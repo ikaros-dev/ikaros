@@ -1,5 +1,6 @@
 server:
   port: 9090
+  shutdown: graceful
   forward-headers-strategy: native
   compression:
     enabled: true
@@ -11,20 +12,19 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
 
+  webflux:
+    static-path-pattern: "./static/**"
+
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
 
     # H2 database configuration.
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:./db/bgmtv-enhance;AUTO_SERVER=TRUE
+    url: jdbc:h2:file:./db/ikaros;AUTO_SERVER=TRUE
     username: admin
     password: 123456
 
-    # MySQL database configuration.
-  #    driver-class-name: com.mysql.cj.jdbc.Driver
-  #    url: jdbc:mysql://127.0.0.1:3306/bgmtv-enhance?characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-  #    username: root
-  #    password: 123456
+    # TODO Add MariaDB database configuration.
 
   h2:
     console:
@@ -49,46 +49,8 @@ spring:
   thymeleaf:
     cache: true
 
-  mail:
-    host: ${APP_SMTP_HOST:smtpdm.aliyun.com}
-    port:
-    username: ${APP_SMTP_USERNAME:username}
-    password: ${APP_SMTP_PASSWORD:password}
-    protocol: smtp
-    default-encoding: UTF-8
-    properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
-      mail.smtp.starttls.required: true
-      mail.smtp.socketFactory.port: 465
-      mail.smtp.socketFactory.class: javax.net.ssl.SSLSocketFactory
-      mail.smtp.socketFactory.fallback: false
-
 logging:
   level:
-    cn.liguohao.bgmtveh: INFO
+    cn.liguohao.ikaros: INFO
   file:
-    name: logs/bgmtveh.log
-
-security:
-  oauth2:
-    client:
-      messaging-client-auth-code:
-        client-id: messaging-client
-        client-secret: secret
-        grant-type: authorization_code
-        user-authorization-uri: http://auth-server:8090/oauth/authorize
-        access-token-uri: http://auth-server:8090/oauth/token
-        scope: message.read, message.write
-        pre-established-redirect-uri: http://localhost:8080/authorized
-        use-current-uri: false
-
-bgmtv:
-  username: xxxx
-  email: xxxx@xx.com
-  userId: 33333
-  api-agent: bgmtveh-0.1.0-SNAPSHOT
-  api-url-user: https://api.bgm.tv/v0/users/
-  api-url-calendar: https://api.bgm.tv/calendar
-  api-url-subject: https://api.bgm.tv/subject
-  api-url-progress: https://api.bgm.tv/user
+    name: ./logs/ikaros.log
