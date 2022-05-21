@@ -40,11 +40,6 @@ checkstyle-xpath-suppressions.xml
 
 commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 
-正常情况是半小时扫描一次，调用下面的端点，可以立即执行一次
-```text
-/bgmtv/execListenTaskOnce
-```
-
 编译打包，告警可以忽视
 ```text
 .\gradlew.bat clean bootJar
