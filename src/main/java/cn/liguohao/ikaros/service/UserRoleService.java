@@ -6,12 +6,12 @@ import cn.liguohao.ikaros.repository.UserRoleRepository;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 /**
  * @author li-guohao
  */
-@Component
+@Service
 public class UserRoleService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRoleService.class);
 

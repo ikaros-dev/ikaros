@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.config.security;
 
-import static cn.liguohao.ikaros.common.Strings.isNotBlank;
+import static cn.liguohao.ikaros.common.Assert.isNotBlank;
 
 import cn.liguohao.ikaros.entity.Role;
 import cn.liguohao.ikaros.entity.User;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * @author li-guohao
+ * @date 2022/3/26
  */
 @Service
 public record UserDetailsServiceImpl(UserService userService)
@@ -24,9 +25,7 @@ public record UserDetailsServiceImpl(UserService userService)
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
         isNotBlank(username);
-
         // 查询用户
         User user = userService.findByUsername(username);
         if (Objects.isNull(user)) {
@@ -45,9 +44,6 @@ public record UserDetailsServiceImpl(UserService userService)
             .collect(Collectors.toSet());
 
         userDetailsAdapter.addAuthorities(authorityAdapters);
-
-        return org.springframework.security.core.userdetails.User
-            .withUserDetails(userDetailsAdapter)
-            .build();
+        return userDetailsAdapter;
     }
 }
