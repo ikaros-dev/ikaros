@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.handler;
+package cn.liguohao.ikaros.service;
 
 
 import cn.liguohao.ikaros.common.Assert;
@@ -25,27 +25,27 @@ import org.springframework.stereotype.Component;
  * @author li-guohao
  */
 @Component
-public class UserHandler {
+public class UserService {
 
     private final UserRepository userRepository;
-    private final RoleHandler roleHandler;
-    private final UserRoleHandler userRoleHandler;
+    private final RoleService roleService;
+    private final UserRoleService userRoleService;
     private final PasswordEncoder passwordEncoder;
 
     /**
      * @param userRepository  用户表操作Repo
      * @param passwordEncoder 指定的密码加密实例
-     * @param roleHandler     角色服务
-     * @param userRoleHandler 用户角色关系服务
+     * @param roleService     角色服务
+     * @param userRoleService 用户角色关系服务
      */
-    public UserHandler(UserRepository userRepository,
+    public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       RoleHandler roleHandler,
-                       UserRoleHandler userRoleHandler) {
+                       RoleService roleService,
+                       UserRoleService userRoleService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.roleHandler = roleHandler;
-        this.userRoleHandler = userRoleHandler;
+        this.roleService = roleService;
+        this.userRoleService = userRoleService;
     }
 
     /**
@@ -99,11 +99,11 @@ public class UserHandler {
             roleName = RoleName.COMMON.name();
         }
         Role roleEntity =
-            roleHandler.save(new Role()
+            roleService.save(new Role()
                 .setName(roleName));
 
         // 保存 用户角色关系
-        userRoleHandler.save(new UserRole()
+        userRoleService.save(new UserRole()
             .setUserId(userEntity.getId())
             .setRoleId(roleEntity.getId()));
 
@@ -136,12 +136,12 @@ public class UserHandler {
      */
     public Set<Role> findRoleByUid(Long id) {
         // 根据用户ID，查找用户角色关系集合
-        List<UserRole> userRoles = userRoleHandler.findByUserId(id);
+        List<UserRole> userRoles = userRoleService.findByUserId(id);
 
         // 根据角色ID，查询角色名称
         Set<Role> roles = new HashSet<>();
         for (UserRole userRole : userRoles) {
-            Optional<Role> roleOptional = roleHandler.findById(userRole.getRoleId());
+            Optional<Role> roleOptional = roleService.findById(userRole.getRoleId());
             roleOptional.ifPresent(roles::add);
 
         }

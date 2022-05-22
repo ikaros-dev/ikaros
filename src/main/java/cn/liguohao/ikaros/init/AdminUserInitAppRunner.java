@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.init;
 
-import cn.liguohao.ikaros.handler.UserHandler;
+import cn.liguohao.ikaros.service.UserService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -11,19 +11,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class AdminUserInitAppRunner implements ApplicationRunner {
 
-    private final UserHandler userHandler;
+    private final UserService userService;
 
-    public AdminUserInitAppRunner(UserHandler userHandler) {
-        this.userHandler = userHandler;
+    public AdminUserInitAppRunner(UserService userService) {
+        this.userService = userService;
     }
 
     /**
      * @param args incoming application arguments
      * @throws Exception none
-     * @see UserHandler#initAdminUserOnlyOnce()
+     * @see UserService#initAdminUserOnlyOnce()
      */
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        userHandler.initAdminUserOnlyOnce();
+        userService.initAdminUserOnlyOnce();
     }
 }

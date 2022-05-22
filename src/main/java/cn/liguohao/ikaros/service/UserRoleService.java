@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.handler;
+package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.entity.UserRole;
@@ -12,12 +12,12 @@ import org.springframework.stereotype.Component;
  * @author li-guohao
  */
 @Component
-public class UserRoleHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserRoleHandler.class);
+public class UserRoleService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserRoleService.class);
 
     private final UserRoleRepository userRoleRepository;
 
-    public UserRoleHandler(UserRoleRepository userRoleRepository) {
+    public UserRoleService(UserRoleRepository userRoleRepository) {
         this.userRoleRepository = userRoleRepository;
     }
 
