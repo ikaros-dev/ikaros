@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.service;
+package cn.liguohao.ikaros.handler;
 
 
 import cn.liguohao.ikaros.common.Assert;
@@ -19,33 +19,33 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 /**
  * @author li-guohao
  */
-@Service
-public class UserService {
+@Component
+public class UserHandler {
 
     private final UserRepository userRepository;
-    private final RoleService roleService;
-    private final UserRoleService userRoleService;
+    private final RoleHandler roleHandler;
+    private final UserRoleHandler userRoleHandler;
     private final PasswordEncoder passwordEncoder;
 
     /**
      * @param userRepository  用户表操作Repo
      * @param passwordEncoder 指定的密码加密实例
-     * @param roleService     角色服务
-     * @param userRoleService 用户角色关系服务
+     * @param roleHandler     角色服务
+     * @param userRoleHandler 用户角色关系服务
      */
-    public UserService(UserRepository userRepository,
+    public UserHandler(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       RoleService roleService,
-                       UserRoleService userRoleService) {
+                       RoleHandler roleHandler,
+                       UserRoleHandler userRoleHandler) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.roleService = roleService;
-        this.userRoleService = userRoleService;
+        this.roleHandler = roleHandler;
+        this.userRoleHandler = userRoleHandler;
     }
 
     /**
@@ -99,11 +99,11 @@ public class UserService {
             roleName = RoleName.COMMON.name();
         }
         Role roleEntity =
-            roleService.save(new Role()
+            roleHandler.save(new Role()
                 .setName(roleName));
 
         // 保存 用户角色关系
-        userRoleService.save(new UserRole()
+        userRoleHandler.save(new UserRole()
             .setUserId(userEntity.getId())
             .setRoleId(roleEntity.getId()));
 
@@ -136,12 +136,12 @@ public class UserService {
      */
     public Set<Role> findRoleByUid(Long id) {
         // 根据用户ID，查找用户角色关系集合
-        List<UserRole> userRoles = userRoleService.findByUserId(id);
+        List<UserRole> userRoles = userRoleHandler.findByUserId(id);
 
         // 根据角色ID，查询角色名称
         Set<Role> roles = new HashSet<>();
         for (UserRole userRole : userRoles) {
-            Optional<Role> roleOptional = roleService.findById(userRole.getRoleId());
+            Optional<Role> roleOptional = roleHandler.findById(userRole.getRoleId());
             roleOptional.ifPresent(roles::add);
 
         }

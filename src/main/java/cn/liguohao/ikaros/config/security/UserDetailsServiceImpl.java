@@ -4,7 +4,7 @@ import static cn.liguohao.ikaros.common.Strings.isNotBlank;
 
 import cn.liguohao.ikaros.entity.Role;
 import cn.liguohao.ikaros.entity.User;
-import cn.liguohao.ikaros.service.UserService;
+import cn.liguohao.ikaros.handler.UserHandler;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -21,13 +21,13 @@ import reactor.core.publisher.Mono;
  */
 @Service
 public record UserDetailsServiceImpl(
-    UserService userService) implements ReactiveUserDetailsService {
+    UserHandler userHandler) implements ReactiveUserDetailsService {
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {
         isNotBlank(username);
         // 查询用户
-        User user = userService.findByUsername(username);
+        User user = userHandler.findByUsername(username);
         if (Objects.isNull(user)) {
             throw new UsernameNotFoundException("user that username=" + username + " not found.");
         }
@@ -35,7 +35,7 @@ public record UserDetailsServiceImpl(
         UserDetailsAdapter userDetailsAdapter = new UserDetailsAdapter(user);
 
         // 填充权限
-        Set<Role> roles = userService.findRoleByUid(user.getId());
+        Set<Role> roles = userHandler.findRoleByUid(user.getId());
 
         Set<GrantedAuthorityAdapter> authorityAdapters = roles
             .stream()

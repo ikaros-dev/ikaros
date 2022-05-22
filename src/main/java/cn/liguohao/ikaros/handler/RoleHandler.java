@@ -1,22 +1,22 @@
-package cn.liguohao.ikaros.service;
+package cn.liguohao.ikaros.handler;
 
 import cn.liguohao.ikaros.entity.Role;
 import cn.liguohao.ikaros.repository.RoleRepository;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 /**
  * @author liguohao
  */
-@Service
-public class RoleService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoleService.class);
+@Component
+public class RoleHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoleHandler.class);
 
     private final RoleRepository roleRepository;
 
-    public RoleService(RoleRepository roleRepository) {
+    public RoleHandler(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
     }
 

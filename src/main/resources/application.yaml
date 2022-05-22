@@ -35,7 +35,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-      naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
     show-sql: true
     open-in-view: false
 
