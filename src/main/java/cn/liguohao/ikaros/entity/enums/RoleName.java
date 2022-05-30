@@ -4,12 +4,30 @@ package cn.liguohao.ikaros.entity.enums;
  * @author li-guohao
  */
 public enum RoleName {
+
     /**
-     * 普通角色
+     * 主人
      */
-    COMMON,
+    MASTER,
+
     /**
-     * 管理员
+     * 访客
      */
-    ADMIN;
+    VISITOR,
+
+    /**
+     * 好友
+     */
+    FRIEND,
+
+    /**
+     * 关注的人
+     */
+    ATTRACTOR,
+
+    /**
+     * 关注我的人
+     */
+    FANS
+    ;
 }

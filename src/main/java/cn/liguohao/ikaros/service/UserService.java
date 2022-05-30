@@ -10,6 +10,7 @@ import cn.liguohao.ikaros.entity.Role;
 import cn.liguohao.ikaros.entity.User;
 import cn.liguohao.ikaros.entity.UserRole;
 import cn.liguohao.ikaros.entity.enums.RoleName;
+import cn.liguohao.ikaros.init.MasterUserInitAppRunner;
 import cn.liguohao.ikaros.repository.UserRepository;
 import java.util.HashSet;
 import java.util.List;
@@ -86,17 +87,17 @@ public class UserService {
                     .setUsername(username)
                     .setEnable(true)
                     .setIntroduce("no set introduce.")
-                    .setNickname("tomoki")
+                    .setNickname("nickname")
                     .setNonLocked(true)
                     .setSite("http://liguohao.cn")
                     .setTelephone("00000000000"));
 
         /*
-         * 给用户分配角色，新注册用户默认角色是 普通用户
+         * 给用户分配角色，新注册用户默认角色是 访客
          * @see cn.liguohao.ikaros.uaa.entity.enums.RoleName
          */
         if (roleName == null) {
-            roleName = RoleName.COMMON.name();
+            roleName = RoleName.VISITOR.name();
         }
         Role roleEntity =
             roleService.save(new Role()
@@ -117,12 +118,12 @@ public class UserService {
     /**
      * 注册管理员用户，应该只在第一次启动应用时注册一次
      *
-     * @see cn.liguohao.ikaros.init.AdminUserInitAppRunner#run(ApplicationArguments)
+     * @see MasterUserInitAppRunner#run(ApplicationArguments)
      */
-    public void initAdminUserOnlyOnce() {
+    public void initMasterUserOnlyOnce() {
         try {
-            registerUserByUsernameAndPassword(UserConstants.DEFAULT_ADMIN_USERNAME,
-                UserConstants.DEFAULT_ADMIN_PASSWORD, RoleName.ADMIN.name());
+            registerUserByUsernameAndPassword(UserConstants.DEFAULT_MASTER_USERNAME,
+                UserConstants.DEFAULT_MASTER_PASSWORD, RoleName.MASTER.name());
         } catch (UserHasExistException userHasExistException) {
             // 说明：这里捕获这个异常不进行处理，因为数据库管理员用户只需要注册一次就行了
         }
