@@ -6,6 +6,7 @@ import cn.liguohao.ikaros.common.constants.UserConstants;
 import cn.liguohao.ikaros.common.exceptions.UserHasExistException;
 import cn.liguohao.ikaros.common.exceptions.UserNoLoginException;
 import cn.liguohao.ikaros.config.security.UserDetailsAdapter;
+import cn.liguohao.ikaros.define.Subject;
 import cn.liguohao.ikaros.entity.Role;
 import cn.liguohao.ikaros.entity.User;
 import cn.liguohao.ikaros.entity.UserRole;
@@ -173,5 +174,41 @@ public class UserService {
             throw new UserNoLoginException("please login.");
         }
         return currentLoginUser.getId();
+    }
+
+    /**
+     * 关注
+     *
+     * @param target   目标用户
+     */
+    public void follow(User target) {
+        // todo 实现关注逻辑
+    }
+
+    /**
+     * 取消关注
+     *
+     * @param target   目标用户
+     */
+    public void unFollow(User target) {
+        // todo 实现取消关注逻辑
+    }
+
+    /**
+     * 订阅
+     *
+     * @param subject  订阅的条目
+     */
+    public void subscribe(Subject subject) {
+        // todo 实现订阅逻辑
+    }
+
+    /**
+     * 取消订阅
+     *
+     * @param subject  取消订阅的条目
+     */
+    public void unsubscribe(Subject subject) {
+        // todo 实现取消订阅逻辑
     }
 }
