@@ -42,8 +42,7 @@ spring:
     multipart:
       max-file-size: 10240MB
       max-request-size: 10240MB
-  cache:
-    type: simple
+
 
   thymeleaf:
     cache: true
