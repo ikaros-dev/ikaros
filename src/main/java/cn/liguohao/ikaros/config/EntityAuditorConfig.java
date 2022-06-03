@@ -23,7 +23,7 @@ public class EntityAuditorConfig implements AuditorAware<Long> {
      */
     public static final Long UUID_WHEN_NO_AUTH = 0L;
 
-    private static SecurityContext securityContext = SecurityContextHolder.getContext();
+    private static final SecurityContext securityContext = SecurityContextHolder.getContext();
 
     @Override
     public Optional<Long> getCurrentAuditor() {

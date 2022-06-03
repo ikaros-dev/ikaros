@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.service;
 
-import cn.liguohao.ikaros.entity.Role;
+import cn.liguohao.ikaros.entity.RoleEntity;
 import cn.liguohao.ikaros.repository.RoleRepository;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -21,11 +21,11 @@ public class RoleService {
     }
 
 
-    public Role save(Role role) {
-        return roleRepository.save(role);
+    public RoleEntity save(RoleEntity roleEntity) {
+        return roleRepository.save(roleEntity);
     }
 
-    public Optional<Role> findById(Long roleId) {
+    public Optional<RoleEntity> findById(Long roleId) {
         return roleRepository.findById(roleId);
     }
 }

@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.common.exceptions;
+package cn.liguohao.ikaros.common.exceptions.security;
 
 import org.springframework.security.core.AuthenticationException;
 

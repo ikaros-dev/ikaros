@@ -2,8 +2,8 @@ package cn.liguohao.ikaros.config.security;
 
 import static cn.liguohao.ikaros.common.Assert.isNotBlank;
 
-import cn.liguohao.ikaros.entity.Role;
-import cn.liguohao.ikaros.entity.User;
+import cn.liguohao.ikaros.entity.RoleEntity;
+import cn.liguohao.ikaros.entity.UserEntity;
 import cn.liguohao.ikaros.service.UserService;
 import java.util.Objects;
 import java.util.Set;
@@ -27,19 +27,19 @@ public record UserDetailsServiceImpl(UserService userService)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         isNotBlank(username);
         // 查询用户
-        User user = userService.findByUsername(username);
-        if (Objects.isNull(user)) {
+        UserEntity userEntity = userService.findByUsername(username);
+        if (Objects.isNull(userEntity)) {
             throw new UsernameNotFoundException("user that username=" + username + " not found.");
         }
         // 构建UserDetails
-        UserDetailsAdapter userDetailsAdapter = new UserDetailsAdapter(user);
+        UserDetailsAdapter userDetailsAdapter = new UserDetailsAdapter(userEntity);
 
         // 填充权限
-        Set<Role> roles = userService.findRoleByUid(user.getId());
+        Set<RoleEntity> roleEntities = userService.findRoleByUid(userEntity.getId());
 
-        Set<GrantedAuthorityAdapter> authorityAdapters = roles
+        Set<GrantedAuthorityAdapter> authorityAdapters = roleEntities
             .stream()
-            .flatMap((Function<Role, Stream<GrantedAuthorityAdapter>>) role
+            .flatMap((Function<RoleEntity, Stream<GrantedAuthorityAdapter>>) role
                 -> Stream.of(new GrantedAuthorityAdapter(role)))
             .collect(Collectors.toSet());
 

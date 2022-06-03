@@ -9,7 +9,7 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "role")
-public class Role extends Base {
+public class RoleEntity extends BaseEntity {
 
     private String name;
 
@@ -17,7 +17,7 @@ public class Role extends Base {
         return name;
     }
 
-    public Role setName(String name) {
+    public RoleEntity setName(String name) {
         this.name = name;
         return this;
     }
@@ -27,10 +27,10 @@ public class Role extends Base {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Role role)) {
+        if (!(o instanceof RoleEntity roleEntity)) {
             return false;
         }
-        return Objects.equals(name, role.name);
+        return Objects.equals(name, roleEntity.name);
     }
 
     @Override

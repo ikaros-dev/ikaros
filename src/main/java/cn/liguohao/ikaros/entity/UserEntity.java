@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "ikuser")
-public class User extends Base {
+public class UserEntity extends BaseEntity {
 
     /**
      * 用户名
@@ -65,7 +65,7 @@ public class User extends Base {
         return username;
     }
 
-    public User setUsername(String username) {
+    public UserEntity setUsername(String username) {
         this.username = username;
         return this;
     }
@@ -74,7 +74,7 @@ public class User extends Base {
         return password;
     }
 
-    public User setPassword(String password) {
+    public UserEntity setPassword(String password) {
         this.password = password;
         return this;
     }
@@ -83,7 +83,7 @@ public class User extends Base {
         return nickname;
     }
 
-    public User setNickname(String nickname) {
+    public UserEntity setNickname(String nickname) {
         this.nickname = nickname;
         return this;
     }
@@ -92,7 +92,7 @@ public class User extends Base {
         return introduce;
     }
 
-    public User setIntroduce(String introduce) {
+    public UserEntity setIntroduce(String introduce) {
         this.introduce = introduce;
         return this;
     }
@@ -101,7 +101,7 @@ public class User extends Base {
         return telephone;
     }
 
-    public User setTelephone(String telephone) {
+    public UserEntity setTelephone(String telephone) {
         this.telephone = telephone;
         return this;
     }
@@ -110,7 +110,7 @@ public class User extends Base {
         return site;
     }
 
-    public User setSite(String site) {
+    public UserEntity setSite(String site) {
         this.site = site;
         return this;
     }
@@ -119,7 +119,7 @@ public class User extends Base {
         return email;
     }
 
-    public User setEmail(String email) {
+    public UserEntity setEmail(String email) {
         this.email = email;
         return this;
     }
@@ -128,7 +128,7 @@ public class User extends Base {
         return enable;
     }
 
-    public User setEnable(Boolean enable) {
+    public UserEntity setEnable(Boolean enable) {
         this.enable = enable;
         return this;
     }
@@ -137,7 +137,7 @@ public class User extends Base {
         return nonLocked;
     }
 
-    public User setNonLocked(Boolean nonLocked) {
+    public UserEntity setNonLocked(Boolean nonLocked) {
         this.nonLocked = nonLocked;
         return this;
     }

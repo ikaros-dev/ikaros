@@ -1,9 +1,9 @@
-package cn.liguohao.ikaros.entity.enums;
+package cn.liguohao.ikaros.define.enums;
 
 /**
  * @author li-guohao
  */
-public enum RoleName {
+public enum Role {
 
     /**
      * 主人
@@ -28,6 +28,6 @@ public enum RoleName {
     /**
      * 关注我的人
      */
-    FANS
+    FAN
     ;
 }

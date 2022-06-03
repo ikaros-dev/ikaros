@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.controller;
 
-import cn.liguohao.ikaros.entity.User;
+import cn.liguohao.ikaros.entity.UserEntity;
 import cn.liguohao.ikaros.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,9 +32,9 @@ public class PageController {
      */
     @GetMapping("/manager")
     public String manager(Model model) {
-        User user = userService.getCurrentLoginUser();
-        if (user != null) {
-            model.addAttribute("user", user);
+        UserEntity userEntity = userService.getCurrentLoginUser();
+        if (userEntity != null) {
+            model.addAttribute("user", userEntity);
         }
         return "admin/index";
     }

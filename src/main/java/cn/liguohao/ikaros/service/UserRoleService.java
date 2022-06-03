@@ -1,7 +1,7 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.entity.UserRole;
+import cn.liguohao.ikaros.entity.UserRoleEntity;
 import cn.liguohao.ikaros.repository.UserRoleRepository;
 import java.util.List;
 import org.slf4j.Logger;
@@ -22,11 +22,11 @@ public class UserRoleService {
     }
 
 
-    public UserRole save(UserRole userRole) {
-        return userRoleRepository.save(userRole);
+    public UserRoleEntity save(UserRoleEntity userRoleEntity) {
+        return userRoleRepository.save(userRoleEntity);
     }
 
-    public List<UserRole> findByUserId(Long id) {
+    public List<UserRoleEntity> findByUserId(Long id) {
         Assert.isNotNull(id);
         return userRoleRepository.findByUserId(id);
     }

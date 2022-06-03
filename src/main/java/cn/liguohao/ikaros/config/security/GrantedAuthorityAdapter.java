@@ -1,20 +1,20 @@
 package cn.liguohao.ikaros.config.security;
 
-import cn.liguohao.ikaros.entity.Role;
+import cn.liguohao.ikaros.entity.RoleEntity;
 import java.util.Objects;
 import org.springframework.security.core.GrantedAuthority;
 
 /**
  * @author li-guohao
  */
-public record GrantedAuthorityAdapter(Role role) implements GrantedAuthority {
+public record GrantedAuthorityAdapter(RoleEntity roleEntity) implements GrantedAuthority {
 
     /**
      * @return 权限字符串，就是角色名称
      */
     @Override
     public String getAuthority() {
-        return role.getName();
+        return roleEntity.getName();
     }
 
     @Override
@@ -28,11 +28,11 @@ public record GrantedAuthorityAdapter(Role role) implements GrantedAuthority {
 
         GrantedAuthorityAdapter that = (GrantedAuthorityAdapter) o;
 
-        return Objects.equals(role, that.role);
+        return Objects.equals(roleEntity, that.roleEntity);
     }
 
     @Override
     public int hashCode() {
-        return role != null ? role.hashCode() : 0;
+        return roleEntity != null ? roleEntity.hashCode() : 0;
     }
 }

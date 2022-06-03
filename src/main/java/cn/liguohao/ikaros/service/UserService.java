@@ -3,14 +3,13 @@ package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.constants.UserConstants;
-import cn.liguohao.ikaros.common.exceptions.UserHasExistException;
-import cn.liguohao.ikaros.common.exceptions.UserNoLoginException;
+import cn.liguohao.ikaros.common.exceptions.security.UserHasExistException;
+import cn.liguohao.ikaros.common.exceptions.security.UserNoLoginException;
 import cn.liguohao.ikaros.config.security.UserDetailsAdapter;
-import cn.liguohao.ikaros.define.Subject;
-import cn.liguohao.ikaros.entity.Role;
-import cn.liguohao.ikaros.entity.User;
-import cn.liguohao.ikaros.entity.UserRole;
-import cn.liguohao.ikaros.entity.enums.RoleName;
+import cn.liguohao.ikaros.define.enums.Role;
+import cn.liguohao.ikaros.entity.RoleEntity;
+import cn.liguohao.ikaros.entity.UserEntity;
+import cn.liguohao.ikaros.entity.UserRoleEntity;
 import cn.liguohao.ikaros.init.MasterUserInitAppRunner;
 import cn.liguohao.ikaros.repository.UserRepository;
 import java.util.HashSet;
@@ -19,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,16 +29,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
+    private static final SecurityContext securityContext = SecurityContextHolder.getContext();
+
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final UserRoleService userRoleService;
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * @param userRepository  用户表操作Repo
-     * @param passwordEncoder 指定的密码加密实例
-     * @param roleService     角色服务
-     * @param userRoleService 用户角色关系服务
+     * @param userRepository     用户表操作Repo
+     * @param passwordEncoder    指定的密码加密实例
+     * @param roleService        角色服务
+     * @param userRoleService    用户角色关系服务
      */
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
@@ -73,16 +75,16 @@ public class UserService {
 
         Assert.isNotBlank(username, password);
 
-        User existUser = userRepository.findByUsername(username);
-        if (existUser != null) {
+        UserEntity existUserEntity = userRepository.findByUsername(username);
+        if (existUserEntity != null) {
             throw new UserHasExistException("register user fail, has exist user: username="
                 + username);
         }
 
         // 新增用户
-        User userEntity =
+        UserEntity userEntity =
             userRepository.save(
-                new User()
+                new UserEntity()
                     .setEmail("user@liguohao.cn")
                     .setPassword(passwordEncoder.encode(password))
                     .setUsername(username)
@@ -98,20 +100,20 @@ public class UserService {
          * @see cn.liguohao.ikaros.uaa.entity.enums.RoleName
          */
         if (roleName == null) {
-            roleName = RoleName.VISITOR.name();
+            roleName = Role.VISITOR.name();
         }
-        Role roleEntity =
-            roleService.save(new Role()
+        RoleEntity roleEntity =
+            roleService.save(new RoleEntity()
                 .setName(roleName));
 
         // 保存 用户角色关系
-        userRoleService.save(new UserRole()
+        userRoleService.save(new UserRoleEntity()
             .setUserId(userEntity.getId())
             .setRoleId(roleEntity.getId()));
 
     }
 
-    public User findByUsername(String username) {
+    public UserEntity findByUsername(String username) {
         Assert.isNotBlank(username);
         return userRepository.findByUsername(username);
     }
@@ -124,7 +126,7 @@ public class UserService {
     public void initMasterUserOnlyOnce() {
         try {
             registerUserByUsernameAndPassword(UserConstants.DEFAULT_MASTER_USERNAME,
-                UserConstants.DEFAULT_MASTER_PASSWORD, RoleName.MASTER.name());
+                UserConstants.DEFAULT_MASTER_PASSWORD, Role.MASTER.name());
         } catch (UserHasExistException userHasExistException) {
             // 说明：这里捕获这个异常不进行处理，因为数据库管理员用户只需要注册一次就行了
         }
@@ -136,26 +138,26 @@ public class UserService {
      * @param id 用户ID
      * @return 角色集合
      */
-    public Set<Role> findRoleByUid(Long id) {
+    public Set<RoleEntity> findRoleByUid(Long id) {
         // 根据用户ID，查找用户角色关系集合
-        List<UserRole> userRoles = userRoleService.findByUserId(id);
+        List<UserRoleEntity> userRoleEntities = userRoleService.findByUserId(id);
 
         // 根据角色ID，查询角色名称
-        Set<Role> roles = new HashSet<>();
-        for (UserRole userRole : userRoles) {
-            Optional<Role> roleOptional = roleService.findById(userRole.getRoleId());
-            roleOptional.ifPresent(roles::add);
+        Set<RoleEntity> roleEntities = new HashSet<>();
+        for (UserRoleEntity userRoleEntity : userRoleEntities) {
+            Optional<RoleEntity> roleOptional = roleService.findById(userRoleEntity.getRoleId());
+            roleOptional.ifPresent(roleEntities::add);
 
         }
 
-        return roles;
+        return roleEntities;
     }
 
     /**
      * @return 当前用户登陆后的用户信息
      */
-    public User getCurrentLoginUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public static UserEntity getCurrentLoginUser() {
+        Authentication authentication = securityContext.getAuthentication();
         if (authentication != null) {
             UserDetailsAdapter userDetailsAdapter
                 = (UserDetailsAdapter) authentication.getPrincipal();
@@ -169,46 +171,11 @@ public class UserService {
      * @return 当前用户登陆的用户ID
      */
     public Long getCurrentLoginUserUid() {
-        User currentLoginUser = getCurrentLoginUser();
-        if (currentLoginUser == null) {
+        UserEntity currentLoginUserEntity = getCurrentLoginUser();
+        if (currentLoginUserEntity == null) {
             throw new UserNoLoginException("please login.");
         }
-        return currentLoginUser.getId();
+        return currentLoginUserEntity.getId();
     }
 
-    /**
-     * 关注
-     *
-     * @param target   目标用户
-     */
-    public void follow(User target) {
-        // todo 实现关注逻辑
-    }
-
-    /**
-     * 取消关注
-     *
-     * @param target   目标用户
-     */
-    public void unFollow(User target) {
-        // todo 实现取消关注逻辑
-    }
-
-    /**
-     * 订阅
-     *
-     * @param subject  订阅的条目
-     */
-    public void subscribe(Subject subject) {
-        // todo 实现订阅逻辑
-    }
-
-    /**
-     * 取消订阅
-     *
-     * @param subject  取消订阅的条目
-     */
-    public void unsubscribe(Subject subject) {
-        // todo 实现取消订阅逻辑
-    }
 }

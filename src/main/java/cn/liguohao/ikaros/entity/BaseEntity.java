@@ -20,7 +20,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public class Base {
+public class BaseEntity {
 
     /**
      * 主键ID自增
@@ -77,7 +77,7 @@ public class Base {
         return status;
     }
 
-    public Base setStatus(Boolean status) {
+    public BaseEntity setStatus(Boolean status) {
         this.status = status;
         return this;
     }
@@ -103,7 +103,7 @@ public class Base {
         return version;
     }
 
-    public Base setVersion(Long version) {
+    public BaseEntity setVersion(Long version) {
         this.version = version;
         return this;
     }

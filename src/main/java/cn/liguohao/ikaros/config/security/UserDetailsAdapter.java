@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.config.security;
 
-import cn.liguohao.ikaros.entity.User;
+import cn.liguohao.ikaros.entity.UserEntity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,11 +13,11 @@ import org.springframework.security.core.userdetails.UserDetails;
  */
 public class UserDetailsAdapter implements UserDetails {
 
-    private final User user;
+    private final UserEntity userEntity;
     private List<GrantedAuthorityAdapter> authorities;
 
-    public UserDetailsAdapter(User user) {
-        this.user = user;
+    public UserDetailsAdapter(UserEntity userEntity) {
+        this.userEntity = userEntity;
     }
 
 
@@ -53,12 +53,12 @@ public class UserDetailsAdapter implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return userEntity.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return userEntity.getUsername();
     }
 
     @Override
@@ -68,7 +68,7 @@ public class UserDetailsAdapter implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return user.getNonLocked();
+        return userEntity.getNonLocked();
     }
 
     @Override
@@ -78,10 +78,10 @@ public class UserDetailsAdapter implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getEnable();
+        return userEntity.getEnable();
     }
 
-    public User getUser() {
-        return user;
+    public UserEntity getUser() {
+        return userEntity;
     }
 }

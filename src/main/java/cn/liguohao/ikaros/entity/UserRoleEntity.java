@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
  * @author li-guohao
  */
 @Entity
-public class UserRole extends Base {
+public class UserRoleEntity extends BaseEntity {
 
     /**
      * 用户唯一ID
@@ -27,7 +27,7 @@ public class UserRole extends Base {
         return userId;
     }
 
-    public UserRole setUserId(Long userId) {
+    public UserRoleEntity setUserId(Long userId) {
         this.userId = userId;
         return this;
     }
@@ -36,7 +36,7 @@ public class UserRole extends Base {
         return roleId;
     }
 
-    public UserRole setRoleId(Long roleId) {
+    public UserRoleEntity setRoleId(Long roleId) {
         this.roleId = roleId;
         return this;
     }

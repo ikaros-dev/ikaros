@@ -24,7 +24,7 @@ spring:
     username: admin
     password: 123456
 
-    # TODO Add MariaDB database configuration.
+    #  Add MariaDB database configuration.
 
   h2:
     console:
