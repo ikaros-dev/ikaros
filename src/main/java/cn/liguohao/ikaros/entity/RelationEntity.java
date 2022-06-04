@@ -27,7 +27,7 @@ public class RelationEntity extends BaseEntity {
      */
     private Long guestUid;
 
-    public Role role() {
+    public Role getRole() {
         return role;
     }
 
@@ -36,7 +36,7 @@ public class RelationEntity extends BaseEntity {
         return this;
     }
 
-    public Long masterUid() {
+    public Long getMasterUid() {
         return masterUid;
     }
 
@@ -45,7 +45,7 @@ public class RelationEntity extends BaseEntity {
         return this;
     }
 
-    public Long guestUid() {
+    public Long getGuestUid() {
         return guestUid;
     }
 
