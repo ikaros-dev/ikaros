@@ -1,6 +1,12 @@
 # 介绍
 娱乐(战略)用泛用机器人——伊卡洛斯。
+
 基于SpringBoot3 + Vue3。
+
+专注于ACGMN的内容管家，一切为主人(Master)的体验服务。
+
+ACGMN全拼是：Anime(动画) + Comic(漫画) + GalGame(游戏) + Music(音乐) + Novel(小说)
+
 
 # 编译环境
 - JDK: 17
