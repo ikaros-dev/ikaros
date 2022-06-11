@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.Set;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,8 +27,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UserService {
-
-    private static final SecurityContext securityContext = SecurityContextHolder.getContext();
 
     private final UserRepository userRepository;
     private final RoleService roleService;
@@ -157,7 +154,7 @@ public class UserService {
      * @return 当前用户登陆后的用户信息
      */
     public static UserEntity getCurrentLoginUser() {
-        Authentication authentication = securityContext.getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
             UserDetailsAdapter userDetailsAdapter
                 = (UserDetailsAdapter) authentication.getPrincipal();

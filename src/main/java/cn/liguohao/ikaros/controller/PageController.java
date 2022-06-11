@@ -15,12 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/page")
 public class PageController {
 
-    private final UserService userService;
-
-    public PageController(UserService userService) {
-        this.userService = userService;
-    }
-
     @GetMapping
     public String home() {
         return "index";
@@ -32,11 +26,14 @@ public class PageController {
      */
     @GetMapping("/manager")
     public String manager(Model model) {
-        UserEntity userEntity = userService.getCurrentLoginUser();
-        if (userEntity != null) {
+        UserEntity userEntity = UserService.getCurrentLoginUser();
+        if (userEntity == null) {
+            model.addAttribute("loginError", "用户名密码错误");
+            return "login";
+        } else {
             model.addAttribute("user", userEntity);
+            return "admin/index";
         }
-        return "admin/index";
     }
 
     @GetMapping("/login")
