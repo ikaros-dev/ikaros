@@ -1,12 +1,8 @@
 package cn.liguohao.ikaros.repository;
 
 
-
-import static cn.liguohao.ikaros.config.CacheConfig.APP_CACHE_NAME;
-
 import cn.liguohao.ikaros.entity.UserRoleEntity;
 import java.util.List;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -20,6 +16,5 @@ public interface UserRoleRepository extends JpaRepository<UserRoleEntity, Long> 
      * @param userId 用户ID
      * @return 用户角色关系记录集合
      */
-    @Cacheable(APP_CACHE_NAME)
     List<UserRoleEntity> findByUserId(Long userId);
 }
