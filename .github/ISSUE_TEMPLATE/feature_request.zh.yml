@@ -2,17 +2,21 @@ name: 新特性建议
 description: 提出你的奇思妙想
 body:
   - type: textarea
+    id: description
     attributes:
       label: "详细描述一下此特性"
     validations:
       required: true
   - type: textarea
+    id: refer_to_the_scenario
     attributes:
       label: "可供参考的方案"
   - type: textarea
+    id: implement
     attributes:
       label: "如果你来设计，你会如果去实现？"
   - type: textarea
+    id: additional-information
     attributes:
       label: "附加信息"
       description: "如果你还有其他需要提供的信息，可以在这里填写（可以提供截图、视频等）。"
