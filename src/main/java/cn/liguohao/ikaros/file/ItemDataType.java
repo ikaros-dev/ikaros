@@ -1,12 +1,12 @@
-package cn.liguohao.ikaros.subject;
+package cn.liguohao.ikaros.file;
 
 /**
- * 条目数据类型，类似文件类型
+ * 条目数据项类型，类似文件类型
  *
  * @author li-guohao
  * @date 2022/06/18
  */
-public enum SubjectDataType {
+public enum ItemDataType {
 
     /**
      * 图片
@@ -27,6 +27,11 @@ public enum SubjectDataType {
      * 音频
      */
     VOICE,
+
+    /**
+     * 未知
+     */
+    UNKNOWN,
     ;
 
 }

@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.subject;
+package cn.liguohao.ikaros.file;
 
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.SystemVarKit;
@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
  * @author li-guohao
  * @date 2022/06/18
  */
-public class LocalSubjectDataHandler implements SubjectDataHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalSubjectDataHandler.class);
+public class LocalItemDataHandler implements ItemDataHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalItemDataHandler.class);
 
     private static final String BASE_UPLOAD_DIR_NAME = "upload";
 
@@ -26,37 +26,37 @@ public class LocalSubjectDataHandler implements SubjectDataHandler {
 
 
     @Override
-    public SubjectDataOperateResult upload(SubjectData subjectData) {
-        Assert.isNotNull(subjectData);
-        subjectData.checkoutBeforeUpload();
+    public ItemDataOperateResult upload(ItemData itemData) {
+        Assert.isNotNull(itemData);
+        itemData.checkoutBeforeUpload();
 
-        LocalDateTime oldUploadedTime = subjectData.uploadedTime();
-        subjectData.setUploadedTime(LocalDateTime.now());
+        LocalDateTime oldUploadedTime = itemData.uploadedTime();
+        itemData.setUploadedTime(LocalDateTime.now());
 
-        String subjectDataFilePath = buildSubjectDataFilePath(subjectData);
+        String subjectDataFilePath = buildSubjectDataFilePath(itemData);
 
         try {
-            Files.write(Path.of(new File(subjectDataFilePath).toURI()), subjectData.datum());
+            Files.write(Path.of(new File(subjectDataFilePath).toURI()), itemData.datum());
             LOGGER.debug("upload subject data success, path={}", subjectDataFilePath);
         } catch (IOException  e) {
-            subjectData.setUploadedTime(oldUploadedTime);
+            itemData.setUploadedTime(oldUploadedTime);
             String msg = "operate file fail for subjectDataFilePath=" + subjectDataFilePath;
             LOGGER.error(msg, e);
-            return SubjectDataOperateResult.ofUploadFail(msg + ", exception: ", e);
+            return ItemDataOperateResult.ofUploadFail(msg + ", exception: ", e);
         }
 
-        return SubjectDataOperateResult.ofOk(subjectData);
+        return ItemDataOperateResult.ofOk(itemData);
     }
 
     /**
-     * @param subjectData 条目数据实例
+     * @param itemData 条目数据实例
      * @return 条目数据的文件路径，格式：[upload/yyyy/MM/dd/HH/name.postfix]
      */
-    public String buildSubjectDataFilePath(SubjectData subjectData) {
-        return buildLocationDirAndReturnPath(subjectData.uploadedTime())
-            + File.separator + subjectData.name()
-            + (('.' == subjectData.postfix().charAt(0))
-            ? subjectData.postfix() : "." + subjectData.postfix());
+    public String buildSubjectDataFilePath(ItemData itemData) {
+        return buildLocationDirAndReturnPath(itemData.uploadedTime())
+            + File.separator + itemData.name()
+            + (('.' == itemData.postfix().charAt(0))
+            ? itemData.postfix() : "." + itemData.postfix());
     }
 
     /**
@@ -78,39 +78,39 @@ public class LocalSubjectDataHandler implements SubjectDataHandler {
     }
 
     @Override
-    public SubjectDataOperateResult download(SubjectData subjectData) {
-        Assert.isNotNull(subjectData);
-        subjectData.checkoutBeforeDownload();
-        Assert.isNotNull(subjectData.uploadedTime());
+    public ItemDataOperateResult download(ItemData itemData) {
+        Assert.isNotNull(itemData);
+        itemData.checkoutBeforeDownload();
+        Assert.isNotNull(itemData.uploadedTime());
 
-        String subjectDataFilePath = buildSubjectDataFilePath(subjectData);
+        String subjectDataFilePath = buildSubjectDataFilePath(itemData);
 
         File subjectDataFile = new File(subjectDataFilePath);
         if (!subjectDataFile.exists()) {
-            return SubjectDataOperateResult
+            return ItemDataOperateResult
                 .ofNotFound("current subject data not found, subjectDataFilePath="
                     + subjectDataFilePath);
         }
 
         try {
             byte[] datum = Files.readAllBytes(Path.of(subjectDataFile.toURI()));
-            subjectData.setDatum(datum);
+            itemData.setDatum(datum);
             LOGGER.debug("download subject data success, path={}", subjectDataFilePath);
         } catch (IOException e) {
             String msg = "download subject data fail for path=" + subjectDataFilePath;
             LOGGER.error(msg, e);
-            return SubjectDataOperateResult.ofDownloadFail(msg + ", exception: ", e);
+            return ItemDataOperateResult.ofDownloadFail(msg + ", exception: ", e);
         }
 
-        return SubjectDataOperateResult.ofOk(subjectData);
+        return ItemDataOperateResult.ofOk(itemData);
     }
 
     @Override
-    public SubjectDataOperateResult delete(SubjectData subjectData) {
-        Assert.isNotNull(subjectData);
-        subjectData.checkoutBeforeDelete();
+    public ItemDataOperateResult delete(ItemData itemData) {
+        Assert.isNotNull(itemData);
+        itemData.checkoutBeforeDelete();
 
-        String subjectDataFilePath = buildSubjectDataFilePath(subjectData);
+        String subjectDataFilePath = buildSubjectDataFilePath(itemData);
 
         try {
             File subjectDataFile = new File(subjectDataFilePath);
@@ -119,9 +119,9 @@ public class LocalSubjectDataHandler implements SubjectDataHandler {
         } catch (Exception e) {
             String msg = "delete file fail for subjectDataFilePath=" + subjectDataFilePath;
             LOGGER.error(msg, e);
-            return SubjectDataOperateResult.ofDeleteFail(msg + ", exception: ", e);
+            return ItemDataOperateResult.ofDeleteFail(msg + ", exception: ", e);
         }
 
-        return SubjectDataOperateResult.ofOk();
+        return ItemDataOperateResult.ofOk();
     }
 }

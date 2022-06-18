@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.subject;
+package cn.liguohao.ikaros.file;
 
 
 import java.io.File;
@@ -16,16 +16,16 @@ import org.junit.jupiter.api.Test;
  * @author li-guohao
  * @date 2022/06/18
  */
-class LocalSubjectDataHandlerTest {
+class LocalItemDataHandlerTest {
 
     static String locationDirPath;
-    static LocalSubjectDataHandler localSubjectDataHandler = new LocalSubjectDataHandler();
+    static LocalItemDataHandler localItemDataHandler = new LocalItemDataHandler();
     static String content = "Hello World.";
     static LocalDateTime localDateTime = LocalDateTime.now();
 
     @BeforeAll
     static void setUp() {
-        locationDirPath = localSubjectDataHandler
+        locationDirPath = localItemDataHandler
             .buildLocationDirAndReturnPath(localDateTime);
 
     }
@@ -41,20 +41,20 @@ class LocalSubjectDataHandlerTest {
 
         byte[] datum = content.getBytes(StandardCharsets.UTF_8);
 
-        SubjectData subjectData = new SubjectData()
-            .setType(SubjectDataType.DOCUMENT)
+        ItemData itemData = new ItemData()
+            .setType(ItemDataType.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setDatum(datum)
             .checkoutBeforeUpload();
 
-        SubjectDataOperateResult result = localSubjectDataHandler.upload(subjectData);
+        ItemDataOperateResult result = localItemDataHandler.upload(itemData);
 
         Assertions.assertNotNull(result);
         Assertions.assertNotNull(result.subjectData());
 
         String subjectDataFilePath
-            = localSubjectDataHandler.buildSubjectDataFilePath(result.subjectData());
+            = localItemDataHandler.buildSubjectDataFilePath(result.subjectData());
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -71,14 +71,14 @@ class LocalSubjectDataHandlerTest {
     @Test
     void download() throws IOException {
 
-        SubjectData subjectData = new SubjectData()
-            .setType(SubjectDataType.DOCUMENT)
+        ItemData itemData = new ItemData()
+            .setType(ItemDataType.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setUploadedTime(localDateTime);
 
         String subjectDataFilePath
-            = localSubjectDataHandler.buildSubjectDataFilePath(subjectData);
+            = localItemDataHandler.buildSubjectDataFilePath(itemData);
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -91,11 +91,11 @@ class LocalSubjectDataHandlerTest {
             Files.readString(Path.of(subjectDataFile.toURI())));
 
 
-        subjectData
+        itemData
             .setUploadedTime(localDateTime)
             .checkoutBeforeDownload();
 
-        SubjectDataOperateResult result = localSubjectDataHandler.download(subjectData);
+        ItemDataOperateResult result = localItemDataHandler.download(itemData);
         Assertions.assertNotNull(result);
         Assertions.assertNotNull(result.subjectData());
 
@@ -108,14 +108,14 @@ class LocalSubjectDataHandlerTest {
 
     @Test
     void delete() throws IOException, InterruptedException {
-        SubjectData subjectData = new SubjectData()
-            .setType(SubjectDataType.DOCUMENT)
+        ItemData itemData = new ItemData()
+            .setType(ItemDataType.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setUploadedTime(localDateTime);
 
         String subjectDataFilePath
-            = localSubjectDataHandler.buildSubjectDataFilePath(subjectData);
+            = localItemDataHandler.buildSubjectDataFilePath(itemData);
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -128,7 +128,7 @@ class LocalSubjectDataHandlerTest {
             Files.readString(Path.of(subjectDataFile.toURI())));
 
 
-        localSubjectDataHandler.delete(subjectData.checkoutBeforeDelete());
+        localItemDataHandler.delete(itemData.checkoutBeforeDelete());
 
         Thread.sleep(500);
 
