@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.define.enums;
+package cn.liguohao.ikaros.enums;
 
 /**
  * @author li-guohao

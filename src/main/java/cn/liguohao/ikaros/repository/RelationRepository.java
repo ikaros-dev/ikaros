@@ -1,7 +1,7 @@
 package cn.liguohao.ikaros.repository;
 
-import cn.liguohao.ikaros.define.enums.Role;
 import cn.liguohao.ikaros.entity.RelationEntity;
+import cn.liguohao.ikaros.enums.Role;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -16,7 +16,7 @@ public interface RelationRepository extends JpaRepository<RelationEntity, Long> 
      *
      * @param masterUid 主体ID
      * @param guestUid  客体ID
-     * @param role 主客体之间的关系
+     * @param role      主客体之间的关系
      * @return 关系记录
      */
     RelationEntity findByMasterUidAndGuestUidAndRole(Long masterUid, Long guestUid, Role role);

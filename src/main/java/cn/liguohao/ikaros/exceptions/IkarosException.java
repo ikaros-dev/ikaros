@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.common.exceptions;
+package cn.liguohao.ikaros.exceptions;
 
 /**
  * @author li-guohao

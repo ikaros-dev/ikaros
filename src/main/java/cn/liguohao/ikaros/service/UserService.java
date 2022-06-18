@@ -2,14 +2,14 @@ package cn.liguohao.ikaros.service;
 
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.common.constants.UserConstants;
-import cn.liguohao.ikaros.common.exceptions.security.UserHasExistException;
-import cn.liguohao.ikaros.common.exceptions.security.UserNoLoginException;
 import cn.liguohao.ikaros.config.security.UserDetailsAdapter;
-import cn.liguohao.ikaros.define.enums.Role;
+import cn.liguohao.ikaros.constants.UserConstants;
 import cn.liguohao.ikaros.entity.RoleEntity;
 import cn.liguohao.ikaros.entity.UserEntity;
 import cn.liguohao.ikaros.entity.UserRoleEntity;
+import cn.liguohao.ikaros.enums.Role;
+import cn.liguohao.ikaros.exceptions.UserHasExistException;
+import cn.liguohao.ikaros.exceptions.UserNoLoginException;
 import cn.liguohao.ikaros.init.MasterUserInitAppRunner;
 import cn.liguohao.ikaros.repository.UserRepository;
 import java.util.HashSet;
@@ -34,10 +34,10 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * @param userRepository     用户表操作Repo
-     * @param passwordEncoder    指定的密码加密实例
-     * @param roleService        角色服务
-     * @param userRoleService    用户角色关系服务
+     * @param userRepository  用户表操作Repo
+     * @param passwordEncoder 指定的密码加密实例
+     * @param roleService     角色服务
+     * @param userRoleService 用户角色关系服务
      */
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
