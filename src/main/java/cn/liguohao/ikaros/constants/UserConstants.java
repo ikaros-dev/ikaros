@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.common.constants;
+package cn.liguohao.ikaros.constants;
 
 /**
  * @author li-guohao

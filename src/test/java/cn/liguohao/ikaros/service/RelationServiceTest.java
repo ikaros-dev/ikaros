@@ -1,8 +1,8 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.config.EntityAuditorConfig;
-import cn.liguohao.ikaros.define.enums.Role;
 import cn.liguohao.ikaros.entity.RelationEntity;
+import cn.liguohao.ikaros.enums.Role;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,8 +55,7 @@ class RelationServiceTest {
 
     @Test
     void findRoleByMasterAndGuestUid() {
-        List<Role> roles =
-            relationService.findRoleByMasterAndGuestUid(MASTER_UID, GUEST_UID);
+        List<Role> roles = relationService.findRoleByMasterAndGuestUid(MASTER_UID, GUEST_UID);
         Assertions.assertNotNull(roles);
         Assertions.assertTrue(roles.isEmpty());
 
@@ -79,8 +78,7 @@ class RelationServiceTest {
     void saveAndDelete() {
         relationService.save(MASTER_UID, GUEST_UID, ROLE);
 
-        List<Role> roles =
-            relationService.findRoleByMasterAndGuestUid(MASTER_UID, GUEST_UID);
+        List<Role> roles = relationService.findRoleByMasterAndGuestUid(MASTER_UID, GUEST_UID);
         Assertions.assertNotNull(roles);
         Assertions.assertEquals(1, roles.size());
 
@@ -94,7 +92,6 @@ class RelationServiceTest {
         Assertions.assertNotNull(rolesAfterDelete);
         Assertions.assertTrue(rolesAfterDelete.isEmpty());
     }
-
 
 
     @Test

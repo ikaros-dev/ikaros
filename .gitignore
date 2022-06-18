@@ -40,3 +40,4 @@ out/
 application-local.yaml
 db/
 logs/
+upload/

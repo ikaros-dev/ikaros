@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.entity;
 
-import cn.liguohao.ikaros.define.enums.Role;
+import cn.liguohao.ikaros.enums.Role;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
