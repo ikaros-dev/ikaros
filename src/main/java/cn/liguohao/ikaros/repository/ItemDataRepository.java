@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author li-guohao
  * @date 2022/06/19
  */
-public interface SubjectDataRepository extends JpaRepository<ItemDataEntity, Long> {
+public interface ItemDataRepository extends JpaRepository<ItemDataEntity, Long> {
 }
