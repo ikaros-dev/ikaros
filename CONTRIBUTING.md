@@ -35,16 +35,15 @@
    ```bash
    git add .
    git commit -s -m "Fix a bug or issue"
-   git push origin {YOU_BRANCH_NAME}
    ```
 
-6. 合并主分支
+6. 合并主分支 并 推送到你的github的fork库
    
    在提交 Pull Request 之前，尽量保证当前分支和主分支的代码尽可能同步，这时需要我们手动操作。示例：
    
    ```bash
-   git fetch upstream/develop
-   git merge upstream/develop
+   git fetch upstream develop
+   git merge upstream develop
    git push origin {YOU_BRANCH_NAME}
    ```
 
