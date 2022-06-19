@@ -126,7 +126,7 @@ public class ItemDataOperateResult {
         return msg;
     }
 
-    public ItemData subjectData() {
+    public ItemData itemData() {
         return itemData;
     }
 

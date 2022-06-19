@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.subject;
+package cn.liguohao.ikaros.acgmn.subject;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -49,11 +49,11 @@ public interface AnimeSubject extends Subject {
     String publishOrganization();
 
     /**
-     * 描述(简介)
+     * 综述(概况)
      *
-     * @return 描述
+     * @return 综述
      */
-    String description();
+    String overview();
 
     /**
      * 其它语言的描述(简介)
@@ -69,5 +69,12 @@ public interface AnimeSubject extends Subject {
      *
      * @return 剧集数
      */
-    int episodeCount();
+    Integer episodeCount();
+
+    /**
+     * 动画状态，0-放送中，1-已经完结
+     *
+     * @return 动画放送状态
+     */
+    Integer airStatus();
 }
