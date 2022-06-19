@@ -37,8 +37,9 @@ public class LocalItemDataHandler implements ItemDataHandler {
 
         try {
             Files.write(Path.of(new File(subjectDataFilePath).toURI()), itemData.datum());
+            itemData.setUploadedPath(subjectDataFilePath);
             LOGGER.debug("upload subject data success, path={}", subjectDataFilePath);
-        } catch (IOException  e) {
+        } catch (IOException e) {
             itemData.setUploadedTime(oldUploadedTime);
             String msg = "operate file fail for subjectDataFilePath=" + subjectDataFilePath;
             LOGGER.error(msg, e);
@@ -83,21 +84,24 @@ public class LocalItemDataHandler implements ItemDataHandler {
         itemData.checkoutBeforeDownload();
         Assert.isNotNull(itemData.uploadedTime());
 
-        String subjectDataFilePath = buildSubjectDataFilePath(itemData);
+        String itemDataFilePath = itemData.uploadedPath();
+        if (itemDataFilePath == null || "".equals(itemDataFilePath)) {
+            itemDataFilePath = buildSubjectDataFilePath(itemData);
+        }
 
-        File subjectDataFile = new File(subjectDataFilePath);
+        File subjectDataFile = new File(itemDataFilePath);
         if (!subjectDataFile.exists()) {
             return ItemDataOperateResult
-                .ofNotFound("current subject data not found, subjectDataFilePath="
-                    + subjectDataFilePath);
+                .ofNotFound("current subject data not found, itemDataFilePath="
+                    + itemDataFilePath);
         }
 
         try {
             byte[] datum = Files.readAllBytes(Path.of(subjectDataFile.toURI()));
             itemData.setDatum(datum);
-            LOGGER.debug("download subject data success, path={}", subjectDataFilePath);
+            LOGGER.debug("download subject data success, path={}", itemDataFilePath);
         } catch (IOException e) {
-            String msg = "download subject data fail for path=" + subjectDataFilePath;
+            String msg = "download subject data fail for path=" + itemDataFilePath;
             LOGGER.error(msg, e);
             return ItemDataOperateResult.ofDownloadFail(msg + ", exception: ", e);
         }
@@ -113,15 +117,21 @@ public class LocalItemDataHandler implements ItemDataHandler {
         String subjectDataFilePath = buildSubjectDataFilePath(itemData);
 
         try {
-            File subjectDataFile = new File(subjectDataFilePath);
-            subjectDataFile.delete();
-            LOGGER.debug("delete file success for subjectDataFilePath={}", subjectDataFile);
+            File itemDataFile = new File(subjectDataFilePath);
+            itemDataFile.delete();
+            LOGGER.debug("delete file success for path={}", itemDataFile);
         } catch (Exception e) {
-            String msg = "delete file fail for subjectDataFilePath=" + subjectDataFilePath;
+            String msg = "delete file fail for path=" + subjectDataFilePath;
             LOGGER.error(msg, e);
             return ItemDataOperateResult.ofDeleteFail(msg + ", exception: ", e);
         }
 
         return ItemDataOperateResult.ofOk();
+    }
+
+    @Override
+    public boolean exist(String uploadedPath) {
+        File itemDataFile = new File(uploadedPath);
+        return itemDataFile.exists();
     }
 }

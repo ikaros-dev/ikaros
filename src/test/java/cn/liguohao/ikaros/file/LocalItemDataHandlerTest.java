@@ -51,10 +51,10 @@ class LocalItemDataHandlerTest {
         ItemDataOperateResult result = localItemDataHandler.upload(itemData);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNotNull(result.subjectData());
+        Assertions.assertNotNull(result.itemData());
 
         String subjectDataFilePath
-            = localItemDataHandler.buildSubjectDataFilePath(result.subjectData());
+            = localItemDataHandler.buildSubjectDataFilePath(result.itemData());
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -97,10 +97,10 @@ class LocalItemDataHandlerTest {
 
         ItemDataOperateResult result = localItemDataHandler.download(itemData);
         Assertions.assertNotNull(result);
-        Assertions.assertNotNull(result.subjectData());
+        Assertions.assertNotNull(result.itemData());
 
         Assertions.assertEquals(content,
-            new String(result.subjectData().datum(), StandardCharsets.UTF_8));
+            new String(result.itemData().datum(), StandardCharsets.UTF_8));
 
         subjectDataFile.delete();
 

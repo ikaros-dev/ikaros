@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.subject;
+package cn.liguohao.ikaros.acgmn.subject;
 
 /**
  * @author li-guohao

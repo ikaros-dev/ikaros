@@ -33,4 +33,12 @@ public interface ItemDataHandler {
      */
     ItemDataOperateResult delete(ItemData itemData);
 
+    /**
+     * 路径的项数据是否存在
+     *
+     * @param uploadedPath 上传后的路径
+     * @return true-存在 false-不存在
+     */
+    boolean exist(String uploadedPath);
+
 }
