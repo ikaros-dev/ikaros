@@ -3,44 +3,44 @@
 ## 代码贡献步骤
 
 1. Fork 此仓库
-   
+
    点击 Ikaros 仓库主页右上角的 `Fork` 按钮即可。
 
 2. Clone 仓库到本地
-   
+
    ```bash
    git clone https://github.com/{YOUR_USERNAME}/ikaros --recursive
    ```
 
 3. 添加主仓库
-   
+
    添加主仓库方便未来同步主仓库最新的 commits 以及创建新的分支。
-   
+
    ```bash
    git remote add upstream https://github.com/ikaros-dev/ikaros.git
    git fetch upstream develop
    ```
 
 4. 创建新的开发分支
-   
+
    我们需要从主仓库的主分支创建一个新的开发分支。
-   
+
    ```bash
    git checkout upstream/develop
    git checkout -b {YOU_BRANCH_NAME}
    ```
 
 5. 提交代码
-   
+
    ```bash
    git add .
    git commit -s -m "Fix a bug or issue"
    ```
 
 6. 合并主分支 并 推送到你的github的fork库
-   
+
    在提交 Pull Request 之前，尽量保证当前分支和主分支的代码尽可能同步，这时需要我们手动操作。示例：
-   
+
    ```bash
    git fetch upstream develop
    git merge upstream develop
