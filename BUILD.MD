@@ -2,7 +2,7 @@
 # 编译环境
 
 - JDK: 17
-- Gradle: 7.4
+- Gradle: 7.5
 - SpringBoot: 3.0.0
 - CheckStyle: 8.39
 - Vue: 3
@@ -21,6 +21,12 @@
 
 ```
 .\gradlew.bat clean build -x test
+```
+
+Mac或者Linux
+
+```
+./gradlew clean build -x test
 ```
 
 本地运行，复制`config/resource/application-local.yaml`到`src/main/resource/application-local.yaml`
