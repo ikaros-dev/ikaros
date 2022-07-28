@@ -1,7 +1,7 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.config.EntityAuditorConfig;
-import cn.liguohao.ikaros.entity.RelationEntity;
+import cn.liguohao.ikaros.persistence.structural.entity.RelationEntity;
 import cn.liguohao.ikaros.enums.Role;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;

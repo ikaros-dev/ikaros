@@ -6,6 +6,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 /**
+ * 第一次运行会初始化一个管理员用户，用户名密码都是 admin 。
+ *
  * @author li-guohao
  */
 @Component

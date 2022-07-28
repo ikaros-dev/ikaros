@@ -4,11 +4,11 @@ import static cn.liguohao.ikaros.service.UserService.getCurrentLoginUser;
 
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.config.EntityAuditorConfig;
-import cn.liguohao.ikaros.entity.RelationEntity;
-import cn.liguohao.ikaros.entity.UserEntity;
+import cn.liguohao.ikaros.persistence.structural.entity.RelationEntity;
+import cn.liguohao.ikaros.persistence.structural.entity.UserEntity;
 import cn.liguohao.ikaros.enums.Role;
 import cn.liguohao.ikaros.exceptions.UserRelationNotExistException;
-import cn.liguohao.ikaros.repository.RelationRepository;
+import cn.liguohao.ikaros.persistence.structural.repository.RelationRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.function.Function;

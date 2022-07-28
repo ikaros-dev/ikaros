@@ -2,8 +2,8 @@ package cn.liguohao.ikaros.config.security;
 
 import static cn.liguohao.ikaros.common.Assert.isNotBlank;
 
-import cn.liguohao.ikaros.entity.RoleEntity;
-import cn.liguohao.ikaros.entity.UserEntity;
+import cn.liguohao.ikaros.persistence.structural.entity.RoleEntity;
+import cn.liguohao.ikaros.persistence.structural.entity.UserEntity;
 import cn.liguohao.ikaros.service.UserService;
 import java.util.Objects;
 import java.util.Set;

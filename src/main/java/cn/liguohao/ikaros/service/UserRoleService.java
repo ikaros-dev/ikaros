@@ -1,8 +1,8 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.entity.UserRoleEntity;
-import cn.liguohao.ikaros.repository.UserRoleRepository;
+import cn.liguohao.ikaros.persistence.structural.entity.UserRoleEntity;
+import cn.liguohao.ikaros.persistence.structural.repository.UserRoleRepository;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

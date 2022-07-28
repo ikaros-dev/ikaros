@@ -1,7 +1,7 @@
-package cn.liguohao.ikaros.repository;
+package cn.liguohao.ikaros.persistence.structural.repository;
 
 
-import cn.liguohao.ikaros.entity.UserEntity;
+import cn.liguohao.ikaros.persistence.structural.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

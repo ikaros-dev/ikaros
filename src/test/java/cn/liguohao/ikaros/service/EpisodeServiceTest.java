@@ -1,12 +1,12 @@
 package cn.liguohao.ikaros.service;
 
 
-import cn.liguohao.ikaros.entity.EpisodeEntity;
-import cn.liguohao.ikaros.file.ItemData;
-import cn.liguohao.ikaros.file.ItemDataHandler;
-import cn.liguohao.ikaros.file.ItemDataOperateResult;
-import cn.liguohao.ikaros.file.LocalItemDataHandler;
-import cn.liguohao.ikaros.repository.EpisodeRepository;
+import cn.liguohao.ikaros.persistence.structural.entity.EpisodeEntity;
+import cn.liguohao.ikaros.persistence.incompact.file.FileData;
+import cn.liguohao.ikaros.persistence.incompact.file.FileDataHandler;
+import cn.liguohao.ikaros.persistence.incompact.file.FileDataOperateResult;
+import cn.liguohao.ikaros.persistence.incompact.file.LocalFileDataHandler;
+import cn.liguohao.ikaros.persistence.structural.repository.EpisodeRepository;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -26,7 +26,7 @@ class EpisodeServiceTest {
     static EpisodeEntity episodeEntity;
     static final String content = "Hello World";
     static byte[] datum = content.getBytes(StandardCharsets.UTF_8);
-    static ItemDataHandler itemDataHandler = new LocalItemDataHandler();
+    static FileDataHandler fileDataHandler = new LocalFileDataHandler();
     @Autowired
     EpisodeService episodeService;
     @Autowired
@@ -43,8 +43,8 @@ class EpisodeServiceTest {
 
     void resetEpisode(EpisodeEntity episodeEntity) {
         episodeRepository.deleteById(episodeEntity.getId());
-        itemDataHandler.delete(
-            ItemData.parseEpisodePath(episodeEntity.path(), episodeEntity.dataAddedTime()));
+        fileDataHandler.delete(
+            FileData.parseEpisodePath(episodeEntity.path(), episodeEntity.dataAddedTime()));
     }
 
     @BeforeAll
@@ -77,7 +77,7 @@ class EpisodeServiceTest {
 
         // 验证项数据
         String path = episodeEntityRecord.path();
-        Assertions.assertTrue(itemDataHandler.exist(path));
+        Assertions.assertTrue(fileDataHandler.exist(path));
 
         // 重置
         resetEpisode(episodeEntityRecord);
@@ -135,9 +135,9 @@ class EpisodeServiceTest {
 
         assertEpisode(episodeEntity, episodeEntityRecord);
 
-        ItemDataOperateResult itemDataOperateResult = itemDataHandler.download(ItemData
+        FileDataOperateResult fileDataOperateResult = fileDataHandler.download(FileData
             .parseEpisodePath(episodeEntityRecord.path(), episodeEntityRecord.dataAddedTime()));
-        byte[] downloadedDatum = itemDataOperateResult.itemData().datum();
+        byte[] downloadedDatum = fileDataOperateResult.itemData().datum();
         Assertions.assertEquals(new String(datum, StandardCharsets.UTF_8),
             new String(downloadedDatum, StandardCharsets.UTF_8));
 
@@ -147,7 +147,7 @@ class EpisodeServiceTest {
         episodeService.addOrUpdate(episodeEntity, newDatum);
 
         // 验证更新是否生效
-        byte[] newDownloadedDatum = itemDataHandler.download(ItemData
+        byte[] newDownloadedDatum = fileDataHandler.download(FileData
                 .parseEpisodePath(episodeEntityRecord.path(), episodeEntityRecord.dataAddedTime()))
             .itemData().datum();
         Assertions.assertEquals(new String(newDatum, StandardCharsets.UTF_8),
@@ -183,7 +183,7 @@ class EpisodeServiceTest {
         // 验证
         Optional<EpisodeEntity> deletedEpisodeEntityOptional = episodeService.findByEid(eid);
         Assertions.assertTrue(deletedEpisodeEntityOptional.isEmpty());
-        Assertions.assertFalse(itemDataHandler.exist(episodeEntityRecord.path()));
+        Assertions.assertFalse(fileDataHandler.exist(episodeEntityRecord.path()));
 
         // 重置
         resetEpisode(episodeEntityRecord);

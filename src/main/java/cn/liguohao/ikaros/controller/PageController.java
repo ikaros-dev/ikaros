@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.controller;
 
-import cn.liguohao.ikaros.entity.UserEntity;
+import cn.liguohao.ikaros.persistence.structural.entity.UserEntity;
 import cn.liguohao.ikaros.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

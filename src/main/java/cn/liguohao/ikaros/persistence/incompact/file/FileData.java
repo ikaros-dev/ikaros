@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.file;
+package cn.liguohao.ikaros.persistence.incompact.file;
 
 import static cn.liguohao.ikaros.constants.ItemDataConstants.DEFAULT_POSTFIX;
 
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * @author li-guohao
  * @date 2022/06/18
  */
-public class ItemData {
+public class FileData {
     /**
      * 数据
      */
@@ -21,7 +21,7 @@ public class ItemData {
     /**
      * 类型
      */
-    private ItemDataType type;
+    private FileDataType type;
 
     /**
      * 名称，不带后缀
@@ -49,7 +49,7 @@ public class ItemData {
      * @param uploadedTime 项数据上传时间
      * @return 项数据实例
      */
-    public static ItemData parseEpisodePath(String path, LocalDateTime uploadedTime) {
+    public static FileData parseEpisodePath(String path, LocalDateTime uploadedTime) {
         Assert.isNotNull(path, uploadedTime);
         Assert.isNotBlank(path);
 
@@ -68,8 +68,8 @@ public class ItemData {
         }
 
 
-        return new ItemData()
-            .setType(ItemDataType.UNKNOWN)
+        return new FileData()
+            .setType(FileDataType.UNKNOWN)
             .setName(name)
             .setPostfix(postfix)
             .setUploadedTime(uploadedTime);
@@ -82,7 +82,7 @@ public class ItemData {
      * @param itemName 项数据文件名
      * @return 实例
      */
-    public static ItemData buildInstanceByDatum(byte[] datum, String itemName) {
+    public static FileData buildInstanceByDatum(byte[] datum, String itemName) {
         Assert.isNotNull(datum, itemName);
         Assert.isNotBlank(itemName);
 
@@ -100,8 +100,8 @@ public class ItemData {
         }
 
 
-        return new ItemData()
-            .setType(ItemDataType.UNKNOWN)
+        return new FileData()
+            .setType(FileDataType.UNKNOWN)
             .setName(name)
             .setPostfix(postfix)
             .setDatum(datum);
@@ -113,7 +113,7 @@ public class ItemData {
      *
      * @return this
      */
-    public ItemData checkoutBeforeDownload() {
+    public FileData checkoutBeforeDownload() {
         Assert.isNotNull(type, name, postfix, uploadedTime);
         Assert.isNotBlank(name, postfix);
         return this;
@@ -124,7 +124,7 @@ public class ItemData {
      *
      * @return this
      */
-    public ItemData checkoutBeforeUpload() {
+    public FileData checkoutBeforeUpload() {
         Assert.isNotNull(name, postfix, datum);
         Assert.isNotBlank(name, postfix);
         return this;
@@ -135,7 +135,7 @@ public class ItemData {
      *
      * @return this
      */
-    public ItemData checkoutBeforeDelete() {
+    public FileData checkoutBeforeDelete() {
         Assert.isNotNull(name, postfix, uploadedTime);
         Assert.isNotBlank(name, postfix);
         return this;
@@ -145,16 +145,16 @@ public class ItemData {
         return datum;
     }
 
-    public ItemData setDatum(byte[] datum) {
+    public FileData setDatum(byte[] datum) {
         this.datum = datum;
         return this;
     }
 
-    public ItemDataType type() {
+    public FileDataType type() {
         return type;
     }
 
-    public ItemData setType(ItemDataType type) {
+    public FileData setType(FileDataType type) {
         this.type = type;
         return this;
     }
@@ -163,7 +163,7 @@ public class ItemData {
         return name;
     }
 
-    public ItemData setName(String name) {
+    public FileData setName(String name) {
         this.name = name;
         return this;
     }
@@ -172,7 +172,7 @@ public class ItemData {
         return postfix;
     }
 
-    public ItemData setPostfix(String postfix) {
+    public FileData setPostfix(String postfix) {
         this.postfix = postfix;
         return this;
     }
@@ -181,7 +181,7 @@ public class ItemData {
         return uploadedTime;
     }
 
-    public ItemData setUploadedTime(LocalDateTime uploadedTime) {
+    public FileData setUploadedTime(LocalDateTime uploadedTime) {
         this.uploadedTime = uploadedTime;
         return this;
     }
@@ -190,7 +190,7 @@ public class ItemData {
         return uploadedPath;
     }
 
-    public ItemData setUploadedPath(String uploadedPath) {
+    public FileData setUploadedPath(String uploadedPath) {
         this.uploadedPath = uploadedPath;
         return this;
     }

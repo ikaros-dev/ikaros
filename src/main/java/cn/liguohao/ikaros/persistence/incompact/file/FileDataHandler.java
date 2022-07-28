@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.file;
+package cn.liguohao.ikaros.persistence.incompact.file;
 
 /**
  * 定义条目数据项与文件系统交互的处理器
@@ -6,32 +6,32 @@ package cn.liguohao.ikaros.file;
  * @author li-guohao
  * @date 2022/06/18
  */
-public interface ItemDataHandler {
+public interface FileDataHandler {
 
     /**
      * 上传条目数据项
      *
-     * @param itemData 待上传的条目数据项
+     * @param fileData 待上传的条目数据项
      * @return 条目数据项的操作结果
      */
-    ItemDataOperateResult upload(ItemData itemData);
+    FileDataOperateResult upload(FileData fileData);
 
     /**
      * 下载条目数据项
      *
-     * @param itemData 条目数据项
+     * @param fileData 条目数据项
      * @return 条目数据项的操作结果，如果成功的则包含条目数据项
      */
-    ItemDataOperateResult download(ItemData itemData);
+    FileDataOperateResult download(FileData fileData);
 
 
     /**
      * 删除条目数据项
      *
-     * @param itemData 条目数据项
+     * @param fileData 条目数据项
      * @return 条目数据项的操作结果
      */
-    ItemDataOperateResult delete(ItemData itemData);
+    FileDataOperateResult delete(FileData fileData);
 
     /**
      * 路径的项数据是否存在

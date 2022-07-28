@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.config.security;
 
-import cn.liguohao.ikaros.entity.UserEntity;
+import cn.liguohao.ikaros.persistence.structural.entity.UserEntity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

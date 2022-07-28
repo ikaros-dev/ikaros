@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.config.security;
 
-import cn.liguohao.ikaros.entity.RoleEntity;
+import cn.liguohao.ikaros.persistence.structural.entity.RoleEntity;
 import java.util.Objects;
 import org.springframework.security.core.GrantedAuthority;
 

@@ -3,12 +3,12 @@ package cn.liguohao.ikaros.service;
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.BeanKit;
 import cn.liguohao.ikaros.common.JacksonConverter;
-import cn.liguohao.ikaros.entity.EpisodeEntity;
-import cn.liguohao.ikaros.file.ItemData;
-import cn.liguohao.ikaros.file.ItemDataHandler;
-import cn.liguohao.ikaros.file.ItemDataOperateResult;
-import cn.liguohao.ikaros.file.LocalItemDataHandler;
-import cn.liguohao.ikaros.repository.EpisodeRepository;
+import cn.liguohao.ikaros.persistence.structural.entity.EpisodeEntity;
+import cn.liguohao.ikaros.persistence.incompact.file.FileData;
+import cn.liguohao.ikaros.persistence.incompact.file.FileDataHandler;
+import cn.liguohao.ikaros.persistence.incompact.file.FileDataOperateResult;
+import cn.liguohao.ikaros.persistence.incompact.file.LocalFileDataHandler;
+import cn.liguohao.ikaros.persistence.structural.repository.EpisodeRepository;
 import com.sun.istack.Nullable;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ public class EpisodeService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EpisodeService.class);
 
     private final EpisodeRepository episodeRepository;
-    private ItemDataHandler itemDataHandler = new LocalItemDataHandler();
+    private FileDataHandler fileDataHandler = new LocalFileDataHandler();
 
     public EpisodeService(EpisodeRepository episodeRepository) {
         this.episodeRepository = episodeRepository;
@@ -60,9 +60,9 @@ public class EpisodeService {
             }
 
             // 上传项数据
-            ItemDataOperateResult itemDataOperateResult = itemDataHandler.upload(ItemData
+            FileDataOperateResult fileDataOperateResult = fileDataHandler.upload(FileData
                 .buildInstanceByDatum(datum, episodeEntity.title().strip()));
-            String uploadedPath = itemDataOperateResult.itemData().uploadedPath();
+            String uploadedPath = fileDataOperateResult.itemData().uploadedPath();
             episodeEntity.setPath(uploadedPath);
 
             // 保存记录
@@ -87,13 +87,13 @@ public class EpisodeService {
                 // 涉及项数据的更新
 
                 // 移除旧的项数据
-                itemDataHandler.delete(ItemData.parseEpisodePath(
+                fileDataHandler.delete(FileData.parseEpisodePath(
                     episodeEntityRecord.path(), episodeEntityRecord.dataAddedTime()));
 
                 // 上传新的项数据，并设置上传后的路径
-                ItemDataOperateResult itemDataOperateResult = itemDataHandler.upload(ItemData
+                FileDataOperateResult fileDataOperateResult = fileDataHandler.upload(FileData
                     .buildInstanceByDatum(datum, episodeEntityRecord.title().strip()));
-                String uploadedPath = itemDataOperateResult.itemData().uploadedPath();
+                String uploadedPath = fileDataOperateResult.itemData().uploadedPath();
                 episodeEntityRecord.setPath(uploadedPath);
             }
 
@@ -122,7 +122,7 @@ public class EpisodeService {
             episodeRepository.save(episodeEntity);
 
             // 但是会把项数据(文件)删除
-            itemDataHandler.delete(ItemData
+            fileDataHandler.delete(FileData
                 .parseEpisodePath(episodeEntity.path(), episodeEntity.dataAddedTime()));
 
             LOGGER.debug("delete old episode record, eid is [{}]", eid);

@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.file;
+package cn.liguohao.ikaros.persistence.incompact.file;
 
 /**
  * 条目数据项类型，类似文件类型
@@ -6,7 +6,7 @@ package cn.liguohao.ikaros.file;
  * @author li-guohao
  * @date 2022/06/18
  */
-public enum ItemDataType {
+public enum FileDataType {
 
     /**
      * 图片

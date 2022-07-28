@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.entity;
+package cn.liguohao.ikaros.persistence.structural.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

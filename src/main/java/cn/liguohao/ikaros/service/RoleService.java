@@ -1,7 +1,7 @@
 package cn.liguohao.ikaros.service;
 
-import cn.liguohao.ikaros.entity.RoleEntity;
-import cn.liguohao.ikaros.repository.RoleRepository;
+import cn.liguohao.ikaros.persistence.structural.entity.RoleEntity;
+import cn.liguohao.ikaros.persistence.structural.repository.RoleRepository;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
