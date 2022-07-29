@@ -36,6 +36,9 @@ out/
 ### VS Code ###
 .vscode/
 
+## Mac
+.DS_Store
+
 ### Local Dev Files
 application-local.yaml
 db/

@@ -1,4 +1,3 @@
-
 # 编译环境
 
 - JDK: 17
@@ -39,6 +38,8 @@ Mac或者Linux
 ```
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
+
+版本选择 8.39
 
 配置插件过程中会让填变量值，填入如下值
 

@@ -1,20 +1,25 @@
 package cn.liguohao.ikaros.service;
 
 
-import cn.liguohao.ikaros.persistence.structural.entity.EpisodeEntity;
 import cn.liguohao.ikaros.persistence.incompact.file.FileData;
 import cn.liguohao.ikaros.persistence.incompact.file.FileDataHandler;
 import cn.liguohao.ikaros.persistence.incompact.file.FileDataOperateResult;
 import cn.liguohao.ikaros.persistence.incompact.file.LocalFileDataHandler;
+import cn.liguohao.ikaros.persistence.structural.entity.EpisodeEntity;
 import cn.liguohao.ikaros.persistence.structural.repository.EpisodeRepository;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * @author li-guohao
@@ -33,12 +38,12 @@ class EpisodeServiceTest {
     EpisodeRepository episodeRepository;
 
     void assertEpisode(EpisodeEntity expected, EpisodeEntity actual) {
-        Assertions.assertNotNull(expected);
-        Assertions.assertNotNull(actual);
-        Assertions.assertEquals(expected.title(), actual.title());
-        Assertions.assertEquals(expected.shortTitle(), actual.shortTitle());
-        Assertions.assertEquals(expected.overview(), actual.overview());
-        Assertions.assertEquals(expected.episodeNumber(), actual.episodeNumber());
+        assertNotNull(expected);
+        assertNotNull(actual);
+        assertEquals(expected.title(), actual.title());
+        assertEquals(expected.shortTitle(), actual.shortTitle());
+        assertEquals(expected.overview(), actual.overview());
+        assertEquals(expected.episodeNumber(), actual.episodeNumber());
     }
 
     void resetEpisode(EpisodeEntity episodeEntity) {
@@ -47,9 +52,8 @@ class EpisodeServiceTest {
             FileData.parseEpisodePath(episodeEntity.path(), episodeEntity.dataAddedTime()));
     }
 
-    @BeforeAll
-    public static void setUp() {
-        episodeEntity = new EpisodeEntity()
+    private static EpisodeEntity buildEpisodeEntity() {
+        return new EpisodeEntity()
             .setTitle(" test episode title S1E01    ")
             .setShortTitle(" test ep ")
             .setDataAddedTime(LocalDateTime.now())
@@ -60,24 +64,25 @@ class EpisodeServiceTest {
 
     @Test
     void add() {
+        EpisodeEntity episodeEntity = buildEpisodeEntity();
         episodeService.addOrUpdate(episodeEntity, datum);
 
         Long eid = episodeEntity.getId();
-        Assertions.assertNotNull(eid);
+        assertNotNull(eid);
 
         // 验证元数据
         Optional<EpisodeEntity> episodeEntityRecordOptional = episodeRepository.findById(eid);
 
-        Assertions.assertTrue(episodeEntityRecordOptional.isPresent());
+        assertTrue(episodeEntityRecordOptional.isPresent());
 
         EpisodeEntity episodeEntityRecord = episodeEntityRecordOptional.get();
 
         assertEpisode(episodeEntity, episodeEntityRecord);
-        Assertions.assertNotNull(episodeEntityRecord.path());
+        assertNotNull(episodeEntityRecord.path());
 
         // 验证项数据
         String path = episodeEntityRecord.path();
-        Assertions.assertTrue(fileDataHandler.exist(path));
+        assertTrue(fileDataHandler.exist(path));
 
         // 重置
         resetEpisode(episodeEntityRecord);
@@ -85,19 +90,18 @@ class EpisodeServiceTest {
 
     @Test
     void updateMetaDataOnly() {
+        EpisodeEntity episodeEntity = buildEpisodeEntity();
         // 准备旧元数据
         episodeService.addOrUpdate(episodeEntity, datum);
 
         // 验证旧元数据
         Long eid = episodeEntity.getId();
-        Assertions.assertNotNull(eid);
+        assertNotNull(eid);
 
         Optional<EpisodeEntity> episodeEntityRecordOptional = episodeRepository.findById(eid);
-
-        Assertions.assertTrue(episodeEntityRecordOptional.isPresent());
+        assertTrue(episodeEntityRecordOptional.isPresent());
 
         EpisodeEntity episodeEntityRecord = episodeEntityRecordOptional.get();
-
         assertEpisode(episodeEntity, episodeEntityRecord);
 
         // 更新旧元数据
@@ -109,7 +113,7 @@ class EpisodeServiceTest {
 
         // 验证更新是否生效
         Optional<EpisodeEntity> newEpisodeEntityOptional = episodeRepository.findById(eid);
-        Assertions.assertTrue(newEpisodeEntityOptional.isPresent());
+        assertTrue(newEpisodeEntityOptional.isPresent());
         EpisodeEntity newEpisodeEntity = newEpisodeEntityOptional.get();
 
         assertEpisode(episodeEntity, newEpisodeEntity);
@@ -120,25 +124,23 @@ class EpisodeServiceTest {
 
     @Test
     void updateDatum() {
+        EpisodeEntity episodeEntity = buildEpisodeEntity();
         // 准备旧元数据
         episodeService.addOrUpdate(episodeEntity, datum);
 
         // 验证旧元数据
         Long eid = episodeEntity.getId();
-        Assertions.assertNotNull(eid);
+        assertNotNull(eid);
 
         Optional<EpisodeEntity> episodeEntityRecordOptional = episodeRepository.findById(eid);
-
-        Assertions.assertTrue(episodeEntityRecordOptional.isPresent());
-
+        assertTrue(episodeEntityRecordOptional.isPresent());
         EpisodeEntity episodeEntityRecord = episodeEntityRecordOptional.get();
-
         assertEpisode(episodeEntity, episodeEntityRecord);
 
         FileDataOperateResult fileDataOperateResult = fileDataHandler.download(FileData
             .parseEpisodePath(episodeEntityRecord.path(), episodeEntityRecord.dataAddedTime()));
         byte[] downloadedDatum = fileDataOperateResult.itemData().datum();
-        Assertions.assertEquals(new String(datum, StandardCharsets.UTF_8),
+        assertEquals(new String(datum, StandardCharsets.UTF_8),
             new String(downloadedDatum, StandardCharsets.UTF_8));
 
         // 操作
@@ -150,7 +152,7 @@ class EpisodeServiceTest {
         byte[] newDownloadedDatum = fileDataHandler.download(FileData
                 .parseEpisodePath(episodeEntityRecord.path(), episodeEntityRecord.dataAddedTime()))
             .itemData().datum();
-        Assertions.assertEquals(new String(newDatum, StandardCharsets.UTF_8),
+        assertEquals(new String(newDatum, StandardCharsets.UTF_8),
             new String(newDownloadedDatum, StandardCharsets.UTF_8));
 
         // 重置
@@ -161,19 +163,17 @@ class EpisodeServiceTest {
 
     @Test
     void delete() {
+        EpisodeEntity episodeEntity = buildEpisodeEntity();
         // 准备旧元数据
         episodeService.addOrUpdate(episodeEntity, datum);
 
         // 验证旧元数据
         Long eid = episodeEntity.getId();
-        Assertions.assertNotNull(eid);
+        assertNotNull(eid);
 
         Optional<EpisodeEntity> episodeEntityRecordOptional = episodeRepository.findById(eid);
-
-        Assertions.assertTrue(episodeEntityRecordOptional.isPresent());
-
+        assertTrue(episodeEntityRecordOptional.isPresent());
         EpisodeEntity episodeEntityRecord = episodeEntityRecordOptional.get();
-
         assertEpisode(episodeEntity, episodeEntityRecord);
 
 
@@ -182,8 +182,8 @@ class EpisodeServiceTest {
 
         // 验证
         Optional<EpisodeEntity> deletedEpisodeEntityOptional = episodeService.findByEid(eid);
-        Assertions.assertTrue(deletedEpisodeEntityOptional.isEmpty());
-        Assertions.assertFalse(fileDataHandler.exist(episodeEntityRecord.path()));
+        assertTrue(deletedEpisodeEntityOptional.isEmpty());
+        assertFalse(fileDataHandler.exist(episodeEntityRecord.path()));
 
         // 重置
         resetEpisode(episodeEntityRecord);
@@ -191,17 +191,18 @@ class EpisodeServiceTest {
 
     @Test
     void findByEid() {
+        EpisodeEntity episodeEntity = buildEpisodeEntity();
         // 准备旧元数据
         episodeService.addOrUpdate(episodeEntity, datum);
 
         // 操作
         Long eid = episodeEntity.getId();
-        Assertions.assertNotNull(eid);
+        assertNotNull(eid);
 
         Optional<EpisodeEntity> episodeEntityRecordOptional = episodeRepository.findById(eid);
 
         // 验证
-        Assertions.assertTrue(episodeEntityRecordOptional.isPresent());
+        assertTrue(episodeEntityRecordOptional.isPresent());
         EpisodeEntity episodeEntityRecord = episodeEntityRecordOptional.get();
         assertEpisode(episodeEntity, episodeEntityRecord);
 
