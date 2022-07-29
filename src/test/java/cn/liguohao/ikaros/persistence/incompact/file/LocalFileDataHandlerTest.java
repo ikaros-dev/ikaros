@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros.file;
+package cn.liguohao.ikaros.persistence.incompact.file;
 
 
 import java.io.File;
@@ -8,10 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
-import cn.liguohao.ikaros.persistence.incompact.file.FileData;
-import cn.liguohao.ikaros.persistence.incompact.file.FileDataOperateResult;
-import cn.liguohao.ikaros.persistence.incompact.file.FileDataType;
-import cn.liguohao.ikaros.persistence.incompact.file.LocalFileDataHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
