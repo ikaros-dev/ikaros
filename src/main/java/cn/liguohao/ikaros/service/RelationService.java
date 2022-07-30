@@ -1,22 +1,23 @@
 package cn.liguohao.ikaros.service;
 
-import static cn.liguohao.ikaros.service.UserService.getCurrentLoginUser;
-
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.config.EntityAuditorConfig;
-import cn.liguohao.ikaros.persistence.structural.entity.RelationEntity;
-import cn.liguohao.ikaros.persistence.structural.entity.UserEntity;
 import cn.liguohao.ikaros.enums.Role;
 import cn.liguohao.ikaros.exceptions.UserRelationNotExistException;
+import cn.liguohao.ikaros.persistence.structural.entity.RelationEntity;
+import cn.liguohao.ikaros.persistence.structural.entity.UserEntity;
 import cn.liguohao.ikaros.persistence.structural.repository.RelationRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+
+import static cn.liguohao.ikaros.service.UserService.getCurrentLoginUser;
 
 /**
  * 关系围绕主体为中心
