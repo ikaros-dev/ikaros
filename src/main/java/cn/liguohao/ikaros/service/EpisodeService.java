@@ -4,6 +4,7 @@ import cn.liguohao.ikaros.acgmn.episode.SimpleEpisode;
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.BeanKit;
 import cn.liguohao.ikaros.common.JacksonConverter;
+import cn.liguohao.ikaros.common.Strings;
 import cn.liguohao.ikaros.exceptions.IkarosRuntimeException;
 import cn.liguohao.ikaros.exceptions.NotFoundRecordException;
 import cn.liguohao.ikaros.persistence.incompact.file.FileData;
@@ -13,12 +14,15 @@ import cn.liguohao.ikaros.persistence.incompact.file.LocalFileDataHandler;
 import cn.liguohao.ikaros.persistence.structural.entity.EpisodeEntity;
 import cn.liguohao.ikaros.persistence.structural.repository.EpisodeRepository;
 import com.sun.istack.Nullable;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -26,6 +30,7 @@ import java.util.Optional;
  * @date 2022/06/19
  */
 @Service
+@Transactional(rollbackOn = Throwable.class)
 public class EpisodeService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EpisodeService.class);
 
@@ -59,20 +64,19 @@ public class EpisodeService {
 
         if (eid == null || findByEid(eid).isEmpty()) {
             // 新增
-            Assert.isNotBlank(episodeEntity.title());
-
-            if (datum == null) {
-                throw new IllegalArgumentException("datum is null when add new episode record.");
-            }
-
-            // 上传文件数据
-            FileDataOperateResult fileDataOperateResult = fileDataHandler.upload(FileData
-                    .buildInstanceByDatum(datum, episodeEntity.title().strip()));
-            String uploadedPath = fileDataOperateResult.itemData().uploadedPath();
-            episodeEntity.setPath(uploadedPath);
+            Assert.isNotBlank(episodeEntity.getTitle());
 
             // 保存记录
             episodeRepository.save(episodeEntity);
+
+            // 如果文件数据存在，则上传文件数据
+            if (datum != null) {
+                FileDataOperateResult fileDataOperateResult = fileDataHandler.upload(
+                        FileData.buildInstanceByDatum(datum, episodeEntity.getOriginalFilename()));
+                String uploadedPath = fileDataOperateResult.itemData().uploadedPath();
+                episodeEntity.setPath(uploadedPath);
+                episodeEntity.setDataAddedTime(LocalDateTime.now());
+            }
 
             LOGGER.debug("add new episode record, new record is [{}]",
                     JacksonConverter.obj2Json(episodeEntity));
@@ -93,17 +97,21 @@ public class EpisodeService {
                 // 涉及文件数据的更新
 
                 // 移除旧的文件数据
-                fileDataHandler.delete(FileData.parseEpisodePath(
-                        episodeEntityRecord.path(), episodeEntityRecord.dataAddedTime()));
+                if (Strings.isNotBlank(episodeEntityRecord.getPath())
+                        && !Objects.isNull(episodeEntityRecord.getDataAddedTime())) {
+                    fileDataHandler.delete(FileData.parseEpisodePath(
+                            episodeEntityRecord.getPath(), episodeEntityRecord.getDataAddedTime()));
+                }
 
                 // 上传新的文件数据，并设置上传后的路径
                 FileDataOperateResult fileDataOperateResult = fileDataHandler.upload(FileData
-                        .buildInstanceByDatum(datum, episodeEntityRecord.title().strip()));
+                        .buildInstanceByDatum(datum, episodeEntityRecord.getOriginalFilename()));
                 String uploadedPath = fileDataOperateResult.itemData().uploadedPath();
                 episodeEntityRecord.setPath(uploadedPath);
+                episodeEntityRecord.setDataAddedTime(LocalDateTime.now());
             }
 
-            episodeRepository.save(episodeEntityRecord);
+            episodeRepository.saveAndFlush(episodeEntityRecord);
 
             LOGGER.debug("update episode record, eid is [{}]", episodeEntityRecord.getId());
 
@@ -125,11 +133,11 @@ public class EpisodeService {
 
             // 逻辑删除，更新元数据状态
             episodeEntity.setStatus(false);
-            episodeRepository.save(episodeEntity);
+            episodeRepository.saveAndFlush(episodeEntity);
 
             // 但是会把文件数据(文件)删除
             fileDataHandler.delete(FileData
-                    .parseEpisodePath(episodeEntity.path(), episodeEntity.dataAddedTime()));
+                    .parseEpisodePath(episodeEntity.getPath(), episodeEntity.getDataAddedTime()));
 
             LOGGER.debug("delete old episode record, eid is [{}]", eid);
         }
@@ -177,6 +185,12 @@ public class EpisodeService {
         if (episodeEntityOptional.isEmpty()) {
             throw new NotFoundRecordException("episode id is " + eid);
         }
-        addOrUpdate(episodeEntityOptional.get(), datum);
+
+        // 更新文件信息的原始文件名
+        EpisodeEntity episodeEntity = episodeEntityOptional.get();
+        String originalFilename = multipartFile.getOriginalFilename();
+        episodeEntity.setOriginalFilename(originalFilename);
+
+        addOrUpdate(episodeEntity, datum);
     }
 }

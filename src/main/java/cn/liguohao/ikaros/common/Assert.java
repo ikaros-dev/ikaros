@@ -5,17 +5,17 @@ import java.util.Objects;
 /**
  * @author li-guohao
  */
-public class Assert {
+public class Assert extends org.springframework.util.Assert {
 
     /**
      * 校验参数不为null
      *
-     * @param objs 待校验的对象
+     * @param args 待校验的对象
      */
-    public static void isNotNull(Object... objs) {
-        for (Object obj : objs) {
-            if (Objects.isNull(obj)) {
-                throw new IllegalArgumentException("obj is null.");
+    public static void isNotNull(Object... args) {
+        for (Object arg : args) {
+            if (Objects.isNull(arg)) {
+                throw new IllegalArgumentException("arg is null.");
             }
         }
     }

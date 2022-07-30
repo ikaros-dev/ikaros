@@ -1,10 +1,11 @@
 package cn.liguohao.ikaros.persistence.incompact.file;
 
-import static cn.liguohao.ikaros.constants.ItemDataConstants.DEFAULT_POSTFIX;
-
 import cn.liguohao.ikaros.common.Assert;
+
 import java.io.File;
 import java.time.LocalDateTime;
+
+import static cn.liguohao.ikaros.constants.ItemDataConstants.DEFAULT_POSTFIX;
 
 /**
  * 具体的项数据，条目中具体的项在文件系统里的数据，即传统意义上的文件，如番剧的视频文件等。
@@ -69,42 +70,42 @@ public class FileData {
 
 
         return new FileData()
-            .setType(FileDataType.UNKNOWN)
-            .setName(name)
-            .setPostfix(postfix)
-            .setUploadedTime(uploadedTime);
+                .setType(FileDataType.UNKNOWN)
+                .setName(name)
+                .setPostfix(postfix)
+                .setUploadedTime(uploadedTime);
     }
 
     /**
      * 构建一个项数据实例
      *
-     * @param datum    数据字节数组
-     * @param itemName 项数据文件名
+     * @param datum            数据字节数组
+     * @param originalFilename 文件数据原始文件名
      * @return 实例
      */
-    public static FileData buildInstanceByDatum(byte[] datum, String itemName) {
-        Assert.isNotNull(datum, itemName);
-        Assert.isNotBlank(itemName);
+    public static FileData buildInstanceByDatum(byte[] datum, String originalFilename) {
+        Assert.isNotNull(datum, originalFilename);
+        Assert.isNotBlank(originalFilename);
 
-        int lastDotIndex = itemName.lastIndexOf(".");
+        int lastDotIndex = originalFilename.lastIndexOf(".");
 
         String postfix;
         String name;
 
         if (lastDotIndex > 0) {
-            postfix = itemName.substring(lastDotIndex);
-            name = itemName.substring(0, lastDotIndex);
+            postfix = originalFilename.substring(lastDotIndex);
+            name = originalFilename.substring(0, lastDotIndex);
         } else {
-            name = itemName;
+            name = originalFilename;
             postfix = DEFAULT_POSTFIX;
         }
 
 
         return new FileData()
-            .setType(FileDataType.UNKNOWN)
-            .setName(name)
-            .setPostfix(postfix)
-            .setDatum(datum);
+                .setType(FileDataType.UNKNOWN)
+                .setName(name)
+                .setPostfix(postfix)
+                .setDatum(datum);
     }
 
 

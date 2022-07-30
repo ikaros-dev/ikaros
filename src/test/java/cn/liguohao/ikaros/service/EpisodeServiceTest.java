@@ -40,16 +40,16 @@ class EpisodeServiceTest {
     void assertEpisode(EpisodeEntity expected, EpisodeEntity actual) {
         assertNotNull(expected);
         assertNotNull(actual);
-        assertEquals(expected.title(), actual.title());
-        assertEquals(expected.shortTitle(), actual.shortTitle());
-        assertEquals(expected.overview(), actual.overview());
-        assertEquals(expected.episodeNumber(), actual.episodeNumber());
+        assertEquals(expected.getTitle(), actual.getTitle());
+        assertEquals(expected.getShortTitle(), actual.getShortTitle());
+        assertEquals(expected.getOverview(), actual.getOverview());
+        assertEquals(expected.getEpisodeNumber(), actual.getEpisodeNumber());
     }
 
     void resetEpisode(EpisodeEntity episodeEntity) {
         episodeRepository.deleteById(episodeEntity.getId());
         fileDataHandler.delete(
-            FileData.parseEpisodePath(episodeEntity.path(), episodeEntity.dataAddedTime()));
+            FileData.parseEpisodePath(episodeEntity.getPath(), episodeEntity.getDataAddedTime()));
     }
 
     private static EpisodeEntity buildEpisodeEntity() {
@@ -78,10 +78,10 @@ class EpisodeServiceTest {
         EpisodeEntity episodeEntityRecord = episodeEntityRecordOptional.get();
 
         assertEpisode(episodeEntity, episodeEntityRecord);
-        assertNotNull(episodeEntityRecord.path());
+        assertNotNull(episodeEntityRecord.getPath());
 
         // 验证项数据
-        String path = episodeEntityRecord.path();
+        String path = episodeEntityRecord.getPath();
         assertTrue(fileDataHandler.exist(path));
 
         // 重置
@@ -138,7 +138,8 @@ class EpisodeServiceTest {
         assertEpisode(episodeEntity, episodeEntityRecord);
 
         FileDataOperateResult fileDataOperateResult = fileDataHandler.download(FileData
-            .parseEpisodePath(episodeEntityRecord.path(), episodeEntityRecord.dataAddedTime()));
+            .parseEpisodePath(episodeEntityRecord.getPath(),
+                    episodeEntityRecord.getDataAddedTime()));
         byte[] downloadedDatum = fileDataOperateResult.itemData().datum();
         assertEquals(new String(datum, StandardCharsets.UTF_8),
             new String(downloadedDatum, StandardCharsets.UTF_8));
@@ -150,7 +151,8 @@ class EpisodeServiceTest {
 
         // 验证更新是否生效
         byte[] newDownloadedDatum = fileDataHandler.download(FileData
-                .parseEpisodePath(episodeEntityRecord.path(), episodeEntityRecord.dataAddedTime()))
+                .parseEpisodePath(episodeEntityRecord.getPath(),
+                        episodeEntityRecord.getDataAddedTime()))
             .itemData().datum();
         assertEquals(new String(newDatum, StandardCharsets.UTF_8),
             new String(newDownloadedDatum, StandardCharsets.UTF_8));
@@ -183,7 +185,7 @@ class EpisodeServiceTest {
         // 验证
         Optional<EpisodeEntity> deletedEpisodeEntityOptional = episodeService.findByEid(eid);
         assertTrue(deletedEpisodeEntityOptional.isEmpty());
-        assertFalse(fileDataHandler.exist(episodeEntityRecord.path()));
+        assertFalse(fileDataHandler.exist(episodeEntityRecord.getPath()));
 
         // 重置
         resetEpisode(episodeEntityRecord);

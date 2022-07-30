@@ -1,7 +1,7 @@
 ikaros:
   persistence:
     incompact:
-      file-dir-prefix: ${IKAROS_FILE_DIR_PREFIX:upload}
+      file-dir-prefix: build/upload
 
 server:
   port: 9090
@@ -10,34 +10,28 @@ server:
   compression:
     enabled: true
 
+
 spring:
-  profiles:
-    active: ${IKAROS_ENV:pro}
-
-  jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
-
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
 
     # H2 database configuration.
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:./db/ikaros;AUTO_SERVER=TRUE
+    url: jdbc:h2:file:./build/db/ikaros;AUTO_SERVER=TRUE
     username: admin
     password: 123456
 
-    #  Add MariaDB database configuration.
 
   h2:
     console:
       settings:
         web-allow-others: false
       path: /h2-console
-      enabled: false
+      enabled: true
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: create-drop
+    show-sql: true
     open-in-view: false
 
   servlet:
@@ -47,10 +41,12 @@ spring:
 
 
   thymeleaf:
-    cache: true
+    cache: false
 
 logging:
   level:
-    cn.liguohao.ikaros: INFO
+    cn.liguohao.ikaros: DEBUG
   file:
-    name: ./logs/ikaros.log
+    name: ./build/logs/ikaros.log
+
+

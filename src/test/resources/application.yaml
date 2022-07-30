@@ -1,7 +1,3 @@
-ikaros:
-  app:
-    test: testValue
-
 spring:
   profiles:
-    active: local
+    active: unittest

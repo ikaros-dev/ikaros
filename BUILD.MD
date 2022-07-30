@@ -28,13 +28,12 @@ Mac或者Linux
 ./gradlew clean build -x test
 ```
 
-本地运行，复制`config/resource/application-local.yaml`到`src/main/resource/application-local.yaml`
+本地运行，复制`config/resource/application-dev.yaml`到`src/main/resource/application-dev.yaml`
 , 可以根据需要酌情修改
 
 再在VM参数里加上如下:
-
 ```text
--Dspring.profiles.active=local
+-Dspring.profiles.active=dev
 ```
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置

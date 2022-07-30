@@ -16,13 +16,14 @@ public class EpisodeEntity extends BaseEntity implements Episode {
     private String path;
     private String title;
     private String shortTitle;
+    private String originalFilename;
     private LocalDateTime dataAddedTime;
     private Integer episodeNumber;
     private String overview;
     private LocalDateTime airTime;
 
     @Override
-    public String path() {
+    public String getPath() {
         return path;
     }
 
@@ -32,7 +33,7 @@ public class EpisodeEntity extends BaseEntity implements Episode {
     }
 
     @Override
-    public String title() {
+    public String getTitle() {
         return title;
     }
 
@@ -42,7 +43,7 @@ public class EpisodeEntity extends BaseEntity implements Episode {
     }
 
     @Override
-    public String shortTitle() {
+    public String getShortTitle() {
         return shortTitle;
     }
 
@@ -51,8 +52,17 @@ public class EpisodeEntity extends BaseEntity implements Episode {
         return this;
     }
 
+    public String getOriginalFilename() {
+        return originalFilename;
+    }
+
+    public EpisodeEntity setOriginalFilename(String originalFilename) {
+        this.originalFilename = originalFilename;
+        return this;
+    }
+
     @Override
-    public LocalDateTime dataAddedTime() {
+    public LocalDateTime getDataAddedTime() {
         return dataAddedTime;
     }
 
@@ -62,7 +72,7 @@ public class EpisodeEntity extends BaseEntity implements Episode {
     }
 
     @Override
-    public Integer episodeNumber() {
+    public Integer getEpisodeNumber() {
         return episodeNumber;
     }
 
@@ -72,7 +82,7 @@ public class EpisodeEntity extends BaseEntity implements Episode {
     }
 
     @Override
-    public String overview() {
+    public String getOverview() {
         return overview;
     }
 
@@ -82,7 +92,7 @@ public class EpisodeEntity extends BaseEntity implements Episode {
     }
 
     @Override
-    public LocalDateTime airTime() {
+    public LocalDateTime getAirTime() {
         return airTime;
     }
 

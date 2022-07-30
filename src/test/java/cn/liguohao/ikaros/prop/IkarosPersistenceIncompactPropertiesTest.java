@@ -10,14 +10,14 @@ import org.springframework.boot.test.context.SpringBootTest;
  * @date 2022/05/28
  */
 @SpringBootTest
-class IkarosAppPropertiesTest {
+class IkarosPersistenceIncompactPropertiesTest {
 
     @Autowired
-    private IkarosAppProperties ikarosAppProperties;
+    private IkarosPersistenceIncompactProperties ikarosPersistenceIncompactProperties;
 
     @Test
     void test1() {
-        Assertions.assertNotNull(ikarosAppProperties);
-        Assertions.assertNotNull(ikarosAppProperties.test());
+        Assertions.assertNotNull(ikarosPersistenceIncompactProperties);
+        Assertions.assertNotNull(ikarosPersistenceIncompactProperties.getFileDirPrefix());
     }
 }

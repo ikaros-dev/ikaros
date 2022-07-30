@@ -1,3 +1,8 @@
+ikaros:
+  persistence:
+    incompact:
+      file-dir-prefix: build/upload
+
 server:
   port: 9090
   shutdown: graceful
@@ -12,7 +17,7 @@ spring:
 
     # H2 database configuration.
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:./build/db/ikaros;AUTO_SERVER=TRUE
+    url: jdbc:h2:file:./build/test/db/ikaros;AUTO_SERVER=TRUE
     username: admin
     password: 123456
 
@@ -42,6 +47,6 @@ logging:
   level:
     cn.liguohao.ikaros: DEBUG
   file:
-    name: ./build/logs/ikaros.log
+    name: ./build/test/logs/ikaros.log
 
 
