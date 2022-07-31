@@ -3,6 +3,8 @@ package cn.liguohao.ikaros.acgmn.episode;
 import java.time.LocalDateTime;
 
 /**
+ * 默认的剧集
+ *
  * @author li-guohao
  * @date 2022/06/19
  */

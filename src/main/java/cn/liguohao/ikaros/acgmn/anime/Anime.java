@@ -1,29 +1,29 @@
-package cn.liguohao.ikaros.acgmn.subject;
+package cn.liguohao.ikaros.acgmn.anime;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
- * 动漫的条目，这里定义的是标准的单季度多集数的动漫的条目。
+ * 动漫
  *
  * @author li-guohao
  * @date 2022/06/19
  */
-public interface AnimeSubject extends Subject {
+public interface Anime {
 
     /**
-     * 条目主标题
+     * 主标题
      *
      * @return 标题
      */
-    String mainTitle();
+    String getMainTitle();
 
     /**
      * 其它语言的标题
      *
      * @return 标题数组
      */
-    default String[] otherLocaleTitle() {
+    default String[] getOtherLocaleTitle() {
         return new String[] {};
     }
 
@@ -32,35 +32,35 @@ public interface AnimeSubject extends Subject {
      *
      * @return 放送开始日期
      */
-    LocalDateTime airStartTime();
+    LocalDateTime getAirStartTime();
 
     /**
      * 制作组全体职员
      *
      * @return 制作组全体职员
      */
-    Map<String, String> staff();
+    Map<String, String> getStaff();
 
     /**
      * 制作组
      *
      * @return 制作组
      */
-    String publishOrganization();
+    String getPublishOrganization();
 
     /**
      * 综述(概况)
      *
      * @return 综述
      */
-    String overview();
+    String getOverview();
 
     /**
      * 其它语言的描述(简介)
      *
      * @return 描述数组
      */
-    default String[] otherLocaleDescription() {
+    default String[] getOtherLocaleDescription() {
         return new String[] {};
     }
 
@@ -69,12 +69,12 @@ public interface AnimeSubject extends Subject {
      *
      * @return 剧集数
      */
-    Integer episodeCount();
+    Integer getEpisodeCount();
 
     /**
      * 动画状态，0-放送中，1-已经完结
      *
      * @return 动画放送状态
      */
-    Integer airStatus();
+    Integer getAirStatus();
 }
