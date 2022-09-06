@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * @author li-guohao
  * @date 2022/06/18
  */
-public class ItemData {
+public class IkarosFile {
     /**
      * 数据
      */
@@ -21,7 +21,7 @@ public class ItemData {
     /**
      * 类型
      */
-    private ItemDataType type;
+    private Type type;
 
     /**
      * 名称，不带后缀
@@ -42,6 +42,35 @@ public class ItemData {
      */
     private String uploadedPath;
 
+    public enum Type {
+
+        /**
+         * 图片
+         */
+        IMAGE,
+
+        /**
+         * 视频
+         */
+        VIDEO,
+
+        /**
+         * 文档
+         */
+        DOCUMENT,
+
+        /**
+         * 音频
+         */
+        VOICE,
+
+        /**
+         * 未知
+         */
+        UNKNOWN,
+        ;
+    }
+
     /**
      * 解析剧集的路径，获取对应的项数据实例
      *
@@ -49,7 +78,7 @@ public class ItemData {
      * @param uploadedTime 项数据上传时间
      * @return 项数据实例
      */
-    public static ItemData parseEpisodePath(String path, LocalDateTime uploadedTime) {
+    public static IkarosFile parseEpisodePath(String path, LocalDateTime uploadedTime) {
         Assert.isNotNull(path, uploadedTime);
         Assert.isNotBlank(path);
 
@@ -68,8 +97,8 @@ public class ItemData {
         }
 
 
-        return new ItemData()
-            .setType(ItemDataType.UNKNOWN)
+        return new IkarosFile()
+            .setType(Type.UNKNOWN)
             .setName(name)
             .setPostfix(postfix)
             .setUploadedTime(uploadedTime);
@@ -82,7 +111,7 @@ public class ItemData {
      * @param itemName 项数据文件名
      * @return 实例
      */
-    public static ItemData buildInstanceByDatum(byte[] datum, String itemName) {
+    public static IkarosFile buildInstanceByDatum(byte[] datum, String itemName) {
         Assert.isNotNull(datum, itemName);
         Assert.isNotBlank(itemName);
 
@@ -100,8 +129,8 @@ public class ItemData {
         }
 
 
-        return new ItemData()
-            .setType(ItemDataType.UNKNOWN)
+        return new IkarosFile()
+            .setType(Type.UNKNOWN)
             .setName(name)
             .setPostfix(postfix)
             .setDatum(datum);
@@ -113,7 +142,7 @@ public class ItemData {
      *
      * @return this
      */
-    public ItemData checkoutBeforeDownload() {
+    public IkarosFile checkoutBeforeDownload() {
         Assert.isNotNull(type, name, postfix, uploadedTime);
         Assert.isNotBlank(name, postfix);
         return this;
@@ -124,7 +153,7 @@ public class ItemData {
      *
      * @return this
      */
-    public ItemData checkoutBeforeUpload() {
+    public IkarosFile checkoutBeforeUpload() {
         Assert.isNotNull(name, postfix, datum);
         Assert.isNotBlank(name, postfix);
         return this;
@@ -135,7 +164,7 @@ public class ItemData {
      *
      * @return this
      */
-    public ItemData checkoutBeforeDelete() {
+    public IkarosFile checkoutBeforeDelete() {
         Assert.isNotNull(name, postfix, uploadedTime);
         Assert.isNotBlank(name, postfix);
         return this;
@@ -145,16 +174,16 @@ public class ItemData {
         return datum;
     }
 
-    public ItemData setDatum(byte[] datum) {
+    public IkarosFile setDatum(byte[] datum) {
         this.datum = datum;
         return this;
     }
 
-    public ItemDataType type() {
+    public Type type() {
         return type;
     }
 
-    public ItemData setType(ItemDataType type) {
+    public IkarosFile setType(Type type) {
         this.type = type;
         return this;
     }
@@ -163,7 +192,7 @@ public class ItemData {
         return name;
     }
 
-    public ItemData setName(String name) {
+    public IkarosFile setName(String name) {
         this.name = name;
         return this;
     }
@@ -172,7 +201,7 @@ public class ItemData {
         return postfix;
     }
 
-    public ItemData setPostfix(String postfix) {
+    public IkarosFile setPostfix(String postfix) {
         this.postfix = postfix;
         return this;
     }
@@ -181,7 +210,7 @@ public class ItemData {
         return uploadedTime;
     }
 
-    public ItemData setUploadedTime(LocalDateTime uploadedTime) {
+    public IkarosFile setUploadedTime(LocalDateTime uploadedTime) {
         this.uploadedTime = uploadedTime;
         return this;
     }
@@ -190,7 +219,7 @@ public class ItemData {
         return uploadedPath;
     }
 
-    public ItemData setUploadedPath(String uploadedPath) {
+    public IkarosFile setUploadedPath(String uploadedPath) {
         this.uploadedPath = uploadedPath;
         return this;
     }

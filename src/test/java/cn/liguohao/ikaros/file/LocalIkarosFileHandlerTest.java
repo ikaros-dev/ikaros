@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test;
  * @author li-guohao
  * @date 2022/06/18
  */
-class LocalItemDataHandlerTest {
+class LocalIkarosFileHandlerTest {
 
     static String locationDirPath;
-    static LocalItemDataHandler localItemDataHandler = new LocalItemDataHandler();
+    static LocalIkarosFileHandler localItemDataHandler = new LocalIkarosFileHandler();
     static String content = "Hello World.";
     static LocalDateTime localDateTime = LocalDateTime.now();
 
@@ -41,14 +41,14 @@ class LocalItemDataHandlerTest {
 
         byte[] datum = content.getBytes(StandardCharsets.UTF_8);
 
-        ItemData itemData = new ItemData()
-            .setType(ItemDataType.DOCUMENT)
+        IkarosFile ikarosFile = new IkarosFile()
+            .setType(IkarosFile.Type.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setDatum(datum)
             .checkoutBeforeUpload();
 
-        ItemDataOperateResult result = localItemDataHandler.upload(itemData);
+        IkarosFileOperateResult result = localItemDataHandler.upload(ikarosFile);
 
         Assertions.assertNotNull(result);
         Assertions.assertNotNull(result.itemData());
@@ -71,14 +71,14 @@ class LocalItemDataHandlerTest {
     @Test
     void download() throws IOException {
 
-        ItemData itemData = new ItemData()
-            .setType(ItemDataType.DOCUMENT)
+        IkarosFile ikarosFile = new IkarosFile()
+            .setType(IkarosFile.Type.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setUploadedTime(localDateTime);
 
         String subjectDataFilePath
-            = localItemDataHandler.buildSubjectDataFilePath(itemData);
+            = localItemDataHandler.buildSubjectDataFilePath(ikarosFile);
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -91,11 +91,11 @@ class LocalItemDataHandlerTest {
             Files.readString(Path.of(subjectDataFile.toURI())));
 
 
-        itemData
+        ikarosFile
             .setUploadedTime(localDateTime)
             .checkoutBeforeDownload();
 
-        ItemDataOperateResult result = localItemDataHandler.download(itemData);
+        IkarosFileOperateResult result = localItemDataHandler.download(ikarosFile);
         Assertions.assertNotNull(result);
         Assertions.assertNotNull(result.itemData());
 
@@ -108,14 +108,14 @@ class LocalItemDataHandlerTest {
 
     @Test
     void delete() throws IOException, InterruptedException {
-        ItemData itemData = new ItemData()
-            .setType(ItemDataType.DOCUMENT)
+        IkarosFile ikarosFile = new IkarosFile()
+            .setType(IkarosFile.Type.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setUploadedTime(localDateTime);
 
         String subjectDataFilePath
-            = localItemDataHandler.buildSubjectDataFilePath(itemData);
+            = localItemDataHandler.buildSubjectDataFilePath(ikarosFile);
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -128,7 +128,7 @@ class LocalItemDataHandlerTest {
             Files.readString(Path.of(subjectDataFile.toURI())));
 
 
-        localItemDataHandler.delete(itemData.checkoutBeforeDelete());
+        localItemDataHandler.delete(ikarosFile.checkoutBeforeDelete());
 
         Thread.sleep(500);
 

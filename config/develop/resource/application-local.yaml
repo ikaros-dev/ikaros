@@ -10,19 +10,25 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
 
-    # H2 database configuration.
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:./build/db/ikaros;AUTO_SERVER=TRUE
-    username: admin
+#    # H2 database configuration.
+#    driver-class-name: org.h2.Driver
+#    url: jdbc:h2:file:./build/db/ikaros;AUTO_SERVER=TRUE
+#    username: admin
+#    password: 123456
+
+    # mariadb database configuration.
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://192.168.2.229:63306/ikaros
+    username: root
     password: 123456
 
+#  h2:
+#    console:
+#      settings:
+#        web-allow-others: false
+#      path: /h2-console
+#      enabled: true
 
-  h2:
-    console:
-      settings:
-        web-allow-others: false
-      path: /h2-console
-      enabled: true
   jpa:
     hibernate:
       ddl-auto: create-drop

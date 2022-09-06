@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
  * @author li-guohao
  * @date 2022/06/18
  */
-public class LocalItemDataHandler implements ItemDataHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalItemDataHandler.class);
+public class LocalIkarosFileHandler implements IkarosFileHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalIkarosFileHandler.class);
 
     private static final String BASE_UPLOAD_DIR_NAME = "upload";
 
@@ -26,38 +26,38 @@ public class LocalItemDataHandler implements ItemDataHandler {
 
 
     @Override
-    public ItemDataOperateResult upload(ItemData itemData) {
-        Assert.isNotNull(itemData);
-        itemData.checkoutBeforeUpload();
+    public IkarosFileOperateResult upload(IkarosFile ikarosFile) {
+        Assert.isNotNull(ikarosFile);
+        ikarosFile.checkoutBeforeUpload();
 
-        LocalDateTime oldUploadedTime = itemData.uploadedTime();
-        itemData.setUploadedTime(LocalDateTime.now());
+        LocalDateTime oldUploadedTime = ikarosFile.uploadedTime();
+        ikarosFile.setUploadedTime(LocalDateTime.now());
 
-        String subjectDataFilePath = buildSubjectDataFilePath(itemData);
+        String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
 
         try {
-            Files.write(Path.of(new File(subjectDataFilePath).toURI()), itemData.datum());
-            itemData.setUploadedPath(subjectDataFilePath);
+            Files.write(Path.of(new File(subjectDataFilePath).toURI()), ikarosFile.datum());
+            ikarosFile.setUploadedPath(subjectDataFilePath);
             LOGGER.debug("upload subject data success, path={}", subjectDataFilePath);
         } catch (IOException e) {
-            itemData.setUploadedTime(oldUploadedTime);
+            ikarosFile.setUploadedTime(oldUploadedTime);
             String msg = "operate file fail for subjectDataFilePath=" + subjectDataFilePath;
             LOGGER.error(msg, e);
-            return ItemDataOperateResult.ofUploadFail(msg + ", exception: ", e);
+            return IkarosFileOperateResult.ofUploadFail(msg + ", exception: ", e);
         }
 
-        return ItemDataOperateResult.ofOk(itemData);
+        return IkarosFileOperateResult.ofOk(ikarosFile);
     }
 
     /**
-     * @param itemData 条目数据实例
+     * @param ikarosFile 条目数据实例
      * @return 条目数据的文件路径，格式：[upload/yyyy/MM/dd/HH/name.postfix]
      */
-    public String buildSubjectDataFilePath(ItemData itemData) {
-        return buildLocationDirAndReturnPath(itemData.uploadedTime())
-            + File.separator + itemData.name()
-            + (('.' == itemData.postfix().charAt(0))
-            ? itemData.postfix() : "." + itemData.postfix());
+    public String buildSubjectDataFilePath(IkarosFile ikarosFile) {
+        return buildLocationDirAndReturnPath(ikarosFile.uploadedTime())
+            + File.separator + ikarosFile.name()
+            + (('.' == ikarosFile.postfix().charAt(0))
+            ? ikarosFile.postfix() : "." + ikarosFile.postfix());
     }
 
     /**
@@ -79,42 +79,42 @@ public class LocalItemDataHandler implements ItemDataHandler {
     }
 
     @Override
-    public ItemDataOperateResult download(ItemData itemData) {
-        Assert.isNotNull(itemData);
-        itemData.checkoutBeforeDownload();
-        Assert.isNotNull(itemData.uploadedTime());
+    public IkarosFileOperateResult download(IkarosFile ikarosFile) {
+        Assert.isNotNull(ikarosFile);
+        ikarosFile.checkoutBeforeDownload();
+        Assert.isNotNull(ikarosFile.uploadedTime());
 
-        String itemDataFilePath = itemData.uploadedPath();
+        String itemDataFilePath = ikarosFile.uploadedPath();
         if (itemDataFilePath == null || "".equals(itemDataFilePath)) {
-            itemDataFilePath = buildSubjectDataFilePath(itemData);
+            itemDataFilePath = buildSubjectDataFilePath(ikarosFile);
         }
 
         File subjectDataFile = new File(itemDataFilePath);
         if (!subjectDataFile.exists()) {
-            return ItemDataOperateResult
+            return IkarosFileOperateResult
                 .ofNotFound("current subject data not found, itemDataFilePath="
                     + itemDataFilePath);
         }
 
         try {
             byte[] datum = Files.readAllBytes(Path.of(subjectDataFile.toURI()));
-            itemData.setDatum(datum);
+            ikarosFile.setDatum(datum);
             LOGGER.debug("download subject data success, path={}", itemDataFilePath);
         } catch (IOException e) {
             String msg = "download subject data fail for path=" + itemDataFilePath;
             LOGGER.error(msg, e);
-            return ItemDataOperateResult.ofDownloadFail(msg + ", exception: ", e);
+            return IkarosFileOperateResult.ofDownloadFail(msg + ", exception: ", e);
         }
 
-        return ItemDataOperateResult.ofOk(itemData);
+        return IkarosFileOperateResult.ofOk(ikarosFile);
     }
 
     @Override
-    public ItemDataOperateResult delete(ItemData itemData) {
-        Assert.isNotNull(itemData);
-        itemData.checkoutBeforeDelete();
+    public IkarosFileOperateResult delete(IkarosFile ikarosFile) {
+        Assert.isNotNull(ikarosFile);
+        ikarosFile.checkoutBeforeDelete();
 
-        String subjectDataFilePath = buildSubjectDataFilePath(itemData);
+        String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
 
         try {
             File itemDataFile = new File(subjectDataFilePath);
@@ -123,10 +123,10 @@ public class LocalItemDataHandler implements ItemDataHandler {
         } catch (Exception e) {
             String msg = "delete file fail for path=" + subjectDataFilePath;
             LOGGER.error(msg, e);
-            return ItemDataOperateResult.ofDeleteFail(msg + ", exception: ", e);
+            return IkarosFileOperateResult.ofDeleteFail(msg + ", exception: ", e);
         }
 
-        return ItemDataOperateResult.ofOk();
+        return IkarosFileOperateResult.ofOk();
     }
 
     @Override

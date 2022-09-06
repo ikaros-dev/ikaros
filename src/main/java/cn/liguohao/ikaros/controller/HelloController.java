@@ -15,4 +15,11 @@ public class HelloController {
     public String hello() {
         return "Hello Ikaros! ";
     }
+
+
+    @GetMapping("/ping")
+    @ResponseBody
+    public String ping() {
+        return "pong";
+    }
 }

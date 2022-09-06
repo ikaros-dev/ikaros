@@ -2,6 +2,7 @@ package cn.liguohao.ikaros.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 /**
  * 用户(1) -- 角色(n) 对应关系表
@@ -9,6 +10,7 @@ import jakarta.persistence.Entity;
  * @author li-guohao
  */
 @Entity
+@Table(name = "user_role")
 public class UserRoleEntity extends BaseEntity {
 
     /**
