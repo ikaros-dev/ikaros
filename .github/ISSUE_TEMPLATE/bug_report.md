@@ -1,38 +1,90 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+name: Ikaros Bug report
+title: "[Bug] "
+description: Problems and issues with code of Ikaros
+labels: [ "bug" ]
+body:
+- type: checkboxes
+  attributes:
+  label: Search before asking
+  description: >
+  Please make sure to search in the [issues](https://github.com/li-guohao/ikaros/issues?q=is%3Aissue) first to see
+  whether the same issue was reported already.
+  options:
+  - label: >
+  I had searched in the [issues](https://github.com/li-guohao/ikaros/issues?q=is%3Aissue) and found no similar
+  issues.
+  required: true
 
----
+- type: dropdown
+  attributes:
+  label: Ikaros Component
+  description: |
+  What ikaros component are you using? 
+  multiple: false
+  options:
+  - "backend server (li-guohao/ikaros)"
+  - "admin ui (li-guohao/ikaros-admin)"
+  validations:
+  required: true
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+- type: textarea
+  attributes:
+  label: What happened
+  description: Describe what happened.
+  placeholder: >
+  Please provide the context in which the problem occurred and explain what happened
+  validations:
+  required: true
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+- type: textarea
+  attributes:
+  label: What you expected to happen
+  description: What do you think went wrong?
+  placeholder: >
+  Please explain why you think the behaviour is erroneous. It is extremely helpful if you copy and paste
+  the fragment of logs showing the exact error messages or wrong behaviour and screenshots for
+  UI problems. You can include files by dragging and dropping them here.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+      **NOTE**: please copy and paste texts instead of taking screenshots of them for easy future search.
+  validations:
+  required: true
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+- type: textarea
+  attributes:
+  label: How to reproduce
+  description: >
+  What should we do to reproduce the problem? If you are not able to provide a reproducible case,
+  please open a [Discussion](https://github.com/apache/skywalking/discussions) instead.
+  placeholder: >
+  Please make sure you provide a reproducible step-by-step case of how to reproduce the problem
+  as minimally and precisely as possible. Keep in mind we do not have access to your deployment.
+  Remember that non-reproducible issues will be closed! Opening a discussion is recommended as a
+  first step.
+  validations:
+  required: true
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+- type: textarea
+  attributes:
+  label: Anything else
+  description: Anything else we need to know?
+  placeholder: >
+  How often does this problem occur? (Once? Every time? Only when certain conditions are met?)
+  Any relevant logs to include? Put them here inside fenced
+  ``` ``` blocks or inside a collapsable details tag if it's too long:
+  <details><summary>x.log</summary> lots of stuff </details>
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+- type: checkboxes
+  attributes:
+  label: Are you willing to submit PR?
+  description: >
+  This is absolutely not required, but we are happy to guide you in the contribution process
+  especially if you already have a good understanding of how to implement the fix.
+  SkyWalking is a totally community-driven project and we love to bring new contributors in.
+  Find us in #skywalking on Slack!
+  options:
+  - label: Yes I am willing to submit a PR!
 
-**Additional context**
-Add any other context about the problem here.
+
+- type: markdown
+  attributes:
+  value: "Thanks for completing our form!"
