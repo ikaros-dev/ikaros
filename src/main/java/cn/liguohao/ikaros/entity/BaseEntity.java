@@ -68,9 +68,13 @@ public class BaseEntity {
     @Transient
     private Long version = -1L;
 
-
     public Long getId() {
         return id;
+    }
+
+    public BaseEntity setId(Long id) {
+        this.id = id;
+        return this;
     }
 
     public Boolean getStatus() {
@@ -86,17 +90,36 @@ public class BaseEntity {
         return createUid;
     }
 
-    public Long getUpdateUid() {
-        return updateUid;
+    public BaseEntity setCreateUid(Long createUid) {
+        this.createUid = createUid;
+        return this;
     }
 
     public Date getCreteTime() {
         return creteTime;
     }
 
+    public BaseEntity setCreteTime(Date creteTime) {
+        this.creteTime = creteTime;
+        return this;
+    }
+
+    public Long getUpdateUid() {
+        return updateUid;
+    }
+
+    public BaseEntity setUpdateUid(Long updateUid) {
+        this.updateUid = updateUid;
+        return this;
+    }
 
     public Date getUpdateTime() {
         return updateTime;
+    }
+
+    public BaseEntity setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+        return this;
     }
 
     public Long getVersion() {

@@ -45,7 +45,7 @@ class LocalIkarosFileHandlerTest {
             .setType(IkarosFile.Type.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
-            .setDatum(datum)
+            .setBytes(datum)
             .checkoutBeforeUpload();
 
         IkarosFileOperateResult result = localItemDataHandler.upload(ikarosFile);
@@ -100,7 +100,7 @@ class LocalIkarosFileHandlerTest {
         Assertions.assertNotNull(result.itemData());
 
         Assertions.assertEquals(content,
-            new String(result.itemData().datum(), StandardCharsets.UTF_8));
+            new String(result.itemData().getBytes(), StandardCharsets.UTF_8));
 
         subjectDataFile.delete();
 

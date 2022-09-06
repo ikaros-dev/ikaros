@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * @author li-guohao
  */
-public class Assert {
+public class Assert extends org.springframework.util.Assert {
 
     /**
      * 校验参数不为null

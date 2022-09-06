@@ -1,8 +1,9 @@
 package cn.liguohao.ikaros.file;
 
-import static cn.liguohao.ikaros.constants.ItemDataConstants.DEFAULT_POSTFIX;
+import static cn.liguohao.ikaros.constants.IkarosFileConstants.DEFAULT_POSTFIX;
 
 import cn.liguohao.ikaros.common.Assert;
+import cn.liguohao.ikaros.common.FileKit;
 import java.io.File;
 import java.time.LocalDateTime;
 
@@ -16,7 +17,7 @@ public class IkarosFile {
     /**
      * 数据
      */
-    private byte[] datum;
+    private byte[] bytes;
 
     /**
      * 类型
@@ -104,36 +105,28 @@ public class IkarosFile {
             .setUploadedTime(uploadedTime);
     }
 
-    /**
-     * 构建一个项数据实例
-     *
-     * @param datum    数据字节数组
-     * @param itemName 项数据文件名
-     * @return 实例
-     */
-    public static IkarosFile buildInstanceByDatum(byte[] datum, String itemName) {
-        Assert.isNotNull(datum, itemName);
-        Assert.isNotBlank(itemName);
+    public static IkarosFile build(String originalFilename, byte[] bytes) {
+        Assert.isNotNull(bytes, originalFilename);
+        Assert.isNotBlank(originalFilename);
 
-        int lastDotIndex = itemName.lastIndexOf(".");
+        int lastDotIndex = originalFilename.lastIndexOf(".");
 
         String postfix;
         String name;
 
         if (lastDotIndex > 0) {
-            postfix = itemName.substring(lastDotIndex);
-            name = itemName.substring(0, lastDotIndex);
+            postfix = originalFilename.substring(lastDotIndex);
+            name = originalFilename.substring(0, lastDotIndex);
         } else {
-            name = itemName;
+            name = originalFilename;
             postfix = DEFAULT_POSTFIX;
         }
 
 
         return new IkarosFile()
-            .setType(Type.UNKNOWN)
             .setName(name)
             .setPostfix(postfix)
-            .setDatum(datum);
+            .setBytes(bytes);
     }
 
 
@@ -154,7 +147,7 @@ public class IkarosFile {
      * @return this
      */
     public IkarosFile checkoutBeforeUpload() {
-        Assert.isNotNull(name, postfix, datum);
+        Assert.isNotNull(name, postfix, bytes);
         Assert.isNotBlank(name, postfix);
         return this;
     }
@@ -170,16 +163,16 @@ public class IkarosFile {
         return this;
     }
 
-    public byte[] datum() {
-        return datum;
+    public byte[] getBytes() {
+        return bytes;
     }
 
-    public IkarosFile setDatum(byte[] datum) {
-        this.datum = datum;
+    public IkarosFile setBytes(byte[] bytes) {
+        this.bytes = bytes;
         return this;
     }
 
-    public Type type() {
+    public Type getType() {
         return type;
     }
 
@@ -188,7 +181,7 @@ public class IkarosFile {
         return this;
     }
 
-    public String name() {
+    public String getName() {
         return name;
     }
 
@@ -197,16 +190,17 @@ public class IkarosFile {
         return this;
     }
 
-    public String postfix() {
+    public String getPostfix() {
         return postfix;
     }
 
     public IkarosFile setPostfix(String postfix) {
         this.postfix = postfix;
+        this.type = FileKit.parseTypeByPostfix(postfix);
         return this;
     }
 
-    public LocalDateTime uploadedTime() {
+    public LocalDateTime getUploadedTime() {
         return uploadedTime;
     }
 
@@ -215,7 +209,7 @@ public class IkarosFile {
         return this;
     }
 
-    public String uploadedPath() {
+    public String getUploadedPath() {
         return uploadedPath;
     }
 

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,13 +31,13 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
         Assert.isNotNull(ikarosFile);
         ikarosFile.checkoutBeforeUpload();
 
-        LocalDateTime oldUploadedTime = ikarosFile.uploadedTime();
+        LocalDateTime oldUploadedTime = ikarosFile.getUploadedTime();
         ikarosFile.setUploadedTime(LocalDateTime.now());
 
         String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
 
         try {
-            Files.write(Path.of(new File(subjectDataFilePath).toURI()), ikarosFile.datum());
+            Files.write(Path.of(new File(subjectDataFilePath).toURI()), ikarosFile.getBytes());
             ikarosFile.setUploadedPath(subjectDataFilePath);
             LOGGER.debug("upload subject data success, path={}", subjectDataFilePath);
         } catch (IOException e) {
@@ -51,13 +52,13 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
 
     /**
      * @param ikarosFile 条目数据实例
-     * @return 条目数据的文件路径，格式：[upload/yyyy/MM/dd/HH/name.postfix]
+     * @return 条目数据的文件路径，格式：[upload/yyyy/MM/dd/HH/随机生成的UUID.postfix]
      */
     public String buildSubjectDataFilePath(IkarosFile ikarosFile) {
-        return buildLocationDirAndReturnPath(ikarosFile.uploadedTime())
-            + File.separator + ikarosFile.name()
-            + (('.' == ikarosFile.postfix().charAt(0))
-            ? ikarosFile.postfix() : "." + ikarosFile.postfix());
+        return buildLocationDirAndReturnPath(ikarosFile.getUploadedTime())
+            + File.separator + UUID.randomUUID().toString().replace("-", "")
+            + (('.' == ikarosFile.getPostfix().charAt(0))
+            ? ikarosFile.getPostfix() : "." + ikarosFile.getPostfix());
     }
 
     /**
@@ -82,9 +83,9 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
     public IkarosFileOperateResult download(IkarosFile ikarosFile) {
         Assert.isNotNull(ikarosFile);
         ikarosFile.checkoutBeforeDownload();
-        Assert.isNotNull(ikarosFile.uploadedTime());
+        Assert.isNotNull(ikarosFile.getUploadedTime());
 
-        String itemDataFilePath = ikarosFile.uploadedPath();
+        String itemDataFilePath = ikarosFile.getUploadedPath();
         if (itemDataFilePath == null || "".equals(itemDataFilePath)) {
             itemDataFilePath = buildSubjectDataFilePath(ikarosFile);
         }
@@ -98,7 +99,7 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
 
         try {
             byte[] datum = Files.readAllBytes(Path.of(subjectDataFile.toURI()));
-            ikarosFile.setDatum(datum);
+            ikarosFile.setBytes(datum);
             LOGGER.debug("download subject data success, path={}", itemDataFilePath);
         } catch (IOException e) {
             String msg = "download subject data fail for path=" + itemDataFilePath;

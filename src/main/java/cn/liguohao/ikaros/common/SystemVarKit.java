@@ -30,4 +30,7 @@ public class SystemVarKit {
         return System.getProperty("user.home");
     }
 
+    public static String getOsCacheDirPath() {
+        return System.getProperty("java.io.tmpdir");
+    }
 }
