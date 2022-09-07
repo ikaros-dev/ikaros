@@ -2,7 +2,8 @@ package cn.liguohao.ikaros.common;
 
 import cn.liguohao.ikaros.exceptions.IkarosRuntimeException;
 import cn.liguohao.ikaros.file.IkarosFile;
-import jakarta.xml.bind.DatatypeConverter;
+
+import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;

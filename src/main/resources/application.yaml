@@ -12,9 +12,6 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
 
-  webflux:
-    static-path-pattern: "./static/**"
-
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
 
@@ -42,13 +39,17 @@ spring:
     multipart:
       max-file-size: 10240MB
       max-request-size: 10240MB
-
+    context-path: /
 
   thymeleaf:
     cache: true
 
+
 logging:
   level:
     cn.liguohao.ikaros: INFO
+    org.hibernate: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO
+    org.hibernate.type.descriptor.sql.BasicExtractor: INFO
   file:
     name: ./logs/ikaros.log

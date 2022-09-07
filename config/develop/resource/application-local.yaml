@@ -39,7 +39,7 @@ spring:
     multipart:
       max-file-size: 10240MB
       max-request-size: 10240MB
-
+    context-path: /
 
   thymeleaf:
     cache: false
@@ -47,6 +47,9 @@ spring:
 logging:
   level:
     cn.liguohao.ikaros: DEBUG
+    org.hibernate: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO
+    org.hibernate.type.descriptor.sql.BasicExtractor: INFO
   file:
     name: ./build/logs/ikaros.log
 

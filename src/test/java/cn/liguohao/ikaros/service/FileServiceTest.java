@@ -1,7 +1,6 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.SystemVarKit;
-import jakarta.annotation.Resource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -9,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.annotation.Resource;
 
 /**
  * @author guohao

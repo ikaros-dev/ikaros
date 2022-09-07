@@ -9,7 +9,6 @@ import cn.liguohao.ikaros.entity.UserEntity;
 import cn.liguohao.ikaros.enums.Role;
 import cn.liguohao.ikaros.exceptions.UserRelationNotExistException;
 import cn.liguohao.ikaros.repository.RelationRepository;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,6 +16,8 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
 
 /**
  * 关系围绕主体为中心

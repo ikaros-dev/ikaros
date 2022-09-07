@@ -1,8 +1,9 @@
 package cn.liguohao.ikaros.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
  * 用户(1) -- 角色(n) 对应关系表

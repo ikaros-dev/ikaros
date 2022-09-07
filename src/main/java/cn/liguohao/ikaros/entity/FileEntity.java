@@ -1,8 +1,9 @@
 package cn.liguohao.ikaros.entity;
 
 import cn.liguohao.ikaros.file.IkarosFile;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
  * @author liguohao
