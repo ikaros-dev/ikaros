@@ -5,6 +5,10 @@ plugins {
 	id "checkstyle"
 }
 
+group = "cn.liguohao.ikaros"
+description = "Ikaros, An open source acgmn cms application."
+sourceCompatibility = JavaVersion.VERSION_17
+
 repositories {
 	mavenLocal()
 	maven { url "https://maven.aliyun.com/nexus/content/groups/public" }
@@ -16,6 +20,10 @@ checkstyle {
 	toolVersion = "8.39"
 	showViolations = false
 	ignoreFailures = false
+}
+
+ext {
+
 }
 
 dependencies {

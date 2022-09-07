@@ -16,4 +16,8 @@ public class TimeKit {
         return Date.from(zdt.toInstant());
 
     }
+
+    public static String nowTimestamp() {
+        return String.valueOf(new Date().getTime());
+    }
 }

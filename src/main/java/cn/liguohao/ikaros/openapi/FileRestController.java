@@ -1,10 +1,10 @@
 package cn.liguohao.ikaros.openapi;
 
+import cn.liguohao.ikaros.common.result.CommonResult;
 import cn.liguohao.ikaros.entity.FileEntity;
 import cn.liguohao.ikaros.service.FileService;
 import java.io.IOException;
 import java.util.Optional;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,10 +25,6 @@ public class FileRestController {
         this.fileService = fileService;
     }
 
-    @GetMapping("/test")
-    public String test() {
-        return "hello";
-    }
 
     /**
      * 上传文件
@@ -38,9 +34,10 @@ public class FileRestController {
      * @throws IOException IO
      */
     @PostMapping("/upload")
-    public FileEntity upload(@RequestParam("file") MultipartFile multipartFile) throws IOException {
+    public CommonResult<FileEntity> upload(@RequestParam("file") MultipartFile multipartFile)
+        throws IOException {
         Optional<FileEntity> fileEntityOptional =
             fileService.upload(multipartFile.getOriginalFilename(), multipartFile.getBytes());
-        return fileEntityOptional.orElseGet(null);
+        return CommonResult.ok(fileEntityOptional.orElseGet(null));
     }
 }

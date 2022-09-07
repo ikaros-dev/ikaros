@@ -1,6 +1,7 @@
 # 介绍
+Ikaros, An open source acgmn cms application.
 
-专注于ACGMN的内容管家(CMS)，娱乐(战略)用泛用机器人——伊卡洛斯。
+专注于ACGMN的内容管家(CMS)，——伊卡洛斯。
 
 ACGMN全拼是：Anime(动画) + Comic(漫画) + GalGame(游戏) + Music(音乐) + Novel(小说)
 
