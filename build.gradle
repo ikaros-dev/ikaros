@@ -19,9 +19,6 @@ checkstyle {
 }
 
 dependencies {
-	// 配置在*.yaml里的自定义的 @ConfigurationProperties 字段提示
-	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
