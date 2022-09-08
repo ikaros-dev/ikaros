@@ -1,8 +1,6 @@
 package cn.liguohao.ikaros.common;
 
-import java.io.IOException;
 import java.util.Objects;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author li-guohao
@@ -74,5 +72,9 @@ public class Assert extends org.springframework.util.Assert {
         }
     }
 
-
+    public static void isPositive(long number, String message) {
+        if (number < 0) {
+            throw new IllegalArgumentException(message);
+        }
+    }
 }

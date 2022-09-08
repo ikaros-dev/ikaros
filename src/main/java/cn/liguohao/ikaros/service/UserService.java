@@ -2,12 +2,14 @@ package cn.liguohao.ikaros.service;
 
 
 import cn.liguohao.ikaros.common.Assert;
+import cn.liguohao.ikaros.common.BeanKit;
 import cn.liguohao.ikaros.config.security.UserDetailsAdapter;
 import cn.liguohao.ikaros.constants.UserConstants;
 import cn.liguohao.ikaros.entity.RoleEntity;
 import cn.liguohao.ikaros.entity.UserEntity;
 import cn.liguohao.ikaros.entity.UserRoleEntity;
 import cn.liguohao.ikaros.enums.Role;
+import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.exceptions.UserHasExistException;
 import cn.liguohao.ikaros.exceptions.UserNoLoginException;
 import cn.liguohao.ikaros.init.MasterUserInitAppRunner;
@@ -16,6 +18,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +31,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UserService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final RoleService roleService;
@@ -70,12 +75,21 @@ public class UserService {
     public synchronized void registerUserByUsernameAndPassword(
         String username, String password, String roleName) {
 
-        Assert.isNotBlank(username, password);
+        Assert.notNull(username, "'username' must not be null");
+        Assert.notNull(password, "'password' must not be null");
 
         UserEntity existUserEntity = userRepository.findByUsername(username);
         if (existUserEntity != null) {
-            throw new UserHasExistException("register user fail, has exist user: username="
-                + username);
+            if (existUserEntity.getStatus()) {
+                throw new UserHasExistException("register user fail, has exist user: username="
+                    + username);
+            } else {
+                // 当用户名已经存在，但是用户被逻辑删除了，则更新状态重新启动，并直接返回
+                existUserEntity.setStatus(true);
+                userRepository.saveAndFlush(existUserEntity);
+                LOGGER.info("enable exist user, username={}", username);
+                return;
+            }
         }
 
         // 新增用户
@@ -92,12 +106,14 @@ public class UserService {
                     .setSite("http://liguohao.cn")
                     .setTelephone("00000000000"));
 
-        /*
-         * 给用户分配角色，新注册用户默认角色是 访客
-         * @see cn.liguohao.ikaros.uaa.entity.enums.RoleName
-         */
+        // 给用户分配角色，新注册用户默认角色是 访客
         if (roleName == null) {
             roleName = Role.VISITOR.name();
+        } else {
+            if (!Role.contains(roleName)) {
+                throw new IllegalArgumentException(
+                    "illegal role=" + roleName + "; you can select on in: " + Role.getRoleNames());
+            }
         }
         RoleEntity roleEntity =
             roleService.save(new RoleEntity()
@@ -175,4 +191,29 @@ public class UserService {
         return currentLoginUserEntity.getId();
     }
 
+    public UserEntity findUserById(Long id) throws RecordNotFoundException {
+        Assert.isPositive(id, "'id' must be gt 0");
+        Optional<UserEntity> userEntityOptional = userRepository.findByIdAndStatus(id, true);
+        if (userEntityOptional.isEmpty()) {
+            throw new RecordNotFoundException("user not found, id=" + id);
+        }
+        return userEntityOptional.get();
+    }
+
+    public void deleteUserById(Long id) throws RecordNotFoundException {
+        Assert.isPositive(id, "'id' must be gt 0");
+        UserEntity userEntity = findUserById(id);
+        userEntity.setStatus(false);
+        userRepository.saveAndFlush(userEntity);
+    }
+
+    public UserEntity updateUserInfo(UserEntity userEntity) throws RecordNotFoundException {
+        Assert.notNull(userEntity, "'userEntity' must not be null.");
+        Long id = userEntity.getId();
+        Assert.notNull(id, "user id must not be null");
+        UserEntity existUserEntity = findUserById(userEntity.getId());
+        BeanKit.copyProperties(userEntity, existUserEntity);
+        existUserEntity = userRepository.saveAndFlush(existUserEntity);
+        return existUserEntity;
+    }
 }
