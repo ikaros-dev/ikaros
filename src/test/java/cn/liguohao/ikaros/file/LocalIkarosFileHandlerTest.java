@@ -51,10 +51,10 @@ class LocalIkarosFileHandlerTest {
         IkarosFileOperateResult result = localItemDataHandler.upload(ikarosFile);
 
         Assertions.assertNotNull(result);
-        Assertions.assertNotNull(result.itemData());
+        Assertions.assertNotNull(result.getIkarosFile());
 
         String subjectDataFilePath
-            = localItemDataHandler.buildSubjectDataFilePath(result.itemData());
+            = localItemDataHandler.buildSubjectDataFilePath(result.getIkarosFile());
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -97,10 +97,10 @@ class LocalIkarosFileHandlerTest {
 
         IkarosFileOperateResult result = localItemDataHandler.download(ikarosFile);
         Assertions.assertNotNull(result);
-        Assertions.assertNotNull(result.itemData());
+        Assertions.assertNotNull(result.getIkarosFile());
 
         Assertions.assertEquals(content,
-            new String(result.itemData().getBytes(), StandardCharsets.UTF_8));
+            new String(result.getIkarosFile().getBytes(), StandardCharsets.UTF_8));
 
         subjectDataFile.delete();
 

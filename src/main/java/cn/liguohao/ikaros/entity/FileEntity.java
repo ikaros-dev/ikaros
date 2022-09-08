@@ -1,8 +1,9 @@
 package cn.liguohao.ikaros.entity;
 
 import cn.liguohao.ikaros.file.IkarosFile;
-
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
 /**
@@ -14,6 +15,7 @@ public class FileEntity extends BaseEntity {
 
     private String name;
     private String postfix;
+    @Enumerated(EnumType.STRING)
     private IkarosFile.Type type;
     private String sha256;
     private String md5;

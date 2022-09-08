@@ -3,12 +3,11 @@ package cn.liguohao.ikaros.repository;
 
 import cn.liguohao.ikaros.entity.UserRoleEntity;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * @author liguohao
  */
-public interface UserRoleRepository extends JpaRepository<UserRoleEntity, Long> {
+public interface UserRoleRepository extends BaseRepository<UserRoleEntity> {
 
     /**
      * 根据用户ID查询用户角色关系记录

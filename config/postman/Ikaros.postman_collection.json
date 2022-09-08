@@ -1,0 +1,124 @@
+{
+	"info": {
+		"_postman_id": "b508fda6-e827-4900-8ede-15b3eae6d564",
+		"name": "Ikaros",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "api/file/upload",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Pictures/955180.jpg"
+						}
+					]
+				},
+				"url": "http://localhost:9090/api/file/data"
+			},
+			"response": []
+		},
+		{
+			"name": "api/file/data/{id}",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Pictures/海灯节-1920x1080.png"
+						}
+					]
+				},
+				"url": "http://localhost:9090/api/file/data/6"
+			},
+			"response": []
+		},
+		{
+			"name": "user/login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "default"
+						},
+						{
+							"key": "password",
+							"value": "admin",
+							"type": "default"
+						}
+					]
+				},
+				"url": "http://localhost:9090/user/login"
+			},
+			"response": []
+		},
+		{
+			"name": "ping",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:9090/ping"
+			},
+			"response": []
+		},
+		{
+			"name": "api/file/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:9090/api/file/6"
+			},
+			"response": []
+		},
+		{
+			"name": "api/file/{id}",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:9090/api/file/6"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

@@ -6,7 +6,7 @@ package cn.liguohao.ikaros.file;
  */
 public class IkarosFileOperateResult {
 
-    enum Status {
+    public enum Status {
         /**
          * 一切正常，操作OK。
          */
@@ -117,20 +117,40 @@ public class IkarosFileOperateResult {
             " appoint location operate has exception, msg=" + msg, throwable);
     }
 
-
-    public Status status() {
+    public Status getStatus() {
         return status;
     }
 
-    public String msg() {
+    public IkarosFileOperateResult setStatus(
+        Status status) {
+        this.status = status;
+        return this;
+    }
+
+    public String getMsg() {
         return msg;
     }
 
-    public IkarosFile itemData() {
+    public IkarosFileOperateResult setMsg(String msg) {
+        this.msg = msg;
+        return this;
+    }
+
+    public IkarosFile getIkarosFile() {
         return ikarosFile;
     }
 
-    public Throwable throwable() {
+    public IkarosFileOperateResult setIkarosFile(IkarosFile ikarosFile) {
+        this.ikarosFile = ikarosFile;
+        return this;
+    }
+
+    public Throwable getThrowable() {
         return throwable;
+    }
+
+    public IkarosFileOperateResult setThrowable(Throwable throwable) {
+        this.throwable = throwable;
+        return this;
     }
 }

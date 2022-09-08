@@ -3,13 +3,12 @@ package cn.liguohao.ikaros.repository;
 import cn.liguohao.ikaros.entity.RelationEntity;
 import cn.liguohao.ikaros.enums.Role;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * @author li-guohao
  * @date 2022/06/03
  */
-public interface RelationRepository extends JpaRepository<RelationEntity, Long> {
+public interface RelationRepository extends BaseRepository<RelationEntity> {
 
     /**
      * 查询是否存在对应的主体和客体的关系

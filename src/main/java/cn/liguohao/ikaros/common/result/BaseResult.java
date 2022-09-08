@@ -17,6 +17,8 @@ public abstract class BaseResult<T> implements Serializable {
 
     private String timestamp;
 
+    private Throwable throwable;
+
     public boolean isSuccess() {
         return success;
     }
@@ -59,6 +61,15 @@ public abstract class BaseResult<T> implements Serializable {
 
     public BaseResult<T> setTimestamp(String timestamp) {
         this.timestamp = timestamp;
+        return this;
+    }
+
+    public Throwable getThrowable() {
+        return throwable;
+    }
+
+    public BaseResult<T> setThrowable(Throwable throwable) {
+        this.throwable = throwable;
         return this;
     }
 }

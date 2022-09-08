@@ -43,6 +43,10 @@ public class IkarosFile {
      */
     private String uploadedPath;
 
+    private String sha256;
+    private String md5;
+    private String oldLocation;
+
     public enum Type {
 
         /**
@@ -115,7 +119,7 @@ public class IkarosFile {
         String name;
 
         if (lastDotIndex > 0) {
-            postfix = originalFilename.substring(lastDotIndex);
+            postfix = originalFilename.substring(lastDotIndex + 1);
             name = originalFilename.substring(0, lastDotIndex);
         } else {
             name = originalFilename;
@@ -215,6 +219,33 @@ public class IkarosFile {
 
     public IkarosFile setUploadedPath(String uploadedPath) {
         this.uploadedPath = uploadedPath;
+        return this;
+    }
+
+    public String getSha256() {
+        return sha256;
+    }
+
+    public IkarosFile setSha256(String sha256) {
+        this.sha256 = sha256;
+        return this;
+    }
+
+    public String getMd5() {
+        return md5;
+    }
+
+    public IkarosFile setMd5(String md5) {
+        this.md5 = md5;
+        return this;
+    }
+
+    public String getOldLocation() {
+        return oldLocation;
+    }
+
+    public IkarosFile setOldLocation(String oldLocation) {
+        this.oldLocation = oldLocation;
         return this;
     }
 }

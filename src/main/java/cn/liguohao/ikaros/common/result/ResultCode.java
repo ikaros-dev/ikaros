@@ -6,5 +6,6 @@ package cn.liguohao.ikaros.common.result;
  */
 public interface ResultCode {
     String SUCCESS = "0";
-    String OTHER_ERR = "9999";
+    String NOT_FOUND = "404";
+    String OTHER_EXCEPTION = "500";
 }

@@ -1,8 +1,11 @@
 package cn.liguohao.ikaros.file;
 
 import cn.liguohao.ikaros.common.Assert;
+import cn.liguohao.ikaros.common.FileKit;
+import cn.liguohao.ikaros.common.Strings;
 import cn.liguohao.ikaros.common.SystemVarKit;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,22 +30,57 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
 
 
     @Override
-    public IkarosFileOperateResult upload(IkarosFile ikarosFile) {
+    public IkarosFileOperateResult upload(IkarosFile ikarosFile) throws IOException {
         Assert.isNotNull(ikarosFile);
         ikarosFile.checkoutBeforeUpload();
 
         LocalDateTime oldUploadedTime = ikarosFile.getUploadedTime();
         ikarosFile.setUploadedTime(LocalDateTime.now());
 
-        String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
+
+        // 相同文件不重复上传
+        final String oldLocation = ikarosFile.getOldLocation();
+        final String md5 = ikarosFile.getMd5();
+        final String sha256 = ikarosFile.getSha256();
+        boolean isSameFile = false;
+        if (Strings.isNotBlank(oldLocation)) {
+            File oldFile = new File(oldLocation);
+            if (oldFile.exists()) {
+                try (FileInputStream fileInputStream = new FileInputStream(oldFile)) {
+                    byte[] bytes = fileInputStream.readAllBytes();
+
+                    if (!isSameFile && Strings.isNotBlank(md5)) {
+                        final String oldMd5 = FileKit.checksum2Str(bytes, FileKit.Hash.MD5);
+                        if (md5.equals(oldMd5)) {
+                            isSameFile = true;
+                        }
+                    }
+
+                    if (!isSameFile && Strings.isNotBlank(sha256)) {
+                        final String oldSha256 = FileKit.checksum2Str(bytes, FileKit.Hash.SHA256);
+                        if (sha256.equals(oldSha256)) {
+                            isSameFile = true;
+                        }
+                    }
+
+                }
+            }
+        }
 
         try {
-            Files.write(Path.of(new File(subjectDataFilePath).toURI()), ikarosFile.getBytes());
-            ikarosFile.setUploadedPath(subjectDataFilePath);
-            LOGGER.debug("upload subject data success, path={}", subjectDataFilePath);
+            if (isSameFile) {
+                ikarosFile.setUploadedPath(oldLocation);
+                LOGGER.debug("repeated ikaros file, do not upload, path={}", oldLocation);
+            } else {
+                String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
+                Files.write(Path.of(new File(subjectDataFilePath).toURI()), ikarosFile.getBytes());
+                ikarosFile.setUploadedPath(subjectDataFilePath);
+                LOGGER.debug("upload ikaros file data success, path={}", subjectDataFilePath);
+            }
+
         } catch (IOException e) {
             ikarosFile.setUploadedTime(oldUploadedTime);
-            String msg = "operate file fail for subjectDataFilePath=" + subjectDataFilePath;
+            String msg = "operate file fail for uploadedPath=" + ikarosFile.getUploadedPath();
             LOGGER.error(msg, e);
             return IkarosFileOperateResult.ofUploadFail(msg + ", exception: ", e);
         }
@@ -117,17 +155,30 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
 
         String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
 
+        return delete(subjectDataFilePath);
+    }
+
+    @Override
+    public IkarosFileOperateResult delete(String uploadedPath) {
+        Assert.isNotBlank(uploadedPath);
         try {
-            File itemDataFile = new File(subjectDataFilePath);
-            itemDataFile.delete();
-            LOGGER.debug("delete file success for path={}", itemDataFile);
+            File file = new File(uploadedPath);
+            if (!file.exists()) {
+                return IkarosFileOperateResult.ofOk(
+                    "file not exist, do nothing. file path: " + uploadedPath);
+            }
+            boolean deleteSuccess = file.delete();
+            if (!deleteSuccess) {
+                return IkarosFileOperateResult.ofDeleteFail(
+                    "delete file fail for path=" + uploadedPath, null);
+            }
+            LOGGER.debug("delete file success for path={}", file);
+            return IkarosFileOperateResult.ofOk();
         } catch (Exception e) {
-            String msg = "delete file fail for path=" + subjectDataFilePath;
+            String msg = "delete file fail for path=" + uploadedPath;
             LOGGER.error(msg, e);
             return IkarosFileOperateResult.ofDeleteFail(msg + ", exception: ", e);
         }
-
-        return IkarosFileOperateResult.ofOk();
     }
 
     @Override

@@ -1,6 +1,8 @@
 package cn.liguohao.ikaros.common;
 
+import java.io.IOException;
 import java.util.Objects;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author li-guohao

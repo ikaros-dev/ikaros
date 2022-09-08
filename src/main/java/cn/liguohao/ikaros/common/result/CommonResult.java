@@ -10,65 +10,46 @@ import java.util.Objects;
  * @author guohao
  * @date 2022/09/07
  */
-public class CommonResult<T> extends BaseResult implements Serializable {
-    private static final long serialVersionUID = -7268141541410717954L;
+public class CommonResult<T> extends BaseResult<T> implements Serializable {
 
     private static final String DEFAULT_SUCCESS_MSG = "SUCCESS";
     private static final String DEFAULT_FAIL_MSG = "FAIL";
 
-    public CommonResult() {
-
+    private CommonResult() {
     }
 
-    public CommonResult(boolean success, String message) {
+    private CommonResult(boolean success, String code,
+                         String message, String timestamp,
+                         T data, Throwable throwable) {
         this.setSuccess(success);
-        this.setMessage(message);
-    }
-
-    public CommonResult(boolean success) {
-        this.setSuccess(success);
-    }
-
-    public CommonResult(String code, String message) {
         this.setCode(code);
         this.setMessage(message);
-    }
-
-    public CommonResult(boolean success, String message, T data) {
-        this.setSuccess(success);
-        this.setMessage(message);
+        this.setTimestamp(timestamp);
         this.setData(data);
+        this.setThrowable(throwable);
     }
 
-    public CommonResult<T> setResult(T data) {
-        this.setData(data);
-        return this;
-    }
-
-    public T getData() {
-        return (T) super.getData();
-    }
-
-
-    private static <T> CommonResult<T> baseCreate(String code, String msg, T date) {
-        Assert.isNotBlank(code, msg);
+    private static <T> CommonResult<T> baseCreate(String code, String msg, T data,
+                                                  Throwable throwable) {
+        Assert.isNotBlank(code);
         CommonResult<T> result = new CommonResult<T>();
         result.setCode(code);
         result.setSuccess(Objects.equals(code, ResultCode.SUCCESS));
         result.setMessage(msg);
-        result.setData(date);
+        result.setData(data);
         result.setTimestamp(TimeKit.nowTimestamp());
+        result.setThrowable(throwable);
         return result;
     }
 
-    public static <T> CommonResult<T> ok(String code, String msg, T date) {
+    public static <T> CommonResult<T> ok(String code, String msg, T data) {
         if (code == null) {
-            code = ResultCode.OTHER_ERR;
+            code = ResultCode.OTHER_EXCEPTION;
         }
         if (Strings.isBlank(msg)) {
             msg = DEFAULT_SUCCESS_MSG;
         }
-        return baseCreate(code, msg, date);
+        return baseCreate(code, msg, data, null);
     }
 
     public static <T> CommonResult<T> ok(String code, T date) {
@@ -83,19 +64,31 @@ public class CommonResult<T> extends BaseResult implements Serializable {
         return ok(null);
     }
 
+    public static <T> CommonResult<T> ok(String message) {
+        return ok(ResultCode.SUCCESS, message, null);
+    }
 
-    public static <T> CommonResult<T> fail(String code, String msg, T date) {
+
+    public static <T> CommonResult<T> fail(String code, String msg, T data, Throwable throwable) {
         if (code == null) {
-            code = ResultCode.OTHER_ERR;
+            code = ResultCode.OTHER_EXCEPTION;
         }
         if (Strings.isBlank(msg)) {
             msg = DEFAULT_FAIL_MSG;
         }
-        return baseCreate(code, msg, date);
+        return baseCreate(code, msg, data, throwable);
     }
 
-    public static <T> CommonResult<T> fail(String code, T date) {
-        return fail(code, DEFAULT_FAIL_MSG, date);
+    public static <T> CommonResult<T> fail(String code, String msg, T date) {
+        return fail(code, msg, date, null);
+    }
+
+    public static <T> CommonResult<T> fail(String code, Throwable throwable) {
+        return fail(code, DEFAULT_FAIL_MSG, null, throwable);
+    }
+
+    public static <T> CommonResult<T> fail(String code, T data) {
+        return fail(code, DEFAULT_FAIL_MSG, data);
     }
 
     public static <T> CommonResult<T> fail(T date) {
@@ -103,9 +96,8 @@ public class CommonResult<T> extends BaseResult implements Serializable {
     }
 
     public static <T> CommonResult<T> fail(String msg) {
-        return ok(ResultCode.OTHER_ERR, msg, null);
+        return ok(ResultCode.OTHER_EXCEPTION, msg, null);
     }
-
 
 
 }
