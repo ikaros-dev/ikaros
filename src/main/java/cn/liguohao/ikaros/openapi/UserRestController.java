@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.openapi;
 
-import cn.liguohao.ikaros.UserDto;
+import cn.liguohao.ikaros.dto.UserDto;
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.result.CommonResult;
 import cn.liguohao.ikaros.entity.UserEntity;

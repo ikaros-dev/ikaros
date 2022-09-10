@@ -1,4 +1,4 @@
-package cn.liguohao.ikaros;
+package cn.liguohao.ikaros.dto;
 
 /**
  * @author guohao

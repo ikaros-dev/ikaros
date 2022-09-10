@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * 伊卡洛斯启动
+ * Ikaros Main Class.
  *
  * @author liguohao
  */
