@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.openapi;
 
-import cn.liguohao.ikaros.dto.UserDto;
+import cn.liguohao.ikaros.model.User;
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.result.CommonResult;
 import cn.liguohao.ikaros.entity.UserEntity;
@@ -31,11 +31,11 @@ public class UserRestController {
     }
 
     @PostMapping
-    public CommonResult<UserEntity> register(@RequestBody UserDto userDto) {
-        Assert.notNull(userDto, "'userDto' must not be null");
-        String username = userDto.getUsername();
-        String password = userDto.getPassword();
-        String role = userDto.getRole();
+    public CommonResult<UserEntity> register(@RequestBody User user) {
+        Assert.notNull(user, "'userDto' must not be null");
+        String username = user.getUsername();
+        String password = user.getPassword();
+        String role = user.getRole();
         userService.registerUserByUsernameAndPassword(username, password, role);
         return CommonResult.ok();
     }

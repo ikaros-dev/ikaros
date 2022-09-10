@@ -1,10 +1,10 @@
-package cn.liguohao.ikaros.dto;
+package cn.liguohao.ikaros.model;
 
 /**
  * @author guohao
  * @date 2022/09/08
  */
-public class UserDto {
+public class User {
     private String username;
     private String password;
     private String role;
@@ -13,7 +13,7 @@ public class UserDto {
         return username;
     }
 
-    public UserDto setUsername(String username) {
+    public User setUsername(String username) {
         this.username = username;
         return this;
     }
@@ -22,7 +22,7 @@ public class UserDto {
         return password;
     }
 
-    public UserDto setPassword(String password) {
+    public User setPassword(String password) {
         this.password = password;
         return this;
     }
@@ -31,7 +31,7 @@ public class UserDto {
         return role;
     }
 
-    public UserDto setRole(String role) {
+    public User setRole(String role) {
         this.role = role;
         return this;
     }

@@ -69,6 +69,18 @@ public class BaseEntity {
     @Transient
     private Long version = -1L;
 
+    public void setTimeAndUidWhenCreate(Date time, Long uid) {
+        this.setCreteTime(time)
+            .setUpdateTime(time)
+            .setCreateUid(uid)
+            .setUpdateUid(uid);
+    }
+
+    public void setTimeAndUidWhenUpdate(Date time, Long uid) {
+        this.setUpdateTime(time).setUpdateUid(uid);
+    }
+
+
     public Long getId() {
         return id;
     }
