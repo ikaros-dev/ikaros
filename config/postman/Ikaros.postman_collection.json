@@ -9,7 +9,10 @@
 			"name": "api/file/upload",
 			"request": {
 				"auth": {
-					"type": "noauth"
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJ0eXBlIjoiSldUIiwiVUlEIjoxLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOlsiUk9MRV9NQVNURVIiXSwiaXNzIjoic2VjdXJpdHkiLCJpYXQiOjE2NjI4ODE5NTAsImF1ZCI6InNlY3VyaXR5LWFsbCIsImV4cCI6MTY2Mjg4OTE1MH0.XsLG1fU20Va6qqKEUl68vkLJDeKm1SzeDqelnffbNtM"
+					}
 				},
 				"method": "PUT",
 				"header": [],
@@ -50,53 +53,77 @@
 			"response": []
 		},
 		{
-			"name": "user/login",
+			"name": "api/status/ping",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:9090/api/status/ping"
+			},
+			"response": []
+		},
+		{
+			"name": "api/status/hello",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:9090/api/status/hello"
+			},
+			"response": []
+		},
+		{
+			"name": "api/status/running",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:9090/api/status/running"
+			},
+			"response": []
+		},
+		{
+			"name": "api/file/{id}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJ0eXBlIjoiSldUIiwiVUlEIjoxLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOlsiUk9MRV9NQVNURVIiXSwiaXNzIjoic2VjdXJpdHkiLCJpYXQiOjE2NjI4ODE5NTAsImF1ZCI6InNlY3VyaXR5LWFsbCIsImV4cCI6MTY2Mjg4OTE1MH0.XsLG1fU20Va6qqKEUl68vkLJDeKm1SzeDqelnffbNtM"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:9090/api/file/4"
+			},
+			"response": []
+		},
+		{
+			"name": "api/file/{id}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJ0eXBlIjoiSldUIiwiVUlEIjoxLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOlsiTUFTVEVSIl0sImlzcyI6InNlY3VyaXR5IiwiaWF0IjoxNjYyODgwNjI5LCJhdWQiOiJzZWN1cml0eS1hbGwiLCJleHAiOjE2NjI4ODc4Mjl9.gIZZkRMZzptz9LPD5-4x1hjZIWUglEg8_AFYztW616g"
+					}
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:9090/api/file/4"
+			},
+			"response": []
+		},
+		{
+			"name": "api/user/login",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "username",
-							"value": "admin",
-							"type": "default"
-						},
-						{
-							"key": "password",
-							"value": "admin",
-							"type": "default"
+					"mode": "raw",
+					"raw": "{\r\n    \"username\":\"admin\",\r\n    \"password\":\"admin\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
-				"url": "http://localhost:9090/user/login"
-			},
-			"response": []
-		},
-		{
-			"name": "ping",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": "http://localhost:9090/ping"
-			},
-			"response": []
-		},
-		{
-			"name": "api/file/{id}",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": "http://localhost:9090/api/file/6"
-			},
-			"response": []
-		},
-		{
-			"name": "api/file/{id}",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": "http://localhost:9090/api/file/6"
+				"url": "http://localhost:9090/api/user/login"
 			},
 			"response": []
 		}
