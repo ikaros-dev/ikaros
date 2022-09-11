@@ -3,7 +3,8 @@ package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.BeanKit;
-import cn.liguohao.ikaros.config.security.UserDetailsAdapter;
+import cn.liguohao.ikaros.common.JwtKit;
+import cn.liguohao.ikaros.constants.SecurityConstants;
 import cn.liguohao.ikaros.constants.UserConstants;
 import cn.liguohao.ikaros.entity.RoleEntity;
 import cn.liguohao.ikaros.entity.UserEntity;
@@ -11,13 +12,17 @@ import cn.liguohao.ikaros.entity.UserRoleEntity;
 import cn.liguohao.ikaros.enums.Role;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.exceptions.UserHasExistException;
-import cn.liguohao.ikaros.exceptions.UserNoLoginException;
+import cn.liguohao.ikaros.exceptions.UserLoginFailException;
 import cn.liguohao.ikaros.init.MasterUserInitAppRunner;
+import cn.liguohao.ikaros.model.AuthUser;
 import cn.liguohao.ikaros.repository.UserRepository;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -167,28 +172,17 @@ public class UserService {
     }
 
     /**
-     * @return 当前用户登陆后的用户信息
-     */
-    public static UserEntity getCurrentLoginUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            UserDetailsAdapter userDetailsAdapter
-                = (UserDetailsAdapter) authentication.getPrincipal();
-            return userDetailsAdapter.getUser();
-        }
-
-        return null;
-    }
-
-    /**
      * @return 当前用户登陆的用户ID
      */
-    public Long getCurrentLoginUserUid() {
-        UserEntity currentLoginUserEntity = getCurrentLoginUser();
-        if (currentLoginUserEntity == null) {
-            throw new UserNoLoginException("please login.");
+    public static Long getCurrentLoginUserUid() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            String token = (String) authentication.getCredentials();
+            Integer userId =
+                (Integer) JwtKit.getTokenHeaderValue(token, SecurityConstants.HEADER_UID);
+            return Long.valueOf(userId);
         }
-        return currentLoginUserEntity.getId();
+        return UserConstants.UID_WHEN_NO_AUTH;
     }
 
     public UserEntity findUserById(Long id) throws RecordNotFoundException {
@@ -215,5 +209,42 @@ public class UserService {
         BeanKit.copyProperties(userEntity, existUserEntity);
         existUserEntity = userRepository.saveAndFlush(existUserEntity);
         return existUserEntity;
+    }
+
+    public AuthUser login(AuthUser authUser) throws RecordNotFoundException {
+        Assert.notNull(authUser, "'authUser' must not be null");
+        final String username = authUser.getUsername();
+        final String password = authUser.getPassword();
+        Assert.hasText(username, "'username' must not be null");
+        Assert.hasText(password, "'password' must not be null");
+
+        UserEntity userEntity = userRepository.findByUsername(username);
+        if (userEntity == null) {
+            throw new RecordNotFoundException("user not found for username=" + username);
+        }
+        final Long userId = userEntity.getId();
+
+        if (!passwordEncoder.matches(password, userEntity.getPassword())) {
+            throw new UserLoginFailException("login fail for username=" + username);
+        }
+
+        List<String> roles = userRoleService.findByUserId(userId).stream().flatMap(
+            (Function<UserRoleEntity, Stream<String>>) userRoleEntity -> {
+                final Long roleId = userRoleEntity.getRoleId();
+                Optional<RoleEntity> roleEntityOptional = roleService.findById(roleId);
+                return roleEntityOptional.isEmpty() ? null :
+                    Stream.of(
+                        UserConstants.SECURITY_ROLE_PREFIX + roleEntityOptional.get().getName());
+            }).collect(Collectors.toList());
+
+        final String token =
+            JwtKit.generateTokenByUsernameAndRoles(username, userId, roles,
+                authUser.getRememberMe());
+        Authentication authentication = JwtKit.getAuthentication(token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        authUser.setToken(token);
+        authUser.setPassword("**hidden password**");
+        return authUser;
     }
 }

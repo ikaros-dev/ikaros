@@ -24,6 +24,7 @@ checkstyle {
 
 ext {
 	swaggerVersion = "3.0.0"
+	jwtVersion = "0.10.7"
 
 }
 
@@ -37,6 +38,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
 	implementation "io.springfox:springfox-boot-starter:$swaggerVersion"
+
+	implementation "io.jsonwebtoken:jjwt-api:$jwtVersion"
+	runtimeOnly "io.jsonwebtoken:jjwt-impl:$jwtVersion"
+	runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jwtVersion"
 
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'com.fasterxml.jackson.core:jackson-core'

@@ -1,5 +1,6 @@
 package cn.liguohao.ikaros.common;
 
+import cn.liguohao.ikaros.constants.FilePostfixConstants;
 import cn.liguohao.ikaros.exceptions.IkarosRuntimeException;
 import cn.liguohao.ikaros.file.IkarosFile;
 
@@ -18,13 +19,13 @@ import java.util.stream.Collectors;
 public class FileKit {
 
     static final Set<String> IMAGES =
-        Arrays.stream(FilePostfixConstant.IMAGES).collect(Collectors.toSet());
+        Arrays.stream(FilePostfixConstants.IMAGES).collect(Collectors.toSet());
     static final Set<String> DOCUMENTS =
-        Arrays.stream(FilePostfixConstant.DOCUMENTS).collect(Collectors.toSet());
+        Arrays.stream(FilePostfixConstants.DOCUMENTS).collect(Collectors.toSet());
     static final Set<String> VIDEOS =
-        Arrays.stream(FilePostfixConstant.VIDEOS).collect(Collectors.toSet());
+        Arrays.stream(FilePostfixConstants.VIDEOS).collect(Collectors.toSet());
     static final Set<String> VOICES =
-        Arrays.stream(FilePostfixConstant.VOICES).collect(Collectors.toSet());
+        Arrays.stream(FilePostfixConstants.VOICES).collect(Collectors.toSet());
 
     public enum Hash {
         MD5("MD5"),

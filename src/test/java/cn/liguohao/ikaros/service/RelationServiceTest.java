@@ -1,6 +1,5 @@
 package cn.liguohao.ikaros.service;
 
-import cn.liguohao.ikaros.config.EntityAuditorConfig;
 import cn.liguohao.ikaros.entity.RelationEntity;
 import cn.liguohao.ikaros.enums.Role;
 import java.util.List;
@@ -20,8 +19,7 @@ class RelationServiceTest {
     @Autowired
     RelationService relationService;
 
-    private static final Long NOT_LOGIN_MASTER_UID = EntityAuditorConfig.UUID_WHEN_NO_AUTH;
-    private static final Long MASTER_UID = NOT_LOGIN_MASTER_UID;
+    private static final Long MASTER_UID = UserService.getCurrentLoginUserUid();
     private static final Long GUEST_UID = 1L;
     private static final Role ROLE = Role.ATTRACTOR;
 

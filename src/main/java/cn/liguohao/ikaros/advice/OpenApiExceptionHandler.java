@@ -5,6 +5,7 @@ import cn.liguohao.ikaros.common.result.ResultCode;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -21,7 +22,15 @@ public class OpenApiExceptionHandler {
         LOGGER.error(exception.getClass().getSimpleName() + ": ", exception);
         final String msg = exception.getClass().getSimpleName() + ": " + exception.getMessage();
         return CommonResult.fail(ResultCode.NOT_FOUND, msg,
-            null, exception);
+            null, reduceStackTraceLength2Three(exception));
+    }
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public CommonResult<String> accessDeniedException(AccessDeniedException exception) {
+        LOGGER.error(exception.getClass().getSimpleName() + ": ", exception);
+        final String msg = exception.getClass().getSimpleName() + ": " + exception.getMessage();
+        return CommonResult.fail(ResultCode.FORBIDDEN, msg,
+            null, reduceStackTraceLength2Three(exception));
     }
 
     @ExceptionHandler(value = Exception.class)
@@ -29,7 +38,17 @@ public class OpenApiExceptionHandler {
         LOGGER.error(exception.getClass().getSimpleName() + ": ", exception);
         final String msg = exception.getClass().getSimpleName() + ": " + exception.getMessage();
         return CommonResult.fail(ResultCode.OTHER_EXCEPTION, msg,
-            null, exception);
+            null, reduceStackTraceLength2Three(exception));
+    }
+
+    private Exception reduceStackTraceLength2Three(Exception exception) {
+        StackTraceElement[] stackTrace = exception.getStackTrace();
+        StackTraceElement[] newStackTrace = new StackTraceElement[3];
+        newStackTrace[0] = stackTrace[0];
+        newStackTrace[1] = stackTrace[1];
+        newStackTrace[2] = stackTrace[2];
+        exception.setStackTrace(newStackTrace);
+        return exception;
     }
 
 }

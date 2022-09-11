@@ -1,11 +1,8 @@
 package cn.liguohao.ikaros.service;
 
-import static cn.liguohao.ikaros.service.UserService.getCurrentLoginUser;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.config.EntityAuditorConfig;
 import cn.liguohao.ikaros.entity.RelationEntity;
-import cn.liguohao.ikaros.entity.UserEntity;
 import cn.liguohao.ikaros.enums.Role;
 import cn.liguohao.ikaros.exceptions.UserRelationNotExistException;
 import cn.liguohao.ikaros.repository.RelationRepository;
@@ -13,11 +10,10 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
 
 /**
  * 关系围绕主体为中心
@@ -39,8 +35,7 @@ public class RelationService {
      * @return 当前登录用户(主体)的UID
      */
     private Long getCurrentLoginUserId() {
-        UserEntity master = getCurrentLoginUser();
-        return master != null ? master.getId() : EntityAuditorConfig.UUID_WHEN_NO_AUTH;
+        return UserService.getCurrentLoginUserUid();
     }
 
 

@@ -1,6 +1,7 @@
 package cn.liguohao.ikaros.common.result;
 
 import cn.liguohao.ikaros.common.Assert;
+import cn.liguohao.ikaros.common.JacksonConverter;
 import cn.liguohao.ikaros.common.Strings;
 import cn.liguohao.ikaros.common.TimeKit;
 import java.io.Serializable;
@@ -99,5 +100,8 @@ public class CommonResult<T> extends BaseResult<T> implements Serializable {
         return ok(ResultCode.OTHER_EXCEPTION, msg, null);
     }
 
-
+    @Override
+    public String toString() {
+        return JacksonConverter.obj2Json(this);
+    }
 }

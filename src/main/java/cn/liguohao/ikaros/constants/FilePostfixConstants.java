@@ -1,10 +1,10 @@
-package cn.liguohao.ikaros.common;
+package cn.liguohao.ikaros.constants;
 
 /**
  * @author guohao
  * @date 2022/09/07
  */
-public interface FilePostfixConstant {
+public interface FilePostfixConstants {
 
     String[] IMAGES = {
         "jpg", "jpeg", "png", "gif"
