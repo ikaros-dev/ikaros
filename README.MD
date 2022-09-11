@@ -1,5 +1,5 @@
 # 介绍
-Ikaros, An open source acgmn cms application.
+ikaros, an open source acgmn cms application.
 
 专注于ACGMN的内容管家(CMS)，——伊卡洛斯。
 

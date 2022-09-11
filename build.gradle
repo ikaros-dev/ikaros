@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "cn.liguohao.ikaros"
-description = "Ikaros, An open source acgmn cms application."
+description = "ikaros, an open source acgmn cms application."
 sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
@@ -23,6 +23,7 @@ checkstyle {
 }
 
 ext {
+	swaggerVersion = "3.0.0"
 
 }
 
@@ -34,6 +35,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	implementation "io.springfox:springfox-boot-starter:$swaggerVersion"
 
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'com.fasterxml.jackson.core:jackson-core'

@@ -17,7 +17,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void configurePathMatch(PathMatchConfigurer config) {
-        config.addPathPrefix("/api", HandlerTypePredicate.forAnnotation(RestController.class));
+        config.addPathPrefix("/api", HandlerTypePredicate.forAnnotation(RestController.class)
+            .and(cls -> cls.getPackageName().contains("cn.liguohao.ikaros.openapi")));
     }
 
 }

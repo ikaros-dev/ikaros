@@ -15,9 +15,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  */
 @Configuration
 @EnableWebSecurity
-@SuppressWarnings("deprecation")
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private static final String[] AUTH_WHITELIST = {
+        "/swagger-ui/",
+        "/swagger-ui/**",
+        "/swagger-resources",
+        "/swagger-resources/**",
+        "/v3/api-docs",
+
+        "/user/register",
+        "/user/login",
+        "/page",
+        "/"
+
+    };
 
     /**
      * 用户名密码认证管理器
@@ -45,8 +58,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             // 关闭csrf跨域检查
             .csrf().disable()
             .authorizeRequests()
-            .antMatchers("/user/register", "/user/login",
-                "/", "/page").permitAll()
+            .antMatchers(AUTH_WHITELIST).permitAll()
             .anyRequest().authenticated()
             .and()
             .formLogin()
