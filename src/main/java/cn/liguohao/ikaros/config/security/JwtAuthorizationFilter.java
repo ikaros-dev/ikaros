@@ -1,7 +1,7 @@
 package cn.liguohao.ikaros.config.security;
 
-import cn.liguohao.ikaros.common.JwtKit;
-import cn.liguohao.ikaros.constants.SecurityConstants;
+import cn.liguohao.ikaros.common.kit.JwtKit;
+import cn.liguohao.ikaros.common.constants.SecurityConstants;
 import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;

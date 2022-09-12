@@ -2,7 +2,7 @@ package cn.liguohao.ikaros.config.security;
 
 import cn.liguohao.ikaros.common.result.CommonResult;
 import cn.liguohao.ikaros.common.result.ResultCode;
-import cn.liguohao.ikaros.constants.HttpConstants;
+import cn.liguohao.ikaros.common.constants.HttpConstants;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

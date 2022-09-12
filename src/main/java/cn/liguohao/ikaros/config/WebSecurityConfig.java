@@ -4,7 +4,7 @@ import cn.liguohao.ikaros.config.security.IkarosAccessDeniedHandler;
 import cn.liguohao.ikaros.config.security.IkarosAuthenticationEntryPoint;
 import cn.liguohao.ikaros.config.security.JwtAuthorizationFilter;
 import cn.liguohao.ikaros.config.security.JwtConfig;
-import cn.liguohao.ikaros.constants.SecurityConstants;
+import cn.liguohao.ikaros.common.constants.SecurityConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

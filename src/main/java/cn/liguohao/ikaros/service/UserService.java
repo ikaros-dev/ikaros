@@ -2,19 +2,19 @@ package cn.liguohao.ikaros.service;
 
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.common.BeanKit;
-import cn.liguohao.ikaros.common.JwtKit;
-import cn.liguohao.ikaros.constants.SecurityConstants;
-import cn.liguohao.ikaros.constants.UserConstants;
-import cn.liguohao.ikaros.entity.RoleEntity;
-import cn.liguohao.ikaros.entity.UserEntity;
-import cn.liguohao.ikaros.entity.UserRoleEntity;
-import cn.liguohao.ikaros.enums.Role;
+import cn.liguohao.ikaros.common.kit.BeanKit;
+import cn.liguohao.ikaros.common.kit.JwtKit;
+import cn.liguohao.ikaros.common.constants.SecurityConstants;
+import cn.liguohao.ikaros.common.constants.UserConstants;
+import cn.liguohao.ikaros.model.dto.AuthUserDTO;
+import cn.liguohao.ikaros.model.entity.RoleEntity;
+import cn.liguohao.ikaros.model.entity.UserEntity;
+import cn.liguohao.ikaros.model.entity.UserRoleEntity;
+import cn.liguohao.ikaros.model.enums.Role;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.exceptions.UserHasExistException;
 import cn.liguohao.ikaros.exceptions.UserLoginFailException;
 import cn.liguohao.ikaros.init.MasterUserInitAppRunner;
-import cn.liguohao.ikaros.model.AuthUser;
 import cn.liguohao.ikaros.repository.UserRepository;
 import java.util.HashSet;
 import java.util.List;
@@ -211,10 +211,10 @@ public class UserService {
         return existUserEntity;
     }
 
-    public AuthUser login(AuthUser authUser) throws RecordNotFoundException {
-        Assert.notNull(authUser, "'authUser' must not be null");
-        final String username = authUser.getUsername();
-        final String password = authUser.getPassword();
+    public AuthUserDTO login(AuthUserDTO authUserDTO) throws RecordNotFoundException {
+        Assert.notNull(authUserDTO, "'authUser' must not be null");
+        final String username = authUserDTO.getUsername();
+        final String password = authUserDTO.getPassword();
         Assert.hasText(username, "'username' must not be null");
         Assert.hasText(password, "'password' must not be null");
 
@@ -239,12 +239,12 @@ public class UserService {
 
         final String token =
             JwtKit.generateTokenByUsernameAndRoles(username, userId, roles,
-                authUser.getRememberMe());
+                authUserDTO.getRememberMe());
         Authentication authentication = JwtKit.getAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        authUser.setToken(token);
-        authUser.setPassword("**hidden password**");
-        return authUser;
+        authUserDTO.setToken(token);
+        authUserDTO.setPassword("**hidden password**");
+        return authUserDTO;
     }
 }

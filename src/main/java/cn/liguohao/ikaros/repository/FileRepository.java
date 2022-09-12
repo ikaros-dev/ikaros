@@ -1,7 +1,7 @@
 package cn.liguohao.ikaros.repository;
 
 
-import cn.liguohao.ikaros.entity.FileEntity;
+import cn.liguohao.ikaros.model.entity.FileEntity;
 
 /**
  * @author li-guohao

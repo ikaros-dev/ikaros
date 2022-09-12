@@ -1,7 +1,7 @@
 package cn.liguohao.ikaros.repository;
 
-import cn.liguohao.ikaros.entity.RelationEntity;
-import cn.liguohao.ikaros.enums.Role;
+import cn.liguohao.ikaros.model.entity.RelationEntity;
+import cn.liguohao.ikaros.model.enums.Role;
 import java.util.List;
 
 /**

@@ -1,7 +1,7 @@
 package cn.liguohao.ikaros.repository;
 
 
-import cn.liguohao.ikaros.entity.UserRoleEntity;
+import cn.liguohao.ikaros.model.entity.UserRoleEntity;
 import java.util.List;
 
 /**

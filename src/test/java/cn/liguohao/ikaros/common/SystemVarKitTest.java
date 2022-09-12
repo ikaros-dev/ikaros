@@ -1,6 +1,7 @@
 package cn.liguohao.ikaros.common;
 
 
+import cn.liguohao.ikaros.common.kit.SystemVarKit;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

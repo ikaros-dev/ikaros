@@ -1,10 +1,10 @@
 package cn.liguohao.ikaros.openapi;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.constants.SecurityConstants;
+import cn.liguohao.ikaros.common.constants.SecurityConstants;
 import cn.liguohao.ikaros.common.result.CommonResult;
-import cn.liguohao.ikaros.model.AuthUser;
-import cn.liguohao.ikaros.entity.UserEntity;
+import cn.liguohao.ikaros.model.dto.AuthUserDTO;
+import cn.liguohao.ikaros.model.entity.UserEntity;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.service.UserService;
 import java.util.List;
@@ -34,22 +34,22 @@ public class UserRestController {
     }
 
     @PostMapping("/login")
-    public CommonResult<AuthUser> login(@RequestBody AuthUser authUser,
-                                        @RequestHeader HttpHeaders httpHeaders)
+    public CommonResult<AuthUserDTO> login(@RequestBody AuthUserDTO authUserDTO,
+                                           @RequestHeader HttpHeaders httpHeaders)
         throws RecordNotFoundException {
-        Assert.notNull(authUser, "'authUser' must not be null");
-        authUser = userService.login(authUser);
+        Assert.notNull(authUserDTO, "'authUser' must not be null");
+        authUserDTO = userService.login(authUserDTO);
         httpHeaders.set(SecurityConstants.TOKEN_HEADER,
-            SecurityConstants.TOKEN_PREFIX + authUser.getToken());
-        return CommonResult.ok(authUser);
+            SecurityConstants.TOKEN_PREFIX + authUserDTO.getToken());
+        return CommonResult.ok(authUserDTO);
     }
 
     //@PostMapping("/register")
-    public CommonResult<UserEntity> register(@RequestBody AuthUser authUser) {
-        Assert.notNull(authUser, "'authUser' must not be null");
-        String username = authUser.getUsername();
-        String password = authUser.getPassword();
-        String role = authUser.getRole();
+    public CommonResult<UserEntity> register(@RequestBody AuthUserDTO authUserDTO) {
+        Assert.notNull(authUserDTO, "'authUser' must not be null");
+        String username = authUserDTO.getUsername();
+        String password = authUserDTO.getPassword();
+        String role = authUserDTO.getRole();
         userService.registerUserByUsernameAndPassword(username, password, role);
         return CommonResult.ok();
     }

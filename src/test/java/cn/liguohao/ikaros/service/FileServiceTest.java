@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.service;
 
-import cn.liguohao.ikaros.common.SystemVarKit;
+import cn.liguohao.ikaros.common.kit.SystemVarKit;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

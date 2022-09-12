@@ -2,8 +2,8 @@ package cn.liguohao.ikaros.service;
 
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.entity.RelationEntity;
-import cn.liguohao.ikaros.enums.Role;
+import cn.liguohao.ikaros.model.entity.RelationEntity;
+import cn.liguohao.ikaros.model.enums.Role;
 import cn.liguohao.ikaros.exceptions.UserRelationNotExistException;
 import cn.liguohao.ikaros.repository.RelationRepository;
 import java.util.List;

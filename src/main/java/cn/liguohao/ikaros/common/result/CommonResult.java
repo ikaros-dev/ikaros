@@ -3,7 +3,7 @@ package cn.liguohao.ikaros.common.result;
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.JacksonConverter;
 import cn.liguohao.ikaros.common.Strings;
-import cn.liguohao.ikaros.common.TimeKit;
+import cn.liguohao.ikaros.common.kit.TimeKit;
 import java.io.Serializable;
 import java.util.Objects;
 

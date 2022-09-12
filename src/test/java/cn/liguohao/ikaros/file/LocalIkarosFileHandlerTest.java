@@ -1,6 +1,9 @@
 package cn.liguohao.ikaros.file;
 
 
+import cn.liguohao.ikaros.model.file.IkarosFile;
+import cn.liguohao.ikaros.model.file.IkarosFileOperateResult;
+import cn.liguohao.ikaros.model.file.LocalIkarosFileHandler;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

@@ -1,7 +1,7 @@
 package cn.liguohao.ikaros.repository.anime;
 
 
-import cn.liguohao.ikaros.entity.anime.SeasonEntity;
+import cn.liguohao.ikaros.model.entity.anime.SeasonEntity;
 import cn.liguohao.ikaros.repository.BaseRepository;
 
 /**

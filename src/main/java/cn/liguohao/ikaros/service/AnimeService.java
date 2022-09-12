@@ -1,15 +1,15 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.common.BeanKit;
-import cn.liguohao.ikaros.entity.anime.AnimeEntity;
-import cn.liguohao.ikaros.entity.anime.AnimeSeasonEntity;
-import cn.liguohao.ikaros.entity.anime.EpisodeEntity;
-import cn.liguohao.ikaros.entity.anime.SeasonEntity;
-import cn.liguohao.ikaros.entity.anime.SeasonEpisodeEntity;
-import cn.liguohao.ikaros.model.Anime;
-import cn.liguohao.ikaros.model.Episode;
-import cn.liguohao.ikaros.model.Season;
+import cn.liguohao.ikaros.common.kit.BeanKit;
+import cn.liguohao.ikaros.model.entity.anime.AnimeEntity;
+import cn.liguohao.ikaros.model.entity.anime.AnimeSeasonEntity;
+import cn.liguohao.ikaros.model.entity.anime.EpisodeEntity;
+import cn.liguohao.ikaros.model.entity.anime.SeasonEntity;
+import cn.liguohao.ikaros.model.entity.anime.SeasonEpisodeEntity;
+import cn.liguohao.ikaros.model.dto.AnimeDTO;
+import cn.liguohao.ikaros.model.dto.EpisodeDTO;
+import cn.liguohao.ikaros.model.dto.SeasonDTO;
 import cn.liguohao.ikaros.repository.anime.AnimeRepository;
 import cn.liguohao.ikaros.repository.anime.AnimeSeasonRepository;
 import cn.liguohao.ikaros.repository.anime.EpisodeRepository;
@@ -50,34 +50,34 @@ public class AnimeService {
     }
 
 
-    public Anime addAnime(Anime anime) {
-        Assert.notNull(anime, "'anime' must not be null.");
+    public AnimeDTO addAnime(AnimeDTO animeDTO) {
+        Assert.notNull(animeDTO, "'anime' must not be null.");
 
         final Date now = new Date();
         final Long loginUserUid = userService.getCurrentLoginUserUid();
 
-        Assert.notNull(anime.getTitle(), "'anime#getTitle' must not be null.");
+        Assert.notNull(animeDTO.getTitle(), "'anime#getTitle' must not be null.");
         AnimeEntity animeEntity = new AnimeEntity();
         animeEntity.setTimeAndUidWhenCreate(now, loginUserUid);
-        BeanKit.copyProperties(anime, animeEntity);
+        BeanKit.copyProperties(animeDTO, animeEntity);
         animeEntity = animeRepository.saveAndFlush(animeEntity);
 
         Long animeId = animeEntity.getId();
         Assert.notNull(animeId, "'animeId' must not be null");
-        anime.setId(animeId);
+        animeDTO.setId(animeId);
 
-        List<Season> seasons = anime.getSeasons();
-        Assert.notNull(seasons, "'seasons' must not be null");
-        for (Season season : seasons) {
+        List<SeasonDTO> seasonDTOS = animeDTO.getSeasons();
+        Assert.notNull(seasonDTOS, "'seasons' must not be null");
+        for (SeasonDTO seasonDTO : seasonDTOS) {
             SeasonEntity seasonEntity = new SeasonEntity();
             seasonEntity.setTimeAndUidWhenCreate(now, loginUserUid);
-            BeanKit.copyProperties(season, seasonEntity);
+            BeanKit.copyProperties(seasonDTO, seasonEntity);
             seasonEntity = seasonRepository.saveAndFlush(seasonEntity);
 
 
             Long seasonId = seasonEntity.getId();
             Assert.notNull(seasonId, "'seasonId' must not be null");
-            season.setId(seasonId);
+            seasonDTO.setId(seasonId);
 
             AnimeSeasonEntity animeSeasonEntity = new AnimeSeasonEntity();
             animeSeasonEntity.setTimeAndUidWhenCreate(now, loginUserUid);
@@ -86,18 +86,18 @@ public class AnimeService {
             animeSeasonRepository.saveAndFlush(animeSeasonEntity);
 
 
-            List<Episode> episodes = season.getEpisodes();
-            Assert.notNull(episodes, "'episodes' must not be null");
-            for (Episode episode : episodes) {
+            List<EpisodeDTO> episodeDTOS = seasonDTO.getEpisodes();
+            Assert.notNull(episodeDTOS, "'episodes' must not be null");
+            for (EpisodeDTO episodeDTO : episodeDTOS) {
                 EpisodeEntity episodeEntity = new EpisodeEntity();
                 episodeEntity.setTimeAndUidWhenCreate(now, loginUserUid);
-                BeanKit.copyProperties(episode, episodeEntity);
+                BeanKit.copyProperties(episodeDTO, episodeEntity);
                 episodeEntity = episodeRepository.saveAndFlush(episodeEntity);
 
                 // PS: 文件上传是在保存元数据之前的，这里应该是获取到文件ID的
                 Long episodeId = episodeEntity.getId();
                 Assert.notNull(episodeId, "'episodeId' must not be null");
-                episode.setId(episodeId);
+                episodeDTO.setId(episodeId);
 
                 SeasonEpisodeEntity seasonEpisodeEntity = new SeasonEpisodeEntity();
                 seasonEpisodeEntity.setTimeAndUidWhenCreate(now, loginUserUid);
@@ -108,7 +108,7 @@ public class AnimeService {
 
         }
 
-        return anime;
+        return animeDTO;
     }
 
 }

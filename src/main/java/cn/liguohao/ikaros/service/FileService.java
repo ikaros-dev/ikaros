@@ -1,17 +1,17 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.common.BeanKit;
-import cn.liguohao.ikaros.common.FileKit;
+import cn.liguohao.ikaros.common.kit.BeanKit;
+import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.JacksonConverter;
 import cn.liguohao.ikaros.common.Strings;
-import cn.liguohao.ikaros.common.TimeKit;
-import cn.liguohao.ikaros.entity.FileEntity;
+import cn.liguohao.ikaros.common.kit.TimeKit;
+import cn.liguohao.ikaros.model.entity.FileEntity;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
-import cn.liguohao.ikaros.file.IkarosFile;
-import cn.liguohao.ikaros.file.IkarosFileHandler;
-import cn.liguohao.ikaros.file.IkarosFileOperateResult;
-import cn.liguohao.ikaros.file.LocalIkarosFileHandler;
+import cn.liguohao.ikaros.model.file.IkarosFile;
+import cn.liguohao.ikaros.model.file.IkarosFileHandler;
+import cn.liguohao.ikaros.model.file.IkarosFileOperateResult;
+import cn.liguohao.ikaros.model.file.LocalIkarosFileHandler;
 import cn.liguohao.ikaros.repository.FileRepository;
 import java.io.IOException;
 import java.util.Date;
