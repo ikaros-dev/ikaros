@@ -243,6 +243,7 @@ public class UserService {
         Authentication authentication = JwtKit.getAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        authUserDTO.setId(userId);
         authUserDTO.setToken(token);
         authUserDTO.setPassword("**hidden password**");
         return authUserDTO;

@@ -5,6 +5,7 @@ package cn.liguohao.ikaros.model.dto;
  * @date 2022/09/08
  */
 public class AuthUserDTO {
+    private Long id;
     private String username;
     private String password;
     private String role;
@@ -54,6 +55,15 @@ public class AuthUserDTO {
 
     public AuthUserDTO setRememberMe(Boolean rememberMe) {
         this.rememberMe = rememberMe;
+        return this;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public AuthUserDTO setId(Long id) {
+        this.id = id;
         return this;
     }
 }
