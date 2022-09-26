@@ -3,11 +3,13 @@ package cn.liguohao.ikaros.openapi;
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.constants.SecurityConstants;
 import cn.liguohao.ikaros.common.result.CommonResult;
-import cn.liguohao.ikaros.model.dto.AuthUserDTO;
-import cn.liguohao.ikaros.model.entity.UserEntity;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
+import cn.liguohao.ikaros.model.dto.AuthUserDTO;
+import cn.liguohao.ikaros.model.dto.UserDTO;
+import cn.liguohao.ikaros.model.entity.UserEntity;
 import cn.liguohao.ikaros.service.UserService;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,6 +44,20 @@ public class UserRestController {
         httpHeaders.set(SecurityConstants.TOKEN_HEADER,
             SecurityConstants.TOKEN_PREFIX + authUserDTO.getToken());
         return CommonResult.ok(authUserDTO);
+    }
+
+    private String getTokenFromHttpRequest(HttpServletRequest request) {
+        String authorization = request.getHeader(SecurityConstants.TOKEN_HEADER);
+        if (authorization == null || !authorization.startsWith(SecurityConstants.TOKEN_PREFIX)) {
+            return null;
+        }
+        return authorization.replace(SecurityConstants.TOKEN_PREFIX, "");
+    }
+
+    @GetMapping("/info")
+    public CommonResult<UserDTO> getUserInfoByToken(HttpServletRequest request) {
+        String token = getTokenFromHttpRequest(request);
+        return CommonResult.ok(userService.getUserInfoByToken(token));
     }
 
     //@PostMapping("/register")

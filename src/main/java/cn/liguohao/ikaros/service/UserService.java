@@ -6,7 +6,9 @@ import cn.liguohao.ikaros.common.kit.BeanKit;
 import cn.liguohao.ikaros.common.kit.JwtKit;
 import cn.liguohao.ikaros.common.constants.SecurityConstants;
 import cn.liguohao.ikaros.common.constants.UserConstants;
+import cn.liguohao.ikaros.exceptions.JwtTokenValidateFailException;
 import cn.liguohao.ikaros.model.dto.AuthUserDTO;
+import cn.liguohao.ikaros.model.dto.UserDTO;
 import cn.liguohao.ikaros.model.entity.RoleEntity;
 import cn.liguohao.ikaros.model.entity.UserEntity;
 import cn.liguohao.ikaros.model.entity.UserRoleEntity;
@@ -247,5 +249,25 @@ public class UserService {
         authUserDTO.setToken(token);
         authUserDTO.setPassword("**hidden password**");
         return authUserDTO;
+    }
+
+    public UserDTO getUserInfoByToken(String token) {
+        Assert.hasText(token, "'token' must not be null");
+        if (!JwtKit.validateToken(token)) {
+            throw new JwtTokenValidateFailException("validate fail for token: " + token);
+        }
+
+        Authentication authentication = JwtKit.getAuthentication(token);
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof String username) {
+            UserEntity userEntity = userRepository.findByUsername(username);
+            userEntity.setPassword(SecurityConstants.HIDDEN_STR);
+            UserDTO userDTO = new UserDTO();
+            BeanKit.copyProperties(userEntity, userDTO);
+            return userDTO;
+        } else {
+            throw new JwtTokenValidateFailException(
+                "validate fail for token principal: " + principal);
+        }
     }
 }

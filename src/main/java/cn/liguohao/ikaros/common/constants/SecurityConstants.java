@@ -41,4 +41,6 @@ public interface SecurityConstants {
     long EXPIRATION_TIME = 60 * 60 * 2L;
     long EXPIRATION_REMEMBER_TIME = 60 * 60 * 24 * 7L;
     String HEADER_UID = "UID";
+
+    String HIDDEN_STR = "***hidden***";
 }

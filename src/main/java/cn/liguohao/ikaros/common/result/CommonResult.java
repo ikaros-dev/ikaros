@@ -26,7 +26,7 @@ public class CommonResult<T> extends BaseResult<T> implements Serializable {
         this.setCode(code);
         this.setMessage(message);
         this.setTimestamp(timestamp);
-        this.setData(data);
+        this.setResult(data);
         this.setThrowable(throwable);
     }
 
@@ -37,7 +37,7 @@ public class CommonResult<T> extends BaseResult<T> implements Serializable {
         result.setCode(code);
         result.setSuccess(Objects.equals(code, ResultCode.SUCCESS));
         result.setMessage(msg);
-        result.setData(data);
+        result.setResult(data);
         result.setTimestamp(TimeKit.nowTimestamp());
         result.setThrowable(throwable);
         return result;

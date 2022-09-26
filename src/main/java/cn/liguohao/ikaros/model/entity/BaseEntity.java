@@ -46,8 +46,8 @@ public class BaseEntity {
      * 记录创建时间
      */
     @CreatedDate
-    @Column(name = "crete_time")
-    private Date creteTime;
+    @Column(name = "create_time")
+    private Date createTime;
 
     /**
      * 记录最后更新用户
@@ -70,7 +70,7 @@ public class BaseEntity {
     private Long version = -1L;
 
     public void setTimeAndUidWhenCreate(Date time, Long uid) {
-        this.setCreteTime(time)
+        this.setCreateTime(time)
             .setUpdateTime(time)
             .setCreateUid(uid)
             .setUpdateUid(uid);
@@ -108,12 +108,12 @@ public class BaseEntity {
         return this;
     }
 
-    public Date getCreteTime() {
-        return creteTime;
+    public Date getCreateTime() {
+        return createTime;
     }
 
-    public BaseEntity setCreteTime(Date creteTime) {
-        this.creteTime = creteTime;
+    public BaseEntity setCreateTime(Date createTime) {
+        this.createTime = createTime;
         return this;
     }
 

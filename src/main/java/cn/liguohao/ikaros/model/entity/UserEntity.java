@@ -60,6 +60,9 @@ public class UserEntity extends BaseEntity {
      */
     private Boolean nonLocked = true;
 
+    private String avatar;
+    private String lastLoginIp;
+    private Long lastLoginTime;
 
     public String getUsername() {
         return username;
@@ -139,6 +142,33 @@ public class UserEntity extends BaseEntity {
 
     public UserEntity setNonLocked(Boolean nonLocked) {
         this.nonLocked = nonLocked;
+        return this;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public UserEntity setAvatar(String avatar) {
+        this.avatar = avatar;
+        return this;
+    }
+
+    public String getLastLoginIp() {
+        return lastLoginIp;
+    }
+
+    public UserEntity setLastLoginIp(String lastLoginIp) {
+        this.lastLoginIp = lastLoginIp;
+        return this;
+    }
+
+    public Long getLastLoginTime() {
+        return lastLoginTime;
+    }
+
+    public UserEntity setLastLoginTime(Long lastLoginTime) {
+        this.lastLoginTime = lastLoginTime;
         return this;
     }
 }

@@ -11,7 +11,7 @@ public abstract class BaseResult<T> implements Serializable {
 
     private String message;
 
-    private T data;
+    private T result;
 
     private String code;
 
@@ -37,12 +37,12 @@ public abstract class BaseResult<T> implements Serializable {
         return this;
     }
 
-    public T getData() {
-        return data;
+    public T getResult() {
+        return result;
     }
 
-    public BaseResult<T> setData(T data) {
-        this.data = data;
+    public BaseResult<T> setResult(T result) {
+        this.result = result;
         return this;
     }
 

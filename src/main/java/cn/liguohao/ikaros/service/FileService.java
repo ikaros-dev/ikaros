@@ -61,7 +61,7 @@ public class FileService {
             .setName(ikarosFile.getName())
             .setPostfix(ikarosFile.getPostfix())
             .setType(ikarosFile.getType())
-            .setCreteTime(uploadedDate)
+            .setCreateTime(uploadedDate)
             .setUpdateTime(uploadedDate);
 
         fileEntity = fileRepository.save(fileEntity);
