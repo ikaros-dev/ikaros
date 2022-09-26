@@ -4,7 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
-import org.hibernate.annotations.ColumnDefault;
 
 /**
  * Setting entity.
@@ -23,19 +22,20 @@ public class OptionEntity extends BaseEntity {
         CUSTOM;
     }
 
+    private Type type = Type.INTERNAL;
 
-    @ColumnDefault("INTERNAL")
-    private Type type;
-
-    @Column(nullable = false)
-    private String key;
+    @Column(name = "ikkey", nullable = false)
+    private String key = "";
 
     /**
      * option value
      */
-    @Column(nullable = false)
+    @Column(name = "ikvalue", nullable = false)
     @Lob
-    private String value;
+    private String value  = "";
+
+    public OptionEntity() {
+    }
 
     public OptionEntity(String key, String value) {
         this.key = key;
