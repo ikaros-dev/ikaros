@@ -1,5 +1,6 @@
 package cn.liguohao.ikaros.config;
 
+import cn.liguohao.ikaros.common.constants.AppConstants;
 import java.util.Arrays;
 import java.util.Collections;
 import org.springframework.context.annotation.Bean;
@@ -23,8 +24,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void configurePathMatch(PathMatchConfigurer config) {
-        config.addPathPrefix("/api", HandlerTypePredicate.forAnnotation(RestController.class)
-            .and(cls -> cls.getPackageName().contains("cn.liguohao.ikaros.openapi")));
+        config.addPathPrefix(AppConstants.OPEN_API_PREFIX_NAME,
+            HandlerTypePredicate.forAnnotation(RestController.class)
+                .and(cls -> cls.getPackageName().contains(AppConstants.OPEN_API_PACKAGE_NAME)));
     }
 
 

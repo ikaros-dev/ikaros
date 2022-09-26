@@ -13,12 +13,14 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author li-guohao
  * @date 2022/06/18
  */
+@Disabled
 class LocalIkarosFileHandlerTest {
 
     static String locationDirPath;

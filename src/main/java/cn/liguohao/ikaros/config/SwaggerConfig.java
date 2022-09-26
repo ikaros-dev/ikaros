@@ -1,5 +1,6 @@
 package cn.liguohao.ikaros.config;
 
+import cn.liguohao.ikaros.common.constants.AppConstants;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
@@ -29,10 +30,10 @@ public class SwaggerConfig {
     public Docket openApiDocket() {
         return new Docket(DocumentationType.OAS_30)
             .apiInfo(apiInfo())
-            .groupName("ikaros-openApi")
+            .groupName("ikaros-admin-openApi")
             .enable(true)
             .select()
-            .apis(RequestHandlerSelectors.basePackage("cn.liguohao.ikaros.openapi"))
+            .apis(RequestHandlerSelectors.basePackage(AppConstants.OPEN_API_PACKAGE_NAME))
             .build()
             // todo config security for api doc
             .securitySchemes(securitySchemes())

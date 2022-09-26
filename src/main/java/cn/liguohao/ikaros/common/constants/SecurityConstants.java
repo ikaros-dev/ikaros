@@ -7,7 +7,7 @@ package cn.liguohao.ikaros.common.constants;
 public interface SecurityConstants {
 
     String API_AUTH_LOGIN_URL = "/api/user/login";
-    String API_AUTH_LOGOUT_URL = "/auth/user/logout";
+    String API_AUTH_LOGOUT_URL = "/api/user/logout";
     String API_USER_REGISTER_URL = "/api/user/register";
     String[] API_STATUS_URLS = {
         "/api/status/ping",
