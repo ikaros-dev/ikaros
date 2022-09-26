@@ -46,10 +46,11 @@ spring:
 
 
 logging:
+  file:
+    name: ./logs/ikaros.log
   level:
     cn.liguohao.ikaros: INFO
     org.hibernate: INFO
     org.hibernate.type.descriptor.sql.BasicBinder: INFO
     org.hibernate.type.descriptor.sql.BasicExtractor: INFO
-  file:
-    name: ./logs/ikaros.log
+    org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration: OFF

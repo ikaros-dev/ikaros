@@ -45,12 +45,13 @@ spring:
     cache: false
 
 logging:
+  file:
+    name: ./build/logs/ikaros.log
   level:
     cn.liguohao.ikaros: DEBUG
     org.hibernate: INFO
     org.hibernate.type.descriptor.sql.BasicBinder: INFO
     org.hibernate.type.descriptor.sql.BasicExtractor: INFO
-  file:
-    name: ./build/logs/ikaros.log
+    org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration: OFF
 
 
