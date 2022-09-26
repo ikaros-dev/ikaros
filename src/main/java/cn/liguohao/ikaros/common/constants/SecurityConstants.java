@@ -15,6 +15,21 @@ public interface SecurityConstants {
         "/api/status/running"
     };
 
+    String[] SWAGGER_DOC_URLS = {
+        "/v2/api-docs/**",
+        "/v3/api-docs/**",
+        "/i18n/**",
+        "/webjars/springfox-swagger-ui/**",
+        "/swagger-resources/**",
+        "/swagger-ui.html",
+        "/swagger-ui/**",
+        "/swagger-ui"
+    };
+
+    String[] APP_URLS = {
+        "/app/**/*.{js,html}",
+        "/h2",
+    };
 
     String JWT_SECRET_KEY = "v8y/B?E(G+KbPeShVmYq3t6w9z$C&F)J@McQfTjWnZr4u7x!A%D*G-KaPdRgUkXp";
     String TOKEN_PREFIX = "Bearer ";
