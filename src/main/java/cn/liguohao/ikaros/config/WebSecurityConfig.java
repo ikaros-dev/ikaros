@@ -75,7 +75,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .clearAuthentication(true)
             .logoutSuccessHandler((request, response, authentication) -> {
                 String token = request.getHeader(SecurityConstants.TOKEN_HEADER);
-                if (Strings.isNotBlank(token) && JwtKit.validateToken(token)) {
+                if (Strings.isNotBlank(token)) {
                     token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
                     Authentication auth = JwtKit.getAuthentication(token);
                     LOGGER.debug("logout success, username: {}", auth.getPrincipal());
