@@ -1,10 +1,14 @@
 package cn.liguohao.ikaros.config;
 
+import cn.liguohao.ikaros.common.Strings;
 import cn.liguohao.ikaros.common.constants.SecurityConstants;
+import cn.liguohao.ikaros.common.kit.JwtKit;
 import cn.liguohao.ikaros.config.security.IkarosAccessDeniedHandler;
 import cn.liguohao.ikaros.config.security.IkarosAuthenticationEntryPoint;
 import cn.liguohao.ikaros.config.security.JwtAuthorizationFilter;
 import cn.liguohao.ikaros.config.security.JwtConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,9 +18,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.filter.CorsFilter;
 
 /**
@@ -26,6 +31,7 @@ import org.springframework.web.filter.CorsFilter;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSecurityConfig.class);
 
 
     private final CorsFilter corsFilter;
@@ -56,7 +62,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-            .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(corsFilter, LogoutFilter.class)
             .exceptionHandling()
             .authenticationEntryPoint(new IkarosAuthenticationEntryPoint())
             .accessDeniedHandler(new IkarosAccessDeniedHandler())
@@ -64,7 +70,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .csrf().disable()
             .headers().frameOptions().disable()
             .and()
-            .logout().logoutUrl(SecurityConstants.API_AUTH_LOGOUT_URL).and()
+            .logout()
+            .logoutUrl(SecurityConstants.API_AUTH_LOGOUT_URL)
+            .clearAuthentication(true)
+            .logoutSuccessHandler((request, response, authentication) -> {
+                String token = request.getHeader(SecurityConstants.TOKEN_HEADER);
+                if (Strings.isNotBlank(token)) {
+                    token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
+                    Authentication auth = JwtKit.getAuthentication(token);
+                    LOGGER.debug("logout success, username: {}", auth.getPrincipal());
+                } else {
+                    LOGGER.debug("logout success.");
+                }
+            })
+            .and()
             .authorizeRequests()
             // 指定路径下的资源需要进行验证后才能访问
             .antMatchers(HttpMethod.POST, SecurityConstants.API_AUTH_LOGIN_URL).permitAll()
