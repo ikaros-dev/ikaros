@@ -21,7 +21,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.web.filter.CorsFilter;
 
 /**
@@ -62,7 +62,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-            .addFilterBefore(corsFilter, LogoutFilter.class)
+            .addFilterBefore(corsFilter, SecurityContextPersistenceFilter.class)
             .exceptionHandling()
             .authenticationEntryPoint(new IkarosAuthenticationEntryPoint())
             .accessDeniedHandler(new IkarosAccessDeniedHandler())
@@ -75,12 +75,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .clearAuthentication(true)
             .logoutSuccessHandler((request, response, authentication) -> {
                 String token = request.getHeader(SecurityConstants.TOKEN_HEADER);
-                if (Strings.isNotBlank(token)) {
+                if (Strings.isNotBlank(token) && JwtKit.validateToken(token)) {
                     token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
                     Authentication auth = JwtKit.getAuthentication(token);
                     LOGGER.debug("logout success, username: {}", auth.getPrincipal());
-                } else {
-                    LOGGER.debug("logout success.");
+                    // todo let token expire
+                    // can use cache such as userId ==> token, expireTime
                 }
             })
             .and()
