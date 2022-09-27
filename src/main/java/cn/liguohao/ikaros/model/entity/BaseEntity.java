@@ -1,6 +1,7 @@
 package cn.liguohao.ikaros.model.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -66,6 +67,7 @@ public class BaseEntity {
     /**
      * 乐观锁版本字段，保留字段，暂未启用
      */
+    @JsonIgnore
     @Transient
     private Long version = -1L;
 

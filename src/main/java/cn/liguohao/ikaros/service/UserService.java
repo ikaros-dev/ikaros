@@ -8,6 +8,7 @@ import cn.liguohao.ikaros.common.constants.SecurityConstants;
 import cn.liguohao.ikaros.common.constants.UserConstants;
 import cn.liguohao.ikaros.exceptions.JwtTokenValidateFailException;
 import cn.liguohao.ikaros.model.dto.AuthUserDTO;
+import cn.liguohao.ikaros.model.dto.RoleDTO;
 import cn.liguohao.ikaros.model.dto.UserDTO;
 import cn.liguohao.ikaros.model.entity.RoleEntity;
 import cn.liguohao.ikaros.model.entity.UserEntity;
@@ -110,8 +111,11 @@ public class UserService {
                     .setIntroduce("no set introduce.")
                     .setNickname("nickname")
                     .setNonLocked(true)
-                    .setSite("http://liguohao.cn")
-                    .setTelephone("00000000000"));
+                    .setSite("http://blog.liguohao.cn")
+                    .setTelephone("00000000000")
+                    .setAvatar(
+                        "https://blog.liguohao.cn/upload/2020/10/D4D57B44-A2EC-4711-B8FE-9C48A4851535-78474784f16544b599ecafc5e9f932d4.jpeg")
+            );
 
         // 给用户分配角色，新注册用户默认角色是 访客
         if (roleName == null) {
@@ -262,8 +266,15 @@ public class UserService {
         if (principal instanceof String username) {
             UserEntity userEntity = userRepository.findByUsername(username);
             userEntity.setPassword(SecurityConstants.HIDDEN_STR);
-            UserDTO userDTO = new UserDTO();
-            BeanKit.copyProperties(userEntity, userDTO);
+            UserDTO userDTO = new UserDTO(userEntity);
+
+            // 填充角色
+            userRoleService.findByUserId(userEntity.getId()).forEach(userRoleEntity -> {
+                Optional<RoleEntity> roleEntityOptional =
+                    roleService.findById(userRoleEntity.getRoleId());
+                roleEntityOptional.ifPresent(
+                    roleEntity -> userDTO.getRoles().add(new RoleDTO(roleEntity)));
+            });
             return userDTO;
         } else {
             throw new JwtTokenValidateFailException(

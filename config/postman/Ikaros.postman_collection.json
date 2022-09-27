@@ -34,7 +34,10 @@
 			"name": "api/file/data/{id}",
 			"request": {
 				"auth": {
-					"type": "noauth"
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJ0eXBlIjoiSldUIiwiVUlEIjoxLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOlsiUk9MRV9NQVNURVIiXSwiaXNzIjoic2VjdXJpdHkiLCJpYXQiOjE2NjMzNTQ4NzYsImF1ZCI6InNlY3VyaXR5LWFsbCIsImV4cCI6MTY2MzM2MjA3Nn0.IaRMTv5XHl8CZNXEbF6LnPwBD5lI8huIsYf0eAAzmeE"
+					}
 				},
 				"method": "PUT",
 				"header": [],
@@ -48,7 +51,7 @@
 						}
 					]
 				},
-				"url": "http://localhost:9090/api/file/data/6"
+				"url": "http://localhost:9090/api/file/data/5"
 			},
 			"response": []
 		},
@@ -82,12 +85,6 @@
 		{
 			"name": "api/file/{id}",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": {
-						"token": "eyJ0eXBlIjoiSldUIiwiVUlEIjoxLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOlsiUk9MRV9NQVNURVIiXSwiaXNzIjoic2VjdXJpdHkiLCJpYXQiOjE2NjI4ODE5NTAsImF1ZCI6InNlY3VyaXR5LWFsbCIsImV4cCI6MTY2Mjg4OTE1MH0.XsLG1fU20Va6qqKEUl68vkLJDeKm1SzeDqelnffbNtM"
-					}
-				},
 				"method": "GET",
 				"header": [],
 				"url": "http://localhost:9090/api/file/4"
@@ -112,6 +109,9 @@
 		{
 			"name": "api/user/login",
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -126,8 +126,32 @@
 				"url": "http://localhost:9090/api/user/login"
 			},
 			"response": []
+		},
+		{
+			"name": "api/user/logout",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:9090/api/user/logout"
+			},
+			"response": []
+		},
+		{
+			"name": "api/user/info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:9090/api/user/info"
+			},
+			"response": []
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": {
+			"token": "eyJ0eXBlIjoiSldUIiwiVUlEIjoxLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOlsiUk9MRV9NQVNURVIiXSwiaXNzIjoic2VjdXJpdHkiLCJpYXQiOjE2NjQzMDU4NTUsImF1ZCI6InNlY3VyaXR5LWFsbCIsImV4cCI6MTY2NDMxMzA1NX0.jlHResuy5qBuRcscsNK0dkRDo2KuwWpx8L5dwhnSGxc"
+		}
+	},
 	"event": [
 		{
 			"listen": "prerequest",
