@@ -7,6 +7,7 @@ import cn.liguohao.ikaros.config.security.IkarosAccessDeniedHandler;
 import cn.liguohao.ikaros.config.security.IkarosAuthenticationEntryPoint;
 import cn.liguohao.ikaros.config.security.JwtAuthorizationFilter;
 import cn.liguohao.ikaros.config.security.JwtConfig;
+import cn.liguohao.ikaros.exceptions.JwtTokenValidateFailException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -77,6 +78,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 String token = request.getHeader(SecurityConstants.TOKEN_HEADER);
                 if (Strings.isNotBlank(token)) {
                     token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
+                    if (!JwtKit.validateToken(token)) {
+                        throw new JwtTokenValidateFailException(
+                            "validate fail for token: " + token);
+                    }
                     Authentication auth = JwtKit.getAuthentication(token);
                     LOGGER.debug("logout success, username: {}", auth.getPrincipal());
                     // todo let token expire

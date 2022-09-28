@@ -27,6 +27,7 @@ public class IkarosAuthenticationEntryPoint implements AuthenticationEntryPoint 
                 + authException.getClass().getSimpleName() + " - "
                 + authException.getMessage(), null);
         response.setContentType(HttpConstants.CONTENT_TYPE_JSON);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().println(result);
     }
 }

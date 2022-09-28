@@ -24,6 +24,7 @@ public class IkarosAccessDeniedHandler implements AccessDeniedHandler {
                 + accessDeniedException.getClass().getSimpleName() + " - "
                 + accessDeniedException.getMessage(), null);
         response.setContentType(HttpConstants.CONTENT_TYPE_JSON);
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.getWriter().println(result);
     }
 }
