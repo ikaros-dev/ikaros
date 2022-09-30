@@ -12,6 +12,7 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -29,6 +30,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .and(cls -> cls.getPackageName().contains(AppConstants.OPEN_API_PACKAGE_NAME)));
     }
 
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/admin/**", "/logo.png")
+            .addResourceLocations("classpath:/admin/");
+        registry.addResourceHandler("/js/**")
+            .addResourceLocations("classpath:/admin/js/");
+        registry.addResourceHandler("/css/**")
+            .addResourceLocations("classpath:/admin/css/");
+        registry.addResourceHandler("/img/**")
+            .addResourceLocations("classpath:/admin/img/");
+    }
 
     @Bean
     public CorsFilter corsFilter() {

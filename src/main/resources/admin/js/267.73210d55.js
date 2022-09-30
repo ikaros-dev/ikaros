@@ -1,0 +1,1 @@
+"use strict";(self["webpackChunkvue_antd_pro"]=self["webpackChunkvue_antd_pro"]||[]).push([[267],{5267:function(e,t,u){u.r(t),u.d(t,{default:function(){return s}});var n=function(){var e=this,t=e._self._c;return t("page-header-wrapper",{attrs:{title:!1}},[t("H2",[e._v("About")])],1)},r=[],a=u(1001),l={},p=(0,a.Z)(l,n,r,!1,null,null,null),s=p.exports}}]);

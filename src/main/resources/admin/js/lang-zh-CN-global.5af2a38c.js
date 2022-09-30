@@ -1,0 +1,1 @@
+"use strict";(self["webpackChunkvue_antd_pro"]=self["webpackChunkvue_antd_pro"]||[]).push([[616],{59921:function(e,u,s){s.r(u),u["default"]={submit:"提交",save:"保存","submit.ok":"提交成功","save.ok":"保存成功"}}}]);

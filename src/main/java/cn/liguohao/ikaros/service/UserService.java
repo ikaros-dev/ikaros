@@ -114,7 +114,7 @@ public class UserService {
                     .setSite("http://blog.liguohao.cn")
                     .setTelephone("00000000000")
                     .setAvatar(
-                        "https://blog.liguohao.cn/upload/2020/10/D4D57B44-A2EC-4711-B8FE-9C48A4851535-78474784f16544b599ecafc5e9f932d4.jpeg")
+                        "https://openimg.liguohao.cn/avator.jpeg")
             );
 
         // 给用户分配角色，新注册用户默认角色是 访客
