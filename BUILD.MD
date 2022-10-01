@@ -11,12 +11,6 @@
 
 建议先使用`java -version`检查下jdk版本，如本地JDK版本不是17编译会报错。
 
-安装git-hooks，为了在commit之前进行代码检查
-
-```
-.\gradlew.bat clean updateGitHooks -x test
-```
-
 跳过测试编译(Windows)
 
 ```

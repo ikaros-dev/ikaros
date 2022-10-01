@@ -1,6 +1,0 @@
-#!/bin/sh
-git stash -qku
-./gradlew clean check -x test
-RESULT=$?
-git stash pop -q
-exit $RESULT

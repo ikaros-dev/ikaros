@@ -63,15 +63,6 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-// 设置编译前代码检查，复制pre-commit脚本到.git的hooks目录
-task updateGitHooks(type: Copy) {
-	from new File(rootProject.rootDir, "config/git/hooks/pre-commit")
-	into {
-		new File(rootProject.rootDir, ".git/hooks")
-	}
-	fileMode 0755
-}
-build.dependsOn updateGitHooks
 gradle.projectsEvaluated {
 	tasks.withType(JavaCompile) {
 		options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
