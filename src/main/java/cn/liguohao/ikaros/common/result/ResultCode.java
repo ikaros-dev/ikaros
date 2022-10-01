@@ -5,7 +5,7 @@ package cn.liguohao.ikaros.common.result;
  * @date 2022/09/07
  */
 public interface ResultCode {
-    String SUCCESS = "0";
+    String SUCCESS = "200";
     String NOT_FOUND = "404";
     String UNAUTHORIZED = "401";
     String FORBIDDEN = "403";
