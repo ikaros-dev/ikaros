@@ -14,4 +14,6 @@ public interface UserRepository extends BaseRepository<UserEntity> {
      * @return 用户实体对象
      */
     UserEntity findByUsername(String username);
+
+    UserEntity findByEmail(String email);
 }

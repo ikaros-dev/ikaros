@@ -33,9 +33,9 @@ public class JwtKit {
     }
 
 
-    public static String generateTokenByUsernameAndRoles(String userName, Long userId,
-                                                         List<String> roles,
-                                                         boolean isRemember) {
+    public static String generateTokenBySubjectAndRoles(String subject, Long userId,
+                                                        List<String> roles,
+                                                        boolean isRemember) {
         byte[] jwtSecretKey = DatatypeConverter.parseBase64Binary(SecurityConstants.JWT_SECRET_KEY);
         long expiration = isRemember ? SecurityConstants.EXPIRATION_REMEMBER_TIME :
             SecurityConstants.EXPIRATION_TIME;
@@ -43,7 +43,7 @@ public class JwtKit {
             .setHeaderParam("type", SecurityConstants.TOKEN_TYPE)
             .setHeaderParam(SecurityConstants.HEADER_UID, userId)
             .signWith(Keys.hmacShaKeyFor(jwtSecretKey), SignatureAlgorithm.HS256)
-            .setSubject(userName)
+            .setSubject(subject)
             .claim(SecurityConstants.TOKEN_ROLE_CLAIM, roles)
             .setIssuer(SecurityConstants.TOKEN_ISSUER)
             .setIssuedAt(new Date())

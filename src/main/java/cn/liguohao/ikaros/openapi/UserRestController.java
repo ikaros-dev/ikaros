@@ -10,6 +10,8 @@ import cn.liguohao.ikaros.model.entity.UserEntity;
 import cn.liguohao.ikaros.service.UserService;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/user")
 public class UserRestController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
     private final UserService userService;
 
@@ -40,6 +43,7 @@ public class UserRestController {
                                            @RequestHeader HttpHeaders httpHeaders)
         throws RecordNotFoundException {
         Assert.notNull(authUserDTO, "'authUser' must not be null");
+        LOGGER.debug("receive user info: {}", authUserDTO);
         authUserDTO = userService.login(authUserDTO);
         httpHeaders.set(SecurityConstants.TOKEN_HEADER,
             SecurityConstants.TOKEN_PREFIX + authUserDTO.getToken());

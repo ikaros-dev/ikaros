@@ -2,11 +2,17 @@ package cn.liguohao.ikaros.service;
 
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.common.kit.BeanKit;
-import cn.liguohao.ikaros.common.kit.JwtKit;
+import cn.liguohao.ikaros.common.Strings;
+import cn.liguohao.ikaros.common.constants.RegexConstants;
 import cn.liguohao.ikaros.common.constants.SecurityConstants;
 import cn.liguohao.ikaros.common.constants.UserConstants;
+import cn.liguohao.ikaros.common.kit.BeanKit;
+import cn.liguohao.ikaros.common.kit.JwtKit;
 import cn.liguohao.ikaros.exceptions.JwtTokenValidateFailException;
+import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
+import cn.liguohao.ikaros.exceptions.UserHasExistException;
+import cn.liguohao.ikaros.exceptions.UserLoginFailException;
+import cn.liguohao.ikaros.init.MasterUserInitAppRunner;
 import cn.liguohao.ikaros.model.dto.AuthUserDTO;
 import cn.liguohao.ikaros.model.dto.RoleDTO;
 import cn.liguohao.ikaros.model.dto.UserDTO;
@@ -14,10 +20,6 @@ import cn.liguohao.ikaros.model.entity.RoleEntity;
 import cn.liguohao.ikaros.model.entity.UserEntity;
 import cn.liguohao.ikaros.model.entity.UserRoleEntity;
 import cn.liguohao.ikaros.model.enums.Role;
-import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
-import cn.liguohao.ikaros.exceptions.UserHasExistException;
-import cn.liguohao.ikaros.exceptions.UserLoginFailException;
-import cn.liguohao.ikaros.init.MasterUserInitAppRunner;
 import cn.liguohao.ikaros.repository.UserRepository;
 import java.util.HashSet;
 import java.util.List;
@@ -104,7 +106,7 @@ public class UserService {
         UserEntity userEntity =
             userRepository.save(
                 new UserEntity()
-                    .setEmail("user@liguohao.cn")
+                    .setEmail(UserConstants.DEFAULT_MASTER_EMAIL)
                     .setPassword(passwordEncoder.encode(password))
                     .setUsername(username)
                     .setEnable(true)
@@ -220,11 +222,20 @@ public class UserService {
     public AuthUserDTO login(AuthUserDTO authUserDTO) throws RecordNotFoundException {
         Assert.notNull(authUserDTO, "'authUser' must not be null");
         final String username = authUserDTO.getUsername();
+        final String email = authUserDTO.getEmail();
         final String password = authUserDTO.getPassword();
-        Assert.hasText(username, "'username' must not be null");
+        Assert.isTrue(!(Strings.isBlank(username) && Strings.isBlank(email)),
+            "'username' or 'email' must not be null");
         Assert.hasText(password, "'password' must not be null");
 
-        UserEntity userEntity = userRepository.findByUsername(username);
+        UserEntity userEntity = null;
+        if (Strings.isNotBlank(username)) {
+            // username login
+            userEntity = userRepository.findByUsername(username);
+        } else {
+            // email login
+            userEntity = userRepository.findByEmail(email);
+        }
         if (userEntity == null) {
             throw new RecordNotFoundException("user not found for username=" + username);
         }
@@ -244,8 +255,8 @@ public class UserService {
             }).collect(Collectors.toList());
 
         final String token =
-            JwtKit.generateTokenByUsernameAndRoles(username, userId, roles,
-                authUserDTO.getRememberMe());
+            JwtKit.generateTokenBySubjectAndRoles(Strings.isNotBlank(username) ? username : email,
+                userId, roles, authUserDTO.getRememberMe());
         Authentication authentication = JwtKit.getAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -263,8 +274,13 @@ public class UserService {
 
         Authentication authentication = JwtKit.getAuthentication(token);
         Object principal = authentication.getPrincipal();
-        if (principal instanceof String username) {
-            UserEntity userEntity = userRepository.findByUsername(username);
+        if (principal instanceof String usernameOrEmail) {
+            UserEntity userEntity;
+            if (usernameOrEmail.matches(RegexConstants.EMAIL)) {
+                userEntity = userRepository.findByEmail(usernameOrEmail);
+            } else {
+                userEntity = userRepository.findByUsername(usernameOrEmail);
+            }
             userEntity.setPassword(SecurityConstants.HIDDEN_STR);
             UserDTO userDTO = new UserDTO(userEntity);
 

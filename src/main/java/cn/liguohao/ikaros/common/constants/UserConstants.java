@@ -7,6 +7,7 @@ import org.springframework.security.access.vote.RoleVoter;
  */
 public interface UserConstants {
     String DEFAULT_MASTER_USERNAME = "admin";
+    String DEFAULT_MASTER_EMAIL = "admin@ikaros.run";
     String DEFAULT_MASTER_PASSWORD = "admin";
     Long UID_WHEN_NO_AUTH = 0L;
     /**

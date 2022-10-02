@@ -1,5 +1,8 @@
 package cn.liguohao.ikaros.model.dto;
 
+import cn.liguohao.ikaros.common.constants.SecurityConstants;
+import java.util.StringJoiner;
+
 /**
  * @author guohao
  * @date 2022/09/08
@@ -7,11 +10,12 @@ package cn.liguohao.ikaros.model.dto;
 public class AuthUserDTO {
     private Long id;
     private String username;
+    private String email;
     private String password;
     private String role;
     private String token;
 
-    private Boolean rememberMe = false;
+    private Boolean rememberMe = true;
 
     public String getUsername() {
         return username;
@@ -65,5 +69,27 @@ public class AuthUserDTO {
     public AuthUserDTO setId(Long id) {
         this.id = id;
         return this;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public AuthUserDTO setEmail(String email) {
+        this.email = email;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", AuthUserDTO.class.getSimpleName() + "[", "]")
+            .add("id=" + id)
+            .add("username='" + username + "'")
+            .add("email='" + email + "'")
+            .add("password='" + SecurityConstants.HIDDEN_STR + "'")
+            .add("role='" + role + "'")
+            .add("token='" + token + "'")
+            .add("rememberMe=" + rememberMe)
+            .toString();
     }
 }
