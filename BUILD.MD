@@ -3,9 +3,9 @@
 
 - JDK: 17
 - Gradle: 7.5
-- SpringBoot: 3.0.0
+- SpringBoot: 2.5.12
 - CheckStyle: 8.39
-- Vue: 3
+- Vue: 2
 
 执行gradle任务前，默认会走一遍单元测试， 如需跳过，加上`-x test` 即可。
 
