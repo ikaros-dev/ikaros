@@ -4,14 +4,15 @@ import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.constants.FilePostfixConstants;
 import cn.liguohao.ikaros.exceptions.IkarosRuntimeException;
 import cn.liguohao.ikaros.model.file.IkarosFile;
-
-import javax.xml.bind.DatatypeConverter;
+import io.jsonwebtoken.io.IOException;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * @author guohao
@@ -79,6 +80,24 @@ public class FileKit {
     public static String checksum2Str(byte[] bytes, FileKit.Hash hash)
         throws IkarosRuntimeException {
         return DatatypeConverter.printHexBinary(checksum(bytes, hash));
+    }
+
+    public static void deleteDirByRecursion(String dirPath) {
+        File parentFile = new File(dirPath);
+        boolean deleteSuccess = true;
+        File[] files = parentFile.listFiles();
+        if (files == null || files.length == 0) {
+            return;
+        }
+        for (File file : files) {
+            deleteDirByRecursion(file.getPath());
+            if (file.exists()) {
+                deleteSuccess = file.delete();
+            }
+            if (!deleteSuccess) {
+                throw new IOException("delete file fail, current path: " + file.getAbsolutePath());
+            }
+        }
     }
 
 }
