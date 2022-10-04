@@ -2,8 +2,10 @@ package cn.liguohao.ikaros.openapi;
 
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.result.CommonResult;
-import cn.liguohao.ikaros.model.entity.FileEntity;
+import cn.liguohao.ikaros.common.result.PagingWrap;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
+import cn.liguohao.ikaros.model.entity.FileEntity;
+import cn.liguohao.ikaros.model.vo.FileVO;
 import cn.liguohao.ikaros.service.FileService;
 import java.io.IOException;
 import java.util.Optional;
@@ -80,5 +82,11 @@ public class FileRestController {
     public CommonResult<FileEntity> update(FileEntity fileEntity) {
         Assert.notNull(fileEntity, "'fileEntity' must not be null");
         return CommonResult.ok(fileService.update(fileEntity));
+    }
+
+    @GetMapping("/list")
+    public CommonResult<PagingWrap<FileVO>> listPaging() {
+        // todo impl
+        return CommonResult.ok();
     }
 }
