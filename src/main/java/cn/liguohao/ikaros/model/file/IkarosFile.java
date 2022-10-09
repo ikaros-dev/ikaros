@@ -48,33 +48,54 @@ public class IkarosFile {
     private String oldLocation;
 
     public enum Type {
-
         /**
          * 图片
          */
-        IMAGE,
+        IMAGE(1),
 
         /**
          * 视频
          */
-        VIDEO,
+        VIDEO(2),
 
         /**
          * 文档
          */
-        DOCUMENT,
+        DOCUMENT(3),
 
         /**
          * 音频
          */
-        VOICE,
+        VOICE(4),
 
         /**
          * 未知
          */
-        UNKNOWN,
+        UNKNOWN(-1),
         ;
+
+        private int value;
+
+        Type(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+
     }
+
+    /**
+     * PS: 大小写不敏感 例子：images/png
+     *
+     * @return 文件类型 + / + 文件后缀名(不带.)
+     */
+    public String getTypeStr() {
+        return this.type.name() + "/" + this.postfix;
+    }
+
 
     /**
      * 解析剧集的路径，获取对应的项数据实例

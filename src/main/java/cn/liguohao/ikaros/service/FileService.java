@@ -1,25 +1,37 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.common.kit.BeanKit;
-import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.JacksonConverter;
 import cn.liguohao.ikaros.common.Strings;
+import cn.liguohao.ikaros.common.kit.BeanKit;
+import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.kit.TimeKit;
-import cn.liguohao.ikaros.model.entity.FileEntity;
+import cn.liguohao.ikaros.common.result.PagingWrap;
+import cn.liguohao.ikaros.exceptions.NotSupportRuntimeException;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
+import cn.liguohao.ikaros.model.entity.FileEntity;
 import cn.liguohao.ikaros.model.file.IkarosFile;
 import cn.liguohao.ikaros.model.file.IkarosFileHandler;
 import cn.liguohao.ikaros.model.file.IkarosFileOperateResult;
 import cn.liguohao.ikaros.model.file.LocalIkarosFileHandler;
+import cn.liguohao.ikaros.model.param.SearchFilesParams;
 import cn.liguohao.ikaros.repository.FileRepository;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -195,4 +207,59 @@ public class FileService {
         }
     }
 
+    public PagingWrap<FileEntity> findFilesByPagingAndCondition(
+        SearchFilesParams searchFilesParams) {
+        Assert.notNull(searchFilesParams, "'searchFilesParams' must not be null");
+        Integer pageIndex = searchFilesParams.getPage();
+        Integer pageSize = searchFilesParams.getSize();
+        String keyword = searchFilesParams.getKeyword();
+        String type = searchFilesParams.getType();
+        String place = searchFilesParams.getPlace();
+
+        if (pageIndex != null) {
+            Assert.isPositive(pageIndex, "'page' must not be negative");
+        }
+        if (pageSize != null) {
+            Assert.isPositive(pageSize, "'size' must not be negative");
+        }
+
+        List<FileEntity> fileEntities = null;
+
+        // 构造自定义查询条件
+        Specification<FileEntity> queryCondition = new Specification<FileEntity>() {
+            @Override
+            public Predicate toPredicate(Root<FileEntity> root, CriteriaQuery<?> criteriaQuery,
+                                         CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicateList = new ArrayList<>();
+                if (Strings.isNotBlank(keyword)) {
+                    //predicateList.add(criteriaBuilder.equal(root.get("name"), keyword));
+                    throw new NotSupportRuntimeException("not support search by keyword");
+                }
+                if (Strings.isNotBlank(type)) {
+                    String postfix = type.substring(type.lastIndexOf("/") + 1);
+                    predicateList.add(criteriaBuilder.equal(root.get("postfix"), postfix));
+                }
+                if (Strings.isNotBlank(place)) {
+                    predicateList.add(criteriaBuilder.equal(root.get("place"), place));
+                }
+                Predicate[] predicates = new Predicate[predicateList.size()];
+                return criteriaBuilder.and(predicateList.toArray(predicates));
+            }
+        };
+
+        // 分页和不分页，这里按起始页和每页展示条数为0时默认为不分页，分页的话按创建时间降序
+        if (pageIndex == null || pageSize == null || (pageIndex == 0 && pageSize == 0)) {
+            fileEntities = fileRepository.findAll(queryCondition);
+        } else {
+            fileEntities = fileRepository.findAll(queryCondition,
+                    PageRequest.of(pageIndex - 1, pageSize,
+                        Sort.by(Sort.Direction.DESC, "createTime")))
+                .getContent();
+        }
+
+        return new PagingWrap<FileEntity>()
+            .setContent(fileEntities)
+            .setCurrentIndex(pageIndex)
+            .setTotal(fileRepository.count(queryCondition));
+    }
 }

@@ -5,7 +5,7 @@ import cn.liguohao.ikaros.common.result.CommonResult;
 import cn.liguohao.ikaros.common.result.PagingWrap;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.entity.FileEntity;
-import cn.liguohao.ikaros.model.vo.FileVO;
+import cn.liguohao.ikaros.model.param.SearchFilesParams;
 import cn.liguohao.ikaros.service.FileService;
 import java.io.IOException;
 import java.util.Optional;
@@ -85,8 +85,10 @@ public class FileRestController {
     }
 
     @GetMapping("/list")
-    public CommonResult<PagingWrap<FileVO>> listPaging() {
-        // todo impl
-        return CommonResult.ok();
+    public CommonResult<PagingWrap<FileEntity>> listPaging(
+        Integer page, Integer size, String keyword, String type, String place) {
+        SearchFilesParams searchFilesParams = new SearchFilesParams().setPage(page).setSize(size)
+            .setType(type).setKeyword(keyword).setPlace(place);
+        return CommonResult.ok(fileService.findFilesByPagingAndCondition(searchFilesParams));
     }
 }
