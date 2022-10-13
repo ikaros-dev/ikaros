@@ -46,6 +46,7 @@ public class IkarosFile {
     private String sha256;
     private String md5;
     private String oldLocation;
+    private Place place;
 
     public enum Type {
         /**
@@ -85,6 +86,20 @@ public class IkarosFile {
         }
 
 
+    }
+
+    public enum Place {
+        LOCAL(1);
+
+        private int value;
+
+        Place(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
     }
 
     /**
@@ -267,6 +282,15 @@ public class IkarosFile {
 
     public IkarosFile setOldLocation(String oldLocation) {
         this.oldLocation = oldLocation;
+        return this;
+    }
+
+    public Place getPlace() {
+        return place;
+    }
+
+    public IkarosFile setPlace(Place place) {
+        this.place = place;
         return this;
     }
 }

@@ -8,7 +8,11 @@ import cn.liguohao.ikaros.model.entity.FileEntity;
 import cn.liguohao.ikaros.model.param.SearchFilesParams;
 import cn.liguohao.ikaros.service.FileService;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -59,11 +63,19 @@ public class FileRestController {
         return CommonResult.ok(fileEntity);
     }
 
-    @DeleteMapping("/{id}")
-    public CommonResult<FileEntity> deleteById(@PathVariable Long id) {
-        Assert.notNull(id, "'id' must not be null");
-        fileService.delete(id);
-        return CommonResult.ok("delete file entity success for id: " + id);
+
+    @DeleteMapping
+    public CommonResult<Object> deleteByIds(HttpServletRequest request) {
+        Collection<String[]> values = request.getParameterMap().values();
+        Set<Long> ids = new HashSet<>();
+        for (String[] value : values) {
+            ids.add(Long.valueOf(value[0]));
+        }
+        if (ids.size() > 0) {
+            fileService.deleteInBatch(ids);
+        }
+
+        return CommonResult.ok("delete file entity success for ids: ");
     }
 
     @PutMapping("/data/{id}")
@@ -90,5 +102,15 @@ public class FileRestController {
         SearchFilesParams searchFilesParams = new SearchFilesParams().setPage(page).setSize(size)
             .setType(type).setKeyword(keyword).setPlace(place);
         return CommonResult.ok(fileService.findFilesByPagingAndCondition(searchFilesParams));
+    }
+
+    @GetMapping("/types")
+    public CommonResult<Set<String>> findTypes() {
+        return CommonResult.ok(fileService.findTypes());
+    }
+
+    @GetMapping("/places")
+    public CommonResult<Set<String>> findPlaces() {
+        return CommonResult.ok(fileService.findPlaces());
     }
 }

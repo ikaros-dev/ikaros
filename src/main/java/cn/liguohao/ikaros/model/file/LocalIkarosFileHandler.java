@@ -85,6 +85,7 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
             return IkarosFileOperateResult.ofUploadFail(msg + ", exception: ", e);
         }
 
+        ikarosFile.setPlace(IkarosFile.Place.LOCAL);
         return IkarosFileOperateResult.ofOk(ikarosFile);
     }
 
@@ -145,6 +146,8 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
             return IkarosFileOperateResult.ofDownloadFail(msg + ", exception: ", e);
         }
 
+        ikarosFile.setPlace(getPlace());
+
         return IkarosFileOperateResult.ofOk(ikarosFile);
     }
 
@@ -185,5 +188,10 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
     public boolean exist(String uploadedPath) {
         File itemDataFile = new File(uploadedPath);
         return itemDataFile.exists();
+    }
+
+    @Override
+    public IkarosFile.Place getPlace() {
+        return IkarosFile.Place.LOCAL;
     }
 }

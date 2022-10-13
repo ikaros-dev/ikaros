@@ -21,6 +21,7 @@ public class FileEntity extends BaseEntity {
     private String md5;
     private Integer size;
     private String location;
+    private IkarosFile.Place place;
 
 
     public String getName() {
@@ -86,5 +87,12 @@ public class FileEntity extends BaseEntity {
         return this;
     }
 
+    public IkarosFile.Place getPlace() {
+        return place;
+    }
 
+    public FileEntity setPlace(IkarosFile.Place place) {
+        this.place = place;
+        return this;
+    }
 }

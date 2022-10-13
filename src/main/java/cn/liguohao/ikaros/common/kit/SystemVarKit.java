@@ -1,5 +1,11 @@
 package cn.liguohao.ikaros.common.kit;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 封装系统变量操作
  *
@@ -7,6 +13,7 @@ package cn.liguohao.ikaros.common.kit;
  * @date 2022/06/18
  */
 public class SystemVarKit {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemVarKit.class);
 
     /**
      * @return 当前应用的目录路径
@@ -32,5 +39,15 @@ public class SystemVarKit {
 
     public static String getOsCacheDirPath() {
         return System.getProperty("java.io.tmpdir");
+    }
+
+    public static String getIPAddress() {
+        InetAddress localHost = null;
+        try {
+            localHost = Inet4Address.getLocalHost();
+        } catch (UnknownHostException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return localHost.getHostAddress();
     }
 }

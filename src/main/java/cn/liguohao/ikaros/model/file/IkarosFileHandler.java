@@ -15,4 +15,6 @@ public interface IkarosFileHandler {
 
     boolean exist(String uploadedPath);
 
+    IkarosFile.Place getPlace();
+
 }

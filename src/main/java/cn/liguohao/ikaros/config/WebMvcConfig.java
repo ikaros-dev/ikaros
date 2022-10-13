@@ -1,6 +1,8 @@
 package cn.liguohao.ikaros.config;
 
 import cn.liguohao.ikaros.common.constants.AppConstants;
+import cn.liguohao.ikaros.common.kit.SystemVarKit;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import org.springframework.context.annotation.Bean;
@@ -32,8 +34,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // register admin
         registry.addResourceHandler("/admin/**")
             .addResourceLocations("classpath:/admin/");
+
+        // register upload
+        registry.addResourceHandler("/upload/**")
+            .addResourceLocations("file:" + SystemVarKit.getCurrentAppDirPath() + File.separatorChar
+                + "upload" + File.separatorChar);
     }
 
     @Bean

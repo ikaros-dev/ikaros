@@ -95,6 +95,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.POST, SecurityConstants.API_USER_REGISTER_URL).permitAll()
             .antMatchers(HttpMethod.GET, SecurityConstants.PAGE_ADMIN_URL).permitAll()
             .antMatchers(HttpMethod.GET, "/static/**").permitAll()
+            .antMatchers(HttpMethod.GET, "/upload/**").permitAll()
             .antMatchers(HttpMethod.OPTIONS).permitAll()
             .antMatchers(SecurityConstants.API_STATUS_URLS).permitAll()
             .antMatchers(SecurityConstants.SWAGGER_DOC_URLS).permitAll()
