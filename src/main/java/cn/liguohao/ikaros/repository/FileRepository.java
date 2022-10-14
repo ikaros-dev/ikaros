@@ -24,4 +24,6 @@ public interface FileRepository extends BaseRepository<FileEntity> {
 
     @Query("select place from FileEntity where status = true")
     Set<String> findPlaces();
+
+    List<FileEntity> findByMd5(String md5);
 }

@@ -60,15 +60,15 @@ public class FileService {
         IkarosFile ikarosFile = IkarosFile.build(originalFilename, bytes);
         fileHandler.upload(ikarosFile);
 
-        FileEntity fileEntity = getFileEntity(bytes, ikarosFile, null);
+        FileEntity fileEntity = uploadAndGetFileEntity(bytes, ikarosFile, null);
 
         fileEntity = fileRepository.save(fileEntity);
 
         return Optional.of(fileEntity);
     }
 
-    private FileEntity getFileEntity(byte[] bytes, IkarosFile ikarosFile,
-                                     @Nullable FileEntity fileEntity) {
+    private FileEntity uploadAndGetFileEntity(byte[] bytes, IkarosFile ikarosFile,
+                                              @Nullable FileEntity fileEntity) throws IOException {
         Assert.notNull(bytes, "'bytes' must not bo null");
         Assert.notNull(ikarosFile, "'ikarosFile' must not bo null");
         final int size = bytes.length;
@@ -77,12 +77,25 @@ public class FileService {
         final String md5 = FileKit.checksum2Str(bytes, FileKit.Hash.MD5);
         final String sha256 = FileKit.checksum2Str(bytes, FileKit.Hash.SHA256);
 
-        Date uploadedDate = TimeKit.localDataTime2Date(ikarosFile.getUploadedTime());
         if (fileEntity == null) {
             fileEntity = new FileEntity();
         }
 
+        // 如果数据库存在相同的文件，则不进行重复上传
+        List<FileEntity> sameMd5FileEntities = fileRepository.findByMd5(md5);
+        if (sameMd5FileEntities != null && sameMd5FileEntities.size() > 0) {
+            FileEntity sameMd5FileEntity = sameMd5FileEntities.get(0);
+            String oldLocation = sameMd5FileEntity.getLocation();
+            ikarosFile
+                .setUploadedPath(oldLocation)
+                .setOldLocation(oldLocation);
+        } else {
+            // upload file to file system
+            fileHandler.upload(ikarosFile);
+        }
+
         IkarosFile.Place place = ikarosFile.getPlace();
+        Date uploadedDate = TimeKit.localDataTime2Date(ikarosFile.getUploadedTime());
         // 如果存储位置是本地，则对应的URL格式为 http://ip:port/upload/xxx.jpg
         String uploadedPath = ikarosFile.getUploadedPath();
         String url = "";
@@ -215,7 +228,7 @@ public class FileService {
         }
         ikarosFile = uploadResult.getIkarosFile();
 
-        existFileEntity = getFileEntity(bytes, ikarosFile, existFileEntity);
+        existFileEntity = uploadAndGetFileEntity(bytes, ikarosFile, existFileEntity);
         existFileEntity = fileRepository.saveAndFlush(existFileEntity);
         return existFileEntity;
     }
