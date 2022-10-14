@@ -20,7 +20,14 @@ public class FileEntity extends BaseEntity {
     private String sha256;
     private String md5;
     private Integer size;
+    /**
+     * 在文件系统的路径
+     */
     private String location;
+    /**
+     * 网络访问的路径
+     */
+    private String url;
     private IkarosFile.Place place;
 
 
@@ -93,6 +100,15 @@ public class FileEntity extends BaseEntity {
 
     public FileEntity setPlace(IkarosFile.Place place) {
         this.place = place;
+        return this;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public FileEntity setUrl(String url) {
+        this.url = url;
         return this;
     }
 }

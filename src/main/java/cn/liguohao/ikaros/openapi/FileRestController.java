@@ -113,4 +113,11 @@ public class FileRestController {
     public CommonResult<Set<String>> findPlaces() {
         return CommonResult.ok(fileService.findPlaces());
     }
+
+    @PutMapping("/name")
+    public CommonResult<Object> updateNameById(String name, Long id)
+        throws RecordNotFoundException {
+        fileService.updateNameById(name, id);
+        return CommonResult.ok();
+    }
 }

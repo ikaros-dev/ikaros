@@ -8,7 +8,6 @@ import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.kit.SystemVarKit;
 import cn.liguohao.ikaros.common.kit.TimeKit;
 import cn.liguohao.ikaros.common.result.PagingWrap;
-import cn.liguohao.ikaros.exceptions.NotSupportRuntimeException;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.entity.FileEntity;
 import cn.liguohao.ikaros.model.file.IkarosFile;
@@ -84,23 +83,27 @@ public class FileService {
         }
 
         IkarosFile.Place place = ikarosFile.getPlace();
-        // 如果存储位置是本地，则更改格式为 http://ip:port/upload/xxx.jpg
+        // 如果存储位置是本地，则对应的URL格式为 http://ip:port/upload/xxx.jpg
         String uploadedPath = ikarosFile.getUploadedPath();
+        String url = "";
         if (place == IkarosFile.Place.LOCAL) {
             String currentAppDirPath = SystemVarKit.getCurrentAppDirPath();
             String ipAddress = SystemVarKit.getIPAddress();
             String port = environment.getProperty("local.server.port");
             String baseUrl = "http://" + ipAddress + ":" + port;
-            uploadedPath = uploadedPath.replace(currentAppDirPath, baseUrl);
+            url = uploadedPath.replace(currentAppDirPath, baseUrl);
             // 如果是ntfs目录URL，则需要替换下 \ 为 /
-            if (uploadedPath.indexOf("\\") > 0) {
-                uploadedPath = uploadedPath.replace("\\", "/");
+            if (url.indexOf("\\") > 0) {
+                url = url.replace("\\", "/");
             }
-
+        } else {
+            // 其它情况下，url和uploadedPath相同
+            url = uploadedPath;
         }
 
         fileEntity
             .setLocation(uploadedPath)
+            .setUrl(url)
             .setMd5(md5)
             .setSha256(sha256)
             .setSize(size)
@@ -299,5 +302,14 @@ public class FileService {
         for (Long id : ids) {
             delete(id);
         }
+    }
+
+    public FileEntity updateNameById(String name, Long id) throws RecordNotFoundException {
+        Assert.notNull(id, "'id' must not be null");
+        Assert.isNotBlank(name, "'name' must not be null");
+
+        FileEntity existFileEntity = findById(id);
+        existFileEntity.setName(name);
+        return fileRepository.saveAndFlush(existFileEntity);
     }
 }
