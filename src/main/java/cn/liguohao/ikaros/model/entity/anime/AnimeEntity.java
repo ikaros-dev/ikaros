@@ -29,7 +29,8 @@ public class AnimeEntity extends BaseEntity {
 
     private String producer;
 
-    private Long coverFileId;
+    @Column(name = "cover_url")
+    private String coverUrl;
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
@@ -83,12 +84,12 @@ public class AnimeEntity extends BaseEntity {
         return this;
     }
 
-    public Long getCoverFileId() {
-        return coverFileId;
+    public String getCoverUrl() {
+        return coverUrl;
     }
 
-    public AnimeEntity setCoverFileId(Long coverFileId) {
-        this.coverFileId = coverFileId;
+    public AnimeEntity setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
         return this;
     }
 
