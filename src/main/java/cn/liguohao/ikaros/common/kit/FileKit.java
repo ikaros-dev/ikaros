@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.xml.bind.DatatypeConverter;
@@ -47,6 +48,7 @@ public class FileKit {
 
     public static IkarosFile.Type parseTypeByPostfix(String postfix) {
         Assert.isNotBlank(postfix);
+        postfix = postfix.toLowerCase(Locale.ROOT);
         if (IMAGES.contains(postfix)) {
             return IkarosFile.Type.IMAGE;
         }

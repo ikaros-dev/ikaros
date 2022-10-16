@@ -1,0 +1,1 @@
+"use strict";(self["webpackChunkvue_antd_pro"]=self["webpackChunkvue_antd_pro"]||[]).push([[301],{36301:function(e,t,r){r.r(t),r.d(t,{default:function(){return f}});var n=function(){var e=this,t=e._self._c;return t("page-header-wrapper",{attrs:{title:!1}},[t("h2",[e._v("番剧列表")])])},u=[],a={},l=a,p=r(1001),s=(0,p.Z)(l,n,u,!1,null,"358fe8b3",null),f=s.exports}}]);
