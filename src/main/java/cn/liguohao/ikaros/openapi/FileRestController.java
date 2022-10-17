@@ -8,6 +8,8 @@ import cn.liguohao.ikaros.model.entity.FileEntity;
 import cn.liguohao.ikaros.model.param.SearchFilesParams;
 import cn.liguohao.ikaros.service.FileService;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -137,11 +139,14 @@ public class FileRestController {
         String uploadLength = request.getHeader("Upload-Length");
         String uploadOffset = request.getHeader("Upload-Offset");
         String uploadName = request.getHeader("Upload-Name");
+        uploadName =
+            new String(Base64.getDecoder()
+                .decode(uploadName.getBytes(StandardCharsets.UTF_8)),
+                StandardCharsets.UTF_8);
 
         fileService.receiveAndHandleChunkFile(unique, uploadLength, uploadOffset, uploadName,
             request.getInputStream().readAllBytes());
     }
-
 
 
 }
