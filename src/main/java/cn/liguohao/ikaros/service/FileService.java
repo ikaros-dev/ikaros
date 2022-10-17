@@ -3,6 +3,7 @@ package cn.liguohao.ikaros.service;
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.JacksonConverter;
 import cn.liguohao.ikaros.common.Strings;
+import cn.liguohao.ikaros.common.constants.AppConstants;
 import cn.liguohao.ikaros.common.kit.BeanKit;
 import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.kit.SystemVarKit;
@@ -16,8 +17,16 @@ import cn.liguohao.ikaros.model.file.IkarosFileOperateResult;
 import cn.liguohao.ikaros.model.file.LocalIkarosFileHandler;
 import cn.liguohao.ikaros.model.param.SearchFilesParams;
 import cn.liguohao.ikaros.repository.FileRepository;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -324,5 +333,118 @@ public class FileService {
         FileEntity existFileEntity = findById(id);
         existFileEntity.setName(name);
         return fileRepository.saveAndFlush(existFileEntity);
+    }
+
+    public void receiveAndHandleChunkFile(String unique, String uploadLength, String uploadOffset,
+                                          String uploadName, byte[] bytes) throws IOException {
+        Assert.notNull(unique, "'unique' must not be null");
+        Assert.notNull(uploadLength, "'uploadLength' must not be null");
+        Assert.notNull(uploadOffset, "'uploadOffset' must not be null");
+        Assert.notNull(uploadName, "'uploadName' must not be null");
+        Assert.notNull(bytes, "'bytes' must not be null");
+
+        File tempChunkFileCacheDir =
+            new File(SystemVarKit.getOsCacheDirPath() + File.separator + unique);
+        if (!tempChunkFileCacheDir.exists()) {
+            tempChunkFileCacheDir.mkdirs();
+            LOGGER.debug("create temp dir: {}", tempChunkFileCacheDir);
+        }
+
+        Assert.notNull(bytes, "file bytes must not be null");
+
+        Long offset = Long.parseLong(uploadOffset) + bytes.length;
+        File uploadedChunkCacheFile = new File(tempChunkFileCacheDir + File.separator + offset);
+        Files.write(Path.of(uploadedChunkCacheFile.toURI()), bytes);
+        LOGGER.debug("upload chunk[{}] to path: {}", uploadOffset,
+            uploadedChunkCacheFile.getAbsolutePath());
+
+        if (offset == Long.parseLong(uploadLength)) {
+            String postfix = uploadName.substring(uploadName.lastIndexOf(".") + 1);
+            String filePath = meringTempChunkFile(unique, postfix);
+
+            for (File file : tempChunkFileCacheDir.listFiles()) {
+                file.delete();
+            }
+            tempChunkFileCacheDir.delete();
+
+            FileEntity fileEntity = (FileEntity) new FileEntity()
+                .setLocation(filePath)
+                .setPlace(IkarosFile.Place.LOCAL)
+                .setUrl(path2url(filePath))
+                .setName(uploadName)
+                .setSize(Integer.valueOf(uploadLength))
+                .setPostfix(postfix)
+                .setType(FileKit.parseTypeByPostfix(postfix))
+                .setCreateTime(new Date())
+                .setUpdateTime(new Date());
+
+            fileRepository.saveAndFlush(fileEntity);
+        }
+    }
+
+    private String meringTempChunkFile(String unique, String postfix) throws IOException {
+        LOGGER.debug("All chunks upload has finish, will start merging files");
+        String url = "";
+
+        File targetFile =
+            new File(SystemVarKit.getCurrentAppDirPath() + File.separator
+                + AppConstants.DEFAULT_UPLOAD_DIR_NAME + File.separator + unique + "." + postfix);
+        LOGGER.debug("upload target file path: {}", targetFile.getAbsolutePath());
+
+        String chunkFileDirPath = SystemVarKit.getOsCacheDirPath() + File.separator + unique;
+        File chunkFileDir = new File(chunkFileDirPath);
+        File[] files = chunkFileDir.listFiles();
+        List<File> chunkFileList = Arrays.asList(files);
+        // PS: 这里需要根据文件名(偏移量)升序, 不然合并的文件分片内容的顺序不正常
+        Collections.sort(chunkFileList, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                long o1Offset = Long.parseLong(o1.getName());
+                long o2Offset = Long.parseLong(o2.getName());
+                if (o1Offset < o2Offset) {
+                    return -1;
+                } else if (o1Offset > o2Offset) {
+                    return 1;
+                }
+                return 0;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                return false;
+            }
+        });
+        int targetFileWriteOffset = 0;
+        for (File chunkFile : chunkFileList) {
+            try (RandomAccessFile randomAccessFile = new RandomAccessFile(targetFile, "rw");
+                 FileInputStream fileInputStream = new FileInputStream(chunkFile);) {
+                randomAccessFile.seek(targetFileWriteOffset);
+                byte[] bytes = new byte[fileInputStream.available()];
+                int read = fileInputStream.read(bytes);
+                randomAccessFile.write(bytes);
+                targetFileWriteOffset += read;
+                LOGGER.debug("[{}] current merge targetFileWriteOffset: {}", chunkFile.getName(),
+                    targetFileWriteOffset);
+            }
+        }
+
+
+        LOGGER.debug("Merging all chunk files success, url: {}", url);
+
+        return targetFile.getAbsolutePath();
+    }
+
+    private String path2url(String path) {
+        String url = "";
+        String currentAppDirPath = SystemVarKit.getCurrentAppDirPath();
+        String ipAddress = SystemVarKit.getIPAddress();
+        String port = environment.getProperty("local.server.port");
+        String baseUrl = "http://" + ipAddress + ":" + port;
+        url = path.replace(currentAppDirPath, baseUrl);
+        // 如果是ntfs目录URL，则需要替换下 \ 为 /
+        if (url.indexOf("\\") > 0) {
+            url = url.replace("\\", "/");
+        }
+        return url;
     }
 }

@@ -12,9 +12,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -30,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/file")
 public class FileRestController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileRestController.class);
 
     private final FileService fileService;
 
@@ -120,4 +125,23 @@ public class FileRestController {
         fileService.updateNameById(name, id);
         return CommonResult.ok();
     }
+
+    @PostMapping("/filepond/unique")
+    public String getUploadUniqueLocation() {
+        return UUID.randomUUID().toString().replaceAll("-", "");
+    }
+
+    @PatchMapping("/filepond/patch/{unique}")
+    public void receiveChunkFile(@PathVariable("unique") String unique,
+                                 HttpServletRequest request) throws IOException {
+        String uploadLength = request.getHeader("Upload-Length");
+        String uploadOffset = request.getHeader("Upload-Offset");
+        String uploadName = request.getHeader("Upload-Name");
+
+        fileService.receiveAndHandleChunkFile(unique, uploadLength, uploadOffset, uploadName,
+            request.getInputStream().readAllBytes());
+    }
+
+
+
 }
