@@ -367,6 +367,7 @@ public class FileService {
             }
             tempChunkFileCacheDir.delete();
 
+            uploadName = uploadName.substring(0, uploadName.lastIndexOf("."));
             FileEntity fileEntity = (FileEntity) new FileEntity()
                 .setLocation(filePath)
                 .setPlace(IkarosFile.Place.LOCAL)
@@ -384,12 +385,11 @@ public class FileService {
 
     private String meringTempChunkFile(String unique, String postfix) throws IOException {
         LOGGER.debug("All chunks upload has finish, will start merging files");
-        String url = "";
 
         File targetFile =
             new File(SystemVarKit.getCurrentAppDirPath() + File.separator
                 + AppConstants.DEFAULT_UPLOAD_DIR_NAME + File.separator + unique + "." + postfix);
-        LOGGER.debug("upload target file path: {}", targetFile.getAbsolutePath());
+        String absolutePath = targetFile.getAbsolutePath();
 
         String chunkFileDirPath = SystemVarKit.getOsCacheDirPath() + File.separator + unique;
         File chunkFileDir = new File(chunkFileDirPath);
@@ -428,10 +428,8 @@ public class FileService {
             }
         }
 
-
-        LOGGER.debug("Merging all chunk files success, url: {}", url);
-
-        return targetFile.getAbsolutePath();
+        LOGGER.debug("Merging all chunk files success, absolute path: {}", absolutePath);
+        return absolutePath;
     }
 
     private String path2url(String path) {
