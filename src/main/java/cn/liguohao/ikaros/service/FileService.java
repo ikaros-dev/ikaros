@@ -387,7 +387,7 @@ public class FileService {
 
         File targetFile =
             new File(SystemVarKit.getCurrentAppDirPath() + File.separator
-                + AppConstants.DEFAULT_UPLOAD_DIR_NAME + File.separator + unique + "." + postfix);
+                + AppConstants.Directory.DEFAULT_UPLOAD_NAME + File.separator + unique + "." + postfix);
         String absolutePath = targetFile.getAbsolutePath();
 
         String chunkFileDirPath = SystemVarKit.getOsCacheDirPath() + File.separator + unique;

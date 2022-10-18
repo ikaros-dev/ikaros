@@ -1,7 +1,7 @@
 package cn.liguohao.ikaros.common.kit;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.common.constants.FilePostfixConstants;
+import cn.liguohao.ikaros.common.constants.FileConstants;
 import cn.liguohao.ikaros.exceptions.IkarosRuntimeException;
 import cn.liguohao.ikaros.model.file.IkarosFile;
 import io.jsonwebtoken.io.IOException;
@@ -22,13 +22,13 @@ import javax.xml.bind.DatatypeConverter;
 public class FileKit {
 
     static final Set<String> IMAGES =
-        Arrays.stream(FilePostfixConstants.IMAGES).collect(Collectors.toSet());
+        Arrays.stream(FileConstants.Postfix.IMAGES).collect(Collectors.toSet());
     static final Set<String> DOCUMENTS =
-        Arrays.stream(FilePostfixConstants.DOCUMENTS).collect(Collectors.toSet());
+        Arrays.stream(FileConstants.Postfix.DOCUMENTS).collect(Collectors.toSet());
     static final Set<String> VIDEOS =
-        Arrays.stream(FilePostfixConstants.VIDEOS).collect(Collectors.toSet());
+        Arrays.stream(FileConstants.Postfix.VIDEOS).collect(Collectors.toSet());
     static final Set<String> VOICES =
-        Arrays.stream(FilePostfixConstants.VOICES).collect(Collectors.toSet());
+        Arrays.stream(FileConstants.Postfix.VOICES).collect(Collectors.toSet());
 
     public enum Hash {
         MD5("MD5"),

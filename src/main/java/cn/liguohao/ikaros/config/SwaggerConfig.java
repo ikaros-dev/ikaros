@@ -33,7 +33,7 @@ public class SwaggerConfig {
             .groupName("ikaros-admin-openApi")
             .enable(true)
             .select()
-            .apis(RequestHandlerSelectors.basePackage(AppConstants.OPEN_API_PACKAGE_NAME))
+            .apis(RequestHandlerSelectors.basePackage(AppConstants.OpenAPI.PACKAGE_NAME))
             .build()
             // todo config security for api doc
             .securitySchemes(securitySchemes())

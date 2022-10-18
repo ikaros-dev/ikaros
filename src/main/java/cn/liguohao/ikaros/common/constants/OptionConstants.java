@@ -8,10 +8,15 @@ import cn.liguohao.ikaros.model.entity.OptionEntity;
  */
 public interface OptionConstants {
 
-    String CATEGORY_DEFAULT = "default";
-    String CATEGORY_SYSTEM_COMMON = "system_common";
 
-    OptionEntity.Type TYPE_DEFAULT = OptionEntity.Type.INTERNAL;
+    interface Category {
+        String DEFAULT = "default";
+        String SYSTEM_COMMON = "system_common";
+    }
+
+    interface Type {
+        OptionEntity.Type DEFAULT = OptionEntity.Type.INTERNAL;
+    }
 
 
 }

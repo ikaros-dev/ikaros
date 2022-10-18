@@ -27,9 +27,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void configurePathMatch(PathMatchConfigurer config) {
-        config.addPathPrefix(AppConstants.OPEN_API_PREFIX_NAME,
+        config.addPathPrefix(AppConstants.OpenAPI.PREFIX_NAME,
             HandlerTypePredicate.forAnnotation(RestController.class)
-                .and(cls -> cls.getPackageName().contains(AppConstants.OPEN_API_PACKAGE_NAME)));
+                .and(cls -> cls.getPackageName().contains(AppConstants.OpenAPI.PACKAGE_NAME)));
     }
 
     @Override

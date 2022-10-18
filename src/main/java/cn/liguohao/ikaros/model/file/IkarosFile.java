@@ -1,8 +1,8 @@
 package cn.liguohao.ikaros.model.file;
 
-import static cn.liguohao.ikaros.common.constants.IkarosFileConstants.DEFAULT_POSTFIX;
 
 import cn.liguohao.ikaros.common.Assert;
+import cn.liguohao.ikaros.common.constants.FileConstants;
 import cn.liguohao.ikaros.common.kit.FileKit;
 import java.io.File;
 import java.time.LocalDateTime;
@@ -133,7 +133,7 @@ public class IkarosFile {
             postfix = path.substring(lastDotIndex);
             name = path.substring(lastSeparatorIndex, lastDotIndex);
         } else {
-            postfix = DEFAULT_POSTFIX;
+            postfix = FileConstants.IkarosFile.DEFAULT_POSTFIX;
             name = path.length() <= 160 ? path : path.substring(0, 160);
         }
 
@@ -159,7 +159,7 @@ public class IkarosFile {
             name = originalFilename.substring(0, lastDotIndex);
         } else {
             name = originalFilename;
-            postfix = DEFAULT_POSTFIX;
+            postfix = FileConstants.IkarosFile.DEFAULT_POSTFIX;
         }
 
 

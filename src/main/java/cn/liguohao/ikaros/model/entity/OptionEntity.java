@@ -23,7 +23,7 @@ public class OptionEntity extends BaseEntity {
         CUSTOM;
     }
 
-    private Type type = OptionConstants.TYPE_DEFAULT;
+    private Type type = OptionConstants.Type.DEFAULT;
 
     @Column(name = "ikkey", nullable = false)
     private String key = "";
@@ -36,7 +36,7 @@ public class OptionEntity extends BaseEntity {
     private String value  = "";
 
     @Column(nullable = false)
-    private String category = OptionConstants.CATEGORY_DEFAULT;
+    private String category = OptionConstants.Category.DEFAULT;
 
     public OptionEntity() {
     }

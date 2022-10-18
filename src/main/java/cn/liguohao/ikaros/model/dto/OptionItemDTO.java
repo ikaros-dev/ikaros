@@ -14,7 +14,7 @@ public class OptionItemDTO {
     private String value;
     private OptionEntity.Type type = OptionEntity.Type.INTERNAL;
 
-    private String category = OptionConstants.CATEGORY_DEFAULT;
+    private String category = OptionConstants.Category.DEFAULT;
 
     public OptionItemDTO(String key, @Nullable String value) {
         Assert.notBlank(key, "'key' must not be blank");

@@ -99,7 +99,7 @@ class OptionServiceTest {
             new OptionItemDTO(buildStr(), buildStr()).setCategory(buildStr()));
 
         List<OptionEntity> optionListByCategory =
-            optionService.findOptionByCategory(OptionConstants.CATEGORY_DEFAULT);
+            optionService.findOptionByCategory(OptionConstants.Category.DEFAULT);
 
         Assertions.assertNotNull(optionListByCategory);
         Assertions.assertFalse(optionListByCategory.isEmpty());
