@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import cn.liguohao.ikaros.common.constants.OptionConstants;
+import cn.liguohao.ikaros.exceptions.NotSupportException;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.dto.OptionItemDTO;
 import cn.liguohao.ikaros.model.entity.OptionEntity;
@@ -89,7 +90,7 @@ class OptionServiceTest {
     }
 
     @Test
-    void findOptionByCategory() {
+    void findOptionByCategory() throws RecordNotFoundException {
 
         OptionEntity optionEntity1
             = optionService.saveOptionItem(new OptionItemDTO(buildStr(), buildStr()));
@@ -111,6 +112,52 @@ class OptionServiceTest {
         Assertions.assertTrue(keys.contains(optionEntity1.getKey()));
         Assertions.assertTrue(keys.contains(optionEntity2.getKey()));
         Assertions.assertFalse(keys.contains(optionEntity3.getKey()));
+
+        optionService.deleteOptionItemByKey(optionEntity1.getKey());
+        optionService.deleteOptionItemByKey(optionEntity2.getKey());
+        optionService.deleteOptionItemByKey(optionEntity3.getKey());
+    }
+
+    @Test
+    void findOptionValueByCategoryAndKey() throws RecordNotFoundException {
+
+        String key = buildStr();
+        String value = buildStr();
+        String category = buildStr();
+
+        try {
+            optionService.findOptionValueByCategoryAndKey(category, key);
+            fail(PROCESS_SHOUT_NOT_RUN_THIS);
+        } catch (RecordNotFoundException e) {
+            assertNotNull(e);
+        }
+
+        OptionItemDTO optionItemDTO = new OptionItemDTO(key, value).setCategory(category);
+        optionService.saveOptionItem(optionItemDTO);
+
+        OptionEntity searchOptionEntity =
+            optionService.findOptionValueByCategoryAndKey(category, key);
+        assertNotNull(searchOptionEntity);
+        assertEquals(key, searchOptionEntity.getKey());
+        assertEquals(value, searchOptionEntity.getValue());
+
+        optionService.deleteOptionItemByKey(key);
+    }
+
+    @Test
+    void initPresetOptionItems()
+        throws NotSupportException, IllegalAccessException, RecordNotFoundException {
+        String category = OptionConstants.Category.APP;
+        String key = OptionConstants.Init.App.IS_INIT[0];
+
+        // OptionItemInitAppRunner has run to init
+        OptionEntity optionEntity =
+            optionService.findOptionValueByCategoryAndKey(category, key);
+        Assertions.assertNotNull(optionEntity);
+        Assertions.assertEquals("true", optionEntity.getValue());
+
+        optionService.initPresetOptionItems();
+
     }
 
 }

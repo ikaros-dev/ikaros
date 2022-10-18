@@ -15,4 +15,6 @@ public interface OptionRepository extends BaseRepository<OptionEntity> {
 
     List<OptionEntity> findByCategoryAndStatus(String category, Boolean status);
 
+    OptionEntity findByCategoryAndKeyAndStatus(String category, String key, Boolean status);
+
 }
