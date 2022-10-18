@@ -8,4 +8,8 @@ import cn.liguohao.ikaros.model.entity.OptionEntity;
  */
 public interface OptionRepository extends BaseRepository<OptionEntity> {
 
+    boolean existsByKeyAndStatus(String key, Boolean status);
+
+    OptionEntity findByKeyAndStatus(String key, Boolean status);
+
 }
