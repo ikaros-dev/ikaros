@@ -47,6 +47,9 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-core'
 	implementation 'com.fasterxml.jackson.core:jackson-annotations'
 
+	// fix: class file for javax.annotation.meta.When not found
+	implementation 'com.google.code.findbugs:jsr305:3.0.2'
+
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
 
