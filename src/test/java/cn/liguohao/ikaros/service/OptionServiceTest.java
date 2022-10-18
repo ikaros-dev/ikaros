@@ -3,16 +3,20 @@ package cn.liguohao.ikaros.service;
 
 import static cn.liguohao.ikaros.common.UnitTestConstants.PROCESS_SHOUT_NOT_RUN_THIS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import cn.liguohao.ikaros.common.constants.OptionConstants;
+import cn.liguohao.ikaros.core.model.OptionModel;
 import cn.liguohao.ikaros.exceptions.NotSupportException;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.dto.OptionItemDTO;
 import cn.liguohao.ikaros.model.entity.OptionEntity;
+import cn.liguohao.ikaros.model.option.SeoOptionModel;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -102,8 +106,8 @@ class OptionServiceTest {
         List<OptionEntity> optionListByCategory =
             optionService.findOptionByCategory(OptionConstants.Category.DEFAULT);
 
-        Assertions.assertNotNull(optionListByCategory);
-        Assertions.assertFalse(optionListByCategory.isEmpty());
+        assertNotNull(optionListByCategory);
+        assertFalse(optionListByCategory.isEmpty());
 
         Set<String> keys = optionListByCategory.stream().flatMap(
             (Function<OptionEntity, Stream<String>>) optionEntity
@@ -111,7 +115,7 @@ class OptionServiceTest {
 
         Assertions.assertTrue(keys.contains(optionEntity1.getKey()));
         Assertions.assertTrue(keys.contains(optionEntity2.getKey()));
-        Assertions.assertFalse(keys.contains(optionEntity3.getKey()));
+        assertFalse(keys.contains(optionEntity3.getKey()));
 
         optionService.deleteOptionItemByKey(optionEntity1.getKey());
         optionService.deleteOptionItemByKey(optionEntity2.getKey());
@@ -153,10 +157,38 @@ class OptionServiceTest {
         // OptionItemInitAppRunner has run to init
         OptionEntity optionEntity =
             optionService.findOptionValueByCategoryAndKey(category, key);
-        Assertions.assertNotNull(optionEntity);
+        assertNotNull(optionEntity);
         Assertions.assertEquals("true", optionEntity.getValue());
 
         optionService.initPresetOptionItems();
+    }
+
+    @Test
+    void findAllOptionModel()
+        throws NoSuchFieldException, InstantiationException, IllegalAccessException, IOException {
+        List<OptionModel> optionModels = optionService.findAllOptionModel();
+        assertNotNull(optionModels);
+        assertFalse(optionModels.isEmpty());
+    }
+
+    @Test
+    void saveOptionModel() throws IllegalAccessException, RecordNotFoundException {
+        String newHide4seValue = "true";
+        String newSiteDescValue = "update description";
+        String newKeywords = "";
+
+
+        SeoOptionModel seoOptionModel
+            = new SeoOptionModel()
+            .setHideForSearchEngine(newHide4seValue)
+            .setSiteDescription(newSiteDescValue)
+            .setKeywords(newKeywords);
+
+        optionService.saveOptionModel(seoOptionModel);
+
+        OptionEntity optionEntity =
+            optionService.findOptionItemByKey(OptionConstants.Init.Seo.HIDE_FOR_SE[0]);
+        Assertions.assertEquals(newHide4seValue, optionEntity.getValue());
 
     }
 

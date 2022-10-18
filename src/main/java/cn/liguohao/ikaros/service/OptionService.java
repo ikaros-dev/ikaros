@@ -2,14 +2,22 @@ package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.constants.OptionConstants;
+import cn.liguohao.ikaros.common.constants.OptionConstants.Category;
+import cn.liguohao.ikaros.common.constants.OptionConstants.Init.App;
+import cn.liguohao.ikaros.common.kit.ClassKit;
+import cn.liguohao.ikaros.core.model.OptionModel;
 import cn.liguohao.ikaros.exceptions.NotSupportException;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.dto.OptionItemDTO;
 import cn.liguohao.ikaros.model.entity.OptionEntity;
 import cn.liguohao.ikaros.repository.OptionRepository;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -87,7 +95,7 @@ public class OptionService {
     /**
      * init all preset options
      *
-     * @see OptionConstants.Category
+     * @see Category
      * @see OptionConstants.Init
      */
     public void initPresetOptionItems() throws NotSupportException, IllegalAccessException {
@@ -96,8 +104,7 @@ public class OptionService {
         // search init result
         try {
             OptionEntity appIsInitOptionEntity =
-                findOptionValueByCategoryAndKey(OptionConstants.Category.APP,
-                    OptionConstants.Init.App.IS_INIT[0]);
+                findOptionValueByCategoryAndKey(Category.APP, App.IS_INIT[0]);
 
             String value = appIsInitOptionEntity.getValue();
 
@@ -114,7 +121,7 @@ public class OptionService {
         }
 
         // init all preset options
-        Set<String> categorySet = Arrays.stream(OptionConstants.Category.class.getDeclaredFields())
+        Set<String> categorySet = Arrays.stream(Category.class.getDeclaredFields())
             .filter(field -> field.getType() == String.class)
             .flatMap((Function<Field, Stream<String>>) field
                 -> Stream.of(field.getName()))
@@ -147,4 +154,51 @@ public class OptionService {
         }
     }
 
+    @SuppressWarnings("deprecation")
+    public List<OptionModel> findAllOptionModel()
+        throws InstantiationException, IllegalAccessException, NoSuchFieldException, IOException {
+        List<OptionModel> optionModels = new ArrayList<>();
+
+        List<Class<?>> optionModelClsList =
+            ClassKit.findClassByPackage(OptionConstants.MODEL_CLASS_PACKAGE_NAME);
+        for (Class<?> cls : optionModelClsList) {
+            // todo 这里如果不是 OptionModel 接口实现类 强转会报错， 先这样后面再改
+            OptionModel instance = (OptionModel) cls.newInstance();
+            Field categoryField = cls.getDeclaredField("category");
+            categoryField.setAccessible(true);
+            if (categoryField.getType() != String.class) {
+                continue;
+            }
+            String category = (String) categoryField.get(instance);
+
+            Map<String, String> keyValueMap = new HashMap<>();
+            optionRepository
+                .findByCategoryAndStatus(category, true)
+                .forEach(optionEntity -> keyValueMap.put(optionEntity.getKey(),
+                    optionEntity.getValue()));
+
+            for (Field field : cls.getDeclaredFields()) {
+                field.setAccessible(true);
+                String fieldName = field.getName();
+                if (keyValueMap.containsKey(fieldName)) {
+                    field.set(instance, keyValueMap.get(fieldName));
+                }
+            }
+
+            optionModels.add(instance);
+        }
+
+        return optionModels;
+    }
+
+    public void saveOptionModel(OptionModel optionModel) throws IllegalAccessException {
+        Assert.notNull(optionModel, "'optionModel' must not be null");
+        String category = optionModel.getCategory();
+        for (Field field : optionModel.getClass().getDeclaredFields()) {
+            field.setAccessible(true);
+            String key = field.getName();
+            String value = (String) field.get(optionModel);
+            saveOptionItem(new OptionItemDTO(key, value).setCategory(category));
+        }
+    }
 }

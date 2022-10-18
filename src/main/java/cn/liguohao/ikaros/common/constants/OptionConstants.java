@@ -2,6 +2,7 @@ package cn.liguohao.ikaros.common.constants;
 
 import cn.liguohao.ikaros.model.entity.OptionEntity;
 import cn.liguohao.ikaros.model.file.IkarosFile;
+import cn.liguohao.ikaros.model.option.AppOptionModel;
 
 /**
  * @author guohao
@@ -9,6 +10,7 @@ import cn.liguohao.ikaros.model.file.IkarosFile;
  */
 public interface OptionConstants {
 
+    String MODEL_CLASS_PACKAGE_NAME = AppOptionModel.class.getPackageName();
 
     interface Category {
         String DEFAULT = "default";
@@ -26,31 +28,31 @@ public interface OptionConstants {
     interface Init {
 
         interface App {
-            String[] IS_INIT = {"is init", "true"};
+            String[] IS_INIT = {"isInit", "true"};
         }
 
         interface Common {
             String[] TITLE = {"title", "ikaros cms system"};
-            String[] ADDRESS = {"address", "default address url"};
-            String[] LOGO = {"logo", "default logo url"};
-            String[] FAVICON = {"favicon", "default favicon url"};
-            String[] FOOTER = {"footer", "default footer content"};
+            String[] ADDRESS = {"address", "/"};
+            String[] LOGO = {"logo", "/logo.jpg"};
+            String[] FAVICON = {"favicon", "/favicon.ico"};
+            String[] FOOTER = {"footer", ""};
         }
 
         interface Seo {
-            String[] HIDE_FOR_SE = {"hide for search engine", "false"};
-            String[] KEYWORDS = {"keywords", "keyword1;keyword2;keyword3"};
+            String[] HIDE_FOR_SE = {"hideForSearchEngine", "false"};
+            String[] KEYWORDS = {"keywords", "ikaros;cms;opensource"};
             String[] SITE_DESCRIPTION =
-                {"site description", "ikaros, an open source acgmn cms application."};
+                {"siteDescription", "ikaros, an open source acgmn cms application."};
         }
 
         interface File {
-            String[] PLACE_SELECT = {"place select", IkarosFile.Place.LOCAL.name()};
+            String[] PLACE_SELECT = {"placeSelect", IkarosFile.Place.LOCAL.name()};
         }
 
         interface Other {
-            String[] CUSTOMER_GLOBAL_HEADER = {"customer global header", ""};
-            String[] STATISTICS_CODE = {"statistics code", ""};
+            String[] CUSTOMER_GLOBAL_HEADER = {"customerGlobalHeader", ""};
+            String[] STATISTICS_CODE = {"statisticsCode", ""};
         }
 
     }
