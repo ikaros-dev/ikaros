@@ -139,8 +139,7 @@ public class FileService {
     }
 
     public FileEntity findById(Long fileId) throws RecordNotFoundException {
-        Assert.notNull(fileId, "'fileId' must not be null");
-        Assert.isPositive(fileId);
+        Assert.isPositive(fileId, "'fileId' must be positive");
         Optional<FileEntity> fileEntityOptional = fileRepository.findByIdAndStatus(fileId, true);
         if (fileEntityOptional.isEmpty()) {
             throw new RecordNotFoundException("record not found, fileId: " + fileId);
@@ -169,7 +168,7 @@ public class FileService {
     public FileEntity update(FileEntity fileEntity) {
         Assert.notNull(fileEntity, "'fileEntity' must not be null.");
         Long fileId = fileEntity.getId();
-        Assert.isPositive(fileId);
+        Assert.isPositive(fileId, "'fileId' must be positive");
 
         FileEntity existFileEntity = null;
         try {
@@ -192,7 +191,7 @@ public class FileService {
 
     public FileEntity update(Long fileId, MultipartFile multipartFile)
         throws IOException {
-        Assert.isPositive(fileId);
+        Assert.isPositive(fileId, "'fileId' must be positive");
         Assert.notNull(multipartFile, "'multipartFile' must not be null");
 
         // 更新部分数据
@@ -328,7 +327,7 @@ public class FileService {
 
     public FileEntity updateNameById(String name, Long id) throws RecordNotFoundException {
         Assert.notNull(id, "'id' must not be null");
-        Assert.isNotBlank(name, "'name' must not be null");
+        Assert.notBlank(name, "'name' must not be blank");
 
         FileEntity existFileEntity = findById(id);
         existFileEntity.setName(name);

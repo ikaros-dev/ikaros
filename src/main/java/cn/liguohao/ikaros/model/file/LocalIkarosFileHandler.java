@@ -31,7 +31,7 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
 
     @Override
     public IkarosFileOperateResult upload(IkarosFile ikarosFile) throws IOException {
-        Assert.isNotNull(ikarosFile);
+        Assert.notNull(ikarosFile, "'ikarosFile' must not be null");
         ikarosFile.checkoutBeforeUpload();
 
         LocalDateTime oldUploadedTime = ikarosFile.getUploadedTime();
@@ -120,9 +120,10 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
 
     @Override
     public IkarosFileOperateResult download(IkarosFile ikarosFile) {
-        Assert.isNotNull(ikarosFile);
+        Assert.notNull(ikarosFile, "'ikarosFile' must not be null");
         ikarosFile.checkoutBeforeDownload();
-        Assert.isNotNull(ikarosFile.getUploadedTime());
+        LocalDateTime uploadedTime = ikarosFile.getUploadedTime();
+        Assert.notNull(uploadedTime, "'uploadedTime' must not be null");
 
         String itemDataFilePath = ikarosFile.getUploadedPath();
         if (itemDataFilePath == null || "".equals(itemDataFilePath)) {
@@ -153,7 +154,7 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
 
     @Override
     public IkarosFileOperateResult delete(IkarosFile ikarosFile) {
-        Assert.isNotNull(ikarosFile);
+        Assert.notNull(ikarosFile, "'ikarosFile' must not be null");
         ikarosFile.checkoutBeforeDelete();
 
         String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
@@ -163,7 +164,7 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
 
     @Override
     public IkarosFileOperateResult delete(String uploadedPath) {
-        Assert.isNotBlank(uploadedPath);
+        Assert.notBlank(uploadedPath, "'uploadedPath' must not be blank");
         try {
             File file = new File(uploadedPath);
             if (!file.exists()) {

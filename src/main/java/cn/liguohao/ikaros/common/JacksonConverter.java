@@ -32,7 +32,7 @@ public class JacksonConverter {
      * @return JSON
      */
     public static String obj2Json(Object obj) {
-        Assert.isNotNull(obj);
+        Assert.notNull(obj, "'obj' must not be null");
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
@@ -51,8 +51,8 @@ public class JacksonConverter {
      * @return 对象实例
      */
     public static <T> T json2obj(String json, Class<T> clazz) {
-        Assert.isNotNull(json, clazz);
-        Assert.isNotBlank(json);
+        Assert.notNull(clazz, "'clazz' must not be null");
+        Assert.notBlank(json, "'json' must not be null");
         try {
             return objectMapper.readValue(json, clazz);
         } catch (JsonProcessingException e) {
@@ -71,8 +71,8 @@ public class JacksonConverter {
      * @return 对象实例
      */
     public static <T> T[] json2ObjArr(String json, TypeReference<T[]> typeReference) {
-        Assert.isNotNull(json, typeReference);
-        Assert.isNotBlank(json);
+        Assert.notNull(typeReference, "'clazz' must not be null");
+        Assert.notBlank(json, "'json' must not be null");
         try {
             T[] ts = objectMapper.readValue(json.getBytes(StandardCharsets.UTF_8), typeReference);
             return ts;
@@ -96,7 +96,8 @@ public class JacksonConverter {
      * @return 对象实例
      */
     public static <T> T[] obj2Arr(Object obj, TypeReference<T[]> typeReference) {
-        Assert.isNotNull(obj, typeReference);
+        Assert.notNull(obj, "'obj' must not be null");
+        Assert.notNull(typeReference, "'clazz' must not be null");
         return json2ObjArr(obj2Json(obj), typeReference);
     }
 

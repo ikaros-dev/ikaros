@@ -47,7 +47,7 @@ public class FileKit {
     }
 
     public static IkarosFile.Type parseTypeByPostfix(String postfix) {
-        Assert.isNotBlank(postfix);
+        Assert.notBlank(postfix, "'postfix' must not be blank");
         postfix = postfix.toLowerCase(Locale.ROOT);
         if (IMAGES.contains(postfix)) {
             return IkarosFile.Type.IMAGE;

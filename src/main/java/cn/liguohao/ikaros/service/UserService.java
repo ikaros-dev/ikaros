@@ -140,7 +140,7 @@ public class UserService {
     }
 
     public UserEntity findByUsername(String username) {
-        Assert.isNotBlank(username);
+        Assert.notBlank(username, "'username' must not be blank");
         return userRepository.findByUsername(username);
     }
 

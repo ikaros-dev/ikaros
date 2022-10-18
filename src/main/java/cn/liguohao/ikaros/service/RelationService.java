@@ -50,7 +50,8 @@ public class RelationService {
     public List<Role> findRoleByMasterAndGuestUid(
         Long masterUid, Long guestUid)
         throws UserRelationNotExistException {
-        Assert.isNotNull(masterUid, guestUid);
+        Assert.notNull(masterUid, "'masterUid' must not be null");
+        Assert.notNull(guestUid, "'guestUid' must not be null");
 
         return relationRepository
             .findByMasterUidAndGuestUid(masterUid, guestUid)
@@ -72,7 +73,7 @@ public class RelationService {
     public RelationEntity findByMasterAndGuestUidAndRole(
         Long masterUid, Long guestUid, Role role)
         throws UserRelationNotExistException {
-        Assert.isNotNull(masterUid, guestUid, role);
+        Assert.notNull(masterUid, "'masterUid' must not be null");
 
         return relationRepository.findByMasterUidAndGuestUidAndRole(masterUid, guestUid, role);
     }
@@ -86,7 +87,9 @@ public class RelationService {
      * @return 保存后的实体对象
      */
     public RelationEntity save(Long masterUid, Long guestUid, Role role) {
-        Assert.isNotNull(masterUid, guestUid, role);
+        Assert.notNull(masterUid, "'masterUid' must not be null");
+        Assert.notNull(guestUid, "'guestUid' must not be null");
+        Assert.notNull(role, "'role' must not be null");
 
         RelationEntity relationEntity =
             relationRepository.findByMasterUidAndGuestUidAndRole(masterUid, guestUid, role);
@@ -108,7 +111,8 @@ public class RelationService {
      * @see #save(Long, Long, Role)
      */
     private RelationEntity save(Long guestUid, Role role) {
-        Assert.isNotNull(guestUid, role);
+        Assert.notNull(guestUid, "'guestUid' must not be null");
+        Assert.notNull(role, "'role' must not be null");
 
         Long masterUid = getCurrentLoginUserId();
 
@@ -123,7 +127,9 @@ public class RelationService {
      * @param role      主客体间的关系
      */
     public void delete(Long masterUid, Long guestUid, Role role) {
-        Assert.isNotNull(masterUid, guestUid, role);
+        Assert.notNull(masterUid, "'masterUid' must not be null");
+        Assert.notNull(guestUid, "'guestUid' must not be null");
+        Assert.notNull(role, "'role' must not be null");
 
         RelationEntity relationEntity =
             relationRepository.findByMasterUidAndGuestUidAndRole(masterUid, guestUid, role);
@@ -138,7 +144,8 @@ public class RelationService {
      * @see #delete(Long, Long, Role)
      */
     public void delete(Long guestUid, Role role) {
-        Assert.isNotNull(guestUid, role);
+        Assert.notNull(guestUid, "'guestUid' must not be null");
+        Assert.notNull(role, "'role' must not be null");
 
         Long masterUid = getCurrentLoginUserId();
 
@@ -152,7 +159,7 @@ public class RelationService {
      * @param guestUid 客体UID
      */
     public void follow(Long guestUid) {
-        Assert.isNotNull(guestUid);
+        Assert.notNull(guestUid, "'guestUid' must not be null");
 
         save(guestUid, Role.ATTRACTOR);
     }
@@ -164,7 +171,7 @@ public class RelationService {
      * @param guestUid 客体UID
      */
     public void beFollowed(Long guestUid) {
-        Assert.isNotNull(guestUid);
+        Assert.notNull(guestUid, "'guestUid' must not be null");
 
         save(guestUid, Role.FAN);
     }
@@ -176,7 +183,7 @@ public class RelationService {
      * @param guestUid 客体UID
      */
     public void unFollow(Long guestUid) {
-        Assert.isNotNull(guestUid);
+        Assert.notNull(guestUid, "'guestUid' must not be null");
 
         delete(guestUid, Role.ATTRACTOR);
     }
@@ -187,7 +194,7 @@ public class RelationService {
      * @param guestUid 客体UID
      */
     public void beUnFollowed(Long guestUid) {
-        Assert.isNotNull(guestUid);
+        Assert.notNull(guestUid, "'guestUid' must not be null");
 
         delete(guestUid, Role.FAN);
     }

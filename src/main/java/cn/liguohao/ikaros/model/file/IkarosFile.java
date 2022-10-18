@@ -120,8 +120,8 @@ public class IkarosFile {
      * @return 项数据实例
      */
     public static IkarosFile parseEpisodePath(String path, LocalDateTime uploadedTime) {
-        Assert.isNotNull(path, uploadedTime);
-        Assert.isNotBlank(path);
+        Assert.notNull(uploadedTime, "'uploadedTime' must not be null");
+        Assert.notBlank(path, "'path' must not be blank");
 
         int lastDotIndex = path.lastIndexOf(".");
         int lastSeparatorIndex = path.lastIndexOf(File.separator);
@@ -146,8 +146,8 @@ public class IkarosFile {
     }
 
     public static IkarosFile build(String originalFilename, byte[] bytes) {
-        Assert.isNotNull(bytes, originalFilename);
-        Assert.isNotBlank(originalFilename);
+        Assert.notNull(bytes, "'bytes' must not be null");
+        Assert.notBlank(originalFilename, "'originalFilename' must not be blank");
 
         int lastDotIndex = originalFilename.lastIndexOf(".");
 
@@ -176,8 +176,10 @@ public class IkarosFile {
      * @return this
      */
     public IkarosFile checkoutBeforeDownload() {
-        Assert.isNotNull(type, name, postfix, uploadedTime);
-        Assert.isNotBlank(name, postfix);
+        Assert.notNull(type, "'type' must not be null");
+        Assert.notNull(uploadedTime, "'uploadedTime' must not be null");
+        Assert.notBlank(name, "'name' must not be blank");
+        Assert.notBlank(postfix, "'postfix' must not be blank");
         return this;
     }
 
@@ -187,8 +189,9 @@ public class IkarosFile {
      * @return this
      */
     public IkarosFile checkoutBeforeUpload() {
-        Assert.isNotNull(name, postfix, bytes);
-        Assert.isNotBlank(name, postfix);
+        Assert.notNull(bytes, "'bytes' must not be null");
+        Assert.notBlank(name, "'name' must not be blank");
+        Assert.notBlank(postfix, "'postfix' must not be blank");
         return this;
     }
 
@@ -198,8 +201,9 @@ public class IkarosFile {
      * @return this
      */
     public IkarosFile checkoutBeforeDelete() {
-        Assert.isNotNull(name, postfix, uploadedTime);
-        Assert.isNotBlank(name, postfix);
+        Assert.notNull(uploadedTime, "'uploadedTime' must not be null");
+        Assert.notBlank(name, "'name' must not be blank");
+        Assert.notBlank(postfix, "'postfix' must not be blank");
         return this;
     }
 

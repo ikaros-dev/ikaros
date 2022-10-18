@@ -27,7 +27,7 @@ public class UserRoleService {
     }
 
     public List<UserRoleEntity> findByUserId(Long id) {
-        Assert.isNotNull(id);
+        Assert.notNull(id, "'id' must not be null");
         return userRoleRepository.findByUserId(id);
     }
 }

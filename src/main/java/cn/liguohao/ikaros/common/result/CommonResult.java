@@ -32,7 +32,7 @@ public class CommonResult<T> extends BaseResult<T> implements Serializable {
 
     private static <T> CommonResult<T> baseCreate(String code, String msg, T data,
                                                   Throwable throwable) {
-        Assert.isNotBlank(code);
+        Assert.notBlank(code, "'code' must not be null");
         CommonResult<T> result = new CommonResult<T>();
         result.setCode(code);
         result.setSuccess(Objects.equals(code, ResultCode.SUCCESS));
