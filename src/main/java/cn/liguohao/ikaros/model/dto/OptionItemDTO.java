@@ -1,6 +1,7 @@
 package cn.liguohao.ikaros.model.dto;
 
 import cn.liguohao.ikaros.common.Assert;
+import cn.liguohao.ikaros.common.constants.OptionConstants;
 import cn.liguohao.ikaros.model.entity.OptionEntity;
 import org.springframework.lang.Nullable;
 
@@ -12,6 +13,8 @@ public class OptionItemDTO {
     private String key;
     private String value;
     private OptionEntity.Type type = OptionEntity.Type.INTERNAL;
+
+    private String category = OptionConstants.CATEGORY_DEFAULT;
 
     public OptionItemDTO(String key, @Nullable String value) {
         Assert.notBlank(key, "'key' must not be blank");
@@ -44,6 +47,15 @@ public class OptionItemDTO {
 
     public OptionItemDTO setType(OptionEntity.Type type) {
         this.type = type;
+        return this;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public OptionItemDTO setCategory(String category) {
+        this.category = category;
         return this;
     }
 }

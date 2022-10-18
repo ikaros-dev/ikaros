@@ -1,5 +1,6 @@
 package cn.liguohao.ikaros.model.entity;
 
+import cn.liguohao.ikaros.common.constants.OptionConstants;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
@@ -22,7 +23,7 @@ public class OptionEntity extends BaseEntity {
         CUSTOM;
     }
 
-    private Type type = Type.INTERNAL;
+    private Type type = OptionConstants.TYPE_DEFAULT;
 
     @Column(name = "ikkey", nullable = false)
     private String key = "";
@@ -34,6 +35,9 @@ public class OptionEntity extends BaseEntity {
     @Lob
     private String value  = "";
 
+    @Column(nullable = false)
+    private String category = OptionConstants.CATEGORY_DEFAULT;
+
     public OptionEntity() {
     }
 
@@ -42,11 +46,6 @@ public class OptionEntity extends BaseEntity {
         this.value = value;
     }
 
-    public OptionEntity(Type type, String key, String value) {
-        this.type = type;
-        this.key = key;
-        this.value = value;
-    }
 
     public Type getType() {
         return type;
@@ -72,6 +71,15 @@ public class OptionEntity extends BaseEntity {
 
     public OptionEntity setValue(String value) {
         this.value = value;
+        return this;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public OptionEntity setCategory(String category) {
+        this.category = category;
         return this;
     }
 }

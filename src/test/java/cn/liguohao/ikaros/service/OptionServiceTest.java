@@ -8,10 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import cn.liguohao.ikaros.common.constants.OptionConstants;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.dto.OptionItemDTO;
 import cn.liguohao.ikaros.model.entity.OptionEntity;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -81,5 +88,29 @@ class OptionServiceTest {
 
     }
 
+    @Test
+    void findOptionByCategory() {
+
+        OptionEntity optionEntity1
+            = optionService.saveOptionItem(new OptionItemDTO(buildStr(), buildStr()));
+        OptionEntity optionEntity2
+            = optionService.saveOptionItem(new OptionItemDTO(buildStr(), buildStr()));
+        OptionEntity optionEntity3 = optionService.saveOptionItem(
+            new OptionItemDTO(buildStr(), buildStr()).setCategory(buildStr()));
+
+        List<OptionEntity> optionListByCategory =
+            optionService.findOptionByCategory(OptionConstants.CATEGORY_DEFAULT);
+
+        Assertions.assertNotNull(optionListByCategory);
+        Assertions.assertFalse(optionListByCategory.isEmpty());
+
+        Set<String> keys = optionListByCategory.stream().flatMap(
+            (Function<OptionEntity, Stream<String>>) optionEntity
+                -> Stream.of(optionEntity.getKey())).collect(Collectors.toSet());
+
+        Assertions.assertTrue(keys.contains(optionEntity1.getKey()));
+        Assertions.assertTrue(keys.contains(optionEntity2.getKey()));
+        Assertions.assertFalse(keys.contains(optionEntity3.getKey()));
+    }
 
 }

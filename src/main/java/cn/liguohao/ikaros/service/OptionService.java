@@ -5,6 +5,7 @@ import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.dto.OptionItemDTO;
 import cn.liguohao.ikaros.model.entity.OptionEntity;
 import cn.liguohao.ikaros.repository.OptionRepository;
+import java.util.List;
 import javax.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -37,13 +38,14 @@ public class OptionService {
 
         try {
             OptionEntity existOptionEntity = findOptionItemByKey(key);
-            existOptionEntity.setValue(optionItemDTO.getValue());
+            existOptionEntity.setValue(optionItemDTO.getValue())
+                .setCategory(optionItemDTO.getCategory());
             return optionRepository.saveAndFlush(existOptionEntity);
         } catch (RecordNotFoundException e) {
-            OptionEntity optionEntity = new OptionEntity()
+            OptionEntity optionEntity
+                = new OptionEntity(key, optionItemDTO.getValue())
                 .setType(optionItemDTO.getType())
-                .setKey(key)
-                .setValue(optionItemDTO.getValue());
+                .setCategory(optionItemDTO.getCategory());
             return optionRepository.saveAndFlush(optionEntity);
         }
 
@@ -56,5 +58,13 @@ public class OptionService {
         optionRepository.saveAndFlush(optionEntity);
     }
 
+    public List<OptionEntity> findOptionByCategory(String category) {
+        Assert.notBlank(category, "'category' must not be blank");
+        return optionRepository.findByCategoryAndStatus(category, true);
+    }
+
+    public void initPresetOptionItems() {
+        // init common option items
+    }
 
 }
