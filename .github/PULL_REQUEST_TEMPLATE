@@ -28,6 +28,5 @@
 - [ ] Tests(including UT, IT, E2E) are added to verify the new feature.
 - [ ] If it's UI related, attach the screenshots below.
      ==== 🆕 Remove this line WHEN AND ONLY WHEN you're adding a new feature, follow the checklist 👆 ==== -->
-
-- [ ] If this pull request closes/resolves/fixes an existing issue, replace the issue number. Closes #<issue number>.
 - [ ] Update the [`CHANGES` log](https://github.com/li-guohao/ikaros/blob/develop/CHANGELOG.MD).
+- [ ] If this pull request closes/resolves/fixes an existing issue, replace the issue number. Closes #<issue number>.
