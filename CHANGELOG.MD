@@ -3,8 +3,8 @@
 
 # 1.0-SNAPSHOT
 ## Features
-- [#41] 给github feature issue 模板添加PR输入框
-- [#41] 调整 github pr模板内容的顺序
+- [#40] 给github feature issue 模板添加PR输入框
+- [#40] 调整 github pr模板内容的顺序
 
 # 0.1.0
 
