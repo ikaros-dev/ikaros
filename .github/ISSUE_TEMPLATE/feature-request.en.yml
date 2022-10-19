@@ -51,6 +51,15 @@ body:
         - label: Yes I am willing to submit a PR!
           required: false
 
+  - type: textarea
+    attributes:
+      label: Related pull requests
+      description: Is there currently another pull request associated with this?
+      placeholder: >
+        - [ ] component1: pr link
+
+        - [ ] component2: pr link
+
   - type: markdown
     attributes:
       value: "Thanks for completing our form!"
