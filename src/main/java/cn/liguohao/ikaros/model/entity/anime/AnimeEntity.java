@@ -20,6 +20,9 @@ public class AnimeEntity extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
+    @Column(name = "bgmtv_id")
+    private Long bgmtvId;
+
     @Column(name = "original_title")
     private String originalTitle;
 
@@ -45,6 +48,15 @@ public class AnimeEntity extends BaseEntity {
 
     public AnimeEntity setTitle(String title) {
         this.title = title;
+        return this;
+    }
+
+    public Long getBgmtvId() {
+        return bgmtvId;
+    }
+
+    public AnimeEntity setBgmtvId(Long bgmtvId) {
+        this.bgmtvId = bgmtvId;
         return this;
     }
 
