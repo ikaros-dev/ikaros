@@ -195,10 +195,13 @@ public class OptionService {
         Assert.notNull(optionModel, "'optionModel' must not be null");
         String category = optionModel.getCategory();
         for (Field field : optionModel.getClass().getDeclaredFields()) {
+            String fieldName = field.getName();
+            if ("category".equalsIgnoreCase(fieldName)) {
+                continue;
+            }
             field.setAccessible(true);
-            String key = field.getName();
-            String value = (String) field.get(optionModel);
-            saveOptionItem(new OptionItemDTO(key, value).setCategory(category));
+            String fieldValue = (String) field.get(optionModel);
+            saveOptionItem(new OptionItemDTO(fieldName, fieldValue).setCategory(category));
         }
     }
 }
