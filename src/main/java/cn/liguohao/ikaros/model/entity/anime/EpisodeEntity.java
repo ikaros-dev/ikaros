@@ -20,6 +20,11 @@ public class EpisodeEntity extends BaseEntity {
     @Column(name = "file_id")
     private Long fileId;
 
+    /**
+     * 第几集
+     */
+    private Long order;
+
     private String title;
 
     @Column(name = "original_title")
@@ -41,6 +46,15 @@ public class EpisodeEntity extends BaseEntity {
 
     public EpisodeEntity setFileId(Long fileId) {
         this.fileId = fileId;
+        return this;
+    }
+
+    public Long getOrder() {
+        return order;
+    }
+
+    public EpisodeEntity setOrder(Long order) {
+        this.order = order;
         return this;
     }
 
