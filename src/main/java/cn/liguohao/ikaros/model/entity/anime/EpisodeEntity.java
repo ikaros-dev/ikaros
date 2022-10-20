@@ -23,7 +23,7 @@ public class EpisodeEntity extends BaseEntity {
     /**
      * 第几集
      */
-    private Long order;
+    private Long seq;
 
     private String title;
 
@@ -49,12 +49,12 @@ public class EpisodeEntity extends BaseEntity {
         return this;
     }
 
-    public Long getOrder() {
-        return order;
+    public Long getSeq() {
+        return seq;
     }
 
-    public EpisodeEntity setOrder(Long order) {
-        this.order = order;
+    public EpisodeEntity setSeq(Long seq) {
+        this.seq = seq;
         return this;
     }
 
