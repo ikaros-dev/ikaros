@@ -12,6 +12,7 @@ public class ThirdPartyOptionModel implements OptionModel {
     private String category = Category.ThirdParty;
     private String bangumiApiBase = ThirdParty.BANGUMI_API_BASE[1];
     private String bangumiApiSubjects = ThirdParty.BANGUMI_API_SUBJECTS[1];
+    private String bangumiApiEpisodes = ThirdParty.BANGUMI_API_EPISODES[1];
 
     @Override
     public String getCategory() {
@@ -38,6 +39,15 @@ public class ThirdPartyOptionModel implements OptionModel {
 
     public ThirdPartyOptionModel setBangumiApiSubjects(String bangumiApiSubjects) {
         this.bangumiApiSubjects = bangumiApiSubjects;
+        return this;
+    }
+
+    public String getBangumiApiEpisodes() {
+        return bangumiApiEpisodes;
+    }
+
+    public ThirdPartyOptionModel setBangumiApiEpisodes(String bangumiApiEpisodes) {
+        this.bangumiApiEpisodes = bangumiApiEpisodes;
         return this;
     }
 }

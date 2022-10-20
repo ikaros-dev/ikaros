@@ -9,6 +9,7 @@ import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.kit.SystemVarKit;
 import cn.liguohao.ikaros.common.kit.TimeKit;
 import cn.liguohao.ikaros.common.result.PagingWrap;
+import cn.liguohao.ikaros.exceptions.IkarosRuntimeException;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.entity.FileEntity;
 import cn.liguohao.ikaros.model.file.IkarosFile;
@@ -62,18 +63,17 @@ public class FileService {
         this.environment = environment;
     }
 
-    public Optional<FileEntity> upload(String originalFilename, byte[] bytes) throws IOException {
+    public FileEntity upload(String originalFilename, byte[] bytes)  {
         Assert.notNull(originalFilename, "'originalFilename' must not bo null");
         Assert.notNull(bytes, "'bytes' must not bo null");
 
         IkarosFile ikarosFile = IkarosFile.build(originalFilename, bytes);
-        fileHandler.upload(ikarosFile);
-
-        FileEntity fileEntity = uploadAndGetFileEntity(bytes, ikarosFile, null);
-
-        fileEntity = fileRepository.save(fileEntity);
-
-        return Optional.of(fileEntity);
+        try {
+            FileEntity fileEntity = uploadAndGetFileEntity(bytes, ikarosFile, null);
+            return fileRepository.saveAndFlush(fileEntity);
+        } catch (IOException ioException) {
+            throw new IkarosRuntimeException("upload file fail, originalFilename=" + originalFilename);
+        }
     }
 
     private FileEntity uploadAndGetFileEntity(byte[] bytes, IkarosFile ikarosFile,
@@ -85,6 +85,8 @@ public class FileService {
 
         final String md5 = FileKit.checksum2Str(bytes, FileKit.Hash.MD5);
         final String sha256 = FileKit.checksum2Str(bytes, FileKit.Hash.SHA256);
+        ikarosFile.setMd5(md5);
+        ikarosFile.setSha256(sha256);
 
         if (fileEntity == null) {
             fileEntity = new FileEntity();

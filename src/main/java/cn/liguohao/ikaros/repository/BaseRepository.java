@@ -10,6 +10,7 @@ import org.springframework.data.repository.NoRepositoryBean;
  */
 @NoRepositoryBean
 public interface BaseRepository<T> extends JpaRepository<T, Long> {
+    boolean existsByIdAndStatus(Long id, Boolean status);
 
     Optional<T> findByIdAndStatus(Long id, boolean status);
 

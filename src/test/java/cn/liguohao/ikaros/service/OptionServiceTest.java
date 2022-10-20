@@ -16,6 +16,7 @@ import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.dto.OptionItemDTO;
 import cn.liguohao.ikaros.model.entity.OptionEntity;
 import cn.liguohao.ikaros.model.option.SeoOptionModel;
+import cn.liguohao.ikaros.model.option.ThirdPartyOptionModel;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -190,6 +191,14 @@ class OptionServiceTest {
             optionService.findOptionItemByKey(OptionConstants.Init.Seo.HIDE_FOR_SE[0]);
         Assertions.assertEquals(newHide4seValue, optionEntity.getValue());
 
+    }
+
+    @Test
+    void findOptionModel() {
+        ThirdPartyOptionModel thirdPartyOptionModel =
+            optionService.findOptionModel(new ThirdPartyOptionModel());
+        Assertions.assertNotNull(thirdPartyOptionModel);
+        Assertions.assertNotNull(thirdPartyOptionModel.getBangumiApiBase());
     }
 
 }

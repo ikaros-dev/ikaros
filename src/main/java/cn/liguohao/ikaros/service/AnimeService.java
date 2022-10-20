@@ -1,23 +1,38 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
+import cn.liguohao.ikaros.common.constants.AnimeConstants;
 import cn.liguohao.ikaros.common.kit.BeanKit;
-import cn.liguohao.ikaros.model.entity.anime.AnimeEntity;
-import cn.liguohao.ikaros.model.entity.anime.AnimeSeasonEntity;
-import cn.liguohao.ikaros.model.entity.anime.EpisodeEntity;
-import cn.liguohao.ikaros.model.entity.anime.SeasonEntity;
-import cn.liguohao.ikaros.model.entity.anime.SeasonEpisodeEntity;
+import cn.liguohao.ikaros.common.kit.DateKit;
+import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvConstants;
+import cn.liguohao.ikaros.model.bgmtv.Episode;
+import cn.liguohao.ikaros.model.bgmtv.EpisodeType;
+import cn.liguohao.ikaros.model.bgmtv.Subject;
+import cn.liguohao.ikaros.model.bgmtv.Tag;
 import cn.liguohao.ikaros.model.dto.AnimeDTO;
 import cn.liguohao.ikaros.model.dto.EpisodeDTO;
 import cn.liguohao.ikaros.model.dto.SeasonDTO;
+import cn.liguohao.ikaros.model.entity.FileEntity;
+import cn.liguohao.ikaros.model.entity.TagEntity;
+import cn.liguohao.ikaros.model.entity.anime.AnimeEntity;
+import cn.liguohao.ikaros.model.entity.anime.AnimeSeasonEntity;
+import cn.liguohao.ikaros.model.entity.anime.AnimeTagEntity;
+import cn.liguohao.ikaros.model.entity.anime.EpisodeEntity;
+import cn.liguohao.ikaros.model.entity.anime.SeasonEntity;
+import cn.liguohao.ikaros.model.entity.anime.SeasonEpisodeEntity;
+import cn.liguohao.ikaros.repository.TagRepository;
 import cn.liguohao.ikaros.repository.anime.AnimeRepository;
 import cn.liguohao.ikaros.repository.anime.AnimeSeasonRepository;
+import cn.liguohao.ikaros.repository.anime.AnimeTagRepository;
 import cn.liguohao.ikaros.repository.anime.EpisodeRepository;
 import cn.liguohao.ikaros.repository.anime.SeasonEpisodeRepository;
 import cn.liguohao.ikaros.repository.anime.SeasonRepository;
 import java.util.Date;
 import java.util.List;
 import javax.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,29 +42,38 @@ import org.springframework.stereotype.Service;
 @Service
 @Transactional(rollbackOn = Exception.class)
 public class AnimeService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnimeService.class);
 
     private final AnimeRepository animeRepository;
     private final AnimeSeasonRepository animeSeasonRepository;
     private final SeasonRepository seasonRepository;
     private final SeasonEpisodeRepository seasonEpisodeRepository;
     private final EpisodeRepository episodeRepository;
-
     private final UserService userService;
+    private final BgmTvService bgmTvService;
+    private final TagRepository tagRepository;
+    private final AnimeTagRepository animeTagRepository;
 
     public AnimeService(AnimeRepository animeRepository,
                         AnimeSeasonRepository animeSeasonRepository,
                         SeasonRepository seasonRepository,
                         SeasonEpisodeRepository seasonEpisodeRepository,
-                        EpisodeRepository episodeRepository, UserService userService) {
+                        EpisodeRepository episodeRepository,
+                        UserService userService, BgmTvService bgmTvService,
+                        TagRepository tagRepository, AnimeTagRepository animeTagRepository) {
         this.animeRepository = animeRepository;
         this.animeSeasonRepository = animeSeasonRepository;
         this.seasonRepository = seasonRepository;
         this.seasonEpisodeRepository = seasonEpisodeRepository;
         this.episodeRepository = episodeRepository;
         this.userService = userService;
+        this.bgmTvService = bgmTvService;
+        this.tagRepository = tagRepository;
+        this.animeTagRepository = animeTagRepository;
     }
 
 
+    @Deprecated
     public AnimeDTO addAnime(AnimeDTO animeDTO) {
         Assert.notNull(animeDTO, "'anime' must not be null.");
 
@@ -110,5 +134,101 @@ public class AnimeService {
 
         return animeDTO;
     }
+
+    public boolean existById(Long id) {
+        Assert.isPositive(id, "'id' must be positive");
+        return animeRepository.existsByIdAndStatus(id, true);
+    }
+
+    public AnimeEntity findById(Long id) throws RecordNotFoundException {
+        Assert.isPositive(id, "'id' must be positive");
+        if (!existById(id)) {
+            throw new RecordNotFoundException("anime entity not exist, id=" + id);
+        }
+        return animeRepository.findByIdAndStatus(id, true).get();
+    }
+
+    public AnimeDTO saveAnimeDTO(AnimeDTO animeDTO) {
+        // todo save animeDTO
+        return null;
+    }
+
+    public AnimeDTO findAnimeDTOById(Long id) throws RecordNotFoundException {
+        AnimeEntity animeEntity = findById(id);
+        return findAnimeDTOByAnimeEntity(animeEntity);
+    }
+
+    private AnimeDTO findAnimeDTOByAnimeEntity(AnimeEntity animeEntity) {
+        // todo findAnimeDTOByAnimeEntity
+
+        return null;
+    }
+
+
+    public AnimeDTO reqBgmtvBangumiMetadata(Long subjectId) {
+        try {
+            // 直接返回已经存在的番剧数据
+            Long id = animeRepository.findIdByBgmtvIdAndStatus(subjectId, true);
+            AnimeDTO animeDTO = findAnimeDTOById(id);
+            LOGGER.debug("anime exist, return this anime, subjectId={}, animeId={}", subjectId, id);
+            return animeDTO;
+        } catch (RecordNotFoundException e) {
+            // 创建新的动漫对象
+            LOGGER.debug("anime not exist, will  create a new, subjectId={}", subjectId);
+
+            // 获取动漫信息
+            Subject subject = bgmTvService.getSubject(subjectId);
+            if (subject == null) {
+                LOGGER.error("request bgmtv fail, response null subject");
+                return null;
+            }
+
+            AnimeEntity animeEntity = new AnimeEntity();
+            String coverUrl = subject.getImages().getLarge();
+            FileEntity coverFileEntity = bgmTvService.downloadCover(coverUrl);
+            animeEntity.setCoverUrl(coverFileEntity.getUrl())
+                .setAirTime(DateKit.parseDateStr(subject.getDate(), BgmTvConstants.DATE_PATTERN))
+                .setPlatform(subject.getPlatform())
+                .setOverview(subject.getSummary())
+                .setTitle(subject.getNameCn())
+                .setOriginalTitle(subject.getName());
+            animeEntity = animeRepository.saveAndFlush(animeEntity);
+
+            for (Tag tag : subject.getTags()) {
+                TagEntity tagEntity =
+                    tagRepository.saveAndFlush(new TagEntity().setName(tag.getName()));
+                AnimeTagEntity animeTagEntity = new AnimeTagEntity()
+                    .setAnimeId(animeEntity.getId())
+                    .setTagId(tagEntity.getId());
+                animeTagRepository.saveAndFlush(animeTagEntity);
+            }
+
+            // 获取动漫剧集信息
+            List<Episode> episodes =
+                bgmTvService.getEpisodesBySubjectId(subjectId, EpisodeType.POSITIVE);
+
+            new SeasonEntity()
+                .setType(AnimeConstants.DEFAULT_SEASON_TYPE);
+
+            for (Episode episode : episodes) {
+                Date airDate =
+                    DateKit.parseDateStr(episode.getAirDate(), BgmTvConstants.DATE_PATTERN);
+                EpisodeEntity episodeEntity = new EpisodeEntity()
+                    .setSeq(episode.getEp().longValue())
+                    .setTitle(episode.getNameCn())
+                    .setOriginalTitle(episode.getName())
+                    .setAirTime(airDate)
+                    .setOverview(episode.getDesc())
+                    .setDuration(episode.getDurationSeconds().longValue());
+                episodeEntity = episodeRepository.saveAndFlush(episodeEntity);
+
+            }
+
+
+
+            return null;
+        }
+    }
+
 
 }

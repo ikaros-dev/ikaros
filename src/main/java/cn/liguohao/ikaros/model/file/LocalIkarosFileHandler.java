@@ -72,8 +72,16 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
                 ikarosFile.setUploadedPath(oldLocation);
                 LOGGER.debug("repeated ikaros file, do not upload, path={}", oldLocation);
             } else {
+                byte[] bytes = ikarosFile.getBytes();
+                if (md5 == null) {
+                    ikarosFile.setMd5(FileKit.checksum2Str(bytes, FileKit.Hash.MD5));
+                }
+                if (sha256 == null) {
+                    ikarosFile.setSha256(FileKit.checksum2Str(bytes, FileKit.Hash.SHA256));
+                }
+                ikarosFile.setPlace(IkarosFile.Place.LOCAL);
                 String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
-                Files.write(Path.of(new File(subjectDataFilePath).toURI()), ikarosFile.getBytes());
+                Files.write(Path.of(new File(subjectDataFilePath).toURI()), bytes);
                 ikarosFile.setUploadedPath(subjectDataFilePath);
                 LOGGER.debug("upload ikaros file data success, path={}", subjectDataFilePath);
             }
@@ -84,8 +92,6 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
             LOGGER.error(msg, e);
             return IkarosFileOperateResult.ofUploadFail(msg + ", exception: ", e);
         }
-
-        ikarosFile.setPlace(IkarosFile.Place.LOCAL);
         return IkarosFileOperateResult.ofOk(ikarosFile);
     }
 

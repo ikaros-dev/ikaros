@@ -17,21 +17,67 @@ import javax.persistence.Table;
 public class SeasonEntity extends BaseEntity {
 
     public enum Type {
-        FIRST,
-        SECOND,
-        THIRD,
-        FOUR,
-        FIFTH,
-        SIXTH,
+        /**
+         * 正篇第一季
+         */
+        FIRST(1),
+        /**
+         * 正篇第二季
+         */
+        SECOND(2),
+        /**
+         * 正篇第三季
+         */
+        THIRD(3),
+        /**
+         * 正篇第四季
+         */
+        FOUR(4),
+        /**
+         * 正篇第五季
+         */
+        FIFTH(5),
+        /**
+         * 正篇第六季
+         */
+        SIXTH(6),
 
-        PROMOTION_VIDEO,
-        OPENING_SONG,
-        ENDING_SONG,
+        /**
+         * 特别篇 其一
+         */
+        SPECIAL_FIRST(11),
+        /**
+         * 特别篇 其二
+         */
+        SPECIAL_SECOND(12),
+        /**
+         * 特别篇 其三
+         */
+        SPECIAL_THIRD(12),
 
-        SPECIAL_PROMOTION_VIDEO_FIRST,
-        SPECIAL_PROMOTION_VIDEO_SECOND,
 
-        SMALL_THEATER;
+        /**
+         * 宣传短片 (PV)
+         */
+        PROMOTION_VIDEO(61),
+
+        OPENING_SONG(71),
+        ENDING_SONG(72),
+
+        SPECIAL_PROMOTION_VIDEO(81),
+        SMALL_THEATER(82),
+
+        OTHER(90);
+
+        private final int code;
+
+        Type(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
     }
 
 

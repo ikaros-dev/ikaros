@@ -37,8 +37,43 @@ public class EpisodeEntity extends BaseEntity {
     @Basic(fetch = FetchType.LAZY)
     private String overview;
 
+    /**
+     * 时长，单位秒
+     */
     private Long duration;
 
+    private Type type;
+
+    public enum Type {
+        /**
+         * 正篇
+         */
+        POSITIVE(0),
+
+        /**
+         * 特别篇
+         */
+        SPECIAL(1),
+
+
+        OP(2),
+
+
+        ED(3),
+
+
+        PROMOTION_VIDEO(4)
+        ;
+        private final int code;
+
+        Type(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
+    }
 
     public Long getFileId() {
         return fileId;
@@ -100,6 +135,15 @@ public class EpisodeEntity extends BaseEntity {
 
     public EpisodeEntity setOriginalTitle(String originalTitle) {
         this.originalTitle = originalTitle;
+        return this;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public EpisodeEntity setType(Type type) {
+        this.type = type;
         return this;
     }
 }

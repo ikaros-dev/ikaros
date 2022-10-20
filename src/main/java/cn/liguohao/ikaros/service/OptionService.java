@@ -23,6 +23,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Transactional(rollbackOn = Exception.class)
 public class OptionService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OptionService.class);
 
     private final OptionRepository optionRepository;
 
@@ -203,5 +206,37 @@ public class OptionService {
             String fieldValue = (String) field.get(optionModel);
             saveOptionItem(new OptionItemDTO(fieldName, fieldValue).setCategory(category));
         }
+    }
+
+    @SuppressWarnings({"deprecation", "unchecked"})
+    public <T> T findOptionModel(T optionModel) {
+        Assert.notNull(optionModel, "'optionModel' must not be null");
+        Assert.isTrue(optionModel instanceof OptionModel,
+            "'optionModel' must implements OptionModel interface");
+
+        String category = ((OptionModel) optionModel).getCategory();
+        Assert.notBlank(category, "'optionModel' category must not be blank");
+
+        Class<T> cls = (Class<T>) optionModel.getClass();
+
+        T instance = null;
+        try {
+            instance = cls.newInstance();
+
+            for (OptionEntity optionEntity : findOptionByCategory(category)) {
+                String fieldName = optionEntity.getKey();
+                String fieldValue = optionEntity.getValue();
+                for (Field field : cls.getDeclaredFields()) {
+                    if (field.getName().equalsIgnoreCase(fieldName)) {
+                        field.setAccessible(true);
+                        field.set(instance, fieldValue);
+                    }
+                }
+            }
+        } catch (ReflectiveOperationException exception) {
+            LOGGER.warn("find category={} OptionModel fail", category, exception);
+        }
+
+        return instance;
     }
 }

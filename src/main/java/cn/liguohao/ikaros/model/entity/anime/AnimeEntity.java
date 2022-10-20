@@ -26,6 +26,8 @@ public class AnimeEntity extends BaseEntity {
     @Column(name = "original_title")
     private String originalTitle;
 
+    private String platform;
+
     @Lob
     @Basic(fetch = FetchType.LAZY)
     private String overview;
@@ -111,6 +113,15 @@ public class AnimeEntity extends BaseEntity {
 
     public AnimeEntity setOriginalTitle(String originalTitle) {
         this.originalTitle = originalTitle;
+        return this;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public AnimeEntity setPlatform(String platform) {
+        this.platform = platform;
         return this;
     }
 }

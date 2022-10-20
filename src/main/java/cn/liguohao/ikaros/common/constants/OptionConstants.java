@@ -54,6 +54,7 @@ public interface OptionConstants {
         interface ThirdParty {
             String[] BANGUMI_API_BASE = {"bangumiApiBase", "https://api.bgm.tv"};
             String[] BANGUMI_API_SUBJECTS = {"bangumiApiSubjects", "/v0/subjects"};
+            String[] BANGUMI_API_EPISODES = {"bangumiApiEpisodes", "/v0/episodes"};
         }
 
         interface Other {
