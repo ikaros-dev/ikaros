@@ -27,20 +27,16 @@ public class ResourceEntity extends BaseEntity {
      * 资源的名称，如果是文件类型的资源，应该带有后缀名
      */
     @Column(nullable = false)
-    private Long name;
+    private String name;
 
 
-    /**
-     * UFL: 统一文件定位符(Uniform File Locator)，
-     * 资源里关于文件的字段名称, 对应文件表的URL
-     */
-    private String ufl;
+    private String url;
 
-    public Long getName() {
+    public String getName() {
         return name;
     }
 
-    public ResourceEntity setName(Long name) {
+    public ResourceEntity setName(String name) {
         this.name = name;
         return this;
     }
@@ -63,12 +59,12 @@ public class ResourceEntity extends BaseEntity {
         return this;
     }
 
-    public String getUfl() {
-        return ufl;
+    public String getUrl() {
+        return url;
     }
 
-    public ResourceEntity setUfl(String ufl) {
-        this.ufl = ufl;
+    public ResourceEntity setUrl(String url) {
+        this.url = url;
         return this;
     }
 }
