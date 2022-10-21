@@ -7,7 +7,7 @@ import javax.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "metadata", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"type", "host_id", "key"})})
+    @UniqueConstraint(columnNames = {"type", "host_id", "name"})})
 public class MetadataEntity extends BaseEntity {
     public enum Type {
         BOX(1),
@@ -40,7 +40,7 @@ public class MetadataEntity extends BaseEntity {
      */
     private Integer type;
 
-    private String key;
+    private String name;
     private String value;
 
     public Long getHostId() {
@@ -61,12 +61,12 @@ public class MetadataEntity extends BaseEntity {
         return this;
     }
 
-    public String getKey() {
-        return key;
+    public String getName() {
+        return name;
     }
 
-    public MetadataEntity setKey(String key) {
-        this.key = key;
+    public MetadataEntity setName(String name) {
+        this.name = name;
         return this;
     }
 

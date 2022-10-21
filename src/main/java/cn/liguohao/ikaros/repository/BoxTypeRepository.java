@@ -8,4 +8,8 @@ import cn.liguohao.ikaros.model.entity.BoxTypeEntity;
  */
 public interface BoxTypeRepository extends BaseRepository<BoxTypeEntity> {
 
+    boolean existsByName(String name);
+
+
+    BoxTypeEntity findByName(String name);
 }
