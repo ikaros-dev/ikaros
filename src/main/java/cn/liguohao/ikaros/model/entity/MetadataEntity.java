@@ -5,10 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-/**
- * @author guohao
- * @date 2022/09/10
- */
 @Entity
 @Table(name = "metadata", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"type", "host_id", "key"})})

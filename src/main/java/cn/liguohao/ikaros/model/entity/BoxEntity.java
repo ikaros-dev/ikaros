@@ -5,9 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-/**
- * @author liguohao
- */
 @Entity
 @Table(name = "role", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"parent_id", "name"})})

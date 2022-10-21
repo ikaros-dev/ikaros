@@ -4,10 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-/**
- * @author guohao
- * @date 2022/09/10
- */
 @Entity
 @Table(name = "box_type")
 public class BoxTypeEntity extends BaseEntity {
