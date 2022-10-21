@@ -4,6 +4,7 @@ import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.constants.FileConstants;
 import cn.liguohao.ikaros.exceptions.IkarosRuntimeException;
 import cn.liguohao.ikaros.model.binary.BinaryType;
+import cn.liguohao.ikaros.model.enums.ResourceType;
 import cn.liguohao.ikaros.model.file.IkarosFile;
 import io.jsonwebtoken.io.IOException;
 import java.io.ByteArrayInputStream;
@@ -82,6 +83,25 @@ public class FileKit {
         }
         return BinaryType.FILE;
     }
+
+    public static ResourceType parseResourceTypeByPostfix(String postfix) {
+        Assert.notBlank(postfix, "'postfix' must not be blank");
+        postfix = postfix.toLowerCase(Locale.ROOT);
+        if (IMAGES.contains(postfix)) {
+            return ResourceType.IMAGE;
+        }
+        if (DOCUMENTS.contains(postfix)) {
+            return ResourceType.DOCUMENT;
+        }
+        if (VIDEOS.contains(postfix)) {
+            return ResourceType.VIDEO;
+        }
+        if (VOICES.contains(postfix)) {
+            return ResourceType.VOICE;
+        }
+        return ResourceType.FILE;
+    }
+
 
 
     public static byte[] checksum(byte[] bytes, FileKit.Hash hash) throws IkarosRuntimeException {

@@ -38,7 +38,7 @@ public class MetadataEntity extends BaseEntity {
     /**
      * @see Type
      */
-    private Integer type;
+    private Integer type = Type.BOX.getCode();
 
     private String name;
     private String value;

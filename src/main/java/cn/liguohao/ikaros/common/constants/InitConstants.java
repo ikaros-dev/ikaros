@@ -10,5 +10,5 @@ public interface InitConstants {
         "VIDEO", "VOICE", "PICTURE", "DOCUMENT"};
     String[] PRESET_BOX_TYPES = {"EPISODE", "POSITIVE", "SPECIAL", "OP", "ED", "PV", "CM",
         "ANIME", "COMIC", "GAME", "MUSIC", "NOVELS",
-        "IP"};
+        "IP", "OTHER"};
 }

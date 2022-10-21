@@ -1,6 +1,5 @@
 package cn.liguohao.ikaros.model.entity;
 
-import cn.liguohao.ikaros.common.constants.InitConstants;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -8,8 +7,26 @@ import javax.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "resource", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"type_id", "name"})})
+    @UniqueConstraint(columnNames = {"type", "name"})})
 public class ResourceEntity extends BaseEntity {
+    public enum Type {
+        IMAGE(1),
+        DOCUMENT(2),
+        VIDEO(3),
+        VOICE(4),
+        FILE(99);
+
+        private final int code;
+
+        Type(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+    }
 
     /**
      * 资源被存放的盒子ID，对应表 box 的 ID
@@ -17,11 +34,7 @@ public class ResourceEntity extends BaseEntity {
     @Column(name = "box_id")
     private Long boxId;
 
-    /**
-     * 资源的类型，对应表 resource_type 的 ID
-     */
-    @Column(name = "type_id", nullable = false)
-    private Long typeId = InitConstants.ROOT_ID;
+    private Integer type = Type.FILE.getCode();
 
     /**
      * 资源的名称，如果是文件类型的资源，应该带有后缀名
@@ -50,12 +63,12 @@ public class ResourceEntity extends BaseEntity {
         return this;
     }
 
-    public Long getTypeId() {
-        return typeId;
+    public Integer getType() {
+        return type;
     }
 
-    public ResourceEntity setTypeId(Long typeId) {
-        this.typeId = typeId;
+    public ResourceEntity setType(Integer type) {
+        this.type = type;
         return this;
     }
 

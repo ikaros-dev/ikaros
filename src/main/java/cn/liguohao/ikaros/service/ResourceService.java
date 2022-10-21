@@ -1,18 +1,12 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.common.JacksonConverter;
-import cn.liguohao.ikaros.common.constants.InitConstants;
-import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.kit.SystemVarKit;
 import cn.liguohao.ikaros.model.binary.Binary;
 import cn.liguohao.ikaros.model.binary.BinaryStorge;
-import cn.liguohao.ikaros.model.binary.BinaryType;
 import cn.liguohao.ikaros.model.binary.LocalBinaryStorge;
 import cn.liguohao.ikaros.model.entity.ResourceEntity;
-import cn.liguohao.ikaros.model.entity.ResourceTypeEntity;
 import cn.liguohao.ikaros.repository.ResourceRepository;
-import cn.liguohao.ikaros.repository.ResourceTypeRepository;
 import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,59 +24,29 @@ public class ResourceService {
 
     private BinaryStorge binaryStorge = new LocalBinaryStorge();
     private final ResourceRepository repository;
-    private final ResourceTypeRepository typeRepository;
     private final Environment environment;
 
-    public ResourceService(ResourceRepository repository,
-                           ResourceTypeRepository typeRepository, Environment environment) {
+    public ResourceService(ResourceRepository repository, Environment environment) {
         this.repository = repository;
-        this.typeRepository = typeRepository;
         this.environment = environment;
     }
-
-    /**
-     * init all preset resource type records
-     *
-     * @see InitConstants#PRESET_RESOURCE_TYPES
-     */
-    public void initPresetTypeRecords() {
-        for (String presetType : InitConstants.PRESET_RESOURCE_TYPES) {
-            if (typeRepository.existsByName(presetType)) {
-                ResourceTypeEntity existResourceTypeEntity = typeRepository.findByName(presetType);
-                if (existResourceTypeEntity.getStatus()) {
-                    continue;
-                }
-                existResourceTypeEntity.setStatus(true);
-                existResourceTypeEntity = typeRepository.saveAndFlush(existResourceTypeEntity);
-                LOGGER.debug("update resource type record status to true: {}",
-                    JacksonConverter.obj2Json(existResourceTypeEntity));
-            } else {
-                ResourceTypeEntity resourceTypeEntity = new ResourceTypeEntity()
-                    .setName(presetType);
-                resourceTypeEntity = typeRepository.saveAndFlush(resourceTypeEntity);
-                LOGGER.debug("init add new resource type record: {}",
-                    JacksonConverter.obj2Json(resourceTypeEntity));
-            }
-        }
-    }
-
 
     public ResourceEntity save(ResourceEntity resourceEntity, byte[] bytes) {
         Assert.notNull(resourceEntity, "'resourceEntity' must not be null");
         String name = resourceEntity.getName();
         Assert.notBlank(name, "'name' must not be blank");
 
-        // update typeId
-        Long typeId = resourceEntity.getTypeId();
-        if (typeId == null) {
-            String postfix = name.substring(name.lastIndexOf("."));
-            BinaryType type = FileKit.parseBinaryTypeByPostfix(postfix);
-            ResourceTypeEntity typeEntity = typeRepository.findByName(type.name());
-            if (typeEntity != null) {
-                typeId = typeEntity.getId();
-                resourceEntity.setTypeId(typeId);
-            }
-        }
+//        // update typeId
+//        Long typeId = resourceEntity.getTypeId();
+//        if (typeId == null) {
+//            String postfix = name.substring(name.lastIndexOf("."));
+//            ResourceType type = FileKit.parseResourceTypeByPostfix(postfix);
+//            ResourceTypeEntity typeEntity = typeRepository.findByName(type.name());
+//            if (typeEntity != null) {
+//                typeId = typeEntity.getId();
+//                resourceEntity.setTypeId(typeId);
+//            }
+//        }
 
         // upload binary data and update url
         if (bytes != null) {

@@ -8,7 +8,4 @@ import cn.liguohao.ikaros.model.entity.ResourceEntity;
  */
 public interface ResourceRepository extends BaseRepository<ResourceEntity> {
 
-    boolean existsByTypeIdAndName(Long typeId, Long name);
-
-    ResourceEntity findByTypeIdAndName(Long typeId, Long name);
 }
