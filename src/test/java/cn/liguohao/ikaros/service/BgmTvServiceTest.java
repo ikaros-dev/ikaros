@@ -1,10 +1,14 @@
 package cn.liguohao.ikaros.service;
 
 
-import cn.liguohao.ikaros.model.bgmtv.Episode;
-import cn.liguohao.ikaros.model.bgmtv.EpisodeType;
-import cn.liguohao.ikaros.model.bgmtv.Subject;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvEpisode;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvEpisodeType;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvSubject;
 import cn.liguohao.ikaros.model.entity.FileEntity;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -25,25 +29,26 @@ class BgmTvServiceTest {
 
     @Test
     void getSubjectMetadata() {
-        Subject subject = bgmTvService.getSubject(subjectId);
-        Assertions.assertNotNull(subject);
-        Assertions.assertNotNull(subject.getName());
+        BgmTvSubject bgmTvSubject = bgmTvService.getSubject(subjectId);
+        Assertions.assertNotNull(bgmTvSubject);
+        Assertions.assertNotNull(bgmTvSubject.getName());
     }
 
     @Test
     void getEpisodesBySubjectId() {
-        List<Episode> episodes =
-            bgmTvService.getEpisodesBySubjectId(subjectId, EpisodeType.POSITIVE);
-        Assertions.assertNotNull(episodes);
-        Assertions.assertFalse(episodes.isEmpty());
+        List<BgmTvEpisode> bgmTvEpisodes =
+            bgmTvService.getEpisodesBySubjectId(subjectId, BgmTvEpisodeType.POSITIVE);
+        Assertions.assertNotNull(bgmTvEpisodes);
+        Assertions.assertFalse(bgmTvEpisodes.isEmpty());
     }
 
     @Test
-    void downloadCover() {
+    void downloadCover() throws IOException {
         String url = "https://lain.bgm.tv/pic/cover/l/3c/82/373267_ffBO8.jpg";
         FileEntity fileEntity = bgmTvService.downloadCover(url);
         Assertions.assertNotNull(fileEntity);
         Assertions.assertNotNull(fileEntity.getLocation());
         Assertions.assertNotNull(fileEntity.getUrl());
+        Files.deleteIfExists(Path.of(new File(fileEntity.getLocation()).toURI()));
     }
 }

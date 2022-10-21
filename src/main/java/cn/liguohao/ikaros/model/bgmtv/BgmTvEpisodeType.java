@@ -1,6 +1,6 @@
 package cn.liguohao.ikaros.model.bgmtv;
 
-public enum EpisodeType {
+public enum BgmTvEpisodeType {
     /**
      * 正篇
      */
@@ -22,7 +22,7 @@ public enum EpisodeType {
     ;
     private final int code;
 
-    EpisodeType(int code) {
+    BgmTvEpisodeType(int code) {
         this.code = code;
     }
 

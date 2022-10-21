@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  */
-public class Images {
+public class BgmTvImages {
     @JsonProperty("large")
     private String large;
     @JsonProperty("common")
@@ -20,7 +20,7 @@ public class Images {
         return large;
     }
 
-    public Images setLarge(String large) {
+    public BgmTvImages setLarge(String large) {
         this.large = large;
         return this;
     }
@@ -29,7 +29,7 @@ public class Images {
         return common;
     }
 
-    public Images setCommon(String common) {
+    public BgmTvImages setCommon(String common) {
         this.common = common;
         return this;
     }
@@ -38,7 +38,7 @@ public class Images {
         return medium;
     }
 
-    public Images setMedium(String medium) {
+    public BgmTvImages setMedium(String medium) {
         this.medium = medium;
         return this;
     }
@@ -47,7 +47,7 @@ public class Images {
         return small;
     }
 
-    public Images setSmall(String small) {
+    public BgmTvImages setSmall(String small) {
         this.small = small;
         return this;
     }
@@ -56,7 +56,7 @@ public class Images {
         return grid;
     }
 
-    public Images setGrid(String grid) {
+    public BgmTvImages setGrid(String grid) {
         this.grid = grid;
         return this;
     }

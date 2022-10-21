@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * 剧集信息
  */
-public class Episode {
+public class BgmTvEpisode {
     private Integer id;
-    private EpisodeType type;
+    private BgmTvEpisodeType type;
     private String name;
     @JsonProperty("name_cn")
     private String nameCn;
@@ -36,16 +36,16 @@ public class Episode {
         return id;
     }
 
-    public Episode setId(Integer id) {
+    public BgmTvEpisode setId(Integer id) {
         this.id = id;
         return this;
     }
 
-    public EpisodeType getType() {
+    public BgmTvEpisodeType getType() {
         return type;
     }
 
-    public Episode setType(EpisodeType type) {
+    public BgmTvEpisode setType(BgmTvEpisodeType type) {
         this.type = type;
         return this;
     }
@@ -54,7 +54,7 @@ public class Episode {
         return name;
     }
 
-    public Episode setName(String name) {
+    public BgmTvEpisode setName(String name) {
         this.name = name;
         return this;
     }
@@ -63,7 +63,7 @@ public class Episode {
         return nameCn;
     }
 
-    public Episode setNameCn(String nameCn) {
+    public BgmTvEpisode setNameCn(String nameCn) {
         this.nameCn = nameCn;
         return this;
     }
@@ -72,7 +72,7 @@ public class Episode {
         return sort;
     }
 
-    public Episode setSort(Integer sort) {
+    public BgmTvEpisode setSort(Integer sort) {
         this.sort = sort;
         return this;
     }
@@ -81,7 +81,7 @@ public class Episode {
         return ep;
     }
 
-    public Episode setEp(Integer ep) {
+    public BgmTvEpisode setEp(Integer ep) {
         this.ep = ep;
         return this;
     }
@@ -90,7 +90,7 @@ public class Episode {
         return airDate;
     }
 
-    public Episode setAirDate(String airDate) {
+    public BgmTvEpisode setAirDate(String airDate) {
         this.airDate = airDate;
         return this;
     }
@@ -99,7 +99,7 @@ public class Episode {
         return comment;
     }
 
-    public Episode setComment(Integer comment) {
+    public BgmTvEpisode setComment(Integer comment) {
         this.comment = comment;
         return this;
     }
@@ -108,7 +108,7 @@ public class Episode {
         return duration;
     }
 
-    public Episode setDuration(String duration) {
+    public BgmTvEpisode setDuration(String duration) {
         this.duration = duration;
         return this;
     }
@@ -117,7 +117,7 @@ public class Episode {
         return desc;
     }
 
-    public Episode setDesc(String desc) {
+    public BgmTvEpisode setDesc(String desc) {
         this.desc = desc;
         return this;
     }
@@ -126,7 +126,7 @@ public class Episode {
         return durationSeconds;
     }
 
-    public Episode setDurationSeconds(Integer durationSeconds) {
+    public BgmTvEpisode setDurationSeconds(Integer durationSeconds) {
         this.durationSeconds = durationSeconds;
         return this;
     }
@@ -135,7 +135,7 @@ public class Episode {
         return disc;
     }
 
-    public Episode setDisc(String disc) {
+    public BgmTvEpisode setDisc(String disc) {
         this.disc = disc;
         return this;
     }

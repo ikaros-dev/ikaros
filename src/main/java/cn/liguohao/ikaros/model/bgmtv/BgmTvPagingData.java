@@ -6,7 +6,7 @@ import java.util.List;
  * @author guohao
  * @date 2022/10/20
  */
-public class PagingData<T> {
+public class BgmTvPagingData<T> {
     private List<T> data;
     private Integer total;
     private Integer limit;
@@ -16,7 +16,7 @@ public class PagingData<T> {
         return data;
     }
 
-    public PagingData<T> setData(List<T> data) {
+    public BgmTvPagingData<T> setData(List<T> data) {
         this.data = data;
         return this;
     }
@@ -25,7 +25,7 @@ public class PagingData<T> {
         return total;
     }
 
-    public PagingData<T> setTotal(Integer total) {
+    public BgmTvPagingData<T> setTotal(Integer total) {
         this.total = total;
         return this;
     }
@@ -34,7 +34,7 @@ public class PagingData<T> {
         return limit;
     }
 
-    public PagingData<T> setLimit(Integer limit) {
+    public BgmTvPagingData<T> setLimit(Integer limit) {
         this.limit = limit;
         return this;
     }
@@ -43,7 +43,7 @@ public class PagingData<T> {
         return offset;
     }
 
-    public PagingData<T> setOffset(Integer offset) {
+    public BgmTvPagingData<T> setOffset(Integer offset) {
         this.offset = offset;
         return this;
     }

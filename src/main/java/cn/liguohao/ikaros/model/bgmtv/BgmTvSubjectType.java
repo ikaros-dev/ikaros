@@ -6,7 +6,7 @@ package cn.liguohao.ikaros.model.bgmtv;
  * @author <a href="http://liguohao.cn" target="_blank">liguohao</a>
  * @date 2022/4/4
  */
-public enum SubjectType {
+public enum BgmTvSubjectType {
     /**
      * 书籍
      */
@@ -34,7 +34,7 @@ public enum SubjectType {
     ;
     private final int code;
 
-    SubjectType(int code) {
+    BgmTvSubjectType(int code) {
         this.code = code;
     }
 

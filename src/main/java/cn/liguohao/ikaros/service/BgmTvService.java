@@ -3,10 +3,10 @@ package cn.liguohao.ikaros.service;
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.JacksonConverter;
 import cn.liguohao.ikaros.common.constants.IkarosConstants;
-import cn.liguohao.ikaros.model.bgmtv.Episode;
-import cn.liguohao.ikaros.model.bgmtv.EpisodeType;
-import cn.liguohao.ikaros.model.bgmtv.PagingData;
-import cn.liguohao.ikaros.model.bgmtv.Subject;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvEpisode;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvEpisodeType;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvPagingData;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvSubject;
 import cn.liguohao.ikaros.model.entity.FileEntity;
 import cn.liguohao.ikaros.model.option.ThirdPartyOptionModel;
 import java.util.ArrayList;
@@ -55,44 +55,45 @@ public class BgmTvService implements InitializingBean {
     }
 
     @Retryable
-    public Subject getSubject(Long subjectId) {
+    public BgmTvSubject getSubject(Long subjectId) {
         Assert.isPositive(subjectId, "'subjectId' must be positive");
         // https://api.bgm.tv/v0/subjects/373267
         String bgmTvSubjectsUrl = thirdPartyOM.getBangumiApiBase()
             + thirdPartyOM.getBangumiApiSubjects() + "/" + subjectId;
 
-        ResponseEntity<Subject> responseEntity = restTemplate
+        ResponseEntity<BgmTvSubject> responseEntity = restTemplate
             .exchange(bgmTvSubjectsUrl, HttpMethod.GET, new HttpEntity<>(null, headers),
-                Subject.class);
+                BgmTvSubject.class);
 
         return responseEntity.getBody();
     }
 
     @Retryable
-    public List<Episode> getEpisodesBySubjectId(Long subjectId, EpisodeType episodeType) {
+    public List<BgmTvEpisode> getEpisodesBySubjectId(Long subjectId,
+                                                     BgmTvEpisodeType bgmTvEpisodeType) {
         Assert.isPositive(subjectId, "'subjectId' must be positive");
         // https://api.bgm.tv/v0/episodes?subject_id=373267&type=0&limit=100&offset=0
         String url = thirdPartyOM.getBangumiApiBase()
             + thirdPartyOM.getBangumiApiEpisodes() + "?subject_id=" + subjectId
-            + "&type=" + episodeType.getCode() + "&limit=100&offset=0";
+            + "&type=" + bgmTvEpisodeType.getCode() + "&limit=100&offset=0";
 
-        ResponseEntity<PagingData> responseEntity = restTemplate
+        ResponseEntity<BgmTvPagingData> responseEntity = restTemplate
             .exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers),
-                PagingData.class);
-        PagingData pagingData = responseEntity.getBody();
-        List<Episode> episodes = new ArrayList<>();
+                BgmTvPagingData.class);
+        BgmTvPagingData bgmTvPagingData = responseEntity.getBody();
+        List<BgmTvEpisode> bgmTvEpisodes = new ArrayList<>();
 
-        for (Object obj : pagingData.getData()) {
+        for (Object obj : bgmTvPagingData.getData()) {
             String json = JacksonConverter.obj2Json(obj);
-            Episode episode = JacksonConverter.json2obj(json, Episode.class);
-            episodes.add(episode);
+            BgmTvEpisode bgmTvEpisode = JacksonConverter.json2obj(json, BgmTvEpisode.class);
+            bgmTvEpisodes.add(bgmTvEpisode);
         }
 
-        return episodes;
+        return bgmTvEpisodes;
     }
 
     @Retryable
-    public FileEntity downloadCover(String url)  {
+    public FileEntity downloadCover(String url) {
         Assert.notBlank(url, "'url' must not be blank");
         ResponseEntity<byte[]> responseEntity =
             restTemplate.exchange(url, HttpMethod.GET, null, byte[].class);

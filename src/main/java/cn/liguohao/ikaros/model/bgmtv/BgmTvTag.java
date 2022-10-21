@@ -4,7 +4,7 @@ package cn.liguohao.ikaros.model.bgmtv;
  * @author guohao
  * @date 2022/10/20
  */
-public class Tag {
+public class BgmTvTag {
     private String name;
     private String count;
 
@@ -12,7 +12,7 @@ public class Tag {
         return name;
     }
 
-    public Tag setName(String name) {
+    public BgmTvTag setName(String name) {
         this.name = name;
         return this;
     }
@@ -21,7 +21,7 @@ public class Tag {
         return count;
     }
 
-    public Tag setCount(String count) {
+    public BgmTvTag setCount(String count) {
         this.count = count;
         return this;
     }

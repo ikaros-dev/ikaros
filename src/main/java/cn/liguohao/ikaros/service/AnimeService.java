@@ -6,10 +6,10 @@ import cn.liguohao.ikaros.common.kit.BeanKit;
 import cn.liguohao.ikaros.common.kit.DateKit;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.bgmtv.BgmTvConstants;
-import cn.liguohao.ikaros.model.bgmtv.Episode;
-import cn.liguohao.ikaros.model.bgmtv.EpisodeType;
-import cn.liguohao.ikaros.model.bgmtv.Subject;
-import cn.liguohao.ikaros.model.bgmtv.Tag;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvEpisode;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvEpisodeType;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvSubject;
+import cn.liguohao.ikaros.model.bgmtv.BgmTvTag;
 import cn.liguohao.ikaros.model.dto.AnimeDTO;
 import cn.liguohao.ikaros.model.dto.EpisodeDTO;
 import cn.liguohao.ikaros.model.dto.SeasonDTO;
@@ -177,26 +177,27 @@ public class AnimeService {
             LOGGER.debug("anime not exist, will  create a new, subjectId={}", subjectId);
 
             // 获取动漫信息
-            Subject subject = bgmTvService.getSubject(subjectId);
-            if (subject == null) {
+            BgmTvSubject bgmTvSubject = bgmTvService.getSubject(subjectId);
+            if (bgmTvSubject == null) {
                 LOGGER.error("request bgmtv fail, response null subject");
                 return null;
             }
 
             AnimeEntity animeEntity = new AnimeEntity();
-            String coverUrl = subject.getImages().getLarge();
+            String coverUrl = bgmTvSubject.getImages().getLarge();
             FileEntity coverFileEntity = bgmTvService.downloadCover(coverUrl);
             animeEntity.setCoverUrl(coverFileEntity.getUrl())
-                .setAirTime(DateKit.parseDateStr(subject.getDate(), BgmTvConstants.DATE_PATTERN))
-                .setPlatform(subject.getPlatform())
-                .setOverview(subject.getSummary())
-                .setTitle(subject.getNameCn())
-                .setOriginalTitle(subject.getName());
+                .setAirTime(
+                    DateKit.parseDateStr(bgmTvSubject.getDate(), BgmTvConstants.DATE_PATTERN))
+                .setPlatform(bgmTvSubject.getPlatform())
+                .setOverview(bgmTvSubject.getSummary())
+                .setTitle(bgmTvSubject.getNameCn())
+                .setOriginalTitle(bgmTvSubject.getName());
             animeEntity = animeRepository.saveAndFlush(animeEntity);
 
-            for (Tag tag : subject.getTags()) {
+            for (BgmTvTag bgmTvTag : bgmTvSubject.getTags()) {
                 TagEntity tagEntity =
-                    tagRepository.saveAndFlush(new TagEntity().setName(tag.getName()));
+                    tagRepository.saveAndFlush(new TagEntity().setName(bgmTvTag.getName()));
                 AnimeTagEntity animeTagEntity = new AnimeTagEntity()
                     .setAnimeId(animeEntity.getId())
                     .setTagId(tagEntity.getId());
@@ -204,26 +205,25 @@ public class AnimeService {
             }
 
             // 获取动漫剧集信息
-            List<Episode> episodes =
-                bgmTvService.getEpisodesBySubjectId(subjectId, EpisodeType.POSITIVE);
+            List<BgmTvEpisode> bgmTvEpisodes =
+                bgmTvService.getEpisodesBySubjectId(subjectId, BgmTvEpisodeType.POSITIVE);
 
             new SeasonEntity()
                 .setType(AnimeConstants.DEFAULT_SEASON_TYPE);
 
-            for (Episode episode : episodes) {
+            for (BgmTvEpisode bgmTvEpisode : bgmTvEpisodes) {
                 Date airDate =
-                    DateKit.parseDateStr(episode.getAirDate(), BgmTvConstants.DATE_PATTERN);
+                    DateKit.parseDateStr(bgmTvEpisode.getAirDate(), BgmTvConstants.DATE_PATTERN);
                 EpisodeEntity episodeEntity = new EpisodeEntity()
-                    .setSeq(episode.getEp().longValue())
-                    .setTitle(episode.getNameCn())
-                    .setOriginalTitle(episode.getName())
+                    .setSeq(bgmTvEpisode.getEp().longValue())
+                    .setTitle(bgmTvEpisode.getNameCn())
+                    .setOriginalTitle(bgmTvEpisode.getName())
                     .setAirTime(airDate)
-                    .setOverview(episode.getDesc())
-                    .setDuration(episode.getDurationSeconds().longValue());
+                    .setOverview(bgmTvEpisode.getDesc())
+                    .setDuration(bgmTvEpisode.getDurationSeconds().longValue());
                 episodeEntity = episodeRepository.saveAndFlush(episodeEntity);
 
             }
-
 
 
             return null;

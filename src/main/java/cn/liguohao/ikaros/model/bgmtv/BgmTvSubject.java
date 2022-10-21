@@ -1,17 +1,15 @@
 package cn.liguohao.ikaros.model.bgmtv;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.HashMap;
 import java.util.List;
 
 /**
  * 条目
  *
  */
-public class Subject {
+public class BgmTvSubject {
     private Integer id;
-    private SubjectType type;
+    private BgmTvSubjectType type;
     private String name;
     @JsonProperty("name_cn")
     private String nameCn;
@@ -21,27 +19,24 @@ public class Subject {
      */
     private String date;
     private String platform;
-    @JsonProperty("url")
     private String url;
-    private Images images;
-    @JsonIgnore
-    private List<HashMap<String, String>> infobox;
-    private List<Tag> tags;
+    private BgmTvImages images;
+    private List<BgmTvTag> tags;
 
     public Integer getId() {
         return id;
     }
 
-    public Subject setId(Integer id) {
+    public BgmTvSubject setId(Integer id) {
         this.id = id;
         return this;
     }
 
-    public SubjectType getType() {
+    public BgmTvSubjectType getType() {
         return type;
     }
 
-    public Subject setType(SubjectType type) {
+    public BgmTvSubject setType(BgmTvSubjectType type) {
         this.type = type;
         return this;
     }
@@ -50,7 +45,7 @@ public class Subject {
         return name;
     }
 
-    public Subject setName(String name) {
+    public BgmTvSubject setName(String name) {
         this.name = name;
         return this;
     }
@@ -59,7 +54,7 @@ public class Subject {
         return nameCn;
     }
 
-    public Subject setNameCn(String nameCn) {
+    public BgmTvSubject setNameCn(String nameCn) {
         this.nameCn = nameCn;
         return this;
     }
@@ -68,7 +63,7 @@ public class Subject {
         return summary;
     }
 
-    public Subject setSummary(String summary) {
+    public BgmTvSubject setSummary(String summary) {
         this.summary = summary;
         return this;
     }
@@ -77,7 +72,7 @@ public class Subject {
         return date;
     }
 
-    public Subject setDate(String date) {
+    public BgmTvSubject setDate(String date) {
         this.date = date;
         return this;
     }
@@ -86,7 +81,7 @@ public class Subject {
         return platform;
     }
 
-    public Subject setPlatform(String platform) {
+    public BgmTvSubject setPlatform(String platform) {
         this.platform = platform;
         return this;
     }
@@ -95,36 +90,26 @@ public class Subject {
         return url;
     }
 
-    public Subject setUrl(String url) {
+    public BgmTvSubject setUrl(String url) {
         this.url = url;
         return this;
     }
 
-    public Images getImages() {
+    public BgmTvImages getImages() {
         return images;
     }
 
-    public Subject setImages(Images images) {
+    public BgmTvSubject setImages(BgmTvImages images) {
         this.images = images;
         return this;
     }
 
-    public List<Tag> getTags() {
+    public List<BgmTvTag> getTags() {
         return tags;
     }
 
-    public Subject setTags(List<Tag> tags) {
+    public BgmTvSubject setTags(List<BgmTvTag> tags) {
         this.tags = tags;
-        return this;
-    }
-
-    public List<HashMap<String, String>> getInfobox() {
-        return infobox;
-    }
-
-    public Subject setInfobox(
-        List<HashMap<String, String>> infobox) {
-        this.infobox = infobox;
         return this;
     }
 }
