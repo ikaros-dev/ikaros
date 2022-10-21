@@ -7,13 +7,15 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 /**
  * @author guohao
  * @date 2022/09/10
  */
 @Entity
-@Table(name = "season")
+@Table(name = "season", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"type", "original_title"})})
 public class SeasonEntity extends BaseEntity {
 
     public enum Type {
@@ -86,7 +88,7 @@ public class SeasonEntity extends BaseEntity {
     @Column(name = "original_title")
     private String originalTitle;
 
-    private Type type;
+    private Integer type = Type.FIRST.getCode();
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
@@ -102,11 +104,11 @@ public class SeasonEntity extends BaseEntity {
         return this;
     }
 
-    public Type getType() {
+    public Integer getType() {
         return type;
     }
 
-    public SeasonEntity setType(Type type) {
+    public SeasonEntity setType(Integer type) {
         this.type = type;
         return this;
     }

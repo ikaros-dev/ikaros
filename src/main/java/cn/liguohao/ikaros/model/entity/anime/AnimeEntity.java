@@ -23,7 +23,7 @@ public class AnimeEntity extends BaseEntity {
     @Column(name = "bgmtv_id")
     private Long bgmtvId;
 
-    @Column(name = "original_title")
+    @Column(name = "original_title", nullable = false)
     private String originalTitle;
 
     private String platform;
