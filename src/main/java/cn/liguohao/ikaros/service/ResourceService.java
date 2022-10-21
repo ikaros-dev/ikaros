@@ -36,17 +36,6 @@ public class ResourceService {
         String name = resourceEntity.getName();
         Assert.notBlank(name, "'name' must not be blank");
 
-//        // update typeId
-//        Long typeId = resourceEntity.getTypeId();
-//        if (typeId == null) {
-//            String postfix = name.substring(name.lastIndexOf("."));
-//            ResourceType type = FileKit.parseResourceTypeByPostfix(postfix);
-//            ResourceTypeEntity typeEntity = typeRepository.findByName(type.name());
-//            if (typeEntity != null) {
-//                typeId = typeEntity.getId();
-//                resourceEntity.setTypeId(typeId);
-//            }
-//        }
 
         // upload binary data and update url
         if (bytes != null) {
