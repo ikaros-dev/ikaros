@@ -1,6 +1,7 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
+import cn.liguohao.ikaros.common.JacksonConverter;
 import cn.liguohao.ikaros.common.constants.OptionConstants;
 import cn.liguohao.ikaros.common.constants.OptionConstants.Category;
 import cn.liguohao.ikaros.common.constants.OptionConstants.Init.App;
@@ -65,6 +66,7 @@ public class OptionService {
                 = new OptionEntity(key, optionItemDTO.getValue())
                 .setType(optionItemDTO.getType())
                 .setCategory(optionItemDTO.getCategory());
+            LOGGER.debug("create new option record: {}", JacksonConverter.obj2Json(optionEntity));
             return optionRepository.saveAndFlush(optionEntity);
         }
 
