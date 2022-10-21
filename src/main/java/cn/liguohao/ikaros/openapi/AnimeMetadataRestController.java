@@ -1,6 +1,7 @@
 package cn.liguohao.ikaros.openapi;
 
 import cn.liguohao.ikaros.common.result.CommonResult;
+import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.dto.AnimeDTO;
 import cn.liguohao.ikaros.service.AnimeService;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +23,8 @@ public class AnimeMetadataRestController {
     }
 
     @PutMapping("/network/bgmTvId/{bgmTvId}")
-    public CommonResult<AnimeDTO> reqBgmtvBangumiMetadata(@PathVariable Long bgmTvId) {
+    public CommonResult<AnimeDTO> reqBgmtvBangumiMetadata(@PathVariable Long bgmTvId)
+        throws RecordNotFoundException {
         return CommonResult.ok(animeService.reqBgmtvBangumiMetadata(bgmTvId));
     }
 }

@@ -28,8 +28,10 @@ import cn.liguohao.ikaros.repository.anime.AnimeTagRepository;
 import cn.liguohao.ikaros.repository.anime.EpisodeRepository;
 import cn.liguohao.ikaros.repository.anime.SeasonEpisodeRepository;
 import cn.liguohao.ikaros.repository.anime.SeasonRepository;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,21 +156,62 @@ public class AnimeService {
     }
 
     public AnimeDTO findAnimeDTOById(Long id) throws RecordNotFoundException {
+        Assert.isPositive(id, "'id' must be positive");
+        AnimeDTO animeDTO = new AnimeDTO();
         AnimeEntity animeEntity = findById(id);
-        return findAnimeDTOByAnimeEntity(animeEntity);
+        BeanKit.copyProperties(animeEntity, animeDTO);
+
+        List<AnimeSeasonEntity> animeSeasonEntities =
+            animeSeasonRepository.findByAnimeIdAndStatus(id, true);
+
+        List<SeasonDTO> seasonDTOS = new ArrayList<>();
+        for (AnimeSeasonEntity animeSeasonEntity : animeSeasonEntities) {
+            Optional<SeasonEntity> seasonEntityOptional =
+                seasonRepository.findById(animeSeasonEntity.getSeasonId());
+            if (seasonEntityOptional.isEmpty()) {
+                throw new RecordNotFoundException(
+                    "season entity record not found: " + animeSeasonEntity.getSeasonId());
+            }
+            SeasonEntity seasonEntity = seasonEntityOptional.get();
+            SeasonDTO seasonDTO = new SeasonDTO();
+            BeanKit.copyProperties(seasonEntity, seasonDTO);
+
+            List<SeasonEpisodeEntity> episodeEntityList =
+                seasonEpisodeRepository.findBySeasonIdAndStatus(seasonEntity.getId(), true);
+            List<EpisodeDTO> episodeDTOS = new ArrayList<>();
+            for (SeasonEpisodeEntity seasonEpisodeEntity : episodeEntityList) {
+                Long episodeId = seasonEpisodeEntity.getEpisodeId();
+
+                Optional<EpisodeEntity> episodeEntityOptional =
+                    episodeRepository.findById(episodeId);
+                if (episodeEntityOptional.isEmpty()) {
+                    throw new RecordNotFoundException(
+                        "episode entity record not found: " + animeSeasonEntity.getSeasonId());
+                }
+                EpisodeEntity episodeEntity = episodeEntityOptional.get();
+                EpisodeDTO episodeDTO = new EpisodeDTO();
+                BeanKit.copyProperties(episodeEntity, episodeDTO);
+                episodeDTOS.add(episodeDTO);
+            }
+
+            seasonDTO.setEpisodes(episodeDTOS);
+            seasonDTOS.add(seasonDTO);
+        }
+
+        animeDTO.setSeasons(seasonDTOS);
+        return animeDTO;
     }
 
-    private AnimeDTO findAnimeDTOByAnimeEntity(AnimeEntity animeEntity) {
-        // todo findAnimeDTOByAnimeEntity
 
-        return null;
-    }
-
-
-    public AnimeDTO reqBgmtvBangumiMetadata(Long subjectId) {
+    public AnimeDTO reqBgmtvBangumiMetadata(Long subjectId) throws RecordNotFoundException {
         try {
             // 直接返回已经存在的番剧数据
-            Long id = animeRepository.findIdByBgmtvIdAndStatus(subjectId, true);
+            List<AnimeEntity> animeEntityList =
+                animeRepository.findByBgmtvIdAndStatus(subjectId, true);
+            if (animeEntityList.isEmpty()) {
+                throw new RecordNotFoundException("record not found, id=" + subjectId);
+            }
+            Long id = animeEntityList.get(0).getId();
             AnimeDTO animeDTO = findAnimeDTOById(id);
             LOGGER.debug("anime exist, return this anime, subjectId={}, animeId={}", subjectId, id);
             return animeDTO;
@@ -186,7 +229,9 @@ public class AnimeService {
             AnimeEntity animeEntity = new AnimeEntity();
             String coverUrl = bgmTvSubject.getImages().getLarge();
             FileEntity coverFileEntity = bgmTvService.downloadCover(coverUrl);
-            animeEntity.setCoverUrl(coverFileEntity.getUrl())
+            animeEntity
+                .setBgmtvId(subjectId)
+                .setCoverUrl(coverFileEntity.getUrl())
                 .setAirTime(
                     DateKit.parseDateStr(bgmTvSubject.getDate(), BgmTvConstants.DATE_PATTERN))
                 .setPlatform(bgmTvSubject.getPlatform())
@@ -208,8 +253,17 @@ public class AnimeService {
             List<BgmTvEpisode> bgmTvEpisodes =
                 bgmTvService.getEpisodesBySubjectId(subjectId, BgmTvEpisodeType.POSITIVE);
 
-            new SeasonEntity()
-                .setType(AnimeConstants.DEFAULT_SEASON_TYPE);
+            SeasonEntity seasonEntity = new SeasonEntity()
+                .setType(AnimeConstants.DEFAULT_SEASON_TYPE)
+                .setOriginalTitle(animeEntity.getOriginalTitle())
+                .setTitle(animeEntity.getTitle())
+                .setOverview(animeEntity.getOverview());
+
+            seasonEntity = seasonRepository.saveAndFlush(seasonEntity);
+
+            animeSeasonRepository.saveAndFlush(new AnimeSeasonEntity()
+                .setAnimeId(animeEntity.getId())
+                .setSeasonId(seasonEntity.getId()));
 
             for (BgmTvEpisode bgmTvEpisode : bgmTvEpisodes) {
                 Date airDate =
@@ -222,11 +276,12 @@ public class AnimeService {
                     .setOverview(bgmTvEpisode.getDesc())
                     .setDuration(bgmTvEpisode.getDurationSeconds().longValue());
                 episodeEntity = episodeRepository.saveAndFlush(episodeEntity);
-
+                seasonEpisodeRepository.saveAndFlush(new SeasonEpisodeEntity()
+                    .setSeasonId(seasonEntity.getId())
+                    .setEpisodeId(episodeEntity.getId()));
             }
 
-
-            return null;
+            return findAnimeDTOById(animeEntity.getId());
         }
     }
 
