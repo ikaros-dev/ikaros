@@ -150,9 +150,39 @@ public class AnimeService {
         return animeRepository.findByIdAndStatus(id, true).get();
     }
 
-    public AnimeDTO saveAnimeDTO(AnimeDTO animeDTO) {
-        // todo save animeDTO
-        return null;
+    public AnimeDTO saveAnimeDTO(AnimeDTO animeDTO) throws RecordNotFoundException {
+        // save anime
+        AnimeEntity animeEntity = findById(animeDTO.getId());
+        BeanKit.copyProperties(animeDTO, animeEntity);
+        animeEntity = animeRepository.saveAndFlush(animeEntity);
+
+        List<SeasonDTO> seasons = animeDTO.getSeasons();
+        for (SeasonDTO season : seasons) {
+            // update season
+            Optional<SeasonEntity> seasonEntityOptional = seasonRepository.findById(season.getId());
+            if (seasonEntityOptional.isEmpty()) {
+                throw new RecordNotFoundException(
+                    "season record not found, id=" + season.getId());
+            }
+            SeasonEntity seasonEntity = seasonEntityOptional.get();
+            BeanKit.copyProperties(season, seasonEntity);
+            season = seasonRepository.saveAndFlush(season);
+
+            List<EpisodeDTO> episodes = season.getEpisodes();
+            for (EpisodeDTO episode : episodes) {
+                // update episode
+                Optional<EpisodeEntity> episodeEntityOptional =
+                    episodeRepository.findById(episode.getId());
+                if (episodeEntityOptional.isEmpty()) {
+                    throw new RecordNotFoundException(
+                        "episode record not found, id=" + episode.getId());
+                }
+                EpisodeEntity episodeEntity = episodeEntityOptional.get();
+                BeanKit.copyProperties(episode, episodeEntity);
+                episodeRepository.saveAndFlush(episodeEntity);
+            }
+        }
+        return animeDTO;
     }
 
     public AnimeDTO findAnimeDTOById(Long id) throws RecordNotFoundException {

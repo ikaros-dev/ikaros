@@ -11,4 +11,6 @@ import java.util.List;
 public interface AnimeSeasonRepository extends BaseRepository<AnimeSeasonEntity> {
 
     List<AnimeSeasonEntity> findByAnimeIdAndStatus(Long animeId, boolean status);
+
+    List<AnimeSeasonEntity> findByAnimeId(Long animeId);
 }

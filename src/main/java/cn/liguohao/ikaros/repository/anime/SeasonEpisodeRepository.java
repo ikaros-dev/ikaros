@@ -10,4 +10,6 @@ import java.util.List;
  */
 public interface SeasonEpisodeRepository extends BaseRepository<SeasonEpisodeEntity> {
     List<SeasonEpisodeEntity> findBySeasonIdAndStatus(Long seasonId, boolean status);
+
+    List<SeasonEpisodeEntity> findBySeasonId(Long seasonId);
 }
