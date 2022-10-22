@@ -17,7 +17,6 @@ public class FileEntity extends BaseEntity {
     private String postfix;
     @Enumerated(EnumType.STRING)
     private IkarosFile.Type type;
-    private String sha256;
     private String md5;
     private Integer size;
     /**
@@ -55,15 +54,6 @@ public class FileEntity extends BaseEntity {
 
     public FileEntity setType(IkarosFile.Type type) {
         this.type = type;
-        return this;
-    }
-
-    public String getSha256() {
-        return sha256;
-    }
-
-    public FileEntity setSha256(String sha256) {
-        this.sha256 = sha256;
         return this;
     }
 

@@ -11,9 +11,11 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.security.MessageDigest;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.xml.bind.DatatypeConverter;
 
@@ -31,6 +33,11 @@ public class FileKit {
         Arrays.stream(FileConstants.Postfix.VIDEOS).collect(Collectors.toSet());
     static final Set<String> VOICES =
         Arrays.stream(FileConstants.Postfix.VOICES).collect(Collectors.toSet());
+
+    private static final String BASE_UPLOAD_DIR_NAME = "upload";
+
+    private static final String BASE_UPLOAD_DIR_PATH
+        = SystemVarKit.getCurrentAppDirPath() + File.separator + BASE_UPLOAD_DIR_NAME;
 
     public enum Hash {
         MD5("MD5"),
@@ -140,6 +147,37 @@ public class FileKit {
                 throw new IOException("delete file fail, current path: " + file.getAbsolutePath());
             }
         }
+    }
+
+
+    /**
+     * @return 条目数据的文件路径，格式：[upload/yyyy/MM/dd/HH/随机生成的UUID.postfix]
+     */
+    public static String buildAppUploadFilePath(String postfix) {
+        Assert.notBlank(postfix, "'postfix' must not be blank");
+        return buildAppUploadFileBasePath(LocalDateTime.now())
+            + File.separator + UUID.randomUUID().toString().replace("-", "")
+            + (('.' == postfix.charAt(0))
+            ? postfix : "." + postfix);
+    }
+
+    /**
+     * @param uploadedTime 条目数据上传的时间
+     * @return 基础的上传目录路径，格式：[upload/yyyy/MM/dd/HH]
+     */
+    public static String buildAppUploadFileBasePath(LocalDateTime uploadedTime) {
+        Assert.notNull(uploadedTime, "'uploadedTime' must not be null");
+        String locationDirPath = BASE_UPLOAD_DIR_PATH
+            + File.separator + uploadedTime.getYear()
+            + File.separator + uploadedTime.getMonthValue()
+            + File.separator + uploadedTime.getDayOfMonth()
+            + File.separator + uploadedTime.getHour();
+
+        File locationDir = new File(locationDirPath);
+        if (!locationDir.exists()) {
+            locationDir.mkdirs();
+        }
+        return locationDirPath;
     }
 
 }

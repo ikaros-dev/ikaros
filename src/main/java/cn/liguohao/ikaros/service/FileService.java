@@ -3,7 +3,6 @@ package cn.liguohao.ikaros.service;
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.JacksonConverter;
 import cn.liguohao.ikaros.common.Strings;
-import cn.liguohao.ikaros.common.constants.AppConstants;
 import cn.liguohao.ikaros.common.kit.BeanKit;
 import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.kit.SystemVarKit;
@@ -63,7 +62,7 @@ public class FileService {
         this.environment = environment;
     }
 
-    public FileEntity upload(String originalFilename, byte[] bytes)  {
+    public FileEntity upload(String originalFilename, byte[] bytes) {
         Assert.notNull(originalFilename, "'originalFilename' must not bo null");
         Assert.notNull(bytes, "'bytes' must not bo null");
 
@@ -72,7 +71,8 @@ public class FileService {
             FileEntity fileEntity = uploadAndGetFileEntity(bytes, ikarosFile, null);
             return fileRepository.saveAndFlush(fileEntity);
         } catch (IOException ioException) {
-            throw new IkarosRuntimeException("upload file fail, originalFilename=" + originalFilename);
+            throw new IkarosRuntimeException(
+                "upload file fail, originalFilename=" + originalFilename);
         }
     }
 
@@ -84,9 +84,7 @@ public class FileService {
         Assert.isTrue(size > 0, "'bytes' length must > 0");
 
         final String md5 = FileKit.checksum2Str(bytes, FileKit.Hash.MD5);
-        final String sha256 = FileKit.checksum2Str(bytes, FileKit.Hash.SHA256);
         ikarosFile.setMd5(md5);
-        ikarosFile.setSha256(sha256);
 
         if (fileEntity == null) {
             fileEntity = new FileEntity();
@@ -102,7 +100,8 @@ public class FileService {
                 .setOldLocation(oldLocation);
         } else {
             // upload file to file system
-            fileHandler.upload(ikarosFile);
+            IkarosFileOperateResult fileOperateResult = fileHandler.upload(ikarosFile);
+            ikarosFile = fileOperateResult.getIkarosFile();
         }
 
         IkarosFile.Place place = ikarosFile.getPlace();
@@ -129,7 +128,6 @@ public class FileService {
             .setLocation(uploadedPath)
             .setUrl(url)
             .setMd5(md5)
-            .setSha256(sha256)
             .setSize(size)
             .setName(ikarosFile.getName())
             .setPostfix(ikarosFile.getPostfix())
@@ -137,7 +135,8 @@ public class FileService {
             .setPlace(place)
             .setCreateTime(uploadedDate)
             .setUpdateTime(uploadedDate);
-        return fileEntity;
+
+        return fileRepository.saveAndFlush(fileEntity);
     }
 
     public FileEntity findById(Long fileId) throws RecordNotFoundException {
@@ -387,9 +386,7 @@ public class FileService {
     private String meringTempChunkFile(String unique, String postfix) throws IOException {
         LOGGER.debug("All chunks upload has finish, will start merging files");
 
-        File targetFile =
-            new File(SystemVarKit.getCurrentAppDirPath() + File.separator
-                + AppConstants.Directory.DEFAULT_UPLOAD_NAME + File.separator + unique + "." + postfix);
+        File targetFile = new File(FileKit.buildAppUploadFilePath(postfix));
         String absolutePath = targetFile.getAbsolutePath();
 
         String chunkFileDirPath = SystemVarKit.getOsCacheDirPath() + File.separator + unique;
