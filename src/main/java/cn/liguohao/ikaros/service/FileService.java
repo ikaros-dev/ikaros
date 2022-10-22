@@ -369,6 +369,7 @@ public class FileService {
 
             uploadName = uploadName.substring(0, uploadName.lastIndexOf("."));
             FileEntity fileEntity = (FileEntity) new FileEntity()
+                .setMd5(FileKit.checksum2Str(bytes, FileKit.Hash.MD5))
                 .setLocation(filePath)
                 .setPlace(IkarosFile.Place.LOCAL)
                 .setUrl(path2url(filePath))
