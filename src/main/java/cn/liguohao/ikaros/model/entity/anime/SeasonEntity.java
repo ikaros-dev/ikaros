@@ -1,9 +1,12 @@
 package cn.liguohao.ikaros.model.entity.anime;
 
 import cn.liguohao.ikaros.model.entity.BaseEntity;
+import java.util.Comparator;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
 import javax.persistence.Table;
@@ -63,23 +66,63 @@ public class SeasonEntity extends BaseEntity {
          */
         PROMOTION_VIDEO(61),
 
+        /**
+         * 片头曲 (OP)
+         */
         OPENING_SONG(71),
+        /**
+         * 片尾曲 (ED)
+         */
         ENDING_SONG(72),
 
-        SPECIAL_PROMOTION_VIDEO(81),
+        /**
+         * SP
+         */
+        SPECIAL_PROMOTION(81),
+        /**
+         * 小剧场
+         */
         SMALL_THEATER(82),
+        /**
+         * LIVE
+         */
+        LIVE(83),
+        /**
+         * CM
+         */
+        CM(84),
 
+        /**
+         * 其它
+         */
         OTHER(90);
 
-        private final int code;
+        /**
+         * 从小到大 => 值越小越考前
+         */
+        private final int order;
 
-        Type(int code) {
-            this.code = code;
+        Type(int order) {
+            this.order = order;
         }
 
-        public int getCode() {
-            return code;
+        public int getOrder() {
+            return order;
         }
+
+        /**
+         * 从小到大 => order值越小越考前
+         */
+        public static class OrderComparator implements Comparator<Type> {
+            @Override
+            public int compare(Type o1, Type o2) {
+                if (o1.getOrder() == o2.getOrder()) {
+                    return 0;
+                }
+                return o1.getOrder() > o2.getOrder() ? 1 : -1;
+            }
+        }
+
     }
 
 
@@ -88,7 +131,8 @@ public class SeasonEntity extends BaseEntity {
     @Column(name = "original_title")
     private String originalTitle;
 
-    private Integer type = Type.FIRST.getCode();
+    @Enumerated(EnumType.STRING)
+    private Type type = Type.FIRST;
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
@@ -104,11 +148,11 @@ public class SeasonEntity extends BaseEntity {
         return this;
     }
 
-    public Integer getType() {
+    public Type getType() {
         return type;
     }
 
-    public SeasonEntity setType(Integer type) {
+    public SeasonEntity setType(Type type) {
         this.type = type;
         return this;
     }

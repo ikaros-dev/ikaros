@@ -19,10 +19,14 @@ public class BeanKit {
      */
     public static <T> void copyProperties(T source, T target) {
         Class<?> sourceClass = source.getClass();
+        // copy current class declared fields
         for (Field declaredField : sourceClass.getDeclaredFields()) {
             try {
                 declaredField.setAccessible(true);
                 Object oldValue = declaredField.get(source);
+                if (oldValue == null) {
+                    continue;
+                }
                 declaredField.set(target, oldValue);
                 declaredField.setAccessible(false);
             } catch (IllegalAccessException e) {
@@ -31,5 +35,26 @@ public class BeanKit {
             }
         }
 
+        // copy parent class declared fields
+        Class<?> superclass = sourceClass.getSuperclass();
+        for (Field declaredField : superclass.getDeclaredFields()) {
+            try {
+                declaredField.setAccessible(true);
+                Object oldValue = declaredField.get(source);
+                if (oldValue == null) {
+                    continue;
+                }
+                declaredField.set(target, oldValue);
+                declaredField.setAccessible(false);
+            } catch (IllegalAccessException e) {
+                String msg = "copy field fail, fileName=" + declaredField.getName();
+                LOGGER.error(msg, e);
+            }
+        }
+
+        if (superclass.getSuperclass() != Object.class) {
+            throw new IllegalArgumentException(
+                "current kit method must can support two extend relation");
+        }
     }
 }

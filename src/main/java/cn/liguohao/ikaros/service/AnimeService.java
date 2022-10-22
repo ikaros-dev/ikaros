@@ -1,8 +1,10 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
+import cn.liguohao.ikaros.common.Strings;
 import cn.liguohao.ikaros.common.kit.BeanKit;
 import cn.liguohao.ikaros.common.kit.DateKit;
+import cn.liguohao.ikaros.common.result.PagingWrap;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.bgmtv.BgmTvConstants;
 import cn.liguohao.ikaros.model.bgmtv.BgmTvEpisode;
@@ -20,6 +22,7 @@ import cn.liguohao.ikaros.model.entity.anime.AnimeTagEntity;
 import cn.liguohao.ikaros.model.entity.anime.EpisodeEntity;
 import cn.liguohao.ikaros.model.entity.anime.SeasonEntity;
 import cn.liguohao.ikaros.model.entity.anime.SeasonEpisodeEntity;
+import cn.liguohao.ikaros.model.param.SearchAnimeDTOSParams;
 import cn.liguohao.ikaros.repository.TagRepository;
 import cn.liguohao.ikaros.repository.anime.AnimeRepository;
 import cn.liguohao.ikaros.repository.anime.AnimeSeasonRepository;
@@ -28,12 +31,21 @@ import cn.liguohao.ikaros.repository.anime.EpisodeRepository;
 import cn.liguohao.ikaros.repository.anime.SeasonEpisodeRepository;
 import cn.liguohao.ikaros.repository.anime.SeasonRepository;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 /**
@@ -77,6 +89,11 @@ public class AnimeService {
         Assert.notNull(animeEntity, "'animeEntity' must not be null");
         String originalTitle = animeEntity.getOriginalTitle();
         Assert.notBlank(originalTitle, "'originalTitle' must not be blank");
+
+        if (animeEntity.getAirTime() == null) {
+            animeEntity.setAirTime(new Date());
+        }
+
         animeEntity = animeRepository.saveAndFlush(animeEntity);
         return animeEntity;
     }
@@ -88,16 +105,59 @@ public class AnimeService {
         // save season
         String originalTitle = seasonEntity.getOriginalTitle();
         Assert.notBlank(originalTitle, "'originalTitle' must not be blank");
+
+        Optional<SeasonEntity> seasonEntityOptional =
+            seasonRepository.findByIdAndTypeAndOriginalTitle(seasonEntity.getId(),
+                seasonEntity.getType(),
+                seasonEntity.getOriginalTitle());
+        if (seasonEntityOptional.isPresent()) {
+            SeasonEntity existSeasonEntity = seasonEntityOptional.get();
+            BeanKit.copyProperties(seasonEntity, existSeasonEntity);
+            seasonEntity = existSeasonEntity;
+        }
         seasonEntity = seasonRepository.saveAndFlush(seasonEntity);
 
         // save season-anime relation
-        animeSeasonRepository.saveAndFlush(new AnimeSeasonEntity()
-            .setSeasonId(seasonEntity.getId())
-            .setAnimeId(animeId));
+        Optional<AnimeSeasonEntity> animeSeasonEntityOptional =
+            animeSeasonRepository.findByAnimeIdAndSeasonId(animeId, seasonEntity.getId());
+        if (animeSeasonEntityOptional.isPresent()) {
+            AnimeSeasonEntity animeSeasonEntity = animeSeasonEntityOptional.get();
+            animeSeasonEntity.setStatus(true);
+            animeSeasonRepository.saveAndFlush(animeSeasonEntity);
+        } else {
+            animeSeasonRepository.saveAndFlush(new AnimeSeasonEntity()
+                .setSeasonId(seasonEntity.getId())
+                .setAnimeId(animeId));
+        }
 
         return seasonEntity;
     }
 
+
+    public void removeAnimeSeason(Long animeId, Long seasonId) throws RecordNotFoundException {
+        Assert.isPositive(animeId, "'animeId' must be positive");
+        Assert.isPositive(seasonId, "'seasonId' must be positive");
+
+        // update season entity
+        Optional<SeasonEntity> seasonEntityOptional = seasonRepository.findById(seasonId);
+        if (seasonEntityOptional.isPresent()) {
+            SeasonEntity seasonEntity = seasonEntityOptional.get();
+            if (seasonEntity.getStatus()) {
+                seasonEntity.setStatus(false);
+                seasonRepository.saveAndFlush(seasonEntity);
+            }
+        }
+
+        // update anime season entity
+        Optional<AnimeSeasonEntity> animeSeasonEntityOptional =
+            animeSeasonRepository.findByAnimeIdAndSeasonId(animeId, seasonId);
+        if (animeSeasonEntityOptional.isPresent()) {
+            AnimeSeasonEntity animeSeasonEntity = animeSeasonEntityOptional.get();
+            animeSeasonEntity.setStatus(false);
+            animeSeasonRepository.saveAndFlush(animeSeasonEntity);
+        }
+
+    }
 
 
     public boolean existById(Long id) {
@@ -195,6 +255,72 @@ public class AnimeService {
         return animeDTO;
     }
 
+    public PagingWrap<AnimeDTO> findAnimeDTOS(SearchAnimeDTOSParams searchAnimeDTOSParams) {
+        Assert.notNull(searchAnimeDTOSParams, "'findAnimeDTOSParams' must not be null");
+        Integer pageIndex = searchAnimeDTOSParams.getPage();
+        Integer pageSize = searchAnimeDTOSParams.getSize();
+        String title = searchAnimeDTOSParams.getTitle();
+        String originalTitle = searchAnimeDTOSParams.getOriginalTitle();
+
+        if (pageIndex == null) {
+            Assert.isPositive(pageIndex, "'pageIndex' must be positive");
+        }
+
+        if (pageSize == null) {
+            Assert.isPositive(pageSize, "'pageSize' must be positive");
+        }
+
+        List<AnimeEntity> animeEntities = null;
+
+        // 构造自定义查询条件
+        Specification<AnimeEntity> queryCondition = (root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> predicateList = new ArrayList<>();
+
+            // 过滤掉逻辑删除的
+            predicateList.add(criteriaBuilder.equal(root.get("status"), true));
+
+            if (Strings.isNotBlank(title)) {
+                predicateList.add(criteriaBuilder.like(root.get("title"), "%" + title + "%"));
+            }
+            if (Strings.isNotBlank(originalTitle)) {
+                predicateList.add(criteriaBuilder.like(root.get("originalTitle"),
+                    "%" + originalTitle + "%"));
+            }
+
+            Predicate[] predicates = new Predicate[predicateList.size()];
+            return criteriaBuilder.and(predicateList.toArray(predicates));
+        };
+
+        // 分页和不分页，这里按起始页和每页展示条数为0时默认为不分页，分页的话按创建时间降序
+        if (pageIndex == null || pageSize == null || (pageIndex == 0 && pageSize == 0)) {
+            animeEntities = animeRepository.findAll(queryCondition);
+        } else {
+            // page小于1时，都为第一页, page从1开始，即第一页 pageIndex=1
+            animeEntities = animeRepository.findAll(queryCondition,
+                    PageRequest.of(pageIndex < 1 ? 0 : (pageIndex - 1), pageSize,
+                        Sort.by(Sort.Direction.DESC, "createTime")))
+                .getContent();
+        }
+
+        // find anime dto by id
+        List<AnimeDTO> animeDTOList = new ArrayList<>(animeEntities.size());
+        for (AnimeEntity animeEntity : animeEntities) {
+            try {
+                AnimeDTO animeDTO = findAnimeDTOById(animeEntity.getId());
+                animeDTOList.add(animeDTO);
+            } catch (RecordNotFoundException e) {
+                LOGGER.warn("search anime id={} originalTitle={}   has exception: ",
+                    animeEntity.getId(), animeEntity.getOriginalTitle(), e);
+            }
+        }
+
+        return new PagingWrap<AnimeDTO>()
+            .setContent(animeDTOList)
+            .setCurrentIndex(pageIndex)
+            .setTotal(animeRepository.count(queryCondition));
+
+    }
+
 
     public AnimeDTO reqBgmtvBangumiMetadata(Long subjectId) throws RecordNotFoundException {
         try {
@@ -231,6 +357,11 @@ public class AnimeService {
                 .setOverview(bgmTvSubject.getSummary())
                 .setTitle(bgmTvSubject.getNameCn())
                 .setOriginalTitle(bgmTvSubject.getName());
+
+            if (Strings.isBlank(animeEntity.getTitle())) {
+                animeEntity.setTitle(animeEntity.getOriginalTitle());
+            }
+
             animeEntity = animeRepository.saveAndFlush(animeEntity);
 
             for (BgmTvTag bgmTvTag : bgmTvSubject.getTags()) {
@@ -247,7 +378,7 @@ public class AnimeService {
                 bgmTvService.getEpisodesBySubjectId(subjectId, BgmTvEpisodeType.POSITIVE);
 
             SeasonEntity seasonEntity = new SeasonEntity()
-                .setType(SeasonEntity.Type.FIRST.getCode())
+                .setType(SeasonEntity.Type.FIRST)
                 .setOriginalTitle(animeEntity.getOriginalTitle())
                 .setTitle(animeEntity.getTitle())
                 .setOverview(animeEntity.getOverview());
@@ -278,5 +409,13 @@ public class AnimeService {
         }
     }
 
+    public List<String> finSeasonTypes() {
+        List<SeasonEntity.Type> types = Arrays.asList(SeasonEntity.Type.values());
+        Collections.sort(types, new SeasonEntity.Type.OrderComparator());
+
+        return types.stream()
+            .flatMap((Function<SeasonEntity.Type, Stream<String>>) type
+                -> Stream.of(type.name())).collect(Collectors.toList());
+    }
 
 }
