@@ -22,7 +22,6 @@ public class EpisodeEntity extends BaseEntity {
     /**
      * 第几集
      */
-    @Column(unique = true)
     private Long seq;
 
     private String title;
