@@ -29,7 +29,7 @@ Mac或者Linux
 再在VM参数里加上如下:
 
 ```text
--Dspring.profiles.active=dev
+-Dikaros.log-level=dev
 ```
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
