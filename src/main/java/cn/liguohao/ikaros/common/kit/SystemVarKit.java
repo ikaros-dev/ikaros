@@ -15,6 +15,14 @@ import org.slf4j.LoggerFactory;
 public class SystemVarKit {
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemVarKit.class);
 
+    static {
+        LOGGER.debug("current app dir path: {}", getCurrentAppDirPath());
+        LOGGER.debug("current app user name: {}", getCurrentUserName());
+        LOGGER.debug("current app user home: {}", getCurrentUserDirPath());
+        LOGGER.debug("current cache tmp dir path: {}", getOsCacheDirPath());
+        LOGGER.debug("current ipv4 address: {}", getIPAddress());
+    }
+
     /**
      * @return 当前应用的目录路径
      */

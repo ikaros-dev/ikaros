@@ -437,7 +437,12 @@ public class FileService {
         String ipAddress = SystemVarKit.getIPAddress();
         String port = environment.getProperty("local.server.port");
         String baseUrl = "http://" + ipAddress + ":" + port;
-        url = path.replace(currentAppDirPath, baseUrl);
+        if ("/".equalsIgnoreCase(currentAppDirPath)) {
+            // fix issue #50
+            url = baseUrl + path;
+        } else {
+            url = path.replace(currentAppDirPath, baseUrl);
+        }
         // 如果是ntfs目录URL，则需要替换下 \ 为 /
         if (url.indexOf("\\") > 0) {
             url = url.replace("\\", "/");
