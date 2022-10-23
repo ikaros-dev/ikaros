@@ -37,7 +37,6 @@ out/
 .vscode/
 
 ### Local Dev Files
-application-local.yaml
 db/
 logs/
 upload/

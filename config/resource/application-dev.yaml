@@ -1,14 +1,9 @@
-server:
-  port: 9090
-  shutdown: graceful
-  forward-headers-strategy: native
-  compression:
-    enabled: true
-
+ikaros:
+  log-level: DEBUG
+  server-port: 9090
 
 spring:
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
 
 #    # H2 database configuration.
 #    driver-class-name: org.h2.Driver
@@ -35,23 +30,11 @@ spring:
     show-sql: true
     open-in-view: false
 
-  servlet:
-    multipart:
-      max-file-size: 10240MB
-      max-request-size: 10240MB
-    context-path: /
-
   thymeleaf:
     cache: false
 
 logging:
   file:
     name: ./build/logs/ikaros.log
-  level:
-    cn.liguohao.ikaros: DEBUG
-    org.hibernate: INFO
-    org.hibernate.type.descriptor.sql.BasicBinder: INFO
-    org.hibernate.type.descriptor.sql.BasicExtractor: INFO
-    org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration: OFF
 
 

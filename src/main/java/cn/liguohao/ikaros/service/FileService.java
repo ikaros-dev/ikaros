@@ -16,6 +16,7 @@ import cn.liguohao.ikaros.model.file.IkarosFileHandler;
 import cn.liguohao.ikaros.model.file.IkarosFileOperateResult;
 import cn.liguohao.ikaros.model.file.LocalIkarosFileHandler;
 import cn.liguohao.ikaros.model.param.SearchFilesParams;
+import cn.liguohao.ikaros.prop.IkarosProperties;
 import cn.liguohao.ikaros.repository.FileRepository;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +37,6 @@ import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -54,12 +54,12 @@ public class FileService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileService.class);
 
     private final FileRepository fileRepository;
-    private final Environment environment;
+    private final IkarosProperties ikarosProperties;
     private IkarosFileHandler fileHandler = new LocalIkarosFileHandler();
 
-    public FileService(FileRepository fileRepository, Environment environment) {
+    public FileService(FileRepository fileRepository, IkarosProperties ikarosProperties) {
         this.fileRepository = fileRepository;
-        this.environment = environment;
+        this.ikarosProperties = ikarosProperties;
     }
 
     public FileEntity upload(String originalFilename, byte[] bytes) {
@@ -110,15 +110,7 @@ public class FileService {
         String uploadedPath = ikarosFile.getUploadedPath();
         String url = "";
         if (place == IkarosFile.Place.LOCAL) {
-            String currentAppDirPath = SystemVarKit.getCurrentAppDirPath();
-            String ipAddress = SystemVarKit.getIPAddress();
-            String port = environment.getProperty("local.server.port");
-            String baseUrl = "http://" + ipAddress + ":" + port;
-            url = uploadedPath.replace(currentAppDirPath, baseUrl);
-            // 如果是ntfs目录URL，则需要替换下 \ 为 /
-            if (url.indexOf("\\") > 0) {
-                url = url.replace("\\", "/");
-            }
+            url = path2url(uploadedPath);
         } else {
             // 其它情况下，url和uploadedPath相同
             url = uploadedPath;
@@ -434,16 +426,18 @@ public class FileService {
     private String path2url(String path) {
         String url = "";
         String currentAppDirPath = SystemVarKit.getCurrentAppDirPath();
-        String ipAddress = SystemVarKit.getIPAddress();
-        String port = environment.getProperty("local.server.port");
-        String baseUrl = "http://" + ipAddress + ":" + port;
         if ("/".equalsIgnoreCase(currentAppDirPath)) {
-            // fix issue #50
-            url = baseUrl + path;
+            url = path;
         } else {
-            url = path.replace(currentAppDirPath, baseUrl);
+            url = path.replace(currentAppDirPath, "");
         }
-        // 如果是ntfs目录URL，则需要替换下 \ 为 /
+
+        // 如果是开发环境，需要加上 http://ip:port
+        if (ikarosProperties.envIsDev()) {
+            url = ikarosProperties.getServerHttpBaseUrl() + url;
+        }
+
+        // 如果是ntfs目录，则需要替换下 \ 为 /
         if (url.indexOf("\\") > 0) {
             url = url.replace("\\", "/");
         }
