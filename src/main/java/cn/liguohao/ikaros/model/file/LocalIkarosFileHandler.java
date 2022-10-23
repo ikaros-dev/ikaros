@@ -1,8 +1,8 @@
 package cn.liguohao.ikaros.model.file;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.Strings;
+import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.kit.SystemVarKit;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,7 +26,9 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
     private static final String BASE_UPLOAD_DIR_NAME = "upload";
 
     private static final String BASE_UPLOAD_DIR_PATH
-        = SystemVarKit.getCurrentAppDirPath() + File.separator + BASE_UPLOAD_DIR_NAME;
+        = SystemVarKit.getCurrentAppDirPath()
+        + (File.separator.equals(SystemVarKit.getCurrentAppDirPath()) ? "" : File.separator)
+        + BASE_UPLOAD_DIR_NAME;
 
 
     @Override

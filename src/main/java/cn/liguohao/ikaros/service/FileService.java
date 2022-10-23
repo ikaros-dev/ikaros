@@ -426,12 +426,9 @@ public class FileService {
     private String path2url(String path) {
         String url = "";
         String currentAppDirPath = SystemVarKit.getCurrentAppDirPath();
-        if ("/".equalsIgnoreCase(currentAppDirPath)) {
-            url = path;
-        } else {
-            url = path.replace(currentAppDirPath, "");
-        }
-
+        path = path.startsWith("//") ? path.substring(1) : path;
+        // issue #50
+        url = currentAppDirPath.startsWith("/") ? path : path.replace(currentAppDirPath, "");
         // 如果是开发环境，需要加上 http://ip:port
         if (ikarosProperties.envIsDev()) {
             url = ikarosProperties.getServerHttpBaseUrl() + url;
