@@ -134,7 +134,7 @@ public class AnimeService {
     }
 
 
-    public void removeAnimeSeason(Long animeId, Long seasonId) throws RecordNotFoundException {
+    public void removeAnimeSeason(Long animeId, Long seasonId) {
         Assert.isPositive(animeId, "'animeId' must be positive");
         Assert.isPositive(seasonId, "'seasonId' must be positive");
 
@@ -418,4 +418,61 @@ public class AnimeService {
                 -> Stream.of(type.name())).collect(Collectors.toList());
     }
 
+    public EpisodeEntity saveEpisodeEntity(Long seasonId, EpisodeEntity episodeEntity) {
+        Assert.isPositive(seasonId, "'seasonId' must be positive");
+        Assert.notNull(episodeEntity, "'episodeEntity' must not be null");
+        Long episodeId = episodeEntity.getId();
+
+        if (episodeId == null) {
+            // 给季度新增剧集
+            episodeEntity = episodeRepository.saveAndFlush(episodeEntity);
+            seasonEpisodeRepository
+                .saveAndFlush(new SeasonEpisodeEntity()
+                    .setSeasonId(seasonId)
+                    .setEpisodeId(episodeEntity.getId()));
+        } else {
+            // 更新剧集信息
+            Optional<SeasonEpisodeEntity> seasonEpisodeEntityOptional =
+                seasonEpisodeRepository.findBySeasonIdAndEpisodeId(seasonId, episodeId);
+            if (seasonEpisodeEntityOptional.isPresent()
+                && !seasonEpisodeEntityOptional.get().getStatus()) {
+                SeasonEpisodeEntity seasonEpisodeEntity = seasonEpisodeEntityOptional.get();
+                seasonEpisodeEntity.setStatus(true);
+                seasonEpisodeRepository.saveAndFlush(seasonEpisodeEntity);
+            }
+
+            Optional<EpisodeEntity> episodeEntityOptional =
+                episodeRepository.findBySeq(episodeEntity.getSeq());
+            if (episodeEntityOptional.isPresent()) {
+                EpisodeEntity existEpisodeEntity = episodeEntityOptional.get();
+                BeanKit.copyProperties(episodeEntity, existEpisodeEntity);
+                episodeEntity = existEpisodeEntity;
+            }
+            episodeEntity = episodeRepository.saveAndFlush(episodeEntity);
+        }
+
+        return episodeEntity;
+    }
+
+    public void removeSeasonEpisode(Long seasonId, Long episodeId) {
+        Assert.isPositive(seasonId, "'seasonId' must be positive");
+        Assert.isPositive(episodeId, "'episodeId' must be positive");
+
+        Optional<EpisodeEntity> episodeEntityOptional = episodeRepository.findById(episodeId);
+        if (episodeEntityOptional.isPresent() && episodeEntityOptional.get().getStatus()) {
+            EpisodeEntity episodeEntity = episodeEntityOptional.get();
+            episodeEntity.setStatus(false);
+            episodeRepository.saveAndFlush(episodeEntity);
+        }
+
+        Optional<SeasonEpisodeEntity> seasonEpisodeEntityOptional =
+            seasonEpisodeRepository.findBySeasonIdAndEpisodeId(seasonId, episodeId);
+        if (seasonEpisodeEntityOptional.isPresent()
+            && seasonEpisodeEntityOptional.get().getStatus()) {
+            SeasonEpisodeEntity seasonEpisodeEntity = seasonEpisodeEntityOptional.get();
+            seasonEpisodeEntity.setStatus(false);
+            seasonEpisodeRepository.saveAndFlush(seasonEpisodeEntity);
+        }
+
+    }
 }

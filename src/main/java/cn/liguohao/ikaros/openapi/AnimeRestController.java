@@ -5,6 +5,7 @@ import cn.liguohao.ikaros.common.result.PagingWrap;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.dto.AnimeDTO;
 import cn.liguohao.ikaros.model.entity.anime.AnimeEntity;
+import cn.liguohao.ikaros.model.entity.anime.EpisodeEntity;
 import cn.liguohao.ikaros.model.entity.anime.SeasonEntity;
 import cn.liguohao.ikaros.model.param.SearchAnimeDTOSParams;
 import cn.liguohao.ikaros.service.AnimeService;
@@ -80,5 +81,16 @@ public class AnimeRestController {
         return CommonResult.ok(animeService.finSeasonTypes());
     }
 
+    @PutMapping("/episode/seasonId/{seasonId}")
+    public CommonResult<EpisodeEntity> saveEpisodeEntity(@PathVariable Long seasonId,
+                                                         @RequestBody EpisodeEntity episodeEntity) {
+        return CommonResult.ok(animeService.saveEpisodeEntity(seasonId, episodeEntity));
+    }
 
+    @DeleteMapping("/season/episode/seasonId/{seasonId}")
+    public CommonResult<String> removeSeasonEpisode(@PathVariable Long seasonId,
+                                                    @RequestParam Long episodeId) {
+        animeService.removeSeasonEpisode(seasonId, episodeId);
+        return CommonResult.ok();
+    }
 }
