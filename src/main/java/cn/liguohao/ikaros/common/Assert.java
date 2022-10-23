@@ -6,7 +6,7 @@ package cn.liguohao.ikaros.common;
 public class Assert extends org.springframework.util.Assert {
 
     public static void notBlank(String str, String message) {
-        notNull(str, "'str' must not be null");
+        notNull(str, "'str' must not be null" + " | " + message);
         if (Strings.isBlank(str)) {
             throw new IllegalArgumentException(message);
         }
@@ -14,7 +14,6 @@ public class Assert extends org.springframework.util.Assert {
 
 
     public static void isPositive(long number, String message) {
-        notNull(number, "'number' must not be null");
         if (number < 0) {
             throw new IllegalArgumentException(message);
         }

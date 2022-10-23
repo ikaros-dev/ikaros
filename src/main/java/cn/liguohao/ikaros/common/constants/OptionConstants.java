@@ -18,6 +18,7 @@ public interface OptionConstants {
         String COMMON = Init.Common.class.getSimpleName().toLowerCase();
         String SEO = Init.Seo.class.getSimpleName().toLowerCase();
         String FILE = Init.File.class.getSimpleName().toLowerCase();
+        String ThirdParty = Init.ThirdParty.class.getSimpleName().toLowerCase();
         String OTHER = Init.Other.class.getSimpleName().toLowerCase();
     }
 
@@ -48,6 +49,12 @@ public interface OptionConstants {
 
         interface File {
             String[] PLACE_SELECT = {"placeSelect", IkarosFile.Place.LOCAL.name()};
+        }
+
+        interface ThirdParty {
+            String[] BANGUMI_API_BASE = {"bangumiApiBase", "https://api.bgm.tv"};
+            String[] BANGUMI_API_SUBJECTS = {"bangumiApiSubjects", "/v0/subjects"};
+            String[] BANGUMI_API_EPISODES = {"bangumiApiEpisodes", "/v0/episodes"};
         }
 
         interface Other {

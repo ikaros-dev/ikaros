@@ -1,8 +1,8 @@
 package cn.liguohao.ikaros.model.file;
 
 import cn.liguohao.ikaros.common.Assert;
-import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.Strings;
+import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.kit.SystemVarKit;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,7 +26,9 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
     private static final String BASE_UPLOAD_DIR_NAME = "upload";
 
     private static final String BASE_UPLOAD_DIR_PATH
-        = SystemVarKit.getCurrentAppDirPath() + File.separator + BASE_UPLOAD_DIR_NAME;
+        = SystemVarKit.getCurrentAppDirPath()
+        + (File.separator.equals(SystemVarKit.getCurrentAppDirPath()) ? "" : File.separator)
+        + BASE_UPLOAD_DIR_NAME;
 
 
     @Override
@@ -72,8 +74,16 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
                 ikarosFile.setUploadedPath(oldLocation);
                 LOGGER.debug("repeated ikaros file, do not upload, path={}", oldLocation);
             } else {
+                byte[] bytes = ikarosFile.getBytes();
+                if (md5 == null) {
+                    ikarosFile.setMd5(FileKit.checksum2Str(bytes, FileKit.Hash.MD5));
+                }
+                if (sha256 == null) {
+                    ikarosFile.setSha256(FileKit.checksum2Str(bytes, FileKit.Hash.SHA256));
+                }
+                ikarosFile.setPlace(IkarosFile.Place.LOCAL);
                 String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
-                Files.write(Path.of(new File(subjectDataFilePath).toURI()), ikarosFile.getBytes());
+                Files.write(Path.of(new File(subjectDataFilePath).toURI()), bytes);
                 ikarosFile.setUploadedPath(subjectDataFilePath);
                 LOGGER.debug("upload ikaros file data success, path={}", subjectDataFilePath);
             }
@@ -84,8 +94,6 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
             LOGGER.error(msg, e);
             return IkarosFileOperateResult.ofUploadFail(msg + ", exception: ", e);
         }
-
-        ikarosFile.setPlace(IkarosFile.Place.LOCAL);
         return IkarosFileOperateResult.ofOk(ikarosFile);
     }
 

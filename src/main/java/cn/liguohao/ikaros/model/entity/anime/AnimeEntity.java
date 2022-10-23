@@ -20,8 +20,13 @@ public class AnimeEntity extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(name = "original_title")
+    @Column(name = "bgmtv_id")
+    private Long bgmtvId;
+
+    @Column(name = "original_title", nullable = false)
     private String originalTitle;
+
+    private String platform;
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
@@ -45,6 +50,15 @@ public class AnimeEntity extends BaseEntity {
 
     public AnimeEntity setTitle(String title) {
         this.title = title;
+        return this;
+    }
+
+    public Long getBgmtvId() {
+        return bgmtvId;
+    }
+
+    public AnimeEntity setBgmtvId(Long bgmtvId) {
+        this.bgmtvId = bgmtvId;
         return this;
     }
 
@@ -99,6 +113,15 @@ public class AnimeEntity extends BaseEntity {
 
     public AnimeEntity setOriginalTitle(String originalTitle) {
         this.originalTitle = originalTitle;
+        return this;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public AnimeEntity setPlatform(String platform) {
+        this.platform = platform;
         return this;
     }
 }

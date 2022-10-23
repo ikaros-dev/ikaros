@@ -3,12 +3,12 @@ package cn.liguohao.ikaros.service;
 import cn.liguohao.ikaros.common.Assert;
 import cn.liguohao.ikaros.common.JacksonConverter;
 import cn.liguohao.ikaros.common.Strings;
-import cn.liguohao.ikaros.common.constants.AppConstants;
 import cn.liguohao.ikaros.common.kit.BeanKit;
 import cn.liguohao.ikaros.common.kit.FileKit;
 import cn.liguohao.ikaros.common.kit.SystemVarKit;
 import cn.liguohao.ikaros.common.kit.TimeKit;
 import cn.liguohao.ikaros.common.result.PagingWrap;
+import cn.liguohao.ikaros.exceptions.IkarosRuntimeException;
 import cn.liguohao.ikaros.exceptions.RecordNotFoundException;
 import cn.liguohao.ikaros.model.entity.FileEntity;
 import cn.liguohao.ikaros.model.file.IkarosFile;
@@ -16,6 +16,7 @@ import cn.liguohao.ikaros.model.file.IkarosFileHandler;
 import cn.liguohao.ikaros.model.file.IkarosFileOperateResult;
 import cn.liguohao.ikaros.model.file.LocalIkarosFileHandler;
 import cn.liguohao.ikaros.model.param.SearchFilesParams;
+import cn.liguohao.ikaros.prop.IkarosProperties;
 import cn.liguohao.ikaros.repository.FileRepository;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +37,6 @@ import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -54,26 +54,26 @@ public class FileService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileService.class);
 
     private final FileRepository fileRepository;
-    private final Environment environment;
+    private final IkarosProperties ikarosProperties;
     private IkarosFileHandler fileHandler = new LocalIkarosFileHandler();
 
-    public FileService(FileRepository fileRepository, Environment environment) {
+    public FileService(FileRepository fileRepository, IkarosProperties ikarosProperties) {
         this.fileRepository = fileRepository;
-        this.environment = environment;
+        this.ikarosProperties = ikarosProperties;
     }
 
-    public Optional<FileEntity> upload(String originalFilename, byte[] bytes) throws IOException {
+    public FileEntity upload(String originalFilename, byte[] bytes) {
         Assert.notNull(originalFilename, "'originalFilename' must not bo null");
         Assert.notNull(bytes, "'bytes' must not bo null");
 
         IkarosFile ikarosFile = IkarosFile.build(originalFilename, bytes);
-        fileHandler.upload(ikarosFile);
-
-        FileEntity fileEntity = uploadAndGetFileEntity(bytes, ikarosFile, null);
-
-        fileEntity = fileRepository.save(fileEntity);
-
-        return Optional.of(fileEntity);
+        try {
+            FileEntity fileEntity = uploadAndGetFileEntity(bytes, ikarosFile, null);
+            return fileRepository.saveAndFlush(fileEntity);
+        } catch (IOException ioException) {
+            throw new IkarosRuntimeException(
+                "upload file fail, originalFilename=" + originalFilename);
+        }
     }
 
     private FileEntity uploadAndGetFileEntity(byte[] bytes, IkarosFile ikarosFile,
@@ -84,7 +84,7 @@ public class FileService {
         Assert.isTrue(size > 0, "'bytes' length must > 0");
 
         final String md5 = FileKit.checksum2Str(bytes, FileKit.Hash.MD5);
-        final String sha256 = FileKit.checksum2Str(bytes, FileKit.Hash.SHA256);
+        ikarosFile.setMd5(md5);
 
         if (fileEntity == null) {
             fileEntity = new FileEntity();
@@ -100,7 +100,8 @@ public class FileService {
                 .setOldLocation(oldLocation);
         } else {
             // upload file to file system
-            fileHandler.upload(ikarosFile);
+            IkarosFileOperateResult fileOperateResult = fileHandler.upload(ikarosFile);
+            ikarosFile = fileOperateResult.getIkarosFile();
         }
 
         IkarosFile.Place place = ikarosFile.getPlace();
@@ -109,15 +110,7 @@ public class FileService {
         String uploadedPath = ikarosFile.getUploadedPath();
         String url = "";
         if (place == IkarosFile.Place.LOCAL) {
-            String currentAppDirPath = SystemVarKit.getCurrentAppDirPath();
-            String ipAddress = SystemVarKit.getIPAddress();
-            String port = environment.getProperty("local.server.port");
-            String baseUrl = "http://" + ipAddress + ":" + port;
-            url = uploadedPath.replace(currentAppDirPath, baseUrl);
-            // 如果是ntfs目录URL，则需要替换下 \ 为 /
-            if (url.indexOf("\\") > 0) {
-                url = url.replace("\\", "/");
-            }
+            url = path2url(uploadedPath);
         } else {
             // 其它情况下，url和uploadedPath相同
             url = uploadedPath;
@@ -127,7 +120,6 @@ public class FileService {
             .setLocation(uploadedPath)
             .setUrl(url)
             .setMd5(md5)
-            .setSha256(sha256)
             .setSize(size)
             .setName(ikarosFile.getName())
             .setPostfix(ikarosFile.getPostfix())
@@ -135,7 +127,8 @@ public class FileService {
             .setPlace(place)
             .setCreateTime(uploadedDate)
             .setUpdateTime(uploadedDate);
-        return fileEntity;
+
+        return fileRepository.saveAndFlush(fileEntity);
     }
 
     public FileEntity findById(Long fileId) throws RecordNotFoundException {
@@ -368,6 +361,7 @@ public class FileService {
 
             uploadName = uploadName.substring(0, uploadName.lastIndexOf("."));
             FileEntity fileEntity = (FileEntity) new FileEntity()
+                .setMd5(FileKit.checksum2Str(bytes, FileKit.Hash.MD5))
                 .setLocation(filePath)
                 .setPlace(IkarosFile.Place.LOCAL)
                 .setUrl(path2url(filePath))
@@ -385,9 +379,7 @@ public class FileService {
     private String meringTempChunkFile(String unique, String postfix) throws IOException {
         LOGGER.debug("All chunks upload has finish, will start merging files");
 
-        File targetFile =
-            new File(SystemVarKit.getCurrentAppDirPath() + File.separator
-                + AppConstants.Directory.DEFAULT_UPLOAD_NAME + File.separator + unique + "." + postfix);
+        File targetFile = new File(FileKit.buildAppUploadFilePath(postfix));
         String absolutePath = targetFile.getAbsolutePath();
 
         String chunkFileDirPath = SystemVarKit.getOsCacheDirPath() + File.separator + unique;
@@ -434,11 +426,15 @@ public class FileService {
     private String path2url(String path) {
         String url = "";
         String currentAppDirPath = SystemVarKit.getCurrentAppDirPath();
-        String ipAddress = SystemVarKit.getIPAddress();
-        String port = environment.getProperty("local.server.port");
-        String baseUrl = "http://" + ipAddress + ":" + port;
-        url = path.replace(currentAppDirPath, baseUrl);
-        // 如果是ntfs目录URL，则需要替换下 \ 为 /
+        path = path.startsWith("//") ? path.substring(1) : path;
+        // issue #50
+        url = currentAppDirPath.startsWith("/") ? path : path.replace(currentAppDirPath, "");
+        // 如果是开发环境，需要加上 http://ip:port
+        if (ikarosProperties.envIsDev()) {
+            url = ikarosProperties.getServerHttpBaseUrl() + url;
+        }
+
+        // 如果是ntfs目录，则需要替换下 \ 为 /
         if (url.indexOf("\\") > 0) {
             url = url.replace("\\", "/");
         }

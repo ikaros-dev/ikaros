@@ -6,6 +6,7 @@ import cn.liguohao.ikaros.model.option.CommonOptionModel;
 import cn.liguohao.ikaros.model.option.FileOptionModel;
 import cn.liguohao.ikaros.model.option.OtherOptionModel;
 import cn.liguohao.ikaros.model.option.SeoOptionModel;
+import cn.liguohao.ikaros.model.option.ThirdPartyOptionModel;
 import cn.liguohao.ikaros.service.OptionService;
 import java.io.IOException;
 import java.util.List;
@@ -54,6 +55,13 @@ public class OptionRestController {
 
     @PostMapping("/model/file")
     public CommonResult<Object> saveFileOptionModel(@RequestBody FileOptionModel model)
+        throws IllegalAccessException {
+        optionService.saveOptionModel(model);
+        return CommonResult.ok("success");
+    }
+
+    @PostMapping("/model/thirdparty")
+    public CommonResult<Object> saveFileOptionModel(@RequestBody ThirdPartyOptionModel model)
         throws IllegalAccessException {
         optionService.saveOptionModel(model);
         return CommonResult.ok("success");

@@ -4,13 +4,15 @@ import cn.liguohao.ikaros.model.entity.BaseEntity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 /**
  * @author guohao
  * @date 2022/09/10
  */
 @Entity
-@Table(name = "anime_season")
+@Table(name = "anime_season", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"season_id", "anime_id"})})
 public class AnimeSeasonEntity extends BaseEntity {
 
     @Column(name = "season_id", nullable = false)

@@ -1,5 +1,10 @@
+ikaros:
+  env: pro
+  log-level: INFO
+  server-port: 9090
+
 server:
-  port: 9090
+  port: ${ikaros.server-port}
   shutdown: graceful
   forward-headers-strategy: native
   compression:
@@ -7,7 +12,7 @@ server:
 
 spring:
   profiles:
-    active: pro
+    active: ${ikaros.env}
 
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -49,7 +54,7 @@ logging:
   file:
     name: ./logs/ikaros.log
   level:
-    cn.liguohao.ikaros: INFO
+    cn.liguohao.ikaros: ${ikaros.log-level}
     org.hibernate: INFO
     org.hibernate.type.descriptor.sql.BasicBinder: INFO
     org.hibernate.type.descriptor.sql.BasicExtractor: INFO

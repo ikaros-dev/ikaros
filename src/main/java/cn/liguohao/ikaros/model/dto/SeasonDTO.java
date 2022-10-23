@@ -9,8 +9,18 @@ import java.util.List;
  */
 public class SeasonDTO extends SeasonEntity {
 
+    private Long animeId;
+
     private List<EpisodeDTO> episodeDTOS;
 
+    public Long getAnimeId() {
+        return animeId;
+    }
+
+    public SeasonDTO setAnimeId(Long animeId) {
+        this.animeId = animeId;
+        return this;
+    }
 
     public List<EpisodeDTO> getEpisodes() {
         return episodeDTOS;

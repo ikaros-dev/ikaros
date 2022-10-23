@@ -1,6 +1,7 @@
 package cn.liguohao.ikaros.service;
 
 import cn.liguohao.ikaros.common.Assert;
+import cn.liguohao.ikaros.common.JacksonConverter;
 import cn.liguohao.ikaros.common.constants.OptionConstants;
 import cn.liguohao.ikaros.common.constants.OptionConstants.Category;
 import cn.liguohao.ikaros.common.constants.OptionConstants.Init.App;
@@ -23,6 +24,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -32,6 +35,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Transactional(rollbackOn = Exception.class)
 public class OptionService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OptionService.class);
 
     private final OptionRepository optionRepository;
 
@@ -62,6 +66,7 @@ public class OptionService {
                 = new OptionEntity(key, optionItemDTO.getValue())
                 .setType(optionItemDTO.getType())
                 .setCategory(optionItemDTO.getCategory());
+            LOGGER.debug("create new option record: {}", JacksonConverter.obj2Json(optionEntity));
             return optionRepository.saveAndFlush(optionEntity);
         }
 
@@ -195,10 +200,45 @@ public class OptionService {
         Assert.notNull(optionModel, "'optionModel' must not be null");
         String category = optionModel.getCategory();
         for (Field field : optionModel.getClass().getDeclaredFields()) {
+            String fieldName = field.getName();
+            if ("category".equalsIgnoreCase(fieldName)) {
+                continue;
+            }
             field.setAccessible(true);
-            String key = field.getName();
-            String value = (String) field.get(optionModel);
-            saveOptionItem(new OptionItemDTO(key, value).setCategory(category));
+            String fieldValue = (String) field.get(optionModel);
+            saveOptionItem(new OptionItemDTO(fieldName, fieldValue).setCategory(category));
         }
+    }
+
+    @SuppressWarnings({"deprecation", "unchecked"})
+    public <T> T findOptionModel(T optionModel) {
+        Assert.notNull(optionModel, "'optionModel' must not be null");
+        Assert.isTrue(optionModel instanceof OptionModel,
+            "'optionModel' must implements OptionModel interface");
+
+        String category = ((OptionModel) optionModel).getCategory();
+        Assert.notBlank(category, "'optionModel' category must not be blank");
+
+        Class<T> cls = (Class<T>) optionModel.getClass();
+
+        T instance = null;
+        try {
+            instance = cls.newInstance();
+
+            for (OptionEntity optionEntity : findOptionByCategory(category)) {
+                String fieldName = optionEntity.getKey();
+                String fieldValue = optionEntity.getValue();
+                for (Field field : cls.getDeclaredFields()) {
+                    if (field.getName().equalsIgnoreCase(fieldName)) {
+                        field.setAccessible(true);
+                        field.set(instance, fieldValue);
+                    }
+                }
+            }
+        } catch (ReflectiveOperationException exception) {
+            LOGGER.warn("find category={} OptionModel fail", category, exception);
+        }
+
+        return instance;
     }
 }

@@ -12,7 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
@@ -58,9 +57,9 @@ public class FileRestController {
         Assert.notNull(multipartFile, "'file' must not be null");
         Assert.notNull(multipartFile.getBytes(), "file bytes must not be null");
         Assert.isTrue(multipartFile.getBytes().length > 0, "file bytes must >0");
-        Optional<FileEntity> fileEntityOptional =
+        FileEntity fileEntity =
             fileService.upload(multipartFile.getOriginalFilename(), multipartFile.getBytes());
-        return CommonResult.ok(fileEntityOptional.orElseGet(null));
+        return CommonResult.ok(fileEntity);
     }
 
     @GetMapping("/{id}")

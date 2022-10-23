@@ -17,8 +17,12 @@ import javax.persistence.Table;
 @Table(name = "episode")
 public class EpisodeEntity extends BaseEntity {
 
-    @Column(name = "file_id")
-    private Long fileId;
+    private String url;
+
+    /**
+     * 第几集
+     */
+    private Long seq;
 
     private String title;
 
@@ -32,15 +36,27 @@ public class EpisodeEntity extends BaseEntity {
     @Basic(fetch = FetchType.LAZY)
     private String overview;
 
+    /**
+     * 时长，单位秒
+     */
     private Long duration;
 
 
-    public Long getFileId() {
-        return fileId;
+    public String getUrl() {
+        return url;
     }
 
-    public EpisodeEntity setFileId(Long fileId) {
-        this.fileId = fileId;
+    public EpisodeEntity setUrl(String url) {
+        this.url = url;
+        return this;
+    }
+
+    public Long getSeq() {
+        return seq;
+    }
+
+    public EpisodeEntity setSeq(Long seq) {
+        this.seq = seq;
         return this;
     }
 
@@ -88,4 +104,5 @@ public class EpisodeEntity extends BaseEntity {
         this.originalTitle = originalTitle;
         return this;
     }
+
 }

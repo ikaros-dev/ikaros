@@ -40,8 +40,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         // register upload
         registry.addResourceHandler("/upload/**")
-            .addResourceLocations("file:" + SystemVarKit.getCurrentAppDirPath() + File.separatorChar
-                + "upload" + File.separatorChar);
+            .addResourceLocations("file:///" + SystemVarKit.getCurrentAppDirPath()
+                + File.separatorChar + "upload" + File.separatorChar);
     }
 
     @Bean

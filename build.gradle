@@ -50,6 +50,10 @@ dependencies {
 	// fix: class file for javax.annotation.meta.When not found
 	implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
+	// retry
+	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.springframework:spring-aspects'
+
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
 

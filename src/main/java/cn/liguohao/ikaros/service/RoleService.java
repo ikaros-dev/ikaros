@@ -22,7 +22,7 @@ public class RoleService {
 
 
     public RoleEntity save(RoleEntity roleEntity) {
-        return roleRepository.save(roleEntity);
+        return roleRepository.saveAndFlush(roleEntity);
     }
 
     public Optional<RoleEntity> findById(Long roleId) {
