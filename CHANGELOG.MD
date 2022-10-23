@@ -3,8 +3,15 @@
 
 # 1.0-SNAPSHOT
 ## Features
-- [#40] 给github feature issue 模板添加PR输入框
-- [#40] 调整 github pr模板内容的顺序
+
+### PR #44
+- 番剧管理的相关开发
+- 番剧管理的页面及初步对接后端
+- 服务端的接口实现以及调整
+
+### old
+- 给github feature issue 模板添加PR输入框
+- 调整 github pr模板内容的顺序
 
 # 0.1.0
 
