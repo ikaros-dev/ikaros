@@ -32,11 +32,3 @@ out/
 /dist/
 /nbdist/
 /.nb-gradle/
-
-### VS Code ###
-.vscode/
-
-### Local Dev Files
-db/
-logs/
-upload/

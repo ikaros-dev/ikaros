@@ -1,77 +1,18 @@
 plugins {
-	id 'org.springframework.boot' version '2.5.12'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'java'
-	id "checkstyle"
+    id 'java'
 }
 
-group = "cn.liguohao.ikaros"
-description = "ikaros, an open source acgmn cms application."
-sourceCompatibility = JavaVersion.VERSION_17
+group 'cn.ikaros.server'
 
 repositories {
-	mavenLocal()
-	maven { url "https://maven.aliyun.com/nexus/content/groups/public" }
-	maven { url "https://maven.aliyun.com/repository/spring/" }
-	mavenCentral()
-	maven { url "https://repo.spring.io/milestone" }
-}
-checkstyle {
-	toolVersion = "8.39"
-	showViolations = false
-	ignoreFailures = false
-}
-
-ext {
-	swaggerVersion = "3.0.0"
-	jwtVersion = "0.10.7"
-
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-cache'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.springframework.boot:spring-boot-starter-freemarker'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-
-	implementation "io.springfox:springfox-boot-starter:$swaggerVersion"
-
-	implementation "io.jsonwebtoken:jjwt-api:$jwtVersion"
-	runtimeOnly "io.jsonwebtoken:jjwt-impl:$jwtVersion"
-	runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jwtVersion"
-
-	implementation 'com.fasterxml.jackson.core:jackson-databind'
-	implementation 'com.fasterxml.jackson.core:jackson-core'
-	implementation 'com.fasterxml.jackson.core:jackson-annotations'
-
-	// fix: class file for javax.annotation.meta.When not found
-	implementation 'com.google.code.findbugs:jsr305:3.0.2'
-
-	// retry
-	implementation 'org.springframework.retry:spring-retry'
-	implementation 'org.springframework:spring-aspects'
-
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-
-	runtimeOnly 'com.h2database:h2'
-	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
-
-
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation "org.mockito:mockito-core"
-	testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
-}
-
-gradle.projectsEvaluated {
-	tasks.withType(JavaCompile) {
-		options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-	}
+test {
+    useJUnitPlatform()
 }

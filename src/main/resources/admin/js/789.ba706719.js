@@ -1,1 +1,0 @@
-"use strict";(self["webpackChunkvue_antd_pro"]=self["webpackChunkvue_antd_pro"]||[]).push([[789],{33789:function(e,t,r){r.r(t),r.d(t,{default:function(){return s}});var n=function(){var e=this,t=e._self._c;return t("page-header-wrapper",{attrs:{title:!1}},[t("h2",[e._v("我的追番")])])},u=[],a={},f=a,l=r(1001),p=(0,l.Z)(f,n,u,!1,null,"99faffb2",null),s=p.exports}}]);
