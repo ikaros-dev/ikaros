@@ -1,6 +1,6 @@
 package run.ikaros.server.init;
 
-import run.ikaros.server.service.UserService;
+import run.ikaros.server.service.impl.UserServiceImpl;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -11,19 +11,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class MasterUserInitAppRunner implements ApplicationRunner {
 
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
-    public MasterUserInitAppRunner(UserService userService) {
-        this.userService = userService;
+    public MasterUserInitAppRunner(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
     }
 
     /**
      * @param args incoming application arguments
      * @throws Exception none
-     * @see UserService#initMasterUserOnlyOnce() ()
+     * @see UserServiceImpl#initMasterUserOnlyOnce() ()
      */
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        userService.initMasterUserOnlyOnce();
+        userServiceImpl.initMasterUserOnlyOnce();
     }
 }

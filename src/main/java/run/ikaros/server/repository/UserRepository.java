@@ -6,7 +6,7 @@ import run.ikaros.server.entity.UserEntity;
 /**
  * @author liguohao
  */
-public interface UserRepository extends BaseRepository<UserEntity> {
+public interface UserRepository extends BaseRepository<UserEntity, Long> {
     /**
      * 根据用户名查询用户
      *

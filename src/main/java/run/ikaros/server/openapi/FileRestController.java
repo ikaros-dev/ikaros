@@ -6,7 +6,7 @@ import run.ikaros.server.result.PagingWrap;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.params.SearchFilesParams;
-import run.ikaros.server.service.FileService;
+import run.ikaros.server.service.impl.FileService;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

@@ -1,9 +1,8 @@
 package run.ikaros.server.utils;
 
 import run.ikaros.server.constants.FileConst;
-import run.ikaros.server.exceptions.IkarosRuntimeException;
+import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.model.binary.BinaryType;
-import run.ikaros.server.enums.ResourceType;
 import run.ikaros.server.file.IkarosFile;
 import io.jsonwebtoken.io.IOException;
 import java.io.ByteArrayInputStream;
@@ -90,27 +89,8 @@ public class FileUtils {
         return BinaryType.FILE;
     }
 
-    public static ResourceType parseResourceTypeByPostfix(String postfix) {
-        AssertUtils.notBlank(postfix, "'postfix' must not be blank");
-        postfix = postfix.toLowerCase(Locale.ROOT);
-        if (IMAGES.contains(postfix)) {
-            return ResourceType.IMAGE;
-        }
-        if (DOCUMENTS.contains(postfix)) {
-            return ResourceType.DOCUMENT;
-        }
-        if (VIDEOS.contains(postfix)) {
-            return ResourceType.VIDEO;
-        }
-        if (VOICES.contains(postfix)) {
-            return ResourceType.VOICE;
-        }
-        return ResourceType.FILE;
-    }
 
-
-
-    public static byte[] checksum(byte[] bytes, FileUtils.Hash hash) throws IkarosRuntimeException {
+    public static byte[] checksum(byte[] bytes, FileUtils.Hash hash) throws RuntimeIkarosException {
         try (InputStream in = new ByteArrayInputStream(bytes)) {
             MessageDigest digest = MessageDigest.getInstance(hash.getName());
             byte[] block = new byte[4096];
@@ -121,12 +101,12 @@ public class FileUtils {
             return digest.digest();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new IkarosRuntimeException(e);
+            throw new RuntimeIkarosException(e);
         }
     }
 
     public static String checksum2Str(byte[] bytes, FileUtils.Hash hash)
-        throws IkarosRuntimeException {
+        throws RuntimeIkarosException {
         return DatatypeConverter.printHexBinary(checksum(bytes, hash));
     }
 

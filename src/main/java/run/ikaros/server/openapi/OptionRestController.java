@@ -7,7 +7,7 @@ import run.ikaros.server.model.option.FileOptionModel;
 import run.ikaros.server.model.option.OtherOptionModel;
 import run.ikaros.server.model.option.SeoOptionModel;
 import run.ikaros.server.model.option.ThirdPartyOptionModel;
-import run.ikaros.server.service.OptionService;
+import run.ikaros.server.service.impl.OptionService;
 import java.io.IOException;
 import java.util.List;
 import org.slf4j.Logger;

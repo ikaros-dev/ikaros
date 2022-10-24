@@ -1,6 +1,6 @@
 package run.ikaros.server.service;
 
-import run.ikaros.server.service.FileService;
+import run.ikaros.server.service.impl.FileService;
 import run.ikaros.server.utils.SystemVarUtils;
 import java.io.File;
 import java.io.FileOutputStream;

@@ -18,10 +18,6 @@ public class OptionDTO extends OptionEntity {
     public OptionDTO() {
     }
 
-    public OptionDTO(String key, String value) {
-        super(key, value);
-    }
-
     public OptionDTO(OptionEntity optionEntity) {
         AssertUtils.notNull(optionEntity, "'optionEntity' must not be null");
         BeanUtils.copyProperties(optionEntity, this);

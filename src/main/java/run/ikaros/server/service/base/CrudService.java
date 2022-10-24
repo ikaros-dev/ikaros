@@ -1,0 +1,54 @@
+package run.ikaros.server.service.base;
+
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.Nonnull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author li-guohao
+ * @param <E> Entity
+ */
+public interface CrudService<E, I> {
+
+    void flush();
+
+    long count();
+
+    boolean existsById(@Nonnull I id);
+
+    @Nonnull
+    @Transactional
+    E create(@Nonnull E entity);
+
+    @Nullable
+    @Transactional
+    E removeById(@Nonnull I id);
+
+    /**
+     * only set status = false, other than delete current record
+     */
+
+    @Nonnull
+    @Transactional
+    E update(@Nonnull E entity);
+
+    @Nonnull
+    List<E> listAll();
+
+    @Nonnull
+    List<E> listAll(@Nonnull Sort sort);
+
+    @Nonnull
+    Page<E> listAll(@Nonnull Pageable pageable);
+
+    @Nonnull
+    Optional<E> fetchById(@Nonnull I id);
+
+    @Nonnull
+    E getById(@Nonnull I id);
+}

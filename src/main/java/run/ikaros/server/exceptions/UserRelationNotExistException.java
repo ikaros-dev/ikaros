@@ -6,7 +6,7 @@ package run.ikaros.server.exceptions;
  * @author li-guohao
  * @date 2022/06/03
  */
-public class UserRelationNotExistException extends IkarosRuntimeException {
+public class UserRelationNotExistException extends RuntimeIkarosException {
     public UserRelationNotExistException() {
     }
 

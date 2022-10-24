@@ -1,6 +1,7 @@
 package run.ikaros.server.config;
 
 import run.ikaros.server.service.UserService;
+import run.ikaros.server.service.impl.UserServiceImpl;
 import java.util.Optional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;

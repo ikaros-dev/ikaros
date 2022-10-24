@@ -1,57 +1,41 @@
 package run.ikaros.server.entity;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import run.ikaros.server.constants.OptionConst;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.enums.OptionType;
 
 /**
- * Setting entity.
- *
- * @author johnniang
- * @author ryanwang
- * @date 2019-03-20
+ * @author li-guohao
  */
 @Entity
 @Table(name = "options")
 public class OptionEntity extends BaseEntity {
 
-    public enum Type {
-        INTERNAL,
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OptionType type = OptionType.INTERNAL;
 
-        CUSTOM;
-    }
-
-    private Type type = OptionConst.Type.DEFAULT;
-
-    @Column(name = "ikkey", nullable = false)
+    @Column(name = "o_key", nullable = false)
     private String key = "";
 
-    /**
-     * option value
-     */
-    @Column(name = "ikvalue", nullable = false)
-    @Lob
+    @Lob @Column(name = "o_value")
     private String value  = "";
 
     @Column(nullable = false)
-    private String category = OptionConst.Category.DEFAULT;
+    @Enumerated(EnumType.STRING)
+    private OptionCategory category = OptionCategory.DEFAULT;
 
-    public OptionEntity() {
-    }
-
-    public OptionEntity(String key, String value) {
-        this.key = key;
-        this.value = value;
-    }
-
-
-    public Type getType() {
+    public OptionType getType() {
         return type;
     }
 
-    public OptionEntity setType(Type type) {
+    public OptionEntity setType(OptionType type) {
         this.type = type;
         return this;
     }
@@ -74,11 +58,11 @@ public class OptionEntity extends BaseEntity {
         return this;
     }
 
-    public String getCategory() {
+    public OptionCategory getCategory() {
         return category;
     }
 
-    public OptionEntity setCategory(String category) {
+    public OptionEntity setCategory(OptionCategory category) {
         this.category = category;
         return this;
     }

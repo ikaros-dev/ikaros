@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import run.ikaros.server.service.BgmTvService;
+import run.ikaros.server.service.impl.BgmTvService;
 
 /**
  * @author guohao

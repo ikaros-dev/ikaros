@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @author li-guohao
  */
-public interface OptionRepository extends BaseRepository<OptionEntity> {
+public interface OptionRepository extends BaseRepository<OptionEntity, Long> {
 
     boolean existsByKeyAndStatus(String key, Boolean status);
 

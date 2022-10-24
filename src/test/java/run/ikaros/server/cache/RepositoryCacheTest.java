@@ -1,6 +1,6 @@
 package run.ikaros.server.cache;
 
-import run.ikaros.server.service.UserService;
+import run.ikaros.server.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -18,15 +18,15 @@ public class RepositoryCacheTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryCacheTest.class);
 
     @Autowired
-    UserService userService;
+    UserServiceImpl userServiceImpl;
 
     @Test
     void findByUsername() {
         LOGGER.info("exec {}#findByUsername", this.getClass().getName());
         final String username = "admin";
-        userService.findByUsername(username);
-        userService.findByUsername(username);
-        userService.findByUsername(username);
+        userServiceImpl.findByUsername(username);
+        userServiceImpl.findByUsername(username);
+        userServiceImpl.findByUsername(username);
     }
 
 }

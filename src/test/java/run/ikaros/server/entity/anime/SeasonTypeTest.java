@@ -1,11 +1,12 @@
 package run.ikaros.server.entity.anime;
 
-import run.ikaros.server.entity.anime.SeasonEntity;
+import run.ikaros.server.entity.SeasonEntity;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import run.ikaros.server.enums.SeasonType;
 
 /**
  * @author guohao
@@ -15,22 +16,22 @@ public class SeasonTypeTest {
 
     @Test
     void comparator() {
-        SeasonEntity.Type[] values = SeasonEntity.Type.values();
-        List<SeasonEntity.Type> types = Arrays.asList(values);
-        Collections.sort(types, new SeasonEntity.Type.OrderComparator());
+        SeasonType[] values = SeasonType.values();
+        List<SeasonType> types = Arrays.asList(values);
+        Collections.sort(types, new SeasonType.OrderComparator());
 
         int firstIndex = 0;
         int secondIndex = 0;
         int sixthIndex = 0;
         for (int i = 0; i < types.size(); i++) {
-            if (types.get(i) == SeasonEntity.Type.FIRST) {
+            if (types.get(i) == SeasonType.FIRST) {
                 firstIndex = i;
             }
-            if (types.get(i) == SeasonEntity.Type.SECOND) {
+            if (types.get(i) == SeasonType.SECOND) {
                 secondIndex = i;
             }
 
-            if (types.get(i) == SeasonEntity.Type.SIXTH) {
+            if (types.get(i) == SeasonType.SIXTH) {
                 sixthIndex = i;
             }
         }

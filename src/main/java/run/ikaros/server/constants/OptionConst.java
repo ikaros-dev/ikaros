@@ -1,6 +1,8 @@
 package run.ikaros.server.constants;
 
 import run.ikaros.server.entity.OptionEntity;
+import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.enums.OptionType;
 import run.ikaros.server.file.IkarosFile;
 import run.ikaros.server.model.option.AppOptionModel;
 
@@ -23,7 +25,7 @@ public interface OptionConst {
     }
 
     interface Type {
-        OptionEntity.Type DEFAULT = OptionEntity.Type.INTERNAL;
+        OptionType DEFAULT = OptionType.INTERNAL;
     }
 
     interface Init {

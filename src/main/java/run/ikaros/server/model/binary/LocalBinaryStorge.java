@@ -4,7 +4,7 @@ import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.FileUtils;
 import run.ikaros.server.utils.SystemVarUtils;
-import run.ikaros.server.exceptions.IkarosRuntimeException;
+import run.ikaros.server.exceptions.RuntimeIkarosException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class LocalBinaryStorge implements BinaryStorge {
         } catch (IOException e) {
             String msg = "operate file fail for upload path=" + binary.getUrl();
             LOGGER.error(msg + ": ", e);
-            throw new IkarosRuntimeException(msg);
+            throw new RuntimeIkarosException(msg);
         }
     }
 
@@ -114,7 +114,7 @@ public class LocalBinaryStorge implements BinaryStorge {
         File file = new File(url);
         if (file.exists()) {
             if (!file.delete()) {
-                throw new IkarosRuntimeException("file delete fail");
+                throw new RuntimeIkarosException("file delete fail");
             } else {
                 LOGGER.debug("delete file success, url={}", url);
             }
