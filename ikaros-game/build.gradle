@@ -1,0 +1,9 @@
+description = 'Ikaros Server Game Module'
+ext {
+
+}
+
+dependencies {
+
+
+}

@@ -1,18 +1,74 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
     id 'java'
+    id "checkstyle"
+    id 'org.springframework.boot' version '2.5.12'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
 group 'cn.ikaros.server'
+description = "ikaros, an open source acgmn cms application."
+sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
+    mavenLocal()
+    maven { url "https://maven.aliyun.com/nexus/content/groups/public" }
+    maven { url "https://maven.aliyun.com/repository/spring/" }
     mavenCentral()
+    maven { url "https://repo.spring.io/milestone" }
 }
 
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-}
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'checkstyle'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
 
-test {
-    useJUnitPlatform()
+    group = project.group
+    version = project.version
+
+    sourceCompatibility = '17'
+    jar.enabled = true
+
+    checkstyle {
+        toolVersion = "8.39"
+        showViolations = false
+        ignoreFailures = false
+    }
+
+    repositories {
+        mavenLocal()
+        maven { url "https://maven.aliyun.com/nexus/content/groups/public" }
+        maven { url "https://maven.aliyun.com/repository/spring/" }
+        mavenCentral()
+        maven { url "https://repo.spring.io/milestone" }
+        maven { url "https://repo.spring.io/snapshot" }
+    }
+
+    dependencies {
+        implementation 'com.fasterxml.jackson.core:jackson-databind'
+        implementation 'com.fasterxml.jackson.core:jackson-core'
+        implementation 'com.fasterxml.jackson.core:jackson-annotations'
+
+
+        testImplementation "org.springframework.boot:spring-boot-starter-test"
+        testImplementation "junit:junit"
+        testImplementation "org.mockito:mockito-core"
+
+    }
+
+    dependencyManagement {
+
+        imports {
+            mavenBom SpringBootPlugin.BOM_COORDINATES
+        }
+
+        dependencies {
+        }
+    }
+
+    test {
+        useJUnitPlatform()
+    }
 }

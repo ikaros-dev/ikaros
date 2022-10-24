@@ -1,2 +1,19 @@
+pluginManagement {
+    repositories {
+        maven { url 'https://plugins.gradle.org/m2/' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url 'https://maven.aliyun.com/repository/spring-plugin' }
+        maven { url 'https://repo.spring.io/milestone' }
+        gradlePluginPortal()
+    }
+}
 rootProject.name = 'ikaros'
+include 'ikaros-core'
+include 'ikaros-bootstrap'
+include 'ikaros-file'
+include 'ikaros-amine'
+include 'ikaros-comic'
+include 'ikaros-game'
+include 'ikaros-music'
+include 'ikaros-novel'
 

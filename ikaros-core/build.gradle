@@ -1,0 +1,14 @@
+description = 'Ikaros Server Core Module'
+ext {
+
+}
+
+dependencies {
+    implementation 'org.slf4j:slf4j-log4j12'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+
+
+
+}
