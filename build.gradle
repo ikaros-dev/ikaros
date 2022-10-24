@@ -5,7 +5,7 @@ plugins {
 	id "checkstyle"
 }
 
-group = "cn.liguohao.ikaros"
+group = "run.ikaros.server"
 description = "ikaros, an open source acgmn cms application."
 sourceCompatibility = JavaVersion.VERSION_17
 
