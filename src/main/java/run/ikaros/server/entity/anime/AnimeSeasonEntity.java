@@ -1,0 +1,42 @@
+package run.ikaros.server.entity.anime;
+
+import run.ikaros.server.entity.BaseEntity;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+
+/**
+ * @author guohao
+ * @date 2022/09/10
+ */
+@Entity
+@Table(name = "anime_season", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"season_id", "anime_id"})})
+public class AnimeSeasonEntity extends BaseEntity {
+
+    @Column(name = "season_id", nullable = false)
+    private Long seasonId;
+
+    @Column(name = "anime_id", nullable = false)
+    private Long animeId;
+
+
+    public Long getSeasonId() {
+        return seasonId;
+    }
+
+    public AnimeSeasonEntity setSeasonId(Long seasonId) {
+        this.seasonId = seasonId;
+        return this;
+    }
+
+    public Long getAnimeId() {
+        return animeId;
+    }
+
+    public AnimeSeasonEntity setAnimeId(Long animeId) {
+        this.animeId = animeId;
+        return this;
+    }
+}
