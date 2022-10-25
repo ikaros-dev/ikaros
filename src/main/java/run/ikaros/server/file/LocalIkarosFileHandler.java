@@ -1,5 +1,6 @@
 package run.ikaros.server.file;
 
+import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.FileUtils;
@@ -82,7 +83,7 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
                 if (sha256 == null) {
                     ikarosFile.setSha256(FileUtils.checksum2Str(bytes, FileUtils.Hash.SHA256));
                 }
-                ikarosFile.setPlace(IkarosFile.Place.LOCAL);
+                ikarosFile.setPlace(FilePlace.LOCAL);
                 String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
                 Files.write(Path.of(new File(subjectDataFilePath).toURI()), bytes);
                 ikarosFile.setUploadedPath(subjectDataFilePath);
@@ -201,7 +202,7 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
     }
 
     @Override
-    public IkarosFile.Place getPlace() {
-        return IkarosFile.Place.LOCAL;
+    public FilePlace getPlace() {
+        return FilePlace.LOCAL;
     }
 }

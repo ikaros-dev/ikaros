@@ -2,7 +2,6 @@ package run.ikaros.server.exceptions;
 
 /**
  * @author li-guohao
- * @date 2022/06/18
  */
 public class NotSupportRuntimeException extends RuntimeIkarosException {
     public NotSupportRuntimeException() {

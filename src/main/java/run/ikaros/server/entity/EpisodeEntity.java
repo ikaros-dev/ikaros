@@ -17,7 +17,7 @@ import javax.persistence.Table;
 public class EpisodeEntity extends BaseEntity {
 
     @Column(name = "season_id", nullable = false)
-    private Long seasonId;
+    private Long seasonId = -1L;
 
     private String url;
 

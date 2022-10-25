@@ -1,9 +1,19 @@
 package run.ikaros.server.init;
 
-import run.ikaros.server.service.impl.OptionService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.springframework.stereotype.Component;
+import run.ikaros.server.constants.OptionConst;
+import run.ikaros.server.entity.OptionEntity;
+import run.ikaros.server.init.option.PresetOption;
+import run.ikaros.server.service.OptionService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
+import run.ikaros.server.utils.ClassUtils;
 
 /**
  * @author guohao
@@ -19,7 +29,28 @@ public class OptionItemInitAppRunner implements ApplicationRunner {
     }
 
     @Override
+    @SuppressWarnings({"unchecked", "deprecation"})
     public void run(ApplicationArguments args) throws Exception {
-        optionService.initPresetOptionItems();
+        // read preset package all PresetOption
+        List<Class<? extends PresetOption>> classList =
+            ClassUtils
+                .findClassByPackage(OptionConst.INIT_PRESET_OPTION_PACKAGE_NAME)
+                .stream()
+                .filter(cls -> Arrays.stream(cls.getInterfaces())
+                    .collect(Collectors.toSet())
+                    .contains(PresetOption.class))
+                .flatMap((Function<Class<?>, Stream<Class<? extends PresetOption>>>) cls
+                    -> Stream.of((Class<? extends PresetOption>) cls))
+                .toList();
+
+        // build option entity list by all preset option
+        List<OptionEntity> optionEntityList = new ArrayList<>();
+        for (Class<?> cls : classList) {
+            PresetOption presetOption = (PresetOption) cls.newInstance();
+            optionEntityList.addAll(PresetOption.buildEntityListByPresetOption(presetOption));
+        }
+
+        // save all option entity
+        optionEntityList.forEach(optionService::save);
     }
 }

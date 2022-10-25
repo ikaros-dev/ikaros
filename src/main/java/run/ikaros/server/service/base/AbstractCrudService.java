@@ -3,6 +3,7 @@ package run.ikaros.server.service.base;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -40,7 +41,7 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
 
     @Nonnull
     @Override
-    public E create(@Nonnull E entity) {
+    public E save(@Nonnull E entity) {
         AssertUtils.notNull(entity, "entity");
         return baseRepository.saveAndFlush(entity);
     }
@@ -51,13 +52,6 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
         E e = getById(id);
         baseRepository.delete(e);
         return e;
-    }
-
-    @Nonnull
-    @Override
-    public E update(@Nonnull E entity) {
-        AssertUtils.notNull(entity, "entity");
-        return baseRepository.saveAndFlush(entity);
     }
 
     @Nonnull
@@ -78,6 +72,21 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
     public Page<E> listAll(@Nonnull Pageable pageable) {
         AssertUtils.notNull(pageable, "pageable");
         return baseRepository.findAll(pageable);
+    }
+
+    @Nonnull
+    @Override
+    public List<E> listAll(@Nonnull Example<E> example) {
+        AssertUtils.notNull(example, "example");
+        return baseRepository.findAll(example);
+    }
+
+    @Nonnull
+    @Override
+    public Page<E> listAll(@Nonnull Example<E> example, @Nonnull Pageable pageable) {
+        AssertUtils.notNull(example, "example");
+        AssertUtils.notNull(pageable, "pageable");
+        return baseRepository.findAll(example, pageable);
     }
 
     @Nonnull

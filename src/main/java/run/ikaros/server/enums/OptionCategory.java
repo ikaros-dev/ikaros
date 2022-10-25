@@ -9,5 +9,5 @@ public enum OptionCategory {
     SEO,
     FILE,
     ThirdParty,
-    DEFAULT;
+    OTHER;
 }

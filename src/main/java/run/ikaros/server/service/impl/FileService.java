@@ -1,5 +1,7 @@
 package run.ikaros.server.service.impl;
 
+import run.ikaros.server.enums.FilePlace;
+import run.ikaros.server.enums.FileType;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
@@ -94,7 +96,7 @@ public class FileService {
         List<FileEntity> sameMd5FileEntities = fileRepository.findByMd5(md5);
         if (sameMd5FileEntities != null && sameMd5FileEntities.size() > 0) {
             FileEntity sameMd5FileEntity = sameMd5FileEntities.get(0);
-            String oldLocation = sameMd5FileEntity.getLocation();
+            String oldLocation = sameMd5FileEntity.getUrl();
             ikarosFile
                 .setUploadedPath(oldLocation)
                 .setOldLocation(oldLocation);
@@ -104,12 +106,12 @@ public class FileService {
             ikarosFile = fileOperateResult.getIkarosFile();
         }
 
-        IkarosFile.Place place = ikarosFile.getPlace();
+        FilePlace place = ikarosFile.getPlace();
         Date uploadedDate = TimeUtils.localDataTime2Date(ikarosFile.getUploadedTime());
         // 如果存储位置是本地，则对应的URL格式为 http://ip:port/upload/xxx.jpg
         String uploadedPath = ikarosFile.getUploadedPath();
         String url = "";
-        if (place == IkarosFile.Place.LOCAL) {
+        if (place == FilePlace.LOCAL) {
             url = path2url(uploadedPath);
         } else {
             // 其它情况下，url和uploadedPath相同
@@ -117,12 +119,11 @@ public class FileService {
         }
 
         fileEntity
-            .setLocation(uploadedPath)
+            .setUrl(uploadedPath)
             .setUrl(url)
             .setMd5(md5)
             .setSize(size)
-            .setName(ikarosFile.getName())
-            .setPostfix(ikarosFile.getPostfix())
+            .setName(ikarosFile.getName() + "." + ikarosFile.getPostfix())
             .setType(ikarosFile.getType())
             .setPlace(place)
             .setCreateTime(uploadedDate)
@@ -144,7 +145,7 @@ public class FileService {
     public void delete(Long fileId) {
         try {
             FileEntity fileEntity = findById(fileId);
-            final String location = fileEntity.getLocation();
+            final String location = fileEntity.getUrl();
             if (StringUtils.isNotBlank(location)) {
                 // 由于目前是逻辑删除，暂时不删除文件
                 //fileHandler.delete(location);
@@ -194,7 +195,7 @@ public class FileService {
             existFileEntity = findById(fileId);
 
             // 如果旧的文件存在，则移除旧的文件
-            oldLocation = existFileEntity.getLocation();
+            oldLocation = existFileEntity.getUrl();
         } catch (RecordNotFoundException e) {
             // 没有旧的数据，则新增一条
             // 查询ID是否已经存在
@@ -202,7 +203,7 @@ public class FileService {
             try {
                 idExistFileEntity = fileRepository.getById(fileId);
                 idExistFileEntity.setStatus(true);
-                oldLocation = idExistFileEntity.getLocation();
+                oldLocation = idExistFileEntity.getUrl();
             } catch (EntityNotFoundException entityNotFoundException) {
                 idExistFileEntity = new FileEntity();
                 // ps: 这里的新的保存的ID并不是指定的ID
@@ -273,7 +274,7 @@ public class FileService {
             }
             if (StringUtils.isNotBlank(type)) {
                 predicateList.add(
-                    criteriaBuilder.equal(root.get("type"), IkarosFile.Type.valueOf(type)));
+                    criteriaBuilder.equal(root.get("type"), FileType.valueOf(type)));
             }
             if (StringUtils.isNotBlank(place)) {
                 predicateList.add(
@@ -362,12 +363,11 @@ public class FileService {
             uploadName = uploadName.substring(0, uploadName.lastIndexOf("."));
             FileEntity fileEntity = (FileEntity) new FileEntity()
                 .setMd5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5))
-                .setLocation(filePath)
-                .setPlace(IkarosFile.Place.LOCAL)
+                .setUrl(filePath)
+                .setPlace(FilePlace.LOCAL)
                 .setUrl(path2url(filePath))
-                .setName(uploadName)
+                .setName(uploadName + "." + postfix)
                 .setSize(Integer.valueOf(uploadLength))
-                .setPostfix(postfix)
                 .setType(FileUtils.parseTypeByPostfix(postfix))
                 .setCreateTime(new Date())
                 .setUpdateTime(new Date());

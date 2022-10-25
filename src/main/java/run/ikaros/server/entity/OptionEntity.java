@@ -2,7 +2,6 @@ package run.ikaros.server.entity;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import run.ikaros.server.constants.OptionConst;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
@@ -29,7 +28,15 @@ public class OptionEntity extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private OptionCategory category = OptionCategory.DEFAULT;
+    private OptionCategory category = OptionCategory.OTHER;
+
+    public OptionEntity() {
+    }
+
+    public OptionEntity(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
 
     public OptionType getType() {
         return type;

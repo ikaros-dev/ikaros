@@ -3,6 +3,7 @@ package run.ikaros.server.service.base;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -23,7 +24,7 @@ public interface CrudService<E, I> {
 
     @Nonnull
     @Transactional
-    E create(@Nonnull E entity);
+    E save(@Nonnull E entity);
 
     @Nullable
     @Transactional
@@ -34,10 +35,6 @@ public interface CrudService<E, I> {
      */
 
     @Nonnull
-    @Transactional
-    E update(@Nonnull E entity);
-
-    @Nonnull
     List<E> listAll();
 
     @Nonnull
@@ -45,6 +42,12 @@ public interface CrudService<E, I> {
 
     @Nonnull
     Page<E> listAll(@Nonnull Pageable pageable);
+
+    @Nonnull
+    List<E> listAll(@Nonnull Example<E> example);
+
+    @Nonnull
+    Page<E> listAll(@Nonnull Example<E> example, @Nonnull Pageable pageable);
 
     @Nonnull
     Optional<E> fetchById(@Nonnull I id);

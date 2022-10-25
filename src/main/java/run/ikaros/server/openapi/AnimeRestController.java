@@ -6,10 +6,9 @@ import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.EpisodeEntity;
-import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.params.SearchAnimeDTOSParams;
-import run.ikaros.server.service.impl.AnimeService;
-import java.util.List;
+import run.ikaros.server.service.AnimeService;
+import run.ikaros.server.service.impl.AnimeServiceImpl;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,12 +30,6 @@ public class AnimeRestController {
 
     public AnimeRestController(AnimeService animeService) {
         this.animeService = animeService;
-    }
-
-    @PutMapping("/metadata/network/bgmTvId/{bgmTvId}")
-    public CommonResult<AnimeDTO> reqBgmtvBangumiMetadata(@PathVariable Long bgmTvId)
-        throws RecordNotFoundException {
-        return CommonResult.ok(animeService.reqBgmtvBangumiMetadata(bgmTvId));
     }
 
     @PutMapping("/dto")
@@ -62,35 +55,5 @@ public class AnimeRestController {
         return CommonResult.ok(animeService.save(animeEntity));
     }
 
-    @PutMapping("/season/animeId/{animeId}")
-    public CommonResult<SeasonEntity> saveSeasonEntity(@PathVariable Long animeId,
-                                                       @RequestBody SeasonEntity seasonEntity) {
-        return CommonResult.ok(animeService.saveSeasonEntity(animeId, seasonEntity));
-    }
 
-    @DeleteMapping("/season/animeId/{animeId}")
-    public CommonResult<String> removeAnimeSeason(@PathVariable Long animeId,
-                                                  @RequestParam Long seasonId)
-        throws RecordNotFoundException {
-        animeService.removeAnimeSeason(animeId, seasonId);
-        return CommonResult.ok();
-    }
-
-    @GetMapping("/season/types")
-    public CommonResult<List<String>> findSeasonTypes() {
-        return CommonResult.ok(animeService.finSeasonTypes());
-    }
-
-    @PutMapping("/episode/seasonId/{seasonId}")
-    public CommonResult<EpisodeEntity> saveEpisodeEntity(@PathVariable Long seasonId,
-                                                         @RequestBody EpisodeEntity episodeEntity) {
-        return CommonResult.ok(animeService.saveEpisodeEntity(seasonId, episodeEntity));
-    }
-
-    @DeleteMapping("/season/episode/seasonId/{seasonId}")
-    public CommonResult<String> removeSeasonEpisode(@PathVariable Long seasonId,
-                                                    @RequestParam Long episodeId) {
-        animeService.removeSeasonEpisode(seasonId, episodeId);
-        return CommonResult.ok();
-    }
 }

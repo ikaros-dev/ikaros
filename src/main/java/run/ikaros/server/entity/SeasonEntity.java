@@ -19,20 +19,19 @@ import run.ikaros.server.enums.SeasonType;
  * @date 2022/09/10
  */
 @Entity
-@Table(name = "season", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"type", "original_title"})})
+@Table(name = "season")
 public class SeasonEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private SeasonType type = SeasonType.FIRST;
 
     @Column(name = "anime_id", nullable = false)
-    private Long animeId;
+    private Long animeId = -1L;
 
     private String title;
 
-    @Column(name = "original_title")
-    private String originalTitle;
+    @Column(name = "title_cn")
+    private String titleCn;
 
     @Lob @Basic(fetch = FetchType.LAZY)
     private String overview;
@@ -65,12 +64,12 @@ public class SeasonEntity extends BaseEntity {
         return this;
     }
 
-    public String getOriginalTitle() {
-        return originalTitle;
+    public String getTitleCn() {
+        return titleCn;
     }
 
-    public SeasonEntity setOriginalTitle(String originalTitle) {
-        this.originalTitle = originalTitle;
+    public SeasonEntity setTitleCn(String titleCn) {
+        this.titleCn = titleCn;
         return this;
     }
 

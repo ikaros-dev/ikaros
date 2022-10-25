@@ -1,6 +1,7 @@
 package run.ikaros.server.file;
 
 
+import run.ikaros.server.enums.FileType;
 import run.ikaros.server.file.IkarosFile;
 import run.ikaros.server.file.IkarosFileOperateResult;
 import run.ikaros.server.file.LocalIkarosFileHandler;
@@ -47,7 +48,7 @@ class LocalIkarosFileHandlerTest {
         byte[] datum = content.getBytes(StandardCharsets.UTF_8);
 
         IkarosFile ikarosFile = new IkarosFile()
-            .setType(IkarosFile.Type.DOCUMENT)
+            .setType(FileType.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setBytes(datum)
@@ -77,7 +78,7 @@ class LocalIkarosFileHandlerTest {
     void download() throws IOException {
 
         IkarosFile ikarosFile = new IkarosFile()
-            .setType(IkarosFile.Type.DOCUMENT)
+            .setType(FileType.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setUploadedTime(localDateTime);
@@ -114,7 +115,7 @@ class LocalIkarosFileHandlerTest {
     @Test
     void delete() throws IOException, InterruptedException {
         IkarosFile ikarosFile = new IkarosFile()
-            .setType(IkarosFile.Type.DOCUMENT)
+            .setType(FileType.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setUploadedTime(localDateTime);

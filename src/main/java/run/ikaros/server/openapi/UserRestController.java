@@ -73,11 +73,6 @@ public class UserRestController {
         return CommonResult.ok();
     }
 
-    @GetMapping
-    public CommonResult<List<UserEntity>> getUsers(@RequestBody UserEntity userEntityCondition) {
-        // todo impl find users by condition
-        return CommonResult.ok();
-    }
 
     @GetMapping("/{id}")
     public CommonResult<UserEntity> getUserById(@PathVariable Long id)
