@@ -6,7 +6,6 @@ import javax.transaction.Transactional;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.init.option.PresetOption;
-import run.ikaros.server.init.option.ThirdPartyPresetOption;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.service.base.CrudService;
 
@@ -14,6 +13,9 @@ import run.ikaros.server.service.base.CrudService;
  * @author li-guohao
  */
 public interface OptionService extends CrudService<OptionEntity, Long> {
+
+    @Nonnull
+    List<Class<? extends PresetOption>> getPresetOptionClassList();
 
     @Nonnull
     OptionEntity findOptionItemByKey(@Nonnull String key);
@@ -34,4 +36,9 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
 
     @Nonnull
     <T extends PresetOption> T findPresetOption(@Nonnull T presetOption);
+
+    @Nonnull
+    List<PresetOption> findPresetOptionList();
+
+    <T extends PresetOption> T savePresetOption(@Nonnull T presetOption);
 }

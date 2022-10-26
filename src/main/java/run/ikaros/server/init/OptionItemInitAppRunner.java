@@ -32,16 +32,7 @@ public class OptionItemInitAppRunner implements ApplicationRunner {
     @SuppressWarnings({"unchecked", "deprecation"})
     public void run(ApplicationArguments args) throws Exception {
         // read preset package all PresetOption
-        List<Class<? extends PresetOption>> classList =
-            ClassUtils
-                .findClassByPackage(OptionConst.INIT_PRESET_OPTION_PACKAGE_NAME)
-                .stream()
-                .filter(cls -> Arrays.stream(cls.getInterfaces())
-                    .collect(Collectors.toSet())
-                    .contains(PresetOption.class))
-                .flatMap((Function<Class<?>, Stream<Class<? extends PresetOption>>>) cls
-                    -> Stream.of((Class<? extends PresetOption>) cls))
-                .toList();
+        List<Class<? extends PresetOption>> classList = optionService.getPresetOptionClassList();
 
         // build option entity list by all preset option
         List<OptionEntity> optionEntityList = new ArrayList<>();

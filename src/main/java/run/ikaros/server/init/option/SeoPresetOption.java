@@ -17,7 +17,7 @@ public class SeoPresetOption implements PresetOption {
     @Nonnull
     @Override
     public OptionCategory getCategory() {
-        return OptionCategory.OTHER;
+        return OptionCategory.SEO;
     }
 
     public String getHideForSearchEngine() {

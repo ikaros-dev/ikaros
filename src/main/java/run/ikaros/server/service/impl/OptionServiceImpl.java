@@ -1,11 +1,18 @@
 package run.ikaros.server.service.impl;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import run.ikaros.server.constants.OptionConst;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.exceptions.RecordNotFoundException;
@@ -16,6 +23,7 @@ import run.ikaros.server.repository.OptionRepository;
 import run.ikaros.server.service.OptionService;
 import run.ikaros.server.service.base.AbstractCrudService;
 import run.ikaros.server.utils.AssertUtils;
+import run.ikaros.server.utils.ClassUtils;
 import run.ikaros.server.utils.JsonUtils;
 
 /**
@@ -28,11 +36,39 @@ public class OptionServiceImpl
     implements OptionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OptionServiceImpl.class);
 
+    private List<Class<? extends PresetOption>> classList = null;
+
     private final OptionRepository optionRepository;
 
     public OptionServiceImpl(OptionRepository optionRepository) {
         super(optionRepository);
         this.optionRepository = optionRepository;
+    }
+
+    @Nonnull
+    @Override
+    @SuppressWarnings("unchecked")
+    public synchronized List<Class<? extends PresetOption>> getPresetOptionClassList() {
+        try {
+            if (classList != null) {
+                return classList;
+            }
+
+            classList =
+                ClassUtils
+                    .findClassByPackage(OptionConst.INIT_PRESET_OPTION_PACKAGE_NAME)
+                    .stream()
+                    .filter(cls -> Arrays.stream(cls.getInterfaces())
+                        .collect(Collectors.toSet())
+                        .contains(PresetOption.class))
+                    .flatMap((Function<Class<?>, Stream<Class<? extends PresetOption>>>) cls
+                        -> Stream.of((Class<? extends PresetOption>) cls))
+                    .toList();
+
+            return classList;
+        } catch (IOException e) {
+            throw new ReflectOperateException(e);
+        }
     }
 
     @Nonnull
@@ -121,6 +157,58 @@ public class OptionServiceImpl
         }
 
         return presetOption;
+    }
+
+    @Nonnull
+    @Override
+    @SuppressWarnings("deprecation")
+    public List<PresetOption> findPresetOptionList() {
+        List<PresetOption> presetOptionList = new ArrayList<>();
+        try {
+            List<Class<? extends PresetOption>> classList = getPresetOptionClassList();
+
+            for (Class<? extends PresetOption> cls : classList) {
+                PresetOption presetOption = cls.newInstance();
+                presetOptionList.add(findPresetOption(presetOption));
+            }
+
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectOperateException(e);
+        }
+
+        return presetOptionList;
+    }
+
+    @Override
+    public <T extends PresetOption> T savePresetOption(@Nonnull T presetOption) {
+        AssertUtils.notNull(presetOption, "presetOption");
+        OptionCategory category = presetOption.getCategory();
+        List<OptionEntity> optionEntityList = findOptionByCategory(category);
+
+        // update data from preset to database
+        for (OptionEntity optionEntity : optionEntityList) {
+            for (Field field : presetOption.getClass().getDeclaredFields()) {
+                if (field.getName().equalsIgnoreCase(optionEntity.getKey())) {
+                    field.setAccessible(true);
+                    String newValue;
+                    try {
+                        newValue = (String) field.get(presetOption);
+                    } catch (IllegalAccessException e) {
+                        throw new ReflectOperateException(e);
+                    }
+                    if (newValue != null) {
+                        optionEntity.setValue(newValue);
+                        optionEntity = optionRepository.save(optionEntity);
+                    }
+                }
+            }
+        }
+
+        // flush all update to database
+        optionRepository.flush();
+
+        // find preset form database to current preset
+        return findPresetOption(presetOption);
     }
 
 }
