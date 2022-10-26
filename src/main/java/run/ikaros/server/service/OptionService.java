@@ -41,4 +41,6 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
     List<PresetOption> findPresetOptionList();
 
     <T extends PresetOption> T savePresetOption(@Nonnull T presetOption);
+
+    void initPresetOptionsOnce();
 }

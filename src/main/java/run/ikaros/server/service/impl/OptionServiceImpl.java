@@ -17,6 +17,7 @@ import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.exceptions.ReflectOperateException;
+import run.ikaros.server.init.option.AppPresetOption;
 import run.ikaros.server.init.option.PresetOption;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.repository.OptionRepository;
@@ -209,6 +210,35 @@ public class OptionServiceImpl
 
         // find preset form database to current preset
         return findPresetOption(presetOption);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void initPresetOptionsOnce() {
+        // search has init
+        AppPresetOption appPresetOption =
+            findPresetOption(new AppPresetOption().setIsInit("false"));
+        if (appPresetOption.getIsInit().equalsIgnoreCase("true")) {
+            return;
+        }
+
+        // read preset package all PresetOption
+        List<Class<? extends PresetOption>> classList = getPresetOptionClassList();
+
+        // build option entity list by all preset option
+        List<OptionEntity> optionEntityList = new ArrayList<>();
+        for (Class<?> cls : classList) {
+            PresetOption presetOption = null;
+            try {
+                presetOption = (PresetOption) cls.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new ReflectOperateException(e);
+            }
+            optionEntityList.addAll(PresetOption.buildEntityListByPresetOption(presetOption));
+        }
+
+        // save all option entity
+        optionEntityList.forEach(this::save);
     }
 
 }
