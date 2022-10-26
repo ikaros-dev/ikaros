@@ -33,6 +33,7 @@ import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.service.AnimeService;
 import run.ikaros.server.service.BgmTvService;
 import run.ikaros.server.service.EpisodeService;
+import run.ikaros.server.service.FileService;
 import run.ikaros.server.service.OptionService;
 import run.ikaros.server.service.SeasonService;
 import run.ikaros.server.utils.AssertUtils;

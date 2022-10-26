@@ -1,7 +1,10 @@
 package run.ikaros.server.service.impl;
 
+import javax.annotation.Nonnull;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.FileType;
+import run.ikaros.server.service.FileService;
+import run.ikaros.server.service.base.AbstractCrudService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
@@ -51,20 +54,24 @@ import org.springframework.web.multipart.MultipartFile;
  * @date 2022/09/07
  */
 @Service
-@Transactional(rollbackOn = Exception.class)
-public class FileService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileService.class);
+public class FileServiceImpl
+    extends AbstractCrudService<FileEntity, Long>
+    implements FileService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileServiceImpl.class);
 
     private final FileRepository fileRepository;
     private final IkarosProperties ikarosProperties;
-    private IkarosFileHandler fileHandler = new LocalIkarosFileHandler();
+    private final IkarosFileHandler fileHandler = new LocalIkarosFileHandler();
 
-    public FileService(FileRepository fileRepository, IkarosProperties ikarosProperties) {
+    public FileServiceImpl(FileRepository fileRepository, IkarosProperties ikarosProperties) {
+        super(fileRepository);
         this.fileRepository = fileRepository;
         this.ikarosProperties = ikarosProperties;
     }
 
-    public FileEntity upload(String originalFilename, byte[] bytes) {
+    @Nonnull
+    @Override
+    public FileEntity upload(@Nonnull String originalFilename, @Nonnull byte[] bytes) {
         AssertUtils.notNull(originalFilename, "'originalFilename' must not bo null");
         AssertUtils.notNull(bytes, "'bytes' must not bo null");
 
@@ -132,7 +139,9 @@ public class FileService {
         return fileRepository.saveAndFlush(fileEntity);
     }
 
-    public FileEntity findById(Long fileId) throws RecordNotFoundException {
+    @Nonnull
+    @Override
+    public FileEntity findById(@Nonnull Long fileId) {
         AssertUtils.isPositive(fileId, "'fileId' must be positive");
         Optional<FileEntity> fileEntityOptional = fileRepository.findByIdAndStatus(fileId, true);
         if (fileEntityOptional.isEmpty()) {
@@ -141,8 +150,8 @@ public class FileService {
         return fileEntityOptional.get();
     }
 
-
-    public void delete(Long fileId) {
+    @Override
+    public void delete(@Nonnull Long fileId) {
         try {
             FileEntity fileEntity = findById(fileId);
             final String location = fileEntity.getUrl();
@@ -159,7 +168,9 @@ public class FileService {
         }
     }
 
-    public FileEntity update(FileEntity fileEntity) {
+    @Nonnull
+    @Override
+    public FileEntity update(@Nonnull FileEntity fileEntity) {
         AssertUtils.notNull(fileEntity, "'fileEntity' must not be null.");
         Long fileId = fileEntity.getId();
         AssertUtils.isPositive(fileId, "'fileId' must be positive");
@@ -183,7 +194,9 @@ public class FileService {
         return existFileEntity;
     }
 
-    public FileEntity update(Long fileId, MultipartFile multipartFile)
+    @Nonnull
+    @Override
+    public FileEntity update(@Nonnull Long fileId, @Nonnull MultipartFile multipartFile)
         throws IOException {
         AssertUtils.isPositive(fileId, "'fileId' must be positive");
         AssertUtils.notNull(multipartFile, "'multipartFile' must not be null");
@@ -244,8 +257,10 @@ public class FileService {
         }
     }
 
+    @Nonnull
+    @Override
     public PagingWrap<FileEntity> findFilesByPagingAndCondition(
-        SearchFilesParams searchFilesParams) {
+        @Nonnull SearchFilesParams searchFilesParams) {
         AssertUtils.notNull(searchFilesParams, "'searchFilesParams' must not be null");
         Integer pageIndex = searchFilesParams.getPage();
         Integer pageSize = searchFilesParams.getSize();
@@ -301,25 +316,33 @@ public class FileService {
             .setTotal(fileRepository.count(queryCondition));
     }
 
+
     /**
      * @return 所有的文件类型
      */
+    @Nonnull
+    @Override
     public Set<String> findTypes() {
         return fileRepository.findTypes();
     }
 
+    @Nonnull
+    @Override
     public Set<String> findPlaces() {
         return fileRepository.findPlaces();
     }
 
-    public void deleteInBatch(Set<Long> ids) {
+    @Override
+    public void deleteInBatch(@Nonnull Set<Long> ids) {
         AssertUtils.notNull(ids, "'ids' must not be null");
         for (Long id : ids) {
             delete(id);
         }
     }
 
-    public FileEntity updateNameById(String name, Long id) throws RecordNotFoundException {
+    @Nonnull
+    @Override
+    public FileEntity updateNameById(@Nonnull String name, @Nonnull Long id) {
         AssertUtils.notNull(id, "'id' must not be null");
         AssertUtils.notBlank(name, "'name' must not be blank");
 
@@ -328,8 +351,10 @@ public class FileService {
         return fileRepository.saveAndFlush(existFileEntity);
     }
 
-    public void receiveAndHandleChunkFile(String unique, String uploadLength, String uploadOffset,
-                                          String uploadName, byte[] bytes) throws IOException {
+    @Override
+    public void receiveAndHandleChunkFile(@Nonnull String unique, @Nonnull String uploadLength,
+                                          @Nonnull String uploadOffset, @Nonnull String uploadName,
+                                          @Nonnull byte[] bytes) throws IOException {
         AssertUtils.notNull(unique, "'unique' must not be null");
         AssertUtils.notNull(uploadLength, "'uploadLength' must not be null");
         AssertUtils.notNull(uploadOffset, "'uploadOffset' must not be null");
@@ -345,7 +370,7 @@ public class FileService {
 
         AssertUtils.notNull(bytes, "file bytes must not be null");
 
-        Long offset = Long.parseLong(uploadOffset) + bytes.length;
+        long offset = Long.parseLong(uploadOffset) + bytes.length;
         File uploadedChunkCacheFile = new File(tempChunkFileCacheDir + File.separator + offset);
         Files.write(Path.of(uploadedChunkCacheFile.toURI()), bytes);
         LOGGER.debug("upload chunk[{}] to path: {}", uploadOffset,
