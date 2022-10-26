@@ -37,6 +37,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+      use-new-id-generator-mappings: false
     show-sql: false
     open-in-view: false
 
