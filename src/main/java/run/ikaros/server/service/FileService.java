@@ -35,23 +35,10 @@ public interface FileService extends CrudService<FileEntity, Long> {
     FileEntity update(@Nonnull Long fileId, @Nonnull MultipartFile multipartFile)
         throws IOException;
 
-    /**
-     * 分页条件查询，需要对参数里的类型进行条件解析
-     *
-     * @param searchFilesParams 分页条件参数
-     * @return 查询结构
-     * @see #findTypes()
-     */
     @Nonnull
     PagingWrap<FileEntity> findFilesByPagingAndCondition(
         @Nonnull SearchFilesParams searchFilesParams);
 
-    /**
-     * 对应查询时也需要解析下这个格式
-     *
-     * @return 类型小写 + / + 后缀 , 例子：image/png
-     * @see #findFilesByPagingAndCondition(SearchFilesParams)
-     */
     @Nonnull
     Set<String> findTypes();
 

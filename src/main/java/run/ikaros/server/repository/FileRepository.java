@@ -27,6 +27,4 @@ public interface FileRepository extends BaseRepository<FileEntity, Long> {
 
     List<FileEntity> findByMd5(String md5);
 
-    @Query("select postfix from FileEntity where status = true")
-    Set<String> findPostfix();
 }
