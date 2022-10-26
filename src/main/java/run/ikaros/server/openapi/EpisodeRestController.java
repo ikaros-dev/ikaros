@@ -11,6 +11,7 @@ import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.model.dto.EpisodeDTO;
 import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.service.EpisodeService;
+import run.ikaros.server.utils.AssertUtils;
 
 /**
  * @author li-guohao
@@ -27,11 +28,14 @@ public class EpisodeRestController {
 
     @PutMapping
     public CommonResult<EpisodeEntity> save(@RequestBody EpisodeEntity entity) {
+        AssertUtils.notNull(entity, "episode");
+        AssertUtils.notNull(entity.getSeasonId(), "seasonId");
         return CommonResult.ok(episodeService.save(entity));
     }
 
     @DeleteMapping
     public CommonResult<EpisodeEntity> remove(@RequestParam String id) {
+        AssertUtils.notNull(id, "id");
         return CommonResult.ok(episodeService.removeById(Long.valueOf(id)));
     }
 }

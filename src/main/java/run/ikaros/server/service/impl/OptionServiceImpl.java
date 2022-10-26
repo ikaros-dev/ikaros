@@ -1,5 +1,6 @@
 package run.ikaros.server.service.impl;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.exceptions.RecordNotFoundException;
+import run.ikaros.server.exceptions.ReflectOperateException;
 import run.ikaros.server.init.option.PresetOption;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.repository.OptionRepository;
@@ -101,9 +103,24 @@ public class OptionServiceImpl
     @Nonnull
     @Override
     public <T extends PresetOption> T findPresetOption(@Nonnull T presetOption) {
+        OptionCategory category = presetOption.getCategory();
+        List<OptionEntity> optionEntityList =
+            optionRepository.findByCategoryAndStatus(category, true);
 
-        // todo impl
-        return null;
+        for (Field field : presetOption.getClass().getDeclaredFields()) {
+            for (OptionEntity optionEntity : optionEntityList) {
+                if (field.getName().equalsIgnoreCase(optionEntity.getKey())) {
+                    field.setAccessible(true);
+                    try {
+                        field.set(presetOption, optionEntity.getValue());
+                    } catch (IllegalAccessException e) {
+                        throw new ReflectOperateException(e);
+                    }
+                }
+            }
+        }
+
+        return presetOption;
     }
 
 }

@@ -32,8 +32,6 @@ public class EpisodeServiceImpl
     @Override
     public List<EpisodeEntity> findBySeasonId(@Nonnull Long seasonId) {
         AssertUtils.notNull(seasonId, "seasonId");
-        EpisodeEntity episodeEntityExample = new EpisodeEntity().setSeasonId(seasonId);
-        episodeEntityExample.setStatus(true);
-        return listAll(Example.of(episodeEntityExample));
+        return episodeRepository.findBySeasonIdAndStatus(seasonId, true);
     }
 }

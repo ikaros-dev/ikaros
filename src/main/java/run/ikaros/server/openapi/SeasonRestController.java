@@ -13,6 +13,7 @@ import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.service.SeasonService;
+import run.ikaros.server.utils.AssertUtils;
 
 /**
  * @author li-guohao
@@ -27,14 +28,15 @@ public class SeasonRestController {
         this.seasonService = seasonService;
     }
 
-    @PutMapping("/animeId/{animeId}")
-    public CommonResult<SeasonEntity> saveSeasonEntity(@PathVariable Long animeId,
-                                                       @RequestBody SeasonEntity seasonEntity) {
-        return CommonResult.ok(seasonService.save(seasonEntity.setAnimeId(animeId)));
+    @PutMapping
+    public CommonResult<SeasonEntity> save(@RequestBody SeasonEntity seasonEntity) {
+        AssertUtils.notNull(seasonEntity, "season");
+        AssertUtils.notNull(seasonEntity.getAnimeId(), "animeId");
+        return CommonResult.ok(seasonService.save(seasonEntity));
     }
 
     @DeleteMapping
-    public CommonResult<String> removeAnimeSeason(@RequestParam("id") Long seasonId)
+    public CommonResult<String> remove(@RequestParam("id") Long seasonId)
         throws RecordNotFoundException {
         seasonService.removeById(seasonId);
         return CommonResult.ok();
