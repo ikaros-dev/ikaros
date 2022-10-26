@@ -55,7 +55,7 @@ logging:
   file:
     name: ./logs/ikaros.log
   level:
-    cn.liguohao.ikaros: ${ikaros.log-level}
+    run.ikaros.server: ${ikaros.log-level}
     org.hibernate: INFO
     org.hibernate.type.descriptor.sql.BasicBinder: INFO
     org.hibernate.type.descriptor.sql.BasicExtractor: INFO

@@ -42,8 +42,6 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
     /**
      * @param userRepository  用户表操作Repo
      * @param passwordEncoder 指定的密码加密实例
-     * @param roleService     角色服务
-     * @param userRoleService 用户角色关系服务
      */
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder) {
@@ -144,7 +142,8 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
         return existUserEntity;
     }
 
-    public AuthUserDTO login(AuthUserDTO authUserDTO) throws RecordNotFoundException {
+    @Nonnull
+    public AuthUserDTO login(@Nonnull AuthUserDTO authUserDTO) throws RecordNotFoundException {
         AssertUtils.notNull(authUserDTO, "authUser");
         final String username = authUserDTO.getUsername();
         final String email = authUserDTO.getEmail();

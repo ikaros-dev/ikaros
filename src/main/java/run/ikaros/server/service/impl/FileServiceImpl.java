@@ -1,5 +1,6 @@
 package run.ikaros.server.service.impl;
 
+import java.util.HashSet;
 import javax.annotation.Nonnull;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.FileType;
@@ -130,7 +131,8 @@ public class FileServiceImpl
             .setUrl(url)
             .setMd5(md5)
             .setSize(size)
-            .setName(ikarosFile.getName() + "." + ikarosFile.getPostfix())
+            .setName(ikarosFile.getName())
+            .setPostfix(ikarosFile.getPostfix())
             .setType(ikarosFile.getType())
             .setPlace(place)
             .setCreateTime(uploadedDate)
@@ -262,11 +264,28 @@ public class FileServiceImpl
     public PagingWrap<FileEntity> findFilesByPagingAndCondition(
         @Nonnull SearchFilesParams searchFilesParams) {
         AssertUtils.notNull(searchFilesParams, "'searchFilesParams' must not be null");
-        Integer pageIndex = searchFilesParams.getPage();
-        Integer pageSize = searchFilesParams.getSize();
-        String keyword = searchFilesParams.getKeyword();
-        String type = searchFilesParams.getType();
-        String place = searchFilesParams.getPlace();
+        final Integer pageIndex = searchFilesParams.getPage();
+        final Integer pageSize = searchFilesParams.getSize();
+        final String keyword = searchFilesParams.getKeyword();
+        String originType = searchFilesParams.getType();
+        final String place = searchFilesParams.getPlace();
+        String type = null;
+        String postfix = null;
+
+        String[] typeArr = null;
+        if (StringUtils.isNotBlank(originType)) {
+            typeArr = originType.split("/");
+            if (typeArr.length != 2) {
+                throw new IllegalArgumentException(
+                    "illegal type: " + originType + "  format example: image/png");
+            }
+        }
+
+        if (typeArr != null) {
+            type = typeArr[0];
+            postfix = typeArr[1];
+        }
+
 
         if (pageIndex != null) {
             AssertUtils.isPositive(pageIndex, "'page' must not be negative");
@@ -278,6 +297,8 @@ public class FileServiceImpl
         List<FileEntity> fileEntities = null;
 
         // 构造自定义查询条件
+        final String finalType = type;
+        final String finalPostfix = postfix;
         Specification<FileEntity> queryCondition = (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> predicateList = new ArrayList<>();
 
@@ -287,9 +308,14 @@ public class FileServiceImpl
             if (StringUtils.isNotBlank(keyword)) {
                 predicateList.add(criteriaBuilder.like(root.get("name"), "%" + keyword + "%"));
             }
-            if (StringUtils.isNotBlank(type)) {
+
+            if (StringUtils.isNotBlank(finalType)) {
                 predicateList.add(
-                    criteriaBuilder.equal(root.get("type"), FileType.valueOf(type)));
+                    criteriaBuilder.equal(root.get("type"), FileType.valueOf(finalType)));
+            }
+            if (StringUtils.isNotBlank(finalPostfix)) {
+                predicateList.add(
+                    criteriaBuilder.equal(root.get("postfix"), FileType.valueOf(finalPostfix)));
             }
             if (StringUtils.isNotBlank(place)) {
                 predicateList.add(
@@ -323,7 +349,19 @@ public class FileServiceImpl
     @Nonnull
     @Override
     public Set<String> findTypes() {
-        return fileRepository.findTypes();
+        Set<String> types = fileRepository.findTypes();
+        Set<String> postfixSet = fileRepository.findPostfix();
+
+        Set<String> resultSet = new HashSet<>(types.size() * postfixSet.size());
+        for (String type : types) {
+            type = type.toLowerCase();
+            for (String postfix : postfixSet) {
+                postfix = postfix.startsWith(".") ? postfix.substring(1) : postfix;
+                resultSet.add(type + "/" + postfix);
+            }
+        }
+
+        return resultSet;
     }
 
     @Nonnull
@@ -391,7 +429,8 @@ public class FileServiceImpl
                 .setUrl(filePath)
                 .setPlace(FilePlace.LOCAL)
                 .setUrl(path2url(filePath))
-                .setName(uploadName + "." + postfix)
+                .setName(uploadName)
+                .setPostfix(postfix)
                 .setSize(Integer.valueOf(uploadLength))
                 .setType(FileUtils.parseTypeByPostfix(postfix))
                 .setCreateTime(new Date())

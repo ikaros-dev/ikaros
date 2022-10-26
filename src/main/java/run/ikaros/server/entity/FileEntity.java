@@ -20,10 +20,16 @@ public class FileEntity extends BaseEntity {
     private String url;
 
     /**
-     * 文件名称，要求完整带后缀名
+     * 文件名称
      */
     @Column(nullable = false)
     private String name;
+
+    /**
+     * 后缀名
+     */
+    @Column(nullable = false)
+    private String postfix;
 
     @Enumerated(EnumType.STRING)
     private FileType type = FileType.UNKNOWN;
@@ -59,6 +65,15 @@ public class FileEntity extends BaseEntity {
 
     public FileEntity setSize(Integer size) {
         this.size = size;
+        return this;
+    }
+
+    public String getPostfix() {
+        return postfix;
+    }
+
+    public FileEntity setPostfix(String postfix) {
+        this.postfix = postfix;
         return this;
     }
 
