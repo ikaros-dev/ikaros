@@ -2,9 +2,6 @@ package run.ikaros.server.file;
 
 
 import run.ikaros.server.enums.FileType;
-import run.ikaros.server.file.IkarosFile;
-import run.ikaros.server.file.IkarosFileOperateResult;
-import run.ikaros.server.file.LocalIkarosFileHandler;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -60,7 +57,7 @@ class LocalIkarosFileHandlerTest {
         Assertions.assertNotNull(result.getIkarosFile());
 
         String subjectDataFilePath
-            = localItemDataHandler.buildSubjectDataFilePath(result.getIkarosFile());
+            = localItemDataHandler.buildRelativePath(result.getIkarosFile());
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -84,7 +81,7 @@ class LocalIkarosFileHandlerTest {
             .setUploadedTime(localDateTime);
 
         String subjectDataFilePath
-            = localItemDataHandler.buildSubjectDataFilePath(ikarosFile);
+            = localItemDataHandler.buildRelativePath(ikarosFile);
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -121,7 +118,7 @@ class LocalIkarosFileHandlerTest {
             .setUploadedTime(localDateTime);
 
         String subjectDataFilePath
-            = localItemDataHandler.buildSubjectDataFilePath(ikarosFile);
+            = localItemDataHandler.buildRelativePath(ikarosFile);
 
         File subjectDataFile = new File(subjectDataFilePath);
 

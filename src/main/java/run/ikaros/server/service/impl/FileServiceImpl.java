@@ -106,8 +106,7 @@ public class FileServiceImpl
         if (sameMd5FileEntities != null && sameMd5FileEntities.size() > 0) {
             FileEntity sameMd5FileEntity = sameMd5FileEntities.get(0);
             String oldLocation = sameMd5FileEntity.getUrl();
-            ikarosFile
-                .setUploadedPath(oldLocation)
+            ikarosFile.setRelativePath(oldLocation)
                 .setOldLocation(oldLocation);
         } else {
             // upload file to file system
@@ -118,17 +117,17 @@ public class FileServiceImpl
         FilePlace place = ikarosFile.getPlace();
         Date uploadedDate = TimeUtils.localDataTime2Date(ikarosFile.getUploadedTime());
         // 如果存储位置是本地，则对应的URL格式为 http://ip:port/upload/xxx.jpg
-        String uploadedPath = ikarosFile.getUploadedPath();
+        String absolutePath = ikarosFile.getAbsolutePath();
         String url = "";
         if (place == FilePlace.LOCAL) {
-            url = path2url(uploadedPath);
+            url = path2url(absolutePath);
         } else {
-            // 其它情况下，url和uploadedPath相同
-            url = uploadedPath;
+            // 其它情况下，url和absolutePath相同
+            url = absolutePath;
         }
 
         fileEntity
-            .setUrl(uploadedPath)
+            .setUrl(absolutePath)
             .setUrl(url)
             .setMd5(md5)
             .setSize(size)
@@ -241,7 +240,7 @@ public class FileServiceImpl
 
         IkarosFileOperateResult uploadResult = fileHandler.upload(ikarosFile);
         if (IkarosFileOperateResult.Status.OK == uploadResult.getStatus()) {
-            LOGGER.info("success upload file for path: {}", ikarosFile.getUploadedPath());
+            LOGGER.info("success upload file for path: {}", ikarosFile.getAbsolutePath());
         }
         ikarosFile = uploadResult.getIkarosFile();
 
@@ -392,7 +391,6 @@ public class FileServiceImpl
             uploadName = uploadName.substring(0, uploadName.lastIndexOf("."));
             FileEntity fileEntity = new FileEntity()
                 .setMd5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5))
-                .setUrl(filePath)
                 .setPlace(FilePlace.LOCAL)
                 .setUrl(path2url(filePath))
                 .setName(uploadName + "." + postfix)
@@ -453,9 +451,8 @@ public class FileServiceImpl
     private String path2url(String path) {
         String url = "";
         String currentAppDirPath = SystemVarUtils.getCurrentAppDirPath();
-        path = path.startsWith("//") ? path.substring(1) : path;
         // issue #50
-        url = currentAppDirPath.startsWith("/") ? path : path.replace(currentAppDirPath, "");
+        url = path.replace(currentAppDirPath, "");
         // 如果是开发环境，需要加上 http://ip:port
         if (ikarosProperties.envIsDev()) {
             url = ikarosProperties.getServerHttpBaseUrl() + url;
@@ -465,6 +462,7 @@ public class FileServiceImpl
         if (url.indexOf("\\") > 0) {
             url = url.replace("\\", "/");
         }
+        LOGGER.debug("current url={}", url);
         return url;
     }
 }

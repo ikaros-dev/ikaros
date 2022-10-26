@@ -41,10 +41,9 @@ public class IkarosFile {
      * 上传时间
      */
     private LocalDateTime uploadedTime;
-    /**
-     * 上传后的路径
-     */
-    private String uploadedPath;
+
+    private String relativePath;
+    private String absolutePath;
 
     private String sha256;
     private String md5;
@@ -220,12 +219,21 @@ public class IkarosFile {
         return this;
     }
 
-    public String getUploadedPath() {
-        return uploadedPath;
+    public String getRelativePath() {
+        return relativePath;
     }
 
-    public IkarosFile setUploadedPath(String uploadedPath) {
-        this.uploadedPath = uploadedPath;
+    public IkarosFile setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+        return this;
+    }
+
+    public String getAbsolutePath() {
+        return absolutePath;
+    }
+
+    public IkarosFile setAbsolutePath(String absolutePath) {
+        this.absolutePath = absolutePath;
         return this;
     }
 
