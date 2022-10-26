@@ -8,6 +8,6 @@ public enum OptionCategory {
     COMMON,
     SEO,
     FILE,
-    ThirdParty,
+    THIRD_PARTY,
     OTHER;
 }

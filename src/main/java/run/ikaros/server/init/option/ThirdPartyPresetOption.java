@@ -15,7 +15,7 @@ public class ThirdPartyPresetOption implements PresetOption {
     @Nonnull
     @Override
     public OptionCategory getCategory() {
-        return OptionCategory.ThirdParty;
+        return OptionCategory.THIRD_PARTY;
     }
 
     public String getBangumiApiBase() {

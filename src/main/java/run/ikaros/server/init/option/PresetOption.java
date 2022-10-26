@@ -33,6 +33,7 @@ public interface PresetOption {
             try {
                 OptionCategory category = presetOption.getCategory();
                 String key = field.getName();
+                field.setAccessible(true);
                 String value = (String) field.get(presetOption);
                 optionEntityList.add(new OptionEntity(key, value).setCategory(category));
             } catch (IllegalAccessException e) {
