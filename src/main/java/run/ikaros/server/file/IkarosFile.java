@@ -1,6 +1,9 @@
 package run.ikaros.server.file;
 
 
+import org.aspectj.apache.bcel.generic.Type;
+import run.ikaros.server.enums.FilePlace;
+import run.ikaros.server.enums.FileType;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.constants.FileConst;
 import run.ikaros.server.utils.FileUtils;
@@ -22,7 +25,7 @@ public class IkarosFile {
     /**
      * 类型
      */
-    private Type type;
+    private FileType type;
 
     /**
      * 名称，不带后缀
@@ -38,55 +41,14 @@ public class IkarosFile {
      * 上传时间
      */
     private LocalDateTime uploadedTime;
-    /**
-     * 上传后的路径
-     */
-    private String uploadedPath;
+
+    private String relativePath;
+    private String absolutePath;
 
     private String sha256;
     private String md5;
     private String oldLocation;
-    private Place place;
-
-    public enum Type {
-        /**
-         * 图片
-         */
-        IMAGE(1),
-
-        /**
-         * 视频
-         */
-        VIDEO(2),
-
-        /**
-         * 文档
-         */
-        DOCUMENT(3),
-
-        /**
-         * 音频
-         */
-        VOICE(4),
-
-        /**
-         * 未知
-         */
-        UNKNOWN(-1),
-        ;
-
-        private int value;
-
-        Type(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-
-    }
+    private FilePlace place;
 
     public enum Place {
         LOCAL(1);
@@ -139,7 +101,7 @@ public class IkarosFile {
 
 
         return new IkarosFile()
-            .setType(Type.UNKNOWN)
+            .setType(FileType.UNKNOWN)
             .setName(name)
             .setPostfix(postfix)
             .setUploadedTime(uploadedTime);
@@ -216,11 +178,11 @@ public class IkarosFile {
         return this;
     }
 
-    public Type getType() {
+    public FileType getType() {
         return type;
     }
 
-    public IkarosFile setType(Type type) {
+    public IkarosFile setType(FileType type) {
         this.type = type;
         return this;
     }
@@ -240,7 +202,11 @@ public class IkarosFile {
 
     public IkarosFile setPostfix(String postfix) {
         this.postfix = postfix;
-        this.type = FileUtils.parseTypeByPostfix(postfix);
+        return this;
+    }
+
+    public IkarosFile setPlace(FilePlace place) {
+        this.place = place;
         return this;
     }
 
@@ -253,12 +219,21 @@ public class IkarosFile {
         return this;
     }
 
-    public String getUploadedPath() {
-        return uploadedPath;
+    public String getRelativePath() {
+        return relativePath;
     }
 
-    public IkarosFile setUploadedPath(String uploadedPath) {
-        this.uploadedPath = uploadedPath;
+    public IkarosFile setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+        return this;
+    }
+
+    public String getAbsolutePath() {
+        return absolutePath;
+    }
+
+    public IkarosFile setAbsolutePath(String absolutePath) {
+        this.absolutePath = absolutePath;
         return this;
     }
 
@@ -289,12 +264,7 @@ public class IkarosFile {
         return this;
     }
 
-    public Place getPlace() {
+    public FilePlace getPlace() {
         return place;
-    }
-
-    public IkarosFile setPlace(Place place) {
-        this.place = place;
-        return this;
     }
 }

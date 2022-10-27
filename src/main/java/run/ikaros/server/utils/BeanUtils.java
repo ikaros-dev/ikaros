@@ -24,7 +24,8 @@ public class BeanUtils {
             try {
                 declaredField.setAccessible(true);
                 Object oldValue = declaredField.get(source);
-                if (oldValue == null) {
+                Object oldTargetValue = declaredField.get(target);
+                if (oldValue == null || oldValue.equals(oldTargetValue)) {
                     continue;
                 }
                 declaredField.set(target, oldValue);
@@ -41,7 +42,8 @@ public class BeanUtils {
             try {
                 declaredField.setAccessible(true);
                 Object oldValue = declaredField.get(source);
-                if (oldValue == null) {
+                Object oldTargetValue = declaredField.get(target);
+                if (oldValue == null || oldValue.equals(oldTargetValue)) {
                     continue;
                 }
                 declaredField.set(target, oldValue);

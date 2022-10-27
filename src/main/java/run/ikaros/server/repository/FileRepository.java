@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 /**
  * @author li-guohao
  */
-public interface FileRepository extends BaseRepository<FileEntity> {
+public interface FileRepository extends BaseRepository<FileEntity, Long> {
     Page<FileEntity> findAll(Specification<FileEntity> specification, Pageable pageable);
 
     List<FileEntity> findAll(Specification<FileEntity> specification);
@@ -26,4 +26,5 @@ public interface FileRepository extends BaseRepository<FileEntity> {
     Set<String> findPlaces();
 
     List<FileEntity> findByMd5(String md5);
+
 }

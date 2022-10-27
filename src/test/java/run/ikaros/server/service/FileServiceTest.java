@@ -1,6 +1,11 @@
 package run.ikaros.server.service;
 
-import run.ikaros.server.service.FileService;
+import java.nio.file.Files;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import run.ikaros.server.common.UnitTestConst;
+import run.ikaros.server.entity.FileEntity;
+import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.SystemVarUtils;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,7 +23,6 @@ import javax.annotation.Resource;
  */
 @SpringBootTest
 class FileServiceTest {
-
     @Resource
     FileService fileService;
 
@@ -26,12 +30,12 @@ class FileServiceTest {
     void upload() throws IOException {
         // 在缓存目录生成一个文件
         final String currentAppDirPath = SystemVarUtils.getCurrentAppDirPath();
-        final String cacheDir = currentAppDirPath + "cache";
+        final String cacheDir = SystemVarUtils.getOsCacheDirPath() + File.separator + "cache";
         File cacheFileDir = new File(cacheDir);
         if (!cacheFileDir.exists()) {
             cacheFileDir.mkdirs();
         }
-        final String cacheFilePath = cacheDir + "test.txt";
+        final String cacheFilePath = cacheDir + File.separator + "test.txt";
         final String cacheFileContent = "Hello World";
         File cacheFile = new File(cacheFilePath);
         if (!cacheFile.exists()) {
@@ -45,12 +49,29 @@ class FileServiceTest {
         Assertions.assertTrue(cacheFile.length() > 0);
 
         // 调用服务层上传这个文件
+        FileEntity fileEntity =
+            fileService.upload(cacheFile.getName(), Files.readAllBytes(cacheFile.toPath()));
 
         // 查询文件是否存在
+        Assertions.assertEquals(cacheFile.getName(), fileEntity.getName());
+        Assertions.assertEquals(cacheFile.length(), (long) fileEntity.getSize());
+        Assertions.assertNotNull(fileEntity.getUrl());
+        String url = fileEntity.getUrl();
+        String relativePath = url.replace("/", File.separator);
+        File exceptFile = new File(currentAppDirPath + File.separator + relativePath);
+        Assertions.assertTrue(exceptFile.length() > 0);
 
         // 移除数据库的这个文件
+        fileService.delete(fileEntity.getId());
+        // 移除这个上传的文件
+        if(!Files.deleteIfExists(exceptFile.toPath())) {
+            Assertions.fail(UnitTestConst.PROCESS_SHOUT_NOT_RUN_THIS);
+        }
 
         // 移除缓存目录对应的文件
+        if(! Files.deleteIfExists(cacheFile.toPath())) {
+            Assertions.fail(UnitTestConst.PROCESS_SHOUT_NOT_RUN_THIS);
+        }
 
     }
 

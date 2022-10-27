@@ -1,11 +1,10 @@
 package run.ikaros.server.utils;
 
-import run.ikaros.server.model.option.AppOptionModel;
 import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import run.ikaros.server.utils.ClassUtils;
+import run.ikaros.server.init.option.PresetOption;
 
 /**
  * @author guohao
@@ -16,7 +15,7 @@ class ClassUtilsTest {
 
     @Test
     void findClassByPackage() throws IOException {
-        String packageName = AppOptionModel.class.getPackageName();
+        String packageName = PresetOption.class.getPackageName();
 
         List<Class<?>> classes = ClassUtils.findClassByPackage(packageName);
 

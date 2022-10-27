@@ -1,6 +1,6 @@
 package run.ikaros.server.model.dto;
 
-import run.ikaros.server.entity.anime.AnimeEntity;
+import run.ikaros.server.entity.AnimeEntity;
 import java.util.List;
 
 /**

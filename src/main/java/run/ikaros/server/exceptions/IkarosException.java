@@ -2,7 +2,6 @@ package run.ikaros.server.exceptions;
 
 /**
  * @author li-guohao
- * @date 2022/06/03
  */
 public class IkarosException extends Exception {
     public IkarosException() {

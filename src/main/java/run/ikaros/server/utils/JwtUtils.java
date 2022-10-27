@@ -1,7 +1,7 @@
 package run.ikaros.server.utils;
 
+import java.util.ArrayList;
 import run.ikaros.server.constants.SecurityConst;
-import run.ikaros.server.enums.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import run.ikaros.server.constants.UserConst;
 
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
@@ -33,8 +34,10 @@ public class JwtUtils {
 
 
     public static String generateTokenBySubjectAndRoles(String subject, Long userId,
-                                                        List<String> roles,
                                                         boolean isRemember) {
+        List<String> roles = new ArrayList<>();
+        roles.add(UserConst.DEFAULT_ROLE);
+
         byte[] jwtSecretKey = DatatypeConverter.parseBase64Binary(SecurityConst.JWT_SECRET_KEY);
         long expiration = isRemember ? SecurityConst.EXPIRATION_REMEMBER_TIME :
             SecurityConst.EXPIRATION_TIME;
@@ -77,7 +80,7 @@ public class JwtUtils {
             (List<String>) claims.get(SecurityConst.TOKEN_ROLE_CLAIM);
         List<SimpleGrantedAuthority> authorities =
             Objects.isNull(roles) ? Collections.singletonList(new SimpleGrantedAuthority(
-                Role.MASTER.name())) :
+                UserConst.DEFAULT_ROLE)) :
                 roles.stream()
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
@@ -95,8 +98,8 @@ public class JwtUtils {
     }
 
     public static Object getTokenHeaderValue(String token, String key) {
-        AssertUtils.hasText(token, "'token' must has text");
-        AssertUtils.hasText(key, "'key' must has text");
+        AssertUtils.notBlank(token, "token");
+        AssertUtils.notBlank(key, "key");
         Jws<Claims> claimsJws = parseToken(token);
         if (claimsJws != null && claimsJws.getHeader() != null) {
             return claimsJws.getHeader().get(key);
@@ -105,7 +108,7 @@ public class JwtUtils {
     }
 
     public static Jws<Claims> parseToken(String token) {
-        AssertUtils.hasText(token, "'token' must has text");
+        AssertUtils.notBlank(token, "token");
         return Jwts.parser()
             .setSigningKey(secretKey)
             .parseClaimsJws(token);

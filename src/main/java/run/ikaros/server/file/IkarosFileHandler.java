@@ -2,6 +2,7 @@ package run.ikaros.server.file;
 
 
 import java.io.IOException;
+import run.ikaros.server.enums.FilePlace;
 
 public interface IkarosFileHandler {
 
@@ -15,6 +16,6 @@ public interface IkarosFileHandler {
 
     boolean exist(String uploadedPath);
 
-    IkarosFile.Place getPlace();
+    FilePlace getPlace();
 
 }

@@ -2,9 +2,8 @@ package run.ikaros.server.exceptions;
 
 /**
  * @author li-guohao
- * @date 2022/06/18
  */
-public class RecordNotFoundException extends IkarosException {
+public class RecordNotFoundException extends RuntimeIkarosException {
     public RecordNotFoundException() {
     }
 

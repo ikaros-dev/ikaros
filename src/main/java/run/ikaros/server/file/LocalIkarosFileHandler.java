@@ -1,5 +1,6 @@
 package run.ikaros.server.file;
 
+import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.FileUtils;
@@ -26,9 +27,7 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
     private static final String BASE_UPLOAD_DIR_NAME = "upload";
 
     private static final String BASE_UPLOAD_DIR_PATH
-        = SystemVarUtils.getCurrentAppDirPath()
-        + (File.separator.equals(SystemVarUtils.getCurrentAppDirPath()) ? "" : File.separator)
-        + BASE_UPLOAD_DIR_NAME;
+        = SystemVarUtils.getCurrentAppDirPath();
 
 
     @Override
@@ -72,7 +71,7 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
 
         try {
             if (isSameFile) {
-                ikarosFile.setUploadedPath(oldLocation);
+                ikarosFile.setAbsolutePath(oldLocation);
                 LOGGER.debug("repeated ikaros file, do not upload, path={}", oldLocation);
             } else {
                 byte[] bytes = ikarosFile.getBytes();
@@ -82,16 +81,18 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
                 if (sha256 == null) {
                     ikarosFile.setSha256(FileUtils.checksum2Str(bytes, FileUtils.Hash.SHA256));
                 }
-                ikarosFile.setPlace(IkarosFile.Place.LOCAL);
-                String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
-                Files.write(Path.of(new File(subjectDataFilePath).toURI()), bytes);
-                ikarosFile.setUploadedPath(subjectDataFilePath);
-                LOGGER.debug("upload ikaros file data success, path={}", subjectDataFilePath);
+                ikarosFile.setPlace(FilePlace.LOCAL);
+                String relativePath = buildRelativePath(ikarosFile);
+                ikarosFile.setRelativePath(relativePath);
+                String absolutePath = SystemVarUtils.getCurrentAppDirPath() + relativePath;
+                Files.write(Path.of(new File(absolutePath).toURI()), bytes);
+                ikarosFile.setAbsolutePath(absolutePath);
+                LOGGER.debug("upload ikaros file data success, path={}", absolutePath);
             }
 
         } catch (IOException e) {
             ikarosFile.setUploadedTime(oldUploadedTime);
-            String msg = "operate file fail for uploadedPath=" + ikarosFile.getUploadedPath();
+            String msg = "operate file fail for uploadedPath=" + ikarosFile.getRelativePath();
             LOGGER.error(msg, e);
             return IkarosFileOperateResult.ofUploadFail(msg + ", exception: ", e);
         }
@@ -99,22 +100,21 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
     }
 
     /**
-     * @param ikarosFile 条目数据实例
-     * @return 条目数据的文件路径，格式：[upload/yyyy/MM/dd/HH/随机生成的UUID.postfix]
+     * @return 条目数据的文件路径，格式：[/upload/yyyy/MM/dd/HH/随机生成的UUID.postfix]
      */
-    public String buildSubjectDataFilePath(IkarosFile ikarosFile) {
-        return buildLocationDirAndReturnPath(ikarosFile.getUploadedTime())
+    public String buildRelativePath(IkarosFile ikarosFile) {
+        return File.separator + buildLocationDirAndReturnPath(ikarosFile.getUploadedTime())
             + File.separator + UUID.randomUUID().toString().replace("-", "")
             + (('.' == ikarosFile.getPostfix().charAt(0))
             ? ikarosFile.getPostfix() : "." + ikarosFile.getPostfix());
     }
 
     /**
-     * @param uploadedTime 条目数据上传的时间
+     * @param uploadedTime 数据上传的时间
      * @return 基础的上传目录路径，格式：[upload/yyyy/MM/dd/HH]
      */
     public String buildLocationDirAndReturnPath(LocalDateTime uploadedTime) {
-        String locationDirPath = BASE_UPLOAD_DIR_PATH
+        String locationDirPath = BASE_UPLOAD_DIR_NAME
             + File.separator + uploadedTime.getYear()
             + File.separator + uploadedTime.getMonthValue()
             + File.separator + uploadedTime.getDayOfMonth()
@@ -134,9 +134,10 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
         LocalDateTime uploadedTime = ikarosFile.getUploadedTime();
         AssertUtils.notNull(uploadedTime, "'uploadedTime' must not be null");
 
-        String itemDataFilePath = ikarosFile.getUploadedPath();
+        String itemDataFilePath = ikarosFile.getAbsolutePath();
         if (itemDataFilePath == null || "".equals(itemDataFilePath)) {
-            itemDataFilePath = buildSubjectDataFilePath(ikarosFile);
+            itemDataFilePath =
+                SystemVarUtils.getCurrentAppDirPath() + buildRelativePath(ikarosFile);
         }
 
         File subjectDataFile = new File(itemDataFilePath);
@@ -166,7 +167,8 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
         AssertUtils.notNull(ikarosFile, "'ikarosFile' must not be null");
         ikarosFile.checkoutBeforeDelete();
 
-        String subjectDataFilePath = buildSubjectDataFilePath(ikarosFile);
+        String subjectDataFilePath =
+            SystemVarUtils.getCurrentAppDirPath() + buildRelativePath(ikarosFile);
 
         return delete(subjectDataFilePath);
     }
@@ -201,7 +203,7 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
     }
 
     @Override
-    public IkarosFile.Place getPlace() {
-        return IkarosFile.Place.LOCAL;
+    public FilePlace getPlace() {
+        return FilePlace.LOCAL;
     }
 }

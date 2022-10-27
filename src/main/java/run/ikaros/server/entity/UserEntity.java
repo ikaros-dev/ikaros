@@ -4,6 +4,7 @@ package run.ikaros.server.entity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import run.ikaros.server.constants.UserConst;
 
 /**
  * 用户表
@@ -13,6 +14,8 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "ikuser")
 public class UserEntity extends BaseEntity {
+
+
 
     /**
      * 用户名
@@ -63,6 +66,12 @@ public class UserEntity extends BaseEntity {
     private String avatar;
     private String lastLoginIp;
     private Long lastLoginTime;
+
+    public UserEntity hiddenSecretField() {
+        return this
+            .setPassword(UserConst.HIDDEN_STR)
+            .setTelephone(UserConst.HIDDEN_STR);
+    }
 
     public String getUsername() {
         return username;

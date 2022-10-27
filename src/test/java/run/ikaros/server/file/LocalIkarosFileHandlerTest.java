@@ -1,9 +1,7 @@
 package run.ikaros.server.file;
 
 
-import run.ikaros.server.file.IkarosFile;
-import run.ikaros.server.file.IkarosFileOperateResult;
-import run.ikaros.server.file.LocalIkarosFileHandler;
+import run.ikaros.server.enums.FileType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -47,7 +45,7 @@ class LocalIkarosFileHandlerTest {
         byte[] datum = content.getBytes(StandardCharsets.UTF_8);
 
         IkarosFile ikarosFile = new IkarosFile()
-            .setType(IkarosFile.Type.DOCUMENT)
+            .setType(FileType.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setBytes(datum)
@@ -59,7 +57,7 @@ class LocalIkarosFileHandlerTest {
         Assertions.assertNotNull(result.getIkarosFile());
 
         String subjectDataFilePath
-            = localItemDataHandler.buildSubjectDataFilePath(result.getIkarosFile());
+            = localItemDataHandler.buildRelativePath(result.getIkarosFile());
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -77,13 +75,13 @@ class LocalIkarosFileHandlerTest {
     void download() throws IOException {
 
         IkarosFile ikarosFile = new IkarosFile()
-            .setType(IkarosFile.Type.DOCUMENT)
+            .setType(FileType.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setUploadedTime(localDateTime);
 
         String subjectDataFilePath
-            = localItemDataHandler.buildSubjectDataFilePath(ikarosFile);
+            = localItemDataHandler.buildRelativePath(ikarosFile);
 
         File subjectDataFile = new File(subjectDataFilePath);
 
@@ -114,13 +112,13 @@ class LocalIkarosFileHandlerTest {
     @Test
     void delete() throws IOException, InterruptedException {
         IkarosFile ikarosFile = new IkarosFile()
-            .setType(IkarosFile.Type.DOCUMENT)
+            .setType(FileType.DOCUMENT)
             .setName("test")
             .setPostfix(".txt")
             .setUploadedTime(localDateTime);
 
         String subjectDataFilePath
-            = localItemDataHandler.buildSubjectDataFilePath(ikarosFile);
+            = localItemDataHandler.buildRelativePath(ikarosFile);
 
         File subjectDataFile = new File(subjectDataFilePath);
 

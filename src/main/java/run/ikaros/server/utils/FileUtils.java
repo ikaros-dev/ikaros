@@ -1,10 +1,5 @@
 package run.ikaros.server.utils;
 
-import run.ikaros.server.constants.FileConst;
-import run.ikaros.server.exceptions.IkarosRuntimeException;
-import run.ikaros.server.model.binary.BinaryType;
-import run.ikaros.server.enums.ResourceType;
-import run.ikaros.server.file.IkarosFile;
 import io.jsonwebtoken.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -17,6 +12,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.xml.bind.DatatypeConverter;
+import run.ikaros.server.constants.FileConst;
+import run.ikaros.server.enums.FileType;
+import run.ikaros.server.exceptions.RuntimeIkarosException;
 
 /**
  * @author guohao
@@ -54,63 +52,29 @@ public class FileUtils {
         }
     }
 
-    public static IkarosFile.Type parseTypeByPostfix(String postfix) {
+    public static FileType parseTypeByPostfix(String postfix) {
         AssertUtils.notBlank(postfix, "'postfix' must not be blank");
+        postfix = postfix.startsWith(".") ? postfix.substring(1) : postfix;
         postfix = postfix.toLowerCase(Locale.ROOT);
         if (IMAGES.contains(postfix)) {
-            return IkarosFile.Type.IMAGE;
+            return FileType.IMAGE;
         }
         if (DOCUMENTS.contains(postfix)) {
-            return IkarosFile.Type.DOCUMENT;
+            return FileType.DOCUMENT;
         }
         if (VIDEOS.contains(postfix)) {
-            return IkarosFile.Type.VIDEO;
+            return FileType.VIDEO;
         }
         if (VOICES.contains(postfix)) {
-            return IkarosFile.Type.VOICE;
+            return FileType.VOICE;
         }
-        return IkarosFile.Type.UNKNOWN;
-    }
-
-    public static BinaryType parseBinaryTypeByPostfix(String postfix) {
-        AssertUtils.notBlank(postfix, "'postfix' must not be blank");
-        postfix = postfix.toLowerCase(Locale.ROOT);
-        if (IMAGES.contains(postfix)) {
-            return BinaryType.IMAGE;
-        }
-        if (DOCUMENTS.contains(postfix)) {
-            return BinaryType.DOCUMENT;
-        }
-        if (VIDEOS.contains(postfix)) {
-            return BinaryType.VIDEO;
-        }
-        if (VOICES.contains(postfix)) {
-            return BinaryType.VOICE;
-        }
-        return BinaryType.FILE;
-    }
-
-    public static ResourceType parseResourceTypeByPostfix(String postfix) {
-        AssertUtils.notBlank(postfix, "'postfix' must not be blank");
-        postfix = postfix.toLowerCase(Locale.ROOT);
-        if (IMAGES.contains(postfix)) {
-            return ResourceType.IMAGE;
-        }
-        if (DOCUMENTS.contains(postfix)) {
-            return ResourceType.DOCUMENT;
-        }
-        if (VIDEOS.contains(postfix)) {
-            return ResourceType.VIDEO;
-        }
-        if (VOICES.contains(postfix)) {
-            return ResourceType.VOICE;
-        }
-        return ResourceType.FILE;
+        return FileType.UNKNOWN;
     }
 
 
 
-    public static byte[] checksum(byte[] bytes, FileUtils.Hash hash) throws IkarosRuntimeException {
+
+    public static byte[] checksum(byte[] bytes, FileUtils.Hash hash) throws RuntimeIkarosException {
         try (InputStream in = new ByteArrayInputStream(bytes)) {
             MessageDigest digest = MessageDigest.getInstance(hash.getName());
             byte[] block = new byte[4096];
@@ -121,12 +85,12 @@ public class FileUtils {
             return digest.digest();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new IkarosRuntimeException(e);
+            throw new RuntimeIkarosException(e);
         }
     }
 
     public static String checksum2Str(byte[] bytes, FileUtils.Hash hash)
-        throws IkarosRuntimeException {
+        throws RuntimeIkarosException {
         return DatatypeConverter.printHexBinary(checksum(bytes, hash));
     }
 
@@ -177,6 +141,12 @@ public class FileUtils {
             locationDir.mkdirs();
         }
         return locationDirPath;
+    }
+
+    public static String parseFilePostfix(String originalFilename) {
+        AssertUtils.notBlank(originalFilename, "originalFilename");
+        int dotIndex = originalFilename.lastIndexOf(".");
+        return originalFilename.substring(dotIndex + 1);
     }
 
 }

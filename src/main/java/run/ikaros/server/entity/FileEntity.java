@@ -1,5 +1,8 @@
 package run.ikaros.server.entity;
 
+import javax.persistence.Column;
+import run.ikaros.server.enums.FilePlace;
+import run.ikaros.server.enums.FileType;
 import run.ikaros.server.file.IkarosFile;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -13,21 +16,23 @@ import javax.persistence.Table;
 @Table(name = "file")
 public class FileEntity extends BaseEntity {
 
-    private String name;
-    private String postfix;
-    @Enumerated(EnumType.STRING)
-    private IkarosFile.Type type;
-    private String md5;
-    private Integer size;
-    /**
-     * 在文件系统的路径
-     */
-    private String location;
-    /**
-     * 网络访问的路径
-     */
+    @Column(nullable = false)
     private String url;
-    private IkarosFile.Place place;
+
+    /**
+     * 完整带后缀文件名称
+     */
+    @Column(nullable = false)
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    private FileType type = FileType.UNKNOWN;
+    private String md5;
+    @Column(nullable = false)
+    private Integer size;
+
+    @Enumerated(EnumType.STRING)
+    private FilePlace place = FilePlace.LOCAL;
 
 
     public String getName() {
@@ -36,24 +41,6 @@ public class FileEntity extends BaseEntity {
 
     public FileEntity setName(String name) {
         this.name = name;
-        return this;
-    }
-
-    public String getPostfix() {
-        return postfix;
-    }
-
-    public FileEntity setPostfix(String postfix) {
-        this.postfix = postfix;
-        return this;
-    }
-
-    public IkarosFile.Type getType() {
-        return type;
-    }
-
-    public FileEntity setType(IkarosFile.Type type) {
-        this.type = type;
         return this;
     }
 
@@ -75,20 +62,20 @@ public class FileEntity extends BaseEntity {
         return this;
     }
 
-    public String getLocation() {
-        return location;
+    public FileType getType() {
+        return type;
     }
 
-    public FileEntity setLocation(String location) {
-        this.location = location;
+    public FileEntity setType(FileType type) {
+        this.type = type;
         return this;
     }
 
-    public IkarosFile.Place getPlace() {
+    public FilePlace getPlace() {
         return place;
     }
 
-    public FileEntity setPlace(IkarosFile.Place place) {
+    public FileEntity setPlace(FilePlace place) {
         this.place = place;
         return this;
     }

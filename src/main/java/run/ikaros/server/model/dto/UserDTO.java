@@ -11,7 +11,7 @@ import java.util.Set;
  * @date 2022/09/27
  */
 public class UserDTO extends UserEntity {
-    private Set<RoleDTO> roles = new HashSet<>();
+    private Set<String> roles = new HashSet<>();
 
     public UserDTO() {
     }
@@ -21,11 +21,11 @@ public class UserDTO extends UserEntity {
         BeanUtils.copyProperties(userEntity, this);
     }
 
-    public Set<RoleDTO> getRoles() {
+    public Set<String> getRoles() {
         return roles;
     }
 
-    public UserDTO setRoles(Set<RoleDTO> roles) {
+    public UserDTO setRoles(Set<String> roles) {
         this.roles = roles;
         return this;
     }

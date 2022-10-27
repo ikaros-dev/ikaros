@@ -1,6 +1,6 @@
 package run.ikaros.server.model.dto;
 
-import run.ikaros.server.entity.anime.EpisodeEntity;
+import run.ikaros.server.entity.EpisodeEntity;
 
 /**
  * @author guohao

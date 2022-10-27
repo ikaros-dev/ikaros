@@ -30,12 +30,11 @@ public class SwaggerConfig {
     public Docket openApiDocket() {
         return new Docket(DocumentationType.OAS_30)
             .apiInfo(apiInfo())
-            .groupName("ikaros-admin-openApi")
+            .groupName("ikaros-openApi")
             .enable(true)
             .select()
             .apis(RequestHandlerSelectors.basePackage(AppConst.OpenAPI.PACKAGE_NAME))
             .build()
-            // todo config security for api doc
             .securitySchemes(securitySchemes())
             .securityContexts(securityContexts());
     }

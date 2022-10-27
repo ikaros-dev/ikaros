@@ -14,4 +14,6 @@ public interface UserConst {
      * @see RoleVoter#rolePrefix
      */
     String SECURITY_ROLE_PREFIX = "ROLE_";
+    String HIDDEN_STR = "**hidden**";
+    String DEFAULT_ROLE = "ADMIN";
 }

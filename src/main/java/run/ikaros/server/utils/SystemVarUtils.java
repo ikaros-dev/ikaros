@@ -1,8 +1,10 @@
 package run.ikaros.server.utils;
 
+import java.io.File;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +48,7 @@ public class SystemVarUtils {
     }
 
     public static String getOsCacheDirPath() {
-        return System.getProperty("java.io.tmpdir");
+        return System.getProperty("java.io.tmpdir") + File.separator + "ikaros";
     }
 
     public static String getIPAddress() {

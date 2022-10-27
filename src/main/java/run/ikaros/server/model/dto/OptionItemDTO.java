@@ -1,8 +1,8 @@
 package run.ikaros.server.model.dto;
 
+import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.enums.OptionType;
 import run.ikaros.server.utils.AssertUtils;
-import run.ikaros.server.constants.OptionConst;
-import run.ikaros.server.entity.OptionEntity;
 import org.springframework.lang.Nullable;
 
 /**
@@ -12,9 +12,9 @@ import org.springframework.lang.Nullable;
 public class OptionItemDTO {
     private String key;
     private String value;
-    private OptionEntity.Type type = OptionEntity.Type.INTERNAL;
+    private OptionType type = OptionType.INTERNAL;
 
-    private String category = OptionConst.Category.DEFAULT;
+    private OptionCategory category = OptionCategory.OTHER;
 
     public OptionItemDTO(String key, @Nullable String value) {
         AssertUtils.notBlank(key, "'key' must not be blank");
@@ -41,20 +41,20 @@ public class OptionItemDTO {
         return this;
     }
 
-    public OptionEntity.Type getType() {
+    public OptionType getType() {
         return type;
     }
 
-    public OptionItemDTO setType(OptionEntity.Type type) {
+    public OptionItemDTO setType(OptionType type) {
         this.type = type;
         return this;
     }
 
-    public String getCategory() {
+    public OptionCategory getCategory() {
         return category;
     }
 
-    public OptionItemDTO setCategory(String category) {
+    public OptionItemDTO setCategory(OptionCategory category) {
         this.category = category;
         return this;
     }

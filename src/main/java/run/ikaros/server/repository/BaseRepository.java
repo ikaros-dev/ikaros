@@ -7,11 +7,13 @@ import org.springframework.data.repository.NoRepositoryBean;
 
 /**
  * @author li-guohao
+ * @param <E> entity
+ * @param <I> id
  */
 @NoRepositoryBean
-public interface BaseRepository<T> extends JpaRepository<T, Long> {
-    boolean existsByIdAndStatus(Long id, Boolean status);
+public interface BaseRepository<E, I> extends JpaRepository<E, I> {
+    boolean existsByIdAndStatus(I id, Boolean status);
 
-    Optional<T> findByIdAndStatus(Long id, boolean status);
+    Optional<E> findByIdAndStatus(I id, boolean status);
 
 }
