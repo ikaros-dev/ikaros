@@ -54,6 +54,7 @@ public class FileUtils {
 
     public static FileType parseTypeByPostfix(String postfix) {
         AssertUtils.notBlank(postfix, "'postfix' must not be blank");
+        postfix = postfix.startsWith(".") ? postfix.substring(1) : postfix;
         postfix = postfix.toLowerCase(Locale.ROOT);
         if (IMAGES.contains(postfix)) {
             return FileType.IMAGE;
@@ -140,6 +141,12 @@ public class FileUtils {
             locationDir.mkdirs();
         }
         return locationDirPath;
+    }
+
+    public static String parseFilePostfix(String originalFilename) {
+        AssertUtils.notBlank(originalFilename, "originalFilename");
+        int dotIndex = originalFilename.lastIndexOf(".");
+        return originalFilename.substring(dotIndex + 1);
     }
 
 }

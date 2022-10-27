@@ -4,36 +4,25 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import run.ikaros.server.enums.SeasonType;
 import run.ikaros.server.service.AnimeService;
 import run.ikaros.server.service.EpisodeService;
 import run.ikaros.server.service.SeasonService;
-import run.ikaros.server.service.UserService;
 import run.ikaros.server.service.base.AbstractCrudService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.BeanUtils;
-import run.ikaros.server.utils.DateUtils;
 import run.ikaros.server.result.PagingWrap;
 import run.ikaros.server.exceptions.RecordNotFoundException;
-import run.ikaros.server.model.bgmtv.BgmTvConstants;
-import run.ikaros.server.model.bgmtv.BgmTvEpisode;
-import run.ikaros.server.model.bgmtv.BgmTvEpisodeType;
-import run.ikaros.server.model.bgmtv.BgmTvSubject;
-import run.ikaros.server.model.bgmtv.BgmTvTag;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.model.dto.EpisodeDTO;
 import run.ikaros.server.model.dto.SeasonDTO;
-import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.params.SearchAnimeDTOSParams;
 import run.ikaros.server.repository.AnimeRepository;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import org.slf4j.Logger;
@@ -151,7 +140,7 @@ public class AnimeServiceImpl
         Integer pageIndex = searchAnimeDTOSParams.getPage();
         Integer pageSize = searchAnimeDTOSParams.getSize();
         String title = searchAnimeDTOSParams.getTitle();
-        String originalTitle = searchAnimeDTOSParams.getOriginalTitle();
+        String titleCn = searchAnimeDTOSParams.getTitleCn();
 
         if (pageIndex == null) {
             AssertUtils.isPositive(pageIndex, "'pageIndex' must be positive");
@@ -173,9 +162,9 @@ public class AnimeServiceImpl
             if (StringUtils.isNotBlank(title)) {
                 predicateList.add(criteriaBuilder.like(root.get("title"), "%" + title + "%"));
             }
-            if (StringUtils.isNotBlank(originalTitle)) {
-                predicateList.add(criteriaBuilder.like(root.get("originalTitle"),
-                    "%" + originalTitle + "%"));
+            if (StringUtils.isNotBlank(titleCn)) {
+                predicateList.add(criteriaBuilder.like(root.get("titleCn"),
+                    "%" + titleCn + "%"));
             }
 
             Predicate[] predicates = new Predicate[predicateList.size()];

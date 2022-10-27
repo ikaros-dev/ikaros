@@ -8,7 +8,7 @@ public class SearchAnimeDTOSParams {
     private Integer page;
     private Integer size;
     private String title;
-    private String originalTitle;
+    private String titleCn;
 
     public Integer getPage() {
         return page;
@@ -37,12 +37,12 @@ public class SearchAnimeDTOSParams {
         return this;
     }
 
-    public String getOriginalTitle() {
-        return originalTitle;
+    public String getTitleCn() {
+        return titleCn;
     }
 
-    public SearchAnimeDTOSParams setOriginalTitle(String originalTitle) {
-        this.originalTitle = originalTitle;
+    public SearchAnimeDTOSParams setTitleCn(String titleCn) {
+        this.titleCn = titleCn;
         return this;
     }
 }

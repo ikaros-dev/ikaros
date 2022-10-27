@@ -80,6 +80,8 @@ public class FileServiceImpl
         IkarosFile ikarosFile = IkarosFile.build(originalFilename, bytes);
         try {
             FileEntity fileEntity = uploadAndGetFileEntity(bytes, ikarosFile, null);
+            String postfix = FileUtils.parseFilePostfix(originalFilename);
+            fileEntity.setType(FileUtils.parseTypeByPostfix(postfix));
             return fileRepository.saveAndFlush(fileEntity);
         } catch (IOException ioException) {
             throw new RuntimeIkarosException(
