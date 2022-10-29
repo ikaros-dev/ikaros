@@ -1,9 +1,12 @@
 package run.ikaros.server.constants;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -12,17 +15,46 @@ import org.junit.jupiter.api.Test;
 class RegexConstTest {
 
     @Test
-    void regex() {
-        final String seqRegex = RegexConst.FILE_NAME_EPISODE_SEQUENCE;
-        final String tagRegex = RegexConst.FILE_NAME_TAG;
-        String fileName = "[VCB-Studio] [02] [3] Sora no Otoshimono II [02][Hi10p_1080p][x264_2flac].mkv";
-        Matcher matcher = Pattern.compile(seqRegex).matcher(fileName);
-
-        List<String> strList = new ArrayList<>();
-        while (matcher.find()) {
-            strList.add(matcher.group());
+    void fileNameTagEpSeqRegex() {
+        Set<String> strSet = new HashSet<>();
+        String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][x265_flac_2aac].mkv";
+        Matcher tagMatcher = Pattern.compile(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE).matcher(fileName);
+        while (tagMatcher.find()) {
+            strSet.add(tagMatcher.group());
         }
-        System.out.println(strList);
+        Assertions.assertFalse(strSet.isEmpty());
+        Assertions.assertEquals(1, strSet.size());
+        Assertions.assertTrue(strSet.contains("[01]"));
+    }
+
+
+    @Test
+    void fileTagRegex() {
+        Set<String> strSet = new HashSet<>();
+        String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][x265_flac_2aac].mkv";
+        Matcher tagMatcher = Pattern.compile(RegexConst.FILE_NAME_TAG).matcher(fileName);
+        while (tagMatcher.find()) {
+            strSet.add(tagMatcher.group());
+        }
+        Assertions.assertFalse(strSet.isEmpty());
+        Assertions.assertEquals(4, strSet.size());
+        Assertions.assertTrue(strSet.contains("[VCB-Studio]"));
+        Assertions.assertTrue(strSet.contains("[01]"));
+        Assertions.assertTrue(strSet.contains("[Ma10p_1080p]"));
+        Assertions.assertTrue(strSet.contains("[x265_flac_2aac]"));
+    }
+
+    @Test
+    void filePostfixRegex() {
+        Set<String> strSet = new HashSet<>();
+        String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][x265_flac_2aac].mkv";
+        Matcher tagMatcher = Pattern.compile(RegexConst.FILE_POSTFIX).matcher(fileName);
+        while (tagMatcher.find()) {
+            strSet.add(tagMatcher.group());
+        }
+        Assertions.assertFalse(strSet.isEmpty());
+        Assertions.assertEquals(1, strSet.size());
+        Assertions.assertTrue(strSet.contains(".mkv"));
     }
 
 }

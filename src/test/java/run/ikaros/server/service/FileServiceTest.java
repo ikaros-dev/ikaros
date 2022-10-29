@@ -76,18 +76,17 @@ class FileServiceTest {
     }
 
     @Test
-    void download() {
-    }
+    void getEpisodeSeqFromName() {
+        String tagSeqFileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][x265_flac_2aac].mkv";
+        String numSeqFileName = "Cyberpunk Edgerunners 11.mp4";
 
-    @Test
-    void update() {
-    }
+        Long tagSeq = fileService.getEpisodeSeqFromName(tagSeqFileName);
+        Assertions.assertNotNull(tagSeq);
+        Assertions.assertEquals(01L, tagSeq);
 
-    @Test
-    void testUpdate() {
-    }
+        Long numSeq = fileService.getEpisodeSeqFromName(numSeqFileName);
+        Assertions.assertNotNull(numSeq);
+        Assertions.assertEquals(11L, numSeq);
 
-    @Test
-    void delete() {
     }
 }
