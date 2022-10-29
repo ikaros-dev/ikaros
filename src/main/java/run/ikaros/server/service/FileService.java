@@ -1,15 +1,21 @@
 package run.ikaros.server.service;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.transaction.Transactional;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.multipart.MultipartFile;
+import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.entity.FileEntity;
+import run.ikaros.server.exceptions.FileNameMatchingException;
 import run.ikaros.server.params.SearchFilesParams;
 import run.ikaros.server.result.PagingWrap;
 import run.ikaros.server.service.base.CrudService;
+import run.ikaros.server.utils.AssertUtils;
 
 /**
  * @author li-guohao
@@ -56,4 +62,47 @@ public interface FileService extends CrudService<FileEntity, Long> {
     void receiveAndHandleChunkFile(@Nonnull String unique, @Nonnull String uploadLength,
                                    @Nonnull String uploadOffset, @Nonnull String uploadName,
                                    @Nonnull byte[] bytes) throws IOException;
+
+
+    @Nonnull
+    default Long getEpisodeSeqFromName(@Nonnull String name) {
+        AssertUtils.notBlank(name, "file name");
+        final String originalName = name;
+        Set<String> seqSet = new HashSet<>();
+        // 目前的匹配逻辑：先筛选中括号内的
+        Matcher tagEpSeqMatcher =
+            Pattern.compile(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE).matcher(name);
+        while (tagEpSeqMatcher.find()) {
+            seqSet.add(tagEpSeqMatcher.group());
+        }
+
+        // 如果中括号里找不到，则先去掉所有的中括号
+        name = name.replaceAll(RegexConst.FILE_NAME_TAG, "");
+
+        // 匹配一位或者两位的数字
+        Matcher numEpSeqMatcher = Pattern.compile(RegexConst.NUMBER_EPISODE_SEQUENCE).matcher(name);
+        while (numEpSeqMatcher.find()) {
+            seqSet.add(numEpSeqMatcher.group());
+        }
+
+        Optional<String> firstSeqStrOptional = seqSet.stream().findFirst();
+        if (firstSeqStrOptional.isEmpty()) {
+            throw new FileNameMatchingException(
+                "not found episode seq by file name: " + originalName);
+        }
+
+        String firstSeqStr = firstSeqStrOptional.get();
+
+        if (firstSeqStr.startsWith("[")) {
+            firstSeqStr = firstSeqStr.replace("[", "")
+                .replace("]", "");
+        }
+
+        try {
+            return Long.parseLong(firstSeqStr);
+        } catch (NumberFormatException numberFormatException) {
+            throw new FileNameMatchingException("special file name, ikaros can't "
+                + "matching automatically, please config it manually, file name: " + originalName);
+        }
+    }
 }

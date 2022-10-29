@@ -1,7 +1,7 @@
 ikaros:
   env: test
   log-level: INFO
-  server-port: 9090
+  server-port: 9091
 
 server:
   port: ${ikaros.server-port}
@@ -20,17 +20,17 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
 
-    #    # H2 database configuration.
-    #    driver-class-name: org.h2.Driver
-    #    url: jdbc:h2:file:./build/db/ikaros;AUTO_SERVER=TRUE
-    #    username: admin
-    #    password: 123456
-
-    # mariadb database configuration.
-    driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://192.168.2.229:63306/ikaros
-    username: root
+    # H2 database configuration.
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./build/db/ikaros;AUTO_SERVER=TRUE
+    username: admin
     password: 123456
+
+#    # mariadb database configuration.
+#    driver-class-name: org.mariadb.jdbc.Driver
+#    url: jdbc:mariadb://192.168.2.229:63306/ikaros
+#    username: root
+#    password: 123456
 
   h2:
     console:

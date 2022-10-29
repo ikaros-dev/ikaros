@@ -26,6 +26,10 @@ public interface CrudService<E, I> {
     @Transactional
     E save(@Nonnull E entity);
 
+    @Nonnull
+    @Transactional
+    E save(@Nonnull E entity, boolean flush);
+
     @Nullable
     @Transactional
     E removeById(@Nonnull I id);
@@ -54,4 +58,6 @@ public interface CrudService<E, I> {
 
     @Nonnull
     E getById(@Nonnull I id);
+
+    void removeAll();
 }
