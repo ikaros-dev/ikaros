@@ -12,9 +12,9 @@ import run.ikaros.server.repository.BaseRepository;
 import run.ikaros.server.utils.AssertUtils;
 
 /**
- * @author li-guohao
  * @param <E> entity
  * @param <I> id
+ * @author li-guohao
  */
 public class AbstractCrudService<E, I> implements CrudService<E, I> {
 
@@ -44,6 +44,13 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
     public E save(@Nonnull E entity) {
         AssertUtils.notNull(entity, "entity");
         return baseRepository.saveAndFlush(entity);
+    }
+
+    @Nonnull
+    @Override
+    public E save(@Nonnull E entity, boolean flush) {
+        AssertUtils.notNull(entity, "entity");
+        return flush ? baseRepository.saveAndFlush(entity) : baseRepository.save(entity);
     }
 
     @Override
@@ -102,5 +109,10 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
         AssertUtils.notNull(id, "id");
         return baseRepository.findById(id).orElseThrow(
             () -> new RecordNotFoundException("record not found, id=" + id));
+    }
+
+    @Override
+    public void removeAll() {
+        baseRepository.deleteAll();
     }
 }

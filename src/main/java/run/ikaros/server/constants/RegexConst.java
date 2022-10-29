@@ -12,4 +12,7 @@ public interface RegexConst {
 
     String MOBILE_PHONE_NUMBER = "^((13[0-9])|(15[^4,\\\\D])|(18[0,5-9]))\\\\d{8}$";
 
+    String FILE_NAME_EPISODE_SEQUENCE = "\\[[1-9]{1,2}\\]";
+    String FILE_NAME_TAG = "\\[\\w+\\]";
+
 }
