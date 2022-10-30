@@ -42,6 +42,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/upload/**")
             .addResourceLocations("file:///" + SystemVarUtils.getCurrentAppDirPath()
                 + File.separatorChar + "upload" + File.separatorChar);
+
+        // register theme lib resource
+        registry.addResourceHandler("/static/**")
+            .addResourceLocations(
+                "classpath:/templates/themes/" + AppConst.DEFAULT_THEME + "/static/");
     }
 
     @Bean

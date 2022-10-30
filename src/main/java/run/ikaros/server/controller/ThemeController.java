@@ -1,10 +1,15 @@
 package run.ikaros.server.controller;
 
+import static run.ikaros.server.constants.AppConst.DEFAULT_THEME;
+
 import java.io.File;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+import run.ikaros.server.constants.AppConst;
+import run.ikaros.server.entity.AnimeEntity;
+import run.ikaros.server.service.AnimeService;
 
 /**
  * @author li-guohao
@@ -12,12 +17,9 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class ThemeController {
 
-    private static final String DEFAULT_THEME = "simple";
-
     @RequestMapping("/")
     public String index(Model model) {
         model.addAttribute("msg", "Hello Ikaros");
-        return "themes" + File.separator + DEFAULT_THEME + File.separator + "index";
+        return AppConst.PAGE_POSTFIX + "index";
     }
-
 }
