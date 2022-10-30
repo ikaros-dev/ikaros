@@ -100,6 +100,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(SecurityConst.API_STATUS_URLS).permitAll()
             .antMatchers(SecurityConst.SWAGGER_DOC_URLS).permitAll()
             .antMatchers(SecurityConst.APP_URLS).permitAll()
+            .antMatchers(HttpMethod.GET, "/").permitAll()
             // 其他请求需验证
             .anyRequest().authenticated()
             .and()
