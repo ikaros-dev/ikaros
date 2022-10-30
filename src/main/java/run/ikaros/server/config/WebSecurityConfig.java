@@ -1,5 +1,6 @@
 package run.ikaros.server.config;
 
+import run.ikaros.server.constants.AppConst;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.constants.SecurityConst;
 import run.ikaros.server.utils.JwtUtils;
@@ -96,7 +97,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.GET, "/static/**").permitAll()
             .antMatchers(HttpMethod.GET, "/upload/**").permitAll()
             .antMatchers(HttpMethod.OPTIONS).permitAll()
-            .antMatchers("/api/**").authenticated()
+            .antMatchers(AppConst.OpenAPI.PREFIX_NAME + "/**").authenticated()
             // 其他请求需验证
             .anyRequest().permitAll()
             .and()
