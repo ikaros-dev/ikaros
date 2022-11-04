@@ -96,39 +96,30 @@ public class SeasonServiceImpl
                 (ep1.getSeq() > ep2.getSeq() ? 1 : -1)).toList();
 
 
-        List<FileEntity> fileEntityListSortedBySeq = fileIdList.stream()
+        final Map<Long, FileEntity> seqFileEntityMap = new HashMap<>();
+
+        fileIdList.stream()
             .flatMap((Function<Long, Stream<FileEntity>>) id
                 -> Stream.of(fileService.getById(id)))
-            .sorted((o1, o2) -> {
-                Long o1Seq = fileService.getEpisodeSeqFromName(o1.getName());
-                Long o2Seq = fileService.getEpisodeSeqFromName(o2.getName());
-                return o1Seq.equals(o2Seq) ? 0 :
-                    (o1Seq > o2Seq ? 1 : -1);
-            }).toList();
+            .forEach(fileEntity
+                -> seqFileEntityMap.put(
+                fileService.getEpisodeSeqFromName(fileEntity.getName()),
+                fileEntity));
 
-        if (fileEntityListSortedBySeq.isEmpty()) {
+        if (seqFileEntityMap.isEmpty()) {
             throw new SeasonEpisodeMatchingFailException("file not found by file id list: "
                 + JsonUtils.obj2Json(fileIdList));
         }
 
-        int firstSeq =
-            Math.toIntExact(
-                fileService.getEpisodeSeqFromName(fileEntityListSortedBySeq.get(0).getName()));
-
-        Map<Long, String> seqUrlMap = new HashMap<>();
-        fileEntityListSortedBySeq.forEach(fileEntity
-            -> seqUrlMap.put(fileService.getEpisodeSeqFromName(fileEntity.getName()),
-            fileEntity.getUrl()));
-
-        for (int i = (firstSeq - 1); i < episodeEntityList.size(); i++) {
-            EpisodeEntity episodeEntity = episodeEntityList.get(i);
-            Long seq = episodeEntity.getSeq();
-            episodeEntity.setUrl(seqUrlMap.get(seq));
-            episodeEntity = episodeService.save(episodeEntity);
-        }
+        episodeService.findBySeasonId(seasonId).forEach(episodeEntity -> {
+            if (seqFileEntityMap.containsKey(episodeEntity.getSeq())) {
+                FileEntity fileEntity = seqFileEntityMap.get(episodeEntity.getSeq());
+                episodeEntity.setUrl(fileEntity.getUrl());
+                episodeEntity = episodeService.save(episodeEntity);
+            }
+        });
 
         SeasonDTO seasonDTO = new SeasonDTO();
-
         SeasonEntity seasonEntity = getById(seasonId);
         if (!seasonEntity.getStatus()) {
             throw new SeasonEpisodeMatchingFailException("season not exist, id=" + seasonId);

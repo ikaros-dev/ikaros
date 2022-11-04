@@ -88,5 +88,13 @@ class FileServiceTest {
         Assertions.assertNotNull(numSeq);
         Assertions.assertEquals(11L, numSeq);
 
+        Long seq = fileService.getEpisodeSeqFromName(
+            "[Lilith-Raws] SPYxFAMILY - 15 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4].mp4");
+        Assertions.assertEquals(15L, seq);
+        seq = fileService.getEpisodeSeqFromName(
+            "[Lilith-Raws] SPYxFAMILY - 17 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4].mp4");
+        Assertions.assertEquals(17L, seq);
+
+
     }
 }
