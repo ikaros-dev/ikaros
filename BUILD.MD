@@ -48,3 +48,9 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 ```text
 .\gradlew.bat clean bootJar
 ```
+
+git modules 初始化
+``` text
+git submodule init
+git submodule update
+```

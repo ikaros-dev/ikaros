@@ -79,6 +79,9 @@ public interface FileService extends CrudService<FileEntity, Long> {
         // 如果中括号里找不到，则先去掉所有的中括号
         name = name.replaceAll(RegexConst.FILE_NAME_TAG, "");
 
+        // 去掉文件后缀
+        name = name.replaceAll(RegexConst.FILE_POSTFIX, "");
+
         // 匹配一位或者两位的数字
         Matcher numEpSeqMatcher = Pattern.compile(RegexConst.NUMBER_EPISODE_SEQUENCE).matcher(name);
         while (numEpSeqMatcher.find()) {

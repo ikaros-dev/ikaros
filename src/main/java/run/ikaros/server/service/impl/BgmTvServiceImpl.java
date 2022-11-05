@@ -196,7 +196,7 @@ public class BgmTvServiceImpl implements BgmTvService, InitializingBean {
                     DateUtils.parseDateStr(bgmTvEpisode.getAirDate(), BgmTvConstants.DATE_PATTERN);
                 EpisodeEntity episodeEntity = new EpisodeEntity()
                     .setSeasonId(seasonEntity.getId())
-                    .setSeq(bgmTvEpisode.getEp().longValue())
+                    .setSeq(bgmTvEpisode.getSort().longValue())
                     .setTitleCn(bgmTvEpisode.getNameCn())
                     .setTitle(bgmTvEpisode.getName())
                     .setAirTime(airDate)

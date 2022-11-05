@@ -1,5 +1,6 @@
 package run.ikaros.server.config;
 
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import run.ikaros.server.constants.AppConst;
 import run.ikaros.server.utils.SystemVarUtils;
 import java.io.File;
@@ -42,6 +43,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/upload/**")
             .addResourceLocations("file:///" + SystemVarUtils.getCurrentAppDirPath()
                 + File.separatorChar + "upload" + File.separatorChar);
+
+        // register theme lib resource
+        registry.addResourceHandler("/static/**")
+            .addResourceLocations(
+                "classpath:/templates/themes/" + AppConst.DEFAULT_THEME + "/static/");
     }
 
     @Bean
