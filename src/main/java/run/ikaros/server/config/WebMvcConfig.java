@@ -1,5 +1,6 @@
 package run.ikaros.server.config;
 
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import run.ikaros.server.constants.AppConst;
 import run.ikaros.server.utils.SystemVarUtils;
 import java.io.File;

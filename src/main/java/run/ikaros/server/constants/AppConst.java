@@ -12,10 +12,6 @@ public interface AppConst {
         String PACKAGE_NAME = "run.ikaros.server.openapi";
     }
 
-    interface Directory {
-        String DEFAULT_UPLOAD_NAME = "upload";
-    }
-
     String DEFAULT_THEME = "simple";
-    String PAGE_POSTFIX = "themes" + File.separator + DEFAULT_THEME + File.separator;
+    String PAGE_POSTFIX = "themes";
 }

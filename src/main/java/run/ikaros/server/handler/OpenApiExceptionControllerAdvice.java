@@ -1,4 +1,4 @@
-package run.ikaros.server.advice;
+package run.ikaros.server.handler;
 
 import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.result.ResultCode;
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * @date 2022/09/08
  */
 @RestControllerAdvice
-public class OpenApiExceptionHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OpenApiExceptionHandler.class);
+public class OpenApiExceptionControllerAdvice {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenApiExceptionControllerAdvice.class);
 
     @ExceptionHandler(value = RecordNotFoundException.class)
     public CommonResult<String> recordNotFoundException(RecordNotFoundException exception) {
