@@ -18,6 +18,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
+import run.ikaros.server.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.qbittorrent.model.QbCategory;
 import run.ikaros.server.utils.AssertUtils;
 
@@ -229,4 +230,26 @@ public class QbittorrentClient {
         }
     }
 
+    /**
+     * @param filter Filter torrent list by state. Allowed state filters: all, downloading, seeding,
+     *              completed, paused, active, inactive, resumed, stalled, stalled_uploading,
+     *               stalled_downloading, errored
+     * @param category Get torrents with the given category (empty string means "without category";
+     *                 no "category" parameter means "any category" <- broken until
+     *                 #11748 is resolved). Remember to URL-encode the category name. For example,
+     *                 My category becomes My%20category
+     * @param limit Limit the number of torrents returned
+     * @param offset Set offset (if less than 0, offset from end)
+     * @param hashes Filter by hashes. Can contain multiple hashes separated by |
+     * @see QbTorrentInfoFilter
+     * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#get-torrent-list">WebUI-API-(qBittorrent-4.1)#get-torrent-list</a>
+     */
+    public void getTorrentList(@Nonnull QbTorrentInfoFilter filter,
+                               String category, Integer limit, Integer offset, String hashes) {
+        final String url = prefix + API.TORRENTS_INFO;
+
+
+
+
+    }
 }
