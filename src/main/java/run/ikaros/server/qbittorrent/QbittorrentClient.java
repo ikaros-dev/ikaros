@@ -1,12 +1,9 @@
 package run.ikaros.server.qbittorrent;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,11 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.qbittorrent.model.QbCategory;
 import run.ikaros.server.utils.AssertUtils;
-import run.ikaros.server.utils.JsonUtils;
 
 /**
  * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)">WebUI-API-(qBittorrent-4.1)</a>
@@ -43,6 +41,7 @@ public class QbittorrentClient {
         String TORRENTS_EDIT_CATEGORY = "/torrents/editCategory";
         String TORRENTS_REMOVE_CATEGORIES = "/torrents/removeCategories";
         String TORRENTS_ADD = "/torrents/add";
+        String TORRENTS_INFO = "/torrents/info";
     }
 
     public QbittorrentClient(RestTemplate restTemplate, String prefix) {
@@ -209,32 +208,25 @@ public class QbittorrentClient {
 
         // This method can add torrents from server local file or from URLs.
         // http://, https://, magnet: and bc://bt/ links are supported.
-        Map<String, String> body = new HashMap<>();
-        StringBuilder sb = new StringBuilder();
-        for (int index = 0; index < urlList.size(); index++) {
-            sb.append(urlList.get(index));
-            if (index < (urlList.size() - 1)) {
-                sb.append("\\n");
-            }
-        }
-        body.put("urls", sb.toString());
-        body.put("savepath", savepath);
-        body.put("category", category);
-        body.put("skip_checking", skipChecking ? "true" : "false");
-        body.put("paused", statusIsPaused ? "true" : "false");
-        body.put("rename", newName);
-        body.put("sequentialDownload", enableSequentialDownload ? "true" : "false");
-        body.put("firstLastPiecePrio", prioritizeDownloadFirstLastPiece ? "true" : "false");
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.put("urls", urlList);
+        body.put("savepath", List.of(savepath));
+        body.put("category", List.of(category));
+        body.put("skip_checking", List.of(skipChecking ? "true" : "false"));
+        body.put("paused", List.of(statusIsPaused ? "true" : "false"));
+        body.put("rename", List.of(newName));
+        body.put("sequentialDownload", List.of(enableSequentialDownload ? "true" : "false"));
+        body.put("firstLastPiecePrio",
+            List.of(prioritizeDownloadFirstLastPiece ? "true" : "false"));
 
-        HttpEntity<Map<String, String>> httpEntity = new HttpEntity<>(body, headers);
+        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Object> responseEntity
-            = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
+        ResponseEntity<Void> responseEntity
+            = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Void.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("remove categories fail");
         }
     }
-
 
 }
