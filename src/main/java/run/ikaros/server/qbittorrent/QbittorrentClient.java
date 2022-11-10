@@ -1,5 +1,7 @@
 package run.ikaros.server.qbittorrent;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,28 +54,29 @@ public class QbittorrentClient {
         this.prefix = prefix;
     }
 
-    public Optional<String> getApplicationVersion() {
+    public String getApplicationVersion() {
         ResponseEntity<String> responseEntity
             = restTemplate.getForEntity(prefix + API.APP_VERSION, String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
         }
-        return Optional.ofNullable(responseEntity.getBody());
+        return responseEntity.getBody();
     }
 
-    public Optional<String> getApiVersion() {
+    public String getApiVersion() {
         ResponseEntity<String> responseEntity
             = restTemplate.getForEntity(prefix + API.APP_API_VERSION, String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
         }
-        return Optional.ofNullable(responseEntity.getBody());
+        return responseEntity.getBody();
     }
 
 
-    public Optional<List<QbCategory>> getAllCategories() {
+    @SuppressWarnings("unchecked")
+    public List<QbCategory> getAllCategories() {
         List<QbCategory> qbCategoryList = new ArrayList<>();
 
         ResponseEntity<HashMap> responseEntity
@@ -87,16 +90,19 @@ public class QbittorrentClient {
         HashMap categoryMap = responseEntity.getBody();
         AssertUtils.notNull(categoryMap, "category map");
         categoryMap.forEach((key, value) -> {
-            QbCategory category = JsonUtils.json2obj(String.valueOf(key), QbCategory.class);
+            Map<String, String> valueMap = (Map<String, String>) value;
+            QbCategory category = new QbCategory();
+            category.setName(valueMap.get("name"));
+            category.setSavePath(valueMap.get("savePath"));
             AssertUtils.notNull(category, "category map value");
-            if (String.valueOf(key).equalsIgnoreCase(category.getName())) {
+            if (!String.valueOf(key).equalsIgnoreCase(category.getName())) {
                 LOGGER.warn("category map key != value's name, key={}, value={}",
                     key, value);
             }
             qbCategoryList.add(category);
         });
 
-        return qbCategoryList.isEmpty() ? Optional.empty() : Optional.of(qbCategoryList);
+        return qbCategoryList;
     }
 
     public void addNewCategory(@Nonnull String category,
@@ -143,7 +149,7 @@ public class QbittorrentClient {
         }
     }
 
-    public void removeCategories(@Nonnull List<QbCategory> categories) {
+    public void removeCategories(@Nonnull List<String> categories) {
         AssertUtils.notNull(categories, "categories");
         AssertUtils.isFalse(categories.isEmpty(), "categories is empty");
         final String url = prefix + API.TORRENTS_REMOVE_CATEGORIES;
@@ -155,7 +161,7 @@ public class QbittorrentClient {
         // categories can contain multiple categories separated by \n (%0A urlencoded)
         StringBuilder sb = new StringBuilder("categories=");
         for (int index = 0; index < categories.size(); index++) {
-            sb.append(categories.get(index).getName());
+            sb.append(categories.get(index));
             if (index < (categories.size() - 1)) {
                 sb.append("%0A");
             }

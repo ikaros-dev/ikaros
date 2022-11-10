@@ -90,7 +90,7 @@ public class SeasonServiceImpl
         AssertUtils.notNull(seasonId, "season_id");
         AssertUtils.notNull(fileIdList, "file_id_list");
 
-        List<EpisodeEntity> episodeEntityList = episodeService.findBySeasonId(seasonId)
+        final List<EpisodeEntity> episodeEntityList = episodeService.findBySeasonId(seasonId)
             .stream()
             .sorted((ep1, ep2) -> Objects.equals(ep1.getSeq(), ep2.getSeq()) ? 0 :
                 (ep1.getSeq() > ep2.getSeq() ? 1 : -1)).toList();
