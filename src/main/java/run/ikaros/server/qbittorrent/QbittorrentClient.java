@@ -21,6 +21,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
+import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.qbittorrent.model.QbCategory;
 import run.ikaros.server.qbittorrent.model.QbTorrentInfo;
@@ -50,6 +51,10 @@ public class QbittorrentClient {
         String TORRENTS_ADD = "/torrents/add";
         String TORRENTS_INFO = "/torrents/info";
         String TORRENTS_RENAME_FILE = "/torrents/renameFile";
+        String TORRENTS_RESUME = "/torrents/resume";
+        String TORRENTS_PAUSE = "/torrents/pause";
+        String TORRENTS_DELETE = "/torrents/delete";
+        String TORRENTS_RECHECK = "/torrents/recheck";
     }
 
     public QbittorrentClient(RestTemplate restTemplate, String prefix) {
@@ -267,16 +272,28 @@ public class QbittorrentClient {
         return qbTorrentInfoList;
     }
 
+    public QbTorrentInfo getTorrent(String hash) {
+        AssertUtils.notBlank(hash, "hash");
+        List<QbTorrentInfo> torrentList = getTorrentList(null, null, null, null, null, hash);
+        if (torrentList.isEmpty()) {
+            throw new QbittorrentRequestException("torrent not found for hash=" + hash);
+        }
+        return torrentList.get(0);
+    }
+
     /**
      * rename torrent file
      *
-     * @param hash    The hash of the torrent
+     * @param hash        The hash of the torrent
      * @param oldFileName The old file name(with postfix) of the torrent's file
      * @param newFileName The new file name(with postfix) to use for the file
      * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#rename-file">WebUI-API-(qBittorrent-4.1)#rename-file</a>
      */
     public void renameFile(@Nonnull String hash, @Nonnull String oldFileName,
                            @Nonnull String newFileName) {
+        AssertUtils.notBlank(hash, "hash");
+        AssertUtils.notBlank(oldFileName, "oldFileName");
+        AssertUtils.notBlank(newFileName, "newFileName");
         final String url = prefix + API.TORRENTS_RENAME_FILE;
 
         HttpHeaders headers = new HttpHeaders();
@@ -286,6 +303,67 @@ public class QbittorrentClient {
         String body = "hash=" + hash + "&oldPath="
             + URLEncoder.encode(oldFileName, StandardCharsets.UTF_8)
             + "&newPath=" + URLEncoder.encode(newFileName, StandardCharsets.UTF_8);
+
+        HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
+
+        restTemplate.exchange(url, HttpMethod.POST, httpEntity, Void.class);
+    }
+
+    public void resume(@Nonnull String hashes) {
+        AssertUtils.notBlank(hashes, "hashes");
+        final String url = prefix + API.TORRENTS_RESUME;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
+
+        String body = "hashes=" + hashes;
+
+        HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
+
+        restTemplate.exchange(url, HttpMethod.POST, httpEntity, Void.class);
+    }
+
+    public void pause(@Nonnull String hashes) {
+        AssertUtils.notBlank(hashes, "hashes");
+        final String url = prefix + API.TORRENTS_PAUSE;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
+
+        String body = "hashes=" + hashes;
+
+        HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
+
+        restTemplate.exchange(url, HttpMethod.POST, httpEntity, Void.class);
+    }
+
+    public void recheck(@Nonnull String hashes) {
+        AssertUtils.notBlank(hashes, "hashes");
+        final String url = prefix + API.TORRENTS_RECHECK;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
+
+        String body = "hashes=" + hashes;
+
+        HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
+
+        restTemplate.exchange(url, HttpMethod.POST, httpEntity, Void.class);
+    }
+
+    public void delete(@Nonnull String hashes, Boolean deleteFiles) {
+        AssertUtils.notBlank(hashes, "hashes");
+        final String url = prefix + API.TORRENTS_DELETE;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
+
+        String body = "hashes=" + hashes
+            + "&deleteFiles=" + (deleteFiles ? "true" : "false");
 
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 

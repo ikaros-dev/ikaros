@@ -26,6 +26,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.common.UnitTestConst;
 import run.ikaros.server.constants.RegexConst;
+import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.qbittorrent.model.QbCategory;
 import run.ikaros.server.qbittorrent.model.QbTorrentInfo;
@@ -36,7 +37,7 @@ import run.ikaros.server.utils.RegexUtils;
 /**
  * @author li-guohao
  */
-@Disabled("only local test can pass")
+//@Disabled("only local test can pass")
 class QbittorrentClientTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(QbittorrentClientTest.class);
 
@@ -192,5 +193,53 @@ class QbittorrentClientTest {
             qbittorrentClient.getTorrentList(null, null, null, null, null, hash);
         QbTorrentInfo updatedQbTorrentInfo = updatedTorrentList.get(0);
         Assertions.assertEquals(newFileName, FileUtils.parseFileName(updatedQbTorrentInfo.getContentPath()));
+    }
+
+    @Test
+    @Disabled
+    void resume() throws InterruptedException {
+        QbTorrentInfo torrent = qbittorrentClient.getTorrent(hash);
+        String state = torrent.getState();
+        qbittorrentClient.resume(hash);
+        Thread.sleep(250);
+        torrent = qbittorrentClient.getTorrent(hash);
+        state = torrent.getState();
+    }
+
+    @Test
+    @Disabled
+    void pause() throws InterruptedException {
+        QbTorrentInfo torrent = qbittorrentClient.getTorrent(hash);
+        String state = torrent.getState();
+        qbittorrentClient.pause(hash);
+        Thread.sleep(1000);
+        torrent = qbittorrentClient.getTorrent(hash);
+        state = torrent.getState();
+    }
+
+    @Test
+    @Disabled
+    void recheck() throws InterruptedException {
+        QbTorrentInfo torrent = qbittorrentClient.getTorrent(hash);
+        String state = torrent.getState();
+        qbittorrentClient.recheck(hash);
+        Thread.sleep(1000);
+        torrent = qbittorrentClient.getTorrent(hash);
+        state = torrent.getState();
+    }
+
+    @Test
+    @Disabled
+    void delete() throws InterruptedException {
+        QbTorrentInfo torrent = qbittorrentClient.getTorrent(hash);
+        String state = torrent.getState();
+        qbittorrentClient.delete(hash, true);
+        Thread.sleep(1000);
+        try {
+            torrent = qbittorrentClient.getTorrent(hash);
+            Assertions.fail(UnitTestConst.PROCESS_SHOUT_NOT_RUN_THIS);
+        } catch (QbittorrentRequestException qbittorrentRequestException) {
+            Assertions.assertNotNull(qbittorrentRequestException);
+        }
     }
 }
