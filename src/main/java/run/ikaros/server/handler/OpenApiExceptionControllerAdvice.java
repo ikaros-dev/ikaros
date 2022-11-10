@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  */
 @RestControllerAdvice
 public class OpenApiExceptionControllerAdvice {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OpenApiExceptionControllerAdvice.class);
+    private static final Logger LOGGER
+        = LoggerFactory.getLogger(OpenApiExceptionControllerAdvice.class);
 
     @ExceptionHandler(value = RecordNotFoundException.class)
     public CommonResult<String> recordNotFoundException(RecordNotFoundException exception) {

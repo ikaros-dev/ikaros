@@ -30,4 +30,11 @@ public class AssertUtils {
             throw new IllegalArgumentException("'" + varName + "' must be true");
         }
     }
+
+    public static void isFalse(boolean condition, String varName) {
+        if (condition) {
+            throw new IllegalArgumentException("'" + varName + "' must be false");
+        }
+    }
+
 }

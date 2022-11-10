@@ -25,7 +25,6 @@ public class RegexUtils {
             strSet.add(tagMatcher.group());
         }
         return strSet.stream()
-
             .findFirst()
             .orElseThrow(() -> new RegexMatchingException("file postfix matching exception"));
     }
