@@ -1,8 +1,19 @@
 package run.ikaros.server.qbittorrent;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
@@ -10,10 +21,9 @@ import run.ikaros.server.qbittorrent.model.QbCategory;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.JsonUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-
+/**
+ * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)">WebUI-API-(qBittorrent-4.1)</a>
+ */
 @Component
 public class QbittorrentClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(QbittorrentClient.class);
@@ -21,7 +31,7 @@ public class QbittorrentClient {
     /**
      * API前缀，例如：http://192.168.2.229:60101/api/v2/
      */
-    private final String postfix;
+    private final String prefix;
 
     public interface API {
         String APP_VERSION = "/app/version";
@@ -33,18 +43,18 @@ public class QbittorrentClient {
         String TORRENTS_ADD = "/torrents/add";
     }
 
-    public QbittorrentClient(RestTemplate restTemplate, String postfix) {
+    public QbittorrentClient(RestTemplate restTemplate, String prefix) {
         this.restTemplate = restTemplate;
         // 如果最后一个字符是 / 则去掉
-        if (postfix.charAt(postfix.length() - 1) == '/') {
-            postfix = postfix.substring(0, postfix.length() - 1);
+        if (prefix.charAt(prefix.length() - 1) == '/') {
+            prefix = prefix.substring(0, prefix.length() - 1);
         }
-        this.postfix = postfix;
+        this.prefix = prefix;
     }
 
     public Optional<String> getApplicationVersion() {
         ResponseEntity<String> responseEntity
-                = restTemplate.getForEntity(postfix + API.APP_VERSION, String.class);
+            = restTemplate.getForEntity(prefix + API.APP_VERSION, String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
@@ -54,7 +64,7 @@ public class QbittorrentClient {
 
     public Optional<String> getApiVersion() {
         ResponseEntity<String> responseEntity
-                = restTemplate.getForEntity(postfix + API.APP_API_VERSION, String.class);
+            = restTemplate.getForEntity(prefix + API.APP_API_VERSION, String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
@@ -67,8 +77,8 @@ public class QbittorrentClient {
         List<QbCategory> qbCategoryList = new ArrayList<>();
 
         ResponseEntity<HashMap> responseEntity
-                = restTemplate.getForEntity(postfix
-                + API.TORRENTS_GET_ALL_CATEGORIES, HashMap.class);
+            = restTemplate.getForEntity(prefix
+            + API.TORRENTS_GET_ALL_CATEGORIES, HashMap.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get all categories fail");
@@ -81,7 +91,7 @@ public class QbittorrentClient {
             AssertUtils.notNull(category, "category map value");
             if (String.valueOf(key).equalsIgnoreCase(category.getName())) {
                 LOGGER.warn("category map key != value's name, key={}, value={}",
-                        key, value);
+                    key, value);
             }
             qbCategoryList.add(category);
         });
@@ -93,7 +103,7 @@ public class QbittorrentClient {
                                @Nonnull String savePath) {
         AssertUtils.notBlank(category, "category");
         AssertUtils.notBlank(savePath, "savePath");
-        final String url = postfix + API.TORRENTS_CREATE_CATEGORY;
+        final String url = prefix + API.TORRENTS_CREATE_CATEGORY;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -104,7 +114,7 @@ public class QbittorrentClient {
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 
         ResponseEntity<Object> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
+            = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("add new category fail");
@@ -115,7 +125,7 @@ public class QbittorrentClient {
                              @Nonnull String savePath) {
         AssertUtils.notBlank(category, "category");
         AssertUtils.notBlank(savePath, "savePath");
-        final String url = postfix + API.TORRENTS_EDIT_CATEGORY;
+        final String url = prefix + API.TORRENTS_EDIT_CATEGORY;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -126,7 +136,7 @@ public class QbittorrentClient {
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 
         ResponseEntity<Object> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
+            = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("edit category fail");
@@ -136,7 +146,7 @@ public class QbittorrentClient {
     public void removeCategories(@Nonnull List<QbCategory> categories) {
         AssertUtils.notNull(categories, "categories");
         AssertUtils.isFalse(categories.isEmpty(), "categories is empty");
-        final String url = postfix + API.TORRENTS_REMOVE_CATEGORIES;
+        final String url = prefix + API.TORRENTS_REMOVE_CATEGORIES;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -155,7 +165,7 @@ public class QbittorrentClient {
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 
         ResponseEntity<Object> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
+            = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("remove categories fail");
@@ -163,15 +173,15 @@ public class QbittorrentClient {
     }
 
     /**
-     * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-torrent">WebUI-API-(qBittorrent-4.1)#add-new-torrent</a>
-     * @param urlList url list
-     * @param savepath save path
-     * @param category category
-     * @param newName new torrent file name
-     * @param skipChecking skip hash checking
-     * @param statusIsPaused add torrents in the paused state
-     * @param enableSequentialDownload enable sequential download
+     * @param urlList                          url list
+     * @param savepath                         save path
+     * @param category                         category
+     * @param newName                          new torrent file name
+     * @param skipChecking                     skip hash checking
+     * @param statusIsPaused                   add torrents in the paused state
+     * @param enableSequentialDownload         enable sequential download
      * @param prioritizeDownloadFirstLastPiece prioritize download first last piece
+     * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-torrent">WebUI-API-(qBittorrent-4.1)#add-new-torrent</a>
      */
     public void addTorrentFromURLs(@Nonnull List<String> urlList,
                                    @Nonnull String savepath,
@@ -186,9 +196,7 @@ public class QbittorrentClient {
         AssertUtils.notBlank(savepath, "savepath");
         AssertUtils.notBlank(category, "category");
         AssertUtils.notBlank(newName, "newName");
-        final String url = postfix + API.TORRENTS_ADD;
-
-        // default value set
+        final String url = prefix + API.TORRENTS_ADD;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -215,7 +223,7 @@ public class QbittorrentClient {
         HttpEntity<Map<String, String>> httpEntity = new HttpEntity<>(body, headers);
 
         ResponseEntity<Object> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
+            = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("remove categories fail");
