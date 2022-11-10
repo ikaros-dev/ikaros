@@ -17,10 +17,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.qbittorrent.model.QbCategory;
+import run.ikaros.server.qbittorrent.model.QbTorrentInfo;
 import run.ikaros.server.utils.AssertUtils;
+import run.ikaros.server.utils.JsonUtils;
+import run.ikaros.server.utils.StringUtils;
 
 /**
  * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)">WebUI-API-(qBittorrent-4.1)</a>
@@ -79,15 +83,10 @@ public class QbittorrentClient {
     public List<QbCategory> getAllCategories() {
         List<QbCategory> qbCategoryList = new ArrayList<>();
 
-        ResponseEntity<HashMap> responseEntity
-            = restTemplate.getForEntity(prefix
+        HashMap<String, Object> categoryMap
+            = restTemplate.getForObject(prefix
             + API.TORRENTS_GET_ALL_CATEGORIES, HashMap.class);
 
-        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-            throw new QbittorrentRequestException("get all categories fail");
-        }
-
-        HashMap categoryMap = responseEntity.getBody();
         AssertUtils.notNull(categoryMap, "category map");
         categoryMap.forEach((key, value) -> {
             Map<String, String> valueMap = (Map<String, String>) value;
@@ -119,12 +118,7 @@ public class QbittorrentClient {
 
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Object> responseEntity
-            = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
-
-        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-            throw new QbittorrentRequestException("add new category fail");
-        }
+        restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
     }
 
     public void editCategory(@Nonnull String category,
@@ -141,12 +135,7 @@ public class QbittorrentClient {
 
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Object> responseEntity
-            = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
-
-        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-            throw new QbittorrentRequestException("edit category fail");
-        }
+        restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
     }
 
     public void removeCategories(@Nonnull List<String> categories) {
@@ -170,16 +159,11 @@ public class QbittorrentClient {
 
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Object> responseEntity
-            = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
-
-        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-            throw new QbittorrentRequestException("remove categories fail");
-        }
+        restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
     }
 
     /**
-     * @param urlList                          url list
+     * @param src                              src
      * @param savepath                         save path
      * @param category                         category
      * @param newName                          new torrent file name
@@ -189,19 +173,17 @@ public class QbittorrentClient {
      * @param prioritizeDownloadFirstLastPiece prioritize download first last piece
      * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-torrent">WebUI-API-(qBittorrent-4.1)#add-new-torrent</a>
      */
-    public void addTorrentFromURLs(@Nonnull List<String> urlList,
+    public void addTorrentFromURLs(@Nonnull String src,
                                    @Nonnull String savepath,
                                    @Nonnull String category,
-                                   @Nonnull String newName,
+                                   String newName,
                                    boolean skipChecking,
                                    boolean statusIsPaused,
                                    boolean enableSequentialDownload,
                                    boolean prioritizeDownloadFirstLastPiece) {
-        AssertUtils.notNull(urlList, "urlList");
-        AssertUtils.isFalse(urlList.isEmpty(), "urlList is empty");
+        AssertUtils.notNull(src, "src");
         AssertUtils.notBlank(savepath, "savepath");
         AssertUtils.notBlank(category, "category");
-        AssertUtils.notBlank(newName, "newName");
         final String url = prefix + API.TORRENTS_ADD;
 
         HttpHeaders headers = new HttpHeaders();
@@ -210,46 +192,76 @@ public class QbittorrentClient {
         // This method can add torrents from server local file or from URLs.
         // http://, https://, magnet: and bc://bt/ links are supported.
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.put("urls", urlList);
+        body.put("urls", List.of(src));
         body.put("savepath", List.of(savepath));
         body.put("category", List.of(category));
         body.put("skip_checking", List.of(skipChecking ? "true" : "false"));
         body.put("paused", List.of(statusIsPaused ? "true" : "false"));
-        body.put("rename", List.of(newName));
+        if (StringUtils.isNotBlank(newName)) {
+            body.put("rename", List.of(newName));
+        }
         body.put("sequentialDownload", List.of(enableSequentialDownload ? "true" : "false"));
         body.put("firstLastPiecePrio",
             List.of(prioritizeDownloadFirstLastPiece ? "true" : "false"));
 
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Void> responseEntity
-            = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Void.class);
-
-        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-            throw new QbittorrentRequestException("remove categories fail");
-        }
+        restTemplate.exchange(url, HttpMethod.POST, httpEntity, Void.class);
     }
 
     /**
-     * @param filter Filter torrent list by state. Allowed state filters: all, downloading, seeding,
-     *              completed, paused, active, inactive, resumed, stalled, stalled_uploading,
-     *               stalled_downloading, errored
+     * @param filter   Filter torrent list by state. Allowed state filters: all, downloading,
+     *                 seeding,completed, paused, active, inactive, resumed, stalled,
+     *                 stalled_uploading,stalled_downloading, errored
      * @param category Get torrents with the given category (empty string means "without category";
      *                 no "category" parameter means "any category" <- broken until
      *                 #11748 is resolved). Remember to URL-encode the category name. For example,
      *                 My category becomes My%20category
-     * @param limit Limit the number of torrents returned
-     * @param offset Set offset (if less than 0, offset from end)
-     * @param hashes Filter by hashes. Can contain multiple hashes separated by |
-     * @see QbTorrentInfoFilter
+     * @param limit    Limit the number of torrents returned
+     * @param offset   Set offset (if less than 0, offset from end)
+     * @param hashes   Filter by hashes. Can contain multiple hashes separated by |
+     * @return qbittorrent torrent info list
      * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#get-torrent-list">WebUI-API-(qBittorrent-4.1)#get-torrent-list</a>
+     * @see QbTorrentInfoFilter
      */
-    public void getTorrentList(@Nonnull QbTorrentInfoFilter filter,
-                               String category, Integer limit, Integer offset, String hashes) {
+    public List<QbTorrentInfo> getTorrentList(QbTorrentInfoFilter filter,
+                                              String category, String tags,
+                                              Integer limit, Integer offset,
+                                              String hashes) {
         final String url = prefix + API.TORRENTS_INFO;
 
+        UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(url);
+        Map<String, Object> varMap = new HashMap<>();
+        if (filter != null) {
+            urlBuilder.queryParam("filter", filter.getValue());
+        }
+        if (StringUtils.isNotBlank(category)) {
+            urlBuilder.queryParam("category", category);
+        }
+        if (StringUtils.isNotBlank(tags)) {
+            urlBuilder.queryParam("tags", tags);
+        }
+        if (limit != null && limit > 0) {
+            urlBuilder.queryParam("limit", limit);
+        }
+        if (offset != null && offset > 0) {
+            urlBuilder.queryParam("offset", offset);
+        }
+        if (StringUtils.isNotBlank(hashes)) {
+            urlBuilder.queryParam("hashes", hashes);
+        }
 
+        ArrayList originalList =
+            restTemplate.getForObject(urlBuilder.toUriString(), ArrayList.class);
+        AssertUtils.notNull(originalList, "originalList");
 
+        List<QbTorrentInfo> qbTorrentInfoList = new ArrayList<>(originalList.size());
+        for (Object o : originalList) {
+            QbTorrentInfo qbTorrentInfo
+                = JsonUtils.json2obj(JsonUtils.obj2Json(o), QbTorrentInfo.class);
+            qbTorrentInfoList.add(qbTorrentInfo);
+        }
 
+        return qbTorrentInfoList;
     }
 }

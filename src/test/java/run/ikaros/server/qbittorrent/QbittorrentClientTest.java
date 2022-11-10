@@ -2,6 +2,15 @@ package run.ikaros.server.qbittorrent;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -10,11 +19,16 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.common.UnitTestConst;
+import run.ikaros.server.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.qbittorrent.model.QbCategory;
+import run.ikaros.server.qbittorrent.model.QbTorrentInfo;
+import run.ikaros.server.utils.JsonUtils;
 
 /**
  * @author li-guohao
@@ -52,17 +66,17 @@ class QbittorrentClientTest {
         qbittorrentClient.getAllCategories();
     }
 
-    private void assertCategory(boolean exceptExist){
+    private void assertCategory(boolean exceptExist) {
         Assertions.assertNotNull(category);
         List<QbCategory> categories = qbittorrentClient.getAllCategories();
         boolean exist = false;
-        if(!categories.isEmpty()) {
+        if (!categories.isEmpty()) {
             exist = categories.stream().anyMatch(
                 qbCategory -> (category.equalsIgnoreCase(qbCategory.getName())
                     && savePath.equalsIgnoreCase(qbCategory.getSavePath())));
         }
 
-        if(exceptExist) {
+        if (exceptExist) {
             Assertions.assertTrue(exist);
         } else {
             Assertions.assertFalse(exist);
@@ -85,7 +99,6 @@ class QbittorrentClientTest {
 
         qbittorrentClient.removeCategories(List.of(category));
     }
-
 
 
     @Test
@@ -119,22 +132,37 @@ class QbittorrentClientTest {
 
     @Test
     @Disabled
-    void addTorrentFromURLs() {
-        List<String> urlList = List.of(
-            "magnet:?xt=urn:btih:f8212d3e87a934c298afefaab6a0fa8d5468d2f1&tr=http%3a%2f%2ft" +
-                ".nyaatracker.com%2fannounce&tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce" +
-                "&tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&tr=http%3a%2f%2fopentracker" +
-                ".acgnx.se%2fannounce&tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&tr" +
-                "=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&tr=https%3a%2f%2ftr.bangumi.moe%3a9696" +
-                "%2fannounce&tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&tr=http%3a%2f%2fopen" +
-                ".acgtracker.com%3a1096%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr" +
-                ".org%3a1337%2fannounce");
-
+    void addTorrentFromURLs() throws IOException, URISyntaxException {
+        final String fileName = "Shinmai Renkinjutsushi no Tenpo Keiei";
+        URL url = ResourceUtils.getURL(ResourceUtils.CLASSPATH_URL_PREFIX + "qbittorrent/" + fileName);
+        List<String> urlList = Files.readAllLines(Path.of(url.toURI()), StandardCharsets.UTF_8);
         qbittorrentClient.addNewCategory(category, savePath);
-        qbittorrentClient.addTorrentFromURLs(urlList, savePath + "/torrent",
-            category,
-            "[桜都字幕组] 孤独摇滚！ / Bocchi the Rock! [05][1080p][简繁内封] [346.46 MB]",
-            true, false, true, true);
+        for (String src : urlList) {
+            qbittorrentClient.addTorrentFromURLs(src, savePath + "/" + fileName,
+                category, null, true, false, true, true);
+        }
 
+    }
+
+    @Test
+    @Disabled
+    void getTorrentList() {
+        List<QbTorrentInfo> torrentList =
+            qbittorrentClient.getTorrentList(QbTorrentInfoFilter.ALL, category, null, 100, 0, null);
+        Assertions.assertFalse(torrentList.isEmpty());
+        torrentList.forEach(
+            qbTorrentInfo -> LOGGER.info("[{}] state={}", qbTorrentInfo.getName(),
+                qbTorrentInfo.getState()));
+    }
+
+    @Test
+    @Disabled
+    void getTorrentListAppoint() {
+        List<QbTorrentInfo> torrentList =
+            qbittorrentClient.getTorrentList(QbTorrentInfoFilter.ALL, null, null, null, null, "42b6ca3fa47fa5435ad69ce67fd7611237bdec5a");
+        Assertions.assertFalse(torrentList.isEmpty());
+        torrentList.forEach(
+            qbTorrentInfo -> LOGGER.info("[{}] state={}", qbTorrentInfo.getName(),
+                qbTorrentInfo.getState()));
     }
 }
