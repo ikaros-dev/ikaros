@@ -49,6 +49,8 @@ public class QbTorrentInfo {
     /**
      * Absolute path of torrent content (root path for multifile torrents,
      * absolute file path for singlefile torrents)
+     * <br/>
+     * 单种子多文件时，此为对应的下载的目录；单种子单文件时，此为文件的绝对路径
      */
     @JsonProperty("content_path")
     private String contentPath;

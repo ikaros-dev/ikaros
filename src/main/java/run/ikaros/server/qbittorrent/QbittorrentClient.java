@@ -1,5 +1,7 @@
 package run.ikaros.server.qbittorrent;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +49,7 @@ public class QbittorrentClient {
         String TORRENTS_REMOVE_CATEGORIES = "/torrents/removeCategories";
         String TORRENTS_ADD = "/torrents/add";
         String TORRENTS_INFO = "/torrents/info";
+        String TORRENTS_RENAME_FILE = "/torrents/renameFile";
     }
 
     public QbittorrentClient(RestTemplate restTemplate, String prefix) {
@@ -231,7 +234,6 @@ public class QbittorrentClient {
         final String url = prefix + API.TORRENTS_INFO;
 
         UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(url);
-        Map<String, Object> varMap = new HashMap<>();
         if (filter != null) {
             urlBuilder.queryParam("filter", filter.getValue());
         }
@@ -263,5 +265,30 @@ public class QbittorrentClient {
         }
 
         return qbTorrentInfoList;
+    }
+
+    /**
+     * rename torrent file
+     *
+     * @param hash    The hash of the torrent
+     * @param oldFileName The old file name(with postfix) of the torrent's file
+     * @param newFileName The new file name(with postfix) to use for the file
+     * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#rename-file">WebUI-API-(qBittorrent-4.1)#rename-file</a>
+     */
+    public void renameFile(@Nonnull String hash, @Nonnull String oldFileName,
+                           @Nonnull String newFileName) {
+        final String url = prefix + API.TORRENTS_RENAME_FILE;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
+
+        String body = "hash=" + hash + "&oldPath="
+            + URLEncoder.encode(oldFileName, StandardCharsets.UTF_8)
+            + "&newPath=" + URLEncoder.encode(newFileName, StandardCharsets.UTF_8);
+
+        HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
+
+        restTemplate.exchange(url, HttpMethod.POST, httpEntity, Void.class);
     }
 }

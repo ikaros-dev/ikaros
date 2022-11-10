@@ -25,18 +25,23 @@ import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.common.UnitTestConst;
+import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.qbittorrent.model.QbCategory;
 import run.ikaros.server.qbittorrent.model.QbTorrentInfo;
+import run.ikaros.server.utils.FileUtils;
 import run.ikaros.server.utils.JsonUtils;
+import run.ikaros.server.utils.RegexUtils;
 
 /**
  * @author li-guohao
  */
+@Disabled("only local test can pass")
 class QbittorrentClientTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(QbittorrentClientTest.class);
 
     static String prefix = "http://192.168.2.229:60101/api/v2";
+    static final String hash = "42b6ca3fa47fa5435ad69ce67fd7611237bdec5a";
     static RestTemplate restTemplate = new RestTemplate();
     static QbittorrentClient qbittorrentClient = new QbittorrentClient(restTemplate, prefix);
     static final String category = "unittest";
@@ -159,10 +164,33 @@ class QbittorrentClientTest {
     @Disabled
     void getTorrentListAppoint() {
         List<QbTorrentInfo> torrentList =
-            qbittorrentClient.getTorrentList(QbTorrentInfoFilter.ALL, null, null, null, null, "42b6ca3fa47fa5435ad69ce67fd7611237bdec5a");
+            qbittorrentClient.getTorrentList(QbTorrentInfoFilter.ALL, null, null, null, null, hash);
         Assertions.assertFalse(torrentList.isEmpty());
         torrentList.forEach(
             qbTorrentInfo -> LOGGER.info("[{}] state={}", qbTorrentInfo.getName(),
                 qbTorrentInfo.getState()));
+    }
+
+    @Test
+    @Disabled
+    void renameFile() {
+        List<QbTorrentInfo> torrentList =
+            qbittorrentClient.getTorrentList(null, null, null, null, null,
+                hash);
+        QbTorrentInfo qbTorrentInfo = torrentList.get(0);
+
+        String contentPath = qbTorrentInfo.getContentPath();
+
+        String oldFileName = FileUtils.parseFileName(contentPath);
+        String[] splitArr = oldFileName.split("\\.");
+        String newFileName = splitArr[0] + "-NEW" + "." + splitArr[1];
+
+        qbittorrentClient.renameFile(hash, oldFileName, newFileName);
+
+
+        List<QbTorrentInfo> updatedTorrentList =
+            qbittorrentClient.getTorrentList(null, null, null, null, null, hash);
+        QbTorrentInfo updatedQbTorrentInfo = updatedTorrentList.get(0);
+        Assertions.assertEquals(newFileName, FileUtils.parseFileName(updatedQbTorrentInfo.getContentPath()));
     }
 }

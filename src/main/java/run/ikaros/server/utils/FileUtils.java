@@ -149,4 +149,8 @@ public class FileUtils {
         return originalFilename.substring(dotIndex + 1);
     }
 
+    public static String parseFileName(String filePath) {
+        AssertUtils.notBlank(filePath, "filePath");
+        return filePath.substring(filePath.lastIndexOf("/") + 1);
+    }
 }
