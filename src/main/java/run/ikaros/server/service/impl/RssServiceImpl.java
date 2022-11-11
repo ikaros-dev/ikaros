@@ -52,7 +52,8 @@ public class RssServiceImpl implements RssService {
             String torrentUrl = syndEnclosure.getUrl();
             MikanRssItem mikanRssItem = new MikanRssItem();
             mikanRssItem.setTitle(title)
-                .setTorrentUrl(torrentUrl);
+                .setTorrentUrl(torrentUrl)
+                .setEpisodePageUrl(syndEntry.getLink());
             mikanRssItemList.add(mikanRssItem);
         }
 

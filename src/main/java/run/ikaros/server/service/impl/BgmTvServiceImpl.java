@@ -224,6 +224,7 @@ public class BgmTvServiceImpl implements BgmTvService, InitializingBean {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public BgmTvSubject findSubjectByQueryStr(@Nonnull String queryStr) {
         AssertUtils.notBlank(queryStr, "queryStr");
         //  curl -X 'GET' \
