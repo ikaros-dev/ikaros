@@ -1,6 +1,7 @@
 package run.ikaros.server.service;
 
 
+import org.junit.jupiter.api.Disabled;
 import run.ikaros.server.model.bgmtv.BgmTvEpisode;
 import run.ikaros.server.model.bgmtv.BgmTvEpisodeType;
 import run.ikaros.server.model.bgmtv.BgmTvSubject;
@@ -52,4 +53,14 @@ class BgmTvServiceImplTest {
         Assertions.assertNotNull(fileEntity.getUrl());
         Files.deleteIfExists(Path.of(new File(fileEntity.getUrl()).toURI()));
     }
+
+    @Test
+    @Disabled("行为不符合预期")
+    void findSubjectByQueryStr() {
+        BgmTvSubject bgmTvSubject = bgmTvServiceImpl.findSubjectByQueryStr("Do It Yourself");
+        Assertions.assertNotNull(bgmTvSubject);
+        Assertions.assertNotNull(bgmTvSubject.getId());
+    }
+
+
 }

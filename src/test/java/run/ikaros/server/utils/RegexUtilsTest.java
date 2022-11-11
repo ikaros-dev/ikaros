@@ -8,14 +8,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import run.ikaros.server.constants.RegexConst;
+import run.ikaros.server.service.impl.BgmTvServiceImpl;
 
 /**
  * @author li-guohao
  */
 class RegexUtilsTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegexUtilsTest.class);
 
-    String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][x265_flac_2aac].mkv";
+    final String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][x265_flac_2aac].mkv";
+    final String title = "手工少女!! / Do It Yourself!! - 06 ";
 
     @Test
     void getFilePostfix() {
@@ -38,5 +43,27 @@ class RegexUtilsTest {
     void getFileNameTagEpSeq() {
         Long seq = RegexUtils.getFileNameTagEpSeq(fileName);
         Assertions.assertEquals(01L, seq);
+    }
+
+    @Test
+    void getMatchingStr() {
+        final String regex = "[\\u2E80-\\u9FFF]";
+        String matchingStr = RegexUtils.getMatchingStr(title, regex);
+        LOGGER.info("matching str: {}", matchingStr);
+        Assertions.assertNotNull(matchingStr);
+    }
+
+    @Test
+    void getMatchingEnglishStr() {
+        String matchingEnglishStr = RegexUtils.getMatchingEnglishStr(title);
+        LOGGER.info("matching english str: {}", matchingEnglishStr);
+        Assertions.assertNotNull(matchingEnglishStr);
+    }
+
+    @Test
+    void getMatchingChineseStr() {
+        String matchingChineseStr = RegexUtils.getMatchingChineseStr(title);
+        LOGGER.info("matching chinese str: {}", matchingChineseStr);
+        Assertions.assertNotNull(matchingChineseStr);
     }
 }

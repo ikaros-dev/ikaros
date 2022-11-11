@@ -11,6 +11,7 @@ public class ThirdPartyPresetOption implements PresetOption {
     private String bangumiApiBase = "https://api.bgm.tv";
     private String bangumiApiSubjects = "/v0/subjects";
     private String bangumiApiEpisodes = "/v0/episodes";
+    private String bangumiApiSearchSubject = "/search/subject";
 
     @Nonnull
     @Override
@@ -42,6 +43,15 @@ public class ThirdPartyPresetOption implements PresetOption {
 
     public ThirdPartyPresetOption setBangumiApiEpisodes(String bangumiApiEpisodes) {
         this.bangumiApiEpisodes = bangumiApiEpisodes;
+        return this;
+    }
+
+    public String getBangumiApiSearchSubject() {
+        return bangumiApiSearchSubject;
+    }
+
+    public ThirdPartyPresetOption setBangumiApiSearchSubject(String bangumiApiSearchSubject) {
+        this.bangumiApiSearchSubject = bangumiApiSearchSubject;
         return this;
     }
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -56,7 +57,8 @@ public class QbittorrentClient {
         String TORRENTS_RECHECK = "/torrents/recheck";
     }
 
-    public QbittorrentClient(RestTemplate restTemplate, String prefix) {
+    public QbittorrentClient(RestTemplate restTemplate,
+                             @Value("ikaros.qbittorrent-base-url") String prefix) {
         this.restTemplate = restTemplate;
         // 如果最后一个字符是 / 则去掉
         if (prefix.charAt(prefix.length() - 1) == '/') {

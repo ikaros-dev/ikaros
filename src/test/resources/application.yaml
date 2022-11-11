@@ -2,6 +2,7 @@ ikaros:
   env: test
   log-level: INFO
   server-port: 9091
+  qbittorrent-base-url: http://192.168.2.229:60101/api/v2/
 
 server:
   port: ${ikaros.server-port}

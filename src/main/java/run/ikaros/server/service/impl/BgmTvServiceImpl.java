@@ -1,9 +1,15 @@
 package run.ikaros.server.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.management.Query;
 import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,18 +22,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import run.ikaros.server.constants.IkarosCons;
+import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.SeasonType;
+import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.init.option.ThirdPartyPresetOption;
 import run.ikaros.server.model.bgmtv.BgmTvConstants;
 import run.ikaros.server.model.bgmtv.BgmTvEpisode;
 import run.ikaros.server.model.bgmtv.BgmTvEpisodeType;
 import run.ikaros.server.model.bgmtv.BgmTvPagingData;
+import run.ikaros.server.model.bgmtv.BgmTvSearchFilter;
+import run.ikaros.server.model.bgmtv.BgmTvSearchRequest;
 import run.ikaros.server.model.bgmtv.BgmTvSubject;
+import run.ikaros.server.model.bgmtv.BgmTvSubjectType;
 import run.ikaros.server.model.bgmtv.BgmTvTag;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.service.AnimeService;
@@ -39,7 +51,9 @@ import run.ikaros.server.service.SeasonService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.DateUtils;
 import run.ikaros.server.utils.JsonUtils;
+import run.ikaros.server.utils.RegexUtils;
 import run.ikaros.server.utils.StringUtils;
+import run.ikaros.server.utils.UrlUtils;
 
 /**
  * @author guohao
@@ -207,5 +221,63 @@ public class BgmTvServiceImpl implements BgmTvService, InitializingBean {
 
             return animeService.findAnimeDTOById(animeEntity.getId());
         }
+    }
+
+    @Override
+    public BgmTvSubject findSubjectByQueryStr(@Nonnull String queryStr) {
+        AssertUtils.notBlank(queryStr, "queryStr");
+        //  curl -X 'GET' \
+        //  'https://api.bgm.tv/search/subject/Do%20It%20Yourself?type=2&responseGroup=small' \
+        //  -H 'accept: application/json'
+        final String url = thirdPartyPresetOption.getBangumiApiBase()
+            + thirdPartyPresetOption.getBangumiApiSearchSubject()
+            + "/" + UrlUtils.encode(queryStr);
+
+
+        byte[] bytes = restTemplate.getForObject(url, byte[].class);
+
+        String content =
+            new String(bytes, StandardCharsets.UTF_8);
+        if (content.startsWith("<!DOCTYPE html>")) {
+            throw new RuntimeIkarosException("you can not search frequently");
+        }
+
+        HashMap hashMap = JsonUtils.json2obj(content, HashMap.class);
+        if (hashMap == null || ((Long) hashMap.get("results")) <= 0) {
+            LOGGER.warn("not found subject for query str: {}", queryStr);
+            return null;
+        }
+
+        Object list = hashMap.get("list");
+        TypeReference<BgmTvSubject[]> typeReference = new TypeReference<>() {
+        };
+        BgmTvSubject[] bgmTvSubjects = JsonUtils.obj2Arr(list, typeReference);
+        for (BgmTvSubject bgmTvSubject : bgmTvSubjects) {
+            if (bgmTvSubject == null) {
+                continue;
+            }
+            String name = bgmTvSubject.getName();
+            if (name.contains(queryStr)) {
+                return bgmTvSubject;
+            }
+        }
+
+        return bgmTvSubjects[0];
+    }
+
+    @Nonnull
+    @Override
+    public Long pullMetadataByTitle(@Nonnull String title) {
+        AssertUtils.notBlank(title, "title");
+
+        // [SweetSub&LoliHouse] 手工少女!! / Do It Yourself!!
+        // - 06 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]
+        // 去掉所有中括号，这个属于 Tag
+        title = title.replaceAll(RegexConst.FILE_NAME_TAG, "");
+        // 获取英文(罗马音), 根据罗马音模糊查询
+        String englishTitle = RegexUtils.getMatchingEnglishStr(title);
+
+
+        return null;
     }
 }

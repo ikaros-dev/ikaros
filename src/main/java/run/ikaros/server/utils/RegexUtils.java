@@ -1,6 +1,8 @@
 package run.ikaros.server.utils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -71,6 +73,42 @@ public class RegexUtils {
                 }
             }).findFirst().orElseThrow(() -> new RegexMatchingException(
                 "file name tag episode seq matching exception, file name: " + fileName));
+    }
+
+    @Nonnull
+    public static String getMatchingStr(@Nonnull String originalStr, @Nonnull String regex) {
+        AssertUtils.notBlank(originalStr, "originalStr");
+        AssertUtils.notBlank(regex, "regex");
+        List<String> strList = new ArrayList<>();
+        Matcher tagMatcher =
+            Pattern.compile(regex).matcher(originalStr);
+        while (tagMatcher.find()) {
+            strList.add(tagMatcher.group());
+        }
+        if (strList.isEmpty()) {
+            throw new RegexMatchingException(
+                "[" + regex + "] match fail for originalStr=" + originalStr);
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String str : strList) {
+            sb.append(str);
+        }
+
+        return sb.toString().trim();
+    }
+
+    @Nonnull
+    public static String getMatchingEnglishStr(String str) {
+        AssertUtils.notBlank(str, "str");
+        final String regex = "[A-Za-z\\s]";
+        return getMatchingStr(str, regex);
+    }
+
+    @Nonnull
+    public static String getMatchingChineseStr(String str) {
+        AssertUtils.notBlank(str, "str");
+        final String regex = "[\\u2E80-\\u9FFF]";
+        return getMatchingStr(str, regex);
     }
 
 }
