@@ -25,6 +25,7 @@ checkstyle {
 ext {
 	swaggerVersion = "3.0.0"
 	jwtVersion = "0.10.7"
+	romeVersion = "1.18.0"
 
 }
 
@@ -53,6 +54,9 @@ dependencies {
 	// retry
 	implementation 'org.springframework.retry:spring-retry'
 	implementation 'org.springframework:spring-aspects'
+
+	// rss
+	implementation "com.rometools:rome:$romeVersion"
 
 //	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
