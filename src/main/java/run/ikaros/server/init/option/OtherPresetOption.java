@@ -12,6 +12,7 @@ public class OtherPresetOption implements PresetOption {
 
     private String customerGlobalHeader = "";
     private String statisticsCode = "";
+    private String mikanMySubscribeRssUrl = "";
 
     @Nonnull
     @Override
@@ -34,6 +35,15 @@ public class OtherPresetOption implements PresetOption {
 
     public OtherPresetOption setStatisticsCode(String statisticsCode) {
         this.statisticsCode = statisticsCode;
+        return this;
+    }
+
+    public String getMikanMySubscribeRssUrl() {
+        return mikanMySubscribeRssUrl;
+    }
+
+    public OtherPresetOption setMikanMySubscribeRssUrl(String mikanMySubscribeRssUrl) {
+        this.mikanMySubscribeRssUrl = mikanMySubscribeRssUrl;
         return this;
     }
 }

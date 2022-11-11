@@ -1,4 +1,4 @@
-package run.ikaros.server.qbittorrent.model;
+package run.ikaros.server.bt.qbittorrent.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

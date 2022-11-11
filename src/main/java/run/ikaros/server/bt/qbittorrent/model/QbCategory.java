@@ -1,4 +1,4 @@
-package run.ikaros.server.qbittorrent.model;
+package run.ikaros.server.bt.qbittorrent.model;
 
 public class QbCategory {
     private String name;
