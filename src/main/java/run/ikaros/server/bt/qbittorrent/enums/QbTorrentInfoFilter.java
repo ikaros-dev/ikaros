@@ -1,4 +1,4 @@
-package run.ikaros.server.qbittorrent.enums;
+package run.ikaros.server.bt.qbittorrent.enums;
 
 /**
  * @author li-guohao

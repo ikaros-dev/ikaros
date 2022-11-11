@@ -1,4 +1,4 @@
-package run.ikaros.server.qbittorrent;
+package run.ikaros.server.bt.qbittorrent;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,10 +21,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
-import run.ikaros.server.exceptions.RecordNotFoundException;
-import run.ikaros.server.qbittorrent.enums.QbTorrentInfoFilter;
-import run.ikaros.server.qbittorrent.model.QbCategory;
-import run.ikaros.server.qbittorrent.model.QbTorrentInfo;
+import run.ikaros.server.bt.qbittorrent.enums.QbTorrentInfoFilter;
+import run.ikaros.server.bt.qbittorrent.model.QbCategory;
+import run.ikaros.server.bt.qbittorrent.model.QbTorrentInfo;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;

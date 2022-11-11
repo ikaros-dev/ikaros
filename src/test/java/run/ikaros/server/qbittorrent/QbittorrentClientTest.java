@@ -2,15 +2,12 @@ package run.ikaros.server.qbittorrent;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -19,20 +16,17 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import run.ikaros.server.bt.qbittorrent.QbittorrentClient;
 import run.ikaros.server.common.UnitTestConst;
-import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
-import run.ikaros.server.qbittorrent.enums.QbTorrentInfoFilter;
-import run.ikaros.server.qbittorrent.model.QbCategory;
-import run.ikaros.server.qbittorrent.model.QbTorrentInfo;
+import run.ikaros.server.bt.qbittorrent.enums.QbTorrentInfoFilter;
+import run.ikaros.server.bt.qbittorrent.model.QbCategory;
+import run.ikaros.server.bt.qbittorrent.model.QbTorrentInfo;
 import run.ikaros.server.utils.FileUtils;
-import run.ikaros.server.utils.JsonUtils;
-import run.ikaros.server.utils.RegexUtils;
 
 /**
  * @author li-guohao
