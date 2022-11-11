@@ -26,7 +26,7 @@ ext {
 	swaggerVersion = "3.0.0"
 	jwtVersion = "0.10.7"
 	romeVersion = "1.18.0"
-
+	jsoupVersion = "1.15.3"
 }
 
 dependencies {
@@ -57,6 +57,8 @@ dependencies {
 
 	// rss
 	implementation "com.rometools:rome:$romeVersion"
+	implementation "org.jsoup:jsoup:$jsoupVersion"
+
 
 //	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
