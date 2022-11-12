@@ -19,6 +19,7 @@ import run.ikaros.server.service.SeasonService;
 import run.ikaros.server.service.TaskService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.FileUtils;
+import run.ikaros.server.utils.RegexUtils;
 import run.ikaros.server.utils.SystemVarUtils;
 
 import java.io.File;
@@ -165,6 +166,8 @@ public class TaskServiceImpl implements TaskService {
             jellyfinMediaDir.mkdirs();
         }
         String fileName = FileUtils.parseFileName(filePath);
+        Long seq = RegexUtils.getFileNameTagEpSeq(fileName);
+        fileName = "S1E" + seq + "-" + fileName;
         String jellyfinFilePath = jellyfinMediaDirPath + File.separatorChar + fileName;
 
         try {
