@@ -24,7 +24,6 @@ import run.ikaros.server.utils.RegexUtils;
 import run.ikaros.server.utils.SystemVarUtils;
 
 import java.io.File;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -129,11 +128,12 @@ public class TaskServiceImpl implements TaskService {
         AssertUtils.notBlank(filePath, "filePath");
         String postfix = FileUtils.parseFilePostfix(filePath);
         String uploadFilePath = FileUtils.buildAppUploadFilePath(postfix);
+        File uploadFile = new File(uploadFilePath);
         try {
-            if (Files.exists(Path.of(URI.create(uploadFilePath)))) {
+            if (uploadFile.exists()) {
                 return;
             }
-            Files.createLink(Path.of(URI.create(uploadFilePath)), Path.of(URI.create(filePath)));
+            Files.createLink(Path.of(uploadFile.toURI()), Path.of(new File(filePath).toURI()));
             LOGGER.debug("create file hard link success, link={}, exist={}",
                 uploadFilePath, filePath);
             String fileName = FileUtils.parseFileName(filePath);
@@ -156,8 +156,6 @@ public class TaskServiceImpl implements TaskService {
     private void createJellyfinFileHardLink(String torrentName, String filePath) {
         AssertUtils.notBlank(torrentName, "torrentName");
         AssertUtils.notBlank(filePath, "filePath");
-        // todo impl jellyfin dir hard link create
-        String postfix = FileUtils.parseFilePostfix(filePath);
         ThirdPartyPresetOption thirdPartyPresetOption =
             optionService.findPresetOption(new ThirdPartyPresetOption());
         String jellyfinMediaDirPath = thirdPartyPresetOption.getJellyfinMediaDirPath()
@@ -171,12 +169,13 @@ public class TaskServiceImpl implements TaskService {
         Long seq = RegexUtils.getFileNameTagEpSeq(fileName);
         fileName = "S1E" + seq + "-" + fileName;
         String jellyfinFilePath = jellyfinMediaDirPath + File.separatorChar + fileName;
+        File jellyfinFile = new File(jellyfinFilePath);
 
         try {
-            if (Files.exists(Path.of(URI.create(jellyfinFilePath)))) {
+            if (jellyfinFile.exists()) {
                 return;
             }
-            Files.createLink(Path.of(URI.create(jellyfinFilePath)), Path.of(URI.create(filePath)));
+            Files.createLink(Path.of(jellyfinFile.toURI()), Path.of(new File(filePath).toURI()));
             LOGGER.debug("create file hard link success, link={}, exist={}",
                 jellyfinFilePath, filePath);
 
