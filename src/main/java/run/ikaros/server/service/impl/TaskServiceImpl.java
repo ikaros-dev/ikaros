@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import run.ikaros.server.bt.qbittorrent.QbittorrentClient;
 import run.ikaros.server.bt.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.bt.qbittorrent.model.QbTorrentInfo;
+import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.init.option.ThirdPartyPresetOption;
@@ -160,7 +161,8 @@ public class TaskServiceImpl implements TaskService {
         ThirdPartyPresetOption thirdPartyPresetOption =
             optionService.findPresetOption(new ThirdPartyPresetOption());
         String jellyfinMediaDirPath = thirdPartyPresetOption.getJellyfinMediaDirPath()
-            + File.separatorChar + torrentName;
+            + File.separatorChar + RegexUtils.getMatchingEnglishStr(
+                torrentName.replaceAll(RegexConst.FILE_NAME_TAG, ""));
         File jellyfinMediaDir = new File(jellyfinMediaDirPath);
         if (!jellyfinMediaDir.exists()) {
             jellyfinMediaDir.mkdirs();
