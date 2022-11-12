@@ -25,7 +25,6 @@ import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -94,18 +93,12 @@ public class QbittorrentClient {
                     .anyMatch(qbCategory -> qbCategory.getName().equalsIgnoreCase(category));
             if (!exist) {
                 addNewCategory(category, categorySavePath);
+                LOGGER.debug("add new qbittorrent category: {}, savePath: {}",
+                    category, categorySavePath);
             }
-            LOGGER.debug("add new qbittorrent category: {}, savePath: {}",
-                category, categorySavePath);
         } catch (Exception exception) {
             LOGGER.warn("operate fail for add qbittorrent category: {}", category, exception);
         }
-    }
-
-    @PreDestroy
-    public void removeQbittorrentCategory() {
-        removeCategories(List.of(category));
-        LOGGER.debug("remove qbittorrent category: {}", category);
     }
 
     public String getApplicationVersion() {
