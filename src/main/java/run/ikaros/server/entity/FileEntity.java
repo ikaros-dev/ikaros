@@ -1,9 +1,9 @@
 package run.ikaros.server.entity;
 
-import javax.persistence.Column;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.FileType;
-import run.ikaros.server.file.IkarosFile;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -29,7 +29,7 @@ public class FileEntity extends BaseEntity {
     private FileType type = FileType.UNKNOWN;
     private String md5;
     @Column(nullable = false)
-    private Integer size;
+    private Integer size = -1;
 
     @Enumerated(EnumType.STRING)
     private FilePlace place = FilePlace.LOCAL;
