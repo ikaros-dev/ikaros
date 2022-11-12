@@ -9,6 +9,7 @@ import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.SeasonType;
+import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.exceptions.SeasonEpisodeMatchingFailException;
 import run.ikaros.server.model.dto.EpisodeDTO;
 import run.ikaros.server.model.dto.SeasonDTO;
@@ -141,10 +142,21 @@ public class SeasonServiceImpl
         SeasonEntity seasonEntity = null;
         // 根据文件名称英文查询 如未查到则根据中文查询
         String fileName = originalFileName.replaceAll(RegexConst.FILE_NAME_TAG, "");
-        String englishName = RegexUtils.getMatchingEnglishStr(fileName);
+        String title = null;
+        try {
+            title = RegexUtils.getMatchingEnglishStr(fileName);
+        } catch (RegexMatchingException matchingException) {
+            try {
+                title = RegexUtils.getMatchingChineseStr(fileName);
+            } catch (RegexMatchingException exception) {
+                String msg = "matching fail, skip for fileName=" + originalFileName;
+                LOGGER.warn(msg, exception);
+                return;
+            }
+        }
 
         Optional<SeasonEntity> seasonEntityOptional =
-            seasonRepository.findOne(Example.of(new SeasonEntity().setTitle(englishName)));
+            seasonRepository.findOne(Example.of(new SeasonEntity().setTitle(title)));
         if (seasonEntityOptional.isEmpty()) {
             String chineseName = RegexUtils.getMatchingChineseStr(fileName);
             Optional<SeasonEntity> chineseSeasonEntityOptional =

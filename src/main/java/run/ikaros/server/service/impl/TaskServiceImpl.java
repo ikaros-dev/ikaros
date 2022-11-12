@@ -162,8 +162,8 @@ public class TaskServiceImpl implements TaskService {
         String jellyfinMediaDirPath = thirdPartyPresetOption.getJellyfinMediaDirPath()
             + File.separatorChar + RegexUtils.getMatchingEnglishStr(
                 torrentName.replaceAll(RegexConst.FILE_NAME_TAG, ""));
-        jellyfinMediaDirPath.replace("AAC", "");
-        jellyfinMediaDirPath.replace("AVCmp", "");
+        jellyfinMediaDirPath = jellyfinMediaDirPath.replace("AAC", "");
+        jellyfinMediaDirPath = jellyfinMediaDirPath.replace("AVCmp", "");
         File jellyfinMediaDir = new File(jellyfinMediaDirPath);
         if (!jellyfinMediaDir.exists()) {
             jellyfinMediaDir.mkdirs();
