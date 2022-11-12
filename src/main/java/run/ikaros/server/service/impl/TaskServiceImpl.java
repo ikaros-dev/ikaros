@@ -25,7 +25,6 @@ import run.ikaros.server.utils.SystemVarUtils;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -133,9 +132,11 @@ public class TaskServiceImpl implements TaskService {
             if (uploadFile.exists()) {
                 return;
             }
-            Files.createLink(Path.of(uploadFile.toURI()), Path.of(new File(filePath).toURI()));
-            LOGGER.debug("create file hard link success, link={}, exist={}",
-                uploadFilePath, filePath);
+//            Files.createLink(Path.of(uploadFile.toURI()), Path.of(new File(filePath).toURI()));
+//            LOGGER.debug("create file hard link success, link={}, exist={}",
+//                uploadFilePath, filePath);
+            Files.copy(new File(filePath).toPath(), uploadFile.toPath());
+            LOGGER.debug("copy file success, source={}, target={}", filePath, uploadFilePath);
             String fileName = FileUtils.parseFileName(filePath);
 
             FileEntity fileEntity = fileService.save(new FileEntity()
@@ -161,6 +162,8 @@ public class TaskServiceImpl implements TaskService {
         String jellyfinMediaDirPath = thirdPartyPresetOption.getJellyfinMediaDirPath()
             + File.separatorChar + RegexUtils.getMatchingEnglishStr(
                 torrentName.replaceAll(RegexConst.FILE_NAME_TAG, ""));
+        jellyfinMediaDirPath.replace("AAC", "");
+        jellyfinMediaDirPath.replace("AVCmp", "");
         File jellyfinMediaDir = new File(jellyfinMediaDirPath);
         if (!jellyfinMediaDir.exists()) {
             jellyfinMediaDir.mkdirs();
@@ -175,9 +178,11 @@ public class TaskServiceImpl implements TaskService {
             if (jellyfinFile.exists()) {
                 return;
             }
-            Files.createLink(Path.of(jellyfinFile.toURI()), Path.of(new File(filePath).toURI()));
-            LOGGER.debug("create file hard link success, link={}, exist={}",
-                jellyfinFilePath, filePath);
+            Files.copy(new File(filePath).toPath(), jellyfinFile.toPath());
+            LOGGER.debug("copy file success, source={}, target={}", filePath, jellyfinFile);
+//            Files.createLink(Path.of(jellyfinFile.toURI()), Path.of(new File(filePath).toURI()));
+//            LOGGER.debug("create file hard link success, link={}, exist={}",
+//                jellyfinFilePath, filePath);
 
         } catch (Exception e) {
             LOGGER.error(
