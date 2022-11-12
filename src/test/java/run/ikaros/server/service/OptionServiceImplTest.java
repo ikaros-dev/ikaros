@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,11 +94,11 @@ class OptionServiceImplTest {
     @Test
     void findOptionByCategory() throws RecordNotFoundException {
 
-        OptionEntity optionEntity1
+        final OptionEntity optionEntity1
             = optionServiceImpl.saveOptionItem(new OptionItemDTO(buildStr(), buildStr()));
-        OptionEntity optionEntity2
+        final OptionEntity optionEntity2
             = optionServiceImpl.saveOptionItem(new OptionItemDTO(buildStr(), buildStr()));
-        OptionEntity optionEntity3 = optionServiceImpl.saveOptionItem(
+        final OptionEntity optionEntity3 = optionServiceImpl.saveOptionItem(
             new OptionItemDTO(buildStr(), buildStr()).setCategory(OptionCategory.OTHER));
 
         List<OptionEntity> optionListByCategory =
@@ -133,7 +134,8 @@ class OptionServiceImplTest {
             assertNotNull(e);
         }
 
-        OptionItemDTO optionItemDTO = new OptionItemDTO(key, value).setCategory(OptionCategory.OTHER);
+        OptionItemDTO optionItemDTO =
+            new OptionItemDTO(key, value).setCategory(OptionCategory.OTHER);
         optionServiceImpl.saveOptionItem(optionItemDTO);
 
         OptionEntity searchOptionEntity =
@@ -144,7 +146,6 @@ class OptionServiceImplTest {
 
         optionServiceImpl.deleteOptionItemByKey(key);
     }
-
 
 
 }

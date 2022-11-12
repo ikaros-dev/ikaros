@@ -1,16 +1,6 @@
 package run.ikaros.server.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.management.Query;
-import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -18,11 +8,12 @@ import org.springframework.data.domain.Example;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 import run.ikaros.server.constants.IkarosCons;
 import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.entity.AnimeEntity;
@@ -36,10 +27,7 @@ import run.ikaros.server.model.bgmtv.BgmTvConstants;
 import run.ikaros.server.model.bgmtv.BgmTvEpisode;
 import run.ikaros.server.model.bgmtv.BgmTvEpisodeType;
 import run.ikaros.server.model.bgmtv.BgmTvPagingData;
-import run.ikaros.server.model.bgmtv.BgmTvSearchFilter;
-import run.ikaros.server.model.bgmtv.BgmTvSearchRequest;
 import run.ikaros.server.model.bgmtv.BgmTvSubject;
-import run.ikaros.server.model.bgmtv.BgmTvSubjectType;
 import run.ikaros.server.model.bgmtv.BgmTvTag;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.service.AnimeService;
@@ -54,6 +42,14 @@ import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.RegexUtils;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.UrlUtils;
+
+import javax.annotation.Nonnull;
+import javax.transaction.Transactional;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author guohao
@@ -103,11 +99,17 @@ public class BgmTvServiceImpl implements BgmTvService, InitializingBean {
         String bgmTvSubjectsUrl = thirdPartyPresetOption.getBangumiApiBase()
             + thirdPartyPresetOption.getBangumiApiSubjects() + "/" + subjectId;
 
-        ResponseEntity<BgmTvSubject> responseEntity = restTemplate
-            .exchange(bgmTvSubjectsUrl, HttpMethod.GET, new HttpEntity<>(null, headers),
-                BgmTvSubject.class);
-
-        return responseEntity.getBody();
+        try {
+            ResponseEntity<BgmTvSubject> responseEntity = restTemplate
+                .exchange(bgmTvSubjectsUrl, HttpMethod.GET, new HttpEntity<>(null, headers),
+                    BgmTvSubject.class);
+            return responseEntity.getBody();
+        } catch (HttpClientErrorException exception) {
+            if (exception.getStatusCode() == HttpStatus.NOT_FOUND) {
+                LOGGER.warn("subject not found for subjectId={}", subjectId);
+            }
+            return null;
+        }
     }
 
     @Retryable

@@ -1,9 +1,8 @@
 package run.ikaros.server.init.option;
 
-import javax.annotation.Nonnull;
-import run.ikaros.server.constants.OptionConst;
-import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.OptionCategory;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author li-guohao
@@ -12,7 +11,6 @@ public class OtherPresetOption implements PresetOption {
 
     private String customerGlobalHeader = "";
     private String statisticsCode = "";
-    private String mikanMySubscribeRssUrl = "";
 
     @Nonnull
     @Override
@@ -38,12 +36,4 @@ public class OtherPresetOption implements PresetOption {
         return this;
     }
 
-    public String getMikanMySubscribeRssUrl() {
-        return mikanMySubscribeRssUrl;
-    }
-
-    public OtherPresetOption setMikanMySubscribeRssUrl(String mikanMySubscribeRssUrl) {
-        this.mikanMySubscribeRssUrl = mikanMySubscribeRssUrl;
-        return this;
-    }
 }

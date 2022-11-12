@@ -1,10 +1,13 @@
 package run.ikaros.server.utils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +25,8 @@ class JsonUtilsTest {
 
         String json = JsonUtils.obj2Json(userList);
 
-        TypeReference<User[]> userTypeReference = new TypeReference<User[]>() {};
+        TypeReference<User[]> userTypeReference = new TypeReference<User[]>() {
+        };
         User[] users = JsonUtils.json2ObjArr(json, userTypeReference);
         assertNotNull(users);
         assertEquals(users.length, userList.size());

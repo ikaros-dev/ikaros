@@ -1,11 +1,12 @@
 package run.ikaros.server.service;
 
-import javax.annotation.Nonnull;
 import org.springframework.retry.annotation.Retryable;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.model.bgmtv.BgmTvSubject;
 import run.ikaros.server.model.dto.AnimeDTO;
-import run.ikaros.server.rss.mikan.model.MikanRssItem;
+
+import javax.annotation.Nonnull;
+import javax.transaction.Transactional;
 
 /**
  * @author li-guohao
@@ -19,6 +20,7 @@ public interface BgmTvService {
     FileEntity downloadCover(@Nonnull String url);
 
     @Nonnull
+    @Transactional(rollbackOn = Exception.class)
     AnimeDTO reqBgmtvSubject(@Nonnull Long subjectId);
 
     /**

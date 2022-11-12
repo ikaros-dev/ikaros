@@ -14,7 +14,8 @@ class MikanServiceImplTest {
 
     @Test
     void getAnimePageUrlByEpisodePageUrl() {
-        String episodePageUrl = "https://mikanani.me/Home/Episode/8c7074d6603f2da3fa48cbb1ae6cc1a9056d4d2e";
+        String episodePageUrl =
+            "https://mikanani.me/Home/Episode/8c7074d6603f2da3fa48cbb1ae6cc1a9056d4d2e";
         String animePageUrl = mikanService.getAnimePageUrlByEpisodePageUrl(episodePageUrl);
         Assertions.assertNotNull(animePageUrl);
     }
@@ -22,7 +23,8 @@ class MikanServiceImplTest {
     @Test
     void getBgmTvSubjectPageUrlByAnimePageUrl() {
         String animePageUrl = "https://mikanani.me/Home/Bangumi/2830";
-        String bgmTvSubjectPageUrl = mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
+        String bgmTvSubjectPageUrl =
+            mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
         Assertions.assertNotNull(bgmTvSubjectPageUrl);
     }
 }

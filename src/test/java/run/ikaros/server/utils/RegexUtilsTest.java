@@ -1,17 +1,11 @@
 package run.ikaros.server.utils;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import run.ikaros.server.constants.RegexConst;
-import run.ikaros.server.service.impl.BgmTvServiceImpl;
+
+import java.util.Set;
 
 /**
  * @author li-guohao

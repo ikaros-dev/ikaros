@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,8 @@ class RegexConstTest {
     void fileNameTagEpSeqRegex() {
         Set<String> strSet = new HashSet<>();
         String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][x265_flac_2aac].mkv";
-        Matcher tagMatcher = Pattern.compile(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE).matcher(fileName);
+        Matcher tagMatcher =
+            Pattern.compile(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE).matcher(fileName);
         while (tagMatcher.find()) {
             strSet.add(tagMatcher.group());
         }

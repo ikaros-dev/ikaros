@@ -1,8 +1,10 @@
 package run.ikaros.server.service;
 
-import java.util.List;
-import javax.annotation.Nonnull;
+import org.springframework.retry.annotation.Retryable;
 import run.ikaros.server.rss.mikan.model.MikanRssItem;
+
+import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * @author li-guohao
@@ -10,6 +12,7 @@ import run.ikaros.server.rss.mikan.model.MikanRssItem;
 public interface RssService {
 
     @Nonnull
+    @Retryable
     List<MikanRssItem> parseMikanMySubscribeRss(@Nonnull String mikanMySubscribeRssUrl);
 
 }
