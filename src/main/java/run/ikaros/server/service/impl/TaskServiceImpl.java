@@ -169,7 +169,7 @@ public class TaskServiceImpl implements TaskService {
                 uploadFilePath, downloadFilePath);
             String fileName = FileUtils.parseFileName(downloadFilePath);
 
-            FileEntity fileEntity = fileService.save(new FileEntity()
+            FileEntity fileEntity = fileService.create(new FileEntity()
                 .setPlace(FilePlace.LOCAL)
                 .setUrl(uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""))
                 .setName(fileName)

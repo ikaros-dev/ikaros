@@ -3,6 +3,7 @@ package run.ikaros.server.service.impl;
 import java.util.HashSet;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.FileType;
 import run.ikaros.server.service.FileService;
@@ -25,6 +26,7 @@ import run.ikaros.server.file.LocalIkarosFileHandler;
 import run.ikaros.server.params.SearchFilesParams;
 import run.ikaros.server.prop.IkarosProperties;
 import run.ikaros.server.repository.FileRepository;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,6 +44,7 @@ import java.util.Set;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -400,6 +403,28 @@ public class FileServiceImpl
                 .setType(FileUtils.parseTypeByPostfix(postfix));
 
             fileRepository.saveAndFlush(fileEntity);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public FileEntity create(@Nonnull FileEntity fileEntity) {
+        AssertUtils.notNull(fileEntity, "fileEntity");
+
+        String name = fileEntity.getName();
+        FileType type = fileEntity.getType();
+        FilePlace place = fileEntity.getPlace();
+        FileEntity existFileEntity =
+            fileRepository.findFileEntityByNameAndTypeAndPlace(name, type, place);
+        if (existFileEntity != null) {
+            if (existFileEntity.getStatus()) {
+                return existFileEntity;
+            } else {
+                existFileEntity.setStatus(true);
+                return existFileEntity;
+            }
+        } else {
+            return save(fileEntity);
         }
     }
 

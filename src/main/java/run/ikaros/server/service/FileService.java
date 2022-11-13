@@ -108,4 +108,7 @@ public interface FileService extends CrudService<FileEntity, Long> {
                 + "matching automatically, please config it manually, file name: " + originalName);
         }
     }
+
+    @Nonnull
+    FileEntity create(@Nonnull FileEntity fileEntity);
 }
