@@ -132,9 +132,6 @@ public class TaskServiceImpl implements TaskService {
             if (uploadFile.exists()) {
                 return;
             }
-//            Files.createLink(Path.of(uploadFile.toURI()), Path.of(new File(filePath).toURI()));
-//            LOGGER.debug("create file hard link success, link={}, exist={}",
-//                uploadFilePath, filePath);
             Files.copy(new File(filePath).toPath(), uploadFile.toPath());
             LOGGER.debug("copy file success, source={}, target={}", filePath, uploadFilePath);
             String fileName = FileUtils.parseFileName(filePath);
@@ -161,7 +158,7 @@ public class TaskServiceImpl implements TaskService {
             optionService.findPresetOption(new ThirdPartyPresetOption());
         String jellyfinMediaDirPath = thirdPartyPresetOption.getJellyfinMediaDirPath()
             + File.separatorChar + RegexUtils.getMatchingEnglishStr(
-                torrentName.replaceAll(RegexConst.FILE_NAME_TAG, ""));
+            torrentName.replaceAll(RegexConst.FILE_NAME_TAG, ""));
         jellyfinMediaDirPath = jellyfinMediaDirPath.replace("AAC", "");
         jellyfinMediaDirPath = jellyfinMediaDirPath.replace("AVCmp", "");
         File jellyfinMediaDir = new File(jellyfinMediaDirPath);
@@ -180,9 +177,6 @@ public class TaskServiceImpl implements TaskService {
             }
             Files.copy(new File(filePath).toPath(), jellyfinFile.toPath());
             LOGGER.debug("copy file success, source={}, target={}", filePath, jellyfinFile);
-//            Files.createLink(Path.of(jellyfinFile.toURI()), Path.of(new File(filePath).toURI()));
-//            LOGGER.debug("create file hard link success, link={}, exist={}",
-//                jellyfinFilePath, filePath);
 
         } catch (Exception e) {
             LOGGER.error(
