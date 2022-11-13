@@ -33,17 +33,18 @@ class RegexConstTest {
     @Test
     void fileTagRegex() {
         Set<String> strSet = new HashSet<>();
-        String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][x265_flac_2aac].mkv";
+        String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][ACC 1080p][x265_flac_2aac].mkv";
         Matcher tagMatcher = Pattern.compile(RegexConst.FILE_NAME_TAG).matcher(fileName);
         while (tagMatcher.find()) {
             strSet.add(tagMatcher.group());
         }
         Assertions.assertFalse(strSet.isEmpty());
-        Assertions.assertEquals(4, strSet.size());
+        Assertions.assertEquals(5, strSet.size());
         Assertions.assertTrue(strSet.contains("[VCB-Studio]"));
         Assertions.assertTrue(strSet.contains("[01]"));
         Assertions.assertTrue(strSet.contains("[Ma10p_1080p]"));
         Assertions.assertTrue(strSet.contains("[x265_flac_2aac]"));
+        Assertions.assertTrue(strSet.contains("[ACC 1080p]"));
     }
 
     @Test

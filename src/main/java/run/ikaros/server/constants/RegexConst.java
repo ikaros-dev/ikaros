@@ -14,7 +14,7 @@ public interface RegexConst {
 
     String FILE_NAME_TAG_EPISODE_SEQUENCE = "[0-9]{1,2}";
     String FILE_NAME_TAG_EPISODE_SEQUENCE_WITH_BRACKETS = "\\[[0-9]{1,2}\\]";
-    String FILE_NAME_TAG = "\\[[A-Za-z0-9_-]+\\]";
+    String FILE_NAME_TAG = "\\[[^\\[^\\]]+\\]";
     String FILE_POSTFIX = "\\.[A-Za-z0-9_-]+$";
     String NUMBER_EPISODE_SEQUENCE = "[0-9]{1,2}";
 
