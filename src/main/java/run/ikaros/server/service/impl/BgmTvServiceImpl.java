@@ -44,6 +44,7 @@ import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.UrlUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -147,7 +148,7 @@ public class BgmTvServiceImpl implements BgmTvService, InitializingBean {
         return fileService.upload(originalFileName, bytes);
     }
 
-    @Nonnull
+    @Nullable
     @Override
     public AnimeDTO reqBgmtvSubject(@Nonnull Long subjectId) {
         AssertUtils.isPositive(subjectId, "subjectId");

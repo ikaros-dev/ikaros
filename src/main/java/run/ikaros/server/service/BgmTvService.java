@@ -6,6 +6,7 @@ import run.ikaros.server.model.bgmtv.BgmTvSubject;
 import run.ikaros.server.model.dto.AnimeDTO;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 /**
@@ -19,7 +20,7 @@ public interface BgmTvService {
     @Retryable
     FileEntity downloadCover(@Nonnull String url);
 
-    @Nonnull
+    @Nullable
     @Transactional(rollbackOn = Exception.class)
     AnimeDTO reqBgmtvSubject(@Nonnull Long subjectId);
 

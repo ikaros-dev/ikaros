@@ -22,12 +22,12 @@ public class ScheduledTaskConfig {
 
     @Scheduled(cron = "0 */30 * * * ?")
     public void halfHourOnceTask() {
-        //taskService.pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
+        taskService.pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
+        taskService.searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode();
     }
 
-    @Scheduled(cron = "0 */5 * * * ?")
+    //@Scheduled(cron = "0 */5 * * * ?")
     public void fiveMinuteOnceTask() {
-        //taskService.searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode();
     }
 
 }

@@ -8,11 +8,14 @@ import run.ikaros.server.bt.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.bt.qbittorrent.model.QbTorrentInfo;
 import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.entity.FileEntity;
+import run.ikaros.server.entity.MikanEpUrlBgmTvSubjectIdEntity;
 import run.ikaros.server.enums.FilePlace;
+import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.init.option.ThirdPartyPresetOption;
 import run.ikaros.server.rss.mikan.model.MikanRssItem;
 import run.ikaros.server.service.BgmTvService;
 import run.ikaros.server.service.FileService;
+import run.ikaros.server.service.MikanEpUrlBgmTvSubjectIdService;
 import run.ikaros.server.service.MikanService;
 import run.ikaros.server.service.OptionService;
 import run.ikaros.server.service.RssService;
@@ -21,13 +24,15 @@ import run.ikaros.server.service.TaskService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.FileUtils;
 import run.ikaros.server.utils.RegexUtils;
+import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.SystemVarUtils;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -43,12 +48,14 @@ public class TaskServiceImpl implements TaskService {
     private final BgmTvService bgmTvService;
     private final FileService fileService;
     private final SeasonService seasonService;
+    private final MikanEpUrlBgmTvSubjectIdService mikanEpUrlBgmTvSubjectIdService;
     private final QbittorrentClient qbittorrentClient;
     private Set<String> hasHandledTorrentHashSet = new HashSet<>();
 
     public TaskServiceImpl(RssService rssService, OptionService optionService,
                            MikanService mikanService, BgmTvService bgmTvService,
                            FileService fileService, SeasonService seasonService,
+                           MikanEpUrlBgmTvSubjectIdService mikanEpUrlBgmTvSubjectIdService,
                            QbittorrentClient qbittorrentClient) {
         this.rssService = rssService;
         this.optionService = optionService;
@@ -56,6 +63,7 @@ public class TaskServiceImpl implements TaskService {
         this.bgmTvService = bgmTvService;
         this.fileService = fileService;
         this.seasonService = seasonService;
+        this.mikanEpUrlBgmTvSubjectIdService = mikanEpUrlBgmTvSubjectIdService;
         this.qbittorrentClient = qbittorrentClient;
     }
 
@@ -72,15 +80,33 @@ public class TaskServiceImpl implements TaskService {
             String episodePageUrl = mikanRssItem.getEpisodePageUrl();
             qbittorrentClient.addTorrentFromUrl(mikanRssItem.getTorrentUrl());
 
-            String animePageUrl =
-                mikanService.getAnimePageUrlByEpisodePageUrl(episodePageUrl);
-            String bgmTvSubjectPageUrl =
-                mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
+            Long bgmtvSubjectId = null;
+            if (mikanEpUrlBgmTvSubjectIdService.existsByMikanEpisodeUrl(episodePageUrl)) {
+                MikanEpUrlBgmTvSubjectIdEntity mikanEpUrlBgmTvSubjectIdEntity =
+                    mikanEpUrlBgmTvSubjectIdService.findByMikanEpisodeUrl(episodePageUrl);
+                AssertUtils.notNull(mikanEpUrlBgmTvSubjectIdEntity,
+                    "mikanEpUrlBgmTvSubjectIdEntity");
+                bgmtvSubjectId = mikanEpUrlBgmTvSubjectIdEntity.getBgmtvSubjectId();
+                LOGGER.debug("find exist relation for mikan ep url and bgmtv subject id, "
+                    + "episodePageUrl={}, bgmtvSubjectId={}", episodePageUrl, bgmtvSubjectId);
+            } else {
+                String animePageUrl =
+                    mikanService.getAnimePageUrlByEpisodePageUrl(episodePageUrl);
+                String bgmTvSubjectPageUrl =
+                    mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
 
-            String bgmTvSubjectId =
-                bgmTvSubjectPageUrl.substring(bgmTvSubjectPageUrl.lastIndexOf("/") + 1);
+                String bgmTvSubjectIdStr =
+                    bgmTvSubjectPageUrl.substring(bgmTvSubjectPageUrl.lastIndexOf("/") + 1);
 
-            bgmTvService.reqBgmtvSubject(Long.valueOf(bgmTvSubjectId));
+                bgmtvSubjectId = Long.valueOf(bgmTvSubjectIdStr);
+
+                mikanEpUrlBgmTvSubjectIdService.save(
+                    new MikanEpUrlBgmTvSubjectIdEntity(episodePageUrl, bgmtvSubjectId));
+                LOGGER.debug("save new relation for mikan ep url and bgmtv subject id, "
+                    + "episodePageUrl={}, bgmtvSubjectId={}", episodePageUrl, bgmtvSubjectId);
+            }
+
+            bgmTvService.reqBgmtvSubject(bgmtvSubjectId);
         }
 
         // 如果新添加的种子文件状态是缺失文件，则需要再恢复下
@@ -132,15 +158,14 @@ public class TaskServiceImpl implements TaskService {
 
         // qbittorrent download path => ikaros app download path
         // /downloads/xxx => /opt/ikaros/downloads/xxx
-        downloadFilePath = SystemVarUtils.getCurrentAppDirPath()
-            + File.separatorChar + downloadFilePath;
+        downloadFilePath = addPrefixForQbittorrentDownloadPath(downloadFilePath);
 
         try {
             if (uploadFile.exists()) {
                 return;
             }
             Files.createLink(uploadFile.toPath(), new File(downloadFilePath).toPath());
-            LOGGER.debug("copy file hard link success, link={}, existing={}",
+            LOGGER.debug("copy server file hard link success, link={}, existing={}",
                 uploadFilePath, downloadFilePath);
             String fileName = FileUtils.parseFileName(downloadFilePath);
 
@@ -151,35 +176,61 @@ public class TaskServiceImpl implements TaskService {
                 .setType(FileUtils.parseTypeByPostfix(postfix)));
 
             seasonService.updateEpisodeUrlByFileEntity(fileEntity);
+        } catch (RegexMatchingException regexMatchingException) {
+            LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
         } catch (Exception e) {
             LOGGER.error(
-                "create file hard link fail, "
+                "create server file hard link fail, "
                     + "please let qbittorrent and ikaros instance in the same file system",
                 e);
         }
     }
 
-    private void createJellyfinFileHardLink(String torrentName, String mediaFilePath) {
+    private static String addPrefixForQbittorrentDownloadPath(String downloadFilePath) {
+        return SystemVarUtils.getCurrentAppDirPath()
+            + (downloadFilePath.startsWith(String.valueOf(File.separatorChar))
+            ? downloadFilePath : (File.separatorChar + downloadFilePath));
+    }
+
+    private void createJellyfinFileHardLink(String torrentName, String downloadFilePath) {
         AssertUtils.notBlank(torrentName, "torrentName");
-        AssertUtils.notBlank(mediaFilePath, "mediaFilePath");
-        ThirdPartyPresetOption thirdPartyPresetOption =
+        AssertUtils.notBlank(downloadFilePath, "downloadFilePath");
+        downloadFilePath = addPrefixForQbittorrentDownloadPath(downloadFilePath);
+
+        final ThirdPartyPresetOption thirdPartyPresetOption =
             optionService.findPresetOption(new ThirdPartyPresetOption());
+
+        final String originalTorrentName = torrentName;
+
+        torrentName = torrentName.replaceAll(RegexConst.FILE_NAME_TAG, "");
+        torrentName = torrentName.replaceAll(RegexConst.FILE_POSTFIX, "");
+        torrentName = torrentName.replaceAll(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE, "");
+        torrentName = torrentName.replace("-", "");
+        torrentName = torrentName.trim();
+        if (StringUtils.isBlank(torrentName)) {
+            torrentName = originalTorrentName.trim();
+        }
+        String matchingEnglishStr = null;
+        try {
+            matchingEnglishStr = RegexUtils.getMatchingEnglishStr(torrentName);
+        } catch (RegexMatchingException regexMatchingException) {
+            LOGGER.warn("match fail", regexMatchingException);
+        }
         String jellyfinMediaDirPath = thirdPartyPresetOption.getJellyfinMediaDirPath()
-            + File.separatorChar + RegexUtils.getMatchingEnglishStr(
-            torrentName.replaceAll(RegexConst.FILE_NAME_TAG, ""));
-        jellyfinMediaDirPath = jellyfinMediaDirPath.replace("AAC", "");
-        jellyfinMediaDirPath = jellyfinMediaDirPath.replace("AVCmp", "");
+            + File.separatorChar
+            + (StringUtils.isBlank(matchingEnglishStr) ? torrentName : matchingEnglishStr);
 
         // jellyfin media path => ikaros app media path
         // /media/xxx => /opt/ikaros/media/xxx
-        mediaFilePath = SystemVarUtils.getCurrentAppDirPath()
-            + File.separatorChar + mediaFilePath;
+        jellyfinMediaDirPath = SystemVarUtils.getCurrentAppDirPath()
+            + (jellyfinMediaDirPath.startsWith("/")
+            ? jellyfinMediaDirPath : (File.separatorChar + jellyfinMediaDirPath));
 
         File jellyfinMediaDir = new File(jellyfinMediaDirPath);
         if (!jellyfinMediaDir.exists()) {
             jellyfinMediaDir.mkdirs();
         }
-        String fileName = FileUtils.parseFileName(mediaFilePath);
+        String fileName = FileUtils.parseFileName(downloadFilePath);
         Long seq = RegexUtils.getFileNameTagEpSeq(fileName);
         fileName = "S1E" + seq + "-" + fileName;
         String jellyfinFilePath = jellyfinMediaDirPath + File.separatorChar + fileName;
@@ -189,13 +240,15 @@ public class TaskServiceImpl implements TaskService {
             if (jellyfinFile.exists()) {
                 return;
             }
-            Files.createLink(jellyfinFile.toPath(), new File(mediaFilePath).toPath());
-            LOGGER.debug("copy file hard link success, link={}, existing={}",
-                jellyfinFilePath, mediaFilePath);
+            Files.createLink(jellyfinFile.toPath(), new File(downloadFilePath).toPath());
+            LOGGER.debug("copy jellyfin file hard link success, link={}, existing={}",
+                jellyfinFilePath, downloadFilePath);
 
+        } catch (RegexMatchingException regexMatchingException) {
+            LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
         } catch (Exception e) {
             LOGGER.error(
-                "create file hard link fail, please let qbittorrent and ikaros "
+                "create jellyfin file hard link fail, please let qbittorrent and ikaros "
                     + "and jellyfin instance in the same file system",
                 e);
         }
