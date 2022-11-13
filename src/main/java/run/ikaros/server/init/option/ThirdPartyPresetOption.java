@@ -20,7 +20,7 @@ public class ThirdPartyPresetOption implements PresetOption {
     /**
      * 要求jellyfin的目录和 ikaros在同一个文件系统下, 因为会创建文件硬链接。
      */
-    private String jellyfinMediaDirPath = "/media/ikaros";
+    private String jellyfinMediaDirPath = "/media";
 
     @Nonnull
     @Override

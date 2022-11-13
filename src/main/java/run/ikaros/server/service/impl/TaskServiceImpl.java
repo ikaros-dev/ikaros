@@ -25,6 +25,7 @@ import run.ikaros.server.utils.SystemVarUtils;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -122,19 +123,26 @@ public class TaskServiceImpl implements TaskService {
 
     }
 
-    private void createServerFileHardLink(String torrentName, String filePath) {
+    private void createServerFileHardLink(String torrentName, String downloadFilePath) {
         AssertUtils.notBlank(torrentName, "torrentName");
-        AssertUtils.notBlank(filePath, "filePath");
-        String postfix = FileUtils.parseFilePostfix(filePath);
+        AssertUtils.notBlank(downloadFilePath, "downloadFilePath");
+        String postfix = FileUtils.parseFilePostfix(downloadFilePath);
         String uploadFilePath = FileUtils.buildAppUploadFilePath(postfix);
         File uploadFile = new File(uploadFilePath);
+
+        // qbittorrent download path => ikaros app download path
+        // /downloads/xxx => /opt/ikaros/downloads/xxx
+        downloadFilePath = SystemVarUtils.getCurrentAppDirPath()
+            + File.separatorChar + downloadFilePath;
+
         try {
             if (uploadFile.exists()) {
                 return;
             }
-            Files.copy(new File(filePath).toPath(), uploadFile.toPath());
-            LOGGER.debug("copy file success, source={}, target={}", filePath, uploadFilePath);
-            String fileName = FileUtils.parseFileName(filePath);
+            Files.createLink(uploadFile.toPath(), new File(downloadFilePath).toPath());
+            LOGGER.debug("copy file hard link success, link={}, existing={}",
+                uploadFilePath, downloadFilePath);
+            String fileName = FileUtils.parseFileName(downloadFilePath);
 
             FileEntity fileEntity = fileService.save(new FileEntity()
                 .setPlace(FilePlace.LOCAL)
@@ -151,9 +159,9 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
-    private void createJellyfinFileHardLink(String torrentName, String filePath) {
+    private void createJellyfinFileHardLink(String torrentName, String mediaFilePath) {
         AssertUtils.notBlank(torrentName, "torrentName");
-        AssertUtils.notBlank(filePath, "filePath");
+        AssertUtils.notBlank(mediaFilePath, "mediaFilePath");
         ThirdPartyPresetOption thirdPartyPresetOption =
             optionService.findPresetOption(new ThirdPartyPresetOption());
         String jellyfinMediaDirPath = thirdPartyPresetOption.getJellyfinMediaDirPath()
@@ -161,11 +169,17 @@ public class TaskServiceImpl implements TaskService {
             torrentName.replaceAll(RegexConst.FILE_NAME_TAG, ""));
         jellyfinMediaDirPath = jellyfinMediaDirPath.replace("AAC", "");
         jellyfinMediaDirPath = jellyfinMediaDirPath.replace("AVCmp", "");
+
+        // jellyfin media path => ikaros app media path
+        // /media/xxx => /opt/ikaros/media/xxx
+        mediaFilePath = SystemVarUtils.getCurrentAppDirPath()
+            + File.separatorChar + mediaFilePath;
+
         File jellyfinMediaDir = new File(jellyfinMediaDirPath);
         if (!jellyfinMediaDir.exists()) {
             jellyfinMediaDir.mkdirs();
         }
-        String fileName = FileUtils.parseFileName(filePath);
+        String fileName = FileUtils.parseFileName(mediaFilePath);
         Long seq = RegexUtils.getFileNameTagEpSeq(fileName);
         fileName = "S1E" + seq + "-" + fileName;
         String jellyfinFilePath = jellyfinMediaDirPath + File.separatorChar + fileName;
@@ -175,8 +189,9 @@ public class TaskServiceImpl implements TaskService {
             if (jellyfinFile.exists()) {
                 return;
             }
-            Files.copy(new File(filePath).toPath(), jellyfinFile.toPath());
-            LOGGER.debug("copy file success, source={}, target={}", filePath, jellyfinFile);
+            Files.createLink(jellyfinFile.toPath(), new File(mediaFilePath).toPath());
+            LOGGER.debug("copy file hard link success, link={}, existing={}",
+                jellyfinFilePath, mediaFilePath);
 
         } catch (Exception e) {
             LOGGER.error(

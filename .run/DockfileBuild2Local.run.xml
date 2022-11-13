@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="IkarosDockfileLocalBuild" type="docker-deploy" factoryName="dockerfile" server-name="LocalHost">
+  <configuration default="false" name="DockfileBuild2Local" type="docker-deploy" factoryName="dockerfile" server-name="LocalHost">
     <deployment type="dockerfile">
       <settings>
         <option name="imageTag" value="ikaros:dev" />

@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="IkarosApplicationRun2LocalDocker" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="ACTIVE_PROFILES" />
+    <module name="ikaros.main" />
+    <target name="LocalDockerTarget" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="run.ikaros.server.IkarosApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
