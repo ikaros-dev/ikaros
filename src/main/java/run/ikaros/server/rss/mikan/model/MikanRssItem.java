@@ -9,6 +9,7 @@ package run.ikaros.server.rss.mikan.model;
 public class MikanRssItem {
     private String title;
     private String torrentUrl;
+    private String episodePageUrl;
 
     public String getTitle() {
         return title;
@@ -27,4 +28,14 @@ public class MikanRssItem {
         this.torrentUrl = torrentUrl;
         return this;
     }
+
+    public String getEpisodePageUrl() {
+        return episodePageUrl;
+    }
+
+    public MikanRssItem setEpisodePageUrl(String episodePageUrl) {
+        this.episodePageUrl = episodePageUrl;
+        return this;
+    }
+
 }

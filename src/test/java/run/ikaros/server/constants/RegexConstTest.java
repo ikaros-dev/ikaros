@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,8 @@ class RegexConstTest {
     void fileNameTagEpSeqRegex() {
         Set<String> strSet = new HashSet<>();
         String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][x265_flac_2aac].mkv";
-        Matcher tagMatcher = Pattern.compile(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE).matcher(fileName);
+        Matcher tagMatcher =
+            Pattern.compile(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE).matcher(fileName);
         while (tagMatcher.find()) {
             strSet.add(tagMatcher.group());
         }
@@ -31,17 +33,18 @@ class RegexConstTest {
     @Test
     void fileTagRegex() {
         Set<String> strSet = new HashSet<>();
-        String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][x265_flac_2aac].mkv";
+        String fileName = "[VCB-Studio] K-ON! [01][Ma10p_1080p][ACC 1080p][x265_flac_2aac].mkv";
         Matcher tagMatcher = Pattern.compile(RegexConst.FILE_NAME_TAG).matcher(fileName);
         while (tagMatcher.find()) {
             strSet.add(tagMatcher.group());
         }
         Assertions.assertFalse(strSet.isEmpty());
-        Assertions.assertEquals(4, strSet.size());
+        Assertions.assertEquals(5, strSet.size());
         Assertions.assertTrue(strSet.contains("[VCB-Studio]"));
         Assertions.assertTrue(strSet.contains("[01]"));
         Assertions.assertTrue(strSet.contains("[Ma10p_1080p]"));
         Assertions.assertTrue(strSet.contains("[x265_flac_2aac]"));
+        Assertions.assertTrue(strSet.contains("[ACC 1080p]"));
     }
 
     @Test

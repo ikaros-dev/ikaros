@@ -1,20 +1,5 @@
 package run.ikaros.server.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.Nonnull;
-import javax.persistence.Tuple;
-import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
@@ -24,6 +9,7 @@ import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.SeasonType;
+import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.exceptions.SeasonEpisodeMatchingFailException;
 import run.ikaros.server.model.dto.EpisodeDTO;
 import run.ikaros.server.model.dto.SeasonDTO;
@@ -36,6 +22,19 @@ import run.ikaros.server.service.base.AbstractCrudService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.JsonUtils;
+import run.ikaros.server.utils.RegexUtils;
+
+import javax.annotation.Nonnull;
+import javax.transaction.Transactional;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author li-guohao
@@ -134,6 +133,59 @@ public class SeasonServiceImpl
             }).collect(Collectors.toList()));
 
         return seasonDTO;
+    }
+
+    @Override
+    public void updateEpisodeUrlByFileEntity(@Nonnull FileEntity fileEntity) {
+        AssertUtils.notNull(fileEntity, "fileEntity");
+        String originalFileName = fileEntity.getName();
+        SeasonEntity seasonEntity = null;
+        // 根据文件名称英文查询 如未查到则根据中文查询
+        String fileName = originalFileName.replaceAll(RegexConst.FILE_NAME_TAG, "");
+        String title = null;
+        try {
+            title = RegexUtils.getMatchingEnglishStr(fileName);
+        } catch (RegexMatchingException matchingException) {
+            try {
+                title = RegexUtils.getMatchingChineseStr(fileName);
+            } catch (RegexMatchingException exception) {
+                String msg = "matching fail, skip for fileName=" + originalFileName;
+                LOGGER.warn(msg, exception);
+                return;
+            }
+        }
+
+        Optional<SeasonEntity> seasonEntityOptional =
+            seasonRepository.findOne(Example.of(new SeasonEntity().setTitle(title)));
+        if (seasonEntityOptional.isEmpty()) {
+            String chineseName = RegexUtils.getMatchingChineseStr(fileName);
+            Optional<SeasonEntity> chineseSeasonEntityOptional =
+                seasonRepository.findOne(Example.of(new SeasonEntity().setTitleCn(chineseName)));
+            seasonEntity = chineseSeasonEntityOptional.orElse(null);
+        } else {
+            seasonEntity = seasonEntityOptional.get();
+        }
+
+        if (seasonEntity == null) {
+            LOGGER.warn("matching season fail by file name={}", fileEntity.getName());
+            return;
+        }
+
+        Long seasonId = seasonEntity.getId();
+        List<EpisodeEntity> episodeEntityList = episodeService.findBySeasonId(seasonId);
+        Long seq = RegexUtils.getFileNameTagEpSeq(originalFileName);
+        Optional<EpisodeEntity> episodeEntityOptional = episodeEntityList.stream()
+            .filter(episodeEntity -> seq.equals(episodeEntity.getSeq()))
+            .findFirst();
+        if (episodeEntityOptional.isEmpty()) {
+            LOGGER.warn("matching episode fail for seasonId={}, fileUrl={}",
+                seasonId, fileEntity.getUrl());
+        }
+        EpisodeEntity episodeEntity = episodeEntityOptional.get();
+        episodeEntity.setUrl(fileEntity.getUrl());
+        episodeService.save(episodeEntity);
+        LOGGER.debug("update episode url by file entity success, originalFileName={}, newUrl={}",
+            originalFileName, fileEntity.getUrl());
     }
 
 

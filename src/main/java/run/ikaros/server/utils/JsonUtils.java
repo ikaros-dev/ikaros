@@ -5,10 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * json转换工具类
@@ -66,7 +67,7 @@ public class JsonUtils {
      * 转换JSON为对象数组
      *
      * @param json          json字符串
-     * @param typeReference 对象类型引用
+     * @param typeReference 对象类型引用, 如果指定User.class 则传入 User[] 即可
      * @param <T>           对象类型
      * @return 对象实例
      */
@@ -91,7 +92,7 @@ public class JsonUtils {
      * 对象转指定的类型数组
      *
      * @param obj           待转换的对象
-     * @param typeReference 对象类型引用
+     * @param typeReference 对象类型引用, 如果指定User.class 则传入 User[] 即可
      * @param <T>           对象类型
      * @return 对象实例
      */

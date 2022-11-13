@@ -1,12 +1,5 @@
 package run.ikaros.server.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import javax.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,11 +8,16 @@ import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.FileType;
 import run.ikaros.server.enums.SeasonType;
-import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.model.dto.EpisodeDTO;
 import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.params.SeasonMatchingEpParams;
 import run.ikaros.server.utils.StringUtils;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author li-guohao
@@ -62,13 +60,14 @@ class SeasonServiceTest {
                 .setType(FileType.VIDEO)
                 .setUrl((i + 1) + "")
                 .setSize(-1)
-                .setName("[VCB-Studio] Sora no Otoshimono II [" + (i + 1) +
-                    "][Hi10p_1080p][x264_2flac].mkv")
+                .setName("[VCB-Studio] Sora no Otoshimono II [" + (i + 1)
+                    + "][Hi10p_1080p][x264_2flac].mkv")
             );
             fileIdList.add(fileEntity.getId());
         }
 
-        Optional<EpisodeEntity> episodeEntityOptional = episodeService.fetchById(episodeIdList.get(0));
+        Optional<EpisodeEntity> episodeEntityOptional =
+            episodeService.fetchById(episodeIdList.get(0));
         Assertions.assertTrue(episodeEntityOptional.isPresent());
         Assertions.assertTrue(StringUtils.isBlank(episodeEntityOptional.get().getUrl()));
 

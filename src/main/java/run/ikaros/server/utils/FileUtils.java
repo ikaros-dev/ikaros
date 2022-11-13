@@ -18,7 +18,6 @@ import run.ikaros.server.exceptions.RuntimeIkarosException;
 
 /**
  * @author guohao
- * @date 2022/09/07
  */
 public class FileUtils {
 
@@ -41,7 +40,7 @@ public class FileUtils {
         SHA1("SHA1"),
         SHA256("SHA-256"),
         SHA512("SHA-512");
-        private String name;
+        private final String name;
 
         Hash(String name) {
             this.name = name;
@@ -133,8 +132,7 @@ public class FileUtils {
         String locationDirPath = BASE_UPLOAD_DIR_PATH
             + File.separator + uploadedTime.getYear()
             + File.separator + uploadedTime.getMonthValue()
-            + File.separator + uploadedTime.getDayOfMonth()
-            + File.separator + uploadedTime.getHour();
+            + File.separator + uploadedTime.getDayOfMonth();
 
         File locationDir = new File(locationDirPath);
         if (!locationDir.exists()) {

@@ -16,6 +16,7 @@ public class IkarosProperties {
     private String env;
     private String logLevel;
     private String serverPort;
+    private String qbittorrentBaseUrl;
 
     public IkarosProperties() {
     }
@@ -62,6 +63,15 @@ public class IkarosProperties {
 
     public IkarosProperties setServerPort(String serverPort) {
         this.serverPort = serverPort;
+        return this;
+    }
+
+    public String getQbittorrentBaseUrl() {
+        return qbittorrentBaseUrl;
+    }
+
+    public IkarosProperties setQbittorrentBaseUrl(String qbittorrentBaseUrl) {
+        this.qbittorrentBaseUrl = qbittorrentBaseUrl;
         return this;
     }
 }

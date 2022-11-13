@@ -1,15 +1,5 @@
 package run.ikaros.server.qbittorrent;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -21,12 +11,23 @@ import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.bt.qbittorrent.QbittorrentClient;
-import run.ikaros.server.common.UnitTestConst;
-import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.bt.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.bt.qbittorrent.model.QbCategory;
 import run.ikaros.server.bt.qbittorrent.model.QbTorrentInfo;
+import run.ikaros.server.common.UnitTestConst;
+import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.utils.FileUtils;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * @author li-guohao
@@ -134,7 +135,8 @@ class QbittorrentClientTest {
     @Disabled
     void addTorrentFromURLs() throws IOException, URISyntaxException {
         final String fileName = "Shinmai Renkinjutsushi no Tenpo Keiei";
-        URL url = ResourceUtils.getURL(ResourceUtils.CLASSPATH_URL_PREFIX + "qbittorrent/" + fileName);
+        URL url =
+            ResourceUtils.getURL(ResourceUtils.CLASSPATH_URL_PREFIX + "qbittorrent/" + fileName);
         List<String> urlList = Files.readAllLines(Path.of(url.toURI()), StandardCharsets.UTF_8);
         qbittorrentClient.addNewCategory(category, savePath);
         for (String src : urlList) {
@@ -186,47 +188,47 @@ class QbittorrentClientTest {
         List<QbTorrentInfo> updatedTorrentList =
             qbittorrentClient.getTorrentList(null, null, null, null, null, hash);
         QbTorrentInfo updatedQbTorrentInfo = updatedTorrentList.get(0);
-        Assertions.assertEquals(newFileName, FileUtils.parseFileName(updatedQbTorrentInfo.getContentPath()));
+        Assertions.assertEquals(newFileName,
+            FileUtils.parseFileName(updatedQbTorrentInfo.getContentPath()));
     }
 
     @Test
     @Disabled
     void resume() throws InterruptedException {
         QbTorrentInfo torrent = qbittorrentClient.getTorrent(hash);
-        String state = torrent.getState();
         qbittorrentClient.resume(hash);
         Thread.sleep(250);
         torrent = qbittorrentClient.getTorrent(hash);
-        state = torrent.getState();
+        String state = torrent.getState();
+        Assertions.assertNotNull(state);
     }
 
     @Test
     @Disabled
     void pause() throws InterruptedException {
         QbTorrentInfo torrent = qbittorrentClient.getTorrent(hash);
-        String state = torrent.getState();
         qbittorrentClient.pause(hash);
         Thread.sleep(1000);
         torrent = qbittorrentClient.getTorrent(hash);
-        state = torrent.getState();
+        String state = torrent.getState();
+        Assertions.assertNotNull(state);
     }
 
     @Test
     @Disabled
     void recheck() throws InterruptedException {
         QbTorrentInfo torrent = qbittorrentClient.getTorrent(hash);
-        String state = torrent.getState();
         qbittorrentClient.recheck(hash);
         Thread.sleep(1000);
         torrent = qbittorrentClient.getTorrent(hash);
-        state = torrent.getState();
+        String state = torrent.getState();
+        Assertions.assertNotNull(state);
     }
 
     @Test
     @Disabled
     void delete() throws InterruptedException {
         QbTorrentInfo torrent = qbittorrentClient.getTorrent(hash);
-        String state = torrent.getState();
         qbittorrentClient.delete(hash, true);
         Thread.sleep(1000);
         try {

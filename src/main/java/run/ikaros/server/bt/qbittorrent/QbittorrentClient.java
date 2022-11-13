@@ -1,39 +1,46 @@
 package run.ikaros.server.bt.qbittorrent;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.bt.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.bt.qbittorrent.model.QbCategory;
 import run.ikaros.server.bt.qbittorrent.model.QbTorrentInfo;
+import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
+
+import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)">WebUI-API-(qBittorrent-4.1)</a>
  */
 @Component
+@Retryable
 public class QbittorrentClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(QbittorrentClient.class);
+    private String category = "ikaros";
+    private String categorySavePath = "/downloads/ikaros/";
     private final RestTemplate restTemplate;
     /**
      * API前缀，例如：http://192.168.2.229:60101/api/v2/
@@ -56,7 +63,8 @@ public class QbittorrentClient {
         String TORRENTS_RECHECK = "/torrents/recheck";
     }
 
-    public QbittorrentClient(RestTemplate restTemplate, String prefix) {
+    public QbittorrentClient(RestTemplate restTemplate,
+                             @Value("${ikaros.qbittorrent-base-url}") String prefix) {
         this.restTemplate = restTemplate;
         // 如果最后一个字符是 / 则去掉
         if (prefix.charAt(prefix.length() - 1) == '/') {
@@ -65,9 +73,37 @@ public class QbittorrentClient {
         this.prefix = prefix;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public String getCategorySavePath() {
+        return categorySavePath;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    @PostConstruct
+    public void initQbittorrentCategory() {
+        try {
+            LOGGER.debug("prefix={}", prefix);
+            boolean exist = getAllCategories().stream()
+                    .anyMatch(qbCategory -> qbCategory.getName().equalsIgnoreCase(category));
+            if (!exist) {
+                addNewCategory(category, categorySavePath);
+                LOGGER.debug("add new qbittorrent category: {}, savePath: {}",
+                    category, categorySavePath);
+            }
+        } catch (Exception exception) {
+            LOGGER.warn("operate fail for add qbittorrent category: {}", category, exception);
+        }
+    }
+
     public String getApplicationVersion() {
         ResponseEntity<String> responseEntity
-            = restTemplate.getForEntity(prefix + API.APP_VERSION, String.class);
+                = restTemplate.getForEntity(prefix + API.APP_VERSION, String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
@@ -77,7 +113,7 @@ public class QbittorrentClient {
 
     public String getApiVersion() {
         ResponseEntity<String> responseEntity
-            = restTemplate.getForEntity(prefix + API.APP_API_VERSION, String.class);
+                = restTemplate.getForEntity(prefix + API.APP_API_VERSION, String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
@@ -91,8 +127,8 @@ public class QbittorrentClient {
         List<QbCategory> qbCategoryList = new ArrayList<>();
 
         HashMap<String, Object> categoryMap
-            = restTemplate.getForObject(prefix
-            + API.TORRENTS_GET_ALL_CATEGORIES, HashMap.class);
+                = restTemplate.getForObject(prefix
+                + API.TORRENTS_GET_ALL_CATEGORIES, HashMap.class);
 
         AssertUtils.notNull(categoryMap, "category map");
         categoryMap.forEach((key, value) -> {
@@ -103,7 +139,7 @@ public class QbittorrentClient {
             AssertUtils.notNull(category, "category map value");
             if (!String.valueOf(key).equalsIgnoreCase(category.getName())) {
                 LOGGER.warn("category map key != value's name, key={}, value={}",
-                    key, value);
+                        key, value);
             }
             qbCategoryList.add(category);
         });
@@ -180,7 +216,7 @@ public class QbittorrentClient {
      * @param prioritizeDownloadFirstLastPiece prioritize download first last piece
      * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-torrent">WebUI-API-(qBittorrent-4.1)#add-new-torrent</a>
      */
-    public void addTorrentFromURLs(@Nonnull String src,
+    public synchronized void addTorrentFromURLs(@Nonnull String src,
                                    @Nonnull String savepath,
                                    @Nonnull String category,
                                    String newName,
@@ -209,11 +245,17 @@ public class QbittorrentClient {
         }
         body.put("sequentialDownload", List.of(enableSequentialDownload ? "true" : "false"));
         body.put("firstLastPiecePrio",
-            List.of(prioritizeDownloadFirstLastPiece ? "true" : "false"));
+                List.of(prioritizeDownloadFirstLastPiece ? "true" : "false"));
 
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(body, headers);
 
         restTemplate.exchange(url, HttpMethod.POST, httpEntity, Void.class);
+    }
+
+    public void addTorrentFromUrl(@Nonnull String url) {
+        AssertUtils.notBlank(url, "url");
+        addTorrentFromURLs(url, categorySavePath, category, null, true,
+            false, false, true);
     }
 
     /**
@@ -258,13 +300,13 @@ public class QbittorrentClient {
         }
 
         ArrayList originalList =
-            restTemplate.getForObject(urlBuilder.toUriString(), ArrayList.class);
+                restTemplate.getForObject(urlBuilder.toUriString(), ArrayList.class);
         AssertUtils.notNull(originalList, "originalList");
 
         List<QbTorrentInfo> qbTorrentInfoList = new ArrayList<>(originalList.size());
         for (Object o : originalList) {
             QbTorrentInfo qbTorrentInfo
-                = JsonUtils.json2obj(JsonUtils.obj2Json(o), QbTorrentInfo.class);
+                    = JsonUtils.json2obj(JsonUtils.obj2Json(o), QbTorrentInfo.class);
             qbTorrentInfoList.add(qbTorrentInfo);
         }
 
@@ -300,8 +342,8 @@ public class QbittorrentClient {
         headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
 
         String body = "hash=" + hash + "&oldPath="
-            + URLEncoder.encode(oldFileName, StandardCharsets.UTF_8)
-            + "&newPath=" + URLEncoder.encode(newFileName, StandardCharsets.UTF_8);
+                + URLEncoder.encode(oldFileName, StandardCharsets.UTF_8)
+                + "&newPath=" + URLEncoder.encode(newFileName, StandardCharsets.UTF_8);
 
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 
@@ -362,7 +404,7 @@ public class QbittorrentClient {
         headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
 
         String body = "hashes=" + hashes
-            + "&deleteFiles=" + (deleteFiles ? "true" : "false");
+                + "&deleteFiles=" + (deleteFiles ? "true" : "false");
 
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 

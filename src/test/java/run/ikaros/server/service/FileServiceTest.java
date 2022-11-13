@@ -1,16 +1,19 @@
 package run.ikaros.server.service;
 
 import java.nio.file.Files;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import run.ikaros.server.common.UnitTestConst;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.SystemVarUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -64,12 +67,12 @@ class FileServiceTest {
         // 移除数据库的这个文件
         fileService.delete(fileEntity.getId());
         // 移除这个上传的文件
-        if(!Files.deleteIfExists(exceptFile.toPath())) {
+        if (!Files.deleteIfExists(exceptFile.toPath())) {
             Assertions.fail(UnitTestConst.PROCESS_SHOUT_NOT_RUN_THIS);
         }
 
         // 移除缓存目录对应的文件
-        if(! Files.deleteIfExists(cacheFile.toPath())) {
+        if (!Files.deleteIfExists(cacheFile.toPath())) {
             Assertions.fail(UnitTestConst.PROCESS_SHOUT_NOT_RUN_THIS);
         }
 

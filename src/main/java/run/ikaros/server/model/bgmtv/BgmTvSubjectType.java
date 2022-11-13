@@ -30,7 +30,12 @@ public enum BgmTvSubjectType {
     /**
      * 三次元
      */
-    REAL(6)
+    REAL(6),
+
+    /**
+     * 没有
+     */
+    NONE(5),
     ;
     private final int code;
 

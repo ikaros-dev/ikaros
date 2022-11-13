@@ -1,0 +1,30 @@
+package run.ikaros.server.service.impl;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.web.client.RestTemplate;
+import run.ikaros.server.service.MikanService;
+
+/**
+ * @author li-guohao
+ */
+class MikanServiceImplTest {
+    RestTemplate restTemplate = new RestTemplate();
+    MikanService mikanService = new MikanServiceImpl(restTemplate);
+
+    @Test
+    void getAnimePageUrlByEpisodePageUrl() {
+        String episodePageUrl =
+            "https://mikanani.me/Home/Episode/8c7074d6603f2da3fa48cbb1ae6cc1a9056d4d2e";
+        String animePageUrl = mikanService.getAnimePageUrlByEpisodePageUrl(episodePageUrl);
+        Assertions.assertNotNull(animePageUrl);
+    }
+
+    @Test
+    void getBgmTvSubjectPageUrlByAnimePageUrl() {
+        String animePageUrl = "https://mikanani.me/Home/Bangumi/2830";
+        String bgmTvSubjectPageUrl =
+            mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
+        Assertions.assertNotNull(bgmTvSubjectPageUrl);
+    }
+}

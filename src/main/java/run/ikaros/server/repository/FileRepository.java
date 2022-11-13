@@ -8,6 +8,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.Query;
+import run.ikaros.server.enums.FilePlace;
+import run.ikaros.server.enums.FileType;
+
+import javax.annotation.Nullable;
 
 /**
  * @author li-guohao
@@ -26,5 +30,10 @@ public interface FileRepository extends BaseRepository<FileEntity, Long> {
     Set<String> findPlaces();
 
     List<FileEntity> findByMd5(String md5);
+
+    FileEntity findFileEntityByNameAndType(String name, FileType type);
+
+
+    FileEntity findFileEntityByNameAndTypeAndPlace(String name, FileType type, FilePlace place);
 
 }
