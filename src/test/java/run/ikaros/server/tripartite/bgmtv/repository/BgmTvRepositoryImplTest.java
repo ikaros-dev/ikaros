@@ -59,18 +59,16 @@ class BgmTvRepositoryImplTest {
         ResponseEntity<BgmTvSubject> responseEntity = spy(new ResponseEntity<>(HttpStatus.OK));
         field(HttpEntity.class, "body").set(responseEntity, mockSubject);
 
-        doReturn(responseEntity)
-            .when(restTemplate)
-            .exchange(Mockito.anyString(), eq(HttpMethod.GET),
-                Mockito.any(HttpEntity.class), eq(BgmTvSubject.class));
+        doReturn(responseEntity).when(restTemplate)
+            .exchange(Mockito.anyString(), eq(HttpMethod.GET), Mockito.any(HttpEntity.class),
+                eq(BgmTvSubject.class));
 
         BgmTvSubject subject = bgmTvRepository.getSubject(subjectId);
         assertThat(subject).isNotNull();
         assertThat(subject).isEqualTo(mockSubject);
 
-        verify(restTemplate)
-            .exchange(Mockito.anyString(), eq(HttpMethod.GET),
-                Mockito.any(HttpEntity.class), eq(BgmTvSubject.class));
+        verify(restTemplate).exchange(Mockito.anyString(), eq(HttpMethod.GET),
+            Mockito.any(HttpEntity.class), eq(BgmTvSubject.class));
         verify(responseEntity).getBody();
     }
 
@@ -80,17 +78,15 @@ class BgmTvRepositoryImplTest {
 
         HttpClientErrorException httpClientErrorException =
             new HttpClientErrorException(HttpStatus.NOT_FOUND);
-        doThrow(httpClientErrorException)
-            .when(restTemplate)
-            .exchange(Mockito.anyString(), eq(HttpMethod.GET),
-                Mockito.any(HttpEntity.class), eq(BgmTvSubject.class));
+        doThrow(httpClientErrorException).when(restTemplate)
+            .exchange(Mockito.anyString(), eq(HttpMethod.GET), Mockito.any(HttpEntity.class),
+                eq(BgmTvSubject.class));
 
         BgmTvSubject subject = bgmTvRepository.getSubject(subjectId);
         assertThat(subject).isNull();
 
-        verify(restTemplate)
-            .exchange(Mockito.anyString(), eq(HttpMethod.GET),
-                Mockito.any(HttpEntity.class), eq(BgmTvSubject.class));
+        verify(restTemplate).exchange(Mockito.anyString(), eq(HttpMethod.GET),
+            Mockito.any(HttpEntity.class), eq(BgmTvSubject.class));
     }
 
     @Test
@@ -99,10 +95,9 @@ class BgmTvRepositoryImplTest {
 
         HttpClientErrorException exceptHttpClientErrorException =
             new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
-        doThrow(exceptHttpClientErrorException)
-            .when(restTemplate)
-            .exchange(Mockito.anyString(), eq(HttpMethod.GET),
-                Mockito.any(HttpEntity.class), eq(BgmTvSubject.class));
+        doThrow(exceptHttpClientErrorException).when(restTemplate)
+            .exchange(Mockito.anyString(), eq(HttpMethod.GET), Mockito.any(HttpEntity.class),
+                eq(BgmTvSubject.class));
 
         try {
             bgmTvRepository.getSubject(subjectId);
@@ -111,19 +106,18 @@ class BgmTvRepositoryImplTest {
             assertThat(exception).isEqualTo(exceptHttpClientErrorException);
         }
 
-        verify(restTemplate)
-            .exchange(Mockito.anyString(), eq(HttpMethod.GET),
-                Mockito.any(HttpEntity.class), eq(BgmTvSubject.class));
+        verify(restTemplate).exchange(Mockito.anyString(), eq(HttpMethod.GET),
+            Mockito.any(HttpEntity.class), eq(BgmTvSubject.class));
     }
 
-//        @Test
-//    void searchSubjectWithNextApi() {
-//        String keyword = "air";
-//        BgmTvPagingData<BgmTvSubject> bgmTvPagingData =
-//            bgmTvRepository.searchSubjectWithNextApi(keyword);
-//        assertThat(bgmTvPagingData.getTotal()).isPositive();
-//        assertThat(bgmTvPagingData.getData()).isNotEmpty();
-//    }
+    //        @Test
+    //    void searchSubjectWithNextApi() {
+    //        String keyword = "air";
+    //        BgmTvPagingData<BgmTvSubject> bgmTvPagingData =
+    //            bgmTvRepository.searchSubjectWithNextApi(keyword);
+    //        assertThat(bgmTvPagingData.getTotal()).isPositive();
+    //        assertThat(bgmTvPagingData.getData()).isNotEmpty();
+    //    }
 
     //        @Test
     void searchSubjectWithOldApi() {

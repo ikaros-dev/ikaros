@@ -75,7 +75,8 @@ public class BeanUtils {
             }
         }
 
-        if (!Object.class.getTypeName().equalsIgnoreCase(superclass.getTypeName())) {
+        Class<?> superPlusCls = superclass.getSuperclass();
+        if (superPlusCls != null && superPlusCls != Object.class) {
             throw new IllegalArgumentException(
                 "current kit method must can support two extend relation");
         }
