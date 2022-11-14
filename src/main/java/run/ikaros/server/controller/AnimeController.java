@@ -1,15 +1,14 @@
 package run.ikaros.server.controller;
 
 import java.util.List;
-import org.springframework.beans.factory.InitializingBean;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import run.ikaros.server.constants.AppConst;
 import run.ikaros.server.entity.AnimeEntity;
-import run.ikaros.server.service.AnimeService;
-import run.ikaros.server.service.ThemeService;
+import run.ikaros.server.core.service.AnimeService;
+import run.ikaros.server.core.service.ThemeService;
 
 /**
  * @author li-guohao

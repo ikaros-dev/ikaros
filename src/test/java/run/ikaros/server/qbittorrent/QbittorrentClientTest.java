@@ -10,11 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import run.ikaros.server.bt.qbittorrent.QbittorrentClient;
-import run.ikaros.server.bt.qbittorrent.enums.QbTorrentInfoFilter;
-import run.ikaros.server.bt.qbittorrent.model.QbCategory;
-import run.ikaros.server.bt.qbittorrent.model.QbTorrentInfo;
-import run.ikaros.server.common.UnitTestConst;
+import run.ikaros.server.tripartite.qbittorrent.QbittorrentClient;
+import run.ikaros.server.tripartite.qbittorrent.enums.QbTorrentInfoFilter;
+import run.ikaros.server.tripartite.qbittorrent.model.QbCategory;
+import run.ikaros.server.tripartite.qbittorrent.model.QbTorrentInfo;
+import run.ikaros.server.unittest.common.UnitTestConst;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.utils.FileUtils;
 

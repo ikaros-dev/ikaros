@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import run.ikaros.server.init.option.AppPresetOption;
-import run.ikaros.server.service.OptionService;
+import run.ikaros.server.core.service.OptionService;
 
 import javax.annotation.Resource;
 

@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import run.ikaros.server.result.CommonResult;
-import run.ikaros.server.service.TaskService;
+import run.ikaros.server.core.service.TaskService;
 
 @RestController
 @RequestMapping("/task")

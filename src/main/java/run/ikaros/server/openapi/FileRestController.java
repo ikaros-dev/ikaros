@@ -1,6 +1,6 @@
 package run.ikaros.server.openapi;
 
-import run.ikaros.server.service.FileService;
+import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.result.PagingWrap;

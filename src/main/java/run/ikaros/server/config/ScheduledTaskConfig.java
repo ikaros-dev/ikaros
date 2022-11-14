@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import run.ikaros.server.service.TaskService;
+import run.ikaros.server.core.service.TaskService;
 
 /**
  * @author li-guohao

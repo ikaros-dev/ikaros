@@ -2,8 +2,8 @@ package run.ikaros.server.service;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import run.ikaros.server.rss.mikan.model.MikanRssItem;
-import run.ikaros.server.service.impl.RssServiceImpl;
+import run.ikaros.server.core.service.RssService;
+import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 
 import java.util.List;
 
