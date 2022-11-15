@@ -1,0 +1,41 @@
+ikaros:
+  log-level: DEBUG
+  server-port: 9090
+  qbittorrent-base-url: http://192.168.2.135:9091/api/v2/
+
+spring:
+  datasource:
+
+    #    # H2 database configuration.
+    #    driver-class-name: org.h2.Driver
+    #    url: jdbc:h2:file:./build/db/ikaros;AUTO_SERVER=TRUE
+    #    username: admin
+    #    password: 123456
+
+    # mariadb database configuration.
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://192.168.2.135:3306/ikaros
+    username: root
+    password: 123456
+
+  #  h2:
+  #    console:
+  #      settings:
+  #        web-allow-others: false
+  #      path: /h2-console
+  #      enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    open-in-view: false
+
+  thymeleaf:
+    cache: false
+
+logging:
+  file:
+    name: ./build/logs/ikaros.log
+
+
