@@ -38,8 +38,7 @@ class QbittorrentClientTest {
 
     static String prefix = "http://192.168.2.229:60101/api/v2";
     static final String hash = "42b6ca3fa47fa5435ad69ce67fd7611237bdec5a";
-    static RestTemplate restTemplate = new RestTemplate();
-    static QbittorrentClient qbittorrentClient = new QbittorrentClient(restTemplate, prefix);
+    static QbittorrentClient qbittorrentClient = new QbittorrentClient(prefix);
     static final String category = "unittest";
     static final String savePath = "/downloads/unittest";
 

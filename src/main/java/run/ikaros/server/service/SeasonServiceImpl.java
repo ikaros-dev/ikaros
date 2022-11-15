@@ -4,7 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
-import run.ikaros.server.constants.RegexConst;
+import run.ikaros.server.core.repository.SeasonRepository;
+import run.ikaros.server.core.service.EpisodeService;
+import run.ikaros.server.core.service.FileService;
+import run.ikaros.server.core.service.SeasonService;
 import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
@@ -14,10 +17,6 @@ import run.ikaros.server.exceptions.SeasonEpisodeMatchingFailException;
 import run.ikaros.server.model.dto.EpisodeDTO;
 import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.params.SeasonMatchingEpParams;
-import run.ikaros.server.core.repository.SeasonRepository;
-import run.ikaros.server.core.service.EpisodeService;
-import run.ikaros.server.core.service.FileService;
-import run.ikaros.server.core.service.SeasonService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.JsonUtils;
@@ -140,13 +139,12 @@ public class SeasonServiceImpl
         String originalFileName = fileEntity.getName();
         SeasonEntity seasonEntity = null;
         // 根据文件名称英文查询 如未查到则根据中文查询
-        String fileName = originalFileName.replaceAll(RegexConst.FILE_NAME_TAG, "");
         String title = null;
         try {
-            title = RegexUtils.getMatchingEnglishStr(fileName);
+            title = RegexUtils.getMatchingChineseStrWithoutTag(originalFileName);
         } catch (RegexMatchingException matchingException) {
             try {
-                title = RegexUtils.getMatchingChineseStr(fileName);
+                title = RegexUtils.getMatchingChineseStrWithoutTag(originalFileName);
             } catch (RegexMatchingException exception) {
                 String msg = "matching fail, skip for fileName=" + originalFileName;
                 LOGGER.warn(msg, exception);
@@ -157,7 +155,7 @@ public class SeasonServiceImpl
         Optional<SeasonEntity> seasonEntityOptional =
             seasonRepository.findOne(Example.of(new SeasonEntity().setTitle(title)));
         if (seasonEntityOptional.isEmpty()) {
-            String chineseName = RegexUtils.getMatchingChineseStr(fileName);
+            String chineseName = RegexUtils.getMatchingChineseStrWithoutTag(originalFileName);
             Optional<SeasonEntity> chineseSeasonEntityOptional =
                 seasonRepository.findOne(Example.of(new SeasonEntity().setTitleCn(chineseName)));
             seasonEntity = chineseSeasonEntityOptional.orElse(null);

@@ -58,7 +58,6 @@ public class AnimeServiceImpl
 
     public AnimeEntity save(AnimeEntity animeEntity) {
         AssertUtils.notNull(animeEntity, "animeEntity");
-        AssertUtils.notNull(animeEntity.getAirTime(), "airTime");
         AssertUtils.notBlank(animeEntity.getTitle(), "title");
 
         animeEntity = animeRepository.saveAndFlush(animeEntity);

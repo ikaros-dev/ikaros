@@ -1,5 +1,7 @@
 package run.ikaros.server.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.exceptions.RegexMatchingException;
 
@@ -18,6 +20,7 @@ import java.util.stream.Stream;
  * @author li-guohao
  */
 public class RegexUtils {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegexUtils.class);
 
     @Nonnull
     public static String getFilePostfix(@Nonnull String fileName) {
@@ -124,8 +127,34 @@ public class RegexUtils {
     }
 
     @Nonnull
+    public static String getMatchingEnglishStrWithoutTag(String str) {
+        AssertUtils.notBlank(str, "str");
+        final String originalStr = str;
+        str = str.replaceAll(RegexConst.FILE_NAME_TAG, "");
+        if (StringUtils.isBlank(str)) {
+            LOGGER.warn("str is blank after remove file tag, originalStr={}", originalStr);
+            return str;
+        }
+        final String regex = "[A-Za-z\\s]";
+        return getMatchingStr(str, regex);
+    }
+
+    @Nonnull
     public static String getMatchingChineseStr(String str) {
         AssertUtils.notBlank(str, "str");
+        final String regex = "[\\u2E80-\\u9FFF]";
+        return getMatchingStr(str, regex);
+    }
+
+    @Nonnull
+    public static String getMatchingChineseStrWithoutTag(String str) {
+        AssertUtils.notBlank(str, "str");
+        final String originalStr = str;
+        str = str.replaceAll(RegexConst.FILE_NAME_TAG, "");
+        if (StringUtils.isBlank(str)) {
+            LOGGER.warn("str is blank after remove file tag, originalStr={}", originalStr);
+            return str;
+        }
         final String regex = "[\\u2E80-\\u9FFF]";
         return getMatchingStr(str, regex);
     }

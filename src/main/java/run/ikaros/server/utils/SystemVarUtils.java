@@ -5,6 +5,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,13 @@ public class SystemVarUtils {
     }
 
     public static String getOsCacheDirPath() {
-        return System.getProperty("java.io.tmpdir") + File.separator + "ikaros";
+        String ikarosCacheFileDir =
+            System.getProperty("java.io.tmpdir") + File.separator + "ikaros";
+        File file = new File(ikarosCacheFileDir);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        return ikarosCacheFileDir;
     }
 
     public static String getIPAddress() {

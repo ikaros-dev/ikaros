@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Mikan Project - 我的番组</title>
+        <link>http://mikanani.me/RSS/MyBangumi?token={token}</link>
+        <description>Mikan Project - 我的番组</description>
+        <item>
+            <guid isPermaLink="false">[豌豆字幕组&amp;风之圣殿字幕组&amp;LoliHouse] 电锯人 / 链锯人 / Chainsaw Man - 05 [WebRip 1080p HEVC-10bit AAC][简繁外挂字幕]</guid>
+            <link>https://mikanani.me/Home/Episode/02c8ef3a8461a0b3d9d6ad0176077ce72f25a891</link>
+            <title>[豌豆字幕组&amp;风之圣殿字幕组&amp;LoliHouse] 电锯人 / 链锯人 / Chainsaw Man - 05 [WebRip 1080p HEVC-10bit AAC][简繁外挂字幕]</title>
+            <description>[豌豆字幕组&amp;风之圣殿字幕组&amp;LoliHouse] 电锯人 / 链锯人 / Chainsaw Man - 05 [WebRip 1080p HEVC-10bit AAC][简繁外挂字幕][536.62 MB]</description>
+            <torrent xmlns="https://mikanani.me/0.1/">
+                <link>https://mikanani.me/Home/Episode/02c8ef3a8461a0b3d9d6ad0176077ce72f25a891</link>
+                <contentLength>562686848</contentLength>
+                <pubDate>2022-11-09T12:54:26.125</pubDate>
+            </torrent>
+            <enclosure type="application/x-bittorrent" length="562686848" url="https://mikanani.me/Download/20221109/02c8ef3a8461a0b3d9d6ad0176077ce72f25a891.torrent" />
+        </item>
+    </channel>
+</rss>

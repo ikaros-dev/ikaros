@@ -109,12 +109,18 @@ public class BgmTvServiceImpl implements BgmTvService {
             animeEntity
                 .setBgmtvId(subjectId)
                 .setCoverUrl(coverFileEntity.getUrl())
-                .setAirTime(
-                    DateUtils.parseDateStr(bgmTvSubject.getDate(), BgmTvConst.DATE_PATTERN))
                 .setPlatform(bgmTvSubject.getPlatform())
                 .setOverview(bgmTvSubject.getSummary())
                 .setTitle(bgmTvSubject.getName())
                 .setTitleCn(bgmTvSubject.getNameCn());
+
+            Date date = null;
+            if (bgmTvSubject.getDate() != null) {
+                date = DateUtils.parseDateStr(bgmTvSubject.getDate(), BgmTvConst.DATE_PATTERN);
+            }
+            if (date != null) {
+                animeEntity.setAirTime(date);
+            }
 
             if (StringUtils.isBlank(animeEntity.getTitle())) {
                 animeEntity.setTitleCn(animeEntity.getTitle());

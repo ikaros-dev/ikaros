@@ -1,5 +1,6 @@
 package run.ikaros.server.service;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
@@ -117,7 +118,6 @@ public class FileServiceImpl
         }
 
         FilePlace place = ikarosFile.getPlace();
-        Date uploadedDate = TimeUtils.localDataTime2Date(ikarosFile.getUploadedTime());
         // 如果存储位置是本地，则对应的URL格式为 http://ip:port/upload/xxx.jpg
         String absolutePath = ikarosFile.getAbsolutePath();
         String url = "";
@@ -136,8 +136,13 @@ public class FileServiceImpl
             .setName(ikarosFile.getName() + "." + ikarosFile.getPostfix())
             .setType(ikarosFile.getType())
             .setPlace(place)
-            .setCreateTime(uploadedDate)
-            .setUpdateTime(uploadedDate);
+            .setCreateTime(new Date())
+            .setUpdateTime(new Date());
+
+        LocalDateTime uploadedTime = ikarosFile.getUploadedTime();
+        if (uploadedTime != null) {
+            fileEntity.setCreateTime(TimeUtils.localDataTime2Date(uploadedTime));
+        }
 
         return fileRepository.saveAndFlush(fileEntity);
     }
@@ -477,9 +482,9 @@ public class FileServiceImpl
         String currentAppDirPath = SystemVarUtils.getCurrentAppDirPath();
         // issue #50
         url = path.replace(currentAppDirPath, "");
-        // 如果是开发环境，需要加上 http://ip:port
+        // 如果是开发环境，需要加上 http://localhost:port
         if (ikarosProperties.envIsDev()) {
-            url = ikarosProperties.getServerHttpBaseUrl() + url;
+            url = ikarosProperties.getLocalhostHttpBaseUrl() + url;
         }
 
         // 如果是ntfs目录，则需要替换下 \ 为 /

@@ -41,7 +41,7 @@ public class QbittorrentClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(QbittorrentClient.class);
     private String category = "ikaros";
     private String categorySavePath = "/downloads/ikaros/";
-    private final RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
     /**
      * API前缀，例如：http://192.168.2.229:60101/api/v2/
      */
@@ -63,9 +63,7 @@ public class QbittorrentClient {
         String TORRENTS_RECHECK = "/torrents/recheck";
     }
 
-    public QbittorrentClient(RestTemplate restTemplate,
-                             @Value("${ikaros.qbittorrent-base-url}") String prefix) {
-        this.restTemplate = restTemplate;
+    public QbittorrentClient(@Value("${ikaros.qbittorrent-base-url}") String prefix) {
         // 如果最后一个字符是 / 则去掉
         if (prefix.charAt(prefix.length() - 1) == '/') {
             prefix = prefix.substring(0, prefix.length() - 1);
@@ -77,10 +75,6 @@ public class QbittorrentClient {
         return category;
     }
 
-    public String getCategorySavePath() {
-        return categorySavePath;
-    }
-
     public String getPrefix() {
         return prefix;
     }
@@ -90,7 +84,7 @@ public class QbittorrentClient {
         try {
             LOGGER.debug("prefix={}", prefix);
             boolean exist = getAllCategories().stream()
-                    .anyMatch(qbCategory -> qbCategory.getName().equalsIgnoreCase(category));
+                .anyMatch(qbCategory -> qbCategory.getName().equalsIgnoreCase(category));
             if (!exist) {
                 addNewCategory(category, categorySavePath);
                 LOGGER.debug("add new qbittorrent category: {}, savePath: {}",
@@ -103,7 +97,7 @@ public class QbittorrentClient {
 
     public String getApplicationVersion() {
         ResponseEntity<String> responseEntity
-                = restTemplate.getForEntity(prefix + API.APP_VERSION, String.class);
+            = restTemplate.getForEntity(prefix + API.APP_VERSION, String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
@@ -113,7 +107,7 @@ public class QbittorrentClient {
 
     public String getApiVersion() {
         ResponseEntity<String> responseEntity
-                = restTemplate.getForEntity(prefix + API.APP_API_VERSION, String.class);
+            = restTemplate.getForEntity(prefix + API.APP_API_VERSION, String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
@@ -127,8 +121,8 @@ public class QbittorrentClient {
         List<QbCategory> qbCategoryList = new ArrayList<>();
 
         HashMap<String, Object> categoryMap
-                = restTemplate.getForObject(prefix
-                + API.TORRENTS_GET_ALL_CATEGORIES, HashMap.class);
+            = restTemplate.getForObject(prefix
+            + API.TORRENTS_GET_ALL_CATEGORIES, HashMap.class);
 
         AssertUtils.notNull(categoryMap, "category map");
         categoryMap.forEach((key, value) -> {
@@ -139,7 +133,7 @@ public class QbittorrentClient {
             AssertUtils.notNull(category, "category map value");
             if (!String.valueOf(key).equalsIgnoreCase(category.getName())) {
                 LOGGER.warn("category map key != value's name, key={}, value={}",
-                        key, value);
+                    key, value);
             }
             qbCategoryList.add(category);
         });
@@ -213,19 +207,19 @@ public class QbittorrentClient {
      * @param skipChecking                     skip hash checking
      * @param statusIsPaused                   add torrents in the paused state
      * @param enableSequentialDownload         enable sequential download
-     * @param prioritizeDownloadFirstLastPiece prioritize download first last piece
+     * @param prioritizeDownloadFirstLastPiece prioritize download first last piece,
+     *                                         开启的话，经常会出现丢失文件的错误，不建议开启
      * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-torrent">WebUI-API-(qBittorrent-4.1)#add-new-torrent</a>
      */
     public synchronized void addTorrentFromURLs(@Nonnull String src,
-                                   @Nonnull String savepath,
-                                   @Nonnull String category,
-                                   String newName,
-                                   boolean skipChecking,
-                                   boolean statusIsPaused,
-                                   boolean enableSequentialDownload,
-                                   boolean prioritizeDownloadFirstLastPiece) {
+                                                String savepath,
+                                                @Nonnull String category,
+                                                String newName,
+                                                boolean skipChecking,
+                                                boolean statusIsPaused,
+                                                boolean enableSequentialDownload,
+                                                boolean prioritizeDownloadFirstLastPiece) {
         AssertUtils.notNull(src, "src");
-        AssertUtils.notBlank(savepath, "savepath");
         AssertUtils.notBlank(category, "category");
         final String url = prefix + API.TORRENTS_ADD;
 
@@ -236,7 +230,9 @@ public class QbittorrentClient {
         // http://, https://, magnet: and bc://bt/ links are supported.
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.put("urls", List.of(src));
-        body.put("savepath", List.of(savepath));
+        if (StringUtils.isNotBlank(savepath)) {
+            body.put("savepath", List.of(savepath));
+        }
         body.put("category", List.of(category));
         body.put("skip_checking", List.of(skipChecking ? "true" : "false"));
         body.put("paused", List.of(statusIsPaused ? "true" : "false"));
@@ -245,7 +241,7 @@ public class QbittorrentClient {
         }
         body.put("sequentialDownload", List.of(enableSequentialDownload ? "true" : "false"));
         body.put("firstLastPiecePrio",
-                List.of(prioritizeDownloadFirstLastPiece ? "true" : "false"));
+            List.of(prioritizeDownloadFirstLastPiece ? "true" : "false"));
 
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(body, headers);
 
@@ -255,7 +251,7 @@ public class QbittorrentClient {
     public void addTorrentFromUrl(@Nonnull String url) {
         AssertUtils.notBlank(url, "url");
         addTorrentFromURLs(url, categorySavePath, category, null, true,
-            false, false, true);
+            false, false, false);
     }
 
     /**
@@ -300,13 +296,13 @@ public class QbittorrentClient {
         }
 
         ArrayList originalList =
-                restTemplate.getForObject(urlBuilder.toUriString(), ArrayList.class);
+            restTemplate.getForObject(urlBuilder.toUriString(), ArrayList.class);
         AssertUtils.notNull(originalList, "originalList");
 
         List<QbTorrentInfo> qbTorrentInfoList = new ArrayList<>(originalList.size());
         for (Object o : originalList) {
             QbTorrentInfo qbTorrentInfo
-                    = JsonUtils.json2obj(JsonUtils.obj2Json(o), QbTorrentInfo.class);
+                = JsonUtils.json2obj(JsonUtils.obj2Json(o), QbTorrentInfo.class);
             qbTorrentInfoList.add(qbTorrentInfo);
         }
 
@@ -342,8 +338,8 @@ public class QbittorrentClient {
         headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
 
         String body = "hash=" + hash + "&oldPath="
-                + URLEncoder.encode(oldFileName, StandardCharsets.UTF_8)
-                + "&newPath=" + URLEncoder.encode(newFileName, StandardCharsets.UTF_8);
+            + URLEncoder.encode(oldFileName, StandardCharsets.UTF_8)
+            + "&newPath=" + URLEncoder.encode(newFileName, StandardCharsets.UTF_8);
 
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 
@@ -404,7 +400,7 @@ public class QbittorrentClient {
         headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
 
         String body = "hashes=" + hashes
-                + "&deleteFiles=" + (deleteFiles ? "true" : "false");
+            + "&deleteFiles=" + (deleteFiles ? "true" : "false");
 
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 
