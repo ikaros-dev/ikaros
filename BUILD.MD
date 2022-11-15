@@ -23,7 +23,7 @@ Mac或者Linux
 ./gradlew clean build -x test
 ```
 
-本地运行，复制`config/resource/application-dev.yaml`到`src/main/resource/application-dev.yaml`
+本地运行，复制`config/example/resource/application-dev.yaml`到`src/main/resource/application-dev.yaml`
 , 可以根据需要酌情修改
 
 再在VM参数里加上如下:
