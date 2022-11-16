@@ -1,28 +1,6 @@
-### 本地Docker运行参考
+### 生产环境Docker运行参考
 
-我使用的是本地安装linux虚拟机，我用的是 [vmware play 16](https://www.vmware.com/cn/products/workstation-player/workstation-player-evaluation.html)，个人使用免费，商用收费。
-
-安装docker，配置好镜像源，并开启远程访问（后续尝试docker for windows配置环境）
-
-修改 /usr/lib/systemd/system/docker.service ，在 ExecStart 加上下方的
-
-```shell
--H tcp://0.0.0.0:2375
-```
-
-最后是这样
-
-```shell
-ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H fd:// --containerd=/run/containerd/containerd.sock
-```
-
-重载使配置生效
-
-```shell
-systemctl daemon-reload && systemctl restart docker
-```
-
-验证是否成功
+我使用的是NAS自带的容器环境，开启远程访问，验证是否成功
 
 浏览器访问 http://ip:2375/version , 正常出现JSON字符串代表成功
 
@@ -33,6 +11,7 @@ systemctl daemon-reload && systemctl restart docker
 - /opt/jellyfin: jellyfin应用数据目录
 - /opt/ikaros：开发用应用根目录
 - /opt/ikaros/downloads: 下载目录，要求在ikaros应用目录下，不然文件硬链接会出问题
+- /opt/ikaros/media: 媒体目录，要求在ikaros应用目录下，不然文件硬链接会出问题
 
 ## portainer
 
@@ -76,7 +55,7 @@ mariadb
 创建数据库
 
 ```shell
-create database ikaros
+create database ikaros;
 ```
 
 ### qbittorrent
@@ -152,7 +131,7 @@ ikaros:dev
 
 ### jellyfin
 
-这个可以不部署，主要是后面看效果
+
 
 ```shell
 docker run -d \
@@ -164,8 +143,8 @@ docker run -d \
 -e LC_ALL=zh_CN.UTF-8 \
 -e TZ=Asia/Shanghai \
 -p 9092:8096 \
--v /opt/ikaros/jellyfin/config:/config \
--v /opt/ikaros/jellyfin/cache:/cache \
+-v /opt/jellyfin/config:/config \
+-v /opt/jellyfin/cache:/cache \
 -v /opt/ikaros/media:/media \
 --device /dev/dri:/dev/dri \
 --restart=always \
