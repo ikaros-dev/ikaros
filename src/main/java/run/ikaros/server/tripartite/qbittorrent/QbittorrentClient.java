@@ -200,7 +200,7 @@ public class QbittorrentClient {
     }
 
     /**
-     * @param src                              src
+     * @param src                              url
      * @param savepath                         save path
      * @param category                         category
      * @param newName                          new torrent file name
@@ -405,5 +405,13 @@ public class QbittorrentClient {
         HttpEntity<String> httpEntity = new HttpEntity<>(body, headers);
 
         restTemplate.exchange(url, HttpMethod.POST, httpEntity, Void.class);
+    }
+
+    public void tryToResumeAllMissingFilesErroredTorrents() {
+        getTorrentList(QbTorrentInfoFilter.ERRORED,
+            getCategory(), null, 100, null, null)
+            .stream()
+            .filter(qbTorrentInfo -> "missingFiles".equalsIgnoreCase(qbTorrentInfo.getState()))
+            .forEach(qbTorrentInfo -> resume(qbTorrentInfo.getHash()));
     }
 }

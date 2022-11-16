@@ -120,8 +120,6 @@ linuxserver/qbittorrent
 
 最后拉到最下方点击保存
 
-配置下只对 torrent进行代理：`设置` => `连接` => `代理服务器`，选中`只对 torrent 使用代理`并保存
-
 ### ikaros
 
 idea里添加docker连接，TCP套接字那填入 tcp://IP:2375 即可
@@ -139,21 +137,19 @@ docker pull eclipse-temurin:17-jdk-alpine
 先执行`DockfileBuild2Dev`进行 `ikaros:dev` 的docker镜像编译，目标选择刚刚添加的docker连接。
 
 ```shell
-docker run -d \
+docker run -rm \
 -p 9090:9090 \
 --name=ikaros \
 -e PUID=0 \
 -e PGID=0 \
--e JAVA_OPTS="-Dikaros.log-level=DEBUG -Dikaros.env=dev" \
+-e IKAROS_ENV=dev \
+-e IKAROS_LOG_LEVEL=DEBUG \
 -e IKAROS_SUB_MIKAN_RSS="https://mikanani.me/RSS/MyBangumi?token={token}" \
 -v /opt/ikaros:/opt/ikaros \
---restart=always \
 ikaros:dev
 ```
 
 ### jellyfin
-
-
 
 ```shell
 docker run -d \

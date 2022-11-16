@@ -15,8 +15,9 @@ class XmlUtilsTest {
 
     @Test
     void parseMikanRssXmlFile() throws FileNotFoundException {
-        final String cacheRssCacheXmlFileResourceClassPath = ResourceUtils.CLASSPATH_URL_PREFIX + "mikan"
-            + File.separator + "issue85unreadableCode.rss.xml";
+        final String cacheRssCacheXmlFileResourceClassPath =
+            ResourceUtils.CLASSPATH_URL_PREFIX + "mikan"
+                + File.separator + "issue85unreadableCode.rss.xml";
         File cacheRssCacheXmlFile = ResourceUtils.getFile(cacheRssCacheXmlFileResourceClassPath);
         List<MikanRssItem> mikanRssItemList =
             XmlUtils.parseMikanRssXmlFile(cacheRssCacheXmlFile.getAbsolutePath());

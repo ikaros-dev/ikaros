@@ -1,4 +1,3 @@
-
 # 编译环境
 
 - JDK: 17
@@ -26,11 +25,7 @@ Mac或者Linux
 本地运行，复制`config/example/resource/application-dev.yaml`到`src/main/resource/application-dev.yaml`
 , 可以根据需要酌情修改
 
-再在VM参数里加上如下:
-
-```text
--Dikaros.env=dev
-```
+todo 待更新
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
 
@@ -50,7 +45,18 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 ```
 
 git modules 初始化
-``` text
+
+```text
 git submodule init
 git submodule update
 ```
+
+## 代码格式化
+
+`Setting` => `Editor` => `Code Style` => `Java` 
+
+=> `Scheme` 选择 `Project`
+
+选择右边设置，导入checkstyle文件
+
+最后OK保存

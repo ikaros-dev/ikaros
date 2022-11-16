@@ -18,6 +18,7 @@ import run.ikaros.server.unittest.common.UnitTestConst;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.utils.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -36,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class QbittorrentClientTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(QbittorrentClientTest.class);
 
-    static String prefix = "http://192.168.2.229:60101/api/v2";
+    static String prefix = "http://192.168.2.127:9091/api/v2/";
     static final String hash = "42b6ca3fa47fa5435ad69ce67fd7611237bdec5a";
     static QbittorrentClient qbittorrentClient = new QbittorrentClient(prefix);
     static final String category = "unittest";

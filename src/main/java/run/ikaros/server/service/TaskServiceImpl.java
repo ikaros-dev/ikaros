@@ -33,6 +33,7 @@ import run.ikaros.server.utils.SystemVarUtils;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -81,14 +82,16 @@ public class TaskServiceImpl implements TaskService {
             rssService.parseMikanMySubscribeRss(mikanMySubscribeRssUrl);
         LOGGER.info("parse mikan my subscribe rss url to mikan rss item list ");
 
+        List<String> torrentUrlList = new ArrayList<>();
         for (MikanRssItem mikanRssItem : mikanRssItemList) {
             try {
-                LOGGER.info("start for each mikan rss item list");
-                String episodePageUrl = mikanRssItem.getEpisodePageUrl();
-                String torrentUrl = mikanRssItem.getTorrentUrl();
-                qbittorrentClient.addTorrentFromUrl(torrentUrl);
-                LOGGER.info("add to qbittorrent for torrent url: {}", torrentUrl);
+                LOGGER.info("start for each mikan rss item list for item title: {}",
+                    mikanRssItem.getTitle());
 
+                qbittorrentClient.addTorrentFromUrl(mikanRssItem.getTorrentUrl());
+                LOGGER.info("add to qbittorrent for torrent torrentUrlList");
+
+                String episodePageUrl = mikanRssItem.getEpisodePageUrl();
                 Long bgmtvSubjectId = null;
                 if (mikanEpUrlBgmTvSubjectIdService.existsByMikanEpisodeUrl(episodePageUrl)) {
                     MikanEpUrlBgmTvSubjectIdEntity mikanEpUrlBgmTvSubjectIdEntity =
@@ -167,11 +170,9 @@ public class TaskServiceImpl implements TaskService {
         }
 
         // 如果新添加的种子文件状态是缺失文件，则需要再恢复下
-        qbittorrentClient.getTorrentList(QbTorrentInfoFilter.ERRORED,
-                qbittorrentClient.getCategory(), null, 100, null, null)
-            .stream()
-            .filter(qbTorrentInfo -> "missingFiles".equalsIgnoreCase(qbTorrentInfo.getState()))
-            .forEach(qbTorrentInfo -> qbittorrentClient.resume(qbTorrentInfo.getHash()));
+        // 这个任务在5分钟一次的定时任务中也会执行
+        // @see ScheduledTaskConfig#fiveMinuteOnceTask()
+        qbittorrentClient.tryToResumeAllMissingFilesErroredTorrents();
 
     }
 

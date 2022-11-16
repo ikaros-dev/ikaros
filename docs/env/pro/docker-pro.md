@@ -6,57 +6,10 @@
 
 ## 目录说明
 
-- /opt/mariadb: 开发用数据库
-- /opt/qbbitorrent: qbbitorrent应用数据目录
-- /opt/jellyfin: jellyfin应用数据目录
-- /opt/ikaros：开发用应用根目录
-- /opt/ikaros/downloads: 下载目录，要求在ikaros应用目录下，不然文件硬链接会出问题
-- /opt/ikaros/media: 媒体目录，要求在ikaros应用目录下，不然文件硬链接会出问题
-
-## portainer
-
-可选，用来管理容器
-
-```shell
-docker pull portainer/portainer
-```
-
-```shell
-docker run -d -p 9000:9000 \
--v /var/run/docker.sock:/var/run/docker.sock \
--v /opt/portainer/data:/data \
---name portainer \
---restart=always \
-portainer/portainer
-```
-
-## mariadb
-
-拉取镜像
-
-```shell
-docker pull mariadb
-```
-
-运行容器
-
-```shell
-docker run -it -d \
---name mariadb \
--p 3306:3306 \
--v /opt/mariadb/conf:/etc/mysql \
--v /opt/mariadb/data:/var/lib/mysql \
--v /opt/mariadb/logs:/var/log/mysql \
--e MYSQL_ROOT_PASSWORD=123456  \
---restart=always \
-mariadb
-```
-
-创建数据库
-
-```shell
-create database ikaros;
-```
+- /share/container/app/ikaros_qbbitorrent: qbbitorrent应用数据目录
+- /share/container/app/ikaros：应用根目录
+- /share/container/app/ikaros/downloads: 下载目录，要求在ikaros应用目录下，不然文件硬链接会出问题
+- /share/container/app/ikaros/media: 媒体目录，要求在ikaros应用目录下，不然文件硬链接会出问题
 
 ### qbittorrent
 
@@ -70,7 +23,7 @@ docker pull linuxserver/qbittorrent
 
 ```shell
 docker run -d \
---name=qbittorrent \
+--name=ikaros_qbbitorrent \
 -e PUID=0 \
 -e PGID=0 \
 -e TZ=Asia/Shanghai \
@@ -78,8 +31,8 @@ docker run -d \
 -p 9091:9091 \
 -p 6881:6881 \
 -p 6881:6881/udp \
--v /opt/qbbitorrent:/config \
--v /opt/ikaros/downloads:/downloads \
+-v /share/container/app/ikaros_qbbitorrent:/config \
+-v /share/container/app/ikaros/downloads:/downloads \
 --restart=always \
 linuxserver/qbittorrent
 ```
@@ -98,8 +51,6 @@ linuxserver/qbittorrent
 
 最后拉到最下方点击保存
 
-配置下只对 torrent进行代理：`设置` => `连接` => `代理服务器`，选中`只对 torrent 使用代理`并保存
-
 ### ikaros
 
 idea里添加docker连接，TCP套接字那填入 tcp://IP:2375 即可
@@ -114,39 +65,16 @@ docker pull eclipse-temurin:17-jdk-alpine
 
 编译镜像
 
-先执行`DockfileBuild2Dev`进行 `ikaros:dev` 的docker镜像编译，目标选择刚刚添加的docker连接。
-
 ```shell
 docker run -d \
 -p 9090:9090 \
 --name=ikaros \
 -e PUID=0 \
 -e PGID=0 \
--e JAVA_OPTS="-Dikaros.log-level=DEBUG -Dikaros.env=dev" \
+-e IKAROS_QB_URL=http://192.168.2.229:9091/api/v2/ \
+-e IKAROS_LOG_LEVEL=DEBUG \
 -e IKAROS_SUB_MIKAN_RSS="https://mikanani.me/RSS/MyBangumi?token={token}" \
--v /opt/ikaros:/opt/ikaros \
+-v /share/container/app/ikaros:/opt/ikaros \
 --restart=always \
-ikaros:dev
-```
-
-### jellyfin
-
-
-
-```shell
-docker run -d \
---name=ikaros_jellyfin \
--e PUID=0 \
--e PGID=0 \
--e LANG=zh_CN.UTF-8 \
--e LANGUAGE=zh_CN:zh \
--e LC_ALL=zh_CN.UTF-8 \
--e TZ=Asia/Shanghai \
--p 9092:8096 \
--v /opt/jellyfin/config:/config \
--v /opt/jellyfin/cache:/cache \
--v /opt/ikaros/media:/media \
---device /dev/dri:/dev/dri \
---restart=always \
-jellyfin/jellyfin
+ikaros:0.1.0
 ```

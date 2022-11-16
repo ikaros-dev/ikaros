@@ -1,4 +1,6 @@
-### 本地环境Docker运行参考
+### [暂时废弃] 本地环境Docker运行参考
+
+**废弃原因**：容器内无法访问和宿主机同局域网的其他主机
 
 我使用的是 Docker Windows Desktop + WSL2
 
@@ -8,13 +10,15 @@
 
 ## 目录说明
 
-`/C/Users/li-guohao/`  对应   `C:\Users\li-guohao\` , 这个是用户目录，放其他目录存在权限问题。
+- C:\Users\li-guohao\mariadb: 开发用数据库
+- C:\Users\li-guohao\qbbitorrent: qbbitorrent应用数据目录
+- C:\Users\li-guohao\ikaros：开发用应用根目录
+- C:\Users\li-guohao\ikaros/downloads: 下载目录，要求在ikaros应用目录下，不然文件硬链接会出问题
+- C:\Users\li-guohao\ikaros/media: 媒体目录，要求在ikaros应用目录下，不然文件硬链接会出问题
 
-- /C/Users/li-guohao/mariadb: 开发用数据库
-- /C/Users/li-guohao/qbbitorrent: qbbitorrent应用数据目录
-- /C/Users/li-guohao/ikaros：开发用应用根目录
-- /C/Users/li-guohao/ikaros/downloads: 下载目录，要求在ikaros应用目录下，不然文件硬链接会出问题
-- /C/Users/li-guohao/ikaros/media: 媒体目录，要求在ikaros应用目录下，不然文件硬链接会出问题
+## 部署说明
+
+建议使用IDEA进行配置部署，
 
 ## mariadb
 
@@ -30,9 +34,9 @@ docker pull mariadb
 docker run -it -d \
 --name mariadb \
 -p 3306:3306 \
--v /C/Users/li-guohao/mariadb/conf:/etc/mysql \
--v /C/Users/li-guohao/mariadb/mariadb/data:/var/lib/mysql \
--v /C/Users/li-guohao/mariadb/mariadb/logs:/var/log/mysql \
+-v C:\Users\li-guohao\mariadb\conf:/etc/mysql \
+-v C:\Users\li-guohao\mariadb\mariadb\data:/var/lib/mysql \
+-v C:\Users\li-guohao\mariadb\mariadb\logs:/var/log/mysql \
 -e MYSQL_ROOT_PASSWORD=123456  \
 --restart=always \
 mariadb
@@ -64,8 +68,8 @@ docker run -d \
 -p 9091:9091 \
 -p 6881:6881 \
 -p 6881:6881/udp \
--v /C/Users/li-guohao/qbbitorrent:/config \
--v /C/Users/li-guohao/ikaros/downloads:/downloads \
+-v C:\Users\li-guohao\qbbitorrent:/config \
+-v C:\Users\li-guohao\ikaros\downloads:/downloads \
 --restart=always \
 linuxserver/qbittorrent
 ```
@@ -83,8 +87,6 @@ linuxserver/qbittorrent
 ```
 
 最后拉到最下方点击保存
-
-配置下只对 torrent进行代理：`设置` => `连接` => `代理服务器`，选中`只对 torrent 使用代理`并保存
 
 ### ikaros
 
@@ -108,9 +110,10 @@ docker run -d \
 --name=ikaros \
 -e PUID=0 \
 -e PGID=0 \
--e JAVA_OPTS="-Dikaros.log-level=DEBUG -Dikaros.env=dev" \
+-e IKAROS_ENV=local \
+-e IKAROS_LOG_LEVEL=DEBUG \
 -e IKAROS_SUB_MIKAN_RSS="https://mikanani.me/RSS/MyBangumi?token={token}" \
--v /C/Users/li-guohao/ikaros:/opt/ikaros \
+-v C:\Users\li-guohao\ikaros:/opt/ikaros \
 --restart=always \
 ikaros:dev
 ```
@@ -127,9 +130,9 @@ docker run -d \
 -e LC_ALL=zh_CN.UTF-8 \
 -e TZ=Asia/Shanghai \
 -p 9092:8096 \
--v /C/Users/li-guohao/ikaros/jellyfin/config:/config \
--v /C/Users/li-guohao/ikaros/jellyfin/cache:/cache \
--v /C/Users/li-guohao/ikaros/media:/media \
+-v C:\Users\li-guohao\ikaros\jellyfin/config:/config \
+-v C:\Users\li-guohao\ikaros\jellyfin/cache:/cache \
+-v C:\Users\li-guohao\ikaros\media:/media \
 --restart=always \
 jellyfin/jellyfin
 ```
