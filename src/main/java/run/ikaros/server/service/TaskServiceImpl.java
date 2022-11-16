@@ -82,7 +82,6 @@ public class TaskServiceImpl implements TaskService {
             rssService.parseMikanMySubscribeRss(mikanMySubscribeRssUrl);
         LOGGER.info("parse mikan my subscribe rss url to mikan rss item list ");
 
-        List<String> torrentUrlList = new ArrayList<>();
         for (MikanRssItem mikanRssItem : mikanRssItemList) {
             try {
                 LOGGER.info("start for each mikan rss item list for item title: {}",
@@ -258,25 +257,25 @@ public class TaskServiceImpl implements TaskService {
         final ThirdPartyPresetOption thirdPartyPresetOption =
             optionService.findPresetOption(new ThirdPartyPresetOption());
 
-        final String originalTorrentName = torrentName;
-
-        torrentName = torrentName.replaceAll(RegexConst.FILE_NAME_TAG, "");
-        torrentName = torrentName.replaceAll(RegexConst.FILE_POSTFIX, "");
-        torrentName = torrentName.replaceAll(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE, "");
-        torrentName = torrentName.replace("-", "");
-        torrentName = torrentName.trim();
-        if (StringUtils.isBlank(torrentName)) {
-            torrentName = originalTorrentName.trim();
-        }
         String matchingEnglishStr = null;
         try {
             matchingEnglishStr = RegexUtils.getMatchingEnglishStrWithoutTag(torrentName);
         } catch (RegexMatchingException regexMatchingException) {
             LOGGER.warn("match fail", regexMatchingException);
         }
+
+        String dirName = matchingEnglishStr;
+        if (StringUtils.isBlank(matchingEnglishStr)) {
+            dirName = RegexUtils.getMatchingChineseStrWithoutTag(torrentName);
+        }
+
         String jellyfinMediaDirPath = thirdPartyPresetOption.getJellyfinMediaDirPath()
             + File.separatorChar
-            + (StringUtils.isBlank(matchingEnglishStr) ? torrentName : matchingEnglishStr);
+            + (StringUtils.isBlank(dirName)
+            ? torrentName
+            .replaceAll(RegexConst.FILE_NAME_TAG, "")
+            .replaceAll(RegexConst.FILE_POSTFIX, "")
+            : dirName);
 
         // jellyfin media path => ikaros app media path
         // /media/xxx => /opt/ikaros/media/xxx
