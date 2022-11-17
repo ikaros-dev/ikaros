@@ -73,4 +73,18 @@ class RegexConstTest {
         }
         assertThat(setList).isNotEmpty();
     }
+
+    @Test
+    void seasonSeq() {
+        String fileName =
+            "[Lilith-Raws] Muv-Luv Alternative S02 "
+                + "- 07 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4].mp4";
+        Matcher matcher =
+            Pattern.compile(RegexConst.NUMBER_SEASON_SEQUENCE_WITH_PREFIX).matcher(fileName);
+        List<String> setList = new ArrayList<>();
+        while (matcher.find()) {
+            setList.add(matcher.group());
+        }
+        assertThat(setList).isNotEmpty();
+    }
 }

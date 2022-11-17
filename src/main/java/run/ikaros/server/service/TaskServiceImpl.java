@@ -49,6 +49,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static run.ikaros.server.constants.RegexConst.NUMBER_SEASON_SEQUENCE_WITH_PREFIX;
+
 /**
  * @author li-guohao
  */
@@ -340,7 +342,7 @@ public class TaskServiceImpl implements TaskService {
         String matchingEnglishStr = null;
         try {
             matchingEnglishStr = RegexUtils.getMatchingEnglishStrWithoutTag(torrentName);
-            matchingEnglishStr =  matchingEnglishStr
+            matchingEnglishStr = matchingEnglishStr
                 .replace(" S ", "")
                 .replace(" S", "")
                 .replace("S ", "");
@@ -363,6 +365,7 @@ public class TaskServiceImpl implements TaskService {
             ? torrentName
             .replaceAll(RegexConst.FILE_NAME_TAG, "")
             .replaceAll(RegexConst.FILE_POSTFIX, "")
+            .replaceAll(NUMBER_SEASON_SEQUENCE_WITH_PREFIX, "")
             .replace("-", "")
             .trim()
             : dirName;
@@ -481,6 +484,7 @@ public class TaskServiceImpl implements TaskService {
             for (File file : files) {
                 try {
                     String fileName = file.getName();
+                    fileName = fileName.replaceAll(NUMBER_SEASON_SEQUENCE_WITH_PREFIX, "");
                     Long seq = null;
                     try {
                         seq = RegexUtils.getFileNameTagEpSeq(fileName);
@@ -513,6 +517,7 @@ public class TaskServiceImpl implements TaskService {
         } else {
             // 单剧集文件
             String fileName = FileUtils.parseFileName(torrentContentPath);
+            fileName = fileName.replaceAll(NUMBER_SEASON_SEQUENCE_WITH_PREFIX, "");
             Long seq = RegexUtils.getFileNameTagEpSeq(fileName);
             fileName = "S1E" + seq + "-" + fileName;
             String jellyfinFilePath = jellyfinMediaDirPath + File.separatorChar + fileName;
