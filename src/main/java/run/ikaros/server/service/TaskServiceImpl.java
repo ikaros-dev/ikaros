@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.core.service.FileService;
-import run.ikaros.server.core.service.MikanEpUrlBgmTvSubjectIdService;
+import run.ikaros.server.core.service.KVService;
 import run.ikaros.server.core.service.MikanService;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.RssService;
@@ -15,12 +15,15 @@ import run.ikaros.server.core.service.TaskService;
 import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.FileEntity;
-import run.ikaros.server.entity.MikanEpUrlBgmTvSubjectIdEntity;
+import run.ikaros.server.entity.KVEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.FilePlace;
+import run.ikaros.server.enums.KVType;
 import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.init.option.ThirdPartyPresetOption;
+import run.ikaros.server.model.dto.AnimeDTO;
+import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
@@ -35,11 +38,14 @@ import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.SystemVarUtils;
 import run.ikaros.server.utils.XmlUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -57,7 +63,7 @@ public class TaskServiceImpl implements TaskService {
     private final FileService fileService;
     private final SeasonService seasonService;
     private final AnimeService animeService;
-    private final MikanEpUrlBgmTvSubjectIdService mikanEpUrlBgmTvSubjectIdService;
+    private final KVService kvService;
     private final QbittorrentClient qbittorrentClient;
     private Set<String> hasHandledTorrentHashSet = new HashSet<>();
 
@@ -65,7 +71,7 @@ public class TaskServiceImpl implements TaskService {
                            MikanService mikanService, BgmTvService bgmTvService,
                            FileService fileService, SeasonService seasonService,
                            AnimeService animeService,
-                           MikanEpUrlBgmTvSubjectIdService mikanEpUrlBgmTvSubjectIdService,
+                           KVService kvService,
                            QbittorrentClient qbittorrentClient) {
         this.rssService = rssService;
         this.optionService = optionService;
@@ -74,7 +80,7 @@ public class TaskServiceImpl implements TaskService {
         this.fileService = fileService;
         this.seasonService = seasonService;
         this.animeService = animeService;
-        this.mikanEpUrlBgmTvSubjectIdService = mikanEpUrlBgmTvSubjectIdService;
+        this.kvService = kvService;
         this.qbittorrentClient = qbittorrentClient;
     }
 
@@ -97,75 +103,36 @@ public class TaskServiceImpl implements TaskService {
 
                 qbittorrentClient.addTorrentFromUrl(mikanRssItem.getTorrentUrl(),
                     mikanRssItemTitle);
-                LOGGER.info("add to qbittorrent for torrent torrentUrlList");
+                LOGGER.info("add to qbittorrent for torrent name: {}", mikanRssItemTitle);
 
                 String episodePageUrl = mikanRssItem.getEpisodePageUrl();
-                Long bgmtvSubjectId = null;
-                if (mikanEpUrlBgmTvSubjectIdService.existsByMikanEpisodeUrl(episodePageUrl)) {
-                    MikanEpUrlBgmTvSubjectIdEntity mikanEpUrlBgmTvSubjectIdEntity =
-                        mikanEpUrlBgmTvSubjectIdService.findByMikanEpisodeUrl(episodePageUrl);
-                    AssertUtils.notNull(mikanEpUrlBgmTvSubjectIdEntity,
-                        "mikanEpUrlBgmTvSubjectIdEntity");
-                    bgmtvSubjectId = mikanEpUrlBgmTvSubjectIdEntity.getBgmtvSubjectId();
-                    LOGGER.debug("find exist relation for mikan ep url and bgmtv subject id, "
-                        + "episodePageUrl={}, bgmtvSubjectId={}", episodePageUrl, bgmtvSubjectId);
-                } else {
-                    // 这里由于bgmtv的旧查询API可用，直接解析标题，作为关键词查询对应的条目ID
-                    // 标题例子：[Lilith-Raws] 孤独摇滚！ / Bocchi the Rock!
-                    // - 06 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]
-                    if (StringUtils.isBlank(mikanRssItemTitle)) {
-                        LOGGER.warn("title is blank, skip this mikan rss item: {}",
-                            JsonUtils.obj2Json(mikanRssItem));
-                        continue;
-                    }
-                    String enName = RegexUtils.getMatchingEnglishStrWithoutTag(mikanRssItemTitle);
-                    String chName = RegexUtils.getMatchingChineseStrWithoutTag(mikanRssItemTitle);
-
-                    Optional<BgmTvSubject> enNameSubOptional = Optional.empty();
-                    if (StringUtils.isNotBlank(enName)) {
-                        enNameSubOptional =
-                            bgmTvService.searchSubject(enName, BgmTvSubjectType.ANIME)
-                                .stream().findFirst();
-                    }
-                    if (enNameSubOptional.isPresent()) {
-                        bgmtvSubjectId = Long.valueOf(enNameSubOptional.get().getId());
-                        LOGGER.info("search bgmtv subject by english name success,"
-                            + "bgmtvSubjectId={}, enName={}", bgmtvSubjectId, enName);
-                    } else {
-                        Optional<BgmTvSubject> chNameSubOptional = Optional.empty();
-                        if (StringUtils.isNotBlank(chName)) {
-                            chNameSubOptional =
-                                bgmTvService.searchSubject(chName, BgmTvSubjectType.ANIME)
-                                    .stream().findFirst();
-                        }
-                        if (chNameSubOptional.isPresent()) {
-                            bgmtvSubjectId = Long.valueOf(chNameSubOptional.get().getId());
-                            LOGGER.info("search bgmtv subject by chinese name success,"
-                                + "bgmtvSubjectId={}, chName={}", bgmtvSubjectId, chName);
-                        } else {
-                            // 如果英文中文都搜不到，最后通过密柑剧集URL请求密柑页面获取对应的 bgmtv条目ID
-                            String animePageUrl =
-                                mikanService.getAnimePageUrlByEpisodePageUrl(episodePageUrl);
-                            String bgmTvSubjectPageUrl =
-                                mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
-                            String bgmTvSubjectIdStr =
-                                bgmTvSubjectPageUrl.substring(
-                                    bgmTvSubjectPageUrl.lastIndexOf("/") + 1);
-                            bgmtvSubjectId = Long.valueOf(bgmTvSubjectIdStr);
-                            LOGGER.info(
-                                "search bgmtv subject by mikan episode to anime page success,"
-                                    + "bgmtvSubjectId={}", bgmtvSubjectId);
-                        }
-                    }
-
-                    mikanEpUrlBgmTvSubjectIdService.save(
-                        new MikanEpUrlBgmTvSubjectIdEntity(episodePageUrl, bgmtvSubjectId));
-                    LOGGER.debug("save new relation for mikan ep url and bgmtv subject id, "
-                        + "episodePageUrl={}, bgmtvSubjectId={}", episodePageUrl, bgmtvSubjectId);
+                String bgmtvSubjectId =
+                    findBgmTvSubjectIdByTorrentName(mikanRssItemTitle, episodePageUrl);
+                if (bgmtvSubjectId == null) {
+                    LOGGER.warn("search bgmtv subject id fail for title={}", mikanRssItemTitle);
+                    continue;
                 }
 
+                kvService.save(new KVEntity()
+                    .setType(KVType.MIKAN_EP_URL__BGM_TV_SUBJECT_ID)
+                    .setKey(episodePageUrl)
+                    .setValue(bgmtvSubjectId)
+                );
+                LOGGER.debug("save new relation for mikan ep url and bgmtv subject id, "
+                    + "episodePageUrl={}, bgmtvSubjectId={}", episodePageUrl, bgmtvSubjectId);
+
+                kvService.save(new KVEntity()
+                    .setType(KVType.MIKAN_TORRENT_NAME__BGM_TV_SUBJECT_ID)
+                    .setKey(mikanRssItemTitle)
+                    .setValue(bgmtvSubjectId)
+                );
+                LOGGER.debug("save new relation for mikan ep url and bgmtv subject id, "
+                        + "torrentNameUrl={}, bgmtvSubjectId={}", mikanRssItemTitle,
+                    bgmtvSubjectId);
+
+
                 try {
-                    bgmTvService.reqBgmtvSubject(bgmtvSubjectId);
+                    bgmTvService.reqBgmtvSubject(Long.valueOf(bgmtvSubjectId));
                 } catch (Exception exception) {
                     throw new RuntimeIkarosException(
                         "request bgmtv subject and save new anime entity fail", exception);
@@ -181,6 +148,75 @@ public class TaskServiceImpl implements TaskService {
         // @see ScheduledTaskConfig#fiveMinuteOnceTask()
         qbittorrentClient.tryToResumeAllMissingFilesErroredTorrents();
 
+    }
+
+    private String findBgmTvSubjectIdByTorrentName(@Nonnull String torrentName,
+                                                   @Nullable String episodePageUrl) {
+        AssertUtils.notBlank(torrentName, "torrentName");
+        String bgmtvSubjectId = null;
+        Map<String, String> mikanTorrentNameBgmTvSubjectIdMap =
+            kvService.findMikanTorrentNameBgmTvSubjectIdMap();
+        if (mikanTorrentNameBgmTvSubjectIdMap.containsKey(torrentName)) {
+            bgmtvSubjectId = mikanTorrentNameBgmTvSubjectIdMap.get(torrentName);
+            LOGGER.debug("find exist relation for mikan torrent name and bgmtv subject id, "
+                    + "torrentName={}, bgmtvSubjectId={}", torrentName,
+                bgmtvSubjectId);
+        } else {
+            // 这里由于bgmtv的旧查询API可用，直接解析标题，作为关键词查询对应的条目ID
+            // 标题例子：[Lilith-Raws] 孤独摇滚！ / Bocchi the Rock!
+            // - 06 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]
+
+            String enName = null;
+            String chName = null;
+            try {
+                enName = RegexUtils.getMatchingEnglishStrWithoutTag(torrentName);
+                chName = RegexUtils.getMatchingChineseStrWithoutTag(torrentName);
+            } catch (RegexMatchingException regexMatchingException) {
+                LOGGER.warn("matching fail for torrentName={}", torrentName);
+            }
+
+            Optional<BgmTvSubject> enNameSubOptional = Optional.empty();
+            if (StringUtils.isNotBlank(enName)) {
+                enNameSubOptional =
+                    bgmTvService.searchSubject(enName, BgmTvSubjectType.ANIME)
+                        .stream().findFirst();
+            }
+            if (enNameSubOptional.isPresent()) {
+                bgmtvSubjectId = String.valueOf(enNameSubOptional.get().getId());
+                LOGGER.info("search bgmtv subject by english name success,"
+                    + "bgmtvSubjectId={}, enName={}", bgmtvSubjectId, enName);
+            } else {
+                Optional<BgmTvSubject> chNameSubOptional = Optional.empty();
+                if (StringUtils.isNotBlank(chName)) {
+                    chNameSubOptional =
+                        bgmTvService.searchSubject(chName, BgmTvSubjectType.ANIME)
+                            .stream().findFirst();
+                }
+                if (chNameSubOptional.isPresent()) {
+                    bgmtvSubjectId = String.valueOf(chNameSubOptional.get().getId());
+                    LOGGER.info("search bgmtv subject by chinese name success,"
+                        + "bgmtvSubjectId={}, chName={}", bgmtvSubjectId, chName);
+                } else {
+                    // 如果英文中文都搜不到，最后通过密柑剧集URL请求密柑页面获取对应的 bgmtv条目ID
+                    if (StringUtils.isNotBlank(episodePageUrl)) {
+                        String animePageUrl =
+                            mikanService.getAnimePageUrlByEpisodePageUrl(episodePageUrl);
+                        String bgmTvSubjectPageUrl =
+                            mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
+                        bgmtvSubjectId =
+                            bgmTvSubjectPageUrl.substring(
+                                bgmTvSubjectPageUrl.lastIndexOf("/") + 1);
+                        LOGGER.info(
+                            "search bgmtv subject by mikan episode to anime page success,"
+                                + "bgmtvSubjectId={}", bgmtvSubjectId);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+
+        }
+        return bgmtvSubjectId;
     }
 
     @Override
@@ -202,8 +238,6 @@ public class TaskServiceImpl implements TaskService {
 
             String contentPath = qbTorrentInfo.getContentPath();
             String name = qbTorrentInfo.getName();
-            // PS: 目前根据RSS订阅的torrent只有单文件，也就是这个路径目前就是绝对路径
-            // todo 相对路径处理
 
             // 创建两个文件硬链接：服务器上传目录 和 Jellyfin目录
             createServerFileHardLink(name, contentPath);
@@ -215,53 +249,90 @@ public class TaskServiceImpl implements TaskService {
 
     }
 
-    private void createServerFileHardLink(String torrentName, String downloadFilePath) {
+    private void createServerFileHardLink(String torrentName, String torrentContentPath) {
         AssertUtils.notBlank(torrentName, "torrentName");
-        AssertUtils.notBlank(downloadFilePath, "downloadFilePath");
-        String postfix = FileUtils.parseFilePostfix(downloadFilePath);
-        String uploadFilePath = FileUtils.buildAppUploadFilePath(postfix);
-        File uploadFile = new File(uploadFilePath);
-
+        AssertUtils.notBlank(torrentContentPath, "torrentContentPath");
         // qbittorrent download path => ikaros app download path
         // /downloads/xxx => /opt/ikaros/downloads/xxx
-        downloadFilePath = addPrefixForQbittorrentDownloadPath(downloadFilePath);
-
-        try {
-            if (uploadFile.exists()) {
+        torrentContentPath = addPrefixForQbittorrentDownloadPath(torrentContentPath);
+        File torrentContentFile = new File(torrentContentPath);
+        if (torrentContentFile.isDirectory()) {
+            // 是目录，则上传目录下的所有文件到服务器目录
+            File[] files = torrentContentFile.listFiles();
+            if (files == null || files.length == 0) {
                 return;
             }
-            Files.createLink(uploadFile.toPath(), new File(downloadFilePath).toPath());
-            LOGGER.debug("copy server file hard link success, link={}, existing={}",
-                uploadFilePath, downloadFilePath);
-            String fileName = FileUtils.parseFileName(downloadFilePath);
+            for (File file : files) {
+                String fileName = file.getName();
+                String postfix = FileUtils.parseFilePostfix(fileName);
+                String uploadFilePath = FileUtils.buildAppUploadFilePath(postfix);
+                File uploadFile = new File(uploadFilePath);
+                if (uploadFile.exists()) {
+                    continue;
+                }
+                try {
+                    Files.createLink(uploadFile.toPath(), file.toPath());
+                    LOGGER.debug("copy server file hard link success, link={}, existing={}",
+                        uploadFilePath, torrentContentPath);
+                    FileEntity fileEntity = fileService.create(new FileEntity()
+                        .setPlace(FilePlace.LOCAL)
+                        .setUrl(uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""))
+                        .setName(fileName)
+                        .setType(FileUtils.parseTypeByPostfix(postfix)));
 
-            FileEntity fileEntity = fileService.create(new FileEntity()
-                .setPlace(FilePlace.LOCAL)
-                .setUrl(uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""))
-                .setName(fileName)
-                .setType(FileUtils.parseTypeByPostfix(postfix)));
+                    seasonService.updateEpisodeUrlByFileEntity(fileEntity);
+                } catch (RegexMatchingException regexMatchingException) {
+                    LOGGER.warn("regex matching fail, msg: {}",
+                        regexMatchingException.getMessage());
+                } catch (Exception e) {
+                    LOGGER.error(
+                        "create server file hard link fail, "
+                            + "please let qbittorrent and ikaros instance in the same file system",
+                        e);
+                }
+            }
+        } else {
+            // 是文件，则直接上传文件到服务器目录
+            String postfix = FileUtils.parseFilePostfix(torrentContentPath);
+            try {
+                String uploadFilePath = FileUtils.buildAppUploadFilePath(postfix);
+                File uploadFile = new File(uploadFilePath);
+                if (uploadFile.exists()) {
+                    return;
+                }
+                Files.createLink(uploadFile.toPath(), torrentContentFile.toPath());
+                LOGGER.debug("copy server file hard link success, link={}, existing={}",
+                    uploadFilePath, torrentContentPath);
+                String fileName = FileUtils.parseFileName(torrentContentPath);
 
-            seasonService.updateEpisodeUrlByFileEntity(fileEntity);
-        } catch (RegexMatchingException regexMatchingException) {
-            LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
-        } catch (Exception e) {
-            LOGGER.error(
-                "create server file hard link fail, "
-                    + "please let qbittorrent and ikaros instance in the same file system",
-                e);
+                FileEntity fileEntity = fileService.create(new FileEntity()
+                    .setPlace(FilePlace.LOCAL)
+                    .setUrl(uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""))
+                    .setName(fileName)
+                    .setType(FileUtils.parseTypeByPostfix(postfix)));
+
+                seasonService.updateEpisodeUrlByFileEntity(fileEntity);
+            } catch (RegexMatchingException regexMatchingException) {
+                LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
+            } catch (Exception e) {
+                LOGGER.error(
+                    "create server file hard link fail, "
+                        + "please let qbittorrent and ikaros instance in the same file system",
+                    e);
+            }
         }
     }
 
-    private static String addPrefixForQbittorrentDownloadPath(String downloadFilePath) {
+    private static String addPrefixForQbittorrentDownloadPath(String torrentContentPath) {
         return SystemVarUtils.getCurrentAppDirPath()
-            + (downloadFilePath.startsWith(String.valueOf(File.separatorChar))
-            ? downloadFilePath : (File.separatorChar + downloadFilePath));
+            + (torrentContentPath.startsWith(String.valueOf(File.separatorChar))
+            ? torrentContentPath : (File.separatorChar + torrentContentPath));
     }
 
-    private void createJellyfinFileHardLink(String torrentName, String downloadFilePath) {
+    private void createJellyfinFileHardLink(String torrentName, String torrentContentPath) {
         AssertUtils.notBlank(torrentName, "torrentName");
-        AssertUtils.notBlank(downloadFilePath, "downloadFilePath");
-        downloadFilePath = addPrefixForQbittorrentDownloadPath(downloadFilePath);
+        AssertUtils.notBlank(torrentContentPath, "torrentContentPath");
+        torrentContentPath = addPrefixForQbittorrentDownloadPath(torrentContentPath);
 
         final ThirdPartyPresetOption thirdPartyPresetOption =
             optionService.findPresetOption(new ThirdPartyPresetOption());
@@ -282,6 +353,9 @@ public class TaskServiceImpl implements TaskService {
             ? torrentName
             .replaceAll(RegexConst.FILE_NAME_TAG, "")
             .replaceAll(RegexConst.FILE_POSTFIX, "")
+            .replaceAll("S", "")
+            .replace("-", "")
+            .trim()
             : dirName;
 
         String jellyfinMediaDirPath = thirdPartyPresetOption.getJellyfinMediaDirPath()
@@ -298,20 +372,53 @@ public class TaskServiceImpl implements TaskService {
             jellyfinMediaDir.mkdirs();
         }
 
-        // 季度封面和tvshow.nfo 用目录名称，根据标题模糊查询数据库季度表
+
+        // 季度封面和tvshow.nfo
+        // 用目录名称，根据标题模糊查询数据库季度表
         SeasonEntity seasonEntity =
-            seasonService.findSeasonEntityByTitleLike(dirName);
+            seasonService.findSeasonEntityByTitleLike(StringUtils.addLikeChar(dirName));
         if (seasonEntity == null && dirName.indexOf(" ") > 0) {
             seasonEntity = seasonService.findSeasonEntityByTitleLike(
-                dirName.substring(0, dirName.indexOf(" ")));
+                StringUtils.addLikeChar(dirName.substring(0, dirName.indexOf(" "))));
         }
         if (seasonEntity == null) {
-            seasonEntity = seasonService.findSeasonEntityByTitleCnLike(dirName);
+            seasonEntity =
+                seasonService.findSeasonEntityByTitleCnLike(StringUtils.addLikeChar(dirName));
         }
         if (seasonEntity == null && dirName.indexOf(" ") > 0) {
             seasonEntity = seasonService.findSeasonEntityByTitleCnLike(
-                dirName.substring(0, dirName.indexOf(" ")));
+                StringUtils.addLikeChar(dirName.substring(0, dirName.indexOf(" "))));
         }
+        // 查本地数据库关系表
+        Map<String, String> mikanTorrentNameBgmTvSubjectIdMap =
+            kvService.findMikanTorrentNameBgmTvSubjectIdMap();
+        Map<String, String> bgmTvSubjectIdMikanEpUrlMap =
+            kvService.findBgmTvSubjectIdMikanEpUrlMap();
+        String bgmtvSubjectId = mikanTorrentNameBgmTvSubjectIdMap.get(torrentName);
+        String mikanEpUrl = null;
+        if (StringUtils.isBlank(bgmtvSubjectId)) {
+            // 使用目录名模糊查询
+            List<KVEntity> kvEntityList = kvService
+                .findKVEntitiesByTypeAndKeyLike(KVType.MIKAN_TORRENT_NAME__BGM_TV_SUBJECT_ID,
+                    dirName);
+            if (!kvEntityList.isEmpty()) {
+                KVEntity kvEntity = kvEntityList.get(0);
+                bgmtvSubjectId = kvEntity.getValue();
+            }
+        }
+        mikanEpUrl = bgmTvSubjectIdMikanEpUrlMap.get(bgmtvSubjectId);
+
+        bgmtvSubjectId = findBgmTvSubjectIdByTorrentName(torrentName, mikanEpUrl);
+
+        if (seasonEntity == null && StringUtils.isNotBlank(bgmtvSubjectId)) {
+            AnimeDTO animeDTO = bgmTvService.reqBgmtvSubject(Long.valueOf(bgmtvSubjectId));
+            if (animeDTO != null) {
+                List<SeasonDTO> seasons = animeDTO.getSeasons();
+                SeasonDTO seasonDTO = seasons.get(0);
+                seasonEntity = seasonService.getById(seasonDTO.getId());
+            }
+        }
+
         if (seasonEntity != null) {
             AnimeEntity animeEntity = animeService.getById(seasonEntity.getAnimeId());
             String tvshowNfoFilePath = jellyfinMediaDir + File.separator + "tvshow.nfo";
@@ -354,28 +461,70 @@ public class TaskServiceImpl implements TaskService {
             LOGGER.warn("search season entity is null for title: {}", dirName);
         }
 
-        // 剧集文件
-        String fileName = FileUtils.parseFileName(downloadFilePath);
-        Long seq = RegexUtils.getFileNameTagEpSeq(fileName);
-        fileName = "S1E" + seq + "-" + fileName;
-        String jellyfinFilePath = jellyfinMediaDirPath + File.separatorChar + fileName;
-        File jellyfinFile = new File(jellyfinFilePath);
-
-        try {
-            if (jellyfinFile.exists()) {
+        // 处理文件
+        File torrentContentFile = new File(torrentContentPath);
+        if (torrentContentFile.isDirectory()) {
+            // 目录多文件，则加上统一前缀
+            File[] files = torrentContentFile.listFiles();
+            if (files == null || files.length == 0) {
                 return;
             }
-            Files.createLink(jellyfinFile.toPath(), new File(downloadFilePath).toPath());
-            LOGGER.debug("copy jellyfin file hard link success, link={}, existing={}",
-                jellyfinFilePath, downloadFilePath);
+            for (File file : files) {
+                try {
+                    String fileName = file.getName();
+                    Long seq = null;
+                    try {
+                        seq = RegexUtils.getFileNameTagEpSeq(fileName);
+                    } catch (RegexMatchingException regexMatchingException) {
+                        LOGGER.warn("matching fail for fileName={}, ex msg:{}", fileName,
+                            regexMatchingException.getMessage());
+                    }
+                    if (seq != null) {
+                        fileName = "S1E" + seq + "-" + fileName;
+                    }
+                    String jellyfinFilePath = jellyfinMediaDirPath + File.separatorChar + fileName;
+                    File jellyfinFile = new File(jellyfinFilePath);
+                    if (jellyfinFile.exists()) {
+                        continue;
+                    }
+                    Files.createLink(jellyfinFile.toPath(), file.toPath());
+                    LOGGER.debug("copy jellyfin file hard link success, link={}, existing={}",
+                        jellyfinFilePath, torrentContentPath);
 
-        } catch (RegexMatchingException regexMatchingException) {
-            LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
-        } catch (Exception e) {
-            LOGGER.error(
-                "create jellyfin file hard link fail, please let qbittorrent and ikaros "
-                    + "and jellyfin instance in the same file system",
-                e);
+                } catch (RegexMatchingException regexMatchingException) {
+                    LOGGER.warn("regex matching fail, msg: {}",
+                        regexMatchingException.getMessage());
+                } catch (Exception e) {
+                    LOGGER.error(
+                        "create jellyfin file hard link fail, please let qbittorrent and ikaros "
+                            + "and jellyfin instance in the same file system",
+                        e);
+                }
+            }
+        } else {
+            // 单剧集文件
+            String fileName = FileUtils.parseFileName(torrentContentPath);
+            Long seq = RegexUtils.getFileNameTagEpSeq(fileName);
+            fileName = "S1E" + seq + "-" + fileName;
+            String jellyfinFilePath = jellyfinMediaDirPath + File.separatorChar + fileName;
+            File jellyfinFile = new File(jellyfinFilePath);
+
+            try {
+                if (jellyfinFile.exists()) {
+                    return;
+                }
+                Files.createLink(jellyfinFile.toPath(), torrentContentFile.toPath());
+                LOGGER.debug("copy jellyfin file hard link success, link={}, existing={}",
+                    jellyfinFilePath, torrentContentPath);
+
+            } catch (RegexMatchingException regexMatchingException) {
+                LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
+            } catch (Exception e) {
+                LOGGER.error(
+                    "create jellyfin file hard link fail, please let qbittorrent and ikaros "
+                        + "and jellyfin instance in the same file system",
+                    e);
+            }
         }
     }
 

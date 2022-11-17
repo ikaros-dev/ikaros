@@ -99,7 +99,7 @@ public class BgmTvServiceImpl implements BgmTvService {
             // 获取动漫信息
             BgmTvSubject bgmTvSubject = getSubject(subjectId);
             if (bgmTvSubject == null) {
-                LOGGER.error("request bgmtv fail, response null subject");
+                LOGGER.warn("request bgmtv fail, response null subject");
                 return null;
             }
 

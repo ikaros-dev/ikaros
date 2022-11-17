@@ -21,6 +21,7 @@ import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.RegexUtils;
+import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -147,8 +148,8 @@ public class SeasonServiceImpl
             try {
                 title = RegexUtils.getMatchingChineseStrWithoutTag(originalFileName);
             } catch (RegexMatchingException exception) {
-                String msg = "matching fail, skip for fileName=" + originalFileName;
-                LOGGER.warn(msg, exception);
+                LOGGER.warn("matching fail, skip for fileName={}, exception msg={}",
+                    originalFileName, exception.getMessage());
                 return;
             }
         }
@@ -190,14 +191,16 @@ public class SeasonServiceImpl
     @Override
     public SeasonEntity findSeasonEntityByTitleLike(@Nonnull String title) {
         AssertUtils.notBlank(title, "title");
-        return seasonRepository.findSeasonEntityByTitleLikeAndStatus(title, true);
+        return seasonRepository
+            .findSeasonEntityByTitleLikeAndStatus(StringUtils.addLikeChar(title), true);
     }
 
     @Nullable
     @Override
     public SeasonEntity findSeasonEntityByTitleCnLike(@Nonnull String titleCn) {
         AssertUtils.notBlank(titleCn, "titleCn");
-        return seasonRepository.findSeasonEntityByTitleCnLikeAndStatus(titleCn, true);
+        return seasonRepository
+            .findSeasonEntityByTitleCnLikeAndStatus(StringUtils.addLikeChar(titleCn), true);
     }
 
 
