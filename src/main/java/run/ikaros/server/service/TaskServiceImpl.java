@@ -347,6 +347,12 @@ public class TaskServiceImpl implements TaskService {
         String dirName = matchingEnglishStr;
         if (StringUtils.isBlank(matchingEnglishStr)) {
             dirName = RegexUtils.getMatchingChineseStrWithoutTag(torrentName);
+            if (dirName.contains("僅限港澳台地區")) {
+                dirName = dirName.replace("僅限港澳台地區", "");
+            }
+            if (dirName.contains("。")) {
+                dirName = dirName.replace("。", "");
+            }
         }
 
         dirName = StringUtils.isBlank(dirName)

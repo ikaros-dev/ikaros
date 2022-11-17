@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * @author li-guohao
  */
@@ -60,4 +62,15 @@ class RegexConstTest {
         Assertions.assertTrue(strSet.contains(".mkv"));
     }
 
+    // @Test
+    void brackets() {
+        String fileName =
+            "[ANi] 秋葉原冥途戰爭（僅限港澳台地區） - 06 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4";
+        Matcher matcher = Pattern.compile("（//w）").matcher(fileName);
+        List<String> setList = new ArrayList<>();
+        while (matcher.find()) {
+            setList.add(matcher.group());
+        }
+        assertThat(setList).isNotEmpty();
+    }
 }
