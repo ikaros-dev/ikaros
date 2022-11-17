@@ -340,6 +340,10 @@ public class TaskServiceImpl implements TaskService {
         String matchingEnglishStr = null;
         try {
             matchingEnglishStr = RegexUtils.getMatchingEnglishStrWithoutTag(torrentName);
+            matchingEnglishStr =  matchingEnglishStr
+                .replace(" S ", "")
+                .replace(" S", "")
+                .replace("S ", "");
         } catch (RegexMatchingException regexMatchingException) {
             LOGGER.warn("match fail", regexMatchingException);
         }
@@ -359,7 +363,6 @@ public class TaskServiceImpl implements TaskService {
             ? torrentName
             .replaceAll(RegexConst.FILE_NAME_TAG, "")
             .replaceAll(RegexConst.FILE_POSTFIX, "")
-            .replaceAll("S", "")
             .replace("-", "")
             .trim()
             : dirName;
