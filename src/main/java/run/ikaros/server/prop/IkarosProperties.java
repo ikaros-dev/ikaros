@@ -38,6 +38,11 @@ public class IkarosProperties {
             + (StringUtils.isBlank(serverPort) ? "" : ":" + serverPort);
     }
 
+    public String getLocalhostHttpBaseUrl() {
+        return "http://localhost"
+            + (StringUtils.isBlank(serverPort) ? "" : ":" + serverPort);
+    }
+
 
     public String getEnv() {
         return env;

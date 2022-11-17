@@ -1,9 +1,10 @@
 # 部署的目录
 目录需要在同一个根目录下，不然硬链接创建会失效，这里给个例子
 
-- /share/test/app: 应用目录
-- /share/test/downloads/ikaros: 下载目录
-- /share/test/media/ikaros: 媒体目录
+- /share/test/app: 容器应用目录
+- /share/test/app/ikaros: Ikaros应用目录
+- /share/test/app/ikaros/downloads: 下载目录
+- /share/test/app/ikaros/media: 媒体目录
 
 ## ikaros
 ``` shell

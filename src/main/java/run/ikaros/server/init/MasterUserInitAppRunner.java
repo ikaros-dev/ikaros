@@ -1,6 +1,6 @@
 package run.ikaros.server.init;
 
-import run.ikaros.server.service.impl.UserServiceImpl;
+import run.ikaros.server.service.UserServiceImpl;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;

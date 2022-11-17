@@ -1,7 +1,5 @@
 package run.ikaros.server.openapi;
 
-import run.ikaros.server.exceptions.RuntimeIkarosException;
-import run.ikaros.server.exceptions.UserNoLoginException;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.constants.SecurityConst;
 import run.ikaros.server.result.CommonResult;
@@ -9,8 +7,8 @@ import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.AuthUserDTO;
 import run.ikaros.server.model.dto.UserDTO;
 import run.ikaros.server.entity.UserEntity;
-import run.ikaros.server.service.impl.UserServiceImpl;
-import java.util.List;
+import run.ikaros.server.service.UserServiceImpl;
+
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import run.ikaros.server.utils.JwtUtils;
 
 /**
  * @author guohao

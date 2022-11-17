@@ -11,6 +11,7 @@ import run.ikaros.server.exceptions.RssOperateException;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 
 /**
  * RSS 解析器 Rome 简单封装
@@ -29,7 +30,7 @@ public class RssUtils {
     public static SyndFeed parseFeed(String url) {
         SyndFeed feed = null;
         try {
-            feed = new SyndFeedInput().build(new XmlReader(new URL(url)));
+            feed = new SyndFeedInput(false, Locale.CHINA).build(new XmlReader(new URL(url)));
         } catch (FeedException | IOException e) {
             final String errMsg = "parse feed fail for url=" + url.substring(0, 30) + "...";
             LOGGER.error(errMsg, e);

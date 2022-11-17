@@ -3,7 +3,9 @@ package run.ikaros.server.utils;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,16 +16,29 @@ import org.slf4j.LoggerFactory;
 public class BeanUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(BeanUtils.class);
 
+    public static <T> void copyProperties(T source, T target) {
+        copyProperties(source, target, null);
+    }
+
     /**
      * 复制相同类型对象的相同类型属性值
      *
      * @param source 源对象
      * @param target 目标对象
      */
-    public static <T> void copyProperties(T source, T target) {
+    public static <T> void copyProperties(T source, T target, Set<String> excludeFieldNameSet) {
+        AssertUtils.notNull(source, "source");
+        AssertUtils.notNull(target, "target");
+        if (null == excludeFieldNameSet) {
+            excludeFieldNameSet = Set.of();
+        }
         Class<?> sourceClass = source.getClass();
+
         // copy current class declared fields
         for (Field declaredField : sourceClass.getDeclaredFields()) {
+            if (excludeFieldNameSet.contains(declaredField.getName())) {
+                continue;
+            }
             try {
                 declaredField.setAccessible(true);
                 Object oldValue = declaredField.get(source);
@@ -42,6 +57,9 @@ public class BeanUtils {
         // copy parent class declared fields
         Class<?> superclass = sourceClass.getSuperclass();
         for (Field declaredField : superclass.getDeclaredFields()) {
+            if (excludeFieldNameSet.contains(declaredField.getName())) {
+                continue;
+            }
             try {
                 declaredField.setAccessible(true);
                 Object oldValue = declaredField.get(source);
@@ -57,12 +75,12 @@ public class BeanUtils {
             }
         }
 
-        if (superclass.getSuperclass() != Object.class) {
+        Class<?> superPlusCls = superclass.getSuperclass();
+        if (superPlusCls != null && superPlusCls != Object.class) {
             throw new IllegalArgumentException(
                 "current kit method must can support two extend relation");
         }
     }
-
 
 
     @Nonnull

@@ -1,5 +1,7 @@
 package run.ikaros.server.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.exceptions.RegexMatchingException;
 
@@ -18,6 +20,7 @@ import java.util.stream.Stream;
  * @author li-guohao
  */
 public class RegexUtils {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegexUtils.class);
 
     @Nonnull
     public static String getFilePostfix(@Nonnull String fileName) {
@@ -33,14 +36,17 @@ public class RegexUtils {
     }
 
     @Nonnull
-    public static Set<String> getFileTag(@Nonnull String fileName) {
+    public static List<String> getFileTag(@Nonnull String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
-        Set<String> strSet = new HashSet<>();
+        if ("[]".equalsIgnoreCase(fileName)) {
+            return List.of();
+        }
+        List<String> stringList = new ArrayList<>();
         Matcher tagMatcher = Pattern.compile(RegexConst.FILE_NAME_TAG).matcher(fileName);
         while (tagMatcher.find()) {
-            strSet.add(tagMatcher.group());
+            stringList.add(tagMatcher.group());
         }
-        return strSet.stream()
+        return stringList.stream()
             .map(postfix -> postfix.replace("[", "")
                 .replace("]", ""))
             .filter(tag -> {
@@ -50,13 +56,16 @@ public class RegexUtils {
                 }
                 return !tag.equalsIgnoreCase(seqStr);
             })
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
     }
 
     @Nonnull
     public static Long getFileNameTagEpSeq(@Nonnull String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
         Set<String> strSet = new HashSet<>();
+        if ("[]".equalsIgnoreCase(fileName)) {
+            return -1L;
+        }
         final String originalFileName = fileName;
 
         // matching file tag that is seq
@@ -124,8 +133,42 @@ public class RegexUtils {
     }
 
     @Nonnull
+    public static String getMatchingEnglishStrWithoutTag(String str) {
+        AssertUtils.notBlank(str, "str");
+        final String originalStr = str;
+        str = str.replaceAll(RegexConst.FILE_NAME_TAG, "");
+        str = str.replaceAll(RegexConst.FILE_POSTFIX, "");
+        if (StringUtils.isBlank(str) || "[]".equalsIgnoreCase(str)) {
+            LOGGER.warn("str is blank after remove file tag, originalStr={}", originalStr);
+            // 针对全用中括号包裹的文件名称 获取第二个中括号的内容为标题
+            List<String> fileTagList = getFileTag(originalStr);
+            if (fileTagList.isEmpty() || fileTagList.size() <= 1) {
+                return str;
+            }
+            return fileTagList.get(1);
+        }
+        final String regex = "[A-Za-z\\s]";
+        return getMatchingStr(str, regex);
+    }
+
+    @Nonnull
     public static String getMatchingChineseStr(String str) {
         AssertUtils.notBlank(str, "str");
+        final String regex = "[\\u2E80-\\u9FFF]";
+        return getMatchingStr(str, regex);
+    }
+
+    @Nonnull
+    public static String getMatchingChineseStrWithoutTag(String str) {
+        AssertUtils.notBlank(str, "str");
+        final String originalStr = str;
+        str = str.replaceAll(RegexConst.FILE_NAME_TAG, "");
+        str = str.replaceAll(RegexConst.FILE_POSTFIX, "");
+        str = str.replaceAll(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE, "");
+        if (StringUtils.isBlank(str)) {
+            LOGGER.warn("str is blank after remove file tag, originalStr={}", originalStr);
+            return str;
+        }
         final String regex = "[\\u2E80-\\u9FFF]";
         return getMatchingStr(str, regex);
     }

@@ -1,6 +1,6 @@
 package run.ikaros.server.cache;
 
-import run.ikaros.server.service.impl.UserServiceImpl;
+import run.ikaros.server.service.UserServiceImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

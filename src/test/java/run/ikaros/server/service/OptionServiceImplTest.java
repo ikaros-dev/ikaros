@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static run.ikaros.server.common.UnitTestConst.PROCESS_SHOUT_NOT_RUN_THIS;
+import static run.ikaros.server.unittest.common.UnitTestConst.PROCESS_SHOUT_NOT_RUN_THIS;
 
 import java.util.List;
 import java.util.Set;
@@ -24,7 +24,6 @@ import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.OptionItemDTO;
-import run.ikaros.server.service.impl.OptionServiceImpl;
 
 /**
  * @author guohao

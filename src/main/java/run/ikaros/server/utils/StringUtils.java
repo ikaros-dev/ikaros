@@ -29,4 +29,12 @@ public class StringUtils {
     public static boolean isNotBlank(final String s) {
         return !isBlank(s);
     }
+
+    /**
+     * @return % + you str + %
+     */
+    public static String addLikeChar(String str) {
+        return "%" + str + "%";
+    }
+
 }

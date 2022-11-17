@@ -4,7 +4,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import run.ikaros.server.constants.RegexConst;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -24,7 +26,7 @@ class RegexUtilsTest {
 
     @Test
     void getFileTag() {
-        Set<String> tagSet = RegexUtils.getFileTag(fileName);
+        List<String> tagSet = RegexUtils.getFileTag(fileName);
         Assertions.assertFalse(tagSet.isEmpty());
         Assertions.assertEquals(3, tagSet.size());
         Assertions.assertTrue(tagSet.contains("VCB-Studio"));
@@ -49,7 +51,8 @@ class RegexUtilsTest {
 
     @Test
     void getMatchingEnglishStr() {
-        String matchingEnglishStr = RegexUtils.getMatchingEnglishStr(title);
+        String str = "[Eternal][Harem Camp!][06][GB][720P][Premium].mp4";
+        String matchingEnglishStr = RegexUtils.getMatchingEnglishStrWithoutTag(str);
         LOGGER.info("matching english str: {}", matchingEnglishStr);
         Assertions.assertNotNull(matchingEnglishStr);
     }

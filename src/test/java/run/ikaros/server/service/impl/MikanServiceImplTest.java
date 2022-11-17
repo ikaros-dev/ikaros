@@ -3,7 +3,8 @@ package run.ikaros.server.service.impl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
-import run.ikaros.server.service.MikanService;
+import run.ikaros.server.core.service.MikanService;
+import run.ikaros.server.service.MikanServiceImpl;
 
 /**
  * @author li-guohao

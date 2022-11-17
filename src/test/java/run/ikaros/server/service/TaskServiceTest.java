@@ -7,7 +7,9 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.util.ResourceUtils;
-import run.ikaros.server.rss.mikan.model.MikanRssItem;
+import run.ikaros.server.core.service.RssService;
+import run.ikaros.server.core.service.TaskService;
+import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 import run.ikaros.server.utils.JsonUtils;
 
 import javax.annotation.Resource;

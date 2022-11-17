@@ -7,9 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.init.option.AppPresetOption;
 import run.ikaros.server.init.option.CommonPresetOption;
 import run.ikaros.server.init.option.FilePresetOption;
@@ -18,7 +16,7 @@ import run.ikaros.server.init.option.PresetOption;
 import run.ikaros.server.init.option.SeoPresetOption;
 import run.ikaros.server.init.option.ThirdPartyPresetOption;
 import run.ikaros.server.result.CommonResult;
-import run.ikaros.server.service.OptionService;
+import run.ikaros.server.core.service.OptionService;
 
 /**
  * @author guohao
