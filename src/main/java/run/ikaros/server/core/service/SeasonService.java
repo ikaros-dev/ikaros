@@ -6,6 +6,7 @@ import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.params.SeasonMatchingEpParams;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -23,4 +24,10 @@ public interface SeasonService extends CrudService<SeasonEntity, Long> {
     SeasonDTO matchingEpisodeUrlByFileIds(@Nonnull SeasonMatchingEpParams seasonMatchingEpParams);
 
     void updateEpisodeUrlByFileEntity(@Nonnull FileEntity fileEntity);
+
+    @Nullable
+    SeasonEntity findSeasonEntityByTitleLike(@Nonnull String title);
+
+    @Nullable
+    SeasonEntity findSeasonEntityByTitleCnLike(@Nonnull String titleCn);
 }

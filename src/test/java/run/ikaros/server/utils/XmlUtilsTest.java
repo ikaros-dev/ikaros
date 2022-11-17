@@ -23,4 +23,17 @@ class XmlUtilsTest {
             XmlUtils.parseMikanRssXmlFile(cacheRssCacheXmlFile.getAbsolutePath());
         assertThat(mikanRssItemList).isNotEmpty();
     }
+
+    @Test
+    void generateJellyfinTvShowNfoXml() {
+        String filePath =
+            SystemVarUtils.getOsCacheDirPath() + File.separator + "tvshow.nfo";
+
+        XmlUtils.generateJellyfinTvShowNfoXml(filePath, "默认的描述", "默认标题", "原始标题", "366695");
+
+        File file = new File(filePath);
+        if (file.exists()) {
+            file.delete();
+        }
+    }
 }

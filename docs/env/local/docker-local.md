@@ -122,7 +122,7 @@ ikaros:dev
 
 ```shell
 docker run -d \
---name=ikaros_jellyfin \
+--name=jellyfin \
 -e PUID=0 \
 -e PGID=0 \
 -e LANG=zh_CN.UTF-8 \
@@ -130,8 +130,8 @@ docker run -d \
 -e LC_ALL=zh_CN.UTF-8 \
 -e TZ=Asia/Shanghai \
 -p 9092:8096 \
--v C:\Users\li-guohao\ikaros\jellyfin/config:/config \
--v C:\Users\li-guohao\ikaros\jellyfin/cache:/cache \
+-v C:\Users\li-guohao\jellyfin/config:/config \
+-v C:\Users\li-guohao\jellyfin/cache:/cache \
 -v C:\Users\li-guohao\ikaros\media:/media \
 --restart=always \
 jellyfin/jellyfin

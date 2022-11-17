@@ -23,6 +23,7 @@ import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.RegexUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -183,6 +184,20 @@ public class SeasonServiceImpl
         episodeService.save(episodeEntity);
         LOGGER.debug("update episode url by file entity success, originalFileName={}, newUrl={}",
             originalFileName, fileEntity.getUrl());
+    }
+
+    @Nullable
+    @Override
+    public SeasonEntity findSeasonEntityByTitleLike(@Nonnull String title) {
+        AssertUtils.notBlank(title, "title");
+        return seasonRepository.findSeasonEntityByTitleLikeAndStatus(title, true);
+    }
+
+    @Nullable
+    @Override
+    public SeasonEntity findSeasonEntityByTitleCnLike(@Nonnull String titleCn) {
+        AssertUtils.notBlank(titleCn, "titleCn");
+        return seasonRepository.findSeasonEntityByTitleCnLikeAndStatus(titleCn, true);
     }
 
 

@@ -254,6 +254,12 @@ public class QbittorrentClient {
             false, false, false);
     }
 
+    public void addTorrentFromUrl(@Nonnull String url, String newName) {
+        AssertUtils.notBlank(url, "url");
+        addTorrentFromURLs(url, categorySavePath, category, newName, true,
+            false, false, false);
+    }
+
     /**
      * @param filter   Filter torrent list by state. Allowed state filters: all, downloading,
      *                 seeding,completed, paused, active, inactive, resumed, stalled,

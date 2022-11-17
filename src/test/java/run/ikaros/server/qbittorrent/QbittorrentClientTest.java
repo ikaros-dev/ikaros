@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class QbittorrentClientTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(QbittorrentClientTest.class);
 
-    static String prefix = "http://192.168.2.127:9091/api/v2/";
+    static String prefix = "http://192.168.2.229:9091/api/v2/";
     static final String hash = "42b6ca3fa47fa5435ad69ce67fd7611237bdec5a";
     static QbittorrentClient qbittorrentClient = new QbittorrentClient(prefix);
     static final String category = "unittest";
@@ -150,7 +150,7 @@ class QbittorrentClientTest {
     @Disabled
     void getTorrentList() {
         List<QbTorrentInfo> torrentList =
-            qbittorrentClient.getTorrentList(QbTorrentInfoFilter.ALL, category, null, 100, 0, null);
+            qbittorrentClient.getTorrentList(QbTorrentInfoFilter.ALL, null, null, 100, 0, null);
         Assertions.assertFalse(torrentList.isEmpty());
         torrentList.forEach(
             qbTorrentInfo -> LOGGER.info("[{}] state={}", qbTorrentInfo.getName(),

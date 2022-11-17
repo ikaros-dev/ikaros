@@ -49,8 +49,9 @@ public class SystemVarUtils {
     }
 
     public static String getOsCacheDirPath() {
-        String ikarosCacheFileDir =
-            System.getProperty("java.io.tmpdir") + File.separator + "ikaros";
+        String tmpDirPath = System.getProperty("java.io.tmpdir");
+        String ikarosCacheFileDir = tmpDirPath
+            + (tmpDirPath.endsWith(File.separator) ? "" : File.separator) + "ikaros";
         File file = new File(ikarosCacheFileDir);
         if (!file.exists()) {
             file.mkdirs();

@@ -8,16 +8,24 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import run.ikaros.server.exceptions.RssOperateException;
+import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 
 import javax.annotation.Nonnull;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class XmlUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(XmlUtils.class);
@@ -80,5 +88,63 @@ public class XmlUtils {
             }
         }
         return mikanRssItem;
+    }
+
+    public static String generateJellyfinTvShowNfoXml(@Nonnull String filePath, String plot,
+                                                       String title,
+                                                       String originaltitle, String bangumiid) {
+        AssertUtils.notBlank(filePath, "filePath");
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = null;
+        try {
+            db = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeIkarosException("new document builder fail", e);
+        }
+        Document document = db.newDocument();
+        // 不显示standalone="no"
+        document.setXmlStandalone(true);
+        Element tvshowElement = document.createElement("tvshow");
+        document.appendChild(tvshowElement);
+
+        Element plotElement = document.createElement("plot");
+        plotElement.setTextContent(plot);
+        tvshowElement.appendChild(plotElement);
+
+        Element lockdataElement = document.createElement("lockdata");
+        lockdataElement.setTextContent("false");
+        tvshowElement.appendChild(lockdataElement);
+
+        Element titleElement = document.createElement("title");
+        titleElement.setTextContent(title);
+        tvshowElement.appendChild(titleElement);
+
+        Element originaltitleElement = document.createElement("originaltitle");
+        originaltitleElement.setTextContent(originaltitle);
+        tvshowElement.appendChild(originaltitleElement);
+
+        Element bangumiidElement = document.createElement("bangumiid");
+        bangumiidElement.setTextContent(bangumiid);
+        tvshowElement.appendChild(bangumiidElement);
+
+        File file = new File(filePath);
+        File dir = file.getParentFile();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        try {
+            TransformerFactory tff = TransformerFactory.newInstance();
+            Transformer tf = tff.newTransformer();
+            // 输出内容是否使用换行
+            tf.setOutputProperty(OutputKeys.INDENT, "yes");
+            // 创建xml文件并写入内容
+            tf.transform(new DOMSource(document), new StreamResult(file));
+            LOGGER.info("generate jellyfin tv show nfo xml file success, filePath: {}", filePath);
+        } catch (TransformerException transformerException) {
+            LOGGER.warn("generate jellyfin tv show nfo xml file fail", transformerException);
+        }
+        return filePath;
     }
 }

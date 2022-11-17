@@ -8,4 +8,8 @@ import run.ikaros.server.entity.SeasonEntity;
  */
 public interface SeasonRepository extends BaseRepository<SeasonEntity, Long> {
 
+    SeasonEntity findSeasonEntityByTitleLikeAndStatus(String title, Boolean status);
+
+    SeasonEntity findSeasonEntityByTitleCnLikeAndStatus(String titleCn, Boolean status);
+
 }
