@@ -79,4 +79,3 @@ docker run -d \
 ikaros:0.1.0
 ```
 
-## 

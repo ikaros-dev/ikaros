@@ -26,6 +26,7 @@ import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.transaction.Transactional;
 import java.util.List;
 
 /**

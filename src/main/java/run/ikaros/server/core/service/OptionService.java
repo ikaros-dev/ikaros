@@ -2,7 +2,8 @@ package run.ikaros.server.core.service;
 
 import java.util.List;
 import javax.annotation.Nonnull;
-import javax.transaction.Transactional;
+
+import org.springframework.transaction.annotation.Transactional;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.model.dto.OptionItemDTO;
@@ -17,10 +18,10 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
     OptionEntity findOptionItemByKey(@Nonnull String key);
 
     @Nonnull
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional
     OptionEntity saveOptionItem(@Nonnull OptionItemDTO optionItemDTO);
 
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional
     void deleteOptionItemByKey(@Nonnull String key);
 
     @Nonnull
@@ -35,6 +36,6 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
     /**
      * @return init result msg
      */
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional
     boolean appInit(@Nonnull AppInitRequest appInitRequest);
 }

@@ -8,6 +8,8 @@ public interface SecurityConst {
 
     String API_AUTH_LOGIN_URL = "/api/user/login";
     String API_AUTH_LOGOUT_URL = "/api/user/logout";
+    String API_AUTH_OPTION_IS_INIT = "/api/option/app/is-init";
+    String API_AUTH_OPTION_APP_INIT = "/api/option/app/init";
     String API_USER_REGISTER_URL = "/api/user/register";
     String[] PAGE_ADMIN_URL = {
         "/admin/**", "/js/**", "/css/**", "/img/**", "/logo.png"

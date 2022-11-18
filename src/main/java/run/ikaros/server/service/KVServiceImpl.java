@@ -48,6 +48,7 @@ public class KVServiceImpl implements KVService {
         return kvEntity;
     }
 
+    @Nonnull
     @Override
     public Map<String, String> findMikanEpUrlBgmTvSubjectIdMap() {
         Map<String, String> map = new HashMap<>();
@@ -65,6 +66,7 @@ public class KVServiceImpl implements KVService {
         return map;
     }
 
+    @Nonnull
     @Override
     public Map<String, String> findMikanTorrentNameBgmTvSubjectIdMap() {
         Map<String, String> map = new HashMap<>();

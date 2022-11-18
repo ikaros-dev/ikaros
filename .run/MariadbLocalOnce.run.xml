@@ -3,6 +3,7 @@
     <deployment type="docker-image">
       <settings>
         <option name="imageTag" value="mariadb" />
+        <option name="command" value="--character_set_client=utf8mb4 --character_set_filesystem=utf8mb4 --character_set_server=utf8mb4 --collation-server=utf8mb4_unicode_ci" />
         <option name="containerName" value="mariadb" />
         <option name="envVars">
           <list>

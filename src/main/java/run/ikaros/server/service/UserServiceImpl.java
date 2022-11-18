@@ -87,7 +87,7 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
                 .setTelephone("00000000000")
                 .setAvatar(
                     "https://example.org/avator.jpeg")
-        ).hiddenSecretField();
+        );
     }
 
 
@@ -163,7 +163,8 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
         return authUserDTO;
     }
 
-    public UserDTO getUserInfoByToken(String token) {
+    @Nonnull
+    public UserDTO getUserInfoByToken(@Nonnull String token) {
         AssertUtils.notBlank(token, "token");
         if (!JwtUtils.validateToken(token)) {
             throw new JwtTokenValidateFailException("validate fail for token: " + token);
