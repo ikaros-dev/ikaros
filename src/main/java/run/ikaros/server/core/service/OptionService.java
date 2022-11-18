@@ -7,6 +7,7 @@ import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.init.option.PresetOption;
 import run.ikaros.server.model.dto.OptionItemDTO;
+import run.ikaros.server.model.request.AppInitRequest;
 
 /**
  * @author li-guohao
@@ -42,4 +43,12 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
     <T extends PresetOption> T savePresetOption(@Nonnull T presetOption);
 
     void initPresetOptionsOnce();
+
+    boolean findAppIsInit();
+
+    /**
+     * @return init result msg
+     */
+    @Transactional(rollbackOn = Exception.class)
+    boolean appInit(@Nonnull AppInitRequest appInitRequest);
 }

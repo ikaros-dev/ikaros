@@ -9,22 +9,36 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import run.ikaros.server.constants.DefaultConst;
 import run.ikaros.server.constants.OptionConst;
+import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.entity.OptionEntity;
+import run.ikaros.server.enums.OptionApp;
+import run.ikaros.server.enums.OptionBgmTv;
 import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.enums.OptionCommon;
+import run.ikaros.server.enums.OptionFile;
+import run.ikaros.server.enums.OptionJellyfin;
+import run.ikaros.server.enums.OptionMikan;
+import run.ikaros.server.enums.OptionNetwork;
+import run.ikaros.server.enums.OptionQbittorrent;
+import run.ikaros.server.enums.OptionSeo;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.exceptions.ReflectOperateException;
 import run.ikaros.server.init.option.AppPresetOption;
 import run.ikaros.server.init.option.PresetOption;
-import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.core.repository.OptionRepository;
 import run.ikaros.server.core.service.OptionService;
+import run.ikaros.server.model.dto.OptionItemDTO;
+import run.ikaros.server.model.request.AppInitRequest;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.ClassUtils;
 import run.ikaros.server.utils.JsonUtils;
+import run.ikaros.server.utils.StringUtils;
 
 /**
  * @author guohao
@@ -39,10 +53,12 @@ public class OptionServiceImpl
     private List<Class<? extends PresetOption>> classList = null;
 
     private final OptionRepository optionRepository;
+    private final UserService userService;
 
-    public OptionServiceImpl(OptionRepository optionRepository) {
+    public OptionServiceImpl(OptionRepository optionRepository, UserService userService) {
         super(optionRepository);
         this.optionRepository = optionRepository;
+        this.userService = userService;
     }
 
     @Nonnull
@@ -238,6 +254,118 @@ public class OptionServiceImpl
 
         // save all option entity
         optionEntityList.forEach(this::save);
+    }
+
+    @Override
+    public boolean findAppIsInit() {
+        OptionEntity optionEntity =
+            optionRepository.findByCategoryAndKeyAndStatus(OptionCategory.APP,
+                OptionApp.IS_INIT.name(), true);
+        if (optionEntity != null) {
+            return "true".equalsIgnoreCase(optionEntity.getValue());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean appInit(@Nonnull AppInitRequest appInitRequest) {
+        if (findAppIsInit()) {
+            return true;
+        }
+
+        AssertUtils.notNull(appInitRequest, "appInitRequest");
+
+        final String username = appInitRequest.getUsername();
+        final String password = appInitRequest.getPassword();
+        AssertUtils.notBlank(username, "username");
+        AssertUtils.notBlank(password, "password");
+        userService.registerUserByUsernameAndPassword(username, password);
+
+        final String title = appInitRequest.getTitle();
+        final String description = appInitRequest.getDescription();
+
+        // init option app
+        saveOptionItem(new OptionItemDTO(OptionApp.IS_INIT.name(),
+            DefaultConst.OPTION_APP_IS_INIT, OptionCategory.APP));
+        saveOptionItem(new OptionItemDTO(OptionApp.THEME.name(),
+            DefaultConst.OPTION_APP_THEME, OptionCategory.APP));
+
+        // init option common
+        saveOptionItem(new OptionItemDTO(OptionCommon.TITLE.name(),
+            StringUtils.isNotBlank(title) ? title : DefaultConst.OPTION_COMMON_TITLE,
+            OptionCategory.COMMON));
+        saveOptionItem(new OptionItemDTO(OptionCommon.DESCRIPTION.name(),
+            StringUtils.isNotBlank(description) ? description :
+                DefaultConst.OPTION_COMMON_DESCRIPTION,
+            OptionCategory.COMMON));
+        saveOptionItem(new OptionItemDTO(OptionCommon.ADDRESS.name(),
+            DefaultConst.OPTION_COMMON_ADDRESS,
+            OptionCategory.COMMON));
+        saveOptionItem(new OptionItemDTO(OptionCommon.LOGO.name(),
+            DefaultConst.OPTION_COMMON_LOGO,
+            OptionCategory.COMMON));
+        saveOptionItem(new OptionItemDTO(OptionCommon.FAVICON.name(),
+            DefaultConst.OPTION_COMMON_FAVICON,
+            OptionCategory.COMMON));
+        saveOptionItem(new OptionItemDTO(OptionCommon.HEADER.name(),
+            DefaultConst.OPTION_COMMON_HEADER,
+            OptionCategory.COMMON));
+        saveOptionItem(new OptionItemDTO(OptionCommon.FOOTER.name(),
+            DefaultConst.OPTION_COMMON_FOOTER,
+            OptionCategory.COMMON));
+        saveOptionItem(new OptionItemDTO(OptionCommon.STATISTICS_CODE.name(),
+            DefaultConst.OPTION_COMMON_STATISTICS_CODE,
+            OptionCategory.COMMON));
+
+        // init option seo
+        saveOptionItem(new OptionItemDTO(OptionSeo.HIDE_FOR_SEARCH_ENGINE.name(),
+            DefaultConst.OPTION_SEO_HIDE_FOR_SEARCH_ENGINE, OptionCategory.SEO));
+        saveOptionItem(new OptionItemDTO(OptionSeo.KEYWORDS.name(),
+            DefaultConst.OPTION_SEO_KEYWORDS, OptionCategory.SEO));
+        saveOptionItem(new OptionItemDTO(OptionSeo.SITE_DESCRIPTION.name(),
+            DefaultConst.OPTION_SEO_SITE_DESCRIPTION, OptionCategory.SEO));
+
+        // init option file
+        saveOptionItem(new OptionItemDTO(OptionFile.PLACE_SELECT.name(),
+            DefaultConst.OPTION_FILE_PLACE_SELECT, OptionCategory.FILE));
+
+        // init option network
+        saveOptionItem(new OptionItemDTO(OptionNetwork.PROXY_HTTP_HOST.name(),
+            DefaultConst.OPTION_NETWORK_PROXY_HTTP_HOST, OptionCategory.NETWORK));
+        saveOptionItem(new OptionItemDTO(OptionNetwork.PROXY_HTTP_PORT.name(),
+            DefaultConst.OPTION_NETWORK_PROXY_HTTP_PORT, OptionCategory.NETWORK));
+
+        // init option qbittorrent
+        saveOptionItem(new OptionItemDTO(OptionQbittorrent.URL.name(),
+            DefaultConst.OPTION_QBITTORRENT_URL, OptionCategory.QBITTORRENT));
+        saveOptionItem(new OptionItemDTO(OptionQbittorrent.USERNAME.name(),
+            DefaultConst.OPTION_QBITTORRENT_USERNAME, OptionCategory.QBITTORRENT));
+        saveOptionItem(new OptionItemDTO(OptionQbittorrent.PASSWORD.name(),
+            DefaultConst.OPTION_QBITTORRENT_PASSWORD, OptionCategory.QBITTORRENT));
+
+        // init option bgmtv
+        saveOptionItem(new OptionItemDTO(OptionBgmTv.API_BASE.name(),
+            DefaultConst.OPTION_BGMTV_API_BASE, OptionCategory.BGMTV));
+        saveOptionItem(new OptionItemDTO(OptionBgmTv.API_SUBJECTS.name(),
+            DefaultConst.OPTION_BGMTV_API_SUBJECTS, OptionCategory.BGMTV));
+        saveOptionItem(new OptionItemDTO(OptionBgmTv.API_EPISODES.name(),
+            DefaultConst.OPTION_BGMTV_API_EPISODES, OptionCategory.BGMTV));
+        saveOptionItem(new OptionItemDTO(OptionBgmTv.API_SEARCH_SUBJECT.name(),
+            DefaultConst.OPTION_BGMTV_API_SEARCH_SUBJECT, OptionCategory.BGMTV));
+        saveOptionItem(new OptionItemDTO(OptionBgmTv.ENABLE_PROXY.name(),
+            DefaultConst.OPTION_BGMTV_ENABLE_PROXY, OptionCategory.BGMTV));
+
+        // init option mikan
+        saveOptionItem(new OptionItemDTO(OptionMikan.MY_SUBSCRIBE_RSS.name(),
+            DefaultConst.OPTION_MIKAN_MY_SUBSCRIBE_RSS, OptionCategory.MIKAN));
+        saveOptionItem(new OptionItemDTO(OptionMikan.ENABLE_PROXY.name(),
+            DefaultConst.OPTION_MIKAN_ENABLE_PROXY, OptionCategory.MIKAN));
+
+        // init option jellyfin
+        saveOptionItem(new OptionItemDTO(OptionJellyfin.MEDIA_DIR_PATH.name(),
+            DefaultConst.OPTION_JELLYFIN_MEDIA_DIR_PATH, OptionCategory.JELLYFIN));
+
+        return true;
     }
 
 }

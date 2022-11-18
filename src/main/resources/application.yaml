@@ -52,6 +52,9 @@ spring:
   thymeleaf:
     cache: true
 
+  flyway:
+    locations: migration
+
 
 logging:
   file:

@@ -16,12 +16,16 @@ import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.KVEntity;
+import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.KVType;
+import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.enums.OptionJellyfin;
+import run.ikaros.server.enums.OptionMikan;
+import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
-import run.ikaros.server.init.option.ThirdPartyPresetOption;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
@@ -89,9 +93,15 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents() {
         LOGGER.info("exec task: pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents");
-        ThirdPartyPresetOption thirdPartyPresetOption =
-            optionService.findPresetOption(new ThirdPartyPresetOption());
-        String mikanMySubscribeRssUrl = thirdPartyPresetOption.getMikanMySubscribeRssUrl();
+
+        OptionEntity mikanSubRssOptionEntity =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.MIKAN,
+                OptionMikan.MY_SUBSCRIBE_RSS.name());
+        if (StringUtils.isBlank(mikanSubRssOptionEntity.getValue())) {
+            throw new RuntimeIkarosException("please config mikan sub rss url");
+        }
+        String mikanMySubscribeRssUrl = mikanSubRssOptionEntity.getValue();
+
         LOGGER.info("start parse mikan my subscribe rss url from db");
         List<MikanRssItem> mikanRssItemList =
             rssService.parseMikanMySubscribeRss(mikanMySubscribeRssUrl);
@@ -336,8 +346,13 @@ public class TaskServiceImpl implements TaskService {
         AssertUtils.notBlank(torrentContentPath, "torrentContentPath");
         torrentContentPath = addPrefixForQbittorrentDownloadPath(torrentContentPath);
 
-        final ThirdPartyPresetOption thirdPartyPresetOption =
-            optionService.findPresetOption(new ThirdPartyPresetOption());
+        OptionEntity jellyfinMediaPathOptionEntity =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.JELLYFIN,
+                OptionJellyfin.MEDIA_DIR_PATH.name());
+        if (StringUtils.isBlank(jellyfinMediaPathOptionEntity.getValue())) {
+            throw new RuntimeIkarosException("please config jellyfin media path");
+        }
+        final String jellyfinMediaBasePath = jellyfinMediaPathOptionEntity.getValue();
 
         String matchingEnglishStr = null;
         try {
@@ -370,7 +385,7 @@ public class TaskServiceImpl implements TaskService {
             .trim()
             : dirName;
 
-        String jellyfinMediaDirPath = thirdPartyPresetOption.getJellyfinMediaDirPath()
+        String jellyfinMediaDirPath = jellyfinMediaBasePath
             + File.separatorChar + dirName;
 
         // jellyfin media path => ikaros app media path

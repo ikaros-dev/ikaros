@@ -4,6 +4,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +15,7 @@ import run.ikaros.server.init.option.FilePresetOption;
 import run.ikaros.server.init.option.OtherPresetOption;
 import run.ikaros.server.init.option.PresetOption;
 import run.ikaros.server.init.option.SeoPresetOption;
-import run.ikaros.server.init.option.ThirdPartyPresetOption;
+import run.ikaros.server.model.request.AppInitRequest;
 import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.core.service.OptionService;
 
@@ -67,13 +68,16 @@ public class OptionRestController {
         return CommonResult.ok(optionService.savePresetOption(presetOption));
     }
 
-    @PutMapping("/preset/thirdparty")
-    public CommonResult<PresetOption> saveThirdPartyPresetOption(
-        @RequestBody ThirdPartyPresetOption presetOption) {
-        return CommonResult.ok(optionService.savePresetOption(presetOption));
+
+    @GetMapping("/app/is-init")
+    public CommonResult<Boolean> findAppIsInit() {
+        return CommonResult.ok(optionService.findAppIsInit());
     }
 
-
+    @PostMapping("/app/init")
+    public CommonResult<Boolean> reqAppInit(@RequestBody AppInitRequest appInitRequest) {
+        return CommonResult.ok(optionService.appInit(appInitRequest));
+    }
 
 
 }

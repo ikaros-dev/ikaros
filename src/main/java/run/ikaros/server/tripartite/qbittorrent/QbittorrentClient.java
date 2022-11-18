@@ -15,6 +15,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import run.ikaros.server.constants.DefaultConst;
 import run.ikaros.server.tripartite.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.tripartite.qbittorrent.model.QbCategory;
 import run.ikaros.server.tripartite.qbittorrent.model.QbTorrentInfo;
@@ -39,8 +40,8 @@ import java.util.Map;
 @Retryable
 public class QbittorrentClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(QbittorrentClient.class);
-    private String category = "ikaros";
-    private String categorySavePath = "/downloads/ikaros/";
+    private String category = DefaultConst.OPTION_QBITTORRENT_CATEGORY;
+    private String categorySavePath = DefaultConst.OPTION_QBITTORRENT_CATEGORY_SAVE_PATH;
     private final RestTemplate restTemplate = new RestTemplate();
     /**
      * API前缀，例如：http://192.168.2.229:60101/api/v2/

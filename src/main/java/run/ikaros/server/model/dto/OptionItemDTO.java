@@ -22,12 +22,17 @@ public class OptionItemDTO {
         this.value = value;
     }
 
+    public OptionItemDTO(String key, String value, OptionCategory category) {
+        this.key = key;
+        this.value = value;
+        this.category = category;
+    }
+
     public String getKey() {
         return key;
     }
 
     public OptionItemDTO setKey(String key) {
-        AssertUtils.notBlank(key, "'key' must not be blank");
         this.key = key;
         return this;
     }
