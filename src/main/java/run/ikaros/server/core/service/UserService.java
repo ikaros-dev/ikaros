@@ -17,7 +17,7 @@ import run.ikaros.server.utils.JwtUtils;
  */
 public interface UserService {
     @Nonnull
-    @Transactional
+    @Transactional(rollbackOn = Exception.class)
     UserEntity registerUserByUsernameAndPassword(@Nonnull String username,
                                                  @Nonnull String password);
 

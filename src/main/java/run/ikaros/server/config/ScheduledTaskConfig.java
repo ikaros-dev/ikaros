@@ -11,8 +11,8 @@ import run.ikaros.server.tripartite.qbittorrent.QbittorrentClient;
 /**
  * @author li-guohao
  */
-@Configuration
-@EnableScheduling
+//@Configuration
+//@EnableScheduling
 public class ScheduledTaskConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScheduledTaskConfig.class);
     private final TaskService taskService;
