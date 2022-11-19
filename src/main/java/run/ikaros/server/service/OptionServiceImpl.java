@@ -2,6 +2,7 @@ package run.ikaros.server.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import run.ikaros.server.constants.DefaultConst;
 import run.ikaros.server.core.repository.OptionRepository;
@@ -19,6 +20,7 @@ import run.ikaros.server.enums.OptionNetwork;
 import run.ikaros.server.enums.OptionQbittorrent;
 import run.ikaros.server.enums.OptionSeo;
 import run.ikaros.server.exceptions.RecordNotFoundException;
+import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.model.request.AppInitRequest;
 import run.ikaros.server.utils.AssertUtils;
@@ -26,8 +28,16 @@ import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author guohao
@@ -223,6 +233,36 @@ public class OptionServiceImpl
             DefaultConst.OPTION_JELLYFIN_MEDIA_DIR_PATH, OptionCategory.JELLYFIN));
 
         return true;
+    }
+
+    @Nonnull
+    @Override
+    public List<OptionDTO> findOptions(@Nullable String category) {
+        List<OptionEntity> optionEntityList = new ArrayList<>();
+        if (StringUtils.isNotBlank(category)) {
+            category = category.toUpperCase(Locale.ROOT);
+            if (!OptionCategory.CATEGORY_SET.contains(category)) {
+                throw new IllegalArgumentException("please input correct category name from: "
+                    + JsonUtils.obj2Json(OptionCategory.CATEGORY_SET));
+            }
+            OptionEntity optionEntityExample
+                = new OptionEntity()
+                .setCategory(OptionCategory.valueOf(category))
+                .setKey(null)
+                .setValue(null);
+            optionEntityList.addAll(listAll(Example.of(optionEntityExample)));
+        } else {
+            optionEntityList.addAll(listAll());
+        }
+        return optionEntityList
+            .stream()
+            .flatMap((Function<OptionEntity, Stream<OptionDTO>>) optionEntity -> {
+                OptionDTO optionDTO = new OptionDTO();
+                optionDTO.setCategory(optionEntity.getCategory().name());
+                optionDTO.setKey(optionEntity.getKey());
+                optionDTO.setValue(optionEntity.getValue());
+                return Stream.of(optionDTO);
+            }).collect(Collectors.toList());
     }
 
 }

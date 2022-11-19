@@ -1,34 +1,34 @@
 package run.ikaros.server.model.dto;
 
-import run.ikaros.server.utils.AssertUtils;
-import run.ikaros.server.utils.BeanUtils;
-import run.ikaros.server.entity.OptionEntity;
+public class OptionDTO {
+    private String key;
+    private String value;
+    private String category;
 
-/**
- * @author guohao
- * @date 2022/10/19
- */
-public class OptionDTO extends OptionEntity {
-
-    /**
-     * 这个是在前端界面的Tab页的key
-     */
-    private Integer tabKey;
-
-    public OptionDTO() {
+    public String getKey() {
+        return key;
     }
 
-    public OptionDTO(OptionEntity optionEntity) {
-        AssertUtils.notNull(optionEntity, "'optionEntity' must not be null");
-        BeanUtils.copyProperties(optionEntity, this);
+    public OptionDTO setKey(String key) {
+        this.key = key;
+        return this;
     }
 
-    public Integer getTabKey() {
-        return tabKey;
+    public String getValue() {
+        return value;
     }
 
-    public OptionDTO setTabKey(Integer tabKey) {
-        this.tabKey = tabKey;
+    public OptionDTO setValue(String value) {
+        this.value = value;
+        return this;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public OptionDTO setCategory(String category) {
+        this.category = category;
         return this;
     }
 }

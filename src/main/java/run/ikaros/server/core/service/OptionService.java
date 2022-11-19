@@ -2,10 +2,12 @@ package run.ikaros.server.core.service;
 
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.springframework.transaction.annotation.Transactional;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.model.request.AppInitRequest;
 
@@ -38,4 +40,7 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
      */
     @Transactional
     boolean appInit(@Nonnull AppInitRequest appInitRequest);
+
+    @Nonnull
+    List<OptionDTO> findOptions(@Nullable String category);
 }
