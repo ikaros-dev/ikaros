@@ -2,7 +2,6 @@ package run.ikaros.server.tripartite.qbittorrent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -16,6 +15,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import run.ikaros.server.constants.DefaultConst;
+import run.ikaros.server.core.service.OptionService;
+import run.ikaros.server.entity.OptionEntity;
+import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.enums.OptionQbittorrent;
 import run.ikaros.server.tripartite.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.tripartite.qbittorrent.model.QbCategory;
 import run.ikaros.server.tripartite.qbittorrent.model.QbTorrentInfo;
@@ -43,47 +46,55 @@ public class QbittorrentClient {
     private String category = DefaultConst.OPTION_QBITTORRENT_CATEGORY;
     private String categorySavePath = DefaultConst.OPTION_QBITTORRENT_CATEGORY_SAVE_PATH;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final OptionService optionService;
     /**
-     * API前缀，例如：http://192.168.2.229:60101/api/v2/
+     * API前缀，例如：http://192.168.2.229:60101
      */
-    private final String prefix;
+    private String urlPrefix;
 
     public interface API {
-        String APP_VERSION = "/app/version";
-        String APP_API_VERSION = "/app/webapiVersion";
-        String TORRENTS_GET_ALL_CATEGORIES = "/torrents/categories";
-        String TORRENTS_CREATE_CATEGORY = "/torrents/createCategory";
-        String TORRENTS_EDIT_CATEGORY = "/torrents/editCategory";
-        String TORRENTS_REMOVE_CATEGORIES = "/torrents/removeCategories";
-        String TORRENTS_ADD = "/torrents/add";
-        String TORRENTS_INFO = "/torrents/info";
-        String TORRENTS_RENAME_FILE = "/torrents/renameFile";
-        String TORRENTS_RESUME = "/torrents/resume";
-        String TORRENTS_PAUSE = "/torrents/pause";
-        String TORRENTS_DELETE = "/torrents/delete";
-        String TORRENTS_RECHECK = "/torrents/recheck";
+        String APP_VERSION = "/api/v2/app/version";
+        String APP_API_VERSION = "/api/v2/app/webapiVersion";
+        String TORRENTS_GET_ALL_CATEGORIES = "/api/v2/torrents/categories";
+        String TORRENTS_CREATE_CATEGORY = "/api/v2/torrents/createCategory";
+        String TORRENTS_EDIT_CATEGORY = "/api/v2/torrents/editCategory";
+        String TORRENTS_REMOVE_CATEGORIES = "/api/v2/torrents/removeCategories";
+        String TORRENTS_ADD = "/api/v2/torrents/add";
+        String TORRENTS_INFO = "/api/v2/torrents/info";
+        String TORRENTS_RENAME_FILE = "/api/v2/torrents/renameFile";
+        String TORRENTS_RESUME = "/api/v2/torrents/resume";
+        String TORRENTS_PAUSE = "/api/v2/torrents/pause";
+        String TORRENTS_DELETE = "/api/v2/torrents/delete";
+        String TORRENTS_RECHECK = "/api/v2/torrents/recheck";
     }
 
-    public QbittorrentClient(@Value("${ikaros.qbittorrent-base-url}") String prefix) {
-        // 如果最后一个字符是 / 则去掉
-        if (prefix.charAt(prefix.length() - 1) == '/') {
-            prefix = prefix.substring(0, prefix.length() - 1);
-        }
-        this.prefix = prefix;
+    public QbittorrentClient(OptionService optionService) {
+        this.optionService = optionService;
     }
 
     public String getCategory() {
         return category;
     }
 
-    public String getPrefix() {
-        return prefix;
+    public String getUrlPrefix() {
+        if (StringUtils.isBlank(urlPrefix)) {
+            OptionEntity optionEntity =
+                optionService.findOptionValueByCategoryAndKey(OptionCategory.QBITTORRENT,
+                    OptionQbittorrent.URL.name());
+
+            urlPrefix = optionEntity.getValue();
+
+            // 如果最后一个字符是 / 则去掉
+            if (urlPrefix.charAt(urlPrefix.length() - 1) == '/') {
+                urlPrefix = urlPrefix.substring(0, urlPrefix.length() - 1);
+            }
+        }
+        return urlPrefix;
     }
 
-    @PostConstruct
     public void initQbittorrentCategory() {
         try {
-            LOGGER.debug("prefix={}", prefix);
+            LOGGER.debug("prefix={}", getUrlPrefix());
             boolean exist = getAllCategories().stream()
                 .anyMatch(qbCategory -> qbCategory.getName().equalsIgnoreCase(category));
             if (!exist) {
@@ -97,8 +108,9 @@ public class QbittorrentClient {
     }
 
     public String getApplicationVersion() {
+        initQbittorrentCategory();
         ResponseEntity<String> responseEntity
-            = restTemplate.getForEntity(prefix + API.APP_VERSION, String.class);
+            = restTemplate.getForEntity(getUrlPrefix() + API.APP_VERSION, String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
@@ -107,8 +119,9 @@ public class QbittorrentClient {
     }
 
     public String getApiVersion() {
+        initQbittorrentCategory();
         ResponseEntity<String> responseEntity
-            = restTemplate.getForEntity(prefix + API.APP_API_VERSION, String.class);
+            = restTemplate.getForEntity(getUrlPrefix() + API.APP_API_VERSION, String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
@@ -122,7 +135,7 @@ public class QbittorrentClient {
         List<QbCategory> qbCategoryList = new ArrayList<>();
 
         HashMap<String, Object> categoryMap
-            = restTemplate.getForObject(prefix
+            = restTemplate.getForObject(getUrlPrefix()
             + API.TORRENTS_GET_ALL_CATEGORIES, HashMap.class);
 
         AssertUtils.notNull(categoryMap, "category map");
@@ -146,7 +159,7 @@ public class QbittorrentClient {
                                @Nonnull String savePath) {
         AssertUtils.notBlank(category, "category");
         AssertUtils.notBlank(savePath, "savePath");
-        final String url = prefix + API.TORRENTS_CREATE_CATEGORY;
+        final String url = getUrlPrefix() + API.TORRENTS_CREATE_CATEGORY;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -163,7 +176,7 @@ public class QbittorrentClient {
                              @Nonnull String savePath) {
         AssertUtils.notBlank(category, "category");
         AssertUtils.notBlank(savePath, "savePath");
-        final String url = prefix + API.TORRENTS_EDIT_CATEGORY;
+        final String url = getUrlPrefix() + API.TORRENTS_EDIT_CATEGORY;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -179,7 +192,7 @@ public class QbittorrentClient {
     public void removeCategories(@Nonnull List<String> categories) {
         AssertUtils.notNull(categories, "categories");
         AssertUtils.isFalse(categories.isEmpty(), "categories is empty");
-        final String url = prefix + API.TORRENTS_REMOVE_CATEGORIES;
+        final String url = getUrlPrefix() + API.TORRENTS_REMOVE_CATEGORIES;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -222,7 +235,7 @@ public class QbittorrentClient {
                                                 boolean prioritizeDownloadFirstLastPiece) {
         AssertUtils.notNull(src, "src");
         AssertUtils.notBlank(category, "category");
-        final String url = prefix + API.TORRENTS_ADD;
+        final String url = getUrlPrefix() + API.TORRENTS_ADD;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -280,7 +293,7 @@ public class QbittorrentClient {
                                               String category, String tags,
                                               Integer limit, Integer offset,
                                               String hashes) {
-        final String url = prefix + API.TORRENTS_INFO;
+        final String url = urlPrefix + API.TORRENTS_INFO;
 
         UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(url);
         if (filter != null) {
@@ -338,7 +351,7 @@ public class QbittorrentClient {
         AssertUtils.notBlank(hash, "hash");
         AssertUtils.notBlank(oldFileName, "oldFileName");
         AssertUtils.notBlank(newFileName, "newFileName");
-        final String url = prefix + API.TORRENTS_RENAME_FILE;
+        final String url = getUrlPrefix() + API.TORRENTS_RENAME_FILE;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -355,7 +368,7 @@ public class QbittorrentClient {
 
     public void resume(@Nonnull String hashes) {
         AssertUtils.notBlank(hashes, "hashes");
-        final String url = prefix + API.TORRENTS_RESUME;
+        final String url = getUrlPrefix() + API.TORRENTS_RESUME;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -370,7 +383,7 @@ public class QbittorrentClient {
 
     public void pause(@Nonnull String hashes) {
         AssertUtils.notBlank(hashes, "hashes");
-        final String url = prefix + API.TORRENTS_PAUSE;
+        final String url = getUrlPrefix() + API.TORRENTS_PAUSE;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -385,7 +398,7 @@ public class QbittorrentClient {
 
     public void recheck(@Nonnull String hashes) {
         AssertUtils.notBlank(hashes, "hashes");
-        final String url = prefix + API.TORRENTS_RECHECK;
+        final String url = getUrlPrefix() + API.TORRENTS_RECHECK;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -400,7 +413,7 @@ public class QbittorrentClient {
 
     public void delete(@Nonnull String hashes, Boolean deleteFiles) {
         AssertUtils.notBlank(hashes, "hashes");
-        final String url = prefix + API.TORRENTS_DELETE;
+        final String url = getUrlPrefix() + API.TORRENTS_DELETE;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

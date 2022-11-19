@@ -15,6 +15,7 @@ import run.ikaros.server.model.request.AppInitRequest;
 import run.ikaros.server.model.request.SaveOptionRequest;
 import run.ikaros.server.model.response.OptionResponse;
 import run.ikaros.server.result.CommonResult;
+import run.ikaros.server.utils.StringUtils;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -66,7 +67,6 @@ public class OptionRestController {
                 OptionResponse optionResponse = new OptionResponse();
                 optionResponse.setKvMap(kvMap);
                 optionResponse.setCategory(category);
-                optionResponse.setTabKey(OptionCategory.valueOf(category).ordinal());
                 categoryOptionResponseMap.put(category, optionResponse);
             }
         }
@@ -82,7 +82,6 @@ public class OptionRestController {
         Map<String, String> kvMap = new HashMap<>();
         for (OptionDTO optionDTO : optionDTOList) {
             String category = optionDTO.getCategory();
-            optionResponse.setTabKey(OptionCategory.valueOf(category).ordinal());
             optionResponse.setCategory(category);
             kvMap.put(optionDTO.getKey(), optionDTO.getValue());
         }

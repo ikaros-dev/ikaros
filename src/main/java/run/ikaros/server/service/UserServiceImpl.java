@@ -2,6 +2,7 @@ package run.ikaros.server.service;
 
 
 import javax.annotation.Nonnull;
+
 import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
@@ -17,7 +18,9 @@ import run.ikaros.server.model.dto.AuthUserDTO;
 import run.ikaros.server.model.dto.UserDTO;
 import run.ikaros.server.entity.UserEntity;
 import run.ikaros.server.core.repository.UserRepository;
+
 import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -179,7 +182,10 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
             } else {
                 userEntity = userRepository.findByUsername(usernameOrEmail);
             }
-            UserDTO userDTO = new UserDTO(userEntity.hiddenSecretField());
+            if (userEntity != null) {
+                userEntity.hiddenSecretField();
+            }
+            UserDTO userDTO = new UserDTO(userEntity);
             // 填充角色
             userDTO.getRoles().add(UserConst.DEFAULT_ROLE);
             return userDTO;

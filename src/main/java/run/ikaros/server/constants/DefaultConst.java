@@ -46,9 +46,9 @@ public interface DefaultConst {
     String OPTION_QBITTORRENT_API_BASE = "/api/v2";
     String OPTION_QBITTORRENT_CATEGORY = "ikaros";
     String OPTION_QBITTORRENT_CATEGORY_SAVE_PATH = "/downloads/ikaros/";
-    String OPTION_QBITTORRENT_URL = "http://192.168.2.135:9091";
-    String OPTION_QBITTORRENT_USERNAME = "admin";
-    String OPTION_QBITTORRENT_PASSWORD = "adminadmin";
+    String OPTION_QBITTORRENT_URL = "";
+    String OPTION_QBITTORRENT_USERNAME = "";
+    String OPTION_QBITTORRENT_PASSWORD = "";
 
 
 

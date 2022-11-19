@@ -6,11 +6,6 @@ public class OptionResponse {
 
     private String category;
 
-    /**
-     * 这个是在前端界面的Tab页的key
-     */
-    private Integer tabKey;
-
     private Map<String /*key*/, String /*value*/> kvMap;
 
     public String getCategory() {
@@ -19,15 +14,6 @@ public class OptionResponse {
 
     public OptionResponse setCategory(String category) {
         this.category = category;
-        return this;
-    }
-
-    public Integer getTabKey() {
-        return tabKey;
-    }
-
-    public OptionResponse setTabKey(Integer tabKey) {
-        this.tabKey = tabKey;
         return this;
     }
 
