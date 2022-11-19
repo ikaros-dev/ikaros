@@ -84,6 +84,10 @@ public class QbittorrentClient {
 
             urlPrefix = optionEntity.getValue();
 
+            if (StringUtils.isBlank(urlPrefix)) {
+                throw new QbittorrentRequestException("qbittorrent config not set");
+            }
+
             // 如果最后一个字符是 / 则去掉
             if (urlPrefix.charAt(urlPrefix.length() - 1) == '/') {
                 urlPrefix = urlPrefix.substring(0, urlPrefix.length() - 1);
@@ -94,7 +98,6 @@ public class QbittorrentClient {
 
     public void initQbittorrentCategory() {
         try {
-            LOGGER.debug("prefix={}", getUrlPrefix());
             boolean exist = getAllCategories().stream()
                 .anyMatch(qbCategory -> qbCategory.getName().equalsIgnoreCase(category));
             if (!exist) {
