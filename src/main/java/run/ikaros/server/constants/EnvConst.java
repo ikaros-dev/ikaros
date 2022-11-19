@@ -7,4 +7,5 @@ package run.ikaros.server.constants;
 public interface EnvConst {
     String DEV = "dev";
     String PRO = "pro";
+    String LOCAL = "local";
 }

@@ -25,6 +25,10 @@ public class IkarosProperties {
         return EnvConst.DEV.equalsIgnoreCase(env);
     }
 
+    public boolean envIsLocal() {
+        return EnvConst.LOCAL.equalsIgnoreCase(env);
+    }
+
     public boolean envIsPro() {
         return EnvConst.PRO.equalsIgnoreCase(env);
     }

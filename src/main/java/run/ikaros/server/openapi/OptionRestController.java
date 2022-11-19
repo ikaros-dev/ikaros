@@ -9,15 +9,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import run.ikaros.server.core.service.OptionService;
+import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.request.AppInitRequest;
+import run.ikaros.server.model.request.SaveOptionRequest;
 import run.ikaros.server.model.response.OptionResponse;
 import run.ikaros.server.result.CommonResult;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author guohao
@@ -48,8 +54,7 @@ public class OptionRestController {
         @RequestParam(name = "category", required = false) String categoryQueryParam) {
         Map<String, OptionResponse> categoryOptionResponseMap = new HashMap<>();
         List<OptionDTO> optionDTOList = optionService.findOptions(categoryQueryParam);
-        for (int index = 0; index < optionDTOList.size(); index++) {
-            OptionDTO optionDTO = optionDTOList.get(index);
+        for (OptionDTO optionDTO : optionDTOList) {
             String category = optionDTO.getCategory();
             if (categoryOptionResponseMap.containsKey(category)) {
                 OptionResponse optionResponse = categoryOptionResponseMap.get(category);
@@ -61,12 +66,28 @@ public class OptionRestController {
                 OptionResponse optionResponse = new OptionResponse();
                 optionResponse.setKvMap(kvMap);
                 optionResponse.setCategory(category);
-                optionResponse.setTabKey(index);
+                optionResponse.setTabKey(OptionCategory.valueOf(category).ordinal());
                 categoryOptionResponseMap.put(category, optionResponse);
             }
         }
         return CommonResult.ok(categoryOptionResponseMap.values().stream().toList());
     }
 
+    @PostMapping
+    public CommonResult<OptionResponse> saveOptionWithCategory(
+        @RequestBody @Valid SaveOptionRequest saveOptionRequest
+    ) {
+        OptionResponse optionResponse = new OptionResponse();
+        List<OptionDTO> optionDTOList = optionService.saveWithRequest(saveOptionRequest);
+        Map<String, String> kvMap = new HashMap<>();
+        for (OptionDTO optionDTO : optionDTOList) {
+            String category = optionDTO.getCategory();
+            optionResponse.setTabKey(OptionCategory.valueOf(category).ordinal());
+            optionResponse.setCategory(category);
+            kvMap.put(optionDTO.getKey(), optionDTO.getValue());
+        }
+        optionResponse.setKvMap(kvMap);
+        return CommonResult.ok(optionResponse);
+    }
 
 }

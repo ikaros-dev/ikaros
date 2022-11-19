@@ -23,6 +23,7 @@ import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.model.request.AppInitRequest;
+import run.ikaros.server.model.request.SaveOptionRequest;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
@@ -32,8 +33,10 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -263,6 +266,49 @@ public class OptionServiceImpl
                 optionDTO.setValue(optionEntity.getValue());
                 return Stream.of(optionDTO);
             }).collect(Collectors.toList());
+    }
+
+    @Nonnull
+    @Override
+    public List<OptionDTO> saveWithRequest(@Nonnull SaveOptionRequest saveOptionRequest) {
+        AssertUtils.notNull(saveOptionRequest, "saveOptionRequest");
+        List<OptionDTO> optionDTOList = new ArrayList<>();
+        String category = saveOptionRequest.getCategory();
+        Map<String, String> kvMap = saveOptionRequest.getKvMap();
+        if (!OptionCategory.CATEGORY_SET.contains(category)) {
+            throw new IllegalArgumentException("please input correct category name from: "
+                + JsonUtils.obj2Json(OptionCategory.CATEGORY_SET));
+        }
+        OptionCategory optionCategory = OptionCategory.valueOf(category);
+        for (Map.Entry<String, String> entry : kvMap.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (value == null) {
+                LOGGER.warn("skip null value update for category={}, key={}, value={}",
+                    category, key, value);
+                continue;
+            }
+
+            OptionEntity optionEntity =
+                optionRepository.findByCategoryAndKeyAndStatus(optionCategory, key, true);
+
+            if (optionEntity != null) {
+                optionEntity.setValue(value);
+            } else {
+                optionEntity = new OptionEntity();
+                optionEntity.setCategory(optionCategory);
+                optionEntity.setKey(key);
+                optionEntity.setValue(value);
+            }
+            optionEntity = save(optionEntity);
+
+            OptionDTO optionDTO = new OptionDTO();
+            optionDTO.setCategory(category);
+            optionDTO.setKey(optionEntity.getKey());
+            optionDTO.setValue(optionEntity.getValue());
+            optionDTOList.add(optionDTO);
+        }
+        return optionDTOList;
     }
 
 }

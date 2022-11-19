@@ -339,7 +339,11 @@ public class FileServiceImpl
     @Nonnull
     @Override
     public Set<String> findPlaces() {
-        return fileRepository.findPlaces();
+        Set<String> places = fileRepository.findPlaces();
+        if (places.isEmpty()) {
+            places.add(FilePlace.LOCAL.name());
+        }
+        return places;
     }
 
     @Override
@@ -482,13 +486,13 @@ public class FileServiceImpl
         String currentAppDirPath = SystemVarUtils.getCurrentAppDirPath();
         // issue #50
         url = path.replace(currentAppDirPath, "");
-        // 如果是开发环境，需要加上 http://localhost:port
-        if (ikarosProperties.envIsDev()) {
+        // 如果是本地环境，需要加上 http://localhost:port
+        if (ikarosProperties.envIsLocal()) {
             url = ikarosProperties.getLocalhostHttpBaseUrl() + url;
         }
 
         // 如果是ntfs目录，则需要替换下 \ 为 /
-        if (url.indexOf("\\") > 0) {
+        if (SystemVarUtils.platformIsWindows()) {
             url = url.replace("\\", "/");
         }
         LOGGER.debug("current url={}", url);

@@ -31,9 +31,8 @@ public interface UserService {
         if (authentication != null
             && StringUtils.isNotBlank((String) authentication.getCredentials())) {
             String token = (String) authentication.getCredentials();
-            Long userId =
-                (Long) JwtUtils.getTokenHeaderValue(token, SecurityConst.HEADER_UID);
-            return userId;
+            return Long.valueOf(
+                String.valueOf(JwtUtils.getTokenHeaderValue(token, SecurityConst.HEADER_UID)));
         }
         return UserConst.UID_WHEN_NO_AUTH;
     }

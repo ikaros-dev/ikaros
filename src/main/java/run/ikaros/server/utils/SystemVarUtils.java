@@ -4,7 +4,6 @@ import java.io.File;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,5 +66,9 @@ public class SystemVarUtils {
             LOGGER.error(e.getMessage(), e);
         }
         return localHost.getHostAddress();
+    }
+    
+    public static boolean platformIsWindows() {
+        return System.getenv("OS").contains("Windows");
     }
 }
