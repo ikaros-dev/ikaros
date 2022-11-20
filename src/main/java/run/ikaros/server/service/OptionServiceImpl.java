@@ -30,14 +30,10 @@ import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -79,7 +75,8 @@ public class OptionServiceImpl
         AssertUtils.notBlank(key, "'key' must not be blank");
 
         try {
-            OptionEntity existOptionEntity = findOptionItemByKey(key);
+            OptionEntity existOptionEntity =
+                findOptionValueByCategoryAndKey(optionItemDTO.getCategory(), key);
             existOptionEntity.setValue(optionItemDTO.getValue())
                 .setCategory(optionItemDTO.getCategory());
             return optionRepository.saveAndFlush(existOptionEntity);
@@ -216,6 +213,8 @@ public class OptionServiceImpl
             DefaultConst.OPTION_QBITTORRENT_PASSWORD, OptionCategory.QBITTORRENT));
 
         // init option bgmtv
+        saveOptionItem(new OptionItemDTO(OptionBgmTv.ENABLE_PROXY.name(),
+            DefaultConst.OPTION_BGMTV_ENABLE_PROXY, OptionCategory.BGMTV));
         saveOptionItem(new OptionItemDTO(OptionBgmTv.API_BASE.name(),
             DefaultConst.OPTION_BGMTV_API_BASE, OptionCategory.BGMTV));
         saveOptionItem(new OptionItemDTO(OptionBgmTv.API_SUBJECTS.name(),
@@ -224,8 +223,6 @@ public class OptionServiceImpl
             DefaultConst.OPTION_BGMTV_API_EPISODES, OptionCategory.BGMTV));
         saveOptionItem(new OptionItemDTO(OptionBgmTv.API_SEARCH_SUBJECT.name(),
             DefaultConst.OPTION_BGMTV_API_SEARCH_SUBJECT, OptionCategory.BGMTV));
-        saveOptionItem(new OptionItemDTO(OptionBgmTv.ENABLE_PROXY.name(),
-            DefaultConst.OPTION_BGMTV_ENABLE_PROXY, OptionCategory.BGMTV));
 
         // init option mikan
         saveOptionItem(new OptionItemDTO(OptionMikan.MY_SUBSCRIBE_RSS.name(),
