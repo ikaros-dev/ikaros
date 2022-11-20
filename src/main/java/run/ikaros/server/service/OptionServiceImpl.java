@@ -208,6 +208,8 @@ public class OptionServiceImpl
         // init option qbittorrent
         saveOptionItem(new OptionItemDTO(OptionQbittorrent.URL.name(),
             DefaultConst.OPTION_QBITTORRENT_URL, OptionCategory.QBITTORRENT));
+        saveOptionItem(new OptionItemDTO(OptionQbittorrent.ENABLE_AUTH.name(),
+            DefaultConst.OPTION_QBITTORRENT_ENABLE_AUTH, OptionCategory.QBITTORRENT));
         saveOptionItem(new OptionItemDTO(OptionQbittorrent.USERNAME.name(),
             DefaultConst.OPTION_QBITTORRENT_USERNAME, OptionCategory.QBITTORRENT));
         saveOptionItem(new OptionItemDTO(OptionQbittorrent.PASSWORD.name(),
