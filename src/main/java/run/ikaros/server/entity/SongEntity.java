@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 
 @Entity(name = "song")
 public class SongEntity extends BaseEntity {
+    private String name;
     @Column(nullable = false)
     private String url;
     /**
@@ -19,6 +20,15 @@ public class SongEntity extends BaseEntity {
      * @see AlbumEntity#id
      */
     private Long albumId;
+
+    public String getName() {
+        return name;
+    }
+
+    public SongEntity setName(String name) {
+        this.name = name;
+        return this;
+    }
 
     public String getUrl() {
         return url;
