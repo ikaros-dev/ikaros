@@ -13,7 +13,7 @@
 
 <!-- ==== 📈 Remove this line WHEN AND ONLY WHEN you're improving the performance, follow the checklist 👇 ====
 ### Improve the performance of <class or module or ...>
-- [ ] Add a benchmark for the improvement, refer to [the existing ones](https://github.com/li-guohao/ikaros/tree/develop/src/test/java/cn/liguohao/ikaros/datacarrier/LinkedArrayBenchmark.java)
+- [ ] Add a benchmark for the improvement, refer to [the existing ones](https://github.com/ikaros-dev/ikaros/tree/develop/src/test/java/cn/liguohao/ikaros/datacarrier/LinkedArrayBenchmark.java)
 - [ ] The benchmark result.
 ```text
 <Paste the benchmark results here>
@@ -28,5 +28,5 @@
 - [ ] Tests(including UT, IT, E2E) are added to verify the new feature.
 - [ ] If it's UI related, attach the screenshots below.
      ==== 🆕 Remove this line WHEN AND ONLY WHEN you're adding a new feature, follow the checklist 👆 ==== -->
-- [ ] Update the [`CHANGES` log](https://github.com/li-guohao/ikaros/blob/develop/CHANGELOG.MD).
+- [ ] Update the [`CHANGES` log](https://github.com/ikaros-dev/ikaros/blob/develop/CHANGELOG.MD).
 - [ ] If this pull request closes/resolves/fixes an existing issue, replace the issue number. Closes #<issue number>.

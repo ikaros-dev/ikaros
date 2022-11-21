@@ -14,10 +14,10 @@ body:
     attributes:
       label: Search before asking
       description: >
-        请去我们的 [issues](https://github.com/li-guohao/ikaros/issues?q=is%3Aissue) 列表里查询下，是否已经有类似的问题存在。
+        请去我们的 [issues](https://github.com/ikaros-dev/ikaros/issues?q=is%3Aissue) 列表里查询下，是否已经有类似的问题存在。
       options:
         - label: >
-            我已经在 [issues](https://github.com/li-guohao/ikaros/issues?q=is%3Aissue) 列表 里查询过，并且没找到类似的问题。
+            我已经在 [issues](https://github.com/ikaros-dev/ikaros/issues?q=is%3Aissue) 列表 里查询过，并且没找到类似的问题。
           required: true
 
   - type: dropdown
