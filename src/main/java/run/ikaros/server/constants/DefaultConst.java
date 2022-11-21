@@ -5,6 +5,7 @@ import run.ikaros.server.enums.FilePlace;
 public interface DefaultConst {
     String OPTION_APP_IS_INIT = Boolean.TRUE.toString();
     String OPTION_APP_THEME = "simple";
+    String OPTION_APP_ENABLE_AUTO_ANIME_SUB_TASK = Boolean.FALSE.toString();
 
 
     String OPTION_COMMON_TITLE = "ikaros cms system";
