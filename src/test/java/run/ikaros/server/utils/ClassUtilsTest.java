@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import run.ikaros.server.init.option.PresetOption;
+import run.ikaros.server.entity.BaseEntity;
 
 /**
  * @author guohao
@@ -15,7 +15,7 @@ class ClassUtilsTest {
 
     @Test
     void findClassByPackage() throws IOException {
-        String packageName = PresetOption.class.getPackageName();
+        String packageName = BaseEntity.class.getPackageName();
 
         List<Class<?>> classes = ClassUtils.findClassByPackage(packageName);
 

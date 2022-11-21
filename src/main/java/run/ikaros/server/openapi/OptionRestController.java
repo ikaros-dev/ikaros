@@ -1,22 +1,30 @@
 package run.ikaros.server.openapi;
 
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import run.ikaros.server.init.option.AppPresetOption;
-import run.ikaros.server.init.option.CommonPresetOption;
-import run.ikaros.server.init.option.FilePresetOption;
-import run.ikaros.server.init.option.OtherPresetOption;
-import run.ikaros.server.init.option.PresetOption;
-import run.ikaros.server.init.option.SeoPresetOption;
-import run.ikaros.server.init.option.ThirdPartyPresetOption;
-import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.core.service.OptionService;
+import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.model.dto.OptionDTO;
+import run.ikaros.server.model.request.AppInitRequest;
+import run.ikaros.server.model.request.SaveOptionRequest;
+import run.ikaros.server.model.response.OptionResponse;
+import run.ikaros.server.result.CommonResult;
+import run.ikaros.server.utils.StringUtils;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author guohao
@@ -32,48 +40,53 @@ public class OptionRestController {
         this.optionService = optionService;
     }
 
-    @GetMapping("/preset/list")
-    public CommonResult<List<PresetOption>> findPresetOptionList() {
-        return CommonResult.ok(optionService.findPresetOptionList());
+    @GetMapping("/app/is-init")
+    public CommonResult<Boolean> findAppIsInit() {
+        return CommonResult.ok(optionService.findAppIsInit());
     }
 
-    @PutMapping("/preset/app")
-    public CommonResult<PresetOption> saveAppPresetOption(
-        @RequestBody AppPresetOption presetOption) {
-        return CommonResult.ok(optionService.savePresetOption(presetOption));
+    @PostMapping("/app/init")
+    public CommonResult<Boolean> reqAppInit(@RequestBody AppInitRequest appInitRequest) {
+        return CommonResult.ok(optionService.appInit(appInitRequest));
     }
 
-    @PutMapping("/preset/common")
-    public CommonResult<PresetOption> saveCommonPresetOption(
-        @RequestBody CommonPresetOption presetOption) {
-        return CommonResult.ok(optionService.savePresetOption(presetOption));
+    @GetMapping("/list")
+    public CommonResult<List<OptionResponse>> findOptionList(
+        @RequestParam(name = "category", required = false) String categoryQueryParam) {
+        Map<String, OptionResponse> categoryOptionResponseMap = new HashMap<>();
+        List<OptionDTO> optionDTOList = optionService.findOptions(categoryQueryParam);
+        for (OptionDTO optionDTO : optionDTOList) {
+            String category = optionDTO.getCategory();
+            if (categoryOptionResponseMap.containsKey(category)) {
+                OptionResponse optionResponse = categoryOptionResponseMap.get(category);
+                Map<String, String> kvMap = optionResponse.getKvMap();
+                kvMap.put(optionDTO.getKey(), optionDTO.getValue());
+            } else {
+                Map<String, String> kvMap = new HashMap<>();
+                kvMap.put(optionDTO.getKey(), optionDTO.getValue());
+                OptionResponse optionResponse = new OptionResponse();
+                optionResponse.setKvMap(kvMap);
+                optionResponse.setCategory(category);
+                categoryOptionResponseMap.put(category, optionResponse);
+            }
+        }
+        return CommonResult.ok(categoryOptionResponseMap.values().stream().toList());
     }
 
-    @PutMapping("/preset/file")
-    public CommonResult<PresetOption> saveFilePresetOption(
-        @RequestBody FilePresetOption presetOption) {
-        return CommonResult.ok(optionService.savePresetOption(presetOption));
+    @PostMapping
+    public CommonResult<OptionResponse> saveOptionWithCategory(
+        @RequestBody @Valid SaveOptionRequest saveOptionRequest
+    ) {
+        OptionResponse optionResponse = new OptionResponse();
+        List<OptionDTO> optionDTOList = optionService.saveWithRequest(saveOptionRequest);
+        Map<String, String> kvMap = new HashMap<>();
+        for (OptionDTO optionDTO : optionDTOList) {
+            String category = optionDTO.getCategory();
+            optionResponse.setCategory(category);
+            kvMap.put(optionDTO.getKey(), optionDTO.getValue());
+        }
+        optionResponse.setKvMap(kvMap);
+        return CommonResult.ok(optionResponse);
     }
-
-    @PutMapping("/preset/other")
-    public CommonResult<PresetOption> saveOtherPresetOption(
-        @RequestBody OtherPresetOption presetOption) {
-        return CommonResult.ok(optionService.savePresetOption(presetOption));
-    }
-
-    @PutMapping("/preset/seo")
-    public CommonResult<PresetOption> saveSeoPresetOption(
-        @RequestBody SeoPresetOption presetOption) {
-        return CommonResult.ok(optionService.savePresetOption(presetOption));
-    }
-
-    @PutMapping("/preset/thirdparty")
-    public CommonResult<PresetOption> saveThirdPartyPresetOption(
-        @RequestBody ThirdPartyPresetOption presetOption) {
-        return CommonResult.ok(optionService.savePresetOption(presetOption));
-    }
-
-
-
 
 }

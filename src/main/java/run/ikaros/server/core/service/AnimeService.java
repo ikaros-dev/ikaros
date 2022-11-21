@@ -1,11 +1,12 @@
 package run.ikaros.server.core.service;
 
-import javax.annotation.Nonnull;
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.params.SearchAnimeDTOSParams;
 import run.ikaros.server.result.PagingWrap;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author li-guohao
@@ -13,7 +14,7 @@ import run.ikaros.server.result.PagingWrap;
 public interface AnimeService extends CrudService<AnimeEntity, Long> {
 
     @Nonnull
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional
     AnimeDTO saveAnimeDTO(@Nonnull AnimeDTO animeDTO);
 
     @Nonnull

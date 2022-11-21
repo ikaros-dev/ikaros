@@ -3,11 +3,16 @@ package run.ikaros.server.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.web.client.RestTemplate;
-import run.ikaros.server.constants.HttpConst;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static run.ikaros.server.constants.HttpConst.HTTP_PROXY_HOST;
 import static run.ikaros.server.constants.HttpConst.HTTP_PROXY_PORT;
@@ -28,5 +33,18 @@ public class RegisterBeanConfig {
         return new RestTemplate(requestFactory);
     }
 
+    @Bean
+    public ScheduledThreadPoolExecutor scheduledThreadPoolExecutor() {
+        ThreadFactory threadFactory = new CustomizableThreadFactory("Ikaros-Scheduled-Task-");
+        return new ScheduledThreadPoolExecutor(5, threadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    @Bean
+    ThreadPoolExecutor threadPoolExecutor() {
+        ThreadFactory threadFactory = new CustomizableThreadFactory("Ikaros-Task-");
+        return new ThreadPoolExecutor(5, 100, 300, TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(2000), threadFactory, new ThreadPoolExecutor.AbortPolicy());
+    }
 
 }

@@ -1,16 +1,16 @@
 package run.ikaros.server.core.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import run.ikaros.server.entity.KVEntity;
 import run.ikaros.server.enums.KVType;
 
 import javax.annotation.Nonnull;
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
 
 public interface KVService {
     @Nonnull
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional
     KVEntity save(@Nonnull KVEntity kvEntity);
 
     @Nonnull

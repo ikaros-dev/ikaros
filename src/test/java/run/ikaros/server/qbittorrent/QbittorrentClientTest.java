@@ -4,12 +4,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.tripartite.qbittorrent.QbittorrentClient;
 import run.ikaros.server.tripartite.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.tripartite.qbittorrent.model.QbCategory;
@@ -39,7 +41,8 @@ class QbittorrentClientTest {
 
     static String prefix = "http://192.168.2.229:9091/api/v2/";
     static final String hash = "42b6ca3fa47fa5435ad69ce67fd7611237bdec5a";
-    static QbittorrentClient qbittorrentClient = new QbittorrentClient(prefix);
+    static OptionService optionService = Mockito.mock(OptionService.class);
+    static QbittorrentClient qbittorrentClient = new QbittorrentClient(optionService);
     static final String category = "unittest";
     static final String savePath = "/downloads/unittest";
 

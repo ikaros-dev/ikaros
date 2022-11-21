@@ -1,8 +1,8 @@
 plugins {
-	id 'org.springframework.boot' version '2.5.12'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'java'
-	id "checkstyle"
+    id 'org.springframework.boot' version '2.5.12'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id "checkstyle"
 }
 
 group = "run.ikaros.server"
@@ -10,76 +10,77 @@ description = "ikaros, an open source acgmn cms application."
 sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
-	mavenLocal()
-	maven { url "https://maven.aliyun.com/nexus/content/groups/public" }
-	maven { url "https://maven.aliyun.com/repository/spring/" }
-	mavenCentral()
-	maven { url "https://repo.spring.io/milestone" }
+    mavenLocal()
+    maven { url "https://maven.aliyun.com/nexus/content/groups/public" }
+    maven { url "https://maven.aliyun.com/repository/spring/" }
+    mavenCentral()
+    maven { url "https://repo.spring.io/milestone" }
 }
 checkstyle {
-	toolVersion = "8.39"
-	showViolations = false
-	ignoreFailures = false
+    toolVersion = "8.39"
+    showViolations = false
+    ignoreFailures = false
 }
 
 ext {
-	swaggerVersion = "3.0.0"
-	jwtVersion = "0.10.7"
-	romeVersion = "1.18.0"
-	jsoupVersion = "1.15.3"
+    swaggerVersion = "3.0.0"
+    jwtVersion = "0.10.7"
+    romeVersion = "1.18.0"
+    jsoupVersion = "1.15.3"
 }
 
 dependencies {
-	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-	implementation 'org.springframework.boot:spring-boot-starter-cache'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.springframework.boot:spring-boot-starter-freemarker'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-freemarker'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 
-	implementation "io.springfox:springfox-boot-starter:$swaggerVersion"
+    implementation "io.springfox:springfox-boot-starter:$swaggerVersion"
 
-	implementation "io.jsonwebtoken:jjwt-api:$jwtVersion"
-	runtimeOnly "io.jsonwebtoken:jjwt-impl:$jwtVersion"
-	runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jwtVersion"
+    implementation "io.jsonwebtoken:jjwt-api:$jwtVersion"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:$jwtVersion"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jwtVersion"
 
-	implementation 'com.fasterxml.jackson.core:jackson-databind'
-	implementation 'com.fasterxml.jackson.core:jackson-core'
-	implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
 
-	// fix: class file for javax.annotation.meta.When not found
-	implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    // fix: class file for javax.annotation.meta.When not found
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
-	// retry
-	implementation 'org.springframework.retry:spring-retry'
-	implementation 'org.springframework:spring-aspects'
+    // retry
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework:spring-aspects'
 
-	// rss
-	implementation "com.rometools:rome:$romeVersion"
-	implementation "org.jsoup:jsoup:$jsoupVersion"
-
-
-//	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-	runtimeOnly 'com.h2database:h2'
-	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    // rss
+    implementation "com.rometools:rome:$romeVersion"
+    implementation "org.jsoup:jsoup:$jsoupVersion"
 
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation "org.mockito:mockito-core"
-	testImplementation 'org.assertj:assertj-core'
-	testImplementation 'org.springframework.security:spring-security-test'
+    // developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    //    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.mockito:mockito-core"
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 gradle.projectsEvaluated {
-	tasks.withType(JavaCompile) {
-		options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-	}
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
 }

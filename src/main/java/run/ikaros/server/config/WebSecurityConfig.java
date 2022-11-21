@@ -94,6 +94,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             // 指定路径下的资源需要进行验证后才能访问
             .antMatchers(HttpMethod.POST, SecurityConst.API_AUTH_LOGIN_URL).permitAll()
             .antMatchers(HttpMethod.POST, SecurityConst.API_USER_REGISTER_URL).permitAll()
+            .antMatchers(HttpMethod.GET, SecurityConst.API_AUTH_OPTION_IS_INIT).permitAll()
+            .antMatchers(HttpMethod.POST, SecurityConst.API_AUTH_OPTION_APP_INIT).permitAll()
             .antMatchers(HttpMethod.GET, "/static/**").permitAll()
             .antMatchers(HttpMethod.GET, "/upload/**").permitAll()
             .antMatchers(HttpMethod.OPTIONS).permitAll()

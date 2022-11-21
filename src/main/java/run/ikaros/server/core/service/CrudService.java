@@ -34,10 +34,6 @@ public interface CrudService<E, I> {
     @Transactional
     E removeById(@Nonnull I id);
 
-    /**
-     * only set status = false, other than delete current record
-     */
-
     @Nonnull
     List<E> listAll();
 

@@ -2,11 +2,15 @@ package run.ikaros.server.core.service;
 
 import java.util.List;
 import javax.annotation.Nonnull;
-import javax.transaction.Transactional;
+import javax.annotation.Nullable;
+
+import org.springframework.transaction.annotation.Transactional;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
-import run.ikaros.server.init.option.PresetOption;
+import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
+import run.ikaros.server.model.request.AppInitRequest;
+import run.ikaros.server.model.request.SaveOptionRequest;
 
 /**
  * @author li-guohao
@@ -14,16 +18,13 @@ import run.ikaros.server.model.dto.OptionItemDTO;
 public interface OptionService extends CrudService<OptionEntity, Long> {
 
     @Nonnull
-    List<Class<? extends PresetOption>> getPresetOptionClassList();
-
-    @Nonnull
     OptionEntity findOptionItemByKey(@Nonnull String key);
 
     @Nonnull
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional
     OptionEntity saveOptionItem(@Nonnull OptionItemDTO optionItemDTO);
 
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional
     void deleteOptionItemByKey(@Nonnull String key);
 
     @Nonnull
@@ -33,13 +34,18 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
     OptionEntity findOptionValueByCategoryAndKey(@Nonnull OptionCategory category,
                                                  @Nonnull String key);
 
-    @Nonnull
-    <T extends PresetOption> T findPresetOption(@Nonnull T presetOption);
+    boolean findAppIsInit();
+
+    /**
+     * @return init result msg
+     */
+    @Transactional
+    boolean appInit(@Nonnull AppInitRequest appInitRequest);
 
     @Nonnull
-    List<PresetOption> findPresetOptionList();
+    List<OptionDTO> findOptions(@Nullable String category);
 
-    <T extends PresetOption> T savePresetOption(@Nonnull T presetOption);
-
-    void initPresetOptionsOnce();
+    @Nonnull
+    @Transactional
+    List<OptionDTO> saveWithRequest(@Nonnull SaveOptionRequest saveOptionRequest);
 }

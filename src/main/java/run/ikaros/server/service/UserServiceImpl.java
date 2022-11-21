@@ -2,6 +2,7 @@ package run.ikaros.server.service;
 
 
 import javax.annotation.Nonnull;
+
 import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
@@ -13,15 +14,15 @@ import run.ikaros.server.exceptions.JwtTokenValidateFailException;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.exceptions.UserHasExistException;
 import run.ikaros.server.exceptions.UserLoginFailException;
-import run.ikaros.server.init.MasterUserInitAppRunner;
 import run.ikaros.server.model.dto.AuthUserDTO;
 import run.ikaros.server.model.dto.UserDTO;
 import run.ikaros.server.entity.UserEntity;
 import run.ikaros.server.core.repository.UserRepository;
+
 import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.ApplicationArguments;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -79,7 +80,6 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
         // 新增用户
         return userRepository.saveAndFlush(
             new UserEntity()
-                .setEmail(UserConst.DEFAULT_MASTER_EMAIL)
                 .setPassword(passwordEncoder.encode(password))
                 .setUsername(username)
                 .setEnable(true)
@@ -90,7 +90,7 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
                 .setTelephone("00000000000")
                 .setAvatar(
                     "https://example.org/avator.jpeg")
-        ).hiddenSecretField();
+        );
     }
 
 
@@ -98,21 +98,6 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
         AssertUtils.notBlank(username, "'username' must not be blank");
         return userRepository.findByUsername(username);
     }
-
-    /**
-     * 注册管理员用户，应该只在第一次启动应用时注册一次
-     *
-     * @see MasterUserInitAppRunner#run(ApplicationArguments)
-     */
-    public void initMasterUserOnlyOnce() {
-        try {
-            registerUserByUsernameAndPassword(UserConst.DEFAULT_MASTER_USERNAME,
-                UserConst.DEFAULT_MASTER_PASSWORD);
-        } catch (UserHasExistException userHasExistException) {
-            // 说明：这里捕获这个异常不进行处理，因为数据库管理员用户只需要注册一次就行了
-        }
-    }
-
 
     public UserEntity findUserById(Long id) throws RecordNotFoundException {
         AssertUtils.isPositive(id, "'id' must be gt 0");
@@ -181,7 +166,8 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
         return authUserDTO;
     }
 
-    public UserDTO getUserInfoByToken(String token) {
+    @Nonnull
+    public UserDTO getUserInfoByToken(@Nonnull String token) {
         AssertUtils.notBlank(token, "token");
         if (!JwtUtils.validateToken(token)) {
             throw new JwtTokenValidateFailException("validate fail for token: " + token);
@@ -196,7 +182,10 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
             } else {
                 userEntity = userRepository.findByUsername(usernameOrEmail);
             }
-            UserDTO userDTO = new UserDTO(userEntity.hiddenSecretField());
+            if (userEntity != null) {
+                userEntity.hiddenSecretField();
+            }
+            UserDTO userDTO = new UserDTO(userEntity);
             // 填充角色
             userDTO.getRoles().add(UserConst.DEFAULT_ROLE);
             return userDTO;
