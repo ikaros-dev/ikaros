@@ -94,7 +94,7 @@ class SeasonServiceTest {
         });
 
         // 清空数据
-        episodeService.removeAll();
-        seasonService.removeAll();
+        episodeService.deleteAll();
+        seasonService.deleteAll();
     }
 }

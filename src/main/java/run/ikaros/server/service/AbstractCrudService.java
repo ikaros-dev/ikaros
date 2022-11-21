@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import run.ikaros.server.core.service.CrudService;
+import run.ikaros.server.entity.BaseEntity;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.core.repository.BaseRepository;
 import run.ikaros.server.utils.AssertUtils;
@@ -55,11 +56,20 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
     }
 
     @Override
-    public E removeById(@Nonnull I id) {
+    public E deleteById(@Nonnull I id) {
         AssertUtils.notNull(id, "id");
         E e = getById(id);
         baseRepository.delete(e);
         return e;
+    }
+
+    @Override
+    public E removeById(@Nonnull I id) {
+        E e = getById(id);
+        BaseEntity entity = (BaseEntity) e;
+        entity.setStatus(false);
+        e = (E) entity;
+        return baseRepository.saveAndFlush(e);
     }
 
     @Nonnull
@@ -113,7 +123,7 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
     }
 
     @Override
-    public void removeAll() {
+    public void deleteAll() {
         baseRepository.deleteAll();
     }
 }
