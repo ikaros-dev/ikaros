@@ -402,20 +402,25 @@ public class TaskServiceImpl implements TaskService {
 
         // 季度封面和tvshow.nfo
         // 用目录名称，根据标题模糊查询数据库季度表
-        SeasonEntity seasonEntity =
+        List<SeasonEntity> seasonEntityList =
             seasonService.findSeasonEntityByTitleLike(StringUtils.addLikeChar(dirName));
-        if (seasonEntity == null && dirName.indexOf(" ") > 0) {
-            seasonEntity = seasonService.findSeasonEntityByTitleLike(
+        if (seasonEntityList == null && dirName.indexOf(" ") > 0) {
+            seasonEntityList = seasonService.findSeasonEntityByTitleLike(
                 StringUtils.addLikeChar(dirName.substring(0, dirName.indexOf(" "))));
         }
-        if (seasonEntity == null) {
-            seasonEntity =
+        if (seasonEntityList == null) {
+            seasonEntityList =
                 seasonService.findSeasonEntityByTitleCnLike(StringUtils.addLikeChar(dirName));
         }
-        if (seasonEntity == null && dirName.indexOf(" ") > 0) {
-            seasonEntity = seasonService.findSeasonEntityByTitleCnLike(
+        if (seasonEntityList == null && dirName.indexOf(" ") > 0) {
+            seasonEntityList = seasonService.findSeasonEntityByTitleCnLike(
                 StringUtils.addLikeChar(dirName.substring(0, dirName.indexOf(" "))));
         }
+        if (seasonEntityList == null || seasonEntityList.isEmpty()) {
+            return;
+        }
+
+        SeasonEntity seasonEntity = seasonEntityList.get(0);
         // 查本地数据库关系表
         Map<String, String> mikanTorrentNameBgmTvSubjectIdMap =
             kvService.findMikanTorrentNameBgmTvSubjectIdMap();
@@ -446,13 +451,14 @@ public class TaskServiceImpl implements TaskService {
             }
         }
 
-        if (seasonEntity != null) {
+        if (seasonEntityList != null) {
             AnimeEntity animeEntity = animeService.getById(seasonEntity.getAnimeId());
             String tvshowNfoFilePath = jellyfinMediaDir + File.separator + "tvshow.nfo";
             File tvshowNfoFile = new File(tvshowNfoFilePath);
             if (!tvshowNfoFile.exists()) {
                 XmlUtils.generateJellyfinTvShowNfoXml(tvshowNfoFilePath,
-                    seasonEntity.getOverview(), seasonEntity.getTitleCn(), seasonEntity.getTitle(),
+                    seasonEntity.getOverview(), seasonEntity.getTitleCn(),
+                    seasonEntity.getTitle(),
                     String.valueOf(animeEntity.getBgmtvId()));
             }
             String coverUrl = animeEntity.getCoverUrl();
