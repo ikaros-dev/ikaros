@@ -144,16 +144,17 @@ docker run -rm \
 -e PGID=0 \
 -e IKAROS_ENV=dev \
 -e IKAROS_LOG_LEVEL=DEBUG \
--e IKAROS_SUB_MIKAN_RSS="https://mikanani.me/RSS/MyBangumi?token={token}" \
 -v /opt/ikaros:/opt/ikaros \
 ikaros:dev
 ```
 
 ### jellyfin
 
+可不部署
+
 ```shell
 docker run -d \
---name=ikaros_jellyfin \
+--name=jellyfin \
 -e PUID=0 \
 -e PGID=0 \
 -e LANG=zh_CN.UTF-8 \
