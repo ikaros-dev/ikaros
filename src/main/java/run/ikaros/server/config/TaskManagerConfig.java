@@ -51,6 +51,7 @@ public class TaskManagerConfig {
 
     @Scheduled(cron = "0 */30 * * * ?")
     public void halfHourOnceTask() {
+        LOGGER.debug("exec scheduled task: halfHourOnceTask");
         if (!appIsInit()) {
             LOGGER.debug("app not init, skip config cron task: halfHourOnceTask");
             return;
@@ -58,14 +59,20 @@ public class TaskManagerConfig {
 
         String value = optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
             OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name()).getValue();
+        LOGGER.debug("current app ENABLE_AUTO_ANIME_SUB_TASK={}", value);
         if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+            LOGGER.debug("start exec task: "
+                + "pull anime subscribe and save metadata and download torrents");
             taskService.pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
+            LOGGER.debug("end exec task: "
+                + "pull anime subscribe and save metadata and download torrents");
         }
 
     }
 
     @Scheduled(cron = "0 */5 * * * ?")
     public void fiveMinuteOnceTask() {
+        LOGGER.debug("exec scheduled task: fiveMinuteOnceTask");
         if (!appIsInit()) {
             LOGGER.debug("app not init, skip config cron task: fiveMinuteOnceTask");
             return;
@@ -73,8 +80,13 @@ public class TaskManagerConfig {
 
         String value = optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
             OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name()).getValue();
+        LOGGER.debug("current app ENABLE_AUTO_ANIME_SUB_TASK={}", value);
         if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+            LOGGER.debug("start exec task: "
+                + "search download process and create file hard links and relate episode");
             taskService.searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode();
+            LOGGER.debug("end exec task: "
+                + "search download process and create file hard links and relate episode");
         }
     }
 
