@@ -33,14 +33,14 @@ public class RegisterBeanConfig {
         return new RestTemplate(requestFactory);
     }
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     public ScheduledThreadPoolExecutor scheduledThreadPoolExecutor() {
         ThreadFactory threadFactory = new CustomizableThreadFactory("Ikaros-Scheduled-Task-");
         return new ScheduledThreadPoolExecutor(5, threadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     ThreadPoolExecutor threadPoolExecutor() {
         ThreadFactory threadFactory = new CustomizableThreadFactory("Ikaros-Task-");
         return new ThreadPoolExecutor(5, 100, 300, TimeUnit.SECONDS,
