@@ -119,6 +119,7 @@ public class TaskManagerConfig {
                     pullAnimeTaskScheduledFuture.cancel(false);
                     LOGGER.debug("cancel app scheduled task:  "
                         + "pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents");
+                    pullAnimeTaskScheduledFuture = null;
                 }
             }
             if (searchDownProcessTaskScheduledFuture != null) {
@@ -126,6 +127,7 @@ public class TaskManagerConfig {
                     searchDownProcessTaskScheduledFuture.cancel(false);
                     LOGGER.debug("cancel app scheduled task:  "
                         + "searchDownProcessTaskScheduledFuture");
+                    searchDownProcessTaskScheduledFuture = null;
                 }
             }
         }
