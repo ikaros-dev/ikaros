@@ -67,8 +67,12 @@ public class SystemVarUtils {
         }
         return localHost.getHostAddress();
     }
-    
+
     public static boolean platformIsWindows() {
-        return System.getenv("OS").contains("Windows");
+        String osName = System.getProperty("os.name");
+        if (StringUtils.isBlank(osName)) {
+            return false;
+        }
+        return osName.contains("Windows");
     }
 }
