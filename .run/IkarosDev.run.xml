@@ -7,14 +7,6 @@
         <option name="envVars">
           <list>
             <DockerEnvVarImpl>
-              <option name="name" value="PUID" />
-              <option name="value" value="0" />
-            </DockerEnvVarImpl>
-            <DockerEnvVarImpl>
-              <option name="name" value="PGID" />
-              <option name="value" value="0" />
-            </DockerEnvVarImpl>
-            <DockerEnvVarImpl>
               <option name="name" value="IKAROS_ENV" />
               <option name="value" value="dev" />
             </DockerEnvVarImpl>
@@ -23,8 +15,12 @@
               <option name="value" value="DEBUG" />
             </DockerEnvVarImpl>
             <DockerEnvVarImpl>
-              <option name="name" value="IKAROS_SUB_MIKAN_RSS" />
-              <option name="value" value="https://mikanani.me/RSS/MyBangumi?token={token}" />
+              <option name="name" value="PGID" />
+              <option name="value" value="0" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="PUID" />
+              <option name="value" value="0" />
             </DockerEnvVarImpl>
           </list>
         </option>

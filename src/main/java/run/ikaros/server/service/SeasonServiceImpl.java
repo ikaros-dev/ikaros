@@ -189,7 +189,7 @@ public class SeasonServiceImpl
 
     @Nullable
     @Override
-    public SeasonEntity findSeasonEntityByTitleLike(@Nonnull String title) {
+    public List<SeasonEntity> findSeasonEntityByTitleLike(@Nonnull String title) {
         AssertUtils.notBlank(title, "title");
         return seasonRepository
             .findSeasonEntityByTitleLikeAndStatus(StringUtils.addLikeChar(title), true);
@@ -197,7 +197,7 @@ public class SeasonServiceImpl
 
     @Nullable
     @Override
-    public SeasonEntity findSeasonEntityByTitleCnLike(@Nonnull String titleCn) {
+    public List<SeasonEntity> findSeasonEntityByTitleCnLike(@Nonnull String titleCn) {
         AssertUtils.notBlank(titleCn, "titleCn");
         return seasonRepository
             .findSeasonEntityByTitleCnLikeAndStatus(StringUtils.addLikeChar(titleCn), true);

@@ -39,7 +39,11 @@ docker run -it -d \
 -v C:\Users\li-guohao\mariadb\mariadb\logs:/var/log/mysql \
 -e MYSQL_ROOT_PASSWORD=123456  \
 --restart=always \
-mariadb
+mariadb \
+--character_set_client=utf8mb4 \
+--character_set_filesystem=utf8mb4 \
+--character_set_server=utf8mb4 \
+--collation-server=utf8mb4_unicode_ci
 ```
 
 创建数据库

@@ -71,7 +71,11 @@ docker run -it -d \
 -v /opt/mariadb/logs:/var/log/mysql \
 -e MYSQL_ROOT_PASSWORD=123456  \
 --restart=always \
-mariadb
+mariadb \
+--character_set_client=utf8mb4 \
+--character_set_filesystem=utf8mb4 \
+--character_set_server=utf8mb4 \
+--collation-server=utf8mb4_unicode_ci
 ```
 
 创建数据库
@@ -144,16 +148,17 @@ docker run -rm \
 -e PGID=0 \
 -e IKAROS_ENV=dev \
 -e IKAROS_LOG_LEVEL=DEBUG \
--e IKAROS_SUB_MIKAN_RSS="https://mikanani.me/RSS/MyBangumi?token={token}" \
 -v /opt/ikaros:/opt/ikaros \
 ikaros:dev
 ```
 
 ### jellyfin
 
+可不部署
+
 ```shell
 docker run -d \
---name=ikaros_jellyfin \
+--name=jellyfin \
 -e PUID=0 \
 -e PGID=0 \
 -e LANG=zh_CN.UTF-8 \
