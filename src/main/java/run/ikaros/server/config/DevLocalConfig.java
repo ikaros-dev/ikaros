@@ -14,11 +14,11 @@ import org.springframework.context.annotation.Configuration;
  * @date 2022/10/04
  */
 @Configuration
-@ConditionalOnProperty(name = "ikaros.env", havingValue = "dev")
-public class DevEnvConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevEnvConfig.class);
+@ConditionalOnProperty(name = "ikaros.env", havingValue = "local")
+public class DevLocalConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevLocalConfig.class);
 
-    // 开发环境下，启动时清空upload文件夹
+    // 本地环境下，启动时清空upload文件夹
     @PostConstruct
     public void cleanUploadDirWhenExist() {
         String uploadDirPath =

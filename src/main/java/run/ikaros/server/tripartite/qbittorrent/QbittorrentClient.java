@@ -296,7 +296,7 @@ public class QbittorrentClient {
                                               String category, String tags,
                                               Integer limit, Integer offset,
                                               String hashes) {
-        final String url = urlPrefix + API.TORRENTS_INFO;
+        final String url = getUrlPrefix() + API.TORRENTS_INFO;
 
         UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(url);
         if (filter != null) {

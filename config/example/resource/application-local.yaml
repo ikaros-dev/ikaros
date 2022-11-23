@@ -1,13 +1,12 @@
 ikaros:
   log-level: DEBUG
   server-port: 9090
-  qbittorrent-base-url: http://172.28.83.148:9091/api/v2/
 
 spring:
   datasource:
     # mariadb database configuration.
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://172.28.83.148:3306/ikaros
+    url: jdbc:mariadb://localhost:3306/ikaros
     username: root
     password: 123456
 
@@ -22,6 +21,6 @@ spring:
 
 logging:
   file:
-    name: ./logs/ikaros.log
+    name: ./build/logs/ikaros.log
 
 

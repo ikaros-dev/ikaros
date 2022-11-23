@@ -24,6 +24,7 @@ import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.model.request.AppInitRequest;
 import run.ikaros.server.model.request.SaveOptionRequest;
+import run.ikaros.server.tripartite.qbittorrent.QbittorrentClient;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
@@ -156,6 +157,8 @@ public class OptionServiceImpl
             DefaultConst.OPTION_APP_IS_INIT, OptionCategory.APP));
         saveOptionItem(new OptionItemDTO(OptionApp.THEME.name(),
             DefaultConst.OPTION_APP_THEME, OptionCategory.APP));
+        saveOptionItem(new OptionItemDTO(OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name(),
+            DefaultConst.OPTION_APP_ENABLE_AUTO_ANIME_SUB_TASK, OptionCategory.APP));
 
         // init option common
         saveOptionItem(new OptionItemDTO(OptionCommon.TITLE.name(),
@@ -282,6 +285,21 @@ public class OptionServiceImpl
         for (Map.Entry<String, String> entry : kvMap.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
+
+            // 需要针对特殊配置项预留较为通用的校验钩子
+            if (OptionCategory.APP.name().equalsIgnoreCase(category)
+                && OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name().equalsIgnoreCase(key)
+                && Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+                checkAppEnableAutoAnimeSubTaskRunEnv();
+            }
+
+            if (OptionMikan.ENABLE_PROXY.name().equalsIgnoreCase(key)
+                || OptionBgmTv.ENABLE_PROXY.name().equalsIgnoreCase(key)) {
+                if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+                    checkNetworkHttpProxyHasConfig();
+                }
+            }
+
             if (value == null) {
                 LOGGER.warn("skip null value update for category={}, key={}, value={}",
                     category, key, value);
@@ -308,6 +326,36 @@ public class OptionServiceImpl
             optionDTOList.add(optionDTO);
         }
         return optionDTOList;
+    }
+
+    private void checkNetworkHttpProxyHasConfig() {
+        String httpHost = findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
+            OptionNetwork.PROXY_HTTP_HOST.name()).getValue();
+        String httpPort = findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
+            OptionNetwork.PROXY_HTTP_PORT.name()).getValue();
+
+        if (StringUtils.isBlank(httpHost) || StringUtils.isBlank(httpPort)) {
+            throw new IllegalArgumentException("please config http proxy host and port "
+                + "in network option");
+        }
+
+    }
+
+    private void checkAppEnableAutoAnimeSubTaskRunEnv() {
+        // 1. 蜜柑计划RSS订阅已经配置
+        String mikanRssUrl = findOptionValueByCategoryAndKey(OptionCategory.MIKAN,
+            OptionMikan.MY_SUBSCRIBE_RSS.name()).getValue();
+        if (StringUtils.isBlank(mikanRssUrl)) {
+            throw new IllegalArgumentException("please add mikan config such as subscribe rss url");
+        }
+
+        // 2. Qbittorrent的URL已经配置
+        String qbittorrentUrl = findOptionValueByCategoryAndKey(OptionCategory.QBITTORRENT,
+            OptionQbittorrent.URL.name()).getValue();
+        if (StringUtils.isBlank(qbittorrentUrl)) {
+            throw new IllegalArgumentException("please add qbittorrent config such as url");
+        }
+
     }
 
 }
