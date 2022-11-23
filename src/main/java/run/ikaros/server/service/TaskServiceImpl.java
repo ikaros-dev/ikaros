@@ -3,7 +3,6 @@ package run.ikaros.server.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.core.service.KVService;
@@ -17,19 +16,14 @@ import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.KVEntity;
 import run.ikaros.server.entity.OptionEntity;
-import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.KVType;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.enums.OptionJellyfin;
 import run.ikaros.server.enums.OptionMikan;
-import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.model.dto.AnimeDTO;
-import run.ikaros.server.model.dto.SeasonDTO;
-import run.ikaros.server.parser.AnimeEpisodeInfo;
-import run.ikaros.server.parser.AnimeParser;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
@@ -37,7 +31,6 @@ import run.ikaros.server.tripartite.qbittorrent.QbittorrentClient;
 import run.ikaros.server.tripartite.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.tripartite.qbittorrent.model.QbTorrentInfo;
 import run.ikaros.server.utils.AssertUtils;
-import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.FileUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.RegexUtils;
@@ -159,8 +152,6 @@ public class TaskServiceImpl implements TaskService {
         }
 
         // 如果新添加的种子文件状态是缺失文件，则需要再恢复下
-        // 这个任务在5分钟一次的定时任务中也会执行
-        // @see ScheduledTaskConfig#fiveMinuteOnceTask()
         qbittorrentClient.tryToResumeAllMissingFilesErroredTorrents();
 
     }
@@ -555,7 +546,7 @@ public class TaskServiceImpl implements TaskService {
 
             return sb.toString();
         } catch (Exception exception) {
-            LOGGER.error("search subject fail for id={}", bgmtvSubjectId, exception);
+            LOGGER.error("search subject fail for id={}", bgmtvSubjectId);
             return null;
         }
     }
