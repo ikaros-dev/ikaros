@@ -56,7 +56,8 @@ public class AnimeServiceImpl
 
     }
 
-    public AnimeEntity save(AnimeEntity animeEntity) {
+    @Nonnull
+    public AnimeEntity save(@Nonnull AnimeEntity animeEntity) {
         AssertUtils.notNull(animeEntity, "animeEntity");
         AssertUtils.notBlank(animeEntity.getTitle(), "title");
 

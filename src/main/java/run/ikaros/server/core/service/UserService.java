@@ -17,7 +17,7 @@ import run.ikaros.server.utils.StringUtils;
 /**
  * @author li-guohao
  */
-public interface UserService {
+public interface UserService extends CrudService<UserEntity, Long> {
     @Nonnull
     @Transactional
     UserEntity registerUserByUsernameAndPassword(@Nonnull String username,
