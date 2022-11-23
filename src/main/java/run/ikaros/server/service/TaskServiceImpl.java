@@ -28,6 +28,8 @@ import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.model.dto.SeasonDTO;
+import run.ikaros.server.parser.AnimeEpisodeInfo;
+import run.ikaros.server.parser.AnimeParser;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
@@ -35,6 +37,7 @@ import run.ikaros.server.tripartite.qbittorrent.QbittorrentClient;
 import run.ikaros.server.tripartite.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.tripartite.qbittorrent.model.QbTorrentInfo;
 import run.ikaros.server.utils.AssertUtils;
+import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.FileUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.RegexUtils;
@@ -121,7 +124,7 @@ public class TaskServiceImpl implements TaskService {
                 String bgmtvSubjectId =
                     findBgmTvSubjectIdByTorrentName(mikanRssItemTitle, episodePageUrl);
                 if (bgmtvSubjectId == null) {
-                    LOGGER.warn("search bgmtv subject id fail for title={}", mikanRssItemTitle);
+                    LOGGER.error("skip current item for title={}", mikanRssItemTitle);
                     continue;
                 }
 
@@ -178,6 +181,15 @@ public class TaskServiceImpl implements TaskService {
             // 标题例子：[Lilith-Raws] 孤独摇滚！ / Bocchi the Rock!
             // - 06 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]
 
+            // 通过密柑剧集URL请求密柑页面获取对应的 bgmtv条目ID
+            if (StringUtils.isNotBlank(episodePageUrl)) {
+                bgmtvSubjectId = findBgmTvSubjectIdByEpisdoePageUrl(episodePageUrl);
+            }
+
+            if (StringUtils.isNotBlank(bgmtvSubjectId)) {
+                return bgmtvSubjectId;
+            }
+
             String enName = null;
             String chName = null;
             try {
@@ -208,26 +220,31 @@ public class TaskServiceImpl implements TaskService {
                     bgmtvSubjectId = String.valueOf(chNameSubOptional.get().getId());
                     LOGGER.info("search bgmtv subject by chinese name success,"
                         + "bgmtvSubjectId={}, chName={}", bgmtvSubjectId, chName);
-                } else {
-                    // 如果英文中文都搜不到，最后通过密柑剧集URL请求密柑页面获取对应的 bgmtv条目ID
-                    if (StringUtils.isNotBlank(episodePageUrl)) {
-                        String animePageUrl =
-                            mikanService.getAnimePageUrlByEpisodePageUrl(episodePageUrl);
-                        String bgmTvSubjectPageUrl =
-                            mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
-                        bgmtvSubjectId =
-                            bgmTvSubjectPageUrl.substring(
-                                bgmTvSubjectPageUrl.lastIndexOf("/") + 1);
-                        LOGGER.info(
-                            "search bgmtv subject by mikan episode to anime page success,"
-                                + "bgmtvSubjectId={}", bgmtvSubjectId);
-                    } else {
-                        return null;
-                    }
                 }
             }
 
         }
+
+        if (StringUtils.isBlank(bgmtvSubjectId)) {
+            LOGGER.error("search bgmtvSubjectId fail torrentName={}; episodePageUrl={}",
+                torrentName, episodePageUrl);
+        }
+
+        return bgmtvSubjectId;
+    }
+
+    private String findBgmTvSubjectIdByEpisdoePageUrl(String episodePageUrl) {
+        AssertUtils.notBlank(episodePageUrl, "episodePageUrl");
+        String animePageUrl =
+            mikanService.getAnimePageUrlByEpisodePageUrl(episodePageUrl);
+        String bgmTvSubjectPageUrl =
+            mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
+        String bgmtvSubjectId =
+            bgmTvSubjectPageUrl.substring(
+                bgmTvSubjectPageUrl.lastIndexOf("/") + 1);
+        LOGGER.info(
+            "search bgmtv subject by mikan episode to anime page success,"
+                + "bgmtvSubjectId={}", bgmtvSubjectId);
         return bgmtvSubjectId;
     }
 
@@ -346,6 +363,22 @@ public class TaskServiceImpl implements TaskService {
         AssertUtils.notBlank(torrentContentPath, "torrentContentPath");
         torrentContentPath = addPrefixForQbittorrentDownloadPath(torrentContentPath);
 
+        // 查本地数据库关系表
+        Map<String, String> mikanTorrentNameBgmTvSubjectIdMap =
+            kvService.findMikanTorrentNameBgmTvSubjectIdMap();
+        Map<String, String> bgmTvSubjectIdMikanEpUrlMap =
+            kvService.findBgmTvSubjectIdMikanEpUrlMap();
+        String bgmtvSubjectId = mikanTorrentNameBgmTvSubjectIdMap.get(torrentName);
+        if (StringUtils.isBlank(bgmtvSubjectId)) {
+            String mikanEpUrl = bgmTvSubjectIdMikanEpUrlMap.get(bgmtvSubjectId);
+            bgmtvSubjectId = findBgmTvSubjectIdByTorrentName(torrentName, mikanEpUrl);
+            kvService.save(new KVEntity()
+                .setType(KVType.MIKAN_TORRENT_NAME__BGM_TV_SUBJECT_ID)
+                .setKey(torrentName)
+                .setValue(bgmtvSubjectId));
+        }
+
+
         OptionEntity jellyfinMediaPathOptionEntity =
             optionService.findOptionValueByCategoryAndKey(OptionCategory.JELLYFIN,
                 OptionJellyfin.MEDIA_DIR_PATH.name());
@@ -354,36 +387,12 @@ public class TaskServiceImpl implements TaskService {
         }
         final String jellyfinMediaBasePath = jellyfinMediaPathOptionEntity.getValue();
 
-        String matchingEnglishStr = null;
-        try {
-            matchingEnglishStr = RegexUtils.getMatchingEnglishStrWithoutTag(torrentName);
-            matchingEnglishStr = matchingEnglishStr
-                .replace(" S ", "")
-                .replace(" S", "")
-                .replace("S ", "");
-        } catch (RegexMatchingException regexMatchingException) {
-            LOGGER.warn("match fail", regexMatchingException);
+        String dirName = buildMediaAnimeDirName(bgmtvSubjectId);
+        if (dirName == null) {
+            LOGGER.error("skip current anime for torrentName={}, bgmTvSubjectId={}",
+                torrentName, bgmtvSubjectId);
+            return;
         }
-
-        String dirName = matchingEnglishStr;
-        if (StringUtils.isBlank(matchingEnglishStr)) {
-            dirName = RegexUtils.getMatchingChineseStrWithoutTag(torrentName);
-            if (dirName.contains("僅限港澳台地區")) {
-                dirName = dirName.replace("僅限港澳台地區", "");
-            }
-            if (dirName.contains("。")) {
-                dirName = dirName.replace("。", "");
-            }
-        }
-
-        dirName = StringUtils.isBlank(dirName)
-            ? torrentName
-            .replaceAll(RegexConst.FILE_NAME_TAG, "")
-            .replaceAll(RegexConst.FILE_POSTFIX, "")
-            .replaceAll(NUMBER_SEASON_SEQUENCE_WITH_PREFIX, "")
-            .replace("-", "")
-            .trim()
-            : dirName;
 
         String jellyfinMediaDirPath = jellyfinMediaBasePath
             + File.separatorChar + dirName;
@@ -402,96 +411,48 @@ public class TaskServiceImpl implements TaskService {
 
         // 季度封面和tvshow.nfo
         // 用目录名称，根据标题模糊查询数据库季度表
-        List<SeasonEntity> seasonEntityList =
-            seasonService.findSeasonEntityByTitleLike(StringUtils.addLikeChar(dirName));
-        if (seasonEntityList == null && dirName.indexOf(" ") > 0) {
-            seasonEntityList = seasonService.findSeasonEntityByTitleLike(
-                StringUtils.addLikeChar(dirName.substring(0, dirName.indexOf(" "))));
+        Long subjectId = Long.valueOf(bgmtvSubjectId);
+        AnimeEntity animeEntity = animeService.findByBgmTvId(subjectId);
+        if (animeEntity == null) {
+            AnimeDTO animeDTO = bgmTvService.reqBgmtvSubject(subjectId);
+            animeEntity = animeService.getById(animeDTO.getId());
         }
-        if (seasonEntityList == null) {
-            seasonEntityList =
-                seasonService.findSeasonEntityByTitleCnLike(StringUtils.addLikeChar(dirName));
+        String tvshowNfoFilePath = jellyfinMediaDir + File.separator + "tvshow.nfo";
+        File tvshowNfoFile = new File(tvshowNfoFilePath);
+        if (!tvshowNfoFile.exists()) {
+            XmlUtils.generateJellyfinTvShowNfoXml(tvshowNfoFilePath,
+                animeEntity.getOverview(), animeEntity.getTitleCn(),
+                animeEntity.getTitle(),
+                String.valueOf(animeEntity.getBgmtvId()));
         }
-        if (seasonEntityList == null && dirName.indexOf(" ") > 0) {
-            seasonEntityList = seasonService.findSeasonEntityByTitleCnLike(
-                StringUtils.addLikeChar(dirName.substring(0, dirName.indexOf(" "))));
-        }
-        if (seasonEntityList == null || seasonEntityList.isEmpty()) {
-            return;
-        }
-
-        SeasonEntity seasonEntity = seasonEntityList.get(0);
-        // 查本地数据库关系表
-        Map<String, String> mikanTorrentNameBgmTvSubjectIdMap =
-            kvService.findMikanTorrentNameBgmTvSubjectIdMap();
-        Map<String, String> bgmTvSubjectIdMikanEpUrlMap =
-            kvService.findBgmTvSubjectIdMikanEpUrlMap();
-        String bgmtvSubjectId = mikanTorrentNameBgmTvSubjectIdMap.get(torrentName);
-        String mikanEpUrl = null;
-        if (StringUtils.isBlank(bgmtvSubjectId)) {
-            // 使用目录名模糊查询
-            List<KVEntity> kvEntityList = kvService
-                .findKVEntitiesByTypeAndKeyLike(KVType.MIKAN_TORRENT_NAME__BGM_TV_SUBJECT_ID,
-                    dirName);
-            if (!kvEntityList.isEmpty()) {
-                KVEntity kvEntity = kvEntityList.get(0);
-                bgmtvSubjectId = kvEntity.getValue();
-            }
-        }
-        mikanEpUrl = bgmTvSubjectIdMikanEpUrlMap.get(bgmtvSubjectId);
-
-        bgmtvSubjectId = findBgmTvSubjectIdByTorrentName(torrentName, mikanEpUrl);
-
-        if (seasonEntity == null && StringUtils.isNotBlank(bgmtvSubjectId)) {
-            AnimeDTO animeDTO = bgmTvService.reqBgmtvSubject(Long.valueOf(bgmtvSubjectId));
-            if (animeDTO != null) {
-                List<SeasonDTO> seasons = animeDTO.getSeasons();
-                SeasonDTO seasonDTO = seasons.get(0);
-                seasonEntity = seasonService.getById(seasonDTO.getId());
-            }
-        }
-
-        if (seasonEntityList != null) {
-            AnimeEntity animeEntity = animeService.getById(seasonEntity.getAnimeId());
-            String tvshowNfoFilePath = jellyfinMediaDir + File.separator + "tvshow.nfo";
-            File tvshowNfoFile = new File(tvshowNfoFilePath);
-            if (!tvshowNfoFile.exists()) {
-                XmlUtils.generateJellyfinTvShowNfoXml(tvshowNfoFilePath,
-                    seasonEntity.getOverview(), seasonEntity.getTitleCn(),
-                    seasonEntity.getTitle(),
-                    String.valueOf(animeEntity.getBgmtvId()));
-            }
-            String coverUrl = animeEntity.getCoverUrl();
-            String coverFilePath = SystemVarUtils.getCurrentAppDirPath()
-                + (coverUrl.startsWith(File.separator) ? coverUrl : File.separator + coverUrl);
-            File coverFile = new File(coverFilePath);
-            if (coverFile.exists()) {
-                String postfix = FileUtils.parseFilePostfix(coverFilePath);
-                String posterFilePath = jellyfinMediaDirPath
-                    + File.separator
-                    + "poster"
-                    + (StringUtils.isBlank(postfix) ? ".jpg" :
-                    postfix.startsWith(".") ? postfix : "." + postfix);
-                File posterFile = new File(posterFilePath);
-                if (!posterFile.exists()) {
-                    try {
-                        Files.createLink(posterFile.toPath(), coverFile.toPath());
-                        LOGGER.warn(
-                            "create jellyfin poster.jpg hard link success, link={}, existing={}",
-                            posterFilePath, coverFilePath);
-                    } catch (IOException e) {
-                        LOGGER.warn(
-                            "create jellyfin poster.jpg hard link fail, link={}, existing={}",
-                            posterFilePath, coverFilePath);
-                    }
+        String coverUrl = animeEntity.getCoverUrl();
+        String coverFilePath = SystemVarUtils.getCurrentAppDirPath()
+            + (coverUrl.startsWith(File.separator) ? coverUrl : File.separator + coverUrl);
+        File coverFile = new File(coverFilePath);
+        if (coverFile.exists()) {
+            String postfix = FileUtils.parseFilePostfix(coverFilePath);
+            String posterFilePath = jellyfinMediaDirPath
+                + File.separator
+                + "poster"
+                + (StringUtils.isBlank(postfix) ? ".jpg" :
+                postfix.startsWith(".") ? postfix : "." + postfix);
+            File posterFile = new File(posterFilePath);
+            if (!posterFile.exists()) {
+                try {
+                    Files.createLink(posterFile.toPath(), coverFile.toPath());
+                    LOGGER.warn(
+                        "create jellyfin poster.jpg hard link success, link={}, existing={}",
+                        posterFilePath, coverFilePath);
+                } catch (IOException e) {
+                    LOGGER.warn(
+                        "create jellyfin poster.jpg hard link fail, link={}, existing={}",
+                        posterFilePath, coverFilePath);
                 }
-            } else {
-                LOGGER.warn(
-                    "cover file not exist, skip create poster.jpg for jellyfinMediaDirPath: {}",
-                    jellyfinMediaDirPath);
             }
         } else {
-            LOGGER.warn("search season entity is null for title: {}", dirName);
+            LOGGER.warn(
+                "cover file not exist, skip create poster.jpg for jellyfinMediaDirPath: {}",
+                jellyfinMediaDirPath);
         }
 
         // 处理文件
@@ -560,6 +521,42 @@ public class TaskServiceImpl implements TaskService {
                         + "and jellyfin instance in the same file system",
                     e);
             }
+        }
+    }
+
+    /**
+     * 查询番组计划获取条目信息，以条目 中文名 - 英文名 (年月日) 这种格式生成媒体番剧目录，
+     * 比如 孤独摇滚！- ぼっち・ざ・ろっく！(2022-10-08)
+     *
+     * @param bgmtvSubjectId 番组计划条目ID
+     * @return 媒体目录名称
+     */
+    @Nullable
+    private String buildMediaAnimeDirName(@Nonnull String bgmtvSubjectId) {
+        AssertUtils.notBlank(bgmtvSubjectId, "bgmtvSubjectId");
+        try {
+            BgmTvSubject subject = bgmTvService.getSubject(Long.valueOf(bgmtvSubjectId));
+            if (subject == null) {
+                throw new RuntimeIkarosException("subject not found");
+            }
+
+            String nameCn = subject.getNameCn();
+            String name = subject.getName();
+            String date = subject.getDate();
+
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(nameCn)
+                .append(" - ")
+                .append(name)
+                .append(" (")
+                .append(date)
+                .append(")");
+
+            return sb.toString();
+        } catch (Exception exception) {
+            LOGGER.error("search subject fail for id={}", bgmtvSubjectId, exception);
+            return null;
         }
     }
 

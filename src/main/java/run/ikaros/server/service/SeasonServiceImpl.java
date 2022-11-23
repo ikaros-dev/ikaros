@@ -17,6 +17,8 @@ import run.ikaros.server.exceptions.SeasonEpisodeMatchingFailException;
 import run.ikaros.server.model.dto.EpisodeDTO;
 import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.params.SeasonMatchingEpParams;
+import run.ikaros.server.parser.AnimeEpisodeInfo;
+import run.ikaros.server.parser.AnimeParser;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.JsonUtils;

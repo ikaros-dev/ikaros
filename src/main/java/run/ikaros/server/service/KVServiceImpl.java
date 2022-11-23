@@ -32,13 +32,18 @@ public class KVServiceImpl implements KVService {
         KVType type = kvEntity.getType();
         String key = kvEntity.getKey();
         KVEntity existKVEntity = null;
-        if (id != null && type != null && StringUtils.isNotBlank(key)) {
+        if (id != null) {
+            existKVEntity = kvRepository.getById(id);
+        }
+
+        if (existKVEntity == null && type != null && StringUtils.isNotBlank(key)) {
             Optional<KVEntity> existKVEntityOptional =
-                kvRepository.findKVEntityByIdAndTypeAndKey(id, type, key);
+                kvRepository.findKVEntityByTypeAndKey(type, key);
             if (existKVEntityOptional.isPresent()) {
                 existKVEntity = existKVEntityOptional.get();
             }
         }
+
         if (existKVEntity == null) {
             kvEntity = kvRepository.saveAndFlush(kvEntity);
         } else {

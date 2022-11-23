@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface KVRepository extends JpaRepository<KVEntity, Long> {
-    Optional<KVEntity> findKVEntityByIdAndTypeAndKey(Long id, KVType type, String key);
+
+    Optional<KVEntity> findKVEntityByTypeAndKey(KVType type, String key);
 
     List<KVEntity> findKVEntitiesByType(KVType type);
 

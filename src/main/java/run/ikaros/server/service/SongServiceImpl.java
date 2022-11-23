@@ -35,6 +35,7 @@ public class SongServiceImpl extends AbstractCrudService<SongEntity, Long> imple
 
     @Nonnull
     @Override
+    @SuppressWarnings("unchecked")
     public PagingWrap<SongDTO> findSongs(SearchSongRequest searchSongRequest) {
         List<SongEntity> songEntities = new ArrayList<>();
         if (null == searchSongRequest) {
