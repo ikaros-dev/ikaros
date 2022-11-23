@@ -71,9 +71,7 @@ docker run -d \
 --name=ikaros \
 -e PUID=0 \
 -e PGID=0 \
--e IKAROS_QB_URL=http://192.168.2.229:9091/api/v2/ \
 -e IKAROS_LOG_LEVEL=DEBUG \
--e IKAROS_SUB_MIKAN_RSS="https://mikanani.me/RSS/MyBangumi?token={token}" \
 -v /share/container/app/ikaros:/opt/ikaros \
 --restart=always \
 ikaros:0.1.0

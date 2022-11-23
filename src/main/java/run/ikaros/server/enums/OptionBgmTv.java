@@ -5,5 +5,7 @@ public enum OptionBgmTv {
     API_SUBJECTS,
     API_EPISODES,
     API_SEARCH_SUBJECT,
-    ENABLE_PROXY
+    ENABLE_PROXY,
+    CLIENT_ID,
+    CLIENT_SECRET
 }

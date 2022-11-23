@@ -378,6 +378,12 @@ public class TaskServiceImpl implements TaskService {
         }
         final String jellyfinMediaBasePath = jellyfinMediaPathOptionEntity.getValue();
 
+        if (bgmtvSubjectId == null) {
+            LOGGER.error("skip current anime for torrentName={}, bgmTvSubjectId={}",
+                torrentName, bgmtvSubjectId);
+            return;
+        }
+
         String dirName = buildMediaAnimeDirName(bgmtvSubjectId);
         if (dirName == null) {
             LOGGER.error("skip current anime for torrentName={}, bgmTvSubjectId={}",

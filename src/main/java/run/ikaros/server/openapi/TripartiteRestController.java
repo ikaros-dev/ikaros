@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.result.CommonResult;
@@ -31,6 +32,12 @@ public class TripartiteRestController {
             LOGGER.warn("connect qbittorrent fail", qbittorrentRequestException);
         }
         return CommonResult.ok(connectSuccess);
+    }
+
+    @GetMapping("/bgmtv/oauth/callback")
+    public CommonResult<Boolean> bgmTvOauthCallback(String code) {
+
+        return CommonResult.ok();
     }
 
 }

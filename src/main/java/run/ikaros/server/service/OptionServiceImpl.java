@@ -226,6 +226,10 @@ public class OptionServiceImpl
             DefaultConst.OPTION_BGMTV_API_EPISODES, OptionCategory.BGMTV));
         saveOptionItem(new OptionItemDTO(OptionBgmTv.API_SEARCH_SUBJECT.name(),
             DefaultConst.OPTION_BGMTV_API_SEARCH_SUBJECT, OptionCategory.BGMTV));
+        saveOptionItem(new OptionItemDTO(OptionBgmTv.CLIENT_ID.name(),
+            DefaultConst.OPTION_BGMTV_CLIENT_ID, OptionCategory.BGMTV));
+        saveOptionItem(new OptionItemDTO(OptionBgmTv.CLIENT_SECRET.name(),
+            DefaultConst.OPTION_BGMTV_CLIENT_SECRET, OptionCategory.BGMTV));
 
         // init option mikan
         saveOptionItem(new OptionItemDTO(OptionMikan.MY_SUBSCRIBE_RSS.name(),

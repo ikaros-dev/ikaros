@@ -35,6 +35,8 @@ public interface DefaultConst {
     String OPTION_BGMTV_API_SUBJECTS = "/v0/subjects";
     String OPTION_BGMTV_API_EPISODES = "/v0/episodes";
     String OPTION_BGMTV_API_SEARCH_SUBJECT = "/search/subject";
+    String OPTION_BGMTV_CLIENT_ID = "";
+    String OPTION_BGMTV_CLIENT_SECRET = "";
 
 
     String OPTION_MIKAN_MY_SUBSCRIBE_RSS = "";
