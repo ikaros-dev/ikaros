@@ -19,9 +19,11 @@ import run.ikaros.server.utils.AssertUtils;
  */
 @Service
 public class MikanServiceImpl implements MikanService {
-    private final RestTemplate restTemplate;
+    private RestTemplate restTemplate = new RestTemplate();
 
-    public MikanServiceImpl(RestTemplate restTemplate) {
+    @Override
+    public void setRestTemplate(@Nonnull RestTemplate restTemplate) {
+        AssertUtils.notNull(restTemplate, "restTemplate");
         this.restTemplate = restTemplate;
     }
 

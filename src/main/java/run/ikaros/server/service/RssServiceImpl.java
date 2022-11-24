@@ -2,13 +2,20 @@ package run.ikaros.server.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.constants.HttpConst;
+import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.RssService;
+import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.enums.OptionMikan;
+import run.ikaros.server.enums.OptionNetwork;
+import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.exceptions.RssOperateException;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 import run.ikaros.server.utils.AssertUtils;
+import run.ikaros.server.utils.RestTemplateUtils;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.SystemVarUtils;
 import run.ikaros.server.utils.XmlUtils;
@@ -35,10 +42,15 @@ import java.util.UUID;
 public class RssServiceImpl implements RssService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RssServiceImpl.class);
 
-    private final RestTemplate restTemplate;
+    private final OptionService optionService;
+    private Proxy proxy = null;
 
-    public RssServiceImpl(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public RssServiceImpl(OptionService optionService) {
+        this.optionService = optionService;
+    }
+
+    public void setProxy(@Nullable Proxy proxy) {
+        this.proxy = proxy;
     }
 
     @Nonnull
@@ -106,9 +118,12 @@ public class RssServiceImpl implements RssService {
         OutputStream outputStream = null;
         BufferedOutputStream bufferedOutputStream = null;
         try {
-            Proxy proxy = new Proxy(Proxy.Type.HTTP,
-                new InetSocketAddress(HttpConst.HTTP_PROXY_HOST, HttpConst.HTTP_PROXY_PORT));
-            URLConnection urlConnection = new URL(url).openConnection(proxy);
+            URLConnection urlConnection;
+            if (proxy == null) {
+                urlConnection = new URL(url).openConnection();
+            } else {
+                urlConnection = new URL(url).openConnection(proxy);
+            }
             urlConnection.connect();
             inputStream = urlConnection.getInputStream();
             bufferedInputStream = new BufferedInputStream(inputStream);

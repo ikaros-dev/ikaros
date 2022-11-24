@@ -2,13 +2,15 @@ package run.ikaros.server.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import run.ikaros.server.constants.DefaultConst;
 import run.ikaros.server.core.repository.OptionRepository;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.UserService;
-import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionApp;
 import run.ikaros.server.enums.OptionBgmTv;
@@ -20,6 +22,9 @@ import run.ikaros.server.enums.OptionMikan;
 import run.ikaros.server.enums.OptionNetwork;
 import run.ikaros.server.enums.OptionQbittorrent;
 import run.ikaros.server.enums.OptionSeo;
+import run.ikaros.server.event.BgmTvHttpProxyUpdateEvent;
+import run.ikaros.server.event.BgmTvTokenUpdateEvent;
+import run.ikaros.server.event.MikanAndRssHttpProxyUpdateEvent;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
@@ -46,19 +51,17 @@ import java.util.stream.Stream;
 @Service
 public class OptionServiceImpl
     extends AbstractCrudService<OptionEntity, Long>
-    implements OptionService {
+    implements OptionService, ApplicationContextAware {
     private static final Logger LOGGER = LoggerFactory.getLogger(OptionServiceImpl.class);
 
     private final OptionRepository optionRepository;
     private final UserService userService;
-    private final BgmTvService bgmTvService;
+    private ApplicationContext applicationContext;
 
-    public OptionServiceImpl(OptionRepository optionRepository, UserService userService,
-                             BgmTvService bgmTvService) {
+    public OptionServiceImpl(OptionRepository optionRepository, UserService userService) {
         super(optionRepository);
         this.optionRepository = optionRepository;
         this.userService = userService;
-        this.bgmTvService = bgmTvService;
     }
 
     @Nonnull
@@ -285,22 +288,80 @@ public class OptionServiceImpl
 
             // 需要针对特殊配置项预留较为通用的校验钩子
             if (OptionCategory.APP.name().equalsIgnoreCase(category)
-                && OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name().equalsIgnoreCase(key)
-                && Boolean.TRUE.toString().equalsIgnoreCase(value)) {
-                checkAppEnableAutoAnimeSubTaskRunEnv();
+                && OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name().equalsIgnoreCase(key)) {
+                if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+                    checkAppEnableAutoAnimeSubTaskRunEnv();
+                }
             }
 
-            if (OptionMikan.ENABLE_PROXY.name().equalsIgnoreCase(key)
-                || OptionBgmTv.ENABLE_PROXY.name().equalsIgnoreCase(key)) {
+            if (OptionCategory.MIKAN.name().equalsIgnoreCase(category)
+                && OptionMikan.ENABLE_PROXY.name().equalsIgnoreCase(key)) {
                 if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
                     checkNetworkHttpProxyHasConfig();
                 }
+                MikanAndRssHttpProxyUpdateEvent mikanAndRssHttpProxyUpdateEvent =
+                    new MikanAndRssHttpProxyUpdateEvent(this, Boolean.valueOf(value),
+                        getOptionNetworkHttpProxyHost(), getOptionNetworkHttpProxyPort());
+                applicationContext.publishEvent(mikanAndRssHttpProxyUpdateEvent);
+            }
+
+            if (OptionCategory.BGMTV.name().equalsIgnoreCase(category)
+                && OptionBgmTv.ENABLE_PROXY.name().equalsIgnoreCase(key)) {
+                if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+                    checkNetworkHttpProxyHasConfig();
+                }
+                BgmTvHttpProxyUpdateEvent bgmTvHttpProxyUpdateEvent =
+                    new BgmTvHttpProxyUpdateEvent(this, Boolean.valueOf(value),
+                        getOptionNetworkHttpProxyHost(), getOptionNetworkHttpProxyPort());
+                applicationContext.publishEvent(bgmTvHttpProxyUpdateEvent);
             }
 
             if (OptionCategory.BGMTV.name().equalsIgnoreCase(category)
                 && OptionBgmTv.ACCESS_TOKEN.toString().equalsIgnoreCase(key)
                 && StringUtils.isNotBlank(value)) {
-                bgmTvService.refreshHttpHeaders(value);
+                BgmTvTokenUpdateEvent bgmTvTokenUpdateEvent =
+                    new BgmTvTokenUpdateEvent(this, value);
+                applicationContext.publishEvent(bgmTvTokenUpdateEvent);
+            }
+
+            if (OptionCategory.NETWORK.name().equalsIgnoreCase(category)) {
+                String enableBgmTvHttpProxy = "false";
+                String enableMikanHttpProxy = "false";
+                try {
+                    enableBgmTvHttpProxy = findOptionValueByCategoryAndKey(OptionCategory.BGMTV,
+                        OptionBgmTv.ENABLE_PROXY.name()).getValue();
+                    enableMikanHttpProxy = findOptionValueByCategoryAndKey(OptionCategory.MIKAN,
+                        OptionMikan.ENABLE_PROXY.name()).getValue();
+                } catch (RecordNotFoundException recordNotFoundException) {
+                    // app not init, default is false
+                }
+
+                if (OptionNetwork.PROXY_HTTP_HOST.name().equalsIgnoreCase(key)) {
+                    BgmTvHttpProxyUpdateEvent bgmTvHttpProxyUpdateEvent =
+                        new BgmTvHttpProxyUpdateEvent(this, Boolean.valueOf(enableBgmTvHttpProxy),
+                            value, getOptionNetworkHttpProxyPort());
+
+                    MikanAndRssHttpProxyUpdateEvent mikanAndRssHttpProxyUpdateEvent =
+                        new MikanAndRssHttpProxyUpdateEvent(this,
+                            Boolean.valueOf(enableMikanHttpProxy),
+                            value, getOptionNetworkHttpProxyPort());
+
+                    applicationContext.publishEvent(bgmTvHttpProxyUpdateEvent);
+                    applicationContext.publishEvent(mikanAndRssHttpProxyUpdateEvent);
+                }
+                if (OptionNetwork.PROXY_HTTP_PORT.name().equalsIgnoreCase(key)) {
+                    BgmTvHttpProxyUpdateEvent bgmTvHttpProxyUpdateEvent =
+                        new BgmTvHttpProxyUpdateEvent(this, Boolean.valueOf(enableBgmTvHttpProxy),
+                            getOptionNetworkHttpProxyHost(), value);
+
+                    MikanAndRssHttpProxyUpdateEvent mikanAndRssHttpProxyUpdateEvent =
+                        new MikanAndRssHttpProxyUpdateEvent(this,
+                            Boolean.valueOf(enableMikanHttpProxy),
+                            getOptionNetworkHttpProxyHost(), value);
+
+                    applicationContext.publishEvent(bgmTvHttpProxyUpdateEvent);
+                    applicationContext.publishEvent(mikanAndRssHttpProxyUpdateEvent);
+                }
             }
 
             if (value == null) {
@@ -361,4 +422,28 @@ public class OptionServiceImpl
 
     }
 
+    @Override
+    public void setApplicationContext(@Nonnull ApplicationContext applicationContext)
+        throws BeansException {
+        AssertUtils.notNull(applicationContext, "applicationContext");
+        this.applicationContext = applicationContext;
+    }
+
+    public String getOptionNetworkHttpProxyHost() {
+        try {
+            return findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
+                OptionNetwork.PROXY_HTTP_HOST.name()).getValue();
+        } catch (RecordNotFoundException recordNotFoundException) {
+            return null;
+        }
+    }
+
+    public String getOptionNetworkHttpProxyPort() {
+        try {
+            return findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
+                OptionNetwork.PROXY_HTTP_PORT.name()).getValue();
+        } catch (RecordNotFoundException recordNotFoundException) {
+            return null;
+        }
+    }
 }

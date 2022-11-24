@@ -3,6 +3,7 @@ package run.ikaros.server.tripartite.bgmtv.repository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -14,8 +15,12 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import run.ikaros.server.constants.IkarosConst;
 import run.ikaros.server.constants.SecurityConst;
+import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.tripartite.bgmtv.constants.BgmTvApiConst;
 import run.ikaros.server.core.tripartite.bgmtv.repository.BgmTvRepository;
+import run.ikaros.server.enums.OptionBgmTv;
+import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisode;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisodeType;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvPagingData;
@@ -35,14 +40,20 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-public class BgmTvRepositoryImpl implements BgmTvRepository {
+public class BgmTvRepositoryImpl implements BgmTvRepository, InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(BgmTvRepositoryImpl.class);
-    private final RestTemplate restTemplate;
+    private RestTemplate restTemplate = new RestTemplate();
     private final HttpHeaders headers = new HttpHeaders();
+    private final OptionService optionService;
 
-    public BgmTvRepositoryImpl(RestTemplate restTemplate) {
+    public BgmTvRepositoryImpl(OptionService optionService) {
+        this.optionService = optionService;
+    }
+
+    public void setRestTemplate(
+        @Nonnull RestTemplate restTemplate) {
+        AssertUtils.notNull(restTemplate, "restTemplate");
         this.restTemplate = restTemplate;
-        refreshHttpHeaders(null);
     }
 
     /**
@@ -220,4 +231,15 @@ public class BgmTvRepositoryImpl implements BgmTvRepository {
     }
 
 
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        String token = null;
+        try {
+            token = optionService.findOptionValueByCategoryAndKey(OptionCategory.BGMTV,
+                OptionBgmTv.ACCESS_TOKEN.name()).getValue();
+        } catch (RecordNotFoundException recordNotFoundException) {
+            LOGGER.warn("current not set bgmtv access token");
+        }
+        refreshHttpHeaders(token);
+    }
 }

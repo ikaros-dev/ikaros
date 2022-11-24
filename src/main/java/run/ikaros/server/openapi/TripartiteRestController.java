@@ -19,7 +19,8 @@ public class TripartiteRestController {
     private final QbittorrentClient qbittorrentClient;
     private final BgmTvService bgmTvService;
 
-    public TripartiteRestController(QbittorrentClient qbittorrentClient, BgmTvService bgmTvService) {
+    public TripartiteRestController(QbittorrentClient qbittorrentClient,
+                                    BgmTvService bgmTvService) {
         this.qbittorrentClient = qbittorrentClient;
         this.bgmTvService = bgmTvService;
     }

@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.tripartite.bgmtv.constants.BgmTvConst;
 import run.ikaros.server.core.tripartite.bgmtv.repository.BgmTvRepository;
 import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
@@ -11,6 +13,8 @@ import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
+import run.ikaros.server.enums.OptionBgmTv;
+import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.enums.SeasonType;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.core.service.AnimeService;
@@ -53,6 +57,12 @@ public class BgmTvServiceImpl implements BgmTvService {
         this.episodeService = episodeService;
     }
 
+
+    @Override
+    public void setRestTemplate(@Nonnull RestTemplate restTemplate) {
+        AssertUtils.notNull(restTemplate, "restTemplate");
+        bgmTvRepository.setRestTemplate(restTemplate);
+    }
 
     @Nonnull
     @Override
