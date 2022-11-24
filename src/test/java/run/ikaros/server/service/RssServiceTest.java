@@ -1,5 +1,6 @@
 package run.ikaros.server.service;
 
+import org.mockito.Mockito;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.core.service.RssService;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
@@ -13,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RssServiceTest {
 
-    RssService rssService = new RssServiceImpl(new RestTemplate());
+    RssService rssService = new RssServiceImpl(Mockito.mock(OptionServiceImpl.class));
 
     /**
      * need add run env config: IKAROS_TEST_RSS_MIKAN_MY_SUB_URL=http://xxxxx

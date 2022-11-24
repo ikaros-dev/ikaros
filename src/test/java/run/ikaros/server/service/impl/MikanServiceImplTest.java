@@ -10,8 +10,7 @@ import run.ikaros.server.service.MikanServiceImpl;
  * @author li-guohao
  */
 class MikanServiceImplTest {
-    RestTemplate restTemplate = new RestTemplate();
-    MikanService mikanService = new MikanServiceImpl(restTemplate);
+    MikanService mikanService = new MikanServiceImpl();
 
     @Test
     void getAnimePageUrlByEpisodePageUrl() {

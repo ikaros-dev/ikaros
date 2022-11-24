@@ -1,10 +1,11 @@
 package run.ikaros.server.core.tripartite.bgmtv.service;
 
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
+import run.ikaros.server.tripartite.bgmtv.model.BgmTvUserInfo;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -12,6 +13,9 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 public interface BgmTvService {
+
+    void setRestTemplate(@Nonnull RestTemplate restTemplate);
+
     @Nonnull
     List<BgmTvSubject> searchSubject(@Nonnull String keyword,
                                      @Nonnull BgmTvSubjectType type);
@@ -28,5 +32,7 @@ public interface BgmTvService {
     @Transactional(rollbackOn = Exception.class)
     AnimeDTO reqBgmtvSubject(@Nonnull Long subjectId);
 
+    void refreshHttpHeaders(@Nullable String accessToken);
 
+    BgmTvUserInfo getMe();
 }

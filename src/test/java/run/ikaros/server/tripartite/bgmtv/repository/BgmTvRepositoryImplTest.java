@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import run.ikaros.server.tripartite.bgmtv.model.BgmTvPagingData;
+import run.ikaros.server.core.service.OptionService;
+import run.ikaros.server.service.OptionServiceImpl;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
 import run.ikaros.server.unittest.common.UnitTestConst;
@@ -30,12 +31,14 @@ import static run.ikaros.server.unittest.MemberMatcher.field;
 class BgmTvRepositoryImplTest {
 
     RestTemplate restTemplate;
+    OptionService optionService;
     BgmTvRepositoryImpl bgmTvRepository;
 
     @BeforeEach
     void setUp() {
-        restTemplate = Mockito.spy(new RestTemplate());
-        bgmTvRepository = new BgmTvRepositoryImpl(restTemplate);
+        restTemplate = new RestTemplate();
+        optionService = Mockito.mock(OptionServiceImpl.class);
+        bgmTvRepository = new BgmTvRepositoryImpl(optionService);
     }
 
     @Test

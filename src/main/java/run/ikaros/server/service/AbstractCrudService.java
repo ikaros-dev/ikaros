@@ -64,6 +64,7 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public E removeById(@Nonnull I id) {
         E e = getById(id);
         BaseEntity entity = (BaseEntity) e;

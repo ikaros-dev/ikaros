@@ -1,14 +1,14 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="IkarosDev" type="docker-deploy" factoryName="dockerfile" server-name="Develop">
+  <configuration default="false" name="IkarosPro" type="docker-deploy" factoryName="dockerfile" server-name="Production">
     <deployment type="dockerfile">
       <settings>
-        <option name="imageTag" value="ikaros:dev" />
+        <option name="imageTag" value="ikaros:0.1.0" />
         <option name="containerName" value="ikaros" />
         <option name="envVars">
           <list>
             <DockerEnvVarImpl>
               <option name="name" value="IKAROS_LOG_LEVEL" />
-              <option name="value" value="DEBUG" />
+              <option name="value" value="DEBUG " />
             </DockerEnvVarImpl>
             <DockerEnvVarImpl>
               <option name="name" value="PGID" />
@@ -17,10 +17,6 @@
             <DockerEnvVarImpl>
               <option name="name" value="PUID" />
               <option name="value" value="0" />
-            </DockerEnvVarImpl>
-            <DockerEnvVarImpl>
-              <option name="name" value="IKAROS_ENV" />
-              <option name="value" value="dev" />
             </DockerEnvVarImpl>
           </list>
         </option>
@@ -37,7 +33,7 @@
           <list>
             <DockerVolumeBindingImpl>
               <option name="containerPath" value="/opt/ikaros" />
-              <option name="hostPath" value="/opt/ikaros" />
+              <option name="hostPath" value="/share/container/app/ikaros" />
             </DockerVolumeBindingImpl>
           </list>
         </option>
