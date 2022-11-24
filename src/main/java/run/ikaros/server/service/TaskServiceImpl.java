@@ -260,8 +260,16 @@ public class TaskServiceImpl implements TaskService {
             String name = qbTorrentInfo.getName();
 
             // 创建两个文件硬链接：服务器上传目录 和 Jellyfin目录
-            createServerFileHardLink(name, contentPath);
-            createJellyfinFileHardLink(name, contentPath);
+            try {
+                createServerFileHardLink(name, contentPath);
+            } catch (RuntimeException runtimeException) {
+                LOGGER.warn("create server file hard link fail", runtimeException);
+            }
+            try {
+                createJellyfinFileHardLink(name, contentPath);
+            } catch (RuntimeException runtimeException) {
+                LOGGER.warn("create jellyfin file hard link fail", runtimeException);
+            }
 
             hasHandledTorrentHashSet.add(hash);
         }
@@ -497,8 +505,14 @@ public class TaskServiceImpl implements TaskService {
             // 单剧集文件
             String fileName = FileUtils.parseFileName(torrentContentPath);
             fileName = fileName.replaceAll(NUMBER_SEASON_SEQUENCE_WITH_PREFIX, "");
-            Long seq = RegexUtils.getFileNameTagEpSeq(fileName);
-            fileName = "S1E" + seq + "-" + fileName;
+            Long seq = null;
+            try {
+                seq = RegexUtils.getFileNameTagEpSeq(fileName);
+            } catch (RegexMatchingException regexMatchingException) {
+                LOGGER.warn("get file name tage episode seq fail for filename={}", fileName);
+            }
+
+            fileName = seq == null ? fileName : "S1E" + seq + "-" + fileName;
             String jellyfinFilePath = jellyfinMediaDirPath + File.separatorChar + fileName;
             File jellyfinFile = new File(jellyfinFilePath);
 
