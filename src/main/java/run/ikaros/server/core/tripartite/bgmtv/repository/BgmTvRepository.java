@@ -6,13 +6,19 @@ import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisodeType;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvPagingData;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
+import run.ikaros.server.tripartite.bgmtv.model.BgmTvUserInfo;
 import run.ikaros.server.utils.AssertUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
+/**
+ * @see run.ikaros.server.core.tripartite.bgmtv.constants.BgmTvApiConst
+ */
 public interface BgmTvRepository {
+
+    void refreshHttpHeaders(@Nullable String accessToken);
 
     @Nullable
     @Retryable
@@ -56,4 +62,7 @@ public interface BgmTvRepository {
                                                @Nonnull BgmTvEpisodeType episodeType,
                                                @Nullable Integer offset,
                                                @Nullable Integer limit);
+
+    @Retryable
+    BgmTvUserInfo getMe();
 }

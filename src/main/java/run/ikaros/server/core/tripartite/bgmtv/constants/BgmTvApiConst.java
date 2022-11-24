@@ -15,6 +15,7 @@ public interface BgmTvApiConst {
      * 实测不支持中文日文查询
      */
     String NEXT_SEARCH_SUBJECTS = BASE + "/v0/search/subjects";
+    String ME = BASE + "/v0/me";
 
     Integer DEFAULT_OFFSET = 1;
     Integer DEFAULT_LIMIT = 50;

@@ -5,6 +5,7 @@ import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
+import run.ikaros.server.tripartite.bgmtv.model.BgmTvUserInfo;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,5 +29,7 @@ public interface BgmTvService {
     @Transactional(rollbackOn = Exception.class)
     AnimeDTO reqBgmtvSubject(@Nonnull Long subjectId);
 
+    void refreshHttpHeaders(@Nullable String accessToken);
 
+    BgmTvUserInfo getMe();
 }

@@ -31,13 +31,7 @@ public interface DefaultConst {
 
 
     String OPTION_BGMTV_ENABLE_PROXY = Boolean.FALSE.toString();
-    String OPTION_BGMTV_API_BASE = "https://api.bgm.tv";
-    String OPTION_BGMTV_API_SUBJECTS = "/v0/subjects";
-    String OPTION_BGMTV_API_EPISODES = "/v0/episodes";
-    String OPTION_BGMTV_API_SEARCH_SUBJECT = "/search/subject";
-    String OPTION_BGMTV_CLIENT_ID = "";
-    String OPTION_BGMTV_CLIENT_SECRET = "";
-
+    String OPTION_BGMTV_ACCESS_TOKEN = "";
 
     String OPTION_MIKAN_MY_SUBSCRIBE_RSS = "";
     String OPTION_MIKAN_ENABLE_PROXY = Boolean.FALSE.toString();

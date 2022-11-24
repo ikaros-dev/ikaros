@@ -8,6 +8,7 @@ import run.ikaros.server.constants.DefaultConst;
 import run.ikaros.server.core.repository.OptionRepository;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.UserService;
+import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionApp;
 import run.ikaros.server.enums.OptionBgmTv;
@@ -24,7 +25,6 @@ import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.model.request.AppInitRequest;
 import run.ikaros.server.model.request.SaveOptionRequest;
-import run.ikaros.server.tripartite.qbittorrent.QbittorrentClient;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
@@ -51,11 +51,14 @@ public class OptionServiceImpl
 
     private final OptionRepository optionRepository;
     private final UserService userService;
+    private final BgmTvService bgmTvService;
 
-    public OptionServiceImpl(OptionRepository optionRepository, UserService userService) {
+    public OptionServiceImpl(OptionRepository optionRepository, UserService userService,
+                             BgmTvService bgmTvService) {
         super(optionRepository);
         this.optionRepository = optionRepository;
         this.userService = userService;
+        this.bgmTvService = bgmTvService;
     }
 
     @Nonnull
@@ -218,18 +221,8 @@ public class OptionServiceImpl
         // init option bgmtv
         saveOptionItem(new OptionItemDTO(OptionBgmTv.ENABLE_PROXY.name(),
             DefaultConst.OPTION_BGMTV_ENABLE_PROXY, OptionCategory.BGMTV));
-        saveOptionItem(new OptionItemDTO(OptionBgmTv.API_BASE.name(),
-            DefaultConst.OPTION_BGMTV_API_BASE, OptionCategory.BGMTV));
-        saveOptionItem(new OptionItemDTO(OptionBgmTv.API_SUBJECTS.name(),
-            DefaultConst.OPTION_BGMTV_API_SUBJECTS, OptionCategory.BGMTV));
-        saveOptionItem(new OptionItemDTO(OptionBgmTv.API_EPISODES.name(),
-            DefaultConst.OPTION_BGMTV_API_EPISODES, OptionCategory.BGMTV));
-        saveOptionItem(new OptionItemDTO(OptionBgmTv.API_SEARCH_SUBJECT.name(),
-            DefaultConst.OPTION_BGMTV_API_SEARCH_SUBJECT, OptionCategory.BGMTV));
-        saveOptionItem(new OptionItemDTO(OptionBgmTv.CLIENT_ID.name(),
-            DefaultConst.OPTION_BGMTV_CLIENT_ID, OptionCategory.BGMTV));
-        saveOptionItem(new OptionItemDTO(OptionBgmTv.CLIENT_SECRET.name(),
-            DefaultConst.OPTION_BGMTV_CLIENT_SECRET, OptionCategory.BGMTV));
+        saveOptionItem(new OptionItemDTO(OptionBgmTv.ACCESS_TOKEN.name(),
+            DefaultConst.OPTION_BGMTV_ACCESS_TOKEN, OptionCategory.BGMTV));
 
         // init option mikan
         saveOptionItem(new OptionItemDTO(OptionMikan.MY_SUBSCRIBE_RSS.name(),
@@ -302,6 +295,12 @@ public class OptionServiceImpl
                 if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
                     checkNetworkHttpProxyHasConfig();
                 }
+            }
+
+            if (OptionCategory.BGMTV.name().equalsIgnoreCase(category)
+                && OptionBgmTv.ACCESS_TOKEN.toString().equalsIgnoreCase(key)
+                && StringUtils.isNotBlank(value)) {
+                bgmTvService.refreshHttpHeaders(value);
             }
 
             if (value == null) {

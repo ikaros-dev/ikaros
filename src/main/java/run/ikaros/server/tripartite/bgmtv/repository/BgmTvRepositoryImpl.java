@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import run.ikaros.server.constants.IkarosCons;
+import run.ikaros.server.constants.IkarosConst;
+import run.ikaros.server.constants.SecurityConst;
 import run.ikaros.server.core.tripartite.bgmtv.constants.BgmTvApiConst;
 import run.ikaros.server.core.tripartite.bgmtv.repository.BgmTvRepository;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisode;
@@ -21,13 +22,14 @@ import run.ikaros.server.tripartite.bgmtv.model.BgmTvPagingData;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSearchRequest;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
+import run.ikaros.server.tripartite.bgmtv.model.BgmTvUserInfo;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.JsonUtils;
+import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +42,7 @@ public class BgmTvRepositoryImpl implements BgmTvRepository {
 
     public BgmTvRepositoryImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        setHttpHeaderUserAgent();
+        refreshHttpHeaders(null);
     }
 
     /**
@@ -48,13 +50,19 @@ public class BgmTvRepositoryImpl implements BgmTvRepository {
      *
      * @see <a href="https://github.com/bangumi/api/blob/master/docs-raw/user%20agent.md">bgmtv api user aget</a>
      */
-    private void setHttpHeaderUserAgent() {
+    @Override
+    public void refreshHttpHeaders(@Nullable String accessToken) {
         // todo 目前设置成GitHub仓库地址，后续官网上线设置成官网地址
         // 当前 User-Agent格式 ikaros-dev/ikaros (https://github.com/ikaros-dev/ikaros)
-        String userAgent = IkarosCons.REPO_GITHUB_NAME
-            + " (" + IkarosCons.REPO_GITHUB_URL + ")";
+        String userAgent = IkarosConst.REPO_GITHUB_NAME
+            + " (" + IkarosConst.REPO_GITHUB_URL + ")";
+        headers.clear();
         headers.set(HttpHeaders.USER_AGENT, userAgent);
         headers.set(HttpHeaders.COOKIE, "chii_searchDateLine=0");
+        headers.set(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        if (StringUtils.isNotBlank(accessToken)) {
+            headers.set(HttpHeaders.AUTHORIZATION, SecurityConst.TOKEN_PREFIX + accessToken);
+        }
     }
 
 
@@ -195,6 +203,20 @@ public class BgmTvRepositoryImpl implements BgmTvRepository {
         });
 
         return List.of(bgmTvEpisodes);
+    }
+
+    @Override
+    public BgmTvUserInfo getMe() {
+        ResponseEntity<BgmTvUserInfo> responseEntity =
+            restTemplate.exchange(BgmTvApiConst.ME, HttpMethod.GET, new HttpEntity<>(null, headers),
+                BgmTvUserInfo.class);
+        if (responseEntity.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+            return null;
+        }
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            return responseEntity.getBody();
+        }
+        return null;
     }
 
 

@@ -22,6 +22,7 @@ import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisodeType;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvTag;
+import run.ikaros.server.tripartite.bgmtv.model.BgmTvUserInfo;
 import run.ikaros.server.tripartite.bgmtv.repository.BgmTvRepositoryImpl;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.DateUtils;
@@ -161,5 +162,15 @@ public class BgmTvServiceImpl implements BgmTvService {
 
             return animeService.findAnimeDTOById(animeEntity.getId());
         }
+    }
+
+    @Override
+    public void refreshHttpHeaders(@Nullable String accessToken) {
+        bgmTvRepository.refreshHttpHeaders(accessToken);
+    }
+
+    @Override
+    public BgmTvUserInfo getMe() {
+        return bgmTvRepository.getMe();
     }
 }
