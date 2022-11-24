@@ -512,7 +512,9 @@ public class TaskServiceImpl implements TaskService {
                 LOGGER.warn("get file name tage episode seq fail for filename={}", fileName);
             }
 
-            fileName = seq == null ? fileName : "S1E" + seq + "-" + fileName;
+            if (seq != null) {
+                fileName = "S1E" + seq + "-" + fileName;
+            }
             String jellyfinFilePath = jellyfinMediaDirPath + File.separatorChar + fileName;
             File jellyfinFile = new File(jellyfinFilePath);
 
