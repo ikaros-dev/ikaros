@@ -8,6 +8,7 @@ import run.ikaros.server.params.SearchAnimeDTOSParams;
 import run.ikaros.server.result.PagingWrap;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * @author li-guohao
