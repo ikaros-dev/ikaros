@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import run.ikaros.server.core.service.MetadataService;
-import run.ikaros.server.model.dto.MetadataDTO;
+import run.ikaros.server.model.response.MetadataSearchResponse;
 import run.ikaros.server.result.CommonResult;
 
 import java.util.List;
@@ -21,7 +21,8 @@ public class MetadataRestController {
     }
 
     @GetMapping("/search")
-    public CommonResult<List<MetadataDTO>> searchAnime(@RequestParam("keyword") String keyword) {
+    public CommonResult<List<MetadataSearchResponse>> searchAnime(
+        @RequestParam("keyword") String keyword) {
         return CommonResult.ok(metadataService.search(keyword));
     }
 }
