@@ -2,8 +2,8 @@ package run.ikaros.server.core.service;
 
 import java.util.List;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
@@ -30,7 +30,7 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
     @Nonnull
     List<OptionEntity> findOptionByCategory(@Nonnull OptionCategory category);
 
-    @Nonnull
+    @Nullable
     OptionEntity findOptionValueByCategoryAndKey(@Nonnull OptionCategory category,
                                                  @Nonnull String key);
 
@@ -48,4 +48,8 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
     @Nonnull
     @Transactional
     List<OptionDTO> saveWithRequest(@Nonnull SaveOptionRequest saveOptionRequest);
+
+    String getOptionNetworkHttpProxyHost();
+
+    String getOptionNetworkHttpProxyPort();
 }

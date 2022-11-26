@@ -19,10 +19,17 @@ public class RestTemplateUtils {
 
     private static Map<String, RestTemplate> restTemplateProxyMap = new HashMap<>();
     private static RestTemplate restTemplate;
+    public static final Integer READ_TIMEOUT = 5000;
+    public static final Integer CONNECT_TIMEOUT = 2000;
+
 
     public static synchronized RestTemplate buildRestTemplate() {
         if (restTemplate == null) {
             restTemplate = new RestTemplate();
+            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+            requestFactory.setReadTimeout(READ_TIMEOUT);
+            requestFactory.setConnectTimeout(CONNECT_TIMEOUT);
+            restTemplate.setRequestFactory(requestFactory);
         }
         return restTemplate;
     }
@@ -42,8 +49,8 @@ public class RestTemplateUtils {
             new InetSocketAddress(httpProxyHost, Integer.parseInt(httpProxyPort));
         Proxy proxy = new Proxy(Proxy.Type.HTTP, inetSocketAddress);
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setReadTimeout(5000);
-        requestFactory.setConnectTimeout(5000);
+        requestFactory.setReadTimeout(READ_TIMEOUT);
+        requestFactory.setConnectTimeout(CONNECT_TIMEOUT);
         requestFactory.setProxy(proxy);
         RestTemplate rt = new RestTemplate(requestFactory);
 

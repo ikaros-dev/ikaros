@@ -93,14 +93,14 @@ public class TaskServiceImpl implements TaskService {
         OptionEntity mikanSubRssOptionEntity =
             optionService.findOptionValueByCategoryAndKey(OptionCategory.MIKAN,
                 OptionMikan.MY_SUBSCRIBE_RSS.name());
-        if (StringUtils.isBlank(mikanSubRssOptionEntity.getValue())) {
+        if (mikanSubRssOptionEntity == null
+            || StringUtils.isBlank(mikanSubRssOptionEntity.getValue())) {
             throw new RuntimeIkarosException("please config mikan sub rss url");
         }
-        String mikanMySubscribeRssUrl = mikanSubRssOptionEntity.getValue();
 
         LOGGER.info("start parse mikan my subscribe rss url from db");
         List<MikanRssItem> mikanRssItemList =
-            rssService.parseMikanMySubscribeRss(mikanMySubscribeRssUrl);
+            rssService.parseMikanMySubscribeRss(mikanSubRssOptionEntity.getValue());
         LOGGER.info("parse mikan my subscribe rss url to mikan rss item list ");
 
         for (MikanRssItem mikanRssItem : mikanRssItemList) {
@@ -174,7 +174,7 @@ public class TaskServiceImpl implements TaskService {
 
             // 通过密柑剧集URL请求密柑页面获取对应的 bgmtv条目ID
             if (StringUtils.isNotBlank(episodePageUrl)) {
-                bgmtvSubjectId = findBgmTvSubjectIdByEpisdoePageUrl(episodePageUrl);
+                bgmtvSubjectId = findBgmTvSubjectIdByEpisodePageUrl(episodePageUrl);
             }
 
             if (StringUtils.isNotBlank(bgmtvSubjectId)) {
@@ -192,6 +192,7 @@ public class TaskServiceImpl implements TaskService {
 
             Optional<BgmTvSubject> enNameSubOptional = Optional.empty();
             if (StringUtils.isNotBlank(enName)) {
+                LOGGER.debug("search bgmtv subject by english name staring ...");
                 enNameSubOptional =
                     bgmTvService.searchSubject(enName, BgmTvSubjectType.ANIME)
                         .stream().findFirst();
@@ -224,7 +225,7 @@ public class TaskServiceImpl implements TaskService {
         return bgmtvSubjectId;
     }
 
-    private String findBgmTvSubjectIdByEpisdoePageUrl(String episodePageUrl) {
+    private String findBgmTvSubjectIdByEpisodePageUrl(String episodePageUrl) {
         AssertUtils.notBlank(episodePageUrl, "episodePageUrl");
         String animePageUrl =
             mikanService.getAnimePageUrlByEpisodePageUrl(episodePageUrl);
@@ -262,11 +263,13 @@ public class TaskServiceImpl implements TaskService {
             // 创建两个文件硬链接：服务器上传目录 和 Jellyfin目录
             try {
                 createServerFileHardLink(name, contentPath);
+                LOGGER.info("create server file hard link success for name={}", name);
             } catch (RuntimeException runtimeException) {
                 LOGGER.warn("create server file hard link fail", runtimeException);
             }
             try {
                 createJellyfinFileHardLink(name, contentPath);
+                LOGGER.info("create jellyfin file hard link success for name={}", name);
             } catch (RuntimeException runtimeException) {
                 LOGGER.warn("create jellyfin file hard link fail", runtimeException);
             }

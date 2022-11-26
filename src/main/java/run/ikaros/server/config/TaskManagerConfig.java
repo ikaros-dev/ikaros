@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.ScheduledTaskService;
 import run.ikaros.server.core.service.TaskService;
+import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.entity.ScheduledTaskEntity;
 import run.ikaros.server.enums.OptionApp;
 import run.ikaros.server.enums.OptionCategory;
@@ -38,15 +39,15 @@ public class TaskManagerConfig {
     }
 
     private boolean appIsInit() {
-        try {
-            Boolean status = optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
-                OptionApp.IS_INIT.name()).getStatus();
-            LOGGER.debug("current app init status={}", status);
-            return status;
-        } catch (RecordNotFoundException recordNotFoundException) {
-            LOGGER.debug("app not init, skip config cron task: updateAutoAnimeSubTaskStatus");
-            return false;
-        }
+        OptionEntity optionEntity =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
+                OptionApp.IS_INIT.name());
+
+        boolean isInit = (optionEntity != null
+            && Boolean.TRUE.toString().equalsIgnoreCase(optionEntity.getValue()));
+
+        LOGGER.debug("current app init status={}", isInit);
+        return isInit;
     }
 
     @Scheduled(cron = "0 */30 * * * ?")
@@ -57,16 +58,21 @@ public class TaskManagerConfig {
             return;
         }
 
-        String value = optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
-            OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name()).getValue();
-        LOGGER.debug("current app ENABLE_AUTO_ANIME_SUB_TASK={}", value);
-        if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
-            LOGGER.debug("start exec task: "
-                + "pull anime subscribe and save metadata and download torrents");
-            taskService.pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
-            LOGGER.debug("end exec task: "
-                + "pull anime subscribe and save metadata and download torrents");
+        OptionEntity optionEntity =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
+                OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name());
+        if (optionEntity != null) {
+            String value = optionEntity.getValue();
+            LOGGER.debug("current app ENABLE_AUTO_ANIME_SUB_TASK={}", value);
+            if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+                LOGGER.debug("start exec task: "
+                    + "pull anime subscribe and save metadata and download torrents");
+                taskService.pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
+                LOGGER.debug("end exec task: "
+                    + "pull anime subscribe and save metadata and download torrents");
+            }
         }
+
 
     }
 
@@ -78,16 +84,22 @@ public class TaskManagerConfig {
             return;
         }
 
-        String value = optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
-            OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name()).getValue();
-        LOGGER.debug("current app ENABLE_AUTO_ANIME_SUB_TASK={}", value);
-        if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
-            LOGGER.debug("start exec task: "
-                + "search download process and create file hard links and relate episode");
-            taskService.searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode();
-            LOGGER.debug("end exec task: "
-                + "search download process and create file hard links and relate episode");
+        OptionEntity optionEntity =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
+                OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name());
+
+        if (optionEntity != null) {
+            String value = optionEntity.getValue();
+            LOGGER.debug("current app ENABLE_AUTO_ANIME_SUB_TASK={}", value);
+            if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+                LOGGER.debug("start exec task: "
+                    + "search download process and create file hard links and relate episode");
+                taskService.searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode();
+                LOGGER.debug("end exec task: "
+                    + "search download process and create file hard links and relate episode");
+            }
         }
+
     }
 
 

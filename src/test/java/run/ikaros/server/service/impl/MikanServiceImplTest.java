@@ -2,15 +2,18 @@ package run.ikaros.server.service.impl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.client.RestTemplate;
+import org.mockito.Mockito;
 import run.ikaros.server.core.service.MikanService;
+import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.service.MikanServiceImpl;
+import run.ikaros.server.service.OptionServiceImpl;
 
 /**
  * @author li-guohao
  */
 class MikanServiceImplTest {
-    MikanService mikanService = new MikanServiceImpl();
+    OptionService optionService = Mockito.mock(OptionServiceImpl.class);
+    MikanService mikanService = new MikanServiceImpl(optionService);
 
     @Test
     void getAnimePageUrlByEpisodePageUrl() {

@@ -6,6 +6,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.Example;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import run.ikaros.server.constants.DefaultConst;
 import run.ikaros.server.core.repository.OptionRepository;
@@ -35,7 +36,6 @@ import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -115,19 +115,13 @@ public class OptionServiceImpl
         return optionRepository.findByCategoryAndStatus(category, true);
     }
 
-    @Nonnull
+    @Nullable
     @Override
     public OptionEntity findOptionValueByCategoryAndKey(@Nonnull OptionCategory category,
                                                         @Nonnull String key) {
         AssertUtils.notNull(category, "category");
         AssertUtils.notBlank(key, "key");
-        OptionEntity optionEntity =
-            optionRepository.findByCategoryAndKeyAndStatus(category, key, true);
-        if (optionEntity == null) {
-            throw new RecordNotFoundException("target option record not fond, key=" + key
-                + " category=" + category);
-        }
-        return optionEntity;
+        return optionRepository.findByCategoryAndKeyAndStatus(category, key, true);
     }
 
     @Override
@@ -328,10 +322,22 @@ public class OptionServiceImpl
                 String enableBgmTvHttpProxy = "false";
                 String enableMikanHttpProxy = "false";
                 try {
-                    enableBgmTvHttpProxy = findOptionValueByCategoryAndKey(OptionCategory.BGMTV,
-                        OptionBgmTv.ENABLE_PROXY.name()).getValue();
-                    enableMikanHttpProxy = findOptionValueByCategoryAndKey(OptionCategory.MIKAN,
-                        OptionMikan.ENABLE_PROXY.name()).getValue();
+                    OptionEntity enableBgmtvHttpProxyOptionEntity =
+                        findOptionValueByCategoryAndKey(OptionCategory.BGMTV,
+                            OptionBgmTv.ENABLE_PROXY.name());
+                    if (enableBgmtvHttpProxyOptionEntity != null
+                        && Boolean.TRUE.toString()
+                        .equalsIgnoreCase(enableBgmtvHttpProxyOptionEntity.getValue())) {
+                        enableBgmTvHttpProxy = enableBgmtvHttpProxyOptionEntity.getValue();
+                    }
+                    OptionEntity enableMikanHttpProxyOptionEntity =
+                        findOptionValueByCategoryAndKey(OptionCategory.MIKAN,
+                            OptionMikan.ENABLE_PROXY.name());
+                    if (enableMikanHttpProxyOptionEntity != null
+                        && Boolean.TRUE.toString()
+                        .equalsIgnoreCase(enableMikanHttpProxyOptionEntity.getValue())) {
+                        enableMikanHttpProxy = enableMikanHttpProxyOptionEntity.getValue();
+                    }
                 } catch (RecordNotFoundException recordNotFoundException) {
                     // app not init, default is false
                 }
@@ -393,10 +399,22 @@ public class OptionServiceImpl
     }
 
     private void checkNetworkHttpProxyHasConfig() {
-        String httpHost = findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
-            OptionNetwork.PROXY_HTTP_HOST.name()).getValue();
-        String httpPort = findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
-            OptionNetwork.PROXY_HTTP_PORT.name()).getValue();
+        String httpHost = null;
+        String httpPort = null;
+
+        OptionEntity httpProxyHostOptionEntity =
+            findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
+                OptionNetwork.PROXY_HTTP_HOST.name());
+        if (httpProxyHostOptionEntity != null) {
+            httpHost = httpProxyHostOptionEntity.getValue();
+        }
+
+        OptionEntity httpPortOptionEntity =
+            findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
+                OptionNetwork.PROXY_HTTP_PORT.name());
+        if (httpPortOptionEntity != null) {
+            httpPort = httpPortOptionEntity.getValue();
+        }
 
         if (StringUtils.isBlank(httpHost) || StringUtils.isBlank(httpPort)) {
             throw new IllegalArgumentException("please config http proxy host and port "
@@ -407,19 +425,21 @@ public class OptionServiceImpl
 
     private void checkAppEnableAutoAnimeSubTaskRunEnv() {
         // 1. 蜜柑计划RSS订阅已经配置
-        String mikanRssUrl = findOptionValueByCategoryAndKey(OptionCategory.MIKAN,
-            OptionMikan.MY_SUBSCRIBE_RSS.name()).getValue();
-        if (StringUtils.isBlank(mikanRssUrl)) {
+        OptionEntity mikanUrlOptionEntity =
+            findOptionValueByCategoryAndKey(OptionCategory.MIKAN,
+                OptionMikan.MY_SUBSCRIBE_RSS.name());
+        if (mikanUrlOptionEntity == null || StringUtils.isBlank(mikanUrlOptionEntity.getValue())) {
             throw new IllegalArgumentException("please add mikan config such as subscribe rss url");
         }
 
         // 2. Qbittorrent的URL已经配置
-        String qbittorrentUrl = findOptionValueByCategoryAndKey(OptionCategory.QBITTORRENT,
-            OptionQbittorrent.URL.name()).getValue();
-        if (StringUtils.isBlank(qbittorrentUrl)) {
+        OptionEntity qbittorrentUrlOptionEntity =
+            findOptionValueByCategoryAndKey(OptionCategory.QBITTORRENT,
+                OptionQbittorrent.URL.name());
+        if (qbittorrentUrlOptionEntity == null
+            || StringUtils.isBlank(qbittorrentUrlOptionEntity.getValue())) {
             throw new IllegalArgumentException("please add qbittorrent config such as url");
         }
-
     }
 
     @Override
@@ -429,21 +449,19 @@ public class OptionServiceImpl
         this.applicationContext = applicationContext;
     }
 
+    @Override
     public String getOptionNetworkHttpProxyHost() {
-        try {
-            return findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
-                OptionNetwork.PROXY_HTTP_HOST.name()).getValue();
-        } catch (RecordNotFoundException recordNotFoundException) {
-            return null;
-        }
+        OptionEntity optionEntity =
+            findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
+                OptionNetwork.PROXY_HTTP_HOST.name());
+        return optionEntity == null ? null : optionEntity.getValue();
     }
 
+    @Override
     public String getOptionNetworkHttpProxyPort() {
-        try {
-            return findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
-                OptionNetwork.PROXY_HTTP_PORT.name()).getValue();
-        } catch (RecordNotFoundException recordNotFoundException) {
-            return null;
-        }
+        OptionEntity optionEntity =
+            findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
+                OptionNetwork.PROXY_HTTP_PORT.name());
+        return optionEntity == null ? null : optionEntity.getValue();
     }
 }
