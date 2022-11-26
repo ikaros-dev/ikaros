@@ -147,7 +147,7 @@ public class SeasonServiceImpl
     @Override
     public void updateEpisodeUrlByFileEntity(@Nonnull FileEntity fileEntity) {
         AssertUtils.notNull(fileEntity, "fileEntity");
-        String originalFileName = fileEntity.getName();
+        final String originalFileName = fileEntity.getName();
         SeasonEntity seasonEntity = null;
         // 根据文件名称英文查询 如未查到则根据中文查询
         String title = null;
@@ -155,7 +155,7 @@ public class SeasonServiceImpl
             title = RegexUtils.getMatchingChineseStrWithoutTag(originalFileName);
         } catch (RegexMatchingException matchingException) {
             try {
-                title = RegexUtils.getMatchingChineseStrWithoutTag(originalFileName);
+                title = RegexUtils.getMatchingEnglishStrWithoutTag(originalFileName);
             } catch (RegexMatchingException exception) {
                 LOGGER.warn("matching fail, skip for fileName={}, exception msg={}",
                     originalFileName, exception.getMessage());

@@ -16,6 +16,7 @@ import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.KVEntity;
 import run.ikaros.server.entity.OptionEntity;
+import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.KVType;
 import run.ikaros.server.enums.OptionCategory;
@@ -24,6 +25,7 @@ import run.ikaros.server.enums.OptionMikan;
 import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.model.dto.AnimeDTO;
+import run.ikaros.server.params.SeasonMatchingEpParams;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
@@ -280,6 +282,49 @@ public class TaskServiceImpl implements TaskService {
 
     }
 
+    private void updateEpisodeUrlByFileEntity(String torrentName, Long fileId) {
+        Map<String, String> torrentNameBgmTvSubjectIdMap =
+            kvService.findMikanTorrentNameBgmTvSubjectIdMap();
+        if (torrentNameBgmTvSubjectIdMap.containsKey(torrentName)) {
+            Long animeId;
+            String subjectIdStr = torrentNameBgmTvSubjectIdMap.get(torrentName);
+            if (StringUtils.isBlank(subjectIdStr)) {
+                LOGGER.warn("skip matching episode url by file entity for torrent name={}",
+                    torrentName);
+                return;
+            }
+            Long subjectId = Long.valueOf(subjectIdStr);
+            AnimeEntity animeEntity = animeService.findByBgmTvId(subjectId);
+            if (animeEntity == null) {
+                AnimeDTO animeDTO = bgmTvService.reqBgmtvSubject(subjectId);
+                if (animeDTO == null) {
+                    LOGGER.warn("skip matching episode url by file entity for torrent name={}",
+                        torrentName);
+                    return;
+                }
+                animeId = animeDTO.getId();
+            } else {
+                animeId = animeEntity.getId();
+            }
+            List<SeasonEntity> seasonEntityList = seasonService.findByAnimeId(animeId);
+            if (seasonEntityList.isEmpty()) {
+                LOGGER.warn("skip matching episode url by file entity for torrent name={}",
+                    torrentName);
+                return;
+            }
+
+            SeasonEntity seasonEntity = seasonEntityList.get(0);
+            SeasonMatchingEpParams seasonMatchingEpParams
+                = new SeasonMatchingEpParams()
+                .setSeasonId(seasonEntity.getId())
+                .setFileIdList(List.of(fileId));
+            seasonService.matchingEpisodeUrlByFileIds(seasonMatchingEpParams);
+        } else {
+            LOGGER.warn("skip matching episode url by file entity for torrent name={}",
+                torrentName);
+        }
+    }
+
     private void createServerFileHardLink(String torrentName, String torrentContentPath) {
         AssertUtils.notBlank(torrentName, "torrentName");
         AssertUtils.notBlank(torrentContentPath, "torrentContentPath");
@@ -311,7 +356,7 @@ public class TaskServiceImpl implements TaskService {
                         .setName(fileName)
                         .setType(FileUtils.parseTypeByPostfix(postfix)));
 
-                    seasonService.updateEpisodeUrlByFileEntity(fileEntity);
+                    updateEpisodeUrlByFileEntity(torrentName, fileEntity.getId());
                 } catch (RegexMatchingException regexMatchingException) {
                     LOGGER.warn("regex matching fail, msg: {}",
                         regexMatchingException.getMessage());
@@ -342,7 +387,7 @@ public class TaskServiceImpl implements TaskService {
                     .setName(fileName)
                     .setType(FileUtils.parseTypeByPostfix(postfix)));
 
-                seasonService.updateEpisodeUrlByFileEntity(fileEntity);
+                updateEpisodeUrlByFileEntity(torrentName, fileEntity.getId());
             } catch (RegexMatchingException regexMatchingException) {
                 LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
             } catch (Exception e) {
