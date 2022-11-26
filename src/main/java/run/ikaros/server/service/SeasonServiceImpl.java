@@ -188,12 +188,17 @@ public class SeasonServiceImpl
         if (episodeEntityOptional.isEmpty()) {
             LOGGER.warn("matching episode fail for seasonId={}, fileUrl={}",
                 seasonId, fileEntity.getUrl());
+            return;
         }
         EpisodeEntity episodeEntity = episodeEntityOptional.get();
-        episodeEntity.setUrl(fileEntity.getUrl());
-        episodeService.save(episodeEntity);
-        LOGGER.debug("update episode url by file entity success, originalFileName={}, newUrl={}",
-            originalFileName, fileEntity.getUrl());
+        if (StringUtils.isNotBlank(fileEntity.getUrl())) {
+            episodeEntity.setUrl(fileEntity.getUrl());
+            episodeService.save(episodeEntity);
+            LOGGER.debug(
+                "update episode url by file entity success, originalFileName={}, newUrl={}",
+                originalFileName, fileEntity.getUrl());
+        }
+
     }
 
     @Nullable
