@@ -129,7 +129,6 @@ public class FileServiceImpl
         }
 
         fileEntity
-            .setUrl(absolutePath)
             .setUrl(url)
             .setMd5(md5)
             .setSize(size)

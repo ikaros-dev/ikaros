@@ -71,7 +71,8 @@ public class LocalIkarosFileHandler implements IkarosFileHandler {
 
         try {
             if (isSameFile) {
-                ikarosFile.setAbsolutePath(oldLocation);
+                String absolutePath = SystemVarUtils.getCurrentAppDirPath() + oldLocation;
+                ikarosFile.setAbsolutePath(absolutePath);
                 LOGGER.debug("repeated ikaros file, do not upload, path={}", oldLocation);
             } else {
                 byte[] bytes = ikarosFile.getBytes();
