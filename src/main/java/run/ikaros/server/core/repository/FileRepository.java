@@ -29,6 +29,8 @@ public interface FileRepository extends BaseRepository<FileEntity, Long> {
 
     List<FileEntity> findByMd5(String md5);
 
+    FileEntity findFileEntityByName(String name);
+
     FileEntity findFileEntityByNameAndType(String name, FileType type);
 
 

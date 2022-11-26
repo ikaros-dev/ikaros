@@ -340,6 +340,12 @@ public class TaskServiceImpl implements TaskService {
             }
             for (File file : files) {
                 String fileName = file.getName();
+                FileEntity existsFileEntity = fileService.findByName(fileName);
+                if (existsFileEntity != null) {
+                    updateEpisodeUrlByFileEntity(torrentName, existsFileEntity.getId());
+                    LOGGER.debug("find exists file for name={}", fileName);
+                    continue;
+                }
                 String postfix = FileUtils.parseFilePostfix(fileName);
                 String uploadFilePath = FileUtils.buildAppUploadFilePath(postfix);
                 File uploadFile = new File(uploadFilePath);

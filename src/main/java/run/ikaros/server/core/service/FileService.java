@@ -1,5 +1,6 @@
 package run.ikaros.server.core.service;
 
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import run.ikaros.server.constants.RegexConst;
@@ -10,7 +11,6 @@ import run.ikaros.server.result.PagingWrap;
 import run.ikaros.server.utils.AssertUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
@@ -112,4 +112,7 @@ public interface FileService extends CrudService<FileEntity, Long> {
 
     @Nonnull
     FileEntity create(@Nonnull FileEntity fileEntity);
+
+    @Nullable
+    FileEntity findByName(@Nonnull String name);
 }
