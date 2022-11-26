@@ -269,12 +269,12 @@ public class TaskServiceImpl implements TaskService {
             } catch (RuntimeException runtimeException) {
                 LOGGER.warn("create server file hard link fail", runtimeException);
             }
-            try {
-                createJellyfinFileHardLink(name, contentPath);
-                LOGGER.info("create jellyfin file hard link success for name={}", name);
-            } catch (RuntimeException runtimeException) {
-                LOGGER.warn("create jellyfin file hard link fail", runtimeException);
-            }
+            // try {
+            //     createJellyfinFileHardLink(name, contentPath);
+            //     LOGGER.info("create jellyfin file hard link success for name={}", name);
+            // } catch (RuntimeException runtimeException) {
+            //     LOGGER.warn("create jellyfin file hard link fail", runtimeException);
+            // }
 
             hasHandledTorrentHashSet.add(hash);
         }

@@ -5,20 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import run.ikaros.server.core.service.MediaService;
 import run.ikaros.server.core.service.OptionService;
-import run.ikaros.server.core.service.ScheduledTaskService;
 import run.ikaros.server.core.service.TaskService;
 import run.ikaros.server.entity.OptionEntity;
-import run.ikaros.server.entity.ScheduledTaskEntity;
 import run.ikaros.server.enums.OptionApp;
 import run.ikaros.server.enums.OptionCategory;
-import run.ikaros.server.exceptions.RecordNotFoundException;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author li-guohao
@@ -30,12 +22,14 @@ public class TaskManagerConfig {
 
     private final OptionService optionService;
     private final TaskService taskService;
+    private final MediaService mediaService;
 
 
     public TaskManagerConfig(OptionService optionService,
-                             TaskService taskService) {
+                             TaskService taskService, MediaService mediaService) {
         this.optionService = optionService;
         this.taskService = taskService;
+        this.mediaService = mediaService;
     }
 
     private boolean appIsInit() {
@@ -84,12 +78,12 @@ public class TaskManagerConfig {
             return;
         }
 
-        OptionEntity optionEntity =
+        OptionEntity enableAutoAnimeSubTaskOptionEntity =
             optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
                 OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name());
 
-        if (optionEntity != null) {
-            String value = optionEntity.getValue();
+        if (enableAutoAnimeSubTaskOptionEntity != null) {
+            String value = enableAutoAnimeSubTaskOptionEntity.getValue();
             LOGGER.debug("current app ENABLE_AUTO_ANIME_SUB_TASK={}", value);
             if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
                 LOGGER.debug("start exec task: "
@@ -100,6 +94,16 @@ public class TaskManagerConfig {
             }
         }
 
+        OptionEntity enableGenerateMediaDirOptionEntity =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
+                OptionApp.ENABLE_GENERATE_MEDIA_DIR_TASK.name());
+        if (enableGenerateMediaDirOptionEntity != null) {
+            String enableGenerateMediaDir = enableGenerateMediaDirOptionEntity.getValue();
+            LOGGER.debug("current app ENABLE_GENERATE_MEDIA_DIR_TASK={}", enableGenerateMediaDir);
+            if (Boolean.TRUE.toString().equalsIgnoreCase(enableGenerateMediaDir)) {
+                mediaService.generateMediaDir();
+            }
+        }
     }
 
 

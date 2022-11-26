@@ -159,6 +159,8 @@ public class OptionServiceImpl
             DefaultConst.OPTION_APP_THEME, OptionCategory.APP));
         saveOptionItem(new OptionItemDTO(OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name(),
             DefaultConst.OPTION_APP_ENABLE_AUTO_ANIME_SUB_TASK, OptionCategory.APP));
+        saveOptionItem(new OptionItemDTO(OptionApp.ENABLE_GENERATE_MEDIA_DIR_TASK.name(),
+            DefaultConst.OPTION_APP_ENABLE_GENERATE_MEDIA_DIR_TASK, OptionCategory.APP));
 
         // init option common
         saveOptionItem(new OptionItemDTO(OptionCommon.TITLE.name(),
