@@ -33,4 +33,11 @@ public class EpisodeServiceImpl
         AssertUtils.notNull(seasonId, "seasonId");
         return episodeRepository.findBySeasonIdAndStatus(seasonId, true);
     }
+
+    @Override
+    public List<EpisodeEntity> findBySeasonIdAndSeq(@Nonnull Long seasonId, @Nonnull Long seq) {
+        AssertUtils.isPositive(seasonId, "season id");
+        AssertUtils.isPositive(seq, "episode seq");
+        return episodeRepository.findBySeasonIdAndSeqAndStatus(seasonId, seq, true);
+    }
 }

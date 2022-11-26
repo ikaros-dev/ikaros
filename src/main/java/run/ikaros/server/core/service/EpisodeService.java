@@ -12,4 +12,6 @@ public interface EpisodeService extends CrudService<EpisodeEntity, Long> {
     @Nonnull
     List<EpisodeEntity> findBySeasonId(@Nonnull Long seasonId);
 
+    List<EpisodeEntity> findBySeasonIdAndSeq(@Nonnull Long seasonId, @Nonnull Long seq);
+
 }

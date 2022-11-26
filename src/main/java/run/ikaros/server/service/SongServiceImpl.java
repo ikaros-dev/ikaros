@@ -9,6 +9,7 @@ import run.ikaros.server.core.service.SongService;
 import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.entity.BaseEntity;
 import run.ikaros.server.entity.SongEntity;
+import run.ikaros.server.entity.UserEntity;
 import run.ikaros.server.model.dto.SongDTO;
 import run.ikaros.server.model.request.SearchSongRequest;
 import run.ikaros.server.result.PagingWrap;
@@ -89,7 +90,10 @@ public class SongServiceImpl extends AbstractCrudService<SongEntity, Long> imple
             songDTO.setAlbumId(songEntity.getAlbumId());
             songDTO.setMenuId(songEntity.getMenuId());
             songDTO.setUploadTime(songEntity.getCreateTime());
-            songDTO.setUploadUser(userService.getById(songEntity.getCreateUid()).getUsername());
+            UserEntity userEntity = userService.getById(songEntity.getCreateUid());
+            if (userEntity != null) {
+                songDTO.setUploadUser(userEntity.getUsername());
+            }
             songDTO.setUrl(songEntity.getUrl());
             songDTOList.add(songDTO);
         }

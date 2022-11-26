@@ -10,6 +10,7 @@ import run.ikaros.server.result.PagingWrap;
 import run.ikaros.server.utils.AssertUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
@@ -26,7 +27,7 @@ public interface FileService extends CrudService<FileEntity, Long> {
     @Transactional
     FileEntity upload(@Nonnull String originalFilename, @Nonnull byte[] bytes);
 
-    @Nonnull
+    @Nullable
     FileEntity findById(@Nonnull Long fileId);
 
     @Transactional
@@ -54,7 +55,7 @@ public interface FileService extends CrudService<FileEntity, Long> {
     @Transactional
     void deleteInBatch(@Nonnull Set<Long> ids);
 
-    @Nonnull
+    @Nullable
     @Transactional
     FileEntity updateNameById(@Nonnull String name, @Nonnull Long id);
 

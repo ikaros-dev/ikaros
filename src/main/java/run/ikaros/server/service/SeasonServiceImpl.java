@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.core.repository.SeasonRepository;
 import run.ikaros.server.core.service.EpisodeService;
 import run.ikaros.server.core.service.FileService;
@@ -21,6 +22,7 @@ import run.ikaros.server.parser.AnimeEpisodeInfo;
 import run.ikaros.server.parser.AnimeParser;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
+import run.ikaros.server.utils.FileUtils;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.RegexUtils;
 import run.ikaros.server.utils.StringUtils;
@@ -28,6 +30,7 @@ import run.ikaros.server.utils.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -91,43 +94,47 @@ public class SeasonServiceImpl
         AssertUtils.notNull(seasonId, "season_id");
         AssertUtils.notNull(fileIdList, "file_id_list");
 
-        final List<EpisodeEntity> episodeEntityList = episodeService.findBySeasonId(seasonId)
-            .stream()
-            .sorted((ep1, ep2) -> Objects.equals(ep1.getSeq(), ep2.getSeq()) ? 0 :
-                (ep1.getSeq() > ep2.getSeq() ? 1 : -1)).toList();
-
-
-        final Map<Long, FileEntity> seqFileEntityMap = new HashMap<>();
-
-        fileIdList.stream()
-            .flatMap((Function<Long, Stream<FileEntity>>) id
-                -> Stream.of(fileService.getById(id)))
-            .forEach(fileEntity
-                -> seqFileEntityMap.put(
-                fileService.getEpisodeSeqFromName(fileEntity.getName()),
-                fileEntity));
-
-        if (seqFileEntityMap.isEmpty()) {
-            throw new SeasonEpisodeMatchingFailException("file not found by file id list: "
-                + JsonUtils.obj2Json(fileIdList));
-        }
-
-        episodeService.findBySeasonId(seasonId).forEach(episodeEntity -> {
-            if (seqFileEntityMap.containsKey(episodeEntity.getSeq())) {
-                FileEntity fileEntity = seqFileEntityMap.get(episodeEntity.getSeq());
-                episodeEntity.setUrl(fileEntity.getUrl());
-                episodeEntity = episodeService.save(episodeEntity);
+        final List<EpisodeEntity> episodeEntities = new ArrayList<>();
+        for (Long fileId : fileIdList) {
+            FileEntity fileEntity = fileService.findById(fileId);
+            if (fileEntity == null) {
+                continue;
             }
-        });
+            final String fileName = fileEntity.getName();
+            Long episodeSeq = null;
+            try {
+                episodeSeq = RegexUtils.getFileNameTagEpSeq(fileName);
+            } catch (RegexMatchingException regexMatchingException) {
+                LOGGER.warn("fail matching seq by file name={}, exception msg={}", fileName,
+                    regexMatchingException.getMessage());
+                continue;
+            }
+
+            List<EpisodeEntity> episodeEntityList =
+                episodeService.findBySeasonIdAndSeq(seasonId, episodeSeq);
+            if (episodeEntityList.isEmpty()) {
+                LOGGER.warn("episode records not found where seasonId={} and seq={}",
+                    seasonId, episodeSeq);
+                continue;
+            }
+            EpisodeEntity episodeEntity = episodeEntityList.get(0);
+            episodeEntity.setUrl(fileEntity.getUrl());
+            episodeService.save(episodeEntity);
+            LOGGER.debug("matching file and episode success,  "
+                    + "fileId={} fileName={}, episodeTitle={} episodeSeq={} episodeUrl={}",
+                fileId, fileEntity.getName(),
+                episodeEntity.getTitle(), episodeSeq, episodeEntity.getUrl());
+            episodeEntities.add(episodeEntity);
+        }
 
         SeasonDTO seasonDTO = new SeasonDTO();
         SeasonEntity seasonEntity = getById(seasonId);
-        if (!seasonEntity.getStatus()) {
+        if (seasonEntity == null || !seasonEntity.getStatus()) {
             throw new SeasonEpisodeMatchingFailException("season not exist, id=" + seasonId);
         }
 
         BeanUtils.copyProperties(seasonEntity, seasonDTO);
-        seasonDTO.setEpisodes(episodeEntityList.stream().flatMap(
+        seasonDTO.setEpisodes(episodeEntities.stream().flatMap(
             (Function<EpisodeEntity, Stream<EpisodeDTO>>) episodeEntity -> {
                 EpisodeDTO episodeDTO = new EpisodeDTO();
                 BeanUtils.copyProperties(episodeEntity, episodeDTO);

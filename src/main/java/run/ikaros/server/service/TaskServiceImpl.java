@@ -421,6 +421,9 @@ public class TaskServiceImpl implements TaskService {
         if (animeEntity == null) {
             AnimeDTO animeDTO = bgmTvService.reqBgmtvSubject(subjectId);
             animeEntity = animeService.getById(animeDTO.getId());
+            if (animeEntity == null) {
+                return;
+            }
         }
         String tvshowNfoFilePath = jellyfinMediaDir + File.separator + "tvshow.nfo";
         File tvshowNfoFile = new File(tvshowNfoFilePath);

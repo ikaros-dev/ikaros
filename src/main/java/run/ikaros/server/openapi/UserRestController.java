@@ -7,9 +7,10 @@ import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.AuthUserDTO;
 import run.ikaros.server.model.dto.UserDTO;
 import run.ikaros.server.entity.UserEntity;
-import run.ikaros.server.service.UserServiceImpl;
+import run.ikaros.server.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -32,10 +33,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserRestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
-    private final UserServiceImpl userServiceImpl;
+    private final UserService userService;
 
-    public UserRestController(UserServiceImpl userServiceImpl) {
-        this.userServiceImpl = userServiceImpl;
+    public UserRestController(UserService userService) {
+        this.userService = userService;
     }
 
     @PostMapping("/login")
@@ -44,7 +45,7 @@ public class UserRestController {
         throws RecordNotFoundException {
         AssertUtils.notNull(authUserDTO, "'authUser' must not be null");
         LOGGER.debug("receive user info: {}", authUserDTO);
-        authUserDTO = userServiceImpl.login(authUserDTO);
+        authUserDTO = userService.login(authUserDTO);
         httpHeaders.set(SecurityConst.TOKEN_HEADER,
             SecurityConst.TOKEN_PREFIX + authUserDTO.getToken());
         return CommonResult.ok(authUserDTO);
@@ -61,7 +62,7 @@ public class UserRestController {
     @GetMapping("/info")
     public CommonResult<UserDTO> getUserInfoByToken(HttpServletRequest request) {
         String token = getTokenFromHttpRequest(request);
-        return CommonResult.ok(userServiceImpl.getUserInfoByToken(token));
+        return CommonResult.ok(userService.getUserInfoByToken(token));
     }
 
     //@PostMapping("/register")
@@ -69,7 +70,7 @@ public class UserRestController {
         AssertUtils.notNull(authUserDTO, "'authUser' must not be null");
         String username = authUserDTO.getUsername();
         String password = authUserDTO.getPassword();
-        userServiceImpl.registerUserByUsernameAndPassword(username, password);
+        userService.registerUserByUsernameAndPassword(username, password);
         return CommonResult.ok();
     }
 
@@ -77,19 +78,23 @@ public class UserRestController {
     @GetMapping("/{id}")
     public CommonResult<UserEntity> getUserById(@PathVariable Long id)
         throws RecordNotFoundException {
-        return CommonResult.ok(userServiceImpl.getById(id).hiddenSecretField());
+        UserEntity user = userService.getById(id);
+        if (user != null) {
+            user.hiddenSecretField();
+        }
+        return CommonResult.ok(user);
     }
 
     @PutMapping
     public CommonResult<UserEntity> updateUser(@RequestBody UserEntity userEntity)
         throws RecordNotFoundException {
-        return CommonResult.ok(userServiceImpl.updateUserInfo(userEntity));
+        return CommonResult.ok(userService.updateUserInfo(userEntity));
     }
 
     @DeleteMapping("/{id}")
     public CommonResult<String> deleteUserById(@PathVariable Long id)
         throws RecordNotFoundException {
-        userServiceImpl.deleteUserById(id);
+        userService.deleteUserById(id);
         return CommonResult.ok();
     }
 
