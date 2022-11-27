@@ -91,6 +91,34 @@ git push origin bug/xxx
 
 同时，若已经进入 Code Review 阶段，请不要强制推送 commits 到当前分支。否则 Reviewers 需要从头开始 Code Review。
 
+### 11.PR后的操作
+删除本地新建的分支
+``` bash
+git checkout master
+git branch -D {YOU_BRANCH_NAME}
+```
+
+删除远端新建分支
+你可以直接在PR页面进行删除fork仓库的新分支，也可以本地通过命令删除
+``` bash
+git remote origin 
+git push origin --delete {YOU_BRANCH_NAME}
+```
+
+删除本地仓库的远程fork仓库分支引用
+请先确保已经删除远程分支
+``` bash
+git remote prune origin
+```
+
+更新本地和fork仓库主分支
+``` shell
+git pull upstream master
+git push origin master
+```
+
+
+
 ### 此文参考
 
 - [开源项目Halo贡献指南](https://github.com/halo-dev/halo/blob/master/CONTRIBUTING.md)
