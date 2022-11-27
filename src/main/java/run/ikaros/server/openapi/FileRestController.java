@@ -65,8 +65,7 @@ public class FileRestController {
     @GetMapping("/{id}")
     public CommonResult<FileEntity> findById(@PathVariable Long id) throws RecordNotFoundException {
         AssertUtils.notNull(id, "'id' must not be null");
-        FileEntity fileEntity = fileService.findById(id);
-        return CommonResult.ok(fileEntity);
+        return CommonResult.ok(fileService.findById(id));
     }
 
 

@@ -1,16 +1,15 @@
 package run.ikaros.server.core.service;
 
-import java.util.List;
-import java.util.Optional;
-import javax.annotation.Nonnull;
-
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
-import run.ikaros.server.entity.BaseEntity;
+
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @param <E> Entity
@@ -70,7 +69,7 @@ public interface CrudService<E, I> {
     @Nonnull
     Optional<E> fetchById(@Nonnull I id);
 
-    @Nonnull
+    @Nullable
     E getById(@Nonnull I id);
 
     /**

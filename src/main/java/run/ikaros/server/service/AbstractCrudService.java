@@ -3,10 +3,12 @@ package run.ikaros.server.service;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
 import run.ikaros.server.core.service.CrudService;
 import run.ikaros.server.entity.BaseEntity;
 import run.ikaros.server.exceptions.RecordNotFoundException;
@@ -59,6 +61,9 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
     public E deleteById(@Nonnull I id) {
         AssertUtils.notNull(id, "id");
         E e = getById(id);
+        if (e == null) {
+            return e;
+        }
         baseRepository.delete(e);
         return e;
     }
@@ -67,6 +72,9 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
     @SuppressWarnings("unchecked")
     public E removeById(@Nonnull I id) {
         E e = getById(id);
+        if (e == null) {
+            return e;
+        }
         BaseEntity entity = (BaseEntity) e;
         entity.setStatus(false);
         e = (E) entity;
@@ -115,12 +123,11 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
         return baseRepository.findById(id);
     }
 
-    @Nonnull
+    @Nullable
     @Override
     public E getById(@Nonnull I id) {
         AssertUtils.notNull(id, "id");
-        return baseRepository.findById(id).orElseThrow(
-            () -> new RecordNotFoundException("record not found, id=" + id));
+        return baseRepository.findById(id).orElse(null);
     }
 
     @Override

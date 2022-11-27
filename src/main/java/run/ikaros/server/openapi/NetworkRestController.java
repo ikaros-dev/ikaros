@@ -43,10 +43,8 @@ public class NetworkRestController {
 
     @GetMapping("/proxy/connect/test")
     public CommonResult<Boolean> proxyConnectTest() {
-        String httpProxyHost = optionService.findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
-            OptionNetwork.PROXY_HTTP_HOST.name()).getValue();
-        String httpProxyPort = optionService.findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
-            OptionNetwork.PROXY_HTTP_PORT.name()).getValue();
+        String httpProxyHost = optionService.getOptionNetworkHttpProxyHost();
+        String httpProxyPort = optionService.getOptionNetworkHttpProxyPort();
         return CommonResult.ok(RestTemplateUtils.testProxyConnect(httpProxyHost, httpProxyPort));
     }
 }

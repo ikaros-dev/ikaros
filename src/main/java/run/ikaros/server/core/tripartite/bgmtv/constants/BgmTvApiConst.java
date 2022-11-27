@@ -17,6 +17,6 @@ public interface BgmTvApiConst {
     String NEXT_SEARCH_SUBJECTS = BASE + "/v0/search/subjects";
     String ME = BASE + "/v0/me";
 
-    Integer DEFAULT_OFFSET = 1;
+    Integer DEFAULT_OFFSET = 0;
     Integer DEFAULT_LIMIT = 50;
 }

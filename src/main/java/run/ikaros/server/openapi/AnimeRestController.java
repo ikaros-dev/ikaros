@@ -1,18 +1,18 @@
 package run.ikaros.server.openapi;
 
-import run.ikaros.server.result.CommonResult;
-import run.ikaros.server.result.PagingWrap;
-import run.ikaros.server.exceptions.RecordNotFoundException;
-import run.ikaros.server.model.dto.AnimeDTO;
-import run.ikaros.server.entity.AnimeEntity;
-import run.ikaros.server.params.SearchAnimeDTOSParams;
-import run.ikaros.server.core.service.AnimeService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import run.ikaros.server.core.service.AnimeService;
+import run.ikaros.server.entity.AnimeEntity;
+import run.ikaros.server.exceptions.RecordNotFoundException;
+import run.ikaros.server.model.dto.AnimeDTO;
+import run.ikaros.server.params.SearchAnimeDTOSParams;
+import run.ikaros.server.result.CommonResult;
+import run.ikaros.server.result.PagingWrap;
 
 /**
  * @author guohao

@@ -129,7 +129,6 @@ public class FileServiceImpl
         }
 
         fileEntity
-            .setUrl(absolutePath)
             .setUrl(url)
             .setMd5(md5)
             .setSize(size)
@@ -147,13 +146,12 @@ public class FileServiceImpl
         return fileRepository.saveAndFlush(fileEntity);
     }
 
-    @Nonnull
     @Override
     public FileEntity findById(@Nonnull Long fileId) {
         AssertUtils.isPositive(fileId, "'fileId' must be positive");
         Optional<FileEntity> fileEntityOptional = fileRepository.findByIdAndStatus(fileId, true);
         if (fileEntityOptional.isEmpty()) {
-            throw new RecordNotFoundException("record not found, fileId: " + fileId);
+            return null;
         }
         return fileEntityOptional.get();
     }
@@ -162,6 +160,9 @@ public class FileServiceImpl
     public void delete(@Nonnull Long fileId) {
         try {
             FileEntity fileEntity = findById(fileId);
+            if (fileEntity == null) {
+                return;
+            }
             final String location = fileEntity.getUrl();
             if (StringUtils.isNotBlank(location)) {
                 // 由于目前是逻辑删除，暂时不删除文件
@@ -183,22 +184,20 @@ public class FileServiceImpl
         Long fileId = fileEntity.getId();
         AssertUtils.isPositive(fileId, "'fileId' must be positive");
 
-        FileEntity existFileEntity = null;
-        try {
-            existFileEntity = findById(fileId);
+        FileEntity existFileEntity = findById(fileId);
+        if (existFileEntity == null) {
+            // 不存在，则新增
+            LOGGER.debug("not exist file entity for fileId={}, do nothing.", fileId);
+            existFileEntity = fileRepository.saveAndFlush(fileEntity);
+            LOGGER.info("success add file entity: {}", existFileEntity);
+        } else {
             // 已经存在，则更新原有的
             final String oldExistFileEntityJson = JsonUtils.obj2Json(existFileEntity);
             BeanUtils.copyProperties(fileEntity, existFileEntity);
             existFileEntity = fileRepository.saveAndFlush(existFileEntity);
             LOGGER.info("success update exist file entity, old: {} , new: {}",
                 oldExistFileEntityJson, existFileEntity);
-        } catch (RecordNotFoundException e) {
-            // 不存在，则新增
-            LOGGER.debug("not exist file entity for fileId={}, do nothing.", fileId);
-            existFileEntity = fileRepository.saveAndFlush(fileEntity);
-            LOGGER.info("success add file entity: {}", existFileEntity);
         }
-
         return existFileEntity;
     }
 
@@ -210,14 +209,9 @@ public class FileServiceImpl
         AssertUtils.notNull(multipartFile, "'multipartFile' must not be null");
 
         // 更新部分数据
-        FileEntity existFileEntity = null;
+        FileEntity existFileEntity = findById(fileId);
         String oldLocation = null;
-        try {
-            existFileEntity = findById(fileId);
-
-            // 如果旧的文件存在，则移除旧的文件
-            oldLocation = existFileEntity.getUrl();
-        } catch (RecordNotFoundException e) {
+        if (existFileEntity == null) {
             // 没有旧的数据，则新增一条
             // 查询ID是否已经存在
             FileEntity idExistFileEntity = null;
@@ -230,8 +224,10 @@ public class FileServiceImpl
                 // ps: 这里的新的保存的ID并不是指定的ID
             }
             existFileEntity = fileRepository.saveAndFlush(idExistFileEntity);
+        } else {
+            // 如果旧的文件存在，则移除旧的文件
+            oldLocation = existFileEntity.getUrl();
         }
-
 
         // 上传文件
         String originalFilename = multipartFile.getOriginalFilename();
@@ -354,13 +350,15 @@ public class FileServiceImpl
         }
     }
 
-    @Nonnull
     @Override
     public FileEntity updateNameById(@Nonnull String name, @Nonnull Long id) {
         AssertUtils.notNull(id, "'id' must not be null");
         AssertUtils.notBlank(name, "'name' must not be blank");
 
         FileEntity existFileEntity = findById(id);
+        if (existFileEntity == null) {
+            return null;
+        }
         existFileEntity.setName(name);
         return fileRepository.saveAndFlush(existFileEntity);
     }
@@ -432,6 +430,12 @@ public class FileServiceImpl
         } else {
             return save(fileEntity);
         }
+    }
+
+    @Override
+    public FileEntity findByName(@Nonnull String name) {
+        AssertUtils.notBlank(name, "name");
+        return fileRepository.findFileEntityByName(name);
     }
 
     private String meringTempChunkFile(String unique, String postfix) throws IOException {

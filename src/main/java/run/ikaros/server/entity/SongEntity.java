@@ -15,10 +15,12 @@ public class SongEntity extends BaseEntity {
     /**
      * @see SongMenuEntity#id
      */
+    @Column(name = "menu_id")
     private Long menuId;
     /**
      * @see AlbumEntity#id
      */
+    @Column(name = "album_id")
     private Long albumId;
 
     public String getName() {

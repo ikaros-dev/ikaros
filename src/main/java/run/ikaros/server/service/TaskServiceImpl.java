@@ -16,6 +16,7 @@ import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.KVEntity;
 import run.ikaros.server.entity.OptionEntity;
+import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.KVType;
 import run.ikaros.server.enums.OptionCategory;
@@ -24,6 +25,7 @@ import run.ikaros.server.enums.OptionMikan;
 import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.model.dto.AnimeDTO;
+import run.ikaros.server.params.SeasonMatchingEpParams;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
@@ -93,14 +95,14 @@ public class TaskServiceImpl implements TaskService {
         OptionEntity mikanSubRssOptionEntity =
             optionService.findOptionValueByCategoryAndKey(OptionCategory.MIKAN,
                 OptionMikan.MY_SUBSCRIBE_RSS.name());
-        if (StringUtils.isBlank(mikanSubRssOptionEntity.getValue())) {
+        if (mikanSubRssOptionEntity == null
+            || StringUtils.isBlank(mikanSubRssOptionEntity.getValue())) {
             throw new RuntimeIkarosException("please config mikan sub rss url");
         }
-        String mikanMySubscribeRssUrl = mikanSubRssOptionEntity.getValue();
 
         LOGGER.info("start parse mikan my subscribe rss url from db");
         List<MikanRssItem> mikanRssItemList =
-            rssService.parseMikanMySubscribeRss(mikanMySubscribeRssUrl);
+            rssService.parseMikanMySubscribeRss(mikanSubRssOptionEntity.getValue());
         LOGGER.info("parse mikan my subscribe rss url to mikan rss item list ");
 
         for (MikanRssItem mikanRssItem : mikanRssItemList) {
@@ -174,7 +176,7 @@ public class TaskServiceImpl implements TaskService {
 
             // 通过密柑剧集URL请求密柑页面获取对应的 bgmtv条目ID
             if (StringUtils.isNotBlank(episodePageUrl)) {
-                bgmtvSubjectId = findBgmTvSubjectIdByEpisdoePageUrl(episodePageUrl);
+                bgmtvSubjectId = findBgmTvSubjectIdByEpisodePageUrl(episodePageUrl);
             }
 
             if (StringUtils.isNotBlank(bgmtvSubjectId)) {
@@ -192,6 +194,7 @@ public class TaskServiceImpl implements TaskService {
 
             Optional<BgmTvSubject> enNameSubOptional = Optional.empty();
             if (StringUtils.isNotBlank(enName)) {
+                LOGGER.debug("search bgmtv subject by english name staring ...");
                 enNameSubOptional =
                     bgmTvService.searchSubject(enName, BgmTvSubjectType.ANIME)
                         .stream().findFirst();
@@ -224,7 +227,7 @@ public class TaskServiceImpl implements TaskService {
         return bgmtvSubjectId;
     }
 
-    private String findBgmTvSubjectIdByEpisdoePageUrl(String episodePageUrl) {
+    private String findBgmTvSubjectIdByEpisodePageUrl(String episodePageUrl) {
         AssertUtils.notBlank(episodePageUrl, "episodePageUrl");
         String animePageUrl =
             mikanService.getAnimePageUrlByEpisodePageUrl(episodePageUrl);
@@ -262,19 +265,64 @@ public class TaskServiceImpl implements TaskService {
             // 创建两个文件硬链接：服务器上传目录 和 Jellyfin目录
             try {
                 createServerFileHardLink(name, contentPath);
+                LOGGER.info("create server file hard link success for name={}", name);
             } catch (RuntimeException runtimeException) {
                 LOGGER.warn("create server file hard link fail", runtimeException);
             }
-            try {
-                createJellyfinFileHardLink(name, contentPath);
-            } catch (RuntimeException runtimeException) {
-                LOGGER.warn("create jellyfin file hard link fail", runtimeException);
-            }
+            // try {
+            //     createJellyfinFileHardLink(name, contentPath);
+            //     LOGGER.info("create jellyfin file hard link success for name={}", name);
+            // } catch (RuntimeException runtimeException) {
+            //     LOGGER.warn("create jellyfin file hard link fail", runtimeException);
+            // }
 
             hasHandledTorrentHashSet.add(hash);
         }
 
 
+    }
+
+    private void updateEpisodeUrlByFileEntity(String torrentName, Long fileId) {
+        Map<String, String> torrentNameBgmTvSubjectIdMap =
+            kvService.findMikanTorrentNameBgmTvSubjectIdMap();
+        if (torrentNameBgmTvSubjectIdMap.containsKey(torrentName)) {
+            Long animeId;
+            String subjectIdStr = torrentNameBgmTvSubjectIdMap.get(torrentName);
+            if (StringUtils.isBlank(subjectIdStr)) {
+                LOGGER.warn("skip matching episode url by file entity for torrent name={}",
+                    torrentName);
+                return;
+            }
+            Long subjectId = Long.valueOf(subjectIdStr);
+            AnimeEntity animeEntity = animeService.findByBgmTvId(subjectId);
+            if (animeEntity == null) {
+                AnimeDTO animeDTO = bgmTvService.reqBgmtvSubject(subjectId);
+                if (animeDTO == null) {
+                    LOGGER.warn("skip matching episode url by file entity for torrent name={}",
+                        torrentName);
+                    return;
+                }
+                animeId = animeDTO.getId();
+            } else {
+                animeId = animeEntity.getId();
+            }
+            List<SeasonEntity> seasonEntityList = seasonService.findByAnimeId(animeId);
+            if (seasonEntityList.isEmpty()) {
+                LOGGER.warn("skip matching episode url by file entity for torrent name={}",
+                    torrentName);
+                return;
+            }
+
+            SeasonEntity seasonEntity = seasonEntityList.get(0);
+            SeasonMatchingEpParams seasonMatchingEpParams
+                = new SeasonMatchingEpParams()
+                .setSeasonId(seasonEntity.getId())
+                .setFileIdList(List.of(fileId));
+            seasonService.matchingEpisodeUrlByFileIds(seasonMatchingEpParams);
+        } else {
+            LOGGER.warn("skip matching episode url by file entity for torrent name={}",
+                torrentName);
+        }
     }
 
     private void createServerFileHardLink(String torrentName, String torrentContentPath) {
@@ -292,6 +340,12 @@ public class TaskServiceImpl implements TaskService {
             }
             for (File file : files) {
                 String fileName = file.getName();
+                FileEntity existsFileEntity = fileService.findByName(fileName);
+                if (existsFileEntity != null) {
+                    updateEpisodeUrlByFileEntity(torrentName, existsFileEntity.getId());
+                    LOGGER.debug("find exists file for name={}", fileName);
+                    continue;
+                }
                 String postfix = FileUtils.parseFilePostfix(fileName);
                 String uploadFilePath = FileUtils.buildAppUploadFilePath(postfix);
                 File uploadFile = new File(uploadFilePath);
@@ -308,7 +362,7 @@ public class TaskServiceImpl implements TaskService {
                         .setName(fileName)
                         .setType(FileUtils.parseTypeByPostfix(postfix)));
 
-                    seasonService.updateEpisodeUrlByFileEntity(fileEntity);
+                    updateEpisodeUrlByFileEntity(torrentName, fileEntity.getId());
                 } catch (RegexMatchingException regexMatchingException) {
                     LOGGER.warn("regex matching fail, msg: {}",
                         regexMatchingException.getMessage());
@@ -339,7 +393,7 @@ public class TaskServiceImpl implements TaskService {
                     .setName(fileName)
                     .setType(FileUtils.parseTypeByPostfix(postfix)));
 
-                seasonService.updateEpisodeUrlByFileEntity(fileEntity);
+                updateEpisodeUrlByFileEntity(torrentName, fileEntity.getId());
             } catch (RegexMatchingException regexMatchingException) {
                 LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
             } catch (Exception e) {
@@ -421,6 +475,9 @@ public class TaskServiceImpl implements TaskService {
         if (animeEntity == null) {
             AnimeDTO animeDTO = bgmTvService.reqBgmtvSubject(subjectId);
             animeEntity = animeService.getById(animeDTO.getId());
+            if (animeEntity == null) {
+                return;
+            }
         }
         String tvshowNfoFilePath = jellyfinMediaDir + File.separator + "tvshow.nfo";
         File tvshowNfoFile = new File(tvshowNfoFilePath);

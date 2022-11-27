@@ -86,6 +86,9 @@ public class ScheduledTaskServiceImpl extends AbstractCrudService<ScheduledTaskE
     public ScheduledTaskEntity updateStatus(@Nonnull Long id, boolean status) {
         AssertUtils.notNull(id, "id");
         ScheduledTaskEntity scheduledTaskEntity = getById(id);
+        if (scheduledTaskEntity == null) {
+            return null;
+        }
         scheduledTaskEntity.setStatus(status);
         return scheduledTaskRepository.saveAndFlush(scheduledTaskEntity);
     }

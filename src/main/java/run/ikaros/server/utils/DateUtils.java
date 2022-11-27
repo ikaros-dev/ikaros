@@ -26,7 +26,7 @@ public class DateUtils {
         try {
             return fmt.parse(dateStr);
         } catch (ParseException e) {
-            LOGGER.warn("parse fail, data str: {}, ex:", dateStr, e);
+            LOGGER.warn("parse fail, date str: {}, ex msg: {}", dateStr, e.getMessage());
             return null;
         }
     }

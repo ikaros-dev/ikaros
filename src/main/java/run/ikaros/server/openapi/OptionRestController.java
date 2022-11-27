@@ -50,6 +50,11 @@ public class OptionRestController {
         return CommonResult.ok(optionService.appInit(appInitRequest));
     }
 
+    @PostMapping("/app/init/coerce")
+    public CommonResult<Boolean> reqAppCoerceInit(@RequestBody AppInitRequest appInitRequest) {
+        return CommonResult.ok(optionService.appInit(appInitRequest, true));
+    }
+
     @GetMapping("/list")
     public CommonResult<List<OptionResponse>> findOptionList(
         @RequestParam(name = "category", required = false) String categoryQueryParam) {

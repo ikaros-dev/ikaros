@@ -3,7 +3,6 @@ package run.ikaros.server.service;
 
 import javax.annotation.Nonnull;
 
-import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.constants.RegexConst;
@@ -32,8 +31,9 @@ import org.springframework.stereotype.Service;
  * @author li-guohao
  */
 @Service
-public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> implements UserService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
+public class UserService extends AbstractCrudService<UserEntity, Long> implements
+    run.ikaros.server.core.service.UserService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -42,8 +42,8 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
      * @param userRepository  用户表操作Repo
      * @param passwordEncoder 指定的密码加密实例
      */
-    public UserServiceImpl(UserRepository userRepository,
-                           PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder) {
         super(userRepository);
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -111,6 +111,9 @@ public class UserServiceImpl extends AbstractCrudService<UserEntity, Long> imple
     public void deleteUserById(Long id) {
         AssertUtils.isPositive(id, "'id' must be gt 0");
         UserEntity userEntity = getById(id);
+        if (userEntity == null) {
+            return;
+        }
         userEntity.setStatus(false);
         userRepository.saveAndFlush(userEntity);
     }

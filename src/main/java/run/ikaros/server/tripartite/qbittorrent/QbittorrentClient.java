@@ -82,11 +82,11 @@ public class QbittorrentClient {
                 optionService.findOptionValueByCategoryAndKey(OptionCategory.QBITTORRENT,
                     OptionQbittorrent.URL.name());
 
-            urlPrefix = optionEntity.getValue();
-
-            if (StringUtils.isBlank(urlPrefix)) {
+            if (optionEntity == null || StringUtils.isBlank(optionEntity.getValue())) {
                 throw new QbittorrentRequestException("qbittorrent config not set");
             }
+
+            urlPrefix = optionEntity.getValue();
 
             // 如果最后一个字符是 / 则去掉
             if (urlPrefix.charAt(urlPrefix.length() - 1) == '/') {

@@ -1,38 +1,36 @@
 package run.ikaros.server.service;
 
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.Nonnull;
-
-import run.ikaros.server.core.service.AnimeService;
-import run.ikaros.server.core.service.EpisodeService;
-import run.ikaros.server.core.service.SeasonService;
-import run.ikaros.server.utils.AssertUtils;
-import run.ikaros.server.utils.StringUtils;
-import run.ikaros.server.utils.BeanUtils;
-import run.ikaros.server.result.PagingWrap;
-import run.ikaros.server.exceptions.RecordNotFoundException;
-import run.ikaros.server.model.dto.AnimeDTO;
-import run.ikaros.server.model.dto.EpisodeDTO;
-import run.ikaros.server.model.dto.SeasonDTO;
-import run.ikaros.server.entity.AnimeEntity;
-import run.ikaros.server.entity.EpisodeEntity;
-import run.ikaros.server.entity.SeasonEntity;
-import run.ikaros.server.params.SearchAnimeDTOSParams;
-import run.ikaros.server.core.repository.AnimeRepository;
-
-import java.util.ArrayList;
-import java.util.List;
-import javax.persistence.criteria.Predicate;
-import javax.transaction.Transactional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import run.ikaros.server.core.repository.AnimeRepository;
+import run.ikaros.server.core.service.AnimeService;
+import run.ikaros.server.core.service.EpisodeService;
+import run.ikaros.server.core.service.SeasonService;
+import run.ikaros.server.entity.AnimeEntity;
+import run.ikaros.server.entity.EpisodeEntity;
+import run.ikaros.server.entity.SeasonEntity;
+import run.ikaros.server.exceptions.RecordNotFoundException;
+import run.ikaros.server.model.dto.AnimeDTO;
+import run.ikaros.server.model.dto.EpisodeDTO;
+import run.ikaros.server.model.dto.SeasonDTO;
+import run.ikaros.server.params.SearchAnimeDTOSParams;
+import run.ikaros.server.result.PagingWrap;
+import run.ikaros.server.utils.AssertUtils;
+import run.ikaros.server.utils.BeanUtils;
+import run.ikaros.server.utils.StringUtils;
+
+import javax.annotation.Nonnull;
+import javax.persistence.criteria.Predicate;
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author guohao

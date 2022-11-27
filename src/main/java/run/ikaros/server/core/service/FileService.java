@@ -1,5 +1,6 @@
 package run.ikaros.server.core.service;
 
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import run.ikaros.server.constants.RegexConst;
@@ -26,7 +27,7 @@ public interface FileService extends CrudService<FileEntity, Long> {
     @Transactional
     FileEntity upload(@Nonnull String originalFilename, @Nonnull byte[] bytes);
 
-    @Nonnull
+    @Nullable
     FileEntity findById(@Nonnull Long fileId);
 
     @Transactional
@@ -54,7 +55,7 @@ public interface FileService extends CrudService<FileEntity, Long> {
     @Transactional
     void deleteInBatch(@Nonnull Set<Long> ids);
 
-    @Nonnull
+    @Nullable
     @Transactional
     FileEntity updateNameById(@Nonnull String name, @Nonnull Long id);
 
@@ -111,4 +112,7 @@ public interface FileService extends CrudService<FileEntity, Long> {
 
     @Nonnull
     FileEntity create(@Nonnull FileEntity fileEntity);
+
+    @Nullable
+    FileEntity findByName(@Nonnull String name);
 }

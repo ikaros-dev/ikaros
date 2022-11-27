@@ -18,6 +18,7 @@ import run.ikaros.server.constants.SecurityConst;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.tripartite.bgmtv.constants.BgmTvApiConst;
 import run.ikaros.server.core.tripartite.bgmtv.repository.BgmTvRepository;
+import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionBgmTv;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.exceptions.RecordNotFoundException;
@@ -31,6 +32,7 @@ import run.ikaros.server.tripartite.bgmtv.model.BgmTvUserInfo;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.JsonUtils;
+import run.ikaros.server.utils.RestTemplateUtils;
 import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -233,13 +235,24 @@ public class BgmTvRepositoryImpl implements BgmTvRepository, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        String token = null;
-        try {
-            token = optionService.findOptionValueByCategoryAndKey(OptionCategory.BGMTV,
-                OptionBgmTv.ACCESS_TOKEN.name()).getValue();
-        } catch (RecordNotFoundException recordNotFoundException) {
+        OptionEntity tokenOptionEntity =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.BGMTV,
+                OptionBgmTv.ACCESS_TOKEN.name());
+        if (tokenOptionEntity == null || StringUtils.isBlank(tokenOptionEntity.getValue())) {
             LOGGER.warn("current not set bgmtv access token");
+        } else {
+            refreshHttpHeaders(tokenOptionEntity.getValue());
         }
-        refreshHttpHeaders(token);
+
+        OptionEntity enableProxyOption =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.BGMTV,
+                OptionBgmTv.ENABLE_PROXY.name());
+        if (enableProxyOption != null
+            && Boolean.TRUE.toString().equalsIgnoreCase(enableProxyOption.getValue())) {
+            String httpProxyHost = optionService.getOptionNetworkHttpProxyHost();
+            String httpProxyPort = optionService.getOptionNetworkHttpProxyPort();
+            setRestTemplate(
+                RestTemplateUtils.buildHttpProxyRestTemplate(httpProxyHost, httpProxyPort));
+        }
     }
 }

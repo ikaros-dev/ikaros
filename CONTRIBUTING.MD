@@ -76,4 +76,4 @@ git push origin bug/xxx
 
 ### 此文参考
 
-- [开源项目Halo贡献指南](https://github.com/halo-dev/halo/edit/master/CONTRIBUTING.md)
+- [开源项目Halo贡献指南](https://github.com/halo-dev/halo/blob/master/CONTRIBUTING.md)
