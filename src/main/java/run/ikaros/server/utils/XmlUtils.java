@@ -147,4 +147,66 @@ public class XmlUtils {
         }
         return filePath;
     }
+
+    public static String generateJellyfinEpisodeNfoXml(@Nonnull String filePath, String plot,
+                                                       String title, String season,
+                                                       String episode, String bangumiid) {
+        AssertUtils.notBlank(filePath, "filePath");
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = null;
+        try {
+            db = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeIkarosException("new document builder fail", e);
+        }
+        Document document = db.newDocument();
+        // 不显示standalone="no"
+        document.setXmlStandalone(true);
+        Element tvshowElement = document.createElement("episodedetails");
+        document.appendChild(tvshowElement);
+
+        Element plotElement = document.createElement("plot");
+        plotElement.setTextContent(plot);
+        tvshowElement.appendChild(plotElement);
+
+        Element lockdataElement = document.createElement("lockdata");
+        lockdataElement.setTextContent("false");
+        tvshowElement.appendChild(lockdataElement);
+
+        Element titleElement = document.createElement("title");
+        titleElement.setTextContent(title);
+        tvshowElement.appendChild(titleElement);
+
+        Element seasonElement = document.createElement("season");
+        seasonElement.setTextContent(season);
+        tvshowElement.appendChild(seasonElement);
+
+        Element episodeElement = document.createElement("episode");
+        episodeElement.setTextContent(episode);
+        tvshowElement.appendChild(episodeElement);
+
+        Element bangumiidElement = document.createElement("bangumiid");
+        bangumiidElement.setTextContent(bangumiid);
+        tvshowElement.appendChild(bangumiidElement);
+
+        File file = new File(filePath);
+        File dir = file.getParentFile();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        try {
+            TransformerFactory tff = TransformerFactory.newInstance();
+            Transformer tf = tff.newTransformer();
+            // 输出内容是否使用换行
+            tf.setOutputProperty(OutputKeys.INDENT, "yes");
+            // 创建xml文件并写入内容
+            tf.transform(new DOMSource(document), new StreamResult(file));
+            LOGGER.info("generate jellyfin episode nfo xml file success, filePath: {}", filePath);
+        } catch (TransformerException transformerException) {
+            LOGGER.warn("generate jellyfin episode nfo xml file fail", transformerException);
+        }
+        return filePath;
+    }
 }

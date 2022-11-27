@@ -115,4 +115,7 @@ public interface FileService extends CrudService<FileEntity, Long> {
 
     @Nullable
     FileEntity findByName(@Nonnull String name);
+
+    @Nonnull
+    Optional<FileEntity> findByUrl(@Nonnull String url);
 }

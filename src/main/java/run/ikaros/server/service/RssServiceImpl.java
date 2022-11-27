@@ -2,6 +2,7 @@ package run.ikaros.server.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -39,7 +40,7 @@ import java.util.UUID;
  * @author li-guohao
  */
 @Service
-public class RssServiceImpl implements RssService {
+public class RssServiceImpl implements RssService, InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(RssServiceImpl.class);
 
     private final OptionService optionService;
@@ -156,5 +157,15 @@ public class RssServiceImpl implements RssService {
             }
         }
         return cacheFilePath;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        String httpProxyHost = optionService.getOptionNetworkHttpProxyHost();
+        String httpProxyPort = optionService.getOptionNetworkHttpProxyPort();
+        if (StringUtils.isNotBlank(httpProxyHost) && StringUtils.isNotBlank(httpProxyPort)) {
+            setProxy(new Proxy(Proxy.Type.HTTP,
+                new InetSocketAddress(httpProxyHost, Integer.parseInt(httpProxyPort))));
+        }
     }
 }
