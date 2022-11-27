@@ -81,13 +81,9 @@ public class OptionServiceImpl
         String key = optionItemDTO.getKey();
         AssertUtils.notBlank(key, "'key' must not be blank");
 
-        try {
-            OptionEntity existOptionEntity =
-                findOptionValueByCategoryAndKey(optionItemDTO.getCategory(), key);
-            existOptionEntity.setValue(optionItemDTO.getValue())
-                .setCategory(optionItemDTO.getCategory());
-            return optionRepository.saveAndFlush(existOptionEntity);
-        } catch (RecordNotFoundException e) {
+        OptionEntity existOptionEntity =
+            findOptionValueByCategoryAndKey(optionItemDTO.getCategory(), key);
+        if (existOptionEntity == null) {
             OptionEntity optionEntity
                 = new OptionEntity()
                 .setKey(key)
@@ -96,6 +92,10 @@ public class OptionServiceImpl
                 .setCategory(optionItemDTO.getCategory());
             LOGGER.debug("create new option record: {}", JsonUtils.obj2Json(optionEntity));
             return optionRepository.saveAndFlush(optionEntity);
+        } else {
+            existOptionEntity.setValue(optionItemDTO.getValue())
+                .setCategory(optionItemDTO.getCategory());
+            return optionRepository.saveAndFlush(existOptionEntity);
         }
 
     }
