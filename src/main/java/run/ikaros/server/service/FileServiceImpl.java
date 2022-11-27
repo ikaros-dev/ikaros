@@ -438,6 +438,13 @@ public class FileServiceImpl
         return fileRepository.findFileEntityByName(name);
     }
 
+    @Nonnull
+    @Override
+    public Optional<FileEntity> findByUrl(@Nonnull String url) {
+        AssertUtils.notBlank(url, "url");
+        return fileRepository.findByUrlAndStatus(url, true);
+    }
+
     private String meringTempChunkFile(String unique, String postfix) throws IOException {
         LOGGER.debug("All chunks upload has finish, will start merging files");
 

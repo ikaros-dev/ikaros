@@ -3,6 +3,7 @@ package run.ikaros.server.core.repository;
 
 import run.ikaros.server.entity.FileEntity;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,4 +37,5 @@ public interface FileRepository extends BaseRepository<FileEntity, Long> {
 
     FileEntity findFileEntityByNameAndTypeAndPlace(String name, FileType type, FilePlace place);
 
+    Optional<FileEntity> findByUrlAndStatus(String url, Boolean status);
 }

@@ -3,12 +3,15 @@ package run.ikaros.server.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.core.service.EpisodeService;
+import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.core.service.MediaService;
 import run.ikaros.server.core.service.SeasonService;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.EpisodeEntity;
+import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.SeasonType;
 import run.ikaros.server.utils.FileUtils;
@@ -24,6 +27,7 @@ import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MediaServiceImpl implements MediaService {
@@ -31,12 +35,14 @@ public class MediaServiceImpl implements MediaService {
     private final AnimeService animeService;
     private final SeasonService seasonService;
     private final EpisodeService episodeService;
+    private final FileService fileService;
 
     public MediaServiceImpl(AnimeService animeService, SeasonService seasonService,
-                            EpisodeService episodeService) {
+                            EpisodeService episodeService, FileService fileService) {
         this.animeService = animeService;
         this.seasonService = seasonService;
         this.episodeService = episodeService;
+        this.fileService = fileService;
     }
 
     @Override
@@ -120,12 +126,13 @@ public class MediaServiceImpl implements MediaService {
             return;
         }
         for (SeasonEntity seasonEntity : seasonEntityList) {
-            generateMediaDirBySingleSeason(animeDirPath, seasonEntity);
+            generateMediaDirBySingleSeason(animeDirPath, seasonEntity, animeEntity.getBgmtvId());
         }
     }
 
     private void generateMediaDirBySingleSeason(@Nonnull String animeDirPath,
-                                                @Nonnull SeasonEntity seasonEntity) {
+                                                @Nonnull SeasonEntity seasonEntity,
+                                                Long bgmtvId) {
         SeasonType type = seasonEntity.getType();
         String seasonDirName = "Season ";
         int seasonNum = type.getOrder();
@@ -148,7 +155,7 @@ public class MediaServiceImpl implements MediaService {
 
         for (EpisodeEntity episodeEntity : episodeEntityList) {
             Long seq = episodeEntity.getSeq();
-            final String prefix = "S" + seasonNum + "E" + seq + " - ";
+            // final String prefix = "S" + seasonNum + "E" + seq + " - ";
             String url = episodeEntity.getUrl();
             if (StringUtils.isBlank(url)) {
                 // LOGGER.warn(
@@ -169,9 +176,16 @@ public class MediaServiceImpl implements MediaService {
                     uploadEpFilePath, seasonEntity.getTitle(), episodeEntity.getTitle());
                 continue;
             }
-            String fileName = FileUtils.parseFileName(uploadEpFilePath);
+            Optional<FileEntity> fileEntityOptional = fileService.findByUrl(url);
+            String fileName;
+            if (fileEntityOptional.isPresent()) {
+                fileName = fileEntityOptional.get().getName();
+            } else {
+                fileName = FileUtils.parseFileName(uploadEpFilePath);
+            }
 
-            String mediaEpFilePath = seasonDirPath + File.separator + prefix + fileName;
+
+            String mediaEpFilePath = seasonDirPath + File.separator + fileName;
             File mediaEpFile = new File(mediaEpFilePath);
 
             if (!mediaEpFile.exists()) {
@@ -186,7 +200,20 @@ public class MediaServiceImpl implements MediaService {
                         mediaEpFilePath, uploadEpFilePath);
                 }
             } else {
-                LOGGER.debug("file has exists for media episode file path={}", mediaEpFile);
+                // LOGGER.debug("file has exists for media episode file path={}", mediaEpFile);
+            }
+
+            // generate episode nfo
+            String episodeNfoFilePath = seasonDirPath + File.separator + fileName.replaceAll(
+                RegexConst.FILE_POSTFIX, "") + ".nfo";
+            File episodeNfoFile = new File(episodeNfoFilePath);
+            if (!episodeNfoFile.exists()) {
+                String episodePlot =
+                    StringUtils.isNotBlank(episodeEntity.getTitleCn()) ? episodeEntity.getTitleCn()
+                        : episodeEntity.getTitle();
+                XmlUtils.generateJellyfinEpisodeNfoXml(episodeNfoFilePath,
+                    episodeEntity.getOverview(), episodePlot, String.valueOf(seasonNum),
+                    String.valueOf(seq), String.valueOf(bgmtvId));
             }
         }
     }
