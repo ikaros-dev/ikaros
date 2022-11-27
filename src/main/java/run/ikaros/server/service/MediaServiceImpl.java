@@ -53,12 +53,17 @@ public class MediaServiceImpl implements MediaService {
      */
     private void generateMediaDirBySingleAnimeEntity(@Nonnull AnimeEntity animeEntity) {
         Date airTime = animeEntity.getAirTime();
-        LocalDateTime localDateTime = TimeUtils.date2LocalDataTime(airTime);
+        LocalDateTime localDateTime = null;
+        if (airTime != null) {
+            localDateTime = TimeUtils.date2LocalDataTime(airTime);
+        }
 
         // generate anime dir
-        final String animeDirName = animeEntity.getTitleCn() + " - " + animeEntity.getTitle()
-            + " (" + localDateTime.getYear() + localDateTime.getMonthValue()
-            + localDateTime.getDayOfMonth() + ")";
+        String animeDirName = animeEntity.getTitleCn() + " - " + animeEntity.getTitle();
+        if (localDateTime != null) {
+            animeDirName += " (" + localDateTime.getYear() + "-" + localDateTime.getMonthValue()
+                + "-" + localDateTime.getDayOfMonth() + ")";
+        }
         final String animeDirPath = SystemVarUtils.getCurrentAppMediaDirPath()
             + File.separator + animeDirName;
         File animeDir = new File(animeDirPath);
@@ -146,9 +151,9 @@ public class MediaServiceImpl implements MediaService {
             final String prefix = "S" + seasonNum + "E" + seq + " - ";
             String url = episodeEntity.getUrl();
             if (StringUtils.isBlank(url)) {
-                LOGGER.warn(
-                    "current episode not relation file url, season title={} episode title={}",
-                    seasonEntity.getTitle(), episodeEntity.getTitle());
+                // LOGGER.warn(
+                //     "current episode not relation file url, season title={} episode title={}",
+                //     seasonEntity.getTitle(), episodeEntity.getTitle());
                 continue;
             }
 
