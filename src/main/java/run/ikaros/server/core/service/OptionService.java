@@ -36,11 +36,14 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
 
     boolean findAppIsInit();
 
+    boolean appInit(@Nonnull AppInitRequest appInitRequest);
+
     /**
+     * @param isCoerce 是否强制初始化
      * @return init result msg
      */
     @Transactional
-    boolean appInit(@Nonnull AppInitRequest appInitRequest);
+    boolean appInit(@Nonnull AppInitRequest appInitRequest, boolean isCoerce);
 
     @Nonnull
     List<OptionDTO> findOptions(@Nullable String category);

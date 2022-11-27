@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SystemVarUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemVarUtils.class);
+    public static final String MEDIA_DIR_NAME = "media";
 
     static {
         LOGGER.debug("current app dir path: {}", getCurrentAppDirPath());
@@ -74,5 +75,9 @@ public class SystemVarUtils {
             return false;
         }
         return osName.contains("Windows");
+    }
+
+    public static String getCurrentAppMediaDirPath() {
+        return getCurrentAppDirPath() + File.separator + MEDIA_DIR_NAME;
     }
 }

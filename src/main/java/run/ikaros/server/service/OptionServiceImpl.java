@@ -137,7 +137,12 @@ public class OptionServiceImpl
 
     @Override
     public boolean appInit(@Nonnull AppInitRequest appInitRequest) {
-        if (findAppIsInit()) {
+        return appInit(appInitRequest, false);
+    }
+
+    @Override
+    public boolean appInit(@Nonnull AppInitRequest appInitRequest, boolean isCoerce) {
+        if (!isCoerce && findAppIsInit()) {
             return true;
         }
 
