@@ -22,14 +22,14 @@ Mac或者Linux
 ./gradlew clean build -x test
 ```
 
-本地运行，复制`config/example/resource/application-dev.yaml`到`src/main/resource/application-dev.yaml`
-, 可以根据需要酌情修改
+本地运行，复制`config/example/resource/application-local.yaml`到`src/main/resource/application-local.yaml`
+, 可以根据需要酌情修改，
 
-todo 待更新
+我建议是本地跑个 [docker for windows](https://docs.docker.com/desktop/install/windows-install/))，装好mariadb方便开发
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
 
-配置插件过程中会让填变量值，填入如下值
+配置插件过程中版本选择`8.39`，还会让填变量值，填入如下值
 
 ```text
 checkstyle-suppressions.xml
@@ -44,7 +44,7 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 .\gradlew.bat clean bootJar
 ```
 
-git modules 初始化
+git modules 初始化，需要初始化是由于主题使用的是git module关联的另一个仓库
 
 ```text
 git submodule init
