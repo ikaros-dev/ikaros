@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  # qbittorrent
+  qbittorrent:
+    image: linuxserver/qbittorrent:latest
+    container_name: ikaros_qbittorrent
+    volumes:
+      - ${IKAROS_APP_DIR}/tripartite/qbittorrent:/config
+      - ${IKAROS_APP_DIR}/downloads:/downloads
+      - ${IKAROS_APP_DIR}/media:/media
+    ports:
+      - 9091:9091
+      - 6881:6881/udp
+      - 6881:6881
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Asia/Shanghai
+      - WEBUI_PORT=9091
+    restart: always
+
+  # ikaros
+  ikaros:
+    image: liguohaocn/ikaros:dev
+    container_name: ikaros_dev
+    volumes:
+      - ${IKAROS_APP_DIR}:/opt/ikaros
+    ports:
+      - 9090:9090
+    environment:
+      - PUID=0
+      - PGID=0
+      - JAVA_OPTS=-Dikaros.log-level=DEBUG
+    restart: always
