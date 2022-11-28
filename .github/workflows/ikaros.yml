@@ -6,7 +6,8 @@ name: CI
 on:
   # Triggers the workflow on pull request events but only for the "master" branch
   pull_request:
-    branches: [ "master" ]
+    branches:
+    - master
 
 jobs:
   build:
