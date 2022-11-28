@@ -2,7 +2,7 @@
   <configuration default="false" name="IkarosPro" type="docker-deploy" factoryName="dockerfile" server-name="Production">
     <deployment type="dockerfile">
       <settings>
-        <option name="imageTag" value="ikaros:0.1.0" />
+        <option name="imageTag" value="ikaros:dev" />
         <option name="containerName" value="ikaros" />
         <option name="envVars">
           <list>
