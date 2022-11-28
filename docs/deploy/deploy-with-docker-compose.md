@@ -34,6 +34,10 @@ export IKAROS_APP_DIR=/opt/ikaros
 docker-compose --version
 ```
 
+# docker compose
+- [docker-compose.yml](docker-compose.yml)
+- [docker-compose-no-jellyfin.yml](docker-compose-no-jellyfin.yml)
+
 ## 启动docker-compose
 执行compose文件，文件名称自定义，我这里是`docker-compose.yml`
 
@@ -47,10 +51,6 @@ docker-compose up -d
 ``` 
 docker-compose -f docker-compose-no-jellyfin.yml up -d
 ```
-
-# docker compose
-- [docker-compose.yml](docker-compose.yml)
-- [docker-compose-no-jellyfin.yml](docker-compose-no-jellyfin.yml)
 
 # 启动后的配置
 ## qbittorrent
@@ -74,4 +74,4 @@ docker-compose -f docker-compose-no-jellyfin.yml up -d
 如果你网络不好，需要HTTP代理，推荐直接部署一个全局模式的`clash`容器
 
 ## jellyfin
-这个添加媒体库就行，选择 `/media` 或者你部署`jellyfin容器时的更改的目录
+这个添加媒体库就行，选择 `/media` 或者你部署jellyfin容器时的更改的目录
