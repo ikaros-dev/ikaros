@@ -43,5 +43,9 @@ public interface UserService extends CrudService<UserEntity, Long> {
     @Nonnull
     UserDTO getUserInfoByToken(@Nonnull String token);
 
+    @Transactional
+    void deleteUserById(@Nonnull Long id);
 
+    @Transactional
+    UserEntity updateUserInfo(@Nonnull UserEntity userEntity);
 }

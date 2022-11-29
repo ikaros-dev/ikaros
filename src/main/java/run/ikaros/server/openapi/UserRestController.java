@@ -1,5 +1,7 @@
 package run.ikaros.server.openapi;
 
+import run.ikaros.server.core.service.UserService;
+import run.ikaros.server.core.service.UserSubscribeService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.constants.SecurityConst;
 import run.ikaros.server.result.CommonResult;
@@ -7,7 +9,6 @@ import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.AuthUserDTO;
 import run.ikaros.server.model.dto.UserDTO;
 import run.ikaros.server.entity.UserEntity;
-import run.ikaros.server.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -34,9 +35,11 @@ public class UserRestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
     private final UserService userService;
+    private final UserSubscribeService userSubscribeService;
 
-    public UserRestController(UserService userService) {
+    public UserRestController(UserService userService, UserSubscribeService userSubscribeService) {
         this.userService = userService;
+        this.userSubscribeService = userSubscribeService;
     }
 
     @PostMapping("/login")
@@ -98,4 +101,21 @@ public class UserRestController {
         return CommonResult.ok();
     }
 
+    @PutMapping("/subscribe/bgmtv/{subjectId}")
+    public CommonResult<Boolean> saveUserSubscribeByBgmtvId(
+        @PathVariable("subjectId") Long bgmtvSubjectId) {
+        userSubscribeService.saveUserAnimeSubscribeByBgmTvSubjectId(
+            UserService.getCurrentLoginUserUid(),
+            bgmtvSubjectId);
+        return CommonResult.ok(Boolean.TRUE);
+    }
+
+    @PutMapping("/subscribe/anime/{id}")
+    public CommonResult<Boolean> saveUserSubscribeByAnimeId(
+        @PathVariable("id") Long animeId) {
+        userSubscribeService.saveUserAnimeSubscribe(
+            UserService.getCurrentLoginUserUid(),
+            animeId);
+        return CommonResult.ok(Boolean.TRUE);
+    }
 }

@@ -242,5 +242,13 @@ public class AnimeServiceImpl
         return animeRepository.findByStatusAndTitleCnLike(true, StringUtils.addLikeChar(titleCn));
     }
 
+    @Override
+    public AnimeEntity deleteByIdLogically(@Nonnull Long animeId) {
+        AssertUtils.isPositive(animeId, "anime id");
+        AnimeEntity animeEntity = getById(animeId);
+        animeEntity.setStatus(false);
+        return save(animeEntity);
+    }
+
 
 }

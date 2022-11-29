@@ -41,5 +41,7 @@ public interface AnimeService extends CrudService<AnimeEntity, Long> {
     @Nonnull
     List<AnimeEntity> findByTitleCnLike(@Nonnull String titleCn);
 
+    @Nullable
+    AnimeEntity deleteByIdLogically(@Nonnull Long animeId);
 
 }

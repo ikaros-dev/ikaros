@@ -61,6 +61,9 @@ dependencies {
     implementation "com.rometools:rome:$romeVersion"
     implementation "org.jsoup:jsoup:$jsoupVersion"
 
+    // lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     // developmentOnly 'org.springframework.boot:spring-boot-devtools'
 

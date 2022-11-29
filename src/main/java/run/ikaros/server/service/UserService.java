@@ -108,6 +108,7 @@ public class UserService extends AbstractCrudService<UserEntity, Long> implement
         return userEntityOptional.get();
     }
 
+    @Override
     public void deleteUserById(Long id) {
         AssertUtils.isPositive(id, "'id' must be gt 0");
         UserEntity userEntity = getById(id);
@@ -118,7 +119,8 @@ public class UserService extends AbstractCrudService<UserEntity, Long> implement
         userRepository.saveAndFlush(userEntity);
     }
 
-    public UserEntity updateUserInfo(UserEntity userEntity) throws RecordNotFoundException {
+    @Override
+    public UserEntity updateUserInfo(@Nonnull UserEntity userEntity) throws RecordNotFoundException {
         AssertUtils.notNull(userEntity, "'userEntity' must not be null.");
         Long id = userEntity.getId();
         AssertUtils.notNull(id, "user id must not be null");
