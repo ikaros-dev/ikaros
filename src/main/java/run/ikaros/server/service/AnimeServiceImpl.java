@@ -28,6 +28,7 @@ import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -211,6 +212,34 @@ public class AnimeServiceImpl
         } else {
             return animeEntityList.get(0);
         }
+    }
+
+    @Nonnull
+    @Override
+    public Optional<AnimeEntity> findByTitle(@Nonnull String title) {
+        AssertUtils.notBlank(title, "title");
+        return animeRepository.findByTitleAndStatus(title, true);
+    }
+
+    @Nonnull
+    @Override
+    public Optional<AnimeEntity> findByTitleCn(@Nonnull String titleCn) {
+        AssertUtils.notBlank(titleCn, "titleCn");
+        return animeRepository.findByTitleCnAndStatus(titleCn, true);
+    }
+
+    @Nonnull
+    @Override
+    public List<AnimeEntity> findByTitleLike(@Nonnull String title) {
+        AssertUtils.notBlank(title, "title");
+        return animeRepository.findByStatusAndTitleLike(true, StringUtils.addLikeChar(title));
+    }
+
+    @Nonnull
+    @Override
+    public List<AnimeEntity> findByTitleCnLike(@Nonnull String titleCn) {
+        AssertUtils.notBlank(titleCn, "titleCn");
+        return animeRepository.findByStatusAndTitleCnLike(true, StringUtils.addLikeChar(titleCn));
     }
 
 

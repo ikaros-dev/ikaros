@@ -9,6 +9,7 @@ import run.ikaros.server.result.PagingWrap;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author li-guohao
@@ -27,4 +28,18 @@ public interface AnimeService extends CrudService<AnimeEntity, Long> {
 
     @Nullable
     AnimeEntity findByBgmTvId(@Nonnull Long bgmtvId);
+
+    @Nonnull
+    Optional<AnimeEntity> findByTitle(@Nonnull String title);
+
+    @Nonnull
+    Optional<AnimeEntity> findByTitleCn(@Nonnull String titleCn);
+
+    @Nonnull
+    List<AnimeEntity> findByTitleLike(@Nonnull String title);
+
+    @Nonnull
+    List<AnimeEntity> findByTitleCnLike(@Nonnull String titleCn);
+
+
 }
