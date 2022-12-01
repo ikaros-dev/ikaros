@@ -1,9 +1,21 @@
 # 介绍
+<p align="left">
+<a href="https://github.com/ikaros-dev/ikaros"><img alt="Docker pulls" src="https://img.shields.io/github/stars/ikaros-dev/ikaros.svg?style=flat-square&label=Stars&logo=github" /></a>
+<a href="https://hub.docker.com/r/liguohaocn/ikaros"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/liguohaocn/ikaros?style=flat-square" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/commits"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/ikaros-dev/ikaros.svg?style=flat-square" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/ikaros-dev/ikaros/CI?style=flat-square" /></a>
+<br />
+</p>
 
 专注于ACGMN的个人内容管家(CMS)，——伊卡洛斯。
 
 ACGMN全拼是：Anime(动画) + Comic(漫画) + Game(游戏) + Music(音乐) + Novel(小说)
 
+# 部署指南
+- [Docker Compose Doc](docs/deploy/deploy-with-docker-compose.md)
+- [Docker Run Doc](docs/deploy/deploy-with-docker-run.md)
+- [docker-compose.yml](docs/deploy/docker-compose.yml)
+- [docker-compose-no-jellyfin.yml](docs/deploy/docker-compose-no-jellyfin.yml)
 
 # 相关社群
 PS: 暂时只有 TG群组，后续会有官网、社区、官网文档等等
