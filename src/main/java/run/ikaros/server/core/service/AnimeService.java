@@ -44,4 +44,6 @@ public interface AnimeService extends CrudService<AnimeEntity, Long> {
     @Nullable
     AnimeEntity deleteByIdLogically(@Nonnull Long animeId);
 
+    @Nonnull
+    List<AnimeEntity> findAll();
 }

@@ -50,8 +50,14 @@ public class SeasonRestController {
     }
 
     @PutMapping("/matching/episodes")
-    public CommonResult<SeasonDTO> matchingEpisodeUrlByFileIds(
+    public CommonResult<SeasonDTO> matchingEpisodesUrlByFileIds(
         @RequestBody SeasonMatchingEpParams seasonMatchingEpParams) {
-        return CommonResult.ok(seasonService.matchingEpisodeUrlByFileIds(seasonMatchingEpParams));
+        return CommonResult.ok(seasonService.matchingEpisodesUrlByFileIds(seasonMatchingEpParams));
+    }
+
+    @PutMapping("/matching/episode")
+    public CommonResult<SeasonDTO> matchingEpisodeUrlByFileId(
+        @RequestBody SeasonMatchingEpParams seasonMatchingEpParams) {
+        return CommonResult.ok(seasonService.matchingEpisodeUrlByFileId(seasonMatchingEpParams));
     }
 }

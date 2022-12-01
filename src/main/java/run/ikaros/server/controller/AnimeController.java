@@ -1,6 +1,7 @@
 package run.ikaros.server.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.core.service.ThemeService;
+import run.ikaros.server.entity.BaseEntity;
 
 /**
  * @author li-guohao
@@ -27,15 +29,16 @@ public class AnimeController {
 
     @RequestMapping
     public String index(Model model) {
-        List<AnimeEntity> animeList = animeService.listAll();
+        List<AnimeEntity> animeList =
+            animeService.findAll();
         model.addAttribute("animeList", animeList);
-        return themeService.getComplexPagePostfix()  + "anime";
+        return themeService.getComplexPagePostfix() + "anime";
     }
 
     @RequestMapping("/dto/id/{id}")
     public String anime(@PathVariable Long id, Model model) {
         model.addAttribute("anime", animeService.findAnimeDTOById(id));
-        return themeService.getComplexPagePostfix()  + "anime-info";
+        return themeService.getComplexPagePostfix() + "anime-info";
     }
 
 }

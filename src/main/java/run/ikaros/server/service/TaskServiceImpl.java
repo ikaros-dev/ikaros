@@ -314,11 +314,10 @@ public class TaskServiceImpl implements TaskService {
             }
 
             SeasonEntity seasonEntity = seasonEntityList.get(0);
-            SeasonMatchingEpParams seasonMatchingEpParams
-                = new SeasonMatchingEpParams()
-                .setSeasonId(seasonEntity.getId())
-                .setFileIdList(List.of(fileId));
-            seasonService.matchingEpisodeUrlByFileIds(seasonMatchingEpParams);
+            SeasonMatchingEpParams seasonMatchingEpParams = new SeasonMatchingEpParams();
+            seasonMatchingEpParams.setSeasonId(seasonEntity.getId());
+            seasonMatchingEpParams.setFileIdList(List.of(fileId));
+            seasonService.matchingEpisodesUrlByFileIds(seasonMatchingEpParams);
         } else {
             LOGGER.warn("skip matching episode url by file entity for torrent name={}",
                 torrentName);

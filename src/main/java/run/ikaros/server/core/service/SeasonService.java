@@ -21,7 +21,7 @@ public interface SeasonService extends CrudService<SeasonEntity, Long> {
     List<String> finSeasonTypes();
 
     @Nonnull
-    SeasonDTO matchingEpisodeUrlByFileIds(@Nonnull SeasonMatchingEpParams seasonMatchingEpParams);
+    SeasonDTO matchingEpisodesUrlByFileIds(@Nonnull SeasonMatchingEpParams seasonMatchingEpParams);
 
     void updateEpisodeUrlByFileEntity(@Nonnull FileEntity fileEntity);
 
@@ -30,4 +30,10 @@ public interface SeasonService extends CrudService<SeasonEntity, Long> {
 
     @Nullable
     List<SeasonEntity> findSeasonEntityByTitleCnLike(@Nonnull String titleCn);
+
+    @Nonnull
+    SeasonDTO matchingEpisodeUrlByFileId(@Nonnull SeasonMatchingEpParams seasonMatchingEpParams);
+
+    @Nonnull
+    List<SeasonDTO> findDtoListByAnimeId(@Nonnull Long id);
 }
