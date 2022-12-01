@@ -5,7 +5,6 @@ public class MetadataSearchResponse {
     private String name;
     private String nameCn;
     private String description;
-    private String url;
     private String image;
 
     public Integer getBgmTvSubjectId() {
@@ -41,15 +40,6 @@ public class MetadataSearchResponse {
 
     public MetadataSearchResponse setNameCn(String nameCn) {
         this.nameCn = nameCn;
-        return this;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public MetadataSearchResponse setUrl(String url) {
-        this.url = url;
         return this;
     }
 

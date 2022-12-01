@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -49,6 +50,11 @@ public class AnimeRestController {
     @PutMapping
     public CommonResult<AnimeEntity> saveAnimeEntity(@RequestBody AnimeEntity animeEntity) {
         return CommonResult.ok(animeService.save(animeEntity));
+    }
+
+    @DeleteMapping("/id/{id}")
+    public CommonResult<AnimeEntity> deleteAnimeById(@PathVariable("id") Long animeId) {
+        return CommonResult.ok(animeService.deleteByIdLogically(animeId));
     }
 
 

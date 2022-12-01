@@ -20,6 +20,7 @@ import run.ikaros.server.enums.SeasonType;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisode;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisodeType;
+import run.ikaros.server.tripartite.bgmtv.model.BgmTvImages;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvTag;
@@ -112,15 +113,32 @@ public class BgmTvServiceImpl implements BgmTvService {
             }
 
             AnimeEntity animeEntity = new AnimeEntity();
-            String coverUrl = bgmTvSubject.getImages().getLarge();
-            FileEntity coverFileEntity = downloadCover(coverUrl);
             animeEntity
                 .setBgmtvId(subjectId)
-                .setCoverUrl(coverFileEntity.getUrl())
                 .setPlatform(bgmTvSubject.getPlatform())
                 .setOverview(bgmTvSubject.getSummary())
                 .setTitle(bgmTvSubject.getName())
                 .setTitleCn(bgmTvSubject.getNameCn());
+
+            BgmTvImages images = bgmTvSubject.getImages();
+            String coverUrl = images.getLarge();
+            if (StringUtils.isBlank(coverUrl)) {
+                coverUrl = images.getGrid();
+            }
+            if (StringUtils.isBlank(coverUrl)) {
+                coverUrl = images.getMedium();
+            }
+            if (StringUtils.isBlank(coverUrl)) {
+                coverUrl = images.getSmall();
+            }
+            if (StringUtils.isBlank(coverUrl)) {
+                coverUrl = images.getCommon();
+            }
+
+            if (StringUtils.isNotBlank(coverUrl)) {
+                FileEntity coverFileEntity = downloadCover(coverUrl);
+                animeEntity.setCoverUrl(coverFileEntity.getUrl());
+            }
 
             Date date = null;
             if (bgmTvSubject.getDate() != null) {
@@ -154,16 +172,20 @@ public class BgmTvServiceImpl implements BgmTvService {
             seasonEntity = seasonService.save(seasonEntity);
 
             for (BgmTvEpisode bgmTvEpisode : bgmTvEpisodes) {
-                Date airDate =
-                    DateUtils.parseDateStr(bgmTvEpisode.getAirDate(), BgmTvConst.DATE_PATTERN);
                 EpisodeEntity episodeEntity = new EpisodeEntity()
                     .setSeasonId(seasonEntity.getId())
                     .setSeq(bgmTvEpisode.getSort().longValue())
                     .setTitleCn(bgmTvEpisode.getNameCn())
                     .setTitle(bgmTvEpisode.getName())
-                    .setAirTime(airDate)
                     .setOverview(bgmTvEpisode.getDesc())
                     .setDuration(bgmTvEpisode.getDurationSeconds().longValue());
+
+                String airDateStr = bgmTvEpisode.getAirDate();
+                if (StringUtils.isNotBlank(airDateStr)) {
+                    Date airDate =
+                        DateUtils.parseDateStr(airDateStr, BgmTvConst.DATE_PATTERN);
+                    episodeEntity.setAirTime(airDate);
+                }
                 episodeEntity = episodeService.save(episodeEntity);
             }
 

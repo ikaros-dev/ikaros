@@ -4,6 +4,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import run.ikaros.server.entity.EpisodeEntity;
+import run.ikaros.server.model.dto.EpisodeDTO;
 
 /**
  * @author li-guohao
@@ -14,4 +15,6 @@ public interface EpisodeService extends CrudService<EpisodeEntity, Long> {
 
     List<EpisodeEntity> findBySeasonIdAndSeq(@Nonnull Long seasonId, @Nonnull Long seq);
 
+    @Nonnull
+    List<EpisodeDTO> findDtoListBySeasonId(@Nonnull Long id);
 }

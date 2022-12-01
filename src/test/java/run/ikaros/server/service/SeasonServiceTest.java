@@ -75,10 +75,10 @@ class SeasonServiceTest {
         Assertions.assertTrue(StringUtils.isBlank(episodeEntityOptional.get().getUrl()));
 
         // 调用方法
-        SeasonDTO seasonDTO = seasonService.matchingEpisodeUrlByFileIds(new SeasonMatchingEpParams()
-            .setSeasonId(seasonEntity.getId())
-            .setFileIdList(fileIdList)
-        );
+        SeasonMatchingEpParams seasonMatchingEpParams = new SeasonMatchingEpParams();
+        seasonMatchingEpParams.setSeasonId(seasonEntity.getId());
+        seasonMatchingEpParams.setFileIdList(fileIdList);
+        SeasonDTO seasonDTO = seasonService.matchingEpisodesUrlByFileIds(seasonMatchingEpParams);
 
         Assertions.assertNotNull(seasonDTO);
         List<EpisodeDTO> episodes = seasonDTO.getEpisodes();

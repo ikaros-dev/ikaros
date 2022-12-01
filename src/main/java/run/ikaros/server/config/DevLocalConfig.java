@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
  * @author guohao
  * @date 2022/10/04
  */
-@Configuration
+//@Configuration
 @ConditionalOnProperty(name = "ikaros.env", havingValue = "local")
 public class DevLocalConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevLocalConfig.class);

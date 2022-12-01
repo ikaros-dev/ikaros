@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
-import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.core.repository.SeasonRepository;
 import run.ikaros.server.core.service.EpisodeService;
 import run.ikaros.server.core.service.FileService;
@@ -13,17 +12,16 @@ import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.SeasonType;
+import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.exceptions.RegexMatchingException;
+import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.exceptions.SeasonEpisodeMatchingFailException;
 import run.ikaros.server.model.dto.EpisodeDTO;
 import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.params.SeasonMatchingEpParams;
-import run.ikaros.server.parser.AnimeEpisodeInfo;
-import run.ikaros.server.parser.AnimeParser;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.FileUtils;
-import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.RegexUtils;
 import run.ikaros.server.utils.StringUtils;
 
@@ -32,9 +30,7 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -86,13 +82,13 @@ public class SeasonServiceImpl
 
     @Nonnull
     @Override
-    public SeasonDTO matchingEpisodeUrlByFileIds(
+    public SeasonDTO matchingEpisodesUrlByFileIds(
         @Nonnull SeasonMatchingEpParams seasonMatchingEpParams) {
         AssertUtils.notNull(seasonMatchingEpParams, "seasonMatchingEpParams");
         Long seasonId = seasonMatchingEpParams.getSeasonId();
         List<Long> fileIdList = seasonMatchingEpParams.getFileIdList();
-        AssertUtils.notNull(seasonId, "season_id");
-        AssertUtils.notNull(fileIdList, "file_id_list");
+        AssertUtils.notNull(seasonId, "seasonId");
+        AssertUtils.notNull(fileIdList, "fileIdList");
 
         final List<EpisodeEntity> episodeEntities = new ArrayList<>();
         for (Long fileId : fileIdList) {
@@ -215,6 +211,59 @@ public class SeasonServiceImpl
         AssertUtils.notBlank(titleCn, "titleCn");
         return seasonRepository
             .findSeasonEntityByTitleCnLikeAndStatus(StringUtils.addLikeChar(titleCn), true);
+    }
+
+    @Nonnull
+    @Override
+    public SeasonDTO matchingEpisodeUrlByFileId(
+        @Nonnull SeasonMatchingEpParams seasonMatchingEpParams) {
+        AssertUtils.notNull(seasonMatchingEpParams, "seasonMatchingEpParams");
+        Long episodeId = seasonMatchingEpParams.getEpisodeId();
+        Long fileId = seasonMatchingEpParams.getFileId();
+        AssertUtils.isPositive(episodeId, "episode id");
+        AssertUtils.isPositive(fileId, "file id");
+        SeasonDTO seasonDTO = new SeasonDTO();
+
+
+        EpisodeEntity episodeEntity = episodeService.getById(episodeId);
+        if (episodeEntity == null || episodeEntity.getSeasonId() == null) {
+            throw new RecordNotFoundException("not found episode for id=" + episodeId);
+        }
+
+        FileEntity fileEntity = fileService.findById(fileId);
+        if (fileEntity == null) {
+            throw new RecordNotFoundException("not found file for id=" + fileId);
+        }
+        Long fileNameTagEpSeq = RegexUtils.getFileNameTagEpSeq(fileEntity.getName());
+        if (!Objects.equals(episodeEntity.getSeq(), fileNameTagEpSeq)) {
+            throw new RuntimeIkarosException("current episode seq and file name seq not matching"
+                + ", ep seq:" + episodeEntity.getSeq() + "  file name seq: " + fileNameTagEpSeq);
+        }
+        episodeEntity.setUrl(fileEntity.getUrl());
+        episodeEntity = episodeService.save(episodeEntity);
+
+        SeasonEntity seasonEntity = getById(episodeEntity.getSeasonId());
+        if (seasonEntity == null) {
+            throw new RecordNotFoundException("not found season for episode id=" + episodeId);
+        }
+        BeanUtils.copyProperties(seasonEntity, seasonDTO);
+        seasonDTO.setEpisodes(episodeService.findDtoListBySeasonId(seasonEntity.getId()));
+        return seasonDTO;
+    }
+
+    @Nonnull
+    @Override
+    public List<SeasonDTO> findDtoListByAnimeId(@Nonnull Long id) {
+        AssertUtils.isPositive(id, "anime id");
+        return findByAnimeId(id)
+            .stream()
+            .flatMap((Function<SeasonEntity, Stream<SeasonDTO>>) seasonEntity -> {
+                SeasonDTO seasonDTO = new SeasonDTO();
+                BeanUtils.copyProperties(seasonEntity, seasonDTO);
+                seasonDTO.setEpisodes(
+                    episodeService.findDtoListBySeasonId(seasonEntity.getId()));
+                return Stream.of(seasonDTO);
+            }).collect(Collectors.toList());
     }
 
 

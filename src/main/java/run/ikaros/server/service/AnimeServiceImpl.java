@@ -9,9 +9,12 @@ import org.springframework.stereotype.Service;
 import run.ikaros.server.core.repository.AnimeRepository;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.core.service.EpisodeService;
+import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.core.service.SeasonService;
 import run.ikaros.server.entity.AnimeEntity;
+import run.ikaros.server.entity.BaseEntity;
 import run.ikaros.server.entity.EpisodeEntity;
+import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.AnimeDTO;
@@ -28,6 +31,7 @@ import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,15 +50,16 @@ public class AnimeServiceImpl
     private final AnimeRepository animeRepository;
     private final SeasonService seasonService;
     private final EpisodeService episodeService;
+    private final FileService fileService;
 
     public AnimeServiceImpl(AnimeRepository animeRepository,
                             SeasonService seasonService,
-                            EpisodeService episodeService) {
+                            EpisodeService episodeService, FileService fileService) {
         super(animeRepository);
         this.animeRepository = animeRepository;
         this.seasonService = seasonService;
         this.episodeService = episodeService;
-
+        this.fileService = fileService;
     }
 
     @Nonnull
@@ -109,26 +114,7 @@ public class AnimeServiceImpl
         AnimeDTO animeDTO = new AnimeDTO();
         AnimeEntity animeEntity = findById(id);
         BeanUtils.copyProperties(animeEntity, animeDTO);
-
-        animeDTO.setSeasons(
-            seasonService.findByAnimeId(animeDTO.getId())
-                .stream()
-                .flatMap((Function<SeasonEntity, Stream<SeasonDTO>>) seasonEntity -> {
-                    SeasonDTO seasonDTO = new SeasonDTO();
-                    BeanUtils.copyProperties(seasonEntity, seasonDTO);
-                    seasonDTO.setEpisodes(
-                        episodeService.findBySeasonId(seasonDTO.getId())
-                            .stream().flatMap(
-                                (Function<EpisodeEntity, Stream<EpisodeDTO>>) episodeEntity -> {
-                                    EpisodeDTO episodeDTO = new EpisodeDTO();
-                                    BeanUtils.copyProperties(episodeEntity, episodeDTO);
-                                    return Stream.of(episodeDTO);
-                                }).collect(Collectors.toList())
-                    );
-                    return Stream.of(seasonDTO);
-                }).collect(Collectors.toList())
-        );
-
+        animeDTO.setSeasons(seasonService.findDtoListByAnimeId(id));
         return animeDTO;
     }
 
@@ -211,6 +197,51 @@ public class AnimeServiceImpl
         } else {
             return animeEntityList.get(0);
         }
+    }
+
+    @Nonnull
+    @Override
+    public Optional<AnimeEntity> findByTitle(@Nonnull String title) {
+        AssertUtils.notBlank(title, "title");
+        return animeRepository.findByTitleAndStatus(title, true);
+    }
+
+    @Nonnull
+    @Override
+    public Optional<AnimeEntity> findByTitleCn(@Nonnull String titleCn) {
+        AssertUtils.notBlank(titleCn, "titleCn");
+        return animeRepository.findByTitleCnAndStatus(titleCn, true);
+    }
+
+    @Nonnull
+    @Override
+    public List<AnimeEntity> findByTitleLike(@Nonnull String title) {
+        AssertUtils.notBlank(title, "title");
+        return animeRepository.findByStatusAndTitleLike(true, StringUtils.addLikeChar(title));
+    }
+
+    @Nonnull
+    @Override
+    public List<AnimeEntity> findByTitleCnLike(@Nonnull String titleCn) {
+        AssertUtils.notBlank(titleCn, "titleCn");
+        return animeRepository.findByStatusAndTitleCnLike(true, StringUtils.addLikeChar(titleCn));
+    }
+
+    @Override
+    public AnimeEntity deleteByIdLogically(@Nonnull Long animeId) {
+        AssertUtils.isPositive(animeId, "anime id");
+        AnimeEntity animeEntity = getById(animeId);
+        animeEntity.setStatus(false);
+        return save(animeEntity);
+    }
+
+    @Nonnull
+    @Override
+    public List<AnimeEntity> findAll() {
+        return listAll()
+            .stream()
+            .filter(BaseEntity::getStatus)
+            .collect(Collectors.toList());
     }
 
 
