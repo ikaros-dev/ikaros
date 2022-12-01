@@ -120,7 +120,8 @@ public class UserService extends AbstractCrudService<UserEntity, Long> implement
     }
 
     @Override
-    public UserEntity updateUserInfo(@Nonnull UserEntity userEntity) throws RecordNotFoundException {
+    public UserEntity updateUserInfo(@Nonnull UserEntity userEntity)
+        throws RecordNotFoundException {
         AssertUtils.notNull(userEntity, "'userEntity' must not be null.");
         Long id = userEntity.getId();
         AssertUtils.notNull(id, "user id must not be null");

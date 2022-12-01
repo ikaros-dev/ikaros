@@ -222,7 +222,7 @@ public class SeasonServiceImpl
         Long fileId = seasonMatchingEpParams.getFileId();
         AssertUtils.isPositive(episodeId, "episode id");
         AssertUtils.isPositive(fileId, "file id");
-        SeasonDTO seasonDTO = new SeasonDTO();
+        final SeasonDTO seasonDTO = new SeasonDTO();
 
 
         EpisodeEntity episodeEntity = episodeService.getById(episodeId);
