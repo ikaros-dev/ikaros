@@ -71,7 +71,9 @@ docker-compose -f docker-compose-no-jellyfin.yml up -d
 
 可以在后台系统设置里，配置HTTP代理、蜜柑计划RSS、等设置项
 
-如果你网络不好，需要HTTP代理，推荐直接部署一个全局模式的`clash`容器
+
+如果你网络不好，需要HTTP代理，推荐直接部署一个全局模式的`clash`容器, 
+记得使用 host 模式，不然容器间网络隔离很麻烦，HTTP代理连不上。
 
 ## jellyfin
 这个添加媒体库就行，选择 `/media` 或者你部署jellyfin容器时的更改的目录

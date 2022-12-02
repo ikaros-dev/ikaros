@@ -65,3 +65,4 @@ services:
 
 networks:
   ikaros_networks:
+    driver: bridge
