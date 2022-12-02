@@ -27,10 +27,12 @@ import run.ikaros.server.enums.OptionSeo;
 import run.ikaros.server.event.BgmTvHttpProxyUpdateEvent;
 import run.ikaros.server.event.BgmTvTokenUpdateEvent;
 import run.ikaros.server.event.MikanAndRssHttpProxyUpdateEvent;
+import run.ikaros.server.event.QbittorrentOptionUpdateEvent;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.model.dto.OptionNetworkDTO;
+import run.ikaros.server.model.dto.OptionQbittorrentDTO;
 import run.ikaros.server.model.request.AppInitRequest;
 import run.ikaros.server.model.request.SaveOptionRequest;
 import run.ikaros.server.utils.AssertUtils;
@@ -426,6 +428,11 @@ public class OptionServiceImpl
             }
             optionEntity = save(optionEntity);
 
+
+            if (OptionCategory.QBITTORRENT.equals(optionCategory)) {
+                applicationContext.publishEvent(new QbittorrentOptionUpdateEvent(this));
+            }
+
             OptionDTO optionDTO = new OptionDTO();
             optionDTO.setCategory(category);
             optionDTO.setKey(optionEntity.getKey());
@@ -513,5 +520,30 @@ public class OptionServiceImpl
             }
         }
         return optionNetworkDTO;
+    }
+
+    @Nonnull
+    @Override
+    public OptionQbittorrentDTO getOptionQbittorrentDTO() {
+        OptionQbittorrentDTO qbittorrentDTO = new OptionQbittorrentDTO();
+        List<OptionEntity> optionEntityList = findOptionByCategory(OptionCategory.QBITTORRENT);
+        for (OptionEntity optionEntity : optionEntityList) {
+            final String key = optionEntity.getKey();
+            final String value = optionEntity.getValue();
+            if (OptionQbittorrent.URL.name().equalsIgnoreCase(key)) {
+                qbittorrentDTO.setUrlPrefix(value);
+            }
+            if (OptionQbittorrent.ENABLE_AUTH.name().equalsIgnoreCase(key)
+                && StringUtils.isNotBlank(value)) {
+                qbittorrentDTO.setEnableAuth(Boolean.valueOf(value));
+            }
+            if (OptionQbittorrent.USERNAME.name().equalsIgnoreCase(key)) {
+                qbittorrentDTO.setUsername(value);
+            }
+            if (OptionQbittorrent.PASSWORD.name().equalsIgnoreCase(key)) {
+                qbittorrentDTO.setPassword(value);
+            }
+        }
+        return qbittorrentDTO;
     }
 }

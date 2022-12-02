@@ -2,6 +2,7 @@ package run.ikaros.server.tripartite.qbittorrent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,12 +14,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import run.ikaros.server.constants.DefaultConst;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.entity.OptionEntity;
+import run.ikaros.server.enums.OptionApp;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.enums.OptionQbittorrent;
+import run.ikaros.server.model.dto.OptionQbittorrentDTO;
 import run.ikaros.server.tripartite.qbittorrent.enums.QbTorrentInfoFilter;
 import run.ikaros.server.tripartite.qbittorrent.model.QbCategory;
 import run.ikaros.server.tripartite.qbittorrent.model.QbTorrentInfo;
@@ -28,6 +32,7 @@ import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -35,13 +40,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @link <a href="https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)">WebUI-API-(qBittorrent-4.1)</a>
  */
 @Component
 @Retryable
-public class QbittorrentClient {
+public class QbittorrentClient implements InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(QbittorrentClient.class);
     private String category = DefaultConst.OPTION_QBITTORRENT_CATEGORY;
     private String categorySavePath = DefaultConst.OPTION_QBITTORRENT_CATEGORY_SAVE_PATH;
@@ -51,10 +57,12 @@ public class QbittorrentClient {
      * API前缀，例如：http://192.168.2.229:60101
      */
     private String urlPrefix;
+    private HttpHeaders httpHeaders = new HttpHeaders();
 
     public interface API {
         String APP_VERSION = "/api/v2/app/version";
         String APP_API_VERSION = "/api/v2/app/webapiVersion";
+        String AUTH = "/api/v2/auth/login";
         String TORRENTS_GET_ALL_CATEGORIES = "/api/v2/torrents/categories";
         String TORRENTS_CREATE_CATEGORY = "/api/v2/torrents/createCategory";
         String TORRENTS_EDIT_CATEGORY = "/api/v2/torrents/editCategory";
@@ -72,6 +80,56 @@ public class QbittorrentClient {
         this.optionService = optionService;
     }
 
+    public QbittorrentClient setHttpHeaders(HttpHeaders httpHeaders) {
+        this.httpHeaders = httpHeaders;
+        return this;
+    }
+
+    public synchronized void refreshHttpHeadersCookies() {
+        OptionQbittorrentDTO optionQbittorrentDTO = optionService.getOptionQbittorrentDTO();
+        if (StringUtils.isNotBlank(optionQbittorrentDTO.getUrlPrefix())) {
+            List<String> cookies = getCookieByLogin(optionQbittorrentDTO.getUsername(),
+                optionQbittorrentDTO.getPassword());
+            this.httpHeaders.clear();
+            this.httpHeaders.put(HttpHeaders.COOKIE, cookies);
+        }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        OptionEntity optionEntity =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
+                OptionApp.IS_INIT.name());
+        if (optionEntity != null
+            && Boolean.TRUE.toString().equalsIgnoreCase(optionEntity.getValue())) {
+            refreshHttpHeadersCookies();
+        }
+    }
+
+    @Nonnull
+    public List<String> getCookieByLogin(@Nullable String username, @Nullable String password) {
+        if (StringUtils.isBlank(username)) {
+            username = DefaultConst.OPTION_QBITTORRENT_USERNAME;
+        }
+        if (StringUtils.isBlank(password)) {
+            password = DefaultConst.OPTION_QBITTORRENT_PASSWORD;
+        }
+
+        UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(getUrlPrefix() + API.AUTH)
+            .queryParam("username", username)
+            .queryParam("password", password)
+            .build();
+
+        ResponseEntity<String> responseEntity =
+            restTemplate.getForEntity(uriComponents.toUriString(), String.class);
+        if (responseEntity.getBody() != null && responseEntity.getBody().contains("Ok")) {
+            HttpHeaders headers = responseEntity.getHeaders();
+            List<String> cookies = headers.get("set-cookie");
+            return cookies == null ? List.of() : cookies;
+        }
+        return List.of();
+    }
+
     public String getCategory() {
         return category;
     }
@@ -83,7 +141,7 @@ public class QbittorrentClient {
                     OptionQbittorrent.URL.name());
 
             if (optionEntity == null || StringUtils.isBlank(optionEntity.getValue())) {
-                throw new QbittorrentRequestException("qbittorrent config not set");
+                throw new QbittorrentRequestException("qbittorrent url prefix config not set");
             }
 
             urlPrefix = optionEntity.getValue();
@@ -112,8 +170,9 @@ public class QbittorrentClient {
 
     public String getApplicationVersion() {
         initQbittorrentCategory();
-        ResponseEntity<String> responseEntity
-            = restTemplate.getForEntity(getUrlPrefix() + API.APP_VERSION, String.class);
+        ResponseEntity<String> responseEntity =
+            restTemplate.exchange(getUrlPrefix() + API.APP_VERSION, HttpMethod.GET,
+                new HttpEntity<>(null, httpHeaders), String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
@@ -124,7 +183,8 @@ public class QbittorrentClient {
     public String getApiVersion() {
         initQbittorrentCategory();
         ResponseEntity<String> responseEntity
-            = restTemplate.getForEntity(getUrlPrefix() + API.APP_API_VERSION, String.class);
+            = restTemplate.exchange(getUrlPrefix() + API.APP_API_VERSION,
+            HttpMethod.GET, new HttpEntity<>(null, httpHeaders), String.class);
 
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new QbittorrentRequestException("get app version fail");
@@ -137,9 +197,10 @@ public class QbittorrentClient {
     public List<QbCategory> getAllCategories() {
         List<QbCategory> qbCategoryList = new ArrayList<>();
 
-        HashMap<String, Object> categoryMap
-            = restTemplate.getForObject(getUrlPrefix()
-            + API.TORRENTS_GET_ALL_CATEGORIES, HashMap.class);
+        ResponseEntity<HashMap> categoryMapResponseEntity =
+            restTemplate.exchange(getUrlPrefix() + API.TORRENTS_GET_ALL_CATEGORIES,
+                HttpMethod.GET, new HttpEntity<>(null, httpHeaders), HashMap.class);
+        HashMap<String, Object> categoryMap = categoryMapResponseEntity.getBody();
 
         AssertUtils.notNull(categoryMap, "category map");
         categoryMap.forEach((key, value) -> {
@@ -166,6 +227,8 @@ public class QbittorrentClient {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        List<String> cookies = this.httpHeaders.get(HttpHeaders.COOKIE);
+        headers.put(HttpHeaders.COOKIE, cookies == null ? List.of() : cookies);
 
         // body: category=CategoryName&savePath=/path/to/dir
         String body = "category=" + category + "&savePath=" + savePath;
@@ -183,6 +246,8 @@ public class QbittorrentClient {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        List<String> cookies = this.httpHeaders.get(HttpHeaders.COOKIE);
+        headers.put(HttpHeaders.COOKIE, cookies);
 
         // body: category=CategoryName&savePath=/path/to/dir
         String body = "category=" + category + "&savePath=" + savePath;
@@ -199,6 +264,8 @@ public class QbittorrentClient {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        List<String> cookies = this.httpHeaders.get(HttpHeaders.COOKIE);
+        headers.put(HttpHeaders.COOKIE, cookies == null ? List.of() : cookies);
 
         // body: categories=Category1%0ACategory2
         // categories can contain multiple categories separated by \n (%0A urlencoded)
@@ -242,6 +309,8 @@ public class QbittorrentClient {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        List<String> cookies = this.httpHeaders.get(HttpHeaders.COOKIE);
+        headers.put(HttpHeaders.COOKIE, cookies == null ? List.of() : cookies);
 
         // This method can add torrents from server local file or from URLs.
         // http://, https://, magnet: and bc://bt/ links are supported.
@@ -318,8 +387,11 @@ public class QbittorrentClient {
             urlBuilder.queryParam("hashes", hashes);
         }
 
-        ArrayList originalList =
-            restTemplate.getForObject(urlBuilder.toUriString(), ArrayList.class);
+        ResponseEntity<ArrayList> originalListResponseEntity
+            = restTemplate.exchange(urlBuilder.toUriString(),
+            HttpMethod.GET, new HttpEntity<>(null, httpHeaders), ArrayList.class);
+        ArrayList originalList = originalListResponseEntity.getBody();
+
         AssertUtils.notNull(originalList, "originalList");
 
         List<QbTorrentInfo> qbTorrentInfoList = new ArrayList<>(originalList.size());
@@ -359,6 +431,8 @@ public class QbittorrentClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
+        List<String> cookies = this.httpHeaders.get(HttpHeaders.COOKIE);
+        headers.put(HttpHeaders.COOKIE, cookies == null ? List.of() : cookies);
 
         String body = "hash=" + hash + "&oldPath="
             + URLEncoder.encode(oldFileName, StandardCharsets.UTF_8)
@@ -376,6 +450,8 @@ public class QbittorrentClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
+        List<String> cookies = this.httpHeaders.get(HttpHeaders.COOKIE);
+        headers.put(HttpHeaders.COOKIE, cookies == null ? List.of() : cookies);
 
         String body = "hashes=" + hashes;
 
@@ -391,6 +467,8 @@ public class QbittorrentClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
+        List<String> cookies = this.httpHeaders.get(HttpHeaders.COOKIE);
+        headers.put(HttpHeaders.COOKIE, cookies == null ? List.of() : cookies);
 
         String body = "hashes=" + hashes;
 
@@ -406,6 +484,8 @@ public class QbittorrentClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
+        List<String> cookies = this.httpHeaders.get(HttpHeaders.COOKIE);
+        headers.put(HttpHeaders.COOKIE, cookies == null ? List.of() : cookies);
 
         String body = "hashes=" + hashes;
 
@@ -421,6 +501,8 @@ public class QbittorrentClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
+        List<String> cookies = this.httpHeaders.get(HttpHeaders.COOKIE);
+        headers.put(HttpHeaders.COOKIE, cookies == null ? List.of() : cookies);
 
         String body = "hashes=" + hashes
             + "&deleteFiles=" + (deleteFiles ? "true" : "false");

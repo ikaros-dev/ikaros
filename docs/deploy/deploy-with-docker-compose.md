@@ -55,16 +55,6 @@ docker-compose -f docker-compose-no-jellyfin.yml up -d
 # 启动后的配置
 ## qbittorrent
 这个镜像默认的WebUI用户名密码是: admin@adminadmin
-局域网添加IP段跳过身份验证
-`设置` => `WebUI` => 选中`对 IP 子网白名单中的客户端跳过身份验证`, 并填入下面内容
-
-```text
-192.168.1.0/24
-192.168.2.0/24
-192.168.3.0/24
-10.0.0.0/24
-10.0.3.0/24
-```
 
 ## ikaros
 启动后的后台配置
