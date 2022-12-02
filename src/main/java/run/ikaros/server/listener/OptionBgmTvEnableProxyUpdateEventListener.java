@@ -26,7 +26,7 @@ public class OptionBgmTvEnableProxyUpdateEventListener implements
 
         Boolean enable = event.getEnable();
         String httpProxyHost = event.getHttpProxyHost();
-        String httpProxyPort = event.getHttpProxyPort();
+        Integer httpProxyPort = event.getHttpProxyPort();
 
         RestTemplate restTemplate = null;
         if (enable) {

@@ -17,6 +17,7 @@ import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.enums.OptionNetwork;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.AnimeDTO;
+import run.ikaros.server.model.dto.OptionNetworkDTO;
 import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.utils.RestTemplateUtils;
 
@@ -43,8 +44,11 @@ public class NetworkRestController {
 
     @GetMapping("/proxy/connect/test")
     public CommonResult<Boolean> proxyConnectTest() {
-        String httpProxyHost = optionService.getOptionNetworkHttpProxyHost();
-        String httpProxyPort = optionService.getOptionNetworkHttpProxyPort();
-        return CommonResult.ok(RestTemplateUtils.testProxyConnect(httpProxyHost, httpProxyPort));
+        OptionNetworkDTO optionNetworkDTO = optionService.getOptionNetworkDTO();
+        return CommonResult.ok(RestTemplateUtils
+            .testProxyConnect(optionNetworkDTO.getProxyHttpHost(),
+                optionNetworkDTO.getProxyHttpPort(),
+                optionNetworkDTO.getReadTimeout(),
+                optionNetworkDTO.getConnectTimeout()));
     }
 }

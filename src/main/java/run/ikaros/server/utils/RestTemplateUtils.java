@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.openapi.NetworkRestController;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.HashMap;
@@ -19,26 +20,39 @@ public class RestTemplateUtils {
 
     private static Map<String, RestTemplate> restTemplateProxyMap = new HashMap<>();
     private static RestTemplate restTemplate;
-    public static final Integer READ_TIMEOUT = 5000;
-    public static final Integer CONNECT_TIMEOUT = 2000;
+    public static final Integer DEFAULT_READ_TIMEOUT = 5000;
+    public static final Integer DEFAULT_CONNECT_TIMEOUT = 5000;
 
+    public static RestTemplate buildRestTemplate() {
+        return buildRestTemplate(null, null);
+    }
 
-    public static synchronized RestTemplate buildRestTemplate() {
+    public static synchronized RestTemplate buildRestTemplate(@Nullable Integer readTimeout,
+                                                              @Nullable Integer connectTimeout) {
         if (restTemplate == null) {
             restTemplate = new RestTemplate();
             SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-            requestFactory.setReadTimeout(READ_TIMEOUT);
-            requestFactory.setConnectTimeout(CONNECT_TIMEOUT);
+            requestFactory.setReadTimeout(readTimeout == null ? DEFAULT_READ_TIMEOUT : readTimeout);
+            requestFactory.setConnectTimeout(
+                connectTimeout == null ? DEFAULT_CONNECT_TIMEOUT : connectTimeout);
             restTemplate.setRequestFactory(requestFactory);
         }
         return restTemplate;
     }
 
+    public static RestTemplate buildHttpProxyRestTemplate(
+        @Nonnull String httpProxyHost,
+        @Nonnull Integer httpProxyPort) {
+        return buildHttpProxyRestTemplate(httpProxyHost, httpProxyPort, null, null);
+    }
+
     public static synchronized RestTemplate buildHttpProxyRestTemplate(
         @Nonnull String httpProxyHost,
-        @Nonnull String httpProxyPort) {
+        @Nonnull Integer httpProxyPort,
+        @Nullable Integer readTimeout,
+        @Nullable Integer connectTimeout) {
         AssertUtils.notBlank(httpProxyHost, "httpProxyHost");
-        AssertUtils.notBlank(httpProxyPort, "httpProxyPort");
+        AssertUtils.notNull(httpProxyPort, "httpProxyPort");
 
         String key = httpProxyHost + ":" + httpProxyPort;
         if (restTemplateProxyMap.containsKey(key)) {
@@ -46,11 +60,12 @@ public class RestTemplateUtils {
         }
 
         InetSocketAddress inetSocketAddress =
-            new InetSocketAddress(httpProxyHost, Integer.parseInt(httpProxyPort));
+            new InetSocketAddress(httpProxyHost, httpProxyPort);
         Proxy proxy = new Proxy(Proxy.Type.HTTP, inetSocketAddress);
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setReadTimeout(READ_TIMEOUT);
-        requestFactory.setConnectTimeout(CONNECT_TIMEOUT);
+        requestFactory.setReadTimeout(readTimeout == null ? DEFAULT_READ_TIMEOUT : readTimeout);
+        requestFactory.setConnectTimeout(
+            connectTimeout == null ? DEFAULT_CONNECT_TIMEOUT : connectTimeout);
         requestFactory.setProxy(proxy);
         RestTemplate rt = new RestTemplate(requestFactory);
 
@@ -59,11 +74,14 @@ public class RestTemplateUtils {
     }
 
     public static boolean testProxyConnect(@Nonnull String httpProxyHost,
-                                           @Nonnull String httpProxyPort) {
+                                           @Nonnull Integer httpProxyPort,
+                                           @Nullable Integer readTimeout,
+                                           @Nullable Integer connectTimeout) {
         AssertUtils.notBlank(httpProxyHost, "httpProxyHost");
-        AssertUtils.notBlank(httpProxyPort, "httpProxyPort");
+        AssertUtils.notNull(httpProxyPort, "httpProxyPort");
 
-        RestTemplate restTemplate = buildHttpProxyRestTemplate(httpProxyHost, httpProxyPort);
+        RestTemplate restTemplate =
+            buildHttpProxyRestTemplate(httpProxyHost, httpProxyPort, readTimeout, connectTimeout);
 
         try {
             ResponseEntity<String> responseEntity =

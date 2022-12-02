@@ -32,7 +32,7 @@ public class OptionMikanEnableProxyUpdateEventListener implements
 
         Boolean enable = event.getEnable();
         String httpProxyHost = event.getHttpProxyHost();
-        String httpProxyPort = event.getHttpProxyPort();
+        Integer httpProxyPort = event.getHttpProxyPort();
 
         RestTemplate restTemplate;
         Proxy proxy = null;
@@ -40,7 +40,7 @@ public class OptionMikanEnableProxyUpdateEventListener implements
             restTemplate =
                 RestTemplateUtils.buildHttpProxyRestTemplate(httpProxyHost, httpProxyPort);
             proxy = new Proxy(Proxy.Type.HTTP,
-                new InetSocketAddress(httpProxyHost, Integer.parseInt(httpProxyPort)));
+                new InetSocketAddress(httpProxyHost, httpProxyPort));
         } else {
             restTemplate = RestTemplateUtils.buildRestTemplate();
         }

@@ -29,6 +29,8 @@ public interface DefaultConst {
 
     String OPTION_NETWORK_PROXY_HTTP_HOST = "";
     String OPTION_NETWORK_PROXY_HTTP_PORT = "";
+    String OPTION_NETWORK_CONNECT_TIMEOUT = "5000";
+    String OPTION_NETWORK_READ_TIMEOUT = "5000";
 
 
     String OPTION_BGMTV_ENABLE_PROXY = Boolean.FALSE.toString();

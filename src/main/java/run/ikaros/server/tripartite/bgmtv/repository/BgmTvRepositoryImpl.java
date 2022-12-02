@@ -22,6 +22,7 @@ import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionBgmTv;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.exceptions.RecordNotFoundException;
+import run.ikaros.server.model.dto.OptionNetworkDTO;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisode;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisodeType;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvPagingData;
@@ -249,10 +250,14 @@ public class BgmTvRepositoryImpl implements BgmTvRepository, InitializingBean {
                 OptionBgmTv.ENABLE_PROXY.name());
         if (enableProxyOption != null
             && Boolean.TRUE.toString().equalsIgnoreCase(enableProxyOption.getValue())) {
-            String httpProxyHost = optionService.getOptionNetworkHttpProxyHost();
-            String httpProxyPort = optionService.getOptionNetworkHttpProxyPort();
+            OptionNetworkDTO optionNetworkDTO = optionService.getOptionNetworkDTO();
             setRestTemplate(
-                RestTemplateUtils.buildHttpProxyRestTemplate(httpProxyHost, httpProxyPort));
+                RestTemplateUtils.buildHttpProxyRestTemplate(
+                    optionNetworkDTO.getProxyHttpHost(),
+                    optionNetworkDTO.getProxyHttpPort(),
+                    optionNetworkDTO.getReadTimeout(),
+                    optionNetworkDTO.getConnectTimeout()
+                ));
         }
     }
 }
