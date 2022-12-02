@@ -499,13 +499,16 @@ public class OptionServiceImpl
             if (OptionNetwork.PROXY_HTTP_HOST.name().equalsIgnoreCase(key)) {
                 optionNetworkDTO.setProxyHttpHost(value);
             }
-            if (OptionNetwork.PROXY_HTTP_PORT.name().equalsIgnoreCase(key)) {
+            if (OptionNetwork.PROXY_HTTP_PORT.name().equalsIgnoreCase(key)
+                && StringUtils.isNotBlank(value)) {
                 optionNetworkDTO.setProxyHttpPort(Integer.parseInt(value));
             }
-            if (OptionNetwork.READ_TIMEOUT.name().equalsIgnoreCase(key)) {
+            if (OptionNetwork.READ_TIMEOUT.name().equalsIgnoreCase(key)
+                && StringUtils.isNotBlank(value)) {
                 optionNetworkDTO.setReadTimeout(Integer.parseInt(value));
             }
-            if (OptionNetwork.CONNECT_TIMEOUT.name().equalsIgnoreCase(key)) {
+            if (OptionNetwork.CONNECT_TIMEOUT.name().equalsIgnoreCase(key)
+                && StringUtils.isNotBlank(value)) {
                 optionNetworkDTO.setConnectTimeout(Integer.parseInt(value));
             }
         }
