@@ -54,3 +54,6 @@ services:
       - PGID=0
       - JAVA_OPTS=-Dikaros.log-level=DEBUG
     restart: always
+
+networks:
+  ikaros_networks:
