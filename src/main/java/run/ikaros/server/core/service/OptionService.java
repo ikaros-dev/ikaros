@@ -10,6 +10,7 @@ import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.model.dto.OptionNetworkDTO;
+import run.ikaros.server.model.dto.OptionQbittorrentDTO;
 import run.ikaros.server.model.request.AppInitRequest;
 import run.ikaros.server.model.request.SaveOptionRequest;
 
@@ -56,4 +57,6 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
     @Nonnull
     OptionNetworkDTO getOptionNetworkDTO();
 
+    @Nonnull
+    OptionQbittorrentDTO getOptionQbittorrentDTO();
 }
