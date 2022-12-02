@@ -36,6 +36,7 @@
 - Web端admin添加动漫详情页
 - 优化Web端admin剧集单集匹配和批量匹配
 - 初步优化README文档
+- 实现通过QB官方文档内Cookies认证的方式调用Qbittorrent Web API
 
 ### PR #44
 - 番剧管理的相关开发
