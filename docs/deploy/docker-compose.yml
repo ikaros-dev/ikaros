@@ -2,9 +2,11 @@ version: "3"
 
 services:
   # qbittorrent
-  qbittorrent:
+  ikaros_qbittorrent:
     image: linuxserver/qbittorrent:latest
     container_name: ikaros_qbittorrent
+    networks:
+      ikaros_networks:
     volumes:
       - ${IKAROS_APP_DIR}/tripartite/qbittorrent:/config
       - ${IKAROS_APP_DIR}/downloads:/downloads
@@ -21,9 +23,11 @@ services:
     restart: always
 
   # jellyfin
-  jellyfin:
+  ikaros_jellyfin:
     image: jellyfin/jellyfin
     container_name: ikaros_jellyfin
+    networks:
+      ikaros_networks:
     volumes:
       - ${IKAROS_APP_DIR}/tripartite/jellyfin/config:/config
       - ${IKAROS_APP_DIR}/tripartite/jellyfin/cache:/cache
@@ -42,9 +46,9 @@ services:
     restart: always
 
   # ikaros
-  ikaros:
+  ikaros_server:
     image: liguohaocn/ikaros:dev
-    container_name: ikaros_dev
+    container_name: ikaros_server
     volumes:
       - ${IKAROS_APP_DIR}:/opt/ikaros
     ports:
@@ -52,5 +56,13 @@ services:
     environment:
       - PUID=0
       - PGID=0
+      - LANG=zh_CN.UTF-8
+      - LANGUAGE=zh_CN:zh
+      - LC_ALL=zh_CN.UTF-8
+      - TZ=Asia/Shanghai
       - JAVA_OPTS=-Dikaros.log-level=DEBUG
     restart: always
+
+networks:
+  ikaros_networks:
+    driver: bridge
