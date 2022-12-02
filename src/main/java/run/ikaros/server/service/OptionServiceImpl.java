@@ -1,5 +1,6 @@
 package run.ikaros.server.service;
 
+import io.swagger.models.auth.In;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -29,6 +30,7 @@ import run.ikaros.server.event.MikanAndRssHttpProxyUpdateEvent;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
+import run.ikaros.server.model.dto.OptionNetworkDTO;
 import run.ikaros.server.model.request.AppInitRequest;
 import run.ikaros.server.model.request.SaveOptionRequest;
 import run.ikaros.server.utils.AssertUtils;
@@ -211,6 +213,10 @@ public class OptionServiceImpl
             DefaultConst.OPTION_NETWORK_PROXY_HTTP_HOST, OptionCategory.NETWORK));
         saveOptionItem(new OptionItemDTO(OptionNetwork.PROXY_HTTP_PORT.name(),
             DefaultConst.OPTION_NETWORK_PROXY_HTTP_PORT, OptionCategory.NETWORK));
+        saveOptionItem(new OptionItemDTO(OptionNetwork.CONNECT_TIMEOUT.name(),
+            DefaultConst.OPTION_NETWORK_CONNECT_TIMEOUT, OptionCategory.NETWORK));
+        saveOptionItem(new OptionItemDTO(OptionNetwork.READ_TIMEOUT.name(),
+            DefaultConst.OPTION_NETWORK_READ_TIMEOUT, OptionCategory.NETWORK));
 
         // init option qbittorrent
         saveOptionItem(new OptionItemDTO(OptionQbittorrent.URL.name(),
@@ -300,9 +306,14 @@ public class OptionServiceImpl
                 if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
                     checkNetworkHttpProxyHasConfig();
                 }
+                OptionNetworkDTO optionNetworkDTO = getOptionNetworkDTO();
                 MikanAndRssHttpProxyUpdateEvent mikanAndRssHttpProxyUpdateEvent =
-                    new MikanAndRssHttpProxyUpdateEvent(this, Boolean.valueOf(value),
-                        getOptionNetworkHttpProxyHost(), getOptionNetworkHttpProxyPort());
+                    new MikanAndRssHttpProxyUpdateEvent(this,
+                        Boolean.valueOf(value),
+                        optionNetworkDTO.getProxyHttpHost(),
+                        optionNetworkDTO.getProxyHttpPort(),
+                        optionNetworkDTO.getReadTimeout(),
+                        optionNetworkDTO.getConnectTimeout());
                 applicationContext.publishEvent(mikanAndRssHttpProxyUpdateEvent);
             }
 
@@ -311,9 +322,13 @@ public class OptionServiceImpl
                 if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
                     checkNetworkHttpProxyHasConfig();
                 }
+                OptionNetworkDTO optionNetworkDTO = getOptionNetworkDTO();
                 BgmTvHttpProxyUpdateEvent bgmTvHttpProxyUpdateEvent =
                     new BgmTvHttpProxyUpdateEvent(this, Boolean.valueOf(value),
-                        getOptionNetworkHttpProxyHost(), getOptionNetworkHttpProxyPort());
+                        optionNetworkDTO.getProxyHttpHost(),
+                        optionNetworkDTO.getProxyHttpPort(),
+                        optionNetworkDTO.getReadTimeout(),
+                        optionNetworkDTO.getConnectTimeout());
                 applicationContext.publishEvent(bgmTvHttpProxyUpdateEvent);
             }
 
@@ -350,27 +365,42 @@ public class OptionServiceImpl
                 }
 
                 if (OptionNetwork.PROXY_HTTP_HOST.name().equalsIgnoreCase(key)) {
+                    OptionNetworkDTO optionNetworkDTO = getOptionNetworkDTO();
                     BgmTvHttpProxyUpdateEvent bgmTvHttpProxyUpdateEvent =
-                        new BgmTvHttpProxyUpdateEvent(this, Boolean.valueOf(enableBgmTvHttpProxy),
-                            value, getOptionNetworkHttpProxyPort());
+                        new BgmTvHttpProxyUpdateEvent(this,
+                            Boolean.valueOf(enableBgmTvHttpProxy),
+                            value, optionNetworkDTO.getProxyHttpPort(),
+                            optionNetworkDTO.getReadTimeout(),
+                            optionNetworkDTO.getConnectTimeout());
 
                     MikanAndRssHttpProxyUpdateEvent mikanAndRssHttpProxyUpdateEvent =
                         new MikanAndRssHttpProxyUpdateEvent(this,
                             Boolean.valueOf(enableMikanHttpProxy),
-                            value, getOptionNetworkHttpProxyPort());
+                            value,
+                            optionNetworkDTO.getProxyHttpPort(),
+                            optionNetworkDTO.getReadTimeout(),
+                            optionNetworkDTO.getConnectTimeout());
 
                     applicationContext.publishEvent(bgmTvHttpProxyUpdateEvent);
                     applicationContext.publishEvent(mikanAndRssHttpProxyUpdateEvent);
                 }
                 if (OptionNetwork.PROXY_HTTP_PORT.name().equalsIgnoreCase(key)) {
+                    OptionNetworkDTO optionNetworkDTO = getOptionNetworkDTO();
                     BgmTvHttpProxyUpdateEvent bgmTvHttpProxyUpdateEvent =
-                        new BgmTvHttpProxyUpdateEvent(this, Boolean.valueOf(enableBgmTvHttpProxy),
-                            getOptionNetworkHttpProxyHost(), value);
+                        new BgmTvHttpProxyUpdateEvent(this,
+                            Boolean.valueOf(enableBgmTvHttpProxy),
+                            optionNetworkDTO.getProxyHttpHost(),
+                            Integer.parseInt(value),
+                            optionNetworkDTO.getReadTimeout(),
+                            optionNetworkDTO.getConnectTimeout());
 
                     MikanAndRssHttpProxyUpdateEvent mikanAndRssHttpProxyUpdateEvent =
                         new MikanAndRssHttpProxyUpdateEvent(this,
                             Boolean.valueOf(enableMikanHttpProxy),
-                            getOptionNetworkHttpProxyHost(), value);
+                            optionNetworkDTO.getProxyHttpHost(),
+                            Integer.parseInt(value),
+                            optionNetworkDTO.getReadTimeout(),
+                            optionNetworkDTO.getConnectTimeout());
 
                     applicationContext.publishEvent(bgmTvHttpProxyUpdateEvent);
                     applicationContext.publishEvent(mikanAndRssHttpProxyUpdateEvent);
@@ -456,19 +486,29 @@ public class OptionServiceImpl
         this.applicationContext = applicationContext;
     }
 
-    @Override
-    public String getOptionNetworkHttpProxyHost() {
-        OptionEntity optionEntity =
-            findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
-                OptionNetwork.PROXY_HTTP_HOST.name());
-        return optionEntity == null ? null : optionEntity.getValue();
-    }
 
+    @Nonnull
     @Override
-    public String getOptionNetworkHttpProxyPort() {
-        OptionEntity optionEntity =
-            findOptionValueByCategoryAndKey(OptionCategory.NETWORK,
-                OptionNetwork.PROXY_HTTP_PORT.name());
-        return optionEntity == null ? null : optionEntity.getValue();
+    public OptionNetworkDTO getOptionNetworkDTO() {
+        OptionNetworkDTO optionNetworkDTO = new OptionNetworkDTO();
+
+        List<OptionEntity> optionEntityList = findOptionByCategory(OptionCategory.NETWORK);
+        for (OptionEntity optionEntity : optionEntityList) {
+            final String key = optionEntity.getKey();
+            final String value = optionEntity.getValue();
+            if (OptionNetwork.PROXY_HTTP_HOST.name().equalsIgnoreCase(key)) {
+                optionNetworkDTO.setProxyHttpHost(value);
+            }
+            if (OptionNetwork.PROXY_HTTP_PORT.name().equalsIgnoreCase(key)) {
+                optionNetworkDTO.setProxyHttpPort(Integer.parseInt(value));
+            }
+            if (OptionNetwork.READ_TIMEOUT.name().equalsIgnoreCase(key)) {
+                optionNetworkDTO.setReadTimeout(Integer.parseInt(value));
+            }
+            if (OptionNetwork.CONNECT_TIMEOUT.name().equalsIgnoreCase(key)) {
+                optionNetworkDTO.setConnectTimeout(Integer.parseInt(value));
+            }
+        }
+        return optionNetworkDTO;
     }
 }

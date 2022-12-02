@@ -9,8 +9,8 @@ class RestTemplateUtilsTest {
     @Test
     void testProxyConnect() {
         String host = "192.168.2.229";
-        String port = "7890";
-        boolean success = RestTemplateUtils.testProxyConnect(host, port);
+        Integer port = 7890;
+        boolean success = RestTemplateUtils.testProxyConnect(host, port, null, null);
         assertThat(success).isTrue();
     }
 }

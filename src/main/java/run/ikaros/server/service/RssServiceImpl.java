@@ -14,6 +14,7 @@ import run.ikaros.server.enums.OptionMikan;
 import run.ikaros.server.enums.OptionNetwork;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.exceptions.RssOperateException;
+import run.ikaros.server.model.dto.OptionNetworkDTO;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.RestTemplateUtils;
@@ -34,6 +35,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -161,11 +163,13 @@ public class RssServiceImpl implements RssService, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        String httpProxyHost = optionService.getOptionNetworkHttpProxyHost();
-        String httpProxyPort = optionService.getOptionNetworkHttpProxyPort();
-        if (StringUtils.isNotBlank(httpProxyHost) && StringUtils.isNotBlank(httpProxyPort)) {
+        OptionNetworkDTO optionNetworkDTO = optionService.getOptionNetworkDTO();
+        String proxyHttpHost = optionNetworkDTO.getProxyHttpHost();
+        Integer proxyHttpPort = optionNetworkDTO.getProxyHttpPort();
+        if (StringUtils.isNotBlank(proxyHttpHost) && Objects.nonNull(proxyHttpPort)) {
             setProxy(new Proxy(Proxy.Type.HTTP,
-                new InetSocketAddress(httpProxyHost, Integer.parseInt(httpProxyPort))));
+                new InetSocketAddress(proxyHttpHost,
+                    proxyHttpPort)));
         }
     }
 }

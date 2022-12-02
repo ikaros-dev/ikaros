@@ -22,6 +22,7 @@ import run.ikaros.server.enums.OptionMikan;
 import run.ikaros.server.exceptions.MikanRequestException;
 import run.ikaros.server.core.service.MikanService;
 import run.ikaros.server.exceptions.RecordNotFoundException;
+import run.ikaros.server.model.dto.OptionNetworkDTO;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.RestTemplateUtils;
 
@@ -111,10 +112,14 @@ public class MikanServiceImpl implements MikanService, InitializingBean {
             enableHttpProxy = true;
         }
         if (enableHttpProxy) {
-            String httpProxyHost = optionService.getOptionNetworkHttpProxyHost();
-            String httpProxyPort = optionService.getOptionNetworkHttpProxyPort();
+            OptionNetworkDTO optionNetworkDTO = optionService.getOptionNetworkDTO();
             setRestTemplate(
-                RestTemplateUtils.buildHttpProxyRestTemplate(httpProxyHost, httpProxyPort));
+                RestTemplateUtils.buildHttpProxyRestTemplate(
+                    optionNetworkDTO.getProxyHttpHost(),
+                    optionNetworkDTO.getProxyHttpPort(),
+                    optionNetworkDTO.getReadTimeout(),
+                    optionNetworkDTO.getConnectTimeout()
+                ));
         }
     }
 }
