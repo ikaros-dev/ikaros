@@ -20,7 +20,7 @@ public class RestTemplateUtils {
     private static Map<String, RestTemplate> restTemplateProxyMap = new HashMap<>();
     private static RestTemplate restTemplate;
     public static final Integer READ_TIMEOUT = 5000;
-    public static final Integer CONNECT_TIMEOUT = 2000;
+    public static final Integer CONNECT_TIMEOUT = 5000;
 
 
     public static synchronized RestTemplate buildRestTemplate() {
