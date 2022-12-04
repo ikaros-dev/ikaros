@@ -1,6 +1,58 @@
 version: "3"
 
 services:
+
+  # ikaros database
+  ikaros_database:
+    image: postgres:latest
+    container_name: ikaros_database
+    restart: always
+    networks:
+      ikaros_networks:
+    volumes:
+      - ${IKAROS_APP_DIR}/database:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      - POSTGRES_DB=ikaros
+      - POSTGRES_USER=ikaros
+      - POSTGRES_PASSWORD=${IKAROS_DB_PASSWORD}
+
+  # ikaros
+  ikaros_server:
+    image: liguohaocn/ikaros:dev
+    container_name: ikaros_server
+    restart: always
+    depends_on:
+      ikaros_database:
+        condition: service_healthy
+    networks:
+      ikaros_networks:
+    volumes:
+      - ${IKAROS_APP_DIR}:/opt/ikaros
+    ports:
+      - "9090:9090"
+    environment:
+      - PUID=0
+      - PGID=0
+      - LANG=zh_CN.UTF-8
+      - LANGUAGE=zh_CN:zh
+      - LC_ALL=zh_CN.UTF-8
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Dikaros.log-level=DEBUG
+      - IKAROS_DB_URL=ikaros_database
+      - IKAROS_DB_NAME=ikaros
+      - IKAROS_DB_USERNAME=ikaros
+      - IKAROS_DB_PASSWORD=${IKAROS_DB_PASSWORD}
+
+
+  ### optinal ###
+
   # qbittorrent
   ikaros_qbittorrent:
     image: linuxserver/qbittorrent:latest
@@ -12,9 +64,9 @@ services:
       - ${IKAROS_APP_DIR}/downloads:/downloads
       - ${IKAROS_APP_DIR}/media:/media
     ports:
-      - 9091:9091
-      - 6881:6881/udp
-      - 6881:6881
+      - "9091:9091"
+      - "6881:6881/udp"
+      - "6881:6881"
     environment:
       - PUID=0
       - PGID=0
@@ -33,7 +85,7 @@ services:
       - ${IKAROS_APP_DIR}/tripartite/jellyfin/cache:/cache
       - ${IKAROS_APP_DIR}/media:/media
     ports:
-      - 8096:8096
+      - "8096:8096"
 #    devices:
 #      - /dev/dri:/dev/dri
     environment:
@@ -45,23 +97,6 @@ services:
       - TZ=Asia/Shanghai
     restart: always
 
-  # ikaros
-  ikaros_server:
-    image: liguohaocn/ikaros:dev
-    container_name: ikaros_server
-    volumes:
-      - ${IKAROS_APP_DIR}:/opt/ikaros
-    ports:
-      - 9090:9090
-    environment:
-      - PUID=0
-      - PGID=0
-      - LANG=zh_CN.UTF-8
-      - LANGUAGE=zh_CN:zh
-      - LC_ALL=zh_CN.UTF-8
-      - TZ=Asia/Shanghai
-      - JAVA_OPTS=-Dikaros.log-level=DEBUG
-    restart: always
 
 networks:
   ikaros_networks:

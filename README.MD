@@ -14,7 +14,6 @@ ACGMN全拼是：Anime(动画) + Comic(漫画) + Game(游戏) + Music(音乐) + 
 
 # 部署指南
 - [Docker Compose Doc](docs/deploy/deploy-with-docker-compose.md)
-- [Docker Run Doc](docs/deploy/deploy-with-docker-run.md)
 - [docker-compose.yml](docs/deploy/docker-compose.yml)
 - [docker-compose-no-jellyfin.yml](docs/deploy/docker-compose-no-jellyfin.yml)
 
