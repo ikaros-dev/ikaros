@@ -8,14 +8,17 @@
 这里的根目录是：/opt/ikaros
 根目录你可以换成你想要存储ikaros应用数据的目录
 
-# 设置临时环境变量
+# 设置环境变量
+你只需要配置好下面的环境变量，修改对应的值，然后直接用给的docker-compose.yml文件启动即可。
 
 - `IKAROS_APP_DIR`: ikaros的数据目录，这里是：/opt/ikaros
+- `IKAROS_DB_PASSWORD`: ikaros的数据库密码，建议设置复杂点的密码
 
 使用命令进行设置
 
 ```shell
 export IKAROS_APP_DIR=/opt/ikaros
+export IKAROS_DB_PASSWORD=openpostgresql
 ```
 
 - /opt/ikaros: Ikaros应用目录
@@ -53,13 +56,14 @@ docker-compose -f docker-compose-no-jellyfin.yml up -d
 ```
 
 # 启动后的配置
-## qbittorrent
-这个镜像默认的WebUI用户名密码是: admin@adminadmin
 
 ## ikaros
 启动后的后台配置
 
 可以在后台系统设置里，配置HTTP代理、蜜柑计划RSS、等设置项
+
+## qbittorrent
+这个镜像默认的WebUI用户名密码是: admin@adminadmin
 
 
 如果你网络不好，需要HTTP代理，推荐直接部署一个全局模式的`clash`容器, 

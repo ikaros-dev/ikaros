@@ -4,11 +4,11 @@ ikaros:
 
 spring:
   datasource:
-    # mariadb database configuration.
-    driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/ikaros
-    username: root
-    password: 123456
+    # postgresql database configuration.
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/ikaros
+    username: ikaros
+    password: openpostgresql
 
   jpa:
     hibernate:

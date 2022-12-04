@@ -1,10 +1,12 @@
 package run.ikaros.server.entity;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import org.hibernate.annotations.Type;
 import run.ikaros.server.constants.UserConst;
+
+import static javax.persistence.FetchType.LAZY;
 
 /**
  * 用户表
@@ -35,7 +37,8 @@ public class UserEntity extends BaseEntity {
     /**
      * 个人介绍
      */
-    @Column(columnDefinition = "mediumtext")
+    @Lob  @Basic(fetch=LAZY)
+    @Type(type = "org.hibernate.type.TextType")
     private String introduce;
 
     /**

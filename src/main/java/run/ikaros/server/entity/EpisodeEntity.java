@@ -1,5 +1,7 @@
 package run.ikaros.server.entity;
 
+import org.hibernate.annotations.Type;
+
 import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -7,6 +9,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+
+import static javax.persistence.FetchType.LAZY;
 
 /**
  * @author guohao
@@ -32,7 +36,8 @@ public class EpisodeEntity extends BaseEntity {
     @Column(name = "air_time")
     private Date airTime;
 
-    @Lob @Basic(fetch = FetchType.LAZY)
+    @Lob  @Basic(fetch=LAZY)
+    @Type(type = "org.hibernate.type.TextType")
     private String overview;
 
     /**
