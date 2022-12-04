@@ -10,7 +10,12 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import java.util.Date;
 
 /**
@@ -27,10 +32,8 @@ public class BaseEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "ikarosEntitySeqGenerator")
-    @GenericGenerator(
-            name = "ikarosEntitySeqGenerator",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator"
-    )
+    @GenericGenerator(name = "ikarosEntitySeqGenerator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator")
     private Long id;
 
     /**

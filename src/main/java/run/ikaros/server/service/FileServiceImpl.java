@@ -58,8 +58,8 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Service
 public class FileServiceImpl
-        extends AbstractCrudService<FileEntity, Long>
-        implements FileService {
+    extends AbstractCrudService<FileEntity, Long>
+    implements FileService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileServiceImpl.class);
 
     private final FileRepository fileRepository;
@@ -86,7 +86,7 @@ public class FileServiceImpl
             return fileRepository.saveAndFlush(fileEntity);
         } catch (IOException ioException) {
             throw new RuntimeIkarosException(
-                    "upload file fail, originalFilename=" + originalFilename);
+                "upload file fail, originalFilename=" + originalFilename);
         }
     }
 
@@ -110,7 +110,7 @@ public class FileServiceImpl
             FileEntity sameMd5FileEntity = sameMd5FileEntities.get(0);
             String oldLocation = sameMd5FileEntity.getUrl();
             ikarosFile.setRelativePath(oldLocation)
-                    .setOldLocation(oldLocation);
+                .setOldLocation(oldLocation);
         } else {
             // upload file to file system
             IkarosFileOperateResult fileOperateResult = fileHandler.upload(ikarosFile);
@@ -195,7 +195,7 @@ public class FileServiceImpl
             BeanUtils.copyProperties(fileEntity, existFileEntity);
             existFileEntity = fileRepository.saveAndFlush(existFileEntity);
             LOGGER.info("success update exist file entity, old: {} , new: {}",
-                    oldExistFileEntityJson, existFileEntity);
+                oldExistFileEntityJson, existFileEntity);
         }
         return existFileEntity;
     }
@@ -203,7 +203,7 @@ public class FileServiceImpl
     @Nonnull
     @Override
     public FileEntity update(@Nonnull Long fileId, @Nonnull MultipartFile multipartFile)
-            throws IOException {
+        throws IOException {
         AssertUtils.isPositive(fileId, "'fileId' must be positive");
         AssertUtils.notNull(multipartFile, "'multipartFile' must not be null");
 
@@ -263,7 +263,7 @@ public class FileServiceImpl
     @Nonnull
     @Override
     public PagingWrap<FileEntity> findFilesByPagingAndCondition(
-            @Nonnull SearchFilesParams searchFilesParams) {
+        @Nonnull SearchFilesParams searchFilesParams) {
         AssertUtils.notNull(searchFilesParams, "'searchFilesParams' must not be null");
         final Integer pageIndex = searchFilesParams.getPage();
         final Integer pageSize = searchFilesParams.getSize();
@@ -293,12 +293,12 @@ public class FileServiceImpl
 
             if (StringUtils.isNotBlank(type)) {
                 predicateList.add(
-                        criteriaBuilder.equal(root.get("type"), FileType.valueOf(type.toUpperCase())));
+                    criteriaBuilder.equal(root.get("type"), FileType.valueOf(type.toUpperCase())));
             }
             if (StringUtils.isNotBlank(place)) {
                 predicateList.add(
-                        criteriaBuilder.equal(root.get("place"),
-                                FilePlace.valueOf(place.toUpperCase())));
+                    criteriaBuilder.equal(root.get("place"),
+                        FilePlace.valueOf(place.toUpperCase())));
             }
             Predicate[] predicates = new Predicate[predicateList.size()];
             return criteriaBuilder.and(predicateList.toArray(predicates));
@@ -310,15 +310,15 @@ public class FileServiceImpl
         } else {
             // page小于1时，都为第一页, page从1开始，即第一页 pageIndex=1
             fileEntities = fileRepository.findAll(queryCondition,
-                            PageRequest.of(pageIndex < 1 ? 0 : (pageIndex - 1), pageSize,
-                                    Sort.by(Sort.Direction.DESC, "createTime")))
-                    .getContent();
+                    PageRequest.of(pageIndex < 1 ? 0 : (pageIndex - 1), pageSize,
+                        Sort.by(Sort.Direction.DESC, "createTime")))
+                .getContent();
         }
 
         return new PagingWrap<FileEntity>()
-                .setContent(fileEntities)
-                .setCurrentIndex(pageIndex)
-                .setTotal(fileRepository.count(queryCondition));
+            .setContent(fileEntities)
+            .setCurrentIndex(pageIndex)
+            .setTotal(fileRepository.count(queryCondition));
     }
 
 
@@ -373,7 +373,7 @@ public class FileServiceImpl
         AssertUtils.notNull(bytes, "'bytes' must not be null");
 
         File tempChunkFileCacheDir =
-                new File(SystemVarUtils.getOsCacheDirPath() + File.separator + unique);
+            new File(SystemVarUtils.getOsCacheDirPath() + File.separator + unique);
         if (!tempChunkFileCacheDir.exists()) {
             tempChunkFileCacheDir.mkdirs();
             LOGGER.debug("create temp dir: {}", tempChunkFileCacheDir);
@@ -385,7 +385,7 @@ public class FileServiceImpl
         File uploadedChunkCacheFile = new File(tempChunkFileCacheDir + File.separator + offset);
         Files.write(Path.of(uploadedChunkCacheFile.toURI()), bytes);
         LOGGER.debug("upload chunk[{}] to path: {}", uploadOffset,
-                uploadedChunkCacheFile.getAbsolutePath());
+            uploadedChunkCacheFile.getAbsolutePath());
 
         if (offset == Long.parseLong(uploadLength)) {
             String postfix = uploadName.substring(uploadName.lastIndexOf(".") + 1);
@@ -398,12 +398,12 @@ public class FileServiceImpl
 
             uploadName = uploadName.substring(0, uploadName.lastIndexOf("."));
             FileEntity fileEntity = new FileEntity()
-                    .setMd5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5))
-                    .setPlace(FilePlace.LOCAL)
-                    .setUrl(path2url(filePath))
-                    .setName(uploadName + "." + postfix)
-                    .setSize(Integer.valueOf(uploadLength))
-                    .setType(FileUtils.parseTypeByPostfix(postfix));
+                .setMd5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5))
+                .setPlace(FilePlace.LOCAL)
+                .setUrl(path2url(filePath))
+                .setName(uploadName + "." + postfix)
+                .setSize(Integer.valueOf(uploadLength))
+                .setType(FileUtils.parseTypeByPostfix(postfix));
 
             fileRepository.saveAndFlush(fileEntity);
         }
@@ -418,7 +418,7 @@ public class FileServiceImpl
         FileType type = fileEntity.getType();
         FilePlace place = fileEntity.getPlace();
         FileEntity existFileEntity =
-                fileRepository.findFileEntityByNameAndTypeAndPlace(name, type, place);
+            fileRepository.findFileEntityByNameAndTypeAndPlace(name, type, place);
         if (existFileEntity != null) {
             if (existFileEntity.getStatus()) {
                 return existFileEntity;
@@ -483,7 +483,7 @@ public class FileServiceImpl
                 randomAccessFile.write(bytes);
                 targetFileWriteOffset += read;
                 LOGGER.debug("[{}] current merge targetFileWriteOffset: {}", chunkFile.getName(),
-                        targetFileWriteOffset);
+                    targetFileWriteOffset);
             }
         }
 
