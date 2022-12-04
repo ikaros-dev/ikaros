@@ -22,26 +22,23 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
 
-    # H2 database configuration.
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:./db/ikaros;AUTO_SERVER=TRUE
-    username: admin
-    password: 123456
+    # postgresql database configuration.
+    driver- class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${IKAROS_DB_URL:localhost:5432}/${IKAROS_DB_NAME:ikaros}
+    username: ${IKAROS_DB_USERNAME:ikaros}
+    password: ${IKAROS_DB_PASSWORD:openpostgresql}
 
-    #  Add MariaDB database configuration.
-
-  h2:
-    console:
-      settings:
-        web-allow-others: false
-      path: /h2-console
-      enabled: false
   jpa:
     hibernate:
       ddl-auto: update
       use-new-id-generator-mappings: false
     show-sql: false
     open-in-view: false
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.PostgreSQLDialect
+#        hbm2ddl:
+#          auto: update
 
   servlet:
     multipart:

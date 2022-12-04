@@ -27,12 +27,6 @@ spring:
     username: admin
     password: 123456
 
-#    # mariadb database configuration.
-#    driver-class-name: org.mariadb.jdbc.Driver
-#    url: jdbc:mariadb://192.168.2.229:63306/ikaros
-#    username: root
-#    password: 123456
-
   h2:
     console:
       settings:

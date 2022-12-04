@@ -12,7 +12,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import org.apache.juli.logging.Log;
+import org.hibernate.annotations.Type;
 import run.ikaros.server.enums.SeasonType;
+
+import static javax.persistence.FetchType.LAZY;
 
 /**
  * @author guohao
@@ -33,7 +36,8 @@ public class SeasonEntity extends BaseEntity {
     @Column(name = "title_cn")
     private String titleCn;
 
-    @Lob @Basic(fetch = FetchType.LAZY)
+    @Lob  @Basic(fetch=LAZY)
+    @Type(type = "org.hibernate.type.TextType")
     private String overview;
 
 

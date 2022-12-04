@@ -1,13 +1,13 @@
 package run.ikaros.server.entity;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import org.hibernate.annotations.Type;
+import org.hibernate.type.TextType;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.enums.OptionType;
+
+import static javax.persistence.FetchType.LAZY;
 
 /**
  * @author li-guohao
@@ -23,7 +23,9 @@ public class OptionEntity extends BaseEntity {
     @Column(name = "o_key", nullable = false)
     private String key = "";
 
-    @Lob @Column(name = "o_value")
+    @Lob  @Basic(fetch=LAZY)
+    @Type(type = "org.hibernate.type.TextType")
+    @Column(name = "o_value")
     private String value  = "";
 
     @Column(nullable = false)
