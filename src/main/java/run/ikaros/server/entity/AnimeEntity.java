@@ -31,7 +31,8 @@ public class AnimeEntity extends BaseEntity {
 
     private String platform;
 
-    @Lob  @Basic(fetch=LAZY)
+    @Lob
+    @Basic(fetch = LAZY)
     @Type(type = "org.hibernate.type.TextType")
     private String overview;
 

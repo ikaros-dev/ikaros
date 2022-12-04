@@ -1,19 +1,15 @@
 package run.ikaros.server.entity;
 
-import java.util.Comparator;
+import org.hibernate.annotations.Type;
+import run.ikaros.server.enums.SeasonType;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import org.apache.juli.logging.Log;
-import org.hibernate.annotations.Type;
-import run.ikaros.server.enums.SeasonType;
 
 import static javax.persistence.FetchType.LAZY;
 
@@ -36,7 +32,8 @@ public class SeasonEntity extends BaseEntity {
     @Column(name = "title_cn")
     private String titleCn;
 
-    @Lob  @Basic(fetch=LAZY)
+    @Lob
+    @Basic(fetch = LAZY)
     @Type(type = "org.hibernate.type.TextType")
     private String overview;
 

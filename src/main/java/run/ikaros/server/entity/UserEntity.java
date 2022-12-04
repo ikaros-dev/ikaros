@@ -1,10 +1,13 @@
 package run.ikaros.server.entity;
 
 
-import javax.persistence.*;
-
 import org.hibernate.annotations.Type;
 import run.ikaros.server.constants.UserConst;
+
+import javax.persistence.Basic;
+import javax.persistence.Entity;
+import javax.persistence.Lob;
+import javax.persistence.Table;
 
 import static javax.persistence.FetchType.LAZY;
 
@@ -16,7 +19,6 @@ import static javax.persistence.FetchType.LAZY;
 @Entity
 @Table(name = "ikuser")
 public class UserEntity extends BaseEntity {
-
 
 
     /**
@@ -37,7 +39,8 @@ public class UserEntity extends BaseEntity {
     /**
      * 个人介绍
      */
-    @Lob  @Basic(fetch=LAZY)
+    @Lob
+    @Basic(fetch = LAZY)
     @Type(type = "org.hibernate.type.TextType")
     private String introduce;
 
