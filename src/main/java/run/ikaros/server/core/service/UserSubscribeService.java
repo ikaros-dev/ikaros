@@ -10,6 +10,11 @@ public interface UserSubscribeService extends CrudService<UserSubscribeEntity, L
     @Transactional
     void saveUserAnimeSubscribe(@Nonnull Long userId, @Nonnull Long animeId);
 
+    boolean findUserAnimeSubscribeStatus(@Nonnull Long userId, @Nonnull Long animeId);
+
     @Transactional
     void saveUserAnimeSubscribeByBgmTvSubjectId(@Nonnull Long userId, @Nonnull Long bgmtvSubjectId);
+
+    @Transactional
+    void deleteUserAnimeSubscribe(@Nonnull Long userId, @Nonnull Long animeId);
 }

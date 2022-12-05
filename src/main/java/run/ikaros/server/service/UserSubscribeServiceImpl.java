@@ -39,7 +39,7 @@ public class UserSubscribeServiceImpl
         AssertUtils.notNull(userId, "userId");
         AssertUtils.notNull(animeId, "animeId");
         Optional<UserSubscribeEntity> userSubscribeEntityOptional =
-            userSubscribeRepository.findByStatusAndUserIdAndTypeAndTargetId(true, userId,
+            userSubscribeRepository.findByUserIdAndTypeAndTargetId(userId,
                 SubscribeType.ANIME, animeId);
         if (userSubscribeEntityOptional.isEmpty()) {
             UserSubscribeEntity userSubscribeEntity = new UserSubscribeEntity();
@@ -48,7 +48,24 @@ public class UserSubscribeServiceImpl
             userSubscribeEntity.setProgress(SubscribeProgress.WISH);
             userSubscribeEntity.setTargetId(animeId);
             userSubscribeRepository.save(userSubscribeEntity);
+        } else {
+            UserSubscribeEntity userSubscribeEntity = userSubscribeEntityOptional.get();
+            if (!userSubscribeEntity.getStatus()) {
+                userSubscribeEntity.setStatus(true);
+                userSubscribeRepository.save(userSubscribeEntity);
+            }
         }
+    }
+
+    @Override
+    public boolean findUserAnimeSubscribeStatus(@Nonnull Long userId, @Nonnull Long animeId) {
+        AssertUtils.notNull(userId, "userId");
+        AssertUtils.notNull(animeId, "animeId");
+        Optional<UserSubscribeEntity> userSubscribeEntityOptional =
+            userSubscribeRepository.findByUserIdAndTypeAndTargetId(userId,
+                SubscribeType.ANIME, animeId);
+        return userSubscribeEntityOptional.isPresent()
+            && userSubscribeEntityOptional.get().getStatus();
     }
 
     @Override
@@ -65,5 +82,21 @@ public class UserSubscribeServiceImpl
             animeId = animeEntity.getId();
         }
         saveUserAnimeSubscribe(userId, animeId);
+    }
+
+    @Override
+    public void deleteUserAnimeSubscribe(@Nonnull Long userId, @Nonnull Long animeId) {
+        AssertUtils.notNull(userId, "userId");
+        AssertUtils.notNull(animeId, "animeId");
+        Optional<UserSubscribeEntity> userSubscribeEntityOptional =
+            userSubscribeRepository.findByUserIdAndTypeAndTargetId(userId,
+                SubscribeType.ANIME, animeId);
+        if (userSubscribeEntityOptional.isPresent()) {
+            UserSubscribeEntity userSubscribeEntity = userSubscribeEntityOptional.get();
+            if (userSubscribeEntity.getStatus()) {
+                userSubscribeEntity.setStatus(false);
+                userSubscribeRepository.save(userSubscribeEntity);
+            }
+        }
     }
 }

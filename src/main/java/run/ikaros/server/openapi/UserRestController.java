@@ -118,4 +118,13 @@ public class UserRestController {
             animeId);
         return CommonResult.ok(Boolean.TRUE);
     }
+
+    @DeleteMapping("/subscribe/anime/{id}")
+    public CommonResult<Boolean> deleteUserSubscribeByAnimeId(
+        @PathVariable("id") Long animeId) {
+        userSubscribeService.deleteUserAnimeSubscribe(
+            UserService.getCurrentLoginUserUid(),
+            animeId);
+        return CommonResult.ok(Boolean.TRUE);
+    }
 }
