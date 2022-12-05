@@ -3,7 +3,7 @@
 
 # 0.1.0-alpha.1
 
-## Documents
+## Documentations
 - 创建微信公众号，更新readme文档，添加官方平台汇总和微信公众号信息
 
 <hr>
