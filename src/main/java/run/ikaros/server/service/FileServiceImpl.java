@@ -497,7 +497,7 @@ public class FileServiceImpl
         // issue #50
         url = path.replace(currentAppDirPath, "");
         // 如果是本地环境，需要加上 http://localhost:port
-        if (ikarosProperties.envIsLocal()) {
+        if (ikarosProperties.envIsLocal() || ikarosProperties.envIsDev()) {
             url = ikarosProperties.getLocalhostHttpBaseUrl() + url;
         }
 
