@@ -6,13 +6,13 @@ public enum SubscribeProgress {
      */
     WISH,
     /**
-     * 看过
-     */
-    DONE,
-    /**
      * 在看
      */
     DOING,
+    /**
+     * 看过
+     */
+    DONE,
     /**
      * 搁置
      */
