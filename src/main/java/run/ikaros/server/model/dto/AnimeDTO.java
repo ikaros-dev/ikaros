@@ -1,23 +1,22 @@
 package run.ikaros.server.model.dto;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import run.ikaros.server.entity.AnimeEntity;
+import run.ikaros.server.entity.UserSubscribeEntity;
+
 import java.util.List;
 
 /**
  * @author guohao
  * @date 2022/09/10
  */
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class AnimeDTO extends AnimeEntity {
 
-    private List<SeasonDTO> seasonDTOS;
+    private boolean isSub;
+    private UserSubscribeEntity subscribe;
+    private List<SeasonDTO> seasons;
 
-
-    public List<SeasonDTO> getSeasons() {
-        return seasonDTOS;
-    }
-
-    public AnimeDTO setSeasons(List<SeasonDTO> seasonDTOS) {
-        this.seasonDTOS = seasonDTOS;
-        return this;
-    }
 }

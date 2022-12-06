@@ -13,4 +13,7 @@ public interface UserSubscribeRepository extends BaseRepository<UserSubscribeEnt
                                                                           SubscribeType type,
                                                                           Long targetId);
 
+    Optional<UserSubscribeEntity> findByUserIdAndTypeAndTargetId(Long userId,
+                                                                 SubscribeType type,
+                                                                 Long targetId);
 }

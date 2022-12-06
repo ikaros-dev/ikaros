@@ -7,15 +7,19 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import run.ikaros.server.core.repository.AnimeRepository;
+import run.ikaros.server.core.repository.UserSubscribeRepository;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.core.service.EpisodeService;
 import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.core.service.SeasonService;
+import run.ikaros.server.core.service.UserService;
+import run.ikaros.server.core.service.UserSubscribeService;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.BaseEntity;
 import run.ikaros.server.entity.EpisodeEntity;
-import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
+import run.ikaros.server.entity.UserSubscribeEntity;
+import run.ikaros.server.enums.SubscribeType;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.model.dto.EpisodeDTO;
@@ -32,9 +36,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author guohao
@@ -48,18 +50,21 @@ public class AnimeServiceImpl
     private static final Logger LOGGER = LoggerFactory.getLogger(AnimeServiceImpl.class);
 
     private final AnimeRepository animeRepository;
+    private final UserSubscribeRepository userSubscribeRepository;
     private final SeasonService seasonService;
     private final EpisodeService episodeService;
     private final FileService fileService;
 
     public AnimeServiceImpl(AnimeRepository animeRepository,
                             SeasonService seasonService,
-                            EpisodeService episodeService, FileService fileService) {
+                            EpisodeService episodeService, FileService fileService,
+                            UserSubscribeRepository userSubscribeRepository) {
         super(animeRepository);
         this.animeRepository = animeRepository;
         this.seasonService = seasonService;
         this.episodeService = episodeService;
         this.fileService = fileService;
+        this.userSubscribeRepository = userSubscribeRepository;
     }
 
     @Nonnull
@@ -115,6 +120,18 @@ public class AnimeServiceImpl
         AnimeEntity animeEntity = findById(id);
         BeanUtils.copyProperties(animeEntity, animeDTO);
         animeDTO.setSeasons(seasonService.findDtoListByAnimeId(id));
+
+        // search current user subscribe status
+        Optional<UserSubscribeEntity> userSubscribeEntityOptional =
+            userSubscribeRepository
+                .findByUserIdAndTypeAndTargetId(UserService.getCurrentLoginUserUid(),
+                    SubscribeType.ANIME, animeDTO.getId());
+        boolean isSub = userSubscribeEntityOptional.isPresent()
+            && userSubscribeEntityOptional.get().getStatus();
+        animeDTO.setSub(isSub);
+        if (isSub) {
+            animeDTO.setSubscribe(userSubscribeEntityOptional.orElse(null));
+        }
         return animeDTO;
     }
 
