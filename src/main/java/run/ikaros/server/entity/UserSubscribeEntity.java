@@ -29,4 +29,6 @@ public class UserSubscribeEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private SubscribeProgress progress;
 
+    private String additional;
+
 }

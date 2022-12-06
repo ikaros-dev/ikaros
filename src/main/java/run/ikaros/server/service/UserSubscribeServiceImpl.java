@@ -12,8 +12,10 @@ import run.ikaros.server.enums.SubscribeProgress;
 import run.ikaros.server.enums.SubscribeType;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.utils.AssertUtils;
+import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Slf4j
@@ -35,9 +37,13 @@ public class UserSubscribeServiceImpl
 
 
     @Override
-    public void saveUserAnimeSubscribe(@Nonnull Long userId, @Nonnull Long animeId) {
+    public void saveUserAnimeSubscribe(@Nonnull Long userId, @Nonnull Long animeId,
+                                       @Nonnull String progress,
+                                       @Nullable String additional) {
         AssertUtils.notNull(userId, "userId");
         AssertUtils.notNull(animeId, "animeId");
+        AssertUtils.notBlank(progress, "progress");
+
         Optional<UserSubscribeEntity> userSubscribeEntityOptional =
             userSubscribeRepository.findByUserIdAndTypeAndTargetId(userId,
                 SubscribeType.ANIME, animeId);
@@ -45,15 +51,22 @@ public class UserSubscribeServiceImpl
             UserSubscribeEntity userSubscribeEntity = new UserSubscribeEntity();
             userSubscribeEntity.setUserId(userId);
             userSubscribeEntity.setType(SubscribeType.ANIME);
-            userSubscribeEntity.setProgress(SubscribeProgress.WISH);
+            userSubscribeEntity.setProgress(SubscribeProgress.valueOf(progress));
             userSubscribeEntity.setTargetId(animeId);
+            if (StringUtils.isNotBlank(additional)) {
+                userSubscribeEntity.setAdditional(additional);
+            }
             userSubscribeRepository.save(userSubscribeEntity);
         } else {
             UserSubscribeEntity userSubscribeEntity = userSubscribeEntityOptional.get();
+            userSubscribeEntity.setProgress(SubscribeProgress.valueOf(progress));
             if (!userSubscribeEntity.getStatus()) {
                 userSubscribeEntity.setStatus(true);
-                userSubscribeRepository.save(userSubscribeEntity);
             }
+            if (StringUtils.isNotBlank(additional)) {
+                userSubscribeEntity.setAdditional(additional);
+            }
+            userSubscribeRepository.save(userSubscribeEntity);
         }
     }
 
@@ -81,7 +94,7 @@ public class UserSubscribeServiceImpl
         } else {
             animeId = animeEntity.getId();
         }
-        saveUserAnimeSubscribe(userId, animeId);
+        saveUserAnimeSubscribe(userId, animeId, SubscribeProgress.WISH.name(), null);
     }
 
     @Override
