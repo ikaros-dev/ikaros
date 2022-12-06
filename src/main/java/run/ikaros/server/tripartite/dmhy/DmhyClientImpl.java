@@ -1,11 +1,8 @@
 package run.ikaros.server.tripartite.dmhy;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -14,14 +11,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import run.ikaros.server.constants.IkarosConst;
+import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
+import run.ikaros.server.model.dto.OptionNetworkDTO;
 import run.ikaros.server.tripartite.dmhy.enums.DmhyCategory;
 import run.ikaros.server.tripartite.dmhy.model.DmhyRssItem;
-import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 import run.ikaros.server.utils.AssertUtils;
-import run.ikaros.server.utils.FileUtils;
 import run.ikaros.server.utils.RestTemplateUtils;
-import run.ikaros.server.utils.SystemVarUtils;
+import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.XmlUtils;
 
 import javax.annotation.Nonnull;
@@ -29,25 +26,27 @@ import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Component
-public class DmhyClientImpl implements DmhyClient {
+public class DmhyClientImpl implements DmhyClient, InitializingBean {
     private final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     private RestTemplate restTemplate = RestTemplateUtils.buildRestTemplate();
     private static final HttpHeaders headers = new HttpHeaders();
     private Proxy proxy;
 
+    private final OptionService optionService;
+
     static {
         headers.set(HttpHeaders.USER_AGENT, IkarosConst.REST_TEMPLATE_USER_AGENT);
+    }
+
+    public DmhyClientImpl(OptionService optionService) {
+        this.optionService = optionService;
     }
 
     public void setProxy(Proxy proxy) {
@@ -55,6 +54,17 @@ public class DmhyClientImpl implements DmhyClient {
         this.restTemplate = RestTemplateUtils.buildProxyRestTemplate(proxy);
     }
 
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        OptionNetworkDTO optionNetworkDTO = optionService.getOptionNetworkDTO();
+        String proxyHttpHost = optionNetworkDTO.getProxyHttpHost();
+        Integer proxyHttpPort = optionNetworkDTO.getProxyHttpPort();
+        if (StringUtils.isNotBlank(proxyHttpHost) && proxyHttpPort != null) {
+            Proxy proxy =
+                new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHttpHost, proxyHttpPort));
+            setProxy(proxy);
+        }
+    }
 
     @Override
     public List<DmhyRssItem> findRssItems(@Nonnull String keyword,
