@@ -40,37 +40,53 @@ public class RestTemplateUtils {
         return restTemplate;
     }
 
-    public static RestTemplate buildHttpProxyRestTemplate(
-        @Nonnull String httpProxyHost,
-        @Nonnull Integer httpProxyPort) {
-        return buildHttpProxyRestTemplate(httpProxyHost, httpProxyPort, null, null);
-    }
 
-    public static synchronized RestTemplate buildHttpProxyRestTemplate(
-        @Nonnull String httpProxyHost,
-        @Nonnull Integer httpProxyPort,
+    public static synchronized RestTemplate buildProxyRestTemplate(
+        @Nonnull Proxy proxy,
         @Nullable Integer readTimeout,
-        @Nullable Integer connectTimeout) {
-        AssertUtils.notBlank(httpProxyHost, "httpProxyHost");
-        AssertUtils.notNull(httpProxyPort, "httpProxyPort");
+        @Nullable Integer connectTimeout
+    ) {
+        AssertUtils.notNull(proxy, "proxy");
 
-        String key = httpProxyHost + ":" + httpProxyPort;
+        String key = proxy.address().toString();
         if (restTemplateProxyMap.containsKey(key)) {
             return restTemplateProxyMap.get(key);
         }
 
-        InetSocketAddress inetSocketAddress =
-            new InetSocketAddress(httpProxyHost, httpProxyPort);
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, inetSocketAddress);
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setReadTimeout(readTimeout == null ? DEFAULT_READ_TIMEOUT : readTimeout);
         requestFactory.setConnectTimeout(
             connectTimeout == null ? DEFAULT_CONNECT_TIMEOUT : connectTimeout);
         requestFactory.setProxy(proxy);
         RestTemplate rt = new RestTemplate(requestFactory);
-
         restTemplateProxyMap.put(key, rt);
         return rt;
+    }
+
+    public static synchronized RestTemplate buildProxyRestTemplate(
+        @Nonnull Proxy proxy
+    ) {
+        return buildProxyRestTemplate(proxy, null, null);
+    }
+
+
+    public static RestTemplate buildHttpProxyRestTemplate(
+        @Nonnull String httpProxyHost,
+        @Nonnull Integer httpProxyPort) {
+        return buildHttpProxyRestTemplate(httpProxyHost, httpProxyPort, null, null);
+    }
+
+    public static RestTemplate buildHttpProxyRestTemplate(
+        @Nonnull String httpProxyHost,
+        @Nonnull Integer httpProxyPort,
+        @Nullable Integer readTimeout,
+        @Nullable Integer connectTimeout) {
+        AssertUtils.notBlank(httpProxyHost, "httpProxyHost");
+        AssertUtils.notNull(httpProxyPort, "httpProxyPort");
+        InetSocketAddress inetSocketAddress =
+            new InetSocketAddress(httpProxyHost, httpProxyPort);
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, inetSocketAddress);
+        return buildProxyRestTemplate(proxy, readTimeout, connectTimeout);
     }
 
     public static boolean testProxyConnect(@Nonnull String httpProxyHost,

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import run.ikaros.server.core.service.MikanService;
 import run.ikaros.server.core.service.OptionService;
-import run.ikaros.server.service.MikanServiceImpl;
+import run.ikaros.server.tripartite.mikan.service.MikanServiceImpl;
 import run.ikaros.server.service.OptionServiceImpl;
 
 /**

@@ -12,6 +12,7 @@ import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,11 +22,20 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Proxy;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class XmlUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(XmlUtils.class);
@@ -91,8 +101,8 @@ public class XmlUtils {
     }
 
     public static String generateJellyfinTvShowNfoXml(@Nonnull String filePath, String plot,
-                                                       String title,
-                                                       String originaltitle, String bangumiid) {
+                                                      String title,
+                                                      String originaltitle, String bangumiid) {
         AssertUtils.notBlank(filePath, "filePath");
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -208,5 +218,66 @@ public class XmlUtils {
             LOGGER.warn("generate jellyfin episode nfo xml file fail", transformerException);
         }
         return filePath;
+    }
+
+
+    /**
+     * 从RSS URL下载内容到本地RSS库
+     *
+     * @param url   RSS URL
+     * @param proxy 是否设置代理
+     * @return 缓存文件路径
+     */
+    public static String downloadRssXmlFile(@Nonnull String url, @Nullable Proxy proxy) {
+        AssertUtils.notBlank(url, "url");
+        String cacheFilePath = SystemVarUtils.getOsCacheDirPath() + File.separator
+            + UUID.randomUUID().toString().replace("-", "") + ".xml";
+
+        InputStream inputStream = null;
+        BufferedInputStream bufferedInputStream = null;
+        OutputStream outputStream = null;
+        BufferedOutputStream bufferedOutputStream = null;
+        try {
+            URLConnection urlConnection;
+            if (proxy == null) {
+                urlConnection = new URL(url).openConnection();
+            } else {
+                urlConnection = new URL(url).openConnection(proxy);
+            }
+            urlConnection.connect();
+            inputStream = urlConnection.getInputStream();
+            bufferedInputStream = new BufferedInputStream(inputStream);
+
+            File cacheFile = new File(cacheFilePath);
+            if (!cacheFile.getParentFile().exists()) {
+                cacheFile.getParentFile().mkdirs();
+            }
+            if (!cacheFile.exists()) {
+                cacheFile.createNewFile();
+            }
+            outputStream = Files.newOutputStream(cacheFile.toPath());
+            bufferedOutputStream = new BufferedOutputStream(outputStream);
+
+            byte[] buffer = new byte[128];
+            int len;
+            while ((len = bufferedInputStream.read(buffer)) != -1) {
+                bufferedOutputStream.write(buffer, 0, len);
+            }
+            LOGGER.info("download rss xml file to cache path: {}", cacheFilePath);
+        } catch (IOException e) {
+            String msg = "fail write rss url xml file bytes to cache path: " + cacheFilePath;
+            LOGGER.warn(msg, e);
+            throw new RssOperateException(msg, e);
+        } finally {
+            try {
+                bufferedOutputStream.close();
+                outputStream.close();
+                bufferedInputStream.close();
+                inputStream.close();
+            } catch (IOException e) {
+                throw new RssOperateException(e);
+            }
+        }
+        return cacheFilePath;
     }
 }
