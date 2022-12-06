@@ -1,20 +1,5 @@
 package run.ikaros.server.openapi;
 
-import com.rometools.rome.io.impl.Base64;
-import org.springframework.web.bind.annotation.RequestParam;
-import run.ikaros.server.core.service.UserService;
-import run.ikaros.server.core.service.UserSubscribeService;
-import run.ikaros.server.utils.AssertUtils;
-import run.ikaros.server.constants.SecurityConst;
-import run.ikaros.server.result.CommonResult;
-import run.ikaros.server.exceptions.RecordNotFoundException;
-import run.ikaros.server.model.dto.AuthUserDTO;
-import run.ikaros.server.model.dto.UserDTO;
-import run.ikaros.server.entity.UserEntity;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -26,8 +11,22 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import run.ikaros.server.constants.SecurityConst;
+import run.ikaros.server.core.service.UserService;
+import run.ikaros.server.core.service.UserSubscribeService;
+import run.ikaros.server.entity.UserEntity;
+import run.ikaros.server.exceptions.RecordNotFoundException;
+import run.ikaros.server.model.dto.AuthUserDTO;
+import run.ikaros.server.model.dto.UserDTO;
+import run.ikaros.server.result.CommonResult;
+import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * @author guohao
@@ -123,7 +122,10 @@ public class UserRestController {
         AssertUtils.notBlank(progress, "progress");
 
         if (StringUtils.isNotBlank(additional)) {
-            additional = Base64.decode(additional);
+            additional =
+                new String(Base64.getDecoder()
+                    .decode(additional.getBytes(StandardCharsets.UTF_8)),
+                    StandardCharsets.UTF_8);
             LOGGER.debug("additional: {}", additional);
         }
         userSubscribeService.saveUserAnimeSubscribe(
