@@ -52,7 +52,7 @@ class TaskServiceTest {
         Mockito.doReturn(mikanRssItemList).when(rssService)
             .parseMikanMySubscribeRss(Mockito.anyString());
 
-        taskService.pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
+        taskService.pullMikanRssAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
     }
 
     @Test

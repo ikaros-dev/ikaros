@@ -131,6 +131,12 @@ public class UserService extends AbstractCrudService<UserEntity, Long> implement
         return existUserEntity;
     }
 
+    @Override
+    public UserEntity getUserOnlyOne() {
+        Optional<UserEntity> userEntityOptional = listAll().stream().findFirst();
+        return userEntityOptional.orElse(null);
+    }
+
     @Nonnull
     public AuthUserDTO login(@Nonnull AuthUserDTO authUserDTO) throws RecordNotFoundException {
         AssertUtils.notNull(authUserDTO, "authUser");

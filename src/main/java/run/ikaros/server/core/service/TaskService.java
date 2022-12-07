@@ -1,5 +1,7 @@
 package run.ikaros.server.core.service;
 
+import javax.annotation.Nullable;
+
 /**
  * @author li-guohao
  */
@@ -7,12 +9,12 @@ public interface TaskService {
 
     /**
      * <ol>
-     *     <li>pull anime form Subscribe</li>
+     *     <li>pull anime form mikan rss subscribe</li>
      *     <li>save metadata to database</li>
      *     <li>download related torrents</li>
      * </ol>
      */
-    void pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
+    void pullMikanRssAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
 
     /**
      * <ol>
@@ -22,4 +24,9 @@ public interface TaskService {
      * </ol>
      */
     void searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode();
+
+    /**
+     * 查询用户订阅的动漫的剧集资源，如果剧集资源
+     */
+    void downloadSubscribeAnimeResource(@Nullable Long userId);
 }

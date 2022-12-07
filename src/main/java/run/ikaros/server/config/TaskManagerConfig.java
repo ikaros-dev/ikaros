@@ -8,9 +8,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import run.ikaros.server.core.service.MediaService;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.TaskService;
+import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.entity.OptionEntity;
+import run.ikaros.server.entity.UserEntity;
 import run.ikaros.server.enums.OptionApp;
 import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.model.dto.OptionQbittorrentDTO;
+import run.ikaros.server.utils.StringUtils;
+
+import java.util.Optional;
 
 /**
  * @author li-guohao
@@ -61,7 +67,7 @@ public class TaskManagerConfig {
             if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
                 LOGGER.debug("start exec task: "
                     + "pull anime subscribe and save metadata and download torrents");
-                taskService.pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
+                taskService.pullMikanRssAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
                 LOGGER.debug("end exec task: "
                     + "pull anime subscribe and save metadata and download torrents");
             }
@@ -85,12 +91,17 @@ public class TaskManagerConfig {
         if (enableAutoAnimeSubTaskOptionEntity != null) {
             String value = enableAutoAnimeSubTaskOptionEntity.getValue();
             LOGGER.debug("current app ENABLE_AUTO_ANIME_SUB_TASK={}", value);
-            if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
-                LOGGER.debug("start exec task: "
-                    + "search download process and create file hard links and relate episode");
+            OptionQbittorrentDTO optionQbittorrentDTO = optionService.getOptionQbittorrentDTO();
+
+            // 需要配置好了QB
+            if (Boolean.TRUE.toString().equalsIgnoreCase(value)
+                && StringUtils.isNotBlank(optionQbittorrentDTO.getUrlPrefix())
+                && optionQbittorrentDTO.getUrlPrefix().startsWith("http")) {
+                // 查询下载进度并创建文件硬链接任务
                 taskService.searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode();
-                LOGGER.debug("end exec task: "
-                    + "search download process and create file hard links and relate episode");
+
+                // 新番特征资源匹配任务
+                taskService.downloadSubscribeAnimeResource(null);
             }
         }
 
