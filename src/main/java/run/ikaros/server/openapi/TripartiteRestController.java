@@ -59,7 +59,7 @@ public class TripartiteRestController {
     }
 
     @GetMapping("/dmhy/rss/items/anime/{id}")
-    public CommonResult<List<DmhyRssItem>> findDmhyRssItems(
+    public CommonResult<List<DmhyRssItem>> findDmhyRssItemsByAnimeId(
         @PathVariable("id") Long animeId,
         @RequestParam(required = false, name = "seq") Long seq) {
         AssertUtils.notNull(animeId, "anime id");
@@ -74,5 +74,14 @@ public class TripartiteRestController {
         String keywords =
             titleCn + (null == seq ? "" : " " + ((seq > 0 && seq < 10) ? "0" + seq : seq));
         return CommonResult.ok(dmhyClient.findRssItems(keywords, DmhyCategory.ANIME));
+    }
+
+    @GetMapping("/dmhy/rss/items")
+    public CommonResult<List<DmhyRssItem>> findDmhyRssItemsByKeyword(
+        @RequestParam("keyword") String keyword,
+        @RequestParam(required = false, name = "seq") Long seq) {
+        AssertUtils.notBlank(keyword, "keyword");
+        keyword = keyword + (null == seq ? "" : " " + ((seq > 0 && seq < 10) ? "0" + seq : seq));
+        return CommonResult.ok(dmhyClient.findRssItems(keyword, DmhyCategory.ANIME));
     }
 }

@@ -110,6 +110,14 @@ public class DmhyClientImpl implements DmhyClient, InitializingBean {
                 cacheXmlFile.delete();
             }
         }
+
+        // 动漫花园，分类是动画的话，全集也会被查询出来，所以这里做下过滤
+        if (category != null) {
+            dmhyRssItemList = dmhyRssItemList.stream()
+                .filter(dmhyRssItem -> category.equals(dmhyRssItem.getCategory()))
+                .toList();
+        }
+
         log.debug("end find rss items with keyword={} and category={}, find size={}",
             keyword, category, dmhyRssItemList.size());
         return dmhyRssItemList;
