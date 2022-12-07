@@ -25,7 +25,7 @@ services:
 
   # ikaros
   ikaros_server:
-    image: ikarosrun/ikaros:dev
+    image: ikarosrun/ikaros:${IKAROS_DOCKER_TAG}
     container_name: ikaros_server
     restart: always
     depends_on:
