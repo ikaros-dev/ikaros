@@ -110,7 +110,8 @@ public class FileServiceImpl
             FileEntity sameMd5FileEntity = sameMd5FileEntities.get(0);
             String oldLocation = sameMd5FileEntity.getUrl();
             ikarosFile.setRelativePath(oldLocation)
-                .setOldLocation(oldLocation);
+                .setOldLocation(oldLocation)
+                .setAbsolutePath(oldLocation);
         } else {
             // upload file to file system
             IkarosFileOperateResult fileOperateResult = fileHandler.upload(ikarosFile);
@@ -497,9 +498,12 @@ public class FileServiceImpl
         // issue #50
         url = path.replace(currentAppDirPath, "");
         // 如果是本地环境，需要加上 http://localhost:port
-        if (ikarosProperties.envIsLocal() || ikarosProperties.envIsDev()) {
-            url = ikarosProperties.getLocalhostHttpBaseUrl() + url;
+        if (!path.startsWith("http")) {
+            if (ikarosProperties.envIsLocal() || ikarosProperties.envIsDev()) {
+                url = ikarosProperties.getLocalhostHttpBaseUrl() + url;
+            }
         }
+
 
         // 如果是ntfs目录，则需要替换下 \ 为 /
         if (SystemVarUtils.platformIsWindows()) {

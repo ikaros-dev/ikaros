@@ -93,11 +93,16 @@ public class BgmTvServiceImpl implements BgmTvService {
         AssertUtils.isPositive(subjectId, "subjectId");
         // 直接返回已经存在的番剧数据
         AnimeEntity animeEntityExample = new AnimeEntity();
-        animeEntityExample.setBgmtvId(subjectId).setStatus(true);
+        animeEntityExample.setBgmtvId(subjectId).setStatus(null);
         List<AnimeEntity> animeEntityList = animeService.listAll(Example.of(animeEntityExample));
 
         if (!animeEntityList.isEmpty()) {
-            Long id = animeEntityList.get(0).getId();
+            AnimeEntity existAnimeEntity = animeEntityList.get(0);
+            if (!existAnimeEntity.getStatus()) {
+                existAnimeEntity.setStatus(true);
+                existAnimeEntity = animeService.save(existAnimeEntity);
+            }
+            Long id = existAnimeEntity.getId();
             AnimeDTO animeDTO = animeService.findAnimeDTOById(id);
             LOGGER.debug("anime exist, return this anime, subjectId={}, animeId={}", subjectId, id);
             return animeDTO;

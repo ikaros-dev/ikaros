@@ -66,12 +66,8 @@ public class BgmTvRepositoryImpl implements BgmTvRepository, InitializingBean {
      */
     @Override
     public void refreshHttpHeaders(@Nullable String accessToken) {
-        // todo 目前设置成GitHub仓库地址，后续官网上线设置成官网地址
-        // 当前 User-Agent格式 ikaros-dev/ikaros (https://github.com/ikaros-dev/ikaros)
-        String userAgent = IkarosConst.REPO_GITHUB_NAME
-            + " (" + IkarosConst.REPO_GITHUB_URL + ")";
         headers.clear();
-        headers.set(HttpHeaders.USER_AGENT, userAgent);
+        headers.set(HttpHeaders.USER_AGENT, IkarosConst.REST_TEMPLATE_USER_AGENT);
         headers.set(HttpHeaders.COOKIE, "chii_searchDateLine=0");
         headers.set(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
         if (StringUtils.isNotBlank(accessToken)) {
