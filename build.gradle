@@ -28,6 +28,10 @@ ext {
     jsoupVersion = "1.15.3"
 }
 
+jar {
+    enabled = false
+}
+
 dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
