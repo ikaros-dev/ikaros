@@ -3,6 +3,7 @@ package run.ikaros.server.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.core.service.KVService;
@@ -11,23 +12,31 @@ import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.RssService;
 import run.ikaros.server.core.service.SeasonService;
 import run.ikaros.server.core.service.TaskService;
+import run.ikaros.server.core.service.UserService;
+import run.ikaros.server.core.service.UserSubscribeService;
 import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.KVEntity;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.entity.SeasonEntity;
+import run.ikaros.server.entity.UserEntity;
+import run.ikaros.server.entity.UserSubscribeEntity;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.KVType;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.enums.OptionJellyfin;
 import run.ikaros.server.enums.OptionMikan;
+import run.ikaros.server.enums.SubscribeType;
 import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.params.SeasonMatchingEpParams;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
+import run.ikaros.server.tripartite.dmhy.DmhyClient;
+import run.ikaros.server.tripartite.dmhy.enums.DmhyCategory;
+import run.ikaros.server.tripartite.dmhy.model.DmhyRssItem;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 import run.ikaros.server.tripartite.qbittorrent.QbittorrentClient;
 import run.ikaros.server.tripartite.qbittorrent.enums.QbTorrentInfoFilter;
@@ -50,6 +59,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static run.ikaros.server.constants.RegexConst.NUMBER_SEASON_SEQUENCE_WITH_PREFIX;
 
@@ -69,6 +81,10 @@ public class TaskServiceImpl implements TaskService {
     private final AnimeService animeService;
     private final KVService kvService;
     private final QbittorrentClient qbittorrentClient;
+    private final DmhyClient dmhyClient;
+    private final UserSubscribeService userSubscribeService;
+    private final UserService userService;
+
     private Set<String> hasHandledTorrentHashSet = new HashSet<>();
 
     public TaskServiceImpl(RssService rssService, OptionService optionService,
@@ -76,7 +92,8 @@ public class TaskServiceImpl implements TaskService {
                            FileService fileService, SeasonService seasonService,
                            AnimeService animeService,
                            KVService kvService,
-                           QbittorrentClient qbittorrentClient) {
+                           QbittorrentClient qbittorrentClient, DmhyClient dmhyClient,
+                           UserSubscribeService userSubscribeService, UserService userService) {
         this.rssService = rssService;
         this.optionService = optionService;
         this.mikanService = mikanService;
@@ -86,10 +103,13 @@ public class TaskServiceImpl implements TaskService {
         this.animeService = animeService;
         this.kvService = kvService;
         this.qbittorrentClient = qbittorrentClient;
+        this.dmhyClient = dmhyClient;
+        this.userSubscribeService = userSubscribeService;
+        this.userService = userService;
     }
 
     @Override
-    public void pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents() {
+    public void pullMikanRssAnimeSubscribeAndSaveMetadataAndDownloadTorrents() {
         LOGGER.info("exec task: pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents");
 
         OptionEntity mikanSubRssOptionEntity =
@@ -104,6 +124,39 @@ public class TaskServiceImpl implements TaskService {
         List<MikanRssItem> mikanRssItemList =
             rssService.parseMikanMySubscribeRss(mikanSubRssOptionEntity.getValue());
         LOGGER.info("parse mikan my subscribe rss url to mikan rss item list ");
+
+        // 用户指定的特征匹配过滤
+        UserEntity userOnlyOne = userService.getUserOnlyOne();
+        if (userOnlyOne != null) {
+            Long userId = userOnlyOne.getId();
+            List<UserSubscribeEntity> userSubscribeEntityList =
+                userSubscribeService.findByUserIdAndStatus(userId, true);
+            for (UserSubscribeEntity userSubscribeEntity : userSubscribeEntityList) {
+                String additional = userSubscribeEntity.getAdditional();
+                final List<String> tagList = RegexUtils.getFileTag(additional)
+                    .stream()
+                    .filter(tag -> !tag.matches(RegexConst.NUMBER_EPISODE_SEQUENCE))
+                    .toList();
+
+                if (StringUtils.isNotBlank(additional)) {
+                    mikanRssItemList = mikanRssItemList.stream()
+                        .filter(mikanRssItem -> {
+                            String title = mikanRssItem.getTitle();
+                            boolean result = true;
+                            if (title.contains(
+                                additional.replaceAll(RegexConst.FILE_NAME_TAG, ""))) {
+                                for (String tag : tagList) {
+                                    if (!title.contains(tag)) {
+                                        result = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            return result;
+                        }).collect(Collectors.toList());
+                }
+            }
+        }
 
         for (MikanRssItem mikanRssItem : mikanRssItemList) {
             try {
@@ -278,8 +331,7 @@ public class TaskServiceImpl implements TaskService {
 
             hasHandledTorrentHashSet.add(hash);
         }
-
-
+        LOGGER.info("end task: searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode");
     }
 
     private void updateEpisodeUrlByFileEntity(String torrentName, Long fileId) {
@@ -629,4 +681,67 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
+
+    @Override
+    public void downloadSubscribeAnimeResource(@Nullable Long userId) {
+        LOGGER.info("start exec task downloadSubscribeAnimeResource");
+        if (userId == null) {
+            UserEntity userOnlyOne = userService.getUserOnlyOne();
+            if (userOnlyOne == null) {
+                LOGGER.warn("skip exec task downloadSubscribeAnimeResource, no user in db");
+                return;
+            }
+            userId = userOnlyOne.getId();
+        }
+        List<UserSubscribeEntity> userSubscribeEntities =
+            userSubscribeService.findByUserIdAndStatus(userId, true);
+        for (UserSubscribeEntity userSubscribeEntity : userSubscribeEntities) {
+            handleSingleUserSubscribe(userSubscribeEntity);
+        }
+        LOGGER.info("end exec task downloadSubscribeAnimeResource");
+    }
+
+    private void handleSingleUserSubscribe(UserSubscribeEntity userSubscribeEntity) {
+        if (userSubscribeEntity.getType().equals(SubscribeType.ANIME)) {
+            Long animeId = userSubscribeEntity.getTargetId();
+            AnimeEntity animeEntity = animeService.getById(animeId);
+            if (animeEntity == null) {
+                LOGGER.warn("not found anime record for id={}", animeId);
+                return;
+            }
+            String keyword = animeEntity.getTitleCn();
+            if (StringUtils.isBlank(keyword)) {
+                LOGGER.warn("current anime title cn is blank for anime id={}, title={}",
+                    animeId, animeEntity.getTitle());
+                return;
+            }
+
+            String additional = userSubscribeEntity.getAdditional();
+            final List<String> tagList = RegexUtils.getFileTag(additional)
+                .stream()
+                .filter(tag -> !tag.matches(RegexConst.NUMBER_EPISODE_SEQUENCE))
+                .toList();
+
+            List<DmhyRssItem> dmhyRssItemList
+                = dmhyClient.findRssItems(keyword, DmhyCategory.ANIME)
+                .stream()
+                .filter(dmhyRssItem -> {
+                    String title = dmhyRssItem.getTitle();
+                    boolean result = true;
+                    for (String tag : tagList) {
+                        if (!title.contains(tag)) {
+                            result = false;
+                            break;
+                        }
+                    }
+                    return result;
+                }).toList();
+            for (DmhyRssItem dmhyRssItem : dmhyRssItemList) {
+                String magnetUrl = dmhyRssItem.getMagnetUrl();
+                if (StringUtils.isNotBlank(magnetUrl)) {
+                    qbittorrentClient.addTorrentFromUrl(magnetUrl, dmhyRssItem.getTitle());
+                }
+            }
+        }
+    }
 }

@@ -5,6 +5,7 @@ import run.ikaros.server.entity.UserSubscribeEntity;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public interface UserSubscribeService extends CrudService<UserSubscribeEntity, Long> {
 
@@ -20,4 +21,7 @@ public interface UserSubscribeService extends CrudService<UserSubscribeEntity, L
 
     @Transactional
     void deleteUserAnimeSubscribe(@Nonnull Long userId, @Nonnull Long animeId);
+
+    @Nonnull
+    List<UserSubscribeEntity> findByUserIdAndStatus(@Nonnull Long userId, @Nonnull Boolean status);
 }

@@ -17,7 +17,7 @@ public class TaskRestController {
 
     @GetMapping("/pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents")
     public CommonResult<String> pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents() {
-        taskService.pullAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
+        taskService.pullMikanRssAnimeSubscribeAndSaveMetadataAndDownloadTorrents();
         return CommonResult.ok();
     }
 

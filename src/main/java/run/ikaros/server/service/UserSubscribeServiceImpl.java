@@ -16,6 +16,7 @@ import run.ikaros.server.utils.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -111,5 +112,14 @@ public class UserSubscribeServiceImpl
                 userSubscribeRepository.save(userSubscribeEntity);
             }
         }
+    }
+
+    @Nonnull
+    @Override
+    public List<UserSubscribeEntity> findByUserIdAndStatus(@Nonnull Long userId,
+                                                           @Nonnull Boolean status) {
+        AssertUtils.notNull(userId, "userId");
+        AssertUtils.notNull(status, "status");
+        return userSubscribeRepository.findByUserIdAndStatus(userId, status);
     }
 }

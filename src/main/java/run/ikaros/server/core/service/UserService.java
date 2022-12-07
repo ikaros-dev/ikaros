@@ -1,6 +1,7 @@
 package run.ikaros.server.core.service;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,4 +49,10 @@ public interface UserService extends CrudService<UserEntity, Long> {
 
     @Transactional
     UserEntity updateUserInfo(@Nonnull UserEntity userEntity);
+
+    /**
+     * @return 获取数据库第一个用户，目前是单用户不需考虑多用户情况
+     */
+    @Nullable
+    UserEntity getUserOnlyOne();
 }

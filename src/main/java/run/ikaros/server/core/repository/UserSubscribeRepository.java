@@ -4,6 +4,7 @@ import run.ikaros.server.entity.UserSubscribeEntity;
 import run.ikaros.server.enums.SubscribeProgress;
 import run.ikaros.server.enums.SubscribeType;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserSubscribeRepository extends BaseRepository<UserSubscribeEntity, Long> {
@@ -16,4 +17,6 @@ public interface UserSubscribeRepository extends BaseRepository<UserSubscribeEnt
     Optional<UserSubscribeEntity> findByUserIdAndTypeAndTargetId(Long userId,
                                                                  SubscribeType type,
                                                                  Long targetId);
+
+    List<UserSubscribeEntity> findByUserIdAndStatus(Long userId, Boolean status);
 }
