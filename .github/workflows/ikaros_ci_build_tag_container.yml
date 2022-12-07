@@ -44,4 +44,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ikarosrun/ikaros:$GITHUB_REF_NAME
+            ikarosrun/ikaros:${{  github.ref_name }}

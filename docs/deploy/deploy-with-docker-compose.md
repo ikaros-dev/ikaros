@@ -13,12 +13,14 @@
 
 - `IKAROS_APP_DIR`: ikaros的数据目录，这里是：/opt/ikaros
 - `IKAROS_DB_PASSWORD`: ikaros的数据库密码，建议设置复杂点的密码
+- `IKAROS_DOCKER_TAG`: ikaros的dockerhub的tag，可以查看[DockerHub Ikaros Tags](https://hub.docker.com/r/ikarosrun/ikaros/tags)找到您要部署的版本
 
 使用命令进行设置
 
 ```shell
 export IKAROS_APP_DIR=/opt/ikaros
 export IKAROS_DB_PASSWORD=openpostgresql
+export IKAROS_DOCKER_TAG=v0.1.0-beta.1
 ```
 
 - /opt/ikaros: Ikaros应用目录
