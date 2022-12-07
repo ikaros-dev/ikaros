@@ -25,7 +25,7 @@ services:
 
   # ikaros
   ikaros_server:
-    image: liguohaocn/ikaros:dev
+    image: ikarosrun/ikaros:dev
     container_name: ikaros_server
     restart: always
     depends_on:
