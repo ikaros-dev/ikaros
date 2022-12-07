@@ -1,5 +1,6 @@
 package run.ikaros.server.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -43,7 +44,10 @@ public class EpisodeServiceImpl
     @Override
     public List<EpisodeEntity> findBySeasonId(@Nonnull Long seasonId) {
         AssertUtils.notNull(seasonId, "seasonId");
-        return episodeRepository.findBySeasonIdAndStatus(seasonId, true);
+        return episodeRepository.findBySeasonIdAndStatus(seasonId, true)
+            .stream()
+            .sorted((o1, o2) -> Integer.parseInt(String.valueOf(o1.getSeq() - o2.getSeq())))
+            .collect(Collectors.toList());
     }
 
     @Override
