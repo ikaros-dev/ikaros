@@ -86,6 +86,7 @@ public class TaskServiceImpl implements TaskService {
     private final UserService userService;
 
     private Set<String> hasHandledTorrentHashSet = new HashSet<>();
+    private Set<Long> hasHandledSubscribeSet = new HashSet<>();
 
     public TaskServiceImpl(RssService rssService, OptionService optionService,
                            MikanService mikanService, BgmTvService bgmTvService,
@@ -702,6 +703,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void handleSingleUserSubscribe(UserSubscribeEntity userSubscribeEntity) {
+        Long subscribeEntityId = userSubscribeEntity.getId();
+        if (hasHandledSubscribeSet.contains(subscribeEntityId)) {
+            return;
+        }
+
         if (userSubscribeEntity.getType().equals(SubscribeType.ANIME)) {
             Long animeId = userSubscribeEntity.getTargetId();
             AnimeEntity animeEntity = animeService.getById(animeId);
@@ -743,5 +749,6 @@ public class TaskServiceImpl implements TaskService {
                 }
             }
         }
+        hasHandledSubscribeSet.add(subscribeEntityId);
     }
 }
