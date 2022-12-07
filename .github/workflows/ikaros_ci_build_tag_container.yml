@@ -44,4 +44,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            liguohaocn/ikaros:$GITHUB_REF_NAME
+            ikarosrun/ikaros:$GITHUB_REF_NAME

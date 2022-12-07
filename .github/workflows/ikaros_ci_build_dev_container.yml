@@ -48,4 +48,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            liguohaocn/ikaros:dev
+            ikarosrun/ikaros:dev
