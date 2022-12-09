@@ -34,7 +34,7 @@ Mac或者Linux
 本地运行，复制`config/example/resource/application-local.yaml`到`src/main/resource/application-local.yaml`
 , 可以根据需要酌情修改，
 
-我建议是本地跑个 [docker for windows](https://docs.docker.com/desktop/install/windows-install/))，装好mariadb方便开发
+我建议是本地跑个 [docker for windows](https://docs.docker.com/desktop/install/windows-install/)，装好mariadb方便开发
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
 
