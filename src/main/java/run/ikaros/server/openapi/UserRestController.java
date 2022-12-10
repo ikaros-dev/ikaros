@@ -139,4 +139,12 @@ public class UserRestController {
             animeId);
         return CommonResult.ok(Boolean.TRUE);
     }
+
+    @PutMapping("/password")
+    public CommonResult<UserEntity> updateUserPassword(
+        @RequestParam("oldPassword") String oldPassword,
+        @RequestParam("newPassword") String newPassword) {
+        userService.updatePassword(UserService.getCurrentLoginUserUid(), oldPassword, newPassword);
+        return CommonResult.ok();
+    }
 }

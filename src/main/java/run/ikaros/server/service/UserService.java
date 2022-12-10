@@ -3,6 +3,7 @@ package run.ikaros.server.service;
 
 import javax.annotation.Nonnull;
 
+import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.constants.RegexConst;
@@ -136,6 +137,23 @@ public class UserService extends AbstractCrudService<UserEntity, Long> implement
     public UserEntity getUserOnlyOne() {
         Optional<UserEntity> userEntityOptional = listAll().stream().findFirst();
         return userEntityOptional.orElse(null);
+    }
+
+    @Override
+    public void updatePassword(@Nonnull Long userId, @Nonnull String oldPassword,
+                               @Nonnull String newPassword) {
+        AssertUtils.notNull(userId, "userId");
+        AssertUtils.notBlank(oldPassword, "oldPassword");
+        AssertUtils.notBlank(newPassword, "newPassword");
+        UserEntity userEntity = getById(userId);
+        if (userEntity == null) {
+            throw new RecordNotFoundException("not found user with id=" + userId);
+        }
+        if (!passwordEncoder.matches(oldPassword, userEntity.getPassword())) {
+            throw new RuntimeIkarosException("incorrect old password: " + oldPassword);
+        }
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        save(userEntity);
     }
 
     @Nonnull

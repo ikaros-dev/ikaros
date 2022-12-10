@@ -55,4 +55,8 @@ public interface UserService extends CrudService<UserEntity, Long> {
      */
     @Nullable
     UserEntity getUserOnlyOne();
+
+    @Transactional
+    void updatePassword(@Nonnull Long userId, @Nonnull String oldPassword,
+                        @Nonnull String newPassword);
 }
