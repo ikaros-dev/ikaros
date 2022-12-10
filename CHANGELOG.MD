@@ -8,6 +8,10 @@
 
 ## Pages
 - 添加用户设置页，对接服务端用户更新接口和密码更新接口
+- 添加了Ikaros的Logo页面对应的地方
+
+## Documentations
+- 添加了Ikaros的Logo，并更新了Readme文档
 
 # 0.1.0-beta.1
 ## Features
