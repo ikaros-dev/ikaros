@@ -10,6 +10,7 @@ import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.core.service.MediaService;
 import run.ikaros.server.core.service.SeasonService;
 import run.ikaros.server.entity.AnimeEntity;
+import run.ikaros.server.entity.BaseEntity;
 import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
@@ -47,7 +48,11 @@ public class MediaServiceImpl implements MediaService {
 
     @Override
     public void generateMediaDir() {
-        List<AnimeEntity> animeEntityList = animeService.listAll();
+        List<AnimeEntity> animeEntityList
+            = animeService
+            .listAll().stream()
+            .filter(BaseEntity::getStatus)
+            .toList();
         for (AnimeEntity animeEntity : animeEntityList) {
             generateMediaDirBySingleAnimeEntity(animeEntity);
         }
