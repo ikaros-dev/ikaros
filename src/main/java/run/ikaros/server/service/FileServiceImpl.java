@@ -433,9 +433,9 @@ public class FileServiceImpl
     }
 
     @Override
-    public FileEntity findByName(@Nonnull String name) {
+    public List<FileEntity> findListByName(@Nonnull String name) {
         AssertUtils.notBlank(name, "name");
-        return fileRepository.findFileEntityByName(name);
+        return fileRepository.findFileEntitiesByName(name);
     }
 
     @Nonnull

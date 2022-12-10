@@ -18,7 +18,7 @@ public class UserDTO extends UserEntity {
 
     public UserDTO(UserEntity userEntity) {
         AssertUtils.notNull(userEntity, "'userEntity' must not be null");
-        BeanUtils.copyProperties(userEntity, this);
+        BeanUtils.copyProperties(userEntity, this, Set.of("password"));
     }
 
     public Set<String> getRoles() {

@@ -59,9 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static run.ikaros.server.constants.RegexConst.NUMBER_SEASON_SEQUENCE_WITH_PREFIX;
 
@@ -392,8 +390,9 @@ public class TaskServiceImpl implements TaskService {
             }
             for (File file : files) {
                 String fileName = file.getName();
-                FileEntity existsFileEntity = fileService.findByName(fileName);
-                if (existsFileEntity != null) {
+                List<FileEntity> existsFileEntityList = fileService.findListByName(fileName);
+                if (!existsFileEntityList.isEmpty()) {
+                    FileEntity existsFileEntity = existsFileEntityList.get(0);
                     updateEpisodeUrlByFileEntity(torrentName, existsFileEntity.getId());
                     LOGGER.debug("find exists file for name={}", fileName);
                     continue;
