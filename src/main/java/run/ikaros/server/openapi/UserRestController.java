@@ -72,29 +72,26 @@ public class UserRestController {
     }
 
     //@PostMapping("/register")
-    public CommonResult<UserEntity> register(@RequestBody AuthUserDTO authUserDTO) {
+    public CommonResult<UserDTO> register(@RequestBody AuthUserDTO authUserDTO) {
         AssertUtils.notNull(authUserDTO, "'authUser' must not be null");
         String username = authUserDTO.getUsername();
         String password = authUserDTO.getPassword();
-        userService.registerUserByUsernameAndPassword(username, password);
-        return CommonResult.ok();
+        UserEntity userEntity = userService.registerUserByUsernameAndPassword(username, password);
+        return CommonResult.ok(new UserDTO(userEntity));
     }
 
 
     @GetMapping("/{id}")
-    public CommonResult<UserEntity> getUserById(@PathVariable Long id)
+    public CommonResult<UserDTO> getUserById(@PathVariable Long id)
         throws RecordNotFoundException {
-        UserEntity user = userService.getById(id);
-        if (user != null) {
-            user.hiddenSecretField();
-        }
-        return CommonResult.ok(user);
+        UserEntity userEntity = userService.getById(id);
+        return CommonResult.ok(new UserDTO(userEntity));
     }
 
     @PutMapping
-    public CommonResult<UserEntity> updateUser(@RequestBody UserEntity userEntity)
+    public CommonResult<UserDTO> updateUser(@RequestBody UserEntity userEntity)
         throws RecordNotFoundException {
-        return CommonResult.ok(userService.updateUserInfo(userEntity));
+        return CommonResult.ok(new UserDTO(userService.updateUserInfo(userEntity)));
     }
 
     @DeleteMapping("/{id}")
@@ -141,5 +138,13 @@ public class UserRestController {
             UserService.getCurrentLoginUserUid(),
             animeId);
         return CommonResult.ok(Boolean.TRUE);
+    }
+
+    @PutMapping("/password")
+    public CommonResult<UserEntity> updateUserPassword(
+        @RequestParam("oldPassword") String oldPassword,
+        @RequestParam("newPassword") String newPassword) {
+        userService.updatePassword(UserService.getCurrentLoginUserUid(), oldPassword, newPassword);
+        return CommonResult.ok();
     }
 }

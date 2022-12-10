@@ -13,6 +13,7 @@ import run.ikaros.server.utils.AssertUtils;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -113,8 +114,8 @@ public interface FileService extends CrudService<FileEntity, Long> {
     @Nonnull
     FileEntity create(@Nonnull FileEntity fileEntity);
 
-    @Nullable
-    FileEntity findByName(@Nonnull String name);
+    @Nonnull
+    List<FileEntity> findListByName(@Nonnull String name);
 
     @Nonnull
     Optional<FileEntity> findByUrl(@Nonnull String url);

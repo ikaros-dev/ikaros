@@ -7,11 +7,13 @@ import run.ikaros.server.result.PagingWrap;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.params.SearchFilesParams;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
@@ -107,6 +109,11 @@ public class FileRestController {
         SearchFilesParams searchFilesParams = new SearchFilesParams().setPage(page).setSize(size)
             .setType(type).setKeyword(keyword).setPlace(place);
         return CommonResult.ok(fileService.findFilesByPagingAndCondition(searchFilesParams));
+    }
+
+    @GetMapping("/list/name/{name}")
+    public CommonResult<List<FileEntity>> findListByName(@PathVariable("name") String name) {
+        return CommonResult.ok(fileService.findListByName(name));
     }
 
     @GetMapping("/types")

@@ -3,6 +3,7 @@ package run.ikaros.server.service;
 
 import javax.annotation.Nonnull;
 
+import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.constants.RegexConst;
@@ -73,24 +74,22 @@ public class UserService extends AbstractCrudService<UserEntity, Long> implement
                 existUserEntity.setStatus(true);
                 userRepository.saveAndFlush(existUserEntity);
                 LOGGER.info("enable exist user, username={}", username);
-                return existUserEntity.hiddenSecretField();
+                return existUserEntity;
             }
         }
 
         // 新增用户
-        return userRepository.saveAndFlush(
-            new UserEntity()
-                .setPassword(passwordEncoder.encode(password))
-                .setUsername(username)
-                .setEnable(true)
-                .setIntroduce("no set introduce.")
-                .setNickname("nickname")
-                .setNonLocked(true)
-                .setSite("http://example.org")
-                .setTelephone("00000000000")
-                .setAvatar(
-                    "https://example.org/avator.jpeg")
-        );
+        UserEntity userEntity = new UserEntity();
+        userEntity.setPassword(passwordEncoder.encode(password));
+        userEntity.setUsername(username);
+        userEntity.setEnable(true);
+        userEntity.setIntroduce("no set introduce.");
+        userEntity.setNickname("no set nickname");
+        userEntity.setNonLocked(true);
+        userEntity.setSite("");
+        userEntity.setTelephone("");
+        userEntity.setAvatar("");
+        return userRepository.saveAndFlush(userEntity);
     }
 
 
@@ -126,6 +125,9 @@ public class UserService extends AbstractCrudService<UserEntity, Long> implement
         Long id = userEntity.getId();
         AssertUtils.notNull(id, "user id must not be null");
         UserEntity existUserEntity = findUserById(userEntity.getId());
+        if (StringUtils.isNotBlank(userEntity.getPassword())) {
+            userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+        }
         BeanUtils.copyProperties(userEntity, existUserEntity);
         existUserEntity = userRepository.saveAndFlush(existUserEntity);
         return existUserEntity;
@@ -135,6 +137,23 @@ public class UserService extends AbstractCrudService<UserEntity, Long> implement
     public UserEntity getUserOnlyOne() {
         Optional<UserEntity> userEntityOptional = listAll().stream().findFirst();
         return userEntityOptional.orElse(null);
+    }
+
+    @Override
+    public void updatePassword(@Nonnull Long userId, @Nonnull String oldPassword,
+                               @Nonnull String newPassword) {
+        AssertUtils.notNull(userId, "userId");
+        AssertUtils.notBlank(oldPassword, "oldPassword");
+        AssertUtils.notBlank(newPassword, "newPassword");
+        UserEntity userEntity = getById(userId);
+        if (userEntity == null) {
+            throw new RecordNotFoundException("not found user with id=" + userId);
+        }
+        if (!passwordEncoder.matches(oldPassword, userEntity.getPassword())) {
+            throw new RuntimeIkarosException("incorrect old password: " + oldPassword);
+        }
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        save(userEntity);
     }
 
     @Nonnull
@@ -174,7 +193,7 @@ public class UserService extends AbstractCrudService<UserEntity, Long> implement
 
         authUserDTO.setId(userId);
         authUserDTO.setToken(token);
-        authUserDTO.setPassword("**hidden password**");
+        authUserDTO.setPassword(null);
         return authUserDTO;
     }
 
@@ -194,10 +213,8 @@ public class UserService extends AbstractCrudService<UserEntity, Long> implement
             } else {
                 userEntity = userRepository.findByUsername(usernameOrEmail);
             }
-            if (userEntity != null) {
-                userEntity.hiddenSecretField();
-            }
             UserDTO userDTO = new UserDTO(userEntity);
+            userDTO.setPassword(null);
             // 填充角色
             userDTO.getRoles().add(UserConst.DEFAULT_ROLE);
             return userDTO;
