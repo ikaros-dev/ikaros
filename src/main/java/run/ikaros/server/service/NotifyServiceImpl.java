@@ -59,7 +59,7 @@ public class NotifyServiceImpl implements NotifyService, InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         OptionNotifyDTO optionNotifyDTO = optionService.getOptionNotifyDTO();
-        if (optionNotifyDTO.getMailEnable()) {
+        if (optionNotifyDTO.getMailEnable() != null && optionNotifyDTO.getMailEnable()) {
             mailSender = new JavaMailSenderImpl();
             mailSender.setHost(optionNotifyDTO.getMailSmtpHost());
             mailSender.setPort(optionNotifyDTO.getMailSmtpPort());
