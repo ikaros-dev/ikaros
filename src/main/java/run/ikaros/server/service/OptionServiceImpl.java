@@ -260,6 +260,8 @@ public class OptionServiceImpl
             DefaultConst.OPTION_NOTIFY_MAIL_SMTP_ACCOUNT, OptionCategory.NOTIFY));
         saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_PASSWORD.name(),
             DefaultConst.OPTION_NOTIFY_MAIL_SMTP_PASSWORD, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_ACCOUNT_ALIAS.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_ACCOUNT_ALIAS, OptionCategory.NOTIFY));
 
         return true;
     }

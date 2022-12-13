@@ -59,6 +59,7 @@ public interface DefaultConst {
     String OPTION_NOTIFY_MAIL_SMTP_PORT = "";
     String OPTION_NOTIFY_MAIL_SMTP_ACCOUNT = "";
     String OPTION_NOTIFY_MAIL_SMTP_PASSWORD = "";
+    String OPTION_NOTIFY_MAIL_SMTP_ACCOUNT_ALIAS = "Ikaros";
 
 
 
