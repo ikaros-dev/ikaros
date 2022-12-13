@@ -14,6 +14,7 @@ import run.ikaros.server.core.repository.OptionRepository;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.entity.OptionEntity;
+import run.ikaros.server.enums.MailProtocol;
 import run.ikaros.server.enums.OptionApp;
 import run.ikaros.server.enums.OptionBgmTv;
 import run.ikaros.server.enums.OptionCategory;
@@ -22,6 +23,7 @@ import run.ikaros.server.enums.OptionFile;
 import run.ikaros.server.enums.OptionJellyfin;
 import run.ikaros.server.enums.OptionMikan;
 import run.ikaros.server.enums.OptionNetwork;
+import run.ikaros.server.enums.OptionNotify;
 import run.ikaros.server.enums.OptionQbittorrent;
 import run.ikaros.server.enums.OptionSeo;
 import run.ikaros.server.event.BgmTvHttpProxyUpdateEvent;
@@ -32,6 +34,7 @@ import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.model.dto.OptionNetworkDTO;
+import run.ikaros.server.model.dto.OptionNotifyDTO;
 import run.ikaros.server.model.dto.OptionQbittorrentDTO;
 import run.ikaros.server.model.request.AppInitRequest;
 import run.ikaros.server.model.request.SaveOptionRequest;
@@ -245,6 +248,22 @@ public class OptionServiceImpl
         // init option jellyfin
         saveOptionItem(new OptionItemDTO(OptionJellyfin.MEDIA_DIR_PATH.name(),
             DefaultConst.OPTION_JELLYFIN_MEDIA_DIR_PATH, OptionCategory.JELLYFIN));
+
+        // init option notify
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_ENABLE.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_ENABLE, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_PROTOCOL.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_PROTOCOL, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_HOST.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_HOST, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_PORT.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_PORT, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_ACCOUNT.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_ACCOUNT, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_PASSWORD.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_PASSWORD, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_ACCOUNT_ALIAS.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_ACCOUNT_ALIAS, OptionCategory.NOTIFY));
 
         return true;
     }
@@ -545,5 +564,41 @@ public class OptionServiceImpl
             }
         }
         return qbittorrentDTO;
+    }
+
+    @Nonnull
+    @Override
+    public OptionNotifyDTO getOptionNotifyDTO() {
+        OptionNotifyDTO notifyDTO = new OptionNotifyDTO();
+        List<OptionEntity> optionEntityList = findOptionByCategory(OptionCategory.NOTIFY);
+        for (OptionEntity optionEntity : optionEntityList) {
+            final String key = optionEntity.getKey();
+            final String value = optionEntity.getValue();
+            if (OptionNotify.MAIL_ENABLE.name().equalsIgnoreCase(key)
+                && StringUtils.isNotBlank(value)) {
+                notifyDTO.setMailEnable(Boolean.valueOf(value));
+            }
+            if (OptionNotify.MAIL_PROTOCOL.name().equalsIgnoreCase(key)
+                && StringUtils.isNotBlank(value)) {
+                notifyDTO.setMailProtocol(MailProtocol.valueOf(value));
+            }
+            if (OptionNotify.MAIL_SMTP_HOST.name().equalsIgnoreCase(key)) {
+                notifyDTO.setMailSmtpHost(value);
+            }
+            if (OptionNotify.MAIL_SMTP_PORT.name().equalsIgnoreCase(key)
+                && StringUtils.isNotBlank(value)) {
+                notifyDTO.setMailSmtpPort(Integer.valueOf(value));
+            }
+            if (OptionNotify.MAIL_SMTP_ACCOUNT.name().equalsIgnoreCase(key)) {
+                notifyDTO.setMailSmtpAccount(value);
+            }
+            if (OptionNotify.MAIL_SMTP_ACCOUNT_ALIAS.name().equalsIgnoreCase(key)) {
+                notifyDTO.setMailSmtpAccountAlias(value);
+            }
+            if (OptionNotify.MAIL_SMTP_PASSWORD.name().equalsIgnoreCase(key)) {
+                notifyDTO.setMailSmtpPassword(value);
+            }
+        }
+        return notifyDTO;
     }
 }
