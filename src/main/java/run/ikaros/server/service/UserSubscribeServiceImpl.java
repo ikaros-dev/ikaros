@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import run.ikaros.server.core.repository.UserSubscribeRepository;
 import run.ikaros.server.core.service.AnimeService;
+import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.core.service.UserSubscribeService;
 import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
 import run.ikaros.server.entity.AnimeEntity;
@@ -39,11 +40,10 @@ public class UserSubscribeServiceImpl
 
     @Override
     public void saveUserAnimeSubscribe(@Nonnull Long userId, @Nonnull Long animeId,
-                                       @Nonnull String progress,
+                                       @Nullable String progress,
                                        @Nullable String additional) {
         AssertUtils.notNull(userId, "userId");
         AssertUtils.notNull(animeId, "animeId");
-        AssertUtils.notBlank(progress, "progress");
 
         Optional<UserSubscribeEntity> userSubscribeEntityOptional =
             userSubscribeRepository.findByUserIdAndTypeAndTargetId(userId,
@@ -52,7 +52,9 @@ public class UserSubscribeServiceImpl
             UserSubscribeEntity userSubscribeEntity = new UserSubscribeEntity();
             userSubscribeEntity.setUserId(userId);
             userSubscribeEntity.setType(SubscribeType.ANIME);
-            userSubscribeEntity.setProgress(SubscribeProgress.valueOf(progress));
+            if (StringUtils.isNotBlank(progress)) {
+                userSubscribeEntity.setProgress(SubscribeProgress.valueOf(progress));
+            }
             userSubscribeEntity.setTargetId(animeId);
             if (StringUtils.isNotBlank(additional)) {
                 userSubscribeEntity.setAdditional(additional);
@@ -60,7 +62,9 @@ public class UserSubscribeServiceImpl
             userSubscribeRepository.save(userSubscribeEntity);
         } else {
             UserSubscribeEntity userSubscribeEntity = userSubscribeEntityOptional.get();
-            userSubscribeEntity.setProgress(SubscribeProgress.valueOf(progress));
+            if (StringUtils.isNotBlank(progress)) {
+                userSubscribeEntity.setProgress(SubscribeProgress.valueOf(progress));
+            }
             if (!userSubscribeEntity.getStatus()) {
                 userSubscribeEntity.setStatus(true);
             }
@@ -121,5 +125,14 @@ public class UserSubscribeServiceImpl
         AssertUtils.notNull(userId, "userId");
         AssertUtils.notNull(status, "status");
         return userSubscribeRepository.findByUserIdAndStatus(userId, status);
+    }
+
+    @Override
+    public void saveUserSubscribeWithBatchByAnimeIdArr(@Nonnull Long[] animeIdArr) {
+        AssertUtils.notNull(animeIdArr, "animeIdArr");
+        Long uid = UserService.getCurrentLoginUserUid();
+        for (Long animeId : animeIdArr) {
+            saveUserAnimeSubscribe(uid, animeId, null, null);
+        }
     }
 }
