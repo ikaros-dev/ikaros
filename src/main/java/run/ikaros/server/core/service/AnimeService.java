@@ -46,4 +46,7 @@ public interface AnimeService extends CrudService<AnimeEntity, Long> {
 
     @Nonnull
     List<AnimeEntity> findAll();
+
+    @Transactional
+    void deleteWithBatchLogicallyByIds(@Nonnull Long[] animeIdArray);
 }

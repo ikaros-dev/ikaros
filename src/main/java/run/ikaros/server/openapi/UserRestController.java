@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +23,7 @@ import run.ikaros.server.model.dto.AuthUserDTO;
 import run.ikaros.server.model.dto.UserDTO;
 import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.utils.AssertUtils;
+import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -128,6 +130,18 @@ public class UserRestController {
         userSubscribeService.saveUserAnimeSubscribe(
             UserService.getCurrentLoginUserUid(),
             animeId, progress, additional);
+        return CommonResult.ok(Boolean.TRUE);
+    }
+
+    @PutMapping("/subscribe/anime/ids/{ids}")
+    public CommonResult<Boolean> saveUserSubscribeWithBatchByAnimeIdArrBase64Json(
+        @PathVariable("ids") String animeIdArrBase64Json
+    ) {
+        AssertUtils.notBlank(animeIdArrBase64Json, "animeIdArrBase64Json");
+        byte[] bytes = Base64.getDecoder().decode(animeIdArrBase64Json);
+        String animeIdArrJson = new String(bytes, StandardCharsets.UTF_8);
+        Long[] animeIdArr = JsonUtils.json2ObjArr(animeIdArrJson, new TypeReference<Long[]>() {});
+        userSubscribeService.saveUserSubscribeWithBatchByAnimeIdArr(animeIdArr);
         return CommonResult.ok(Boolean.TRUE);
     }
 

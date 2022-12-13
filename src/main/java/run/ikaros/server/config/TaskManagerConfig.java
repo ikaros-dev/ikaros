@@ -101,7 +101,7 @@ public class TaskManagerConfig {
                 taskService.searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode();
 
                 // 新番特征资源匹配任务
-                taskService.downloadSubscribeAnimeResource(null);
+                // taskService.downloadSubscribeAnimeResource(null);
             }
         }
 

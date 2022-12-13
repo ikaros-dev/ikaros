@@ -11,7 +11,7 @@ public interface UserSubscribeService extends CrudService<UserSubscribeEntity, L
 
     @Transactional
     void saveUserAnimeSubscribe(@Nonnull Long userId, @Nonnull Long animeId,
-                                @Nonnull String progress,
+                                @Nullable String progress,
                                 @Nullable String additional);
 
     boolean findUserAnimeSubscribeStatus(@Nonnull Long userId, @Nonnull Long animeId);
@@ -24,4 +24,7 @@ public interface UserSubscribeService extends CrudService<UserSubscribeEntity, L
 
     @Nonnull
     List<UserSubscribeEntity> findByUserIdAndStatus(@Nonnull Long userId, @Nonnull Boolean status);
+
+    @Transactional
+    void saveUserSubscribeWithBatchByAnimeIdArr(@Nonnull Long[] animeIdArr);
 }

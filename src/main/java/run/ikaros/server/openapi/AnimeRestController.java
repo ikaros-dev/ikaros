@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +15,11 @@ import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.params.SearchAnimeDTOSParams;
 import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.result.PagingWrap;
+import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
+import run.ikaros.server.utils.JsonUtils;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * @author guohao
@@ -55,6 +61,20 @@ public class AnimeRestController {
     @DeleteMapping("/id/{id}")
     public CommonResult<AnimeEntity> deleteAnimeById(@PathVariable("id") Long animeId) {
         return CommonResult.ok(animeService.deleteByIdLogically(animeId));
+    }
+
+    @DeleteMapping("/ids/{ids}")
+    public CommonResult<Boolean> deleteWithBatchByIds(
+        @PathVariable("ids") String animeIdsJsonBase64) {
+        byte[] bytes = Base64.getDecoder().decode(animeIdsJsonBase64);
+        String animeIdsJson = new String(bytes, StandardCharsets.UTF_8);
+        Long[] ids = JsonUtils.json2ObjArr(animeIdsJson, new TypeReference<>() {
+        });
+        if (ids == null) {
+            throw new IllegalArgumentException("anime id array is null");
+        }
+        animeService.deleteWithBatchLogicallyByIds(ids);
+        return CommonResult.ok(Boolean.TRUE);
     }
 
 

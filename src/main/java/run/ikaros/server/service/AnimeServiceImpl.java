@@ -261,5 +261,13 @@ public class AnimeServiceImpl
             .collect(Collectors.toList());
     }
 
+    @Override
+    public void deleteWithBatchLogicallyByIds(@Nonnull Long[] animeIdArray) {
+        AssertUtils.notNull(animeIdArray, "anime id array");
+        for (Long animeId : animeIdArray) {
+            deleteByIdLogically(animeId);
+        }
+    }
+
 
 }
