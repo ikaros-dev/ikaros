@@ -31,6 +31,7 @@ public enum OptionCategory {
      * @see <a href="https://github.com/jellyfin/jellyfin">jellyfin</a>
      */
     JELLYFIN,
+    NOTIFY,
     OTHER;
 
     public static final Set<String> CATEGORY_SET = Arrays.stream(OptionCategory.values())

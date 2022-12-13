@@ -1,6 +1,8 @@
 package run.ikaros.server.constants;
 
 import run.ikaros.server.enums.FilePlace;
+import run.ikaros.server.enums.MailProtocol;
+import run.ikaros.server.enums.NotifyMethod;
 
 public interface DefaultConst {
     String OPTION_APP_IS_INIT = Boolean.TRUE.toString();
@@ -50,6 +52,13 @@ public interface DefaultConst {
     String OPTION_QBITTORRENT_ENABLE_AUTH = Boolean.TRUE.toString();
     String OPTION_QBITTORRENT_USERNAME = "admin";
     String OPTION_QBITTORRENT_PASSWORD = "adminadmin";
+
+    String OPTION_NOTIFY_MAIL_ENABLE = Boolean.FALSE.toString();
+    String OPTION_NOTIFY_MAIL_PROTOCOL = MailProtocol.SMTP.name();
+    String OPTION_NOTIFY_MAIL_SMTP_HOST = "";
+    String OPTION_NOTIFY_MAIL_SMTP_PORT = "";
+    String OPTION_NOTIFY_MAIL_SMTP_ACCOUNT = "";
+    String OPTION_NOTIFY_MAIL_SMTP_PASSWORD = "";
 
 
 

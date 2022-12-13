@@ -22,6 +22,7 @@ import run.ikaros.server.enums.OptionFile;
 import run.ikaros.server.enums.OptionJellyfin;
 import run.ikaros.server.enums.OptionMikan;
 import run.ikaros.server.enums.OptionNetwork;
+import run.ikaros.server.enums.OptionNotify;
 import run.ikaros.server.enums.OptionQbittorrent;
 import run.ikaros.server.enums.OptionSeo;
 import run.ikaros.server.event.BgmTvHttpProxyUpdateEvent;
@@ -245,6 +246,20 @@ public class OptionServiceImpl
         // init option jellyfin
         saveOptionItem(new OptionItemDTO(OptionJellyfin.MEDIA_DIR_PATH.name(),
             DefaultConst.OPTION_JELLYFIN_MEDIA_DIR_PATH, OptionCategory.JELLYFIN));
+
+        // init option notify
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_ENABLE.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_ENABLE, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_PROTOCOL.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_PROTOCOL, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_HOST.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_HOST, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_PORT.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_PORT, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_ACCOUNT.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_ACCOUNT, OptionCategory.NOTIFY));
+        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_PASSWORD.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_PASSWORD, OptionCategory.NOTIFY));
 
         return true;
     }
