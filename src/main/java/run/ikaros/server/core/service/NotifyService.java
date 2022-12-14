@@ -1,6 +1,7 @@
 package run.ikaros.server.core.service;
 
 import org.thymeleaf.context.Context;
+import run.ikaros.server.model.dto.OptionNotifyDTO;
 import run.ikaros.server.model.request.NotifyMailTestRequest;
 
 import javax.annotation.Nonnull;
@@ -11,4 +12,6 @@ public interface NotifyService {
 
     void sendTemplateMail(@Nonnull String targetMailAddress, @Nonnull String subject,
                           @Nonnull String template, @Nonnull Context context);
+
+    void refreshMailSender(@Nonnull OptionNotifyDTO optionNotifyDTO);
 }
