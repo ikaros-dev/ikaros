@@ -56,7 +56,10 @@ public class EpisodeServiceImpl
     @Override
     public EpisodeEntity save(@Nonnull EpisodeEntity entity) {
         Long id = entity.getId();
-        EpisodeEntity existsEpisodeEntity = getById(id);
+        EpisodeEntity existsEpisodeEntity = null;
+        if (id != null) {
+            existsEpisodeEntity = getById(id);
+        }
         String oldUrl = null;
         if (existsEpisodeEntity != null) {
             oldUrl = existsEpisodeEntity.getUrl();
