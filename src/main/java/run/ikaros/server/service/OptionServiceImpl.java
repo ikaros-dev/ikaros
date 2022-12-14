@@ -30,6 +30,7 @@ import run.ikaros.server.event.BgmTvHttpProxyUpdateEvent;
 import run.ikaros.server.event.BgmTvTokenUpdateEvent;
 import run.ikaros.server.event.MikanAndRssHttpProxyUpdateEvent;
 import run.ikaros.server.event.OptionNetworkUpdateEvent;
+import run.ikaros.server.event.OptionNotifyUpdateEvent;
 import run.ikaros.server.event.QbittorrentOptionUpdateEvent;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.OptionDTO;
@@ -456,6 +457,11 @@ public class OptionServiceImpl
             if (OptionCategory.NETWORK.equals(optionCategory)) {
                 applicationContext.publishEvent(
                     new OptionNetworkUpdateEvent(this, getOptionNetworkDTO()));
+            }
+
+            if (OptionCategory.NOTIFY.equals(optionCategory)) {
+                applicationContext.publishEvent(
+                    new OptionNotifyUpdateEvent(this, getOptionNotifyDTO()));
             }
 
             OptionDTO optionDTO = new OptionDTO();
