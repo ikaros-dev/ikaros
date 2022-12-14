@@ -90,7 +90,6 @@ public class EpisodeUrlUpdateEventListener
             vars.put("epSeq", episodeEntity.getSeq());
             vars.put("epIntroduction", episodeEntity.getOverview());
             vars.put("introduction", animeEntity.getOverview());
-            vars.put("coverImgUrl", animeEntity.getCoverUrl());
             context.setVariables(vars);
 
             notifyService.sendTemplateMail(targetAddress, subject,
