@@ -1,6 +1,5 @@
 package run.ikaros.server.service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -8,6 +7,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.entity.EpisodeEntity;
@@ -15,6 +18,7 @@ import run.ikaros.server.core.repository.BaseRepository;
 import run.ikaros.server.core.repository.EpisodeRepository;
 import run.ikaros.server.core.service.EpisodeService;
 import run.ikaros.server.entity.FileEntity;
+import run.ikaros.server.event.EpisodeUrlUpdateEvent;
 import run.ikaros.server.model.dto.EpisodeDTO;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
@@ -26,10 +30,12 @@ import run.ikaros.server.utils.StringUtils;
 @Service
 public class EpisodeServiceImpl
     extends AbstractCrudService<EpisodeEntity, Long>
-    implements EpisodeService {
+    implements EpisodeService, ApplicationContextAware {
 
     private final EpisodeRepository episodeRepository;
     private final FileService fileService;
+
+    private ApplicationContext applicationContext;
 
     public EpisodeServiceImpl(
         BaseRepository<EpisodeEntity, Long> baseRepository, EpisodeRepository episodeRepository,
@@ -39,6 +45,27 @@ public class EpisodeServiceImpl
         this.fileService = fileService;
     }
 
+
+    @Override
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext)
+        throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    @Nonnull
+    @Override
+    public EpisodeEntity save(@Nonnull EpisodeEntity entity) {
+        Long id = entity.getId();
+        EpisodeEntity existsEpisodeEntity = getById(id);
+        String oldUrl = null;
+        if (existsEpisodeEntity != null) {
+            oldUrl = existsEpisodeEntity.getUrl();
+        }
+        if (StringUtils.isNotBlank(entity.getUrl())) {
+            applicationContext.publishEvent(new EpisodeUrlUpdateEvent(this, entity, oldUrl));
+        }
+        return super.save(entity);
+    }
 
     @Nonnull
     @Override
