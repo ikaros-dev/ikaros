@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+
+<div style="background: #fff;">
+    <div  style="width:100%;max-width:720px;text-align: left;margin: 0 auto;padding-top: 20px;padding-bottom: 80px">
+        <div style="border-radius: 5px;border:1px solid #eee;overflow: hidden;">
+            <h1 style="color:#fff;background: #3798e8;font-size:24px;font-weight:normal;padding-left:40px;margin:0">
+                【Ikaros】番剧更新: 《<strong th:text="${title}"></strong>》
+            </h1>
+            <div style="background:#fff;padding:20px 32px 40px;">
+                <strong>更新详情：</strong>
+                <p style="color: #6e6e6e;font-size:13px;line-height:24px;">剧集标题：${epTitle}</p>
+                <p style="color: #6e6e6e;font-size:13px;line-height:24px;">剧集序号：${epSeq}</p>
+                <p>剧集描述：${epIntroduction}</p>
+<!--                <p style="color: #6e6e6e;font-size:13px;line-height:24px;">放送进度：<span th:text="${updateEpsCount}"></span>/<span th:text="${allEpsCount}"></span></p>-->
+                <br />
+                <strong>简介：</strong>
+                <p th:text="${introduction}" style="color: #6e6e6e;font-size:13px;line-height:24px;padding:10px 20px;background:#f8f8f8;margin:0">
+                </p>
+                <br />
+<!--                <strong>详细：</strong>-->
+<!--                <p style="color: #6e6e6e;font-size:13px;line-height:24px;">您可以点击&nbsp;<a th:href="${infoUrl}">跳转到动漫页面</a></p>-->
+                <br />
+                <strong>封面：</strong>
+                <br />
+                <img style="border-radius:5px;" th:src="${coverImgUrl}"></img>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

@@ -5,6 +5,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 import run.ikaros.server.core.service.NotifyService;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
@@ -12,6 +14,7 @@ import run.ikaros.server.model.dto.OptionNotifyDTO;
 import run.ikaros.server.model.request.NotifyMailTestRequest;
 import run.ikaros.server.utils.AssertUtils;
 
+import javax.annotation.Nonnull;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
@@ -23,9 +26,11 @@ public class NotifyServiceImpl implements NotifyService, InitializingBean {
 
     private final OptionService optionService;
     private JavaMailSenderImpl mailSender;
+    private final TemplateEngine templateEngine;
 
-    public NotifyServiceImpl(OptionService optionService) {
+    public NotifyServiceImpl(OptionService optionService, TemplateEngine templateEngine) {
         this.optionService = optionService;
+        this.templateEngine = templateEngine;
     }
 
     @Override
@@ -54,6 +59,39 @@ public class NotifyServiceImpl implements NotifyService, InitializingBean {
         mailSender.send(message);
         log.info("send mail to {} success, mail subject is {}",
             notifyMailTestRequest.getAddress(), notifyMailTestRequest.getSubject());
+    }
+
+    private String getMailFrom() {
+        OptionNotifyDTO optionNotifyDTO = optionService.getOptionNotifyDTO();
+        return optionNotifyDTO.getMailSmtpAccountAlias()
+            + "<"
+            + optionNotifyDTO.getMailSmtpAccount()
+            + ">";
+    }
+
+    @Override
+    public void sendTemplateMail(@Nonnull String targetMailAddress, @Nonnull String subject,
+                                 @Nonnull String template, @Nonnull Context context) {
+        AssertUtils.notBlank(targetMailAddress, "targetMailAddress");
+        AssertUtils.notBlank(subject, "subject");
+        AssertUtils.notBlank(template, "template");
+        AssertUtils.notNull(context, "context");
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = null;
+        try {
+            helper = new MimeMessageHelper(message, true);
+            helper.setFrom(getMailFrom());
+            helper.setTo(targetMailAddress);
+            helper.setSubject(subject);
+            helper.setText(templateEngine.process(template, context), true);
+
+            mailSender.send(message);
+            log.info("send mail to {} success, mail subject is {}", targetMailAddress, subject);
+        } catch (MessagingException e) {
+            log.error("send mail fail, message exception: ", e);
+        } catch (Exception e) {
+            log.error("send mail fail, exception: ", e);
+        }
     }
 
     @Override
