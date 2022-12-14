@@ -1,6 +1,5 @@
 package run.ikaros.server.service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -12,7 +11,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.NonNullApi;
 import org.springframework.stereotype.Service;
 import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.entity.EpisodeEntity;
@@ -49,15 +47,22 @@ public class EpisodeServiceImpl
 
 
     @Override
-    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext)
+        throws BeansException {
         this.applicationContext = applicationContext;
     }
 
     @Nonnull
     @Override
     public EpisodeEntity save(@Nonnull EpisodeEntity entity) {
+        Long id = entity.getId();
+        EpisodeEntity existsEpisodeEntity = getById(id);
+        String oldUrl = null;
+        if (existsEpisodeEntity != null) {
+            oldUrl = existsEpisodeEntity.getUrl();
+        }
         if (StringUtils.isNotBlank(entity.getUrl())) {
-            applicationContext.publishEvent(new EpisodeUrlUpdateEvent(this, entity));
+            applicationContext.publishEvent(new EpisodeUrlUpdateEvent(this, entity, oldUrl));
         }
         return super.save(entity);
     }

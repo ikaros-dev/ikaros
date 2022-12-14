@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
+import run.ikaros.server.constants.TemplateConst;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.core.service.NotifyService;
 import run.ikaros.server.core.service.SeasonService;
@@ -39,6 +40,7 @@ public class EpisodeUrlUpdateEventListener
     @Override
     public void onApplicationEvent(@NonNull EpisodeUrlUpdateEvent event) {
         EpisodeEntity episodeEntity = event.getEpisodeEntity();
+        final String oldUrl = event.getOldUrl();
         if (episodeEntity != null) {
             Long seasonId = episodeEntity.getSeasonId();
             SeasonEntity seasonEntity = seasonService.getById(seasonId);
@@ -53,9 +55,20 @@ public class EpisodeUrlUpdateEventListener
                     episodeEntity.getTitle());
                 return;
             }
-            String title = StringUtils.isNotBlank(animeEntity.getTitleCn())
+
+            if (StringUtils.isNotBlank(oldUrl) && oldUrl.equalsIgnoreCase(episodeEntity.getUrl())) {
+                log.warn("new url equals old url, skip notify, url:{}", oldUrl);
+                return;
+            }
+
+            if (StringUtils.isBlank(episodeEntity.getUrl())) {
+                log.warn("new url is blank, skip notify");
+                return;
+            }
+
+            final String title = StringUtils.isNotBlank(animeEntity.getTitleCn())
                 ? animeEntity.getTitleCn() : animeEntity.getTitle();
-            String subject = "【Ikaros】番剧更新: 《" + title + "》";
+            final String subject = "番剧更新: 《" + title + "》";
             UserEntity userOnlyOne = userService.getUserOnlyOne();
             if (userOnlyOne == null) {
                 log.warn("app not init user");
@@ -63,21 +76,25 @@ public class EpisodeUrlUpdateEventListener
             }
             String targetAddress = userOnlyOne.getEmail();
             if (StringUtils.isBlank(targetAddress)) {
-                log.error("user not set email, notify fail for episode id={}, title={}",
+                log.error("user not set email, skip notify for episode id={}, title={}",
                     episodeEntity.getId(), episodeEntity.getTitle());
+                return;
             }
 
             final var context = new Context();
             var vars = new HashMap<String, Object>();
             vars.put("title", title);
-            vars.put("epTitle", episodeEntity.getTitle());
+            vars.put("epTitle",
+                StringUtils.isNotBlank(episodeEntity.getTitleCn())
+                    ? episodeEntity.getTitleCn() : episodeEntity.getTitle());
             vars.put("epSeq", episodeEntity.getSeq());
             vars.put("epIntroduction", episodeEntity.getOverview());
             vars.put("introduction", animeEntity.getOverview());
             vars.put("coverImgUrl", animeEntity.getCoverUrl());
             context.setVariables(vars);
 
-            notifyService.sendTemplateMail(targetAddress, subject, "mail/anime_update", context);
+            notifyService.sendTemplateMail(targetAddress, subject,
+                TemplateConst.MAIL_ANIME_UPDATE, context);
         }
     }
 }
