@@ -70,7 +70,7 @@ public interface CrudService<E, I> {
     Optional<E> fetchById(@Nonnull I id);
 
     @Nullable
-    E getById(@Nonnull I id);
+    E getById(@Nullable I id);
 
     /**
      * 真实删除所有数据

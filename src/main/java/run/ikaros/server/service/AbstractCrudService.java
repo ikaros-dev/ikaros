@@ -125,8 +125,10 @@ public class AbstractCrudService<E, I> implements CrudService<E, I> {
 
     @Nullable
     @Override
-    public E getById(@Nonnull I id) {
-        AssertUtils.notNull(id, "id");
+    public E getById(@Nullable I id) {
+        if (id == null) {
+            return null;
+        }
         return baseRepository.findById(id).orElse(null);
     }
 
