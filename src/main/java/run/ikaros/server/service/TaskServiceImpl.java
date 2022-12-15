@@ -125,37 +125,40 @@ public class TaskServiceImpl implements TaskService {
         LOGGER.info("parse mikan my subscribe rss url to mikan rss item list ");
 
         // 用户指定的特征匹配过滤
-        // UserEntity userOnlyOne = userService.getUserOnlyOne();
-        // if (userOnlyOne != null) {
-        //     Long userId = userOnlyOne.getId();
-        //     List<UserSubscribeEntity> userSubscribeEntityList =
-        //         userSubscribeService.findByUserIdAndStatus(userId, true);
-        //     for (UserSubscribeEntity userSubscribeEntity : userSubscribeEntityList) {
-        //         String additional = userSubscribeEntity.getAdditional();
-        //         final List<String> tagList = RegexUtils.getFileTag(additional)
-        //             .stream()
-        //             .filter(tag -> !tag.matches(RegexConst.NUMBER_EPISODE_SEQUENCE))
-        //             .toList();
-        //
-        //         if (StringUtils.isNotBlank(additional)) {
-        //             mikanRssItemList = mikanRssItemList.stream()
-        //                 .filter(mikanRssItem -> {
-        //                     String title = mikanRssItem.getTitle();
-        //                     boolean result = true;
-        //                     if (title.contains(
-        //                         additional.replaceAll(RegexConst.FILE_NAME_TAG, ""))) {
-        //                         for (String tag : tagList) {
-        //                             if (!title.contains(tag)) {
-        //                                 result = false;
-        //                                 break;
-        //                             }
-        //                         }
-        //                     }
-        //                     return result;
-        //                 }).collect(Collectors.toList());
-        //         }
-        //     }
-        // }
+        UserEntity userOnlyOne = userService.getUserOnlyOne();
+        if (userOnlyOne != null) {
+            Long userId = userOnlyOne.getId();
+            List<UserSubscribeEntity> userSubscribeEntityList =
+                userSubscribeService.findByUserIdAndStatus(userId, true);
+            for (UserSubscribeEntity userSubscribeEntity : userSubscribeEntityList) {
+                String additional = userSubscribeEntity.getAdditional();
+                if (StringUtils.isBlank(additional)) {
+                    continue;
+                }
+                final List<String> tagList = RegexUtils.getFileTag(additional)
+                    .stream()
+                    .filter(tag -> !tag.matches(RegexConst.NUMBER_EPISODE_SEQUENCE))
+                    .toList();
+
+                if (StringUtils.isNotBlank(additional)) {
+                    mikanRssItemList = mikanRssItemList.stream()
+                        .filter(mikanRssItem -> {
+                            String title = mikanRssItem.getTitle();
+                            boolean result = true;
+                            if (title.contains(
+                                additional.replaceAll(RegexConst.FILE_NAME_TAG, ""))) {
+                                for (String tag : tagList) {
+                                    if (!title.contains(tag)) {
+                                        result = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            return result;
+                        }).collect(Collectors.toList());
+                }
+            }
+        }
 
         for (MikanRssItem mikanRssItem : mikanRssItemList) {
             try {
