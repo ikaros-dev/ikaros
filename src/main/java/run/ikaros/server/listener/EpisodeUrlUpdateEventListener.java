@@ -80,7 +80,7 @@ public class EpisodeUrlUpdateEventListener
         if (isNotify) {
             final String title = StringUtils.isNotBlank(animeEntity.getTitleCn())
                 ? animeEntity.getTitleCn() : animeEntity.getTitle();
-            final String subject = "番剧更新: 《" + title + "》";
+            final String subject = "番剧《" + title + "》" + "第" + episodeEntity.getSeq() + "集更新";
             UserEntity userOnlyOne = userService.getUserOnlyOne();
             if (userOnlyOne == null) {
                 log.warn("app not init user");
