@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
 import run.ikaros.server.constants.TemplateConst;
 import run.ikaros.server.core.service.AnimeService;
+import run.ikaros.server.core.service.EpisodeService;
 import run.ikaros.server.core.service.NotifyService;
 import run.ikaros.server.core.service.SeasonService;
 import run.ikaros.server.core.service.UserService;
@@ -25,13 +26,16 @@ public class EpisodeUrlUpdateEventListener
     implements ApplicationListener<EpisodeUrlUpdateEvent> {
 
     private final NotifyService notifyService;
+    private final EpisodeService episodeService;
     private final SeasonService seasonService;
     private final AnimeService animeService;
     private final UserService userService;
 
-    public EpisodeUrlUpdateEventListener(NotifyService notifyService, SeasonService seasonService,
+    public EpisodeUrlUpdateEventListener(NotifyService notifyService, EpisodeService episodeService,
+                                         SeasonService seasonService,
                                          AnimeService animeService, UserService userService) {
         this.notifyService = notifyService;
+        this.episodeService = episodeService;
         this.seasonService = seasonService;
         this.animeService = animeService;
         this.userService = userService;
@@ -39,33 +43,41 @@ public class EpisodeUrlUpdateEventListener
 
     @Override
     public void onApplicationEvent(@NonNull EpisodeUrlUpdateEvent event) {
-        EpisodeEntity episodeEntity = event.getEpisodeEntity();
+        final Long episodeId = event.getEpisodeId();
         final String oldUrl = event.getOldUrl();
-        if (episodeEntity != null) {
-            Long seasonId = episodeEntity.getSeasonId();
-            SeasonEntity seasonEntity = seasonService.getById(seasonId);
-            if (seasonEntity == null) {
-                log.warn("not found season for episode id={}, title={}", episodeEntity.getId(),
-                    episodeEntity.getTitle());
-                return;
-            }
-            AnimeEntity animeEntity = animeService.getById(seasonEntity.getAnimeId());
-            if (animeEntity == null) {
-                log.warn("not found anime for episode id={}, title={}", episodeEntity.getId(),
-                    episodeEntity.getTitle());
-                return;
-            }
+        final String newUrl = event.getNewUrl();
+        final Boolean isNotify = event.getIsNotify();
+        EpisodeEntity episodeEntity = episodeService.getById(episodeId);
+        if (episodeEntity == null) {
+            log.warn("skip, not found episode for id={}", episodeId);
+            return;
+        }
 
-            if (StringUtils.isNotBlank(oldUrl) && oldUrl.equalsIgnoreCase(episodeEntity.getUrl())) {
-                log.warn("new url equals old url, skip notify, url:{}", oldUrl);
-                return;
-            }
+        Long seasonId = episodeEntity.getSeasonId();
+        SeasonEntity seasonEntity = seasonService.getById(seasonId);
+        if (seasonEntity == null) {
+            log.warn("not found season for episode id={}, title={}", episodeEntity.getId(),
+                episodeEntity.getTitle());
+            return;
+        }
+        AnimeEntity animeEntity = animeService.getById(seasonEntity.getAnimeId());
+        if (animeEntity == null) {
+            log.warn("not found anime for episode id={}, title={}", episodeEntity.getId(),
+                episodeEntity.getTitle());
+            return;
+        }
 
-            if (StringUtils.isBlank(episodeEntity.getUrl())) {
-                log.warn("new url is blank, skip notify");
-                return;
-            }
+        if (StringUtils.isNotBlank(oldUrl) && oldUrl.equalsIgnoreCase(newUrl)) {
+            log.warn("new url equals old url, skip, url:{}", oldUrl);
+            return;
+        }
 
+        if (StringUtils.isBlank(newUrl)) {
+            log.warn("new url is blank, skip");
+            return;
+        }
+
+        if (isNotify) {
             final String title = StringUtils.isNotBlank(animeEntity.getTitleCn())
                 ? animeEntity.getTitleCn() : animeEntity.getTitle();
             final String subject = "番剧更新: 《" + title + "》";

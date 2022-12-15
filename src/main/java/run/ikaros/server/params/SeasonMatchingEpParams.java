@@ -13,5 +13,6 @@ public class SeasonMatchingEpParams {
     private List<Long> fileIdList;
     private Long episodeId;
     private Long fileId;
+    private Boolean isNotify = false;
 
 }
