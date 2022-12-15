@@ -23,7 +23,8 @@ public interface SeasonService extends CrudService<SeasonEntity, Long> {
     @Nonnull
     SeasonDTO matchingEpisodesUrlByFileIds(@Nonnull SeasonMatchingEpParams seasonMatchingEpParams);
 
-    void updateEpisodeUrlByFileEntity(@Nonnull FileEntity fileEntity);
+    void updateEpisodeUrlByFileEntity(@Nonnull FileEntity fileEntity,
+                                      @Nonnull Boolean isNotify);
 
     @Nullable
     List<SeasonEntity> findSeasonEntityByTitleLike(@Nonnull String title);

@@ -30,12 +30,11 @@ import run.ikaros.server.utils.StringUtils;
 @Service
 public class EpisodeServiceImpl
     extends AbstractCrudService<EpisodeEntity, Long>
-    implements EpisodeService, ApplicationContextAware {
+    implements EpisodeService {
 
     private final EpisodeRepository episodeRepository;
     private final FileService fileService;
 
-    private ApplicationContext applicationContext;
 
     public EpisodeServiceImpl(
         BaseRepository<EpisodeEntity, Long> baseRepository, EpisodeRepository episodeRepository,
@@ -43,31 +42,6 @@ public class EpisodeServiceImpl
         super(baseRepository);
         this.episodeRepository = episodeRepository;
         this.fileService = fileService;
-    }
-
-
-    @Override
-    public void setApplicationContext(@NonNull ApplicationContext applicationContext)
-        throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-
-    @Nonnull
-    @Override
-    public EpisodeEntity save(@Nonnull EpisodeEntity entity) {
-        Long id = entity.getId();
-        EpisodeEntity existsEpisodeEntity = null;
-        if (id != null) {
-            existsEpisodeEntity = getById(id);
-        }
-        String oldUrl = null;
-        if (existsEpisodeEntity != null) {
-            oldUrl = existsEpisodeEntity.getUrl();
-        }
-        if (StringUtils.isNotBlank(entity.getUrl())) {
-            applicationContext.publishEvent(new EpisodeUrlUpdateEvent(this, entity, oldUrl));
-        }
-        return super.save(entity);
     }
 
     @Nonnull

@@ -2,6 +2,9 @@ package run.ikaros.server.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import run.ikaros.server.core.repository.SeasonRepository;
@@ -12,6 +15,7 @@ import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.SeasonType;
+import run.ikaros.server.event.EpisodeUrlUpdateEvent;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.exceptions.RegexMatchingException;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
@@ -44,12 +48,14 @@ import java.util.stream.Stream;
 @Transactional(rollbackOn = Exception.class)
 public class SeasonServiceImpl
     extends AbstractCrudService<SeasonEntity, Long>
-    implements SeasonService {
+    implements SeasonService, ApplicationContextAware {
     private static final Logger LOGGER = LoggerFactory.getLogger(SeasonServiceImpl.class);
 
     private final SeasonRepository seasonRepository;
     private final FileService fileService;
     private final EpisodeService episodeService;
+
+    private ApplicationContext applicationContext;
 
     public SeasonServiceImpl(SeasonRepository seasonRepository, FileService fileService,
                              EpisodeService episodeService) {
@@ -57,6 +63,13 @@ public class SeasonServiceImpl
         this.seasonRepository = seasonRepository;
         this.fileService = fileService;
         this.episodeService = episodeService;
+    }
+
+
+    @Override
+    public void setApplicationContext(@Nonnull ApplicationContext applicationContext)
+        throws BeansException {
+        this.applicationContext = applicationContext;
     }
 
     @Nonnull
@@ -114,12 +127,22 @@ public class SeasonServiceImpl
                 continue;
             }
             EpisodeEntity episodeEntity = episodeEntityList.get(0);
-            episodeEntity.setUrl(fileEntity.getUrl());
-            episodeService.save(episodeEntity);
-            LOGGER.debug("matching file and episode success,  "
-                    + "fileId={} fileName={}, episodeTitle={} episodeSeq={} episodeUrl={}",
-                fileId, fileEntity.getName(),
-                episodeEntity.getTitle(), episodeSeq, episodeEntity.getUrl());
+            String newEpisodeUrl = fileEntity.getUrl();
+            if (StringUtils.isNotBlank(newEpisodeUrl)) {
+                String oldEpisodeUrl = episodeEntity.getUrl();
+                if (!newEpisodeUrl.equalsIgnoreCase(oldEpisodeUrl)) {
+                    EpisodeUrlUpdateEvent episodeUrlUpdateEvent =
+                        new EpisodeUrlUpdateEvent(this, episodeEntity.getId(), oldEpisodeUrl,
+                            newEpisodeUrl, seasonMatchingEpParams.getIsNotify());
+                    applicationContext.publishEvent(episodeUrlUpdateEvent);
+                }
+                episodeEntity.setUrl(newEpisodeUrl);
+                episodeService.save(episodeEntity);
+                LOGGER.debug("matching file and episode success,  "
+                        + "fileId={} fileName={}, episodeTitle={} episodeSeq={} episodeUrl={}",
+                    fileId, fileEntity.getName(),
+                    episodeEntity.getTitle(), episodeSeq, newEpisodeUrl);
+            }
             episodeEntities.add(episodeEntity);
         }
 
@@ -141,7 +164,8 @@ public class SeasonServiceImpl
     }
 
     @Override
-    public void updateEpisodeUrlByFileEntity(@Nonnull FileEntity fileEntity) {
+    public void updateEpisodeUrlByFileEntity(@Nonnull FileEntity fileEntity,
+                                             @Nonnull Boolean isNotify) {
         AssertUtils.notNull(fileEntity, "fileEntity");
         final String originalFileName = fileEntity.getName();
         SeasonEntity seasonEntity = null;
@@ -188,6 +212,15 @@ public class SeasonServiceImpl
         }
         EpisodeEntity episodeEntity = episodeEntityOptional.get();
         if (StringUtils.isNotBlank(fileEntity.getUrl())) {
+            String oldEpisodeUrl = episodeEntity.getUrl();
+            String newEpisodeUrl = fileEntity.getUrl();
+            if (StringUtils.isNotBlank(newEpisodeUrl)
+                && !newEpisodeUrl.equalsIgnoreCase(oldEpisodeUrl)) {
+                EpisodeUrlUpdateEvent episodeUrlUpdateEvent =
+                    new EpisodeUrlUpdateEvent(this, episodeEntity.getId(), oldEpisodeUrl,
+                        newEpisodeUrl, isNotify);
+                applicationContext.publishEvent(episodeUrlUpdateEvent);
+            }
             episodeEntity.setUrl(fileEntity.getUrl());
             episodeService.save(episodeEntity);
             LOGGER.debug(
@@ -239,8 +272,23 @@ public class SeasonServiceImpl
             throw new RuntimeIkarosException("current episode seq and file name seq not matching"
                 + ", ep seq:" + episodeEntity.getSeq() + "  file name seq: " + fileNameTagEpSeq);
         }
-        episodeEntity.setUrl(fileEntity.getUrl());
-        episodeEntity = episodeService.save(episodeEntity);
+
+        String newEpisodeUrl = fileEntity.getUrl();
+        if (StringUtils.isNotBlank(newEpisodeUrl)) {
+            String oldEpisodeUrl = episodeEntity.getUrl();
+            if (!newEpisodeUrl.equalsIgnoreCase(oldEpisodeUrl)) {
+                EpisodeUrlUpdateEvent episodeUrlUpdateEvent =
+                    new EpisodeUrlUpdateEvent(this, episodeEntity.getId(), oldEpisodeUrl,
+                        newEpisodeUrl, seasonMatchingEpParams.getIsNotify());
+                applicationContext.publishEvent(episodeUrlUpdateEvent);
+            }
+            episodeEntity.setUrl(newEpisodeUrl);
+            episodeEntity = episodeService.save(episodeEntity);
+            LOGGER.debug("matching file and episode success,  "
+                    + "fileId={} fileName={}, episodeTitle={} episodeSeq={} episodeUrl={}",
+                fileId, fileEntity.getName(),
+                episodeEntity.getTitle(), episodeEntity.getSeq(), newEpisodeUrl);
+        }
 
         SeasonEntity seasonEntity = getById(episodeEntity.getSeasonId());
         if (seasonEntity == null) {
