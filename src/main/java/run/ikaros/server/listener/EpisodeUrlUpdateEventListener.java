@@ -88,8 +88,7 @@ public class EpisodeUrlUpdateEventListener
                 StringUtils.isNotBlank(episodeEntity.getTitleCn())
                     ? episodeEntity.getTitleCn() : episodeEntity.getTitle());
             vars.put("epSeq", episodeEntity.getSeq());
-            // 涉及日文阿里云邮件推送直接 544 拒绝发送，暂时不填充剧集介绍信息
-            // vars.put("epIntroduction", episodeEntity.getOverview());
+            vars.put("epIntroduction", episodeEntity.getOverview());
             vars.put("introduction", animeEntity.getOverview());
             vars.put("coverImgUrl", animeEntity.getCoverUrl());
             context.setVariables(vars);
