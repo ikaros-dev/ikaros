@@ -12,9 +12,14 @@
                 <h2>封面：</h2>
                 <img style="border-radius:5px;" th:src="${coverImgUrl}" alt="URL无法访问"></img>
                 <h2>剧集更新详情：</h2>
-                <span style="color: #6e6e6e;font-size:13px;line-height:24px;">剧集标题：<span th:text="${epTitle}" /></span>
+                <span th:if="${not #strings.isEmpty(epTitle)}">
+                    <span style="color: #6e6e6e;font-size:13px;line-height:24px;">剧集标题：<span th:text="${epTitle}" /></span>
+                </span>
                 <br />
                 <span style="color: #6e6e6e;font-size:13px;line-height:24px;">剧集序号：<span th:text="${epSeq}" /></span>
+                <br />
+                <span style="color: #6e6e6e;font-size:13px;line-height:24px;">剧集文件名：<span th:text="${epUrlFileName}" /></span>
+
 
                 <span th:if="${not #strings.isEmpty(epIntroduction)}">
                     <h2>剧集描述：</h2>

@@ -46,6 +46,7 @@ public class EpisodeUrlUpdateEventListener
         final Long episodeId = event.getEpisodeId();
         final String oldUrl = event.getOldUrl();
         final String newUrl = event.getNewUrl();
+        final String newUrlFileName = event.getNewUrlFileName();
         final Boolean isNotify = event.getIsNotify();
         EpisodeEntity episodeEntity = episodeService.getById(episodeId);
         if (episodeEntity == null) {
@@ -103,6 +104,7 @@ public class EpisodeUrlUpdateEventListener
             vars.put("epIntroduction", episodeEntity.getOverview());
             vars.put("introduction", animeEntity.getOverview());
             vars.put("coverImgUrl", animeEntity.getCoverUrl());
+            vars.put("epUrlFileName", newUrlFileName);
             context.setVariables(vars);
 
             notifyService.sendTemplateMail(targetAddress, subject,

@@ -25,7 +25,6 @@ import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.params.SeasonMatchingEpParams;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
-import run.ikaros.server.utils.FileUtils;
 import run.ikaros.server.utils.RegexUtils;
 import run.ikaros.server.utils.StringUtils;
 
@@ -132,8 +131,9 @@ public class SeasonServiceImpl
                 String oldEpisodeUrl = episodeEntity.getUrl();
                 if (!newEpisodeUrl.equalsIgnoreCase(oldEpisodeUrl)) {
                     EpisodeUrlUpdateEvent episodeUrlUpdateEvent =
-                        new EpisodeUrlUpdateEvent(this, episodeEntity.getId(), oldEpisodeUrl,
-                            newEpisodeUrl, seasonMatchingEpParams.getIsNotify());
+                        new EpisodeUrlUpdateEvent(this,
+                            episodeEntity.getId(), oldEpisodeUrl, newEpisodeUrl,
+                            fileEntity.getName(), seasonMatchingEpParams.getIsNotify());
                     applicationContext.publishEvent(episodeUrlUpdateEvent);
                 }
                 episodeEntity.setUrl(newEpisodeUrl);
@@ -218,7 +218,7 @@ public class SeasonServiceImpl
                 && !newEpisodeUrl.equalsIgnoreCase(oldEpisodeUrl)) {
                 EpisodeUrlUpdateEvent episodeUrlUpdateEvent =
                     new EpisodeUrlUpdateEvent(this, episodeEntity.getId(), oldEpisodeUrl,
-                        newEpisodeUrl, isNotify);
+                        newEpisodeUrl, fileEntity.getName(), isNotify);
                 applicationContext.publishEvent(episodeUrlUpdateEvent);
             }
             episodeEntity.setUrl(fileEntity.getUrl());
@@ -279,7 +279,7 @@ public class SeasonServiceImpl
             if (!newEpisodeUrl.equalsIgnoreCase(oldEpisodeUrl)) {
                 EpisodeUrlUpdateEvent episodeUrlUpdateEvent =
                     new EpisodeUrlUpdateEvent(this, episodeEntity.getId(), oldEpisodeUrl,
-                        newEpisodeUrl, seasonMatchingEpParams.getIsNotify());
+                        newEpisodeUrl, fileEntity.getName(), seasonMatchingEpParams.getIsNotify());
                 applicationContext.publishEvent(episodeUrlUpdateEvent);
             }
             episodeEntity.setUrl(newEpisodeUrl);
