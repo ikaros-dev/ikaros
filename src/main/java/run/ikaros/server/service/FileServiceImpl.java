@@ -445,6 +445,13 @@ public class FileServiceImpl
         return fileRepository.findByUrlAndStatus(url, true);
     }
 
+    @Nonnull
+    @Override
+    public List<FileEntity> findListByNameLike(@Nonnull String keyword) {
+        AssertUtils.notBlank(keyword, "keyword");
+        return new ArrayList<>(fileRepository.findByNameLike(StringUtils.addLikeChar(keyword)));
+    }
+
     private String meringTempChunkFile(String unique, String postfix) throws IOException {
         LOGGER.debug("All chunks upload has finish, will start merging files");
 

@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MediaServiceImpl implements MediaService {
@@ -75,6 +76,19 @@ public class MediaServiceImpl implements MediaService {
             animeDirName += " (" + localDateTime.getYear() + "-" + localDateTime.getMonthValue()
                 + "-" + localDateTime.getDayOfMonth() + ")";
         }
+
+        // remove char \ / : * ? " < > |
+        animeDirName = animeDirName
+            .replace("\\", "")
+            .replace("/", "")
+            .replace(":", "")
+            .replace("*", "")
+            .replace("?", "")
+            .replace("\"", "")
+            .replace("<", "")
+            .replace(">", "")
+            .replace("|", "");
+
         final String animeDirPath = SystemVarUtils.getCurrentAppMediaDirPath()
             + File.separator + animeDirName;
         File animeDir = new File(animeDirPath);
@@ -181,7 +195,7 @@ public class MediaServiceImpl implements MediaService {
                     uploadEpFilePath, seasonEntity.getTitle(), episodeEntity.getTitle());
                 continue;
             }
-            Optional<FileEntity> fileEntityOptional = fileService.findByUrl(url);
+            Optional<FileEntity> fileEntityOptional = fileService.findByUrl(episodeEntity.getUrl());
             String fileName;
             if (fileEntityOptional.isPresent()) {
                 fileName = fileEntityOptional.get().getName();
@@ -219,6 +233,46 @@ public class MediaServiceImpl implements MediaService {
                 XmlUtils.generateJellyfinEpisodeNfoXml(episodeNfoFilePath,
                     episodeEntity.getOverview(), episodePlot, String.valueOf(seasonNum),
                     String.valueOf(seq), String.valueOf(bgmtvId));
+            }
+
+            // link episode subtitle file
+            List<FileEntity> existsFileEntityList =
+                fileService.findListByNameLike(fileName.replaceAll(RegexConst.FILE_POSTFIX, ""))
+                    .stream()
+                    .filter(fileEntity -> !fileName.equalsIgnoreCase(fileEntity.getName()))
+                    .toList();
+            if (!existsFileEntityList.isEmpty()) {
+                for (FileEntity fileEntity : existsFileEntityList) {
+                    String name = fileEntity.getName();
+                    String postfix = FileUtils.parseFilePostfix(name);
+                    if ("ass".equalsIgnoreCase(postfix)
+                        && name.contains(
+                        fileName.replaceAll(RegexConst.FILE_POSTFIX, ""))) {
+                        File mediaSubtitleFile =
+                            new File(seasonDirPath + File.separator + name);
+                        File uploadSubtitleFile = new File(
+                            SystemVarUtils.getCurrentAppDirPath()
+                                + File.separator + fileEntity.getUrl());
+                        if (mediaSubtitleFile.exists()) {
+                            continue;
+                        }
+                        try {
+                            Files.createLink(mediaSubtitleFile.toPath(),
+                                uploadSubtitleFile.toPath());
+                            LOGGER.info(
+                                "create media episode subtitle hard link success, "
+                                    + "link={}, existing={}",
+                                mediaSubtitleFile.getAbsolutePath(),
+                                uploadSubtitleFile.getAbsolutePath());
+                        } catch (IOException e) {
+                            LOGGER.error(
+                                "create media episode subtitle hard link fail, link={}, "
+                                    + "existing={}",
+                                mediaSubtitleFile.getAbsolutePath(),
+                                uploadSubtitleFile.getAbsolutePath());
+                        }
+                    }
+                }
             }
         }
     }
