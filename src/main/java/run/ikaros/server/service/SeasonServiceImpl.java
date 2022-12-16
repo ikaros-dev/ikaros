@@ -14,6 +14,7 @@ import run.ikaros.server.core.service.SeasonService;
 import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
+import run.ikaros.server.enums.FileType;
 import run.ikaros.server.enums.SeasonType;
 import run.ikaros.server.event.EpisodeUrlUpdateEvent;
 import run.ikaros.server.exceptions.RecordNotFoundException;
@@ -25,6 +26,7 @@ import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.params.SeasonMatchingEpParams;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
+import run.ikaros.server.utils.FileUtils;
 import run.ikaros.server.utils.RegexUtils;
 import run.ikaros.server.utils.StringUtils;
 
@@ -109,6 +111,11 @@ public class SeasonServiceImpl
                 continue;
             }
             final String fileName = fileEntity.getName();
+            FileType fileType = FileUtils.parseTypeByPostfix(FileUtils.parseFileName(fileName));
+            if (fileType != FileType.VIDEO) {
+                continue;
+            }
+
             Long episodeSeq = null;
             try {
                 episodeSeq = RegexUtils.getFileNameTagEpSeq(fileName);
