@@ -49,6 +49,7 @@ services:
       - IKAROS_DB_NAME=ikaros
       - IKAROS_DB_USERNAME=ikaros
       - IKAROS_DB_PASSWORD=${IKAROS_DB_PASSWORD}
+      - IKAROS_APP_URL_PREFIX=${IKAROS_APP_URL_PREFIX}
 
 
   ### optinal ###

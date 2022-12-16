@@ -429,9 +429,19 @@ public class TaskServiceImpl implements TaskService {
                 }
             }
         } else {
-            // 是文件，则直接上传文件到服务器目录
-            String postfix = FileUtils.parseFilePostfix(torrentContentPath);
             try {
+                // 是文件，则直接上传文件到服务器目录
+                String postfix = FileUtils.parseFilePostfix(torrentContentPath);
+                final String fileName = FileUtils.parseFileName(torrentContentPath);
+                // 如果已经存在对应的文件，则无需进行后续的步骤
+                List<FileEntity> existsFileEntityList = fileService.findListByName(fileName);
+                if (!existsFileEntityList.isEmpty()) {
+                    LOGGER.warn("skip, find exist file with name={}, fileEntity={}",
+                        fileName, JsonUtils.obj2Json(existsFileEntityList.get(0)));
+                    return;
+                }
+
+
                 String uploadFilePath = FileUtils.buildAppUploadFilePath(postfix);
                 File uploadFile = new File(uploadFilePath);
                 if (uploadFile.exists()) {
@@ -440,7 +450,6 @@ public class TaskServiceImpl implements TaskService {
                 Files.createLink(uploadFile.toPath(), torrentContentFile.toPath());
                 LOGGER.debug("copy server file hard link success, link={}, existing={}",
                     uploadFilePath, torrentContentPath);
-                String fileName = FileUtils.parseFileName(torrentContentPath);
 
                 FileEntity fileEntity = fileService.create(new FileEntity()
                     .setPlace(FilePlace.LOCAL)

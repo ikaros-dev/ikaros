@@ -2,6 +2,7 @@ ikaros:
   env: ${IKAROS_ENV:pro}
   log-level: ${IKAROS_LOG_LEVEL:INFO}
   server-port: ${IKAROS_SERVER_PORT:9090}
+  app-url-prefix: ${IKAROS_APP_URL_PREFIX:http://localhost:9090}
 
 server:
   port: ${ikaros.server-port}

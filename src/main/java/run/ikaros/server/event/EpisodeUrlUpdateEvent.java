@@ -11,15 +11,17 @@ public class EpisodeUrlUpdateEvent extends ApplicationEvent {
     private final Long episodeId;
     private final String oldUrl;
     private final String newUrl;
+    private final String newUrlFileName;
     private final Boolean isNotify;
 
     public EpisodeUrlUpdateEvent(@Nonnull Object source, @Nonnull Long episodeId,
                                  @Nullable String oldUrl, @Nonnull String newUrl,
-                                 @Nonnull Boolean isNotify) {
+                                 String newUrlFileName, @Nonnull Boolean isNotify) {
         super(source);
         this.episodeId = episodeId;
         this.oldUrl = oldUrl;
         this.newUrl = newUrl;
+        this.newUrlFileName = newUrlFileName;
         this.isNotify = isNotify;
     }
 }
