@@ -111,8 +111,10 @@ public class SeasonServiceImpl
                 continue;
             }
             final String fileName = fileEntity.getName();
-            FileType fileType = FileUtils.parseTypeByPostfix(FileUtils.parseFileName(fileName));
+            FileType fileType = fileEntity.getType();
             if (fileType != FileType.VIDEO) {
+                LOGGER.warn("skip matching, "
+                    + "current file entity type is not video, file name={}", fileName);
                 continue;
             }
 
