@@ -1,5 +1,6 @@
 package run.ikaros.server.prop;
 
+import lombok.Data;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.constants.EnvConst;
 import run.ikaros.server.utils.SystemVarUtils;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
  * @author guohao
  * @date 2022/10/23
  */
+@Data
 @Component
 @ConfigurationProperties("ikaros")
 public class IkarosProperties {
@@ -17,6 +19,7 @@ public class IkarosProperties {
     private String logLevel;
     private String serverPort;
     private String qbittorrentBaseUrl;
+    private String appUrlPrefix;
 
     public IkarosProperties() {
     }
@@ -48,39 +51,4 @@ public class IkarosProperties {
     }
 
 
-    public String getEnv() {
-        return env;
-    }
-
-    public IkarosProperties setEnv(String env) {
-        this.env = env;
-        return this;
-    }
-
-    public String getLogLevel() {
-        return logLevel;
-    }
-
-    public IkarosProperties setLogLevel(String logLevel) {
-        this.logLevel = logLevel;
-        return this;
-    }
-
-    public String getServerPort() {
-        return serverPort;
-    }
-
-    public IkarosProperties setServerPort(String serverPort) {
-        this.serverPort = serverPort;
-        return this;
-    }
-
-    public String getQbittorrentBaseUrl() {
-        return qbittorrentBaseUrl;
-    }
-
-    public IkarosProperties setQbittorrentBaseUrl(String qbittorrentBaseUrl) {
-        this.qbittorrentBaseUrl = qbittorrentBaseUrl;
-        return this;
-    }
 }

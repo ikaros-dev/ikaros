@@ -16,6 +16,7 @@ import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.entity.UserEntity;
 import run.ikaros.server.event.EpisodeUrlUpdateEvent;
+import run.ikaros.server.prop.IkarosProperties;
 import run.ikaros.server.utils.StringUtils;
 
 import java.util.HashMap;
@@ -25,15 +26,18 @@ import java.util.HashMap;
 public class EpisodeUrlUpdateEventListener
     implements ApplicationListener<EpisodeUrlUpdateEvent> {
 
+    private final IkarosProperties ikarosProperties;
     private final NotifyService notifyService;
     private final EpisodeService episodeService;
     private final SeasonService seasonService;
     private final AnimeService animeService;
     private final UserService userService;
 
-    public EpisodeUrlUpdateEventListener(NotifyService notifyService, EpisodeService episodeService,
-                                         SeasonService seasonService,
-                                         AnimeService animeService, UserService userService) {
+    public EpisodeUrlUpdateEventListener(IkarosProperties ikarosProperties,
+                                         NotifyService notifyService, EpisodeService episodeService,
+                                         SeasonService seasonService, AnimeService animeService,
+                                         UserService userService) {
+        this.ikarosProperties = ikarosProperties;
         this.notifyService = notifyService;
         this.episodeService = episodeService;
         this.seasonService = seasonService;
@@ -48,6 +52,7 @@ public class EpisodeUrlUpdateEventListener
         final String newUrl = event.getNewUrl();
         final String newUrlFileName = event.getNewUrlFileName();
         final Boolean isNotify = event.getIsNotify();
+        final String appUrlPrefix = ikarosProperties.getAppUrlPrefix();
         EpisodeEntity episodeEntity = episodeService.getById(episodeId);
         if (episodeEntity == null) {
             log.warn("skip, not found episode for id={}", episodeId);
@@ -103,7 +108,7 @@ public class EpisodeUrlUpdateEventListener
             vars.put("epSeq", episodeEntity.getSeq());
             vars.put("epIntroduction", episodeEntity.getOverview());
             vars.put("introduction", animeEntity.getOverview());
-            vars.put("coverImgUrl", animeEntity.getCoverUrl());
+            vars.put("coverImgUrl", appUrlPrefix + "/" + animeEntity.getCoverUrl());
             vars.put("epUrlFileName", newUrlFileName);
             context.setVariables(vars);
 
