@@ -38,4 +38,6 @@ public interface FileRepository extends BaseRepository<FileEntity, Long> {
     FileEntity findFileEntityByNameAndTypeAndPlace(String name, FileType type, FilePlace place);
 
     Optional<FileEntity> findByUrlAndStatus(String url, Boolean status);
+
+    List<FileEntity> findByNameLike(String name);
 }
