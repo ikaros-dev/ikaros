@@ -1,14 +1,5 @@
 package run.ikaros.server.config;
 
-import run.ikaros.server.constants.AppConst;
-import run.ikaros.server.utils.StringUtils;
-import run.ikaros.server.constants.SecurityConst;
-import run.ikaros.server.utils.JwtUtils;
-import run.ikaros.server.config.security.IkarosAccessDeniedHandler;
-import run.ikaros.server.config.security.IkarosAuthenticationEntryPoint;
-import run.ikaros.server.config.security.JwtAuthorizationFilter;
-import run.ikaros.server.config.security.JwtConfig;
-import run.ikaros.server.exceptions.JwtTokenValidateFailException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -18,13 +9,22 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.SecurityContextPersistenceFilter;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.filter.CorsFilter;
+import run.ikaros.server.config.security.IkarosAccessDeniedHandler;
+import run.ikaros.server.config.security.IkarosAuthenticationEntryPoint;
+import run.ikaros.server.config.security.JwtAuthorizationFilter;
+import run.ikaros.server.config.security.JwtConfig;
+import run.ikaros.server.constants.AppConst;
+import run.ikaros.server.constants.SecurityConst;
+import run.ikaros.server.exceptions.JwtTokenValidateFailException;
+import run.ikaros.server.utils.JwtUtils;
+import run.ikaros.server.utils.StringUtils;
 
 /**
  * @author li-guohao
@@ -32,7 +32,7 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSecurityConfig.class);
 
 
@@ -42,16 +42,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         this.corsFilter = corsFilter;
     }
 
-
-    /**
-     * 用户名密码认证管理器
-     */
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
-
-
     /**
      * 注入密码加密解密器
      */
@@ -60,11 +50,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .addFilterBefore(corsFilter, SecurityContextPersistenceFilter.class)
+            .addFilterBefore(corsFilter, SecurityContextHolderFilter.class)
             .exceptionHandling()
             .authenticationEntryPoint(new IkarosAuthenticationEntryPoint())
             .accessDeniedHandler(new IkarosAccessDeniedHandler())
@@ -107,10 +96,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .apply(securityConfigurationAdapter());
+            .apply(securityConfigurationAdapter(http.getSharedObject(AuthenticationManager.class)));
+        return http.build();
     }
 
-    private JwtConfig securityConfigurationAdapter() throws Exception {
-        return new JwtConfig(new JwtAuthorizationFilter(authenticationManager()));
+    private JwtConfig securityConfigurationAdapter(AuthenticationManager authenticationManager) {
+        return new JwtConfig(new JwtAuthorizationFilter(authenticationManager));
     }
 }
