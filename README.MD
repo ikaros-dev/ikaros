@@ -19,6 +19,8 @@
 
 <p align="center">ACGMN全拼是：Anime(动画) + Comic(漫画) + Game(游戏) + Music(音乐) + Novel(小说)</p>
 
+# 演示视频
+https://www.bilibili.com/medialist/play/ml1995422644
 
 # 部署指南
 
