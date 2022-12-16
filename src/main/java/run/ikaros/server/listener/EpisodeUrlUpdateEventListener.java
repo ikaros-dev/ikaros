@@ -52,7 +52,6 @@ public class EpisodeUrlUpdateEventListener
         final String newUrl = event.getNewUrl();
         final String newUrlFileName = event.getNewUrlFileName();
         final Boolean isNotify = event.getIsNotify();
-        final String appUrlPrefix = ikarosProperties.getAppUrlPrefix();
         EpisodeEntity episodeEntity = episodeService.getById(episodeId);
         if (episodeEntity == null) {
             log.warn("skip, not found episode for id={}", episodeId);
@@ -108,7 +107,18 @@ public class EpisodeUrlUpdateEventListener
             vars.put("epSeq", episodeEntity.getSeq());
             vars.put("epIntroduction", episodeEntity.getOverview());
             vars.put("introduction", animeEntity.getOverview());
-            vars.put("coverImgUrl", appUrlPrefix + "/" + animeEntity.getCoverUrl());
+            String coverUrl = animeEntity.getCoverUrl();
+            if (StringUtils.isNotBlank(coverUrl) && coverUrl.startsWith("/")) {
+                coverUrl = coverUrl.substring(1);
+                if (coverUrl.startsWith("/")) {
+                    coverUrl = coverUrl.substring(1);
+                }
+            }
+            String appUrlPrefix = ikarosProperties.getAppUrlPrefix();
+            if (StringUtils.isNotBlank(appUrlPrefix) && appUrlPrefix.endsWith("/")) {
+                appUrlPrefix = appUrlPrefix.substring(0, appUrlPrefix.length() - 1);
+            }
+            vars.put("coverImgUrl", appUrlPrefix + "/" + coverUrl);
             vars.put("epUrlFileName", newUrlFileName);
             context.setVariables(vars);
 
