@@ -13,7 +13,7 @@
 <a href="https://github.com/ikaros-dev/ikaros/issues"><img src="https://img.shields.io/github/issues/ikaros-dev/ikaros?color=blue&style=flat-square"/></a>
 <a href="https://hub.docker.com/r/ikarosrun/ikaros"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/liguohaocn/ikaros?style=flat-square" /></a>
 <a href="https://github.com/ikaros-dev/ikaros/commits"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/ikaros-dev/ikaros.svg?style=flat-square" /></a>
-<a href="https://github.com/ikaros-dev/ikaros/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/ikaros-dev/ikaros/CI?style=flat-square" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/actions"><img alt="GitHub Workflow Build Status" src="https://img.shields.io/github/actions/workflow/status/ikaros-dev/ikaros/ikaros_ci_build_dev_container.yml?branch=master&style=flat-square" /></a>
 <br />
 </p>
 
