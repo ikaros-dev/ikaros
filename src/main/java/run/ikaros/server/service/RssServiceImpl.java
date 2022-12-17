@@ -144,17 +144,25 @@ public class RssServiceImpl implements RssService, InitializingBean {
                 bufferedOutputStream.write(buffer, 0, len);
             }
             LOGGER.info("download rss xml file to cache path: {}", cacheFilePath);
-        } catch (IOException e) {
+        } catch (Exception e) {
             String msg = "fail write rss url xml file bytes to cache path: " + cacheFilePath;
             LOGGER.warn(msg, e);
             throw new RssOperateException(msg, e);
         } finally {
             try {
-                bufferedOutputStream.close();
-                outputStream.close();
-                bufferedInputStream.close();
-                inputStream.close();
-            } catch (IOException e) {
+                if (bufferedOutputStream != null) {
+                    bufferedOutputStream.close();
+                }
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+                if (bufferedInputStream != null) {
+                    bufferedInputStream.close();
+                }
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (Exception e) {
                 throw new RssOperateException(e);
             }
         }
