@@ -17,8 +17,8 @@ import run.ikaros.server.model.response.OptionResponse;
 import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.utils.StringUtils;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

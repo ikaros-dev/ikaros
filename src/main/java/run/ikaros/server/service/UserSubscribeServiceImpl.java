@@ -15,8 +15,8 @@ import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.StringUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 

@@ -5,8 +5,8 @@ import run.ikaros.server.model.dto.SongDTO;
 import run.ikaros.server.model.request.SearchSongRequest;
 import run.ikaros.server.result.PagingWrap;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public interface SongService extends CrudService<SongEntity, Long> {
     @Nonnull

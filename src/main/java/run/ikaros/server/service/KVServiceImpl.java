@@ -9,7 +9,7 @@ import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.StringUtils;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +33,7 @@ public class KVServiceImpl implements KVService {
         String key = kvEntity.getKey();
         KVEntity existKVEntity = null;
         if (id != null) {
-            existKVEntity = kvRepository.getById(id);
+            existKVEntity = kvRepository.getReferenceById(id);
         }
 
         if (existKVEntity == null && type != null && StringUtils.isNotBlank(key)) {

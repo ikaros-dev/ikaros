@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import run.ikaros.server.event.QbittorrentOptionUpdateEvent;
 import run.ikaros.server.tripartite.qbittorrent.QbittorrentClient;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 @Component
 public class QbittorrentOptionUpdateEventListener implements

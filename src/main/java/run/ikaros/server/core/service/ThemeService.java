@@ -1,6 +1,6 @@
 package run.ikaros.server.core.service;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * @author li-guohao

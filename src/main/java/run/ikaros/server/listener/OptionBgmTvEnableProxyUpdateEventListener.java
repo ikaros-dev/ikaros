@@ -8,7 +8,7 @@ import run.ikaros.server.event.BgmTvHttpProxyUpdateEvent;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.RestTemplateUtils;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 @Component
 public class OptionBgmTvEnableProxyUpdateEventListener implements

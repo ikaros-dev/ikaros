@@ -3,8 +3,8 @@ package run.ikaros.server.event;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 @Getter
 public class EpisodeUrlUpdateEvent extends ApplicationEvent {

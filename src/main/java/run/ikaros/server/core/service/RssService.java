@@ -6,7 +6,7 @@ import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.service.RssServiceImpl;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.net.Proxy;
 import java.util.List;

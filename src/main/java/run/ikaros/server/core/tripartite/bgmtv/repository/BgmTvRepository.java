@@ -11,8 +11,8 @@ import run.ikaros.server.tripartite.bgmtv.model.BgmTvUserInfo;
 import run.ikaros.server.tripartite.bgmtv.repository.BgmTvRepositoryImpl;
 import run.ikaros.server.utils.AssertUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.List;
 
 /**

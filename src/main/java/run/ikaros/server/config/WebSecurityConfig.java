@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -32,7 +32,7 @@ import run.ikaros.server.utils.StringUtils;
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class WebSecurityConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSecurityConfig.class);
 
@@ -86,16 +86,16 @@ public class WebSecurityConfig {
                 }
             })
             .and()
-            .authorizeRequests()
+            .authorizeHttpRequests()
             // 指定路径下的资源需要进行验证后才能访问
-            .antMatchers(HttpMethod.POST, SecurityConst.API_AUTH_LOGIN_URL).permitAll()
-            .antMatchers(HttpMethod.POST, SecurityConst.API_USER_REGISTER_URL).permitAll()
-            .antMatchers(HttpMethod.GET, SecurityConst.API_AUTH_OPTION_IS_INIT).permitAll()
-            .antMatchers(HttpMethod.POST, SecurityConst.API_AUTH_OPTION_APP_INIT).permitAll()
-            .antMatchers(HttpMethod.GET, "/static/**").permitAll()
-            .antMatchers(HttpMethod.GET, "/upload/**").permitAll()
-            .antMatchers(HttpMethod.OPTIONS).permitAll()
-            .antMatchers(AppConst.OpenAPI.PREFIX_NAME + "/**").authenticated()
+            .requestMatchers(HttpMethod.POST, SecurityConst.API_AUTH_LOGIN_URL).permitAll()
+            .requestMatchers(HttpMethod.POST, SecurityConst.API_USER_REGISTER_URL).permitAll()
+            .requestMatchers(HttpMethod.GET, SecurityConst.API_AUTH_OPTION_IS_INIT).permitAll()
+            .requestMatchers(HttpMethod.POST, SecurityConst.API_AUTH_OPTION_APP_INIT).permitAll()
+            .requestMatchers(HttpMethod.GET, "/static/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/upload/**").permitAll()
+            .requestMatchers(HttpMethod.OPTIONS).permitAll()
+            .requestMatchers(AppConst.OpenAPI.PREFIX_NAME + "/**").authenticated()
             // 其他请求需验证
             .anyRequest().permitAll()
             .and()

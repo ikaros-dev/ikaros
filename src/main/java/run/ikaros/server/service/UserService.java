@@ -1,7 +1,7 @@
 package run.ikaros.server.service;
 
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.utils.AssertUtils;

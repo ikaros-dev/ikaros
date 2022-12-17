@@ -6,7 +6,7 @@ import run.ikaros.server.core.service.NotifyService;
 import run.ikaros.server.event.OptionNotifyUpdateEvent;
 import run.ikaros.server.model.dto.OptionNotifyDTO;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 @Component
 public class OptionNotifyUpdateEventListener

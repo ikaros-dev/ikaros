@@ -7,9 +7,9 @@ import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubject;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvSubjectType;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvUserInfo;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 import java.util.List;
 
 public interface BgmTvService {

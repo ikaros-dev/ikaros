@@ -16,9 +16,9 @@ import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.result.PagingWrap;
 import run.ikaros.server.utils.AssertUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.validation.Valid;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController

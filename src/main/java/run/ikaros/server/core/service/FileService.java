@@ -10,7 +10,7 @@ import run.ikaros.server.params.SearchFilesParams;
 import run.ikaros.server.result.PagingWrap;
 import run.ikaros.server.utils.AssertUtils;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;

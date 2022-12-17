@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.event.SubscribeBgmTvSubjectEvent;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * <ol>

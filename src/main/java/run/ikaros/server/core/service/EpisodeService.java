@@ -1,7 +1,7 @@
 package run.ikaros.server.core.service;
 
 import java.util.List;
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import run.ikaros.server.entity.EpisodeEntity;
 import run.ikaros.server.model.dto.EpisodeDTO;

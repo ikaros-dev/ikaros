@@ -1,6 +1,6 @@
 package run.ikaros.server.core.service;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * @author li-guohao

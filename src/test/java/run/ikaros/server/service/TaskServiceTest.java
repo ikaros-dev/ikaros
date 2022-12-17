@@ -12,7 +12,7 @@ import run.ikaros.server.core.service.TaskService;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 import run.ikaros.server.utils.JsonUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;

@@ -5,8 +5,8 @@ import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.params.SeasonMatchingEpParams;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.List;
 
 /**

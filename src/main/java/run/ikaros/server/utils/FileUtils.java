@@ -11,7 +11,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.xml.bind.DatatypeConverter;
+
+import jakarta.xml.bind.DatatypeConverter;
 import run.ikaros.server.constants.FileConst;
 import run.ikaros.server.enums.FileType;
 import run.ikaros.server.exceptions.RuntimeIkarosException;

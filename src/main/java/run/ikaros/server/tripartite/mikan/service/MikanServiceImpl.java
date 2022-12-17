@@ -2,7 +2,7 @@ package run.ikaros.server.tripartite.mikan.service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

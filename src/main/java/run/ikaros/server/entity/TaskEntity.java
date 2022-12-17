@@ -2,7 +2,7 @@ package run.ikaros.server.entity;
 
 import run.ikaros.server.enums.TaskType;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 
 @Entity(name = "task")

@@ -1,7 +1,7 @@
 package run.ikaros.server.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 
 @Entity(name = "album")
 public class AlbumEntity extends BaseEntity {

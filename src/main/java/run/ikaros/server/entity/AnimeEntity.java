@@ -3,14 +3,14 @@ package run.ikaros.server.entity;
 import org.hibernate.annotations.Type;
 
 import java.util.Date;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import jakarta.persistence.Basic;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 
-import static javax.persistence.FetchType.LAZY;
+import static jakarta.persistence.FetchType.LAZY;
 
 /**
  * @author li-guohao
@@ -33,7 +33,6 @@ public class AnimeEntity extends BaseEntity {
 
     @Lob
     @Basic(fetch = LAZY)
-    @Type(type = "org.hibernate.type.TextType")
     private String overview;
 
     private String producer;

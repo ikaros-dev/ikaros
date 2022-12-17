@@ -2,7 +2,7 @@ package run.ikaros.server.service;
 
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;

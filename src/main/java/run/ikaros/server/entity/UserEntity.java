@@ -6,12 +6,12 @@ import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.Type;
 import run.ikaros.server.constants.UserConst;
 
-import javax.persistence.Basic;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import jakarta.persistence.Basic;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 
-import static javax.persistence.FetchType.LAZY;
+import static jakarta.persistence.FetchType.LAZY;
 
 /**
  * 用户表
@@ -45,7 +45,6 @@ public class UserEntity extends BaseEntity {
      */
     @Lob
     @Basic(fetch = LAZY)
-    @Type(type = "org.hibernate.type.TextType")
     private String introduce;
 
     /**

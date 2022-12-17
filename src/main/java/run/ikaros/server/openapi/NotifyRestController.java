@@ -9,7 +9,7 @@ import run.ikaros.server.core.service.NotifyService;
 import run.ikaros.server.model.request.NotifyMailTestRequest;
 import run.ikaros.server.result.CommonResult;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 
 @RestController
 @RequestMapping("/notify")

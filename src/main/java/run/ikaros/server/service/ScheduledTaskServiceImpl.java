@@ -9,7 +9,7 @@ import run.ikaros.server.core.service.ScheduledTaskService;
 import run.ikaros.server.entity.ScheduledTaskEntity;
 import run.ikaros.server.utils.AssertUtils;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;

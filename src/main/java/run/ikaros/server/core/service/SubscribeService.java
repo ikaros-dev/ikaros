@@ -2,7 +2,7 @@ package run.ikaros.server.core.service;
 
 import run.ikaros.server.entity.SubscribeEntity;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 public interface SubscribeService extends CrudService<SubscribeEntity, Long> {
 

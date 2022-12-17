@@ -9,8 +9,8 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.openapi.NetworkRestController;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.HashMap;

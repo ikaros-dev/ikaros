@@ -8,15 +8,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import run.ikaros.server.core.service.MediaService;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.TaskService;
-import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.entity.OptionEntity;
-import run.ikaros.server.entity.UserEntity;
 import run.ikaros.server.enums.OptionApp;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.model.dto.OptionQbittorrentDTO;
 import run.ikaros.server.utils.StringUtils;
-
-import java.util.Optional;
 
 /**
  * @author li-guohao

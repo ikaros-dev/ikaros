@@ -16,8 +16,8 @@ import run.ikaros.server.result.PagingWrap;
 import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.StringUtils;
 
-import javax.annotation.Nonnull;
-import javax.persistence.criteria.Predicate;
+import jakarta.annotation.Nonnull;
+import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

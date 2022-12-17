@@ -1,13 +1,13 @@
 package run.ikaros.server.config;
 
-import run.ikaros.server.utils.FileUtils;
-import run.ikaros.server.utils.SystemVarUtils;
-import java.io.File;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Configuration;
+import run.ikaros.server.utils.FileUtils;
+import run.ikaros.server.utils.SystemVarUtils;
+
+import java.io.File;
 
 /**
  * @author guohao

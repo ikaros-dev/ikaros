@@ -30,9 +30,9 @@ import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
 import run.ikaros.server.utils.StringUtils;
 
-import javax.annotation.Nonnull;
-import javax.persistence.criteria.Predicate;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nonnull;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

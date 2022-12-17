@@ -21,8 +21,9 @@ import run.ikaros.server.utils.RestTemplateUtils;
 import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.XmlUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;

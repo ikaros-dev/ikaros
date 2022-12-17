@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.ThemeService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**

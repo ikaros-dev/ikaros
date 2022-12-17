@@ -4,7 +4,7 @@ import org.springframework.transaction.annotation.Transactional;
 import run.ikaros.server.entity.KVEntity;
 import run.ikaros.server.enums.KVType;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 
