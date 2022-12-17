@@ -8,8 +8,12 @@
 
 <p align="center"><b>Ikaros</b> [Ίκαρος]，专注于ACGMN的个人内容管家(CMS)。</p>
 
+<p align="center">ACGMN全拼是：Anime(动画) + Comic(漫画) + Game(游戏) + Music(音乐) + Novel(小说)</p>
+
 <p align="center">
-<a href="https://github.com/ikaros-dev/ikaros/stargazers"><img alt="Docker pulls" src="https://img.shields.io/github/stars/ikaros-dev/ikaros.svg?style=flat-square&label=Stars&logo=github" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/blob/master/LICENSE"><img alt="LICENSE" src="https://img.shields.io/github/license/ikaros-dev/ikaros?style=flat-square" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/releases"><img alt="Github Releases" src="https://img.shields.io/github/v/release/ikaros-dev/ikaros?include_prereleases&style=flat-square" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/stargazers"><img alt="GitHub Stargazers" src="https://img.shields.io/github/stars/ikaros-dev/ikaros.svg?style=flat-square&label=Stars&logo=github" /></a>
 <a href="https://github.com/ikaros-dev/ikaros/issues"><img src="https://img.shields.io/github/issues/ikaros-dev/ikaros?color=blue&style=flat-square"/></a>
 <a href="https://hub.docker.com/r/ikarosrun/ikaros"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/liguohaocn/ikaros?style=flat-square" /></a>
 <a href="https://github.com/ikaros-dev/ikaros/commits"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/ikaros-dev/ikaros.svg?style=flat-square" /></a>
@@ -17,7 +21,6 @@
 <br />
 </p>
 
-<p align="center">ACGMN全拼是：Anime(动画) + Comic(漫画) + Game(游戏) + Music(音乐) + Novel(小说)</p>
 
 # 演示视频
 https://www.bilibili.com/medialist/play/ml1995422644
@@ -70,5 +73,5 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
 # 感谢
 
-- 项目中用到的所有开源项目
+- 项目中用到的所有开源项目和参考的所有开源项目
 - Intellij 的开源许可
