@@ -37,8 +37,10 @@ class RegexUtilsTest {
 
     @Test
     void getFileNameTagEpSeq() {
-        Long seq = RegexUtils.getFileNameTagEpSeq(fileName);
-        Assertions.assertEquals(01L, seq);
+        String episodeFileName = "[Nekomoe kissaten&LoliHouse] Urusei Yatsura 2022 "
+            + "- 08 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv";
+        Long seq = RegexUtils.getFileNameTagEpSeq(episodeFileName);
+        Assertions.assertEquals(8L, seq);
     }
 
     @Test
