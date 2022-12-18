@@ -2,14 +2,14 @@ package run.ikaros.server.entity;
 
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import jakarta.persistence.Basic;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 import java.util.Date;
 
-import static javax.persistence.FetchType.LAZY;
+import static jakarta.persistence.FetchType.LAZY;
 
 /**
  * @author guohao
@@ -35,9 +35,8 @@ public class EpisodeEntity extends BaseEntity {
     @Column(name = "air_time")
     private Date airTime;
 
-    @Lob
     @Basic(fetch = LAZY)
-    @Type(type = "org.hibernate.type.TextType")
+    @Column(columnDefinition = "mediumblob")
     private String overview;
 
     /**

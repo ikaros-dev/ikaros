@@ -1,14 +1,11 @@
 package run.ikaros.server.tripartite.dmhy;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.tripartite.dmhy.enums.DmhyCategory;
 import run.ikaros.server.tripartite.dmhy.model.DmhyRssItem;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
 import java.net.Proxy;
 import java.util.List;
 

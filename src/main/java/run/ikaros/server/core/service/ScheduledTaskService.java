@@ -3,7 +3,7 @@ package run.ikaros.server.core.service;
 import org.springframework.transaction.annotation.Transactional;
 import run.ikaros.server.entity.ScheduledTaskEntity;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 public interface ScheduledTaskService extends CrudService<ScheduledTaskEntity, Long> {
 

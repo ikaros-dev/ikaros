@@ -14,9 +14,9 @@ import run.ikaros.server.model.dto.OptionNotifyDTO;
 import run.ikaros.server.model.request.NotifyMailTestRequest;
 import run.ikaros.server.utils.AssertUtils;
 
-import javax.annotation.Nonnull;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+import jakarta.annotation.Nonnull;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
@@ -118,7 +118,7 @@ public class NotifyServiceImpl implements NotifyService, InitializingBean {
             properties.setProperty("mail.smtp.socketFactory.port",
                 String.valueOf(optionNotifyDTO.getMailSmtpPort()));
             properties.setProperty("mail.smtp.socketFactory.class",
-                "javax.net.ssl.SSLSocketFactory");
+                "jakarta.net.ssl.SSLSocketFactory");
             mailSender.setJavaMailProperties(properties);
         }
     }

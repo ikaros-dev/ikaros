@@ -1,11 +1,5 @@
 package run.ikaros.server.config;
 
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import run.ikaros.server.constants.AppConst;
-import run.ikaros.server.utils.SystemVarUtils;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +11,12 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import run.ikaros.server.constants.AppConst;
+import run.ikaros.server.utils.SystemVarUtils;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * @author liguohao

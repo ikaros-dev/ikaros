@@ -36,8 +36,8 @@ import run.ikaros.server.utils.JsonUtils;
 import run.ikaros.server.utils.RestTemplateUtils;
 import run.ikaros.server.utils.StringUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

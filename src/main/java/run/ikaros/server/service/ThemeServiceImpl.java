@@ -1,7 +1,7 @@
 package run.ikaros.server.service;
 
 import java.io.File;
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.springframework.stereotype.Service;
 import run.ikaros.server.constants.AppConst;

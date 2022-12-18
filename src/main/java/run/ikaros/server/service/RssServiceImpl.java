@@ -22,7 +22,7 @@ import run.ikaros.server.utils.StringUtils;
 import run.ikaros.server.utils.SystemVarUtils;
 import run.ikaros.server.utils.XmlUtils;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;

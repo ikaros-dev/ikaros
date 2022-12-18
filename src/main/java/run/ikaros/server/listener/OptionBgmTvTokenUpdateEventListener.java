@@ -6,7 +6,7 @@ import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
 import run.ikaros.server.event.BgmTvTokenUpdateEvent;
 import run.ikaros.server.utils.AssertUtils;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 @Component
 public class OptionBgmTvTokenUpdateEventListener

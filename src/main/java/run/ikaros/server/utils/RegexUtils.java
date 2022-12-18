@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.exceptions.RegexMatchingException;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

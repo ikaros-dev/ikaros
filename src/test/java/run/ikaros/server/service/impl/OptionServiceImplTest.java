@@ -6,7 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.model.request.AppInitRequest;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

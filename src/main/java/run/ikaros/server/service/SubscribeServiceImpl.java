@@ -16,7 +16,7 @@ import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.utils.AssertUtils;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 @Service
 public class SubscribeServiceImpl

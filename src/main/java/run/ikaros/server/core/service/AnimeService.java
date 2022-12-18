@@ -7,7 +7,7 @@ import run.ikaros.server.model.dto.AnimeDTO;
 import run.ikaros.server.params.SearchAnimeDTOSParams;
 import run.ikaros.server.result.PagingWrap;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
 

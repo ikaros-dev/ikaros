@@ -2,7 +2,7 @@ package run.ikaros.server.service;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.FileType;
@@ -40,8 +40,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.criteria.Predicate;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,7 +216,7 @@ public class FileServiceImpl
             // 查询ID是否已经存在
             FileEntity idExistFileEntity = null;
             try {
-                idExistFileEntity = fileRepository.getById(fileId);
+                idExistFileEntity = fileRepository.getReferenceById(fileId);
                 idExistFileEntity.setStatus(true);
                 oldLocation = idExistFileEntity.getUrl();
             } catch (EntityNotFoundException entityNotFoundException) {

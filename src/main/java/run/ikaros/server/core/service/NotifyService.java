@@ -4,8 +4,8 @@ import org.thymeleaf.context.Context;
 import run.ikaros.server.model.dto.OptionNotifyDTO;
 import run.ikaros.server.model.request.NotifyMailTestRequest;
 
-import javax.annotation.Nonnull;
-import javax.mail.MessagingException;
+import jakarta.annotation.Nonnull;
+import jakarta.mail.MessagingException;
 
 public interface NotifyService {
     void mailTest(NotifyMailTestRequest notifyMailTestRequest) throws MessagingException;

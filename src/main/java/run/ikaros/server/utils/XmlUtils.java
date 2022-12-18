@@ -1,5 +1,6 @@
 package run.ikaros.server.utils;
 
+import jakarta.persistence.spi.TransformerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -11,14 +12,15 @@ import run.ikaros.server.exceptions.RssOperateException;
 import run.ikaros.server.exceptions.RuntimeIkarosException;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -152,8 +154,10 @@ public class XmlUtils {
             // 创建xml文件并写入内容
             tf.transform(new DOMSource(document), new StreamResult(file));
             LOGGER.info("generate jellyfin tv show nfo xml file success, filePath: {}", filePath);
-        } catch (TransformerException transformerException) {
+        } catch (TransformerConfigurationException transformerException) {
             LOGGER.warn("generate jellyfin tv show nfo xml file fail", transformerException);
+        } catch (javax.xml.transform.TransformerException e) {
+            throw new RuntimeException(e);
         }
         return filePath;
     }
@@ -214,8 +218,10 @@ public class XmlUtils {
             // 创建xml文件并写入内容
             tf.transform(new DOMSource(document), new StreamResult(file));
             LOGGER.info("generate jellyfin episode nfo xml file success, filePath: {}", filePath);
-        } catch (TransformerException transformerException) {
-            LOGGER.warn("generate jellyfin episode nfo xml file fail", transformerException);
+        } catch (TransformerConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (javax.xml.transform.TransformerException e) {
+            throw new RuntimeException(e);
         }
         return filePath;
     }

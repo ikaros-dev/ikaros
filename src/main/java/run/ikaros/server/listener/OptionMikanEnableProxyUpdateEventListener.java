@@ -9,7 +9,7 @@ import run.ikaros.server.event.MikanAndRssHttpProxyUpdateEvent;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.RestTemplateUtils;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 
