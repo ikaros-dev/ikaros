@@ -31,9 +31,7 @@ public class BaseEntity {
      * 主键ID自增
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "ikarosEntitySeqGenerator")
-    @GenericGenerator(name = "ikarosEntitySeqGenerator",
-        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     /**

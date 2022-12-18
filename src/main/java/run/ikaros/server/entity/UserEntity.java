@@ -1,6 +1,7 @@
 package run.ikaros.server.entity;
 
 
+import jakarta.persistence.Column;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.Type;
@@ -43,8 +44,8 @@ public class UserEntity extends BaseEntity {
     /**
      * 个人介绍
      */
-    @Lob
     @Basic(fetch = LAZY)
+    @Column(columnDefinition = "mediumblob")
     private String introduce;
 
     /**
