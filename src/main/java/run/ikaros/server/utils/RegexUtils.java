@@ -80,6 +80,8 @@ public class RegexUtils {
         fileName = fileName.replaceAll(RegexConst.FILE_NAME_TAG, "");
         // remove file postfix if exist
         fileName = fileName.replaceAll(RegexConst.FILE_POSTFIX, "");
+        // remove year such as 2022
+        fileName = fileName.replaceAll(RegexConst.YEAR, "");
 
         // matching seq
         Matcher tagMatcher =
