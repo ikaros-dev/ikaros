@@ -5,6 +5,8 @@
 ## Features
 - 升级SpringBoot至3.0
 
+## Bugfix
+- 剧集文件名存在年份时序列匹配失败问题 #136
 
 # 0.1.0-rc.1
 ## Features
