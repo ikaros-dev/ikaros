@@ -37,6 +37,7 @@ PS: 暂时只有下方这些，后续会有官网、社区、官网文档等等
 
 - GitHub: [Ikaros project github offical repo](https://github.com/ikaros-dev/ikaros)
 - 微信公众号：见下方[微信公众号](#微信公众号)
+- QQ群：749098345 名称是：Ikaros开源
 - 哔哩哔哩：https://space.bilibili.com/118744944/dynamic
 - TG群组：https://t.me/run_ikaros
 - TG频道：https://t.me/run_ikaros_channel
