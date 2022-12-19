@@ -23,7 +23,7 @@
 
 
 # 演示视频
-https://www.bilibili.com/medialist/play/ml1995422644
+https://www.bilibili.com/medialist/play/118744944?business=space_series&business_id=2872054
 
 # 部署指南
 
