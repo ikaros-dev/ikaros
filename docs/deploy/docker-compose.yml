@@ -12,7 +12,7 @@ services:
     volumes:
       - ${IKAROS_APP_DIR}/database:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "45432:5432"
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
@@ -36,7 +36,7 @@ services:
     volumes:
       - ${IKAROS_APP_DIR}:/opt/ikaros
     ports:
-      - "9090:9090"
+      - "40000:40000"
     environment:
       - PUID=0
       - PGID=0
@@ -65,14 +65,14 @@ services:
       - ${IKAROS_APP_DIR}/downloads:/downloads
       - ${IKAROS_APP_DIR}/media:/media
     ports:
-      - "9091:9091"
-      - "6881:6881/udp"
-      - "6881:6881"
+      - "48080:8080"
+      - "46881:6881/udp"
+      - "46881:6881"
     environment:
       - PUID=0
       - PGID=0
       - TZ=Asia/Shanghai
-      - WEBUI_PORT=9091
+      - WEBUI_PORT=48080
     restart: always
 
   # jellyfin
@@ -86,7 +86,7 @@ services:
       - ${IKAROS_APP_DIR}/tripartite/jellyfin/cache:/cache
       - ${IKAROS_APP_DIR}/media:/media
     ports:
-      - "8096:8096"
+      - "48096:8096"
 #    devices:
 #      - /dev/dri:/dev/dri
     environment:
