@@ -34,7 +34,7 @@ public class OptionEntity extends BaseEntity {
     private String key = "";
 
     @Basic(fetch = LAZY)
-    @Column(name = "o_value", columnDefinition = "mediumblob")
+    @Column(name = "o_value", length = 50000)
     private String value = "";
 
     @Column(nullable = false)

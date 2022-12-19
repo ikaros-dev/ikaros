@@ -12,7 +12,7 @@ services:
     volumes:
       - ${IKAROS_APP_DIR}/database:/var/lib/postgresql/data
     ports:
-      - "45432:5432"
+      - "55432:5432"
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
@@ -27,7 +27,7 @@ services:
   ikaros_server:
     image: ikarosrun/ikaros:${IKAROS_DOCKER_TAG}
     container_name: ikaros_server
-    restart: always
+    restart: on-failure:3
     depends_on:
       ikaros_database:
         condition: service_healthy
@@ -36,7 +36,7 @@ services:
     volumes:
       - ${IKAROS_APP_DIR}:/opt/ikaros
     ports:
-      - "40000:40000"
+      - "50000:50000"
     environment:
       - PUID=0
       - PGID=0
@@ -63,16 +63,15 @@ services:
     volumes:
       - ${IKAROS_APP_DIR}/tripartite/qbittorrent:/config
       - ${IKAROS_APP_DIR}/downloads:/downloads
-      - ${IKAROS_APP_DIR}/media:/media
     ports:
-      - "48080:8080"
-      - "46881:6881/udp"
-      - "46881:6881"
+      - "58080:8080"
+      - "56881:6881/udp"
+      - "56881:6881"
     environment:
       - PUID=0
       - PGID=0
       - TZ=Asia/Shanghai
-      - WEBUI_PORT=48080
+      - WEBUI_PORT=8080
     restart: always
 
   # jellyfin
@@ -86,7 +85,7 @@ services:
       - ${IKAROS_APP_DIR}/tripartite/jellyfin/cache:/cache
       - ${IKAROS_APP_DIR}/media:/media
     ports:
-      - "48096:8096"
+      - "58096:8096"
 #    devices:
 #      - /dev/dri:/dev/dri
     environment:

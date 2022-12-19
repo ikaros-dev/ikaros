@@ -21,8 +21,8 @@
 ```shell
 export IKAROS_APP_DIR=/opt/ikaros
 export IKAROS_DB_PASSWORD=openpostgresql
-export IKAROS_DOCKER_TAG=v0.1.0-beta.1
-export IKAROS_APP_URL_PREFIX=http://localhost:9090
+export IKAROS_DOCKER_TAG=v0.1.0-rc.1
+export IKAROS_APP_URL_PREFIX=http://localhost:50000
 ```
 
 - /opt/ikaros: Ikaros应用目录
@@ -44,6 +44,10 @@ docker-compose --version
 # docker compose
 - [docker-compose.yml](docker-compose.yml)
 - [docker-compose-no-jellyfin.yml](docker-compose-no-jellyfin.yml)
+
+## 添加yml文件
+选择上面的一个yml文件，下载到您的命令行当前目录；
+或者使用vi编辑器复制上方的其中一个yml文件内容，保存为您当前命令行的一个yml文件
 
 ## 启动docker-compose
 执行compose文件，文件名称自定义，我这里是`docker-compose.yml`
