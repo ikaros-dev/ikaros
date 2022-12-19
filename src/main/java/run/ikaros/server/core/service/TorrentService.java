@@ -1,7 +1,7 @@
 package run.ikaros.server.core.service;
 
-import run.ikaros.server.enums.TorrentType;
+import javax.annotation.Nonnull;
 
 public interface TorrentService {
-    Boolean create(TorrentType type, String torrentUrl);
+    void create(@Nonnull String torrentUrl);
 }

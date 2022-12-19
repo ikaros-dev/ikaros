@@ -1,7 +1,7 @@
 ikaros:
   env: ${IKAROS_ENV:pro}
   log-level: ${IKAROS_LOG_LEVEL:INFO}
-  server-port: ${IKAROS_SERVER_PORT:9090}
+  server-port: ${IKAROS_SERVER_PORT:40000}
   app-url-prefix: ${IKAROS_APP_URL_PREFIX:http://localhost:9090}
 
 server:
@@ -32,7 +32,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-      use-new-id-generator-mappings: false
     show-sql: false
     open-in-view: false
 #    properties:
