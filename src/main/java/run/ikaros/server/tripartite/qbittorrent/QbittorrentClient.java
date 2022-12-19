@@ -74,6 +74,7 @@ public class QbittorrentClient implements InitializingBean {
         String TORRENTS_PAUSE = "/api/v2/torrents/pause";
         String TORRENTS_DELETE = "/api/v2/torrents/delete";
         String TORRENTS_RECHECK = "/api/v2/torrents/recheck";
+        String TORRENTS_ADD_TAGS = "/api/v2/torrents/addTags";
     }
 
     public QbittorrentClient(OptionService optionService) {
@@ -518,5 +519,9 @@ public class QbittorrentClient implements InitializingBean {
             .stream()
             .filter(qbTorrentInfo -> "missingFiles".equalsIgnoreCase(qbTorrentInfo.getState()))
             .forEach(qbTorrentInfo -> resume(qbTorrentInfo.getHash()));
+    }
+
+    public void addTag() {
+
     }
 }
