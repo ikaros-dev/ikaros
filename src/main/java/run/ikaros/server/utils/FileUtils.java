@@ -152,4 +152,21 @@ public class FileUtils {
         AssertUtils.notBlank(filePath, "filePath");
         return filePath.substring(filePath.lastIndexOf("/") + 1);
     }
+
+    /**
+     * remove char \ / : * ? " < > |
+     */
+    public static String formatDirName(String dirName) {
+        AssertUtils.notBlank(dirName, "dir name");
+        return dirName
+            .replace("\\", "")
+            .replace("/", "")
+            .replace(":", "")
+            .replace("*", "")
+            .replace("?", "")
+            .replace("\"", "")
+            .replace("<", "")
+            .replace(">", "")
+            .replace("|", "");
+    }
 }

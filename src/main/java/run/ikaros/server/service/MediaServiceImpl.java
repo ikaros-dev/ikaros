@@ -78,16 +78,7 @@ public class MediaServiceImpl implements MediaService {
         }
 
         // remove char \ / : * ? " < > |
-        animeDirName = animeDirName
-            .replace("\\", "")
-            .replace("/", "")
-            .replace(":", "")
-            .replace("*", "")
-            .replace("?", "")
-            .replace("\"", "")
-            .replace("<", "")
-            .replace(">", "")
-            .replace("|", "");
+        animeDirName = FileUtils.formatDirName(animeDirName);
 
         final String animeDirPath = SystemVarUtils.getCurrentAppMediaDirPath()
             + File.separator + animeDirName;
