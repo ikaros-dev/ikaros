@@ -21,6 +21,7 @@ public interface TaskService {
      *     <li>search download process has finished torrents</li>
      *     <li>create file hard link for server upload dir</li>
      *     <li>create file hard link for jellyfin media dir</li>
+     *     <li>create file hard link for original dir</li>
      * </ol>
      */
     void searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode();

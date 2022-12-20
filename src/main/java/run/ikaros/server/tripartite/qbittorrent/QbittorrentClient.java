@@ -89,10 +89,15 @@ public class QbittorrentClient implements InitializingBean {
     public synchronized void refreshHttpHeadersCookies() {
         OptionQbittorrentDTO optionQbittorrentDTO = optionService.getOptionQbittorrentDTO();
         if (StringUtils.isNotBlank(optionQbittorrentDTO.getUrlPrefix())) {
-            List<String> cookies = getCookieByLogin(optionQbittorrentDTO.getUsername(),
-                optionQbittorrentDTO.getPassword());
-            this.httpHeaders.clear();
-            this.httpHeaders.put(HttpHeaders.COOKIE, cookies);
+            try {
+                List<String> cookies = getCookieByLogin(optionQbittorrentDTO.getUsername(),
+                    optionQbittorrentDTO.getPassword());
+                this.httpHeaders.clear();
+                this.httpHeaders.put(HttpHeaders.COOKIE, cookies);
+            } catch (Exception exception) {
+                LOGGER.warn("refresh qbittorrent options fail", exception);
+            }
+
         }
     }
 
