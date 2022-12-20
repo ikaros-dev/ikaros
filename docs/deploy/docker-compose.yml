@@ -38,8 +38,8 @@ services:
     ports:
       - "50000:50000"
     environment:
-      - PUID=0
-      - PGID=0
+      #- PUID=0
+      #- PGID=0
       - LANG=zh_CN.UTF-8
       - LANGUAGE=zh_CN:zh
       - LC_ALL=zh_CN.UTF-8
@@ -64,14 +64,14 @@ services:
       - ${IKAROS_APP_DIR}/tripartite/qbittorrent:/config
       - ${IKAROS_APP_DIR}/downloads:/downloads
     ports:
-      - "58080:8080"
+      - "58080:58080"
       - "56881:6881/udp"
       - "56881:6881"
     environment:
-      - PUID=0
-      - PGID=0
+      #- PUID=0
+      #- PGID=0
       - TZ=Asia/Shanghai
-      - WEBUI_PORT=8080
+      - WEBUI_PORT=58080
     restart: always
 
   # jellyfin
@@ -89,8 +89,8 @@ services:
 #    devices:
 #      - /dev/dri:/dev/dri
     environment:
-      - PUID=0
-      - PGID=0
+      #- PUID=0
+      #- PGID=0
       - LANG=zh_CN.UTF-8
       - LANGUAGE=zh_CN:zh
       - LC_ALL=zh_CN.UTF-8
