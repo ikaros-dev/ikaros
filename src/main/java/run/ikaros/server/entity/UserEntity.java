@@ -45,7 +45,7 @@ public class UserEntity extends BaseEntity {
      * 个人介绍
      */
     @Basic(fetch = LAZY)
-    @Column(columnDefinition = "mediumblob")
+    @Column(length = 50000)
     private String introduce;
 
     /**

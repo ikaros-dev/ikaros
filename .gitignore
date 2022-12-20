@@ -42,3 +42,5 @@ logs/
 upload/
 media/
 downloads/
+database/
+tripartite/

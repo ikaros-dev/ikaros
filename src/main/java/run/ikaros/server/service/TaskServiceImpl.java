@@ -51,12 +51,14 @@ import run.ikaros.server.utils.XmlUtils;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -321,19 +323,73 @@ public class TaskServiceImpl implements TaskService {
             try {
                 createServerFileHardLink(name, contentPath);
                 LOGGER.info("create server file hard link success for name={}", name);
-            } catch (RuntimeException runtimeException) {
-                LOGGER.warn("create server file hard link fail", runtimeException);
+            } catch (Exception exception) {
+                LOGGER.warn("create server file hard link fail", exception);
             }
             // try {
             //     createJellyfinFileHardLink(name, contentPath);
             //     LOGGER.info("create jellyfin file hard link success for name={}", name);
-            // } catch (RuntimeException runtimeException) {
-            //     LOGGER.warn("create jellyfin file hard link fail", runtimeException);
+            // } catch (Exception exception) {
+            //     LOGGER.warn("create jellyfin file hard link fail", exception);
             // }
+
+            // 创建原始目录
+            try {
+                createOriginalFileHardLink(name, contentPath);
+                LOGGER.info("create original dir file hard link success for name={}", name);
+            } catch (Exception exception) {
+                LOGGER.warn("create original dir file hard link fail", exception);
+            }
 
             hasHandledTorrentHashSet.add(hash);
         }
         LOGGER.info("end task: searchDownloadProcessAndCreateFileHardLinksAndRelateEpisode");
+    }
+
+    private void createOriginalFileHardLink(String torrentName, String torrentContentPath) {
+        AssertUtils.notBlank(torrentName, "torrentName");
+        AssertUtils.notBlank(torrentContentPath, "torrentContentPath");
+
+        // 如果目录不存在，则创建
+        final String originalDirPath = SystemVarUtils.getCurrentAppOriginalDirPath();
+        File originalDir = new File(originalDirPath);
+        if (!originalDir.exists()) {
+            originalDir.mkdirs();
+        }
+
+        // 硬链接创建种子原始目录
+        // qbittorrent download path => ikaros app download path
+        // /downloads/xxx => /opt/ikaros/downloads/xxx
+        torrentContentPath = addPrefixForQbittorrentDownloadPath(torrentContentPath);
+        File torrentContentFile = new File(torrentContentPath);
+        createOriginalFileHardLinkRecursively(torrentContentFile);
+    }
+
+    private void createOriginalFileHardLinkRecursively(File torrentContentFile) {
+        AssertUtils.notNull(torrentContentFile, "torrentContentFile");
+        if (torrentContentFile.isDirectory()) {
+            for (File file : Objects.requireNonNull(torrentContentFile.listFiles())) {
+                createOriginalFileHardLinkRecursively(file);
+            }
+        } else {
+            // 单个文件
+            String originalFilePath = SystemVarUtils.getCurrentAppOriginalDirPath()
+                + File.separator + torrentContentFile.getName();
+            String torrentContentPath = torrentContentFile.getAbsolutePath();
+            File originalFile = new File(originalFilePath);
+            if (originalFile.exists()) {
+                // LOGGER.debug("skip, file exists for path: {}", originalFilePath);
+                return;
+            }
+            try {
+                Files.createLink(originalFile.toPath(), torrentContentFile.toPath());
+                LOGGER.debug("success create origin file hard link, link: {}, existing: {}",
+                    originalFilePath, torrentContentPath);
+            } catch (IOException e) {
+                LOGGER.warn("success create origin file hard link, link: {}, existing: {}",
+                    originalFilePath, torrentContentPath, e);
+            }
+        }
     }
 
     private void updateEpisodeUrlByFileEntity(String torrentName, Long fileId) {

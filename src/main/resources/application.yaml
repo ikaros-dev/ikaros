@@ -1,8 +1,8 @@
 ikaros:
   env: ${IKAROS_ENV:pro}
   log-level: ${IKAROS_LOG_LEVEL:INFO}
-  server-port: ${IKAROS_SERVER_PORT:9090}
-  app-url-prefix: ${IKAROS_APP_URL_PREFIX:http://localhost:9090}
+  server-port: ${IKAROS_SERVER_PORT:50000}
+  app-url-prefix: ${IKAROS_APP_URL_PREFIX:http://localhost:50000}
 
 server:
   port: ${ikaros.server-port}
@@ -25,14 +25,13 @@ spring:
 
     # postgresql database configuration.
     driver- class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${IKAROS_DB_URL:localhost:5432}/${IKAROS_DB_NAME:ikaros}
+    url: jdbc:postgresql://${IKAROS_DB_URL:localhost:55432}/${IKAROS_DB_NAME:ikaros}
     username: ${IKAROS_DB_USERNAME:ikaros}
     password: ${IKAROS_DB_PASSWORD:openpostgresql}
 
   jpa:
     hibernate:
       ddl-auto: update
-      use-new-id-generator-mappings: false
     show-sql: false
     open-in-view: false
 #    properties:

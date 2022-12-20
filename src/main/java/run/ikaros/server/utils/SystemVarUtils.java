@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import run.ikaros.server.constants.AppConst;
 
 /**
  * 封装系统变量操作
@@ -16,7 +17,8 @@ import org.slf4j.LoggerFactory;
  */
 public class SystemVarUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemVarUtils.class);
-    public static final String MEDIA_DIR_NAME = "media";
+    public static final String MEDIA_DIR_NAME = AppConst.MEDIA;
+    public static final String ORIGINAL_DIR_NAME = AppConst.ORIGINAL;
 
     static {
         LOGGER.debug("current app dir path: {}", getCurrentAppDirPath());
@@ -79,5 +81,9 @@ public class SystemVarUtils {
 
     public static String getCurrentAppMediaDirPath() {
         return getCurrentAppDirPath() + File.separator + MEDIA_DIR_NAME;
+    }
+
+    public static String getCurrentAppOriginalDirPath() {
+        return getCurrentAppDirPath() + File.separator + ORIGINAL_DIR_NAME;
     }
 }

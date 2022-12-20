@@ -33,7 +33,7 @@ public class SeasonEntity extends BaseEntity {
     private String titleCn;
 
     @Basic(fetch = LAZY)
-    @Column(columnDefinition = "mediumblob")
+    @Column(length = 50000)
     private String overview;
 
 

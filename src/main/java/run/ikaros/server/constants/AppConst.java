@@ -14,4 +14,7 @@ public interface AppConst {
 
     String DEFAULT_THEME = "simple";
     String PAGE_POSTFIX = "themes";
+    String ORIGINAL = "original";
+    String MEDIA = "media";
+    String UPLOAD = "upload";
 }

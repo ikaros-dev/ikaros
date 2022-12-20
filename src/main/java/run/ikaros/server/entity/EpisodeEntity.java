@@ -36,7 +36,7 @@ public class EpisodeEntity extends BaseEntity {
     private Date airTime;
 
     @Basic(fetch = LAZY)
-    @Column(columnDefinition = "mediumblob")
+    @Column(length = 50000)
     private String overview;
 
     /**

@@ -32,7 +32,7 @@ public class AnimeEntity extends BaseEntity {
     private String platform;
 
     @Basic(fetch = LAZY)
-    @Column(columnDefinition = "mediumblob")
+    @Column(length = 50000)
     private String overview;
 
     private String producer;
