@@ -87,4 +87,16 @@ class RegexConstTest {
         }
         assertThat(setList).isNotEmpty();
     }
+
+    @Test
+    void year() {
+        String year = "12310 2022 2013";
+        Matcher matcher =
+            Pattern.compile(RegexConst.YEAR).matcher(year);
+        List<String> setList = new ArrayList<>();
+        while (matcher.find()) {
+            setList.add(matcher.group());
+        }
+        assertThat(setList).isNotEmpty();
+    }
 }
