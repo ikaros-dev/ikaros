@@ -362,18 +362,30 @@ public class TaskServiceImpl implements TaskService {
         // /downloads/xxx => /opt/ikaros/downloads/xxx
         torrentContentPath = addPrefixForQbittorrentDownloadPath(torrentContentPath);
         File torrentContentFile = new File(torrentContentPath);
-        createOriginalFileHardLinkRecursively(torrentContentFile);
+        createOriginalFileHardLinkRecursively(torrentContentFile,
+            SystemVarUtils.getCurrentAppOriginalDirPath());
     }
 
-    private void createOriginalFileHardLinkRecursively(File torrentContentFile) {
+    private void createOriginalFileHardLinkRecursively(File torrentContentFile, String dirPath) {
         AssertUtils.notNull(torrentContentFile, "torrentContentFile");
+        AssertUtils.notBlank(dirPath, "dir path");
         if (torrentContentFile.isDirectory()) {
+            dirPath = dirPath + File.separator
+                + FileUtils.formatDirName(torrentContentFile.getName());
+            File dir = new File(dirPath);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
             for (File file : Objects.requireNonNull(torrentContentFile.listFiles())) {
-                createOriginalFileHardLinkRecursively(file);
+                createOriginalFileHardLinkRecursively(file, dirPath);
             }
         } else {
             // 单个文件
-            String originalFilePath = SystemVarUtils.getCurrentAppOriginalDirPath()
+            File dir = new File(dirPath);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            String originalFilePath = dirPath
                 + File.separator + torrentContentFile.getName();
             String torrentContentPath = torrentContentFile.getAbsolutePath();
             File originalFile = new File(originalFilePath);
