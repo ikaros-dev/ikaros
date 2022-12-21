@@ -1,12 +1,12 @@
 ikaros:
   log-level: DEBUG
-  server-port: 9090
+  server-port: 50000
 
 spring:
   datasource:
     # postgresql database configuration.
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/ikaros
+    url: jdbc:postgresql://localhost:55432/ikaros
     username: ikaros
     password: openpostgresql
 
