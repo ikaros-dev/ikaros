@@ -58,14 +58,14 @@ class SeasonServiceTest {
             );
             episodeIdList.add(episodeEntity.getId());
 
-            FileEntity fileEntity = fileService.save(new FileEntity()
-                .setMd5("MD5")
-                .setType(FileType.VIDEO)
-                .setUrl((i + 1) + "")
-                .setSize(-1)
-                .setName("[VCB-Studio] Sora no Otoshimono II [" + (i + 1)
-                    + "][Hi10p_1080p][x264_2flac].mkv")
-            );
+            FileEntity fileEntity = new FileEntity();
+            fileEntity.setMd5("MD5");
+            fileEntity.setType(FileType.VIDEO);
+            fileEntity.setUrl((i + 1) + "");
+            fileEntity.setSize(-1);
+            fileEntity.setName("[VCB-Studio] Sora no Otoshimono II [" + (i + 1)
+                + "][Hi10p_1080p][x264_2flac].mkv");
+            fileEntity = fileService.save(fileEntity);
             fileIdList.add(fileEntity.getId());
         }
 

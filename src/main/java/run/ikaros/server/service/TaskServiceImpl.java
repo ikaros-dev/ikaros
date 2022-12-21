@@ -447,6 +447,10 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
+    private void createServerFileHardLinkRecursively() {
+
+    }
+
     private void createServerFileHardLink(String torrentName, String torrentContentPath) {
         AssertUtils.notBlank(torrentName, "torrentName");
         AssertUtils.notBlank(torrentContentPath, "torrentContentPath");
@@ -479,11 +483,13 @@ public class TaskServiceImpl implements TaskService {
                     Files.createLink(uploadFile.toPath(), file.toPath());
                     LOGGER.debug("copy server file hard link success, link={}, existing={}",
                         uploadFilePath, torrentContentPath);
-                    FileEntity fileEntity = fileService.create(new FileEntity()
-                        .setPlace(FilePlace.LOCAL)
-                        .setUrl(uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""))
-                        .setName(fileName)
-                        .setType(FileUtils.parseTypeByPostfix(postfix)));
+                    FileEntity fileEntity = new FileEntity();
+                    fileEntity.setPlace(FilePlace.LOCAL);
+                    fileEntity
+                        .setUrl(uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""));
+                    fileEntity.setName(fileName);
+                    fileEntity.setType(FileUtils.parseTypeByPostfix(postfix));
+                    fileEntity = fileService.create(fileEntity);
 
                     updateEpisodeUrlByFileEntity(torrentName, fileEntity.getId());
                 } catch (RegexMatchingException regexMatchingException) {
@@ -519,11 +525,13 @@ public class TaskServiceImpl implements TaskService {
                 LOGGER.debug("copy server file hard link success, link={}, existing={}",
                     uploadFilePath, torrentContentPath);
 
-                FileEntity fileEntity = fileService.create(new FileEntity()
-                    .setPlace(FilePlace.LOCAL)
-                    .setUrl(uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""))
-                    .setName(fileName)
-                    .setType(FileUtils.parseTypeByPostfix(postfix)));
+                FileEntity fileEntity = new FileEntity();
+                fileEntity.setPlace(FilePlace.LOCAL);
+                fileEntity
+                    .setUrl(uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""));
+                fileEntity.setName(fileName);
+                fileEntity.setType(FileUtils.parseTypeByPostfix(postfix));
+                fileEntity = fileService.create(fileEntity);
 
                 updateEpisodeUrlByFileEntity(torrentName, fileEntity.getId());
             } catch (RegexMatchingException regexMatchingException) {

@@ -398,14 +398,13 @@ public class FileServiceImpl
             tempChunkFileCacheDir.delete();
 
             uploadName = uploadName.substring(0, uploadName.lastIndexOf("."));
-            FileEntity fileEntity = new FileEntity()
-                .setMd5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5))
-                .setPlace(FilePlace.LOCAL)
-                .setUrl(path2url(filePath))
-                .setName(uploadName + "." + postfix)
-                .setSize(Integer.valueOf(uploadLength))
-                .setType(FileUtils.parseTypeByPostfix(postfix));
-
+            FileEntity fileEntity = new FileEntity();
+            fileEntity.setMd5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5));
+            fileEntity.setPlace(FilePlace.LOCAL);
+            fileEntity.setUrl(path2url(filePath));
+            fileEntity.setName(uploadName + "." + postfix);
+            fileEntity.setSize(Integer.valueOf(uploadLength));
+            fileEntity.setType(FileUtils.parseTypeByPostfix(postfix));
             fileRepository.saveAndFlush(fileEntity);
         }
     }
