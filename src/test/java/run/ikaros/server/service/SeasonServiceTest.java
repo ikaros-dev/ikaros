@@ -62,7 +62,7 @@ class SeasonServiceTest {
             fileEntity.setMd5("MD5");
             fileEntity.setType(FileType.VIDEO);
             fileEntity.setUrl((i + 1) + "");
-            fileEntity.setSize(-1);
+            fileEntity.setSize(-1L);
             fileEntity.setName("[VCB-Studio] Sora no Otoshimono II [" + (i + 1)
                 + "][Hi10p_1080p][x264_2flac].mkv");
             fileEntity = fileService.save(fileEntity);

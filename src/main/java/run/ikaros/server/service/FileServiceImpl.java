@@ -131,7 +131,7 @@ public class FileServiceImpl
 
         fileEntity.setUrl(url);
         fileEntity.setMd5(md5);
-        fileEntity.setSize(size);
+        fileEntity.setSize((long) size);
         fileEntity.setName(ikarosFile.getName() + "." + ikarosFile.getPostfix());
         fileEntity.setType(ikarosFile.getType());
         fileEntity.setPlace(place);
@@ -403,7 +403,7 @@ public class FileServiceImpl
             fileEntity.setPlace(FilePlace.LOCAL);
             fileEntity.setUrl(path2url(filePath));
             fileEntity.setName(uploadName + "." + postfix);
-            fileEntity.setSize(Integer.valueOf(uploadLength));
+            fileEntity.setSize(Long.valueOf(uploadLength));
             fileEntity.setType(FileUtils.parseTypeByPostfix(postfix));
             fileRepository.saveAndFlush(fileEntity);
         }

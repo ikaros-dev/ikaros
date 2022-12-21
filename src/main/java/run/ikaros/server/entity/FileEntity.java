@@ -34,7 +34,7 @@ public class FileEntity extends BaseEntity {
     private FileType type = FileType.UNKNOWN;
     private String md5;
     @Column(nullable = false)
-    private Integer size = -1;
+    private Long size = -1L;
 
     @Enumerated(EnumType.STRING)
     private FilePlace place = FilePlace.LOCAL;

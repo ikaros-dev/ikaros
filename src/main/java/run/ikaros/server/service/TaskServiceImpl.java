@@ -16,6 +16,7 @@ import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.core.service.UserSubscribeService;
 import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
 import run.ikaros.server.entity.AnimeEntity;
+import run.ikaros.server.entity.BaseEntity;
 import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.KVEntity;
 import run.ikaros.server.entity.OptionEntity;
@@ -447,8 +448,62 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
-    private void createServerFileHardLinkRecursively() {
+    private void createServerFileHardLinkRecursively(File torrentContentFile) {
+        AssertUtils.notNull(torrentContentFile, "torrentContentFile");
+        if (torrentContentFile.isDirectory()) {
+            for (File file : Objects.requireNonNull(torrentContentFile.listFiles())) {
+                createServerFileHardLinkRecursively(file);
+            }
+        } else {
+            // 单个文件
+            String fileName = torrentContentFile.getName();
+            String postfix = FileUtils.parseFilePostfix(fileName);
+            String serverFilePath
+                = FileUtils.buildAppUploadFilePath(postfix);
 
+            List<FileEntity> existsFileEntityList
+                = fileService
+                .findListByName(fileName)
+                .stream()
+                .filter(BaseEntity::getStatus)
+                .toList();
+            if (!existsFileEntityList.isEmpty()) {
+                // LOGGER.debug("skip, file exists for path: {}", serverFilePath);
+                return;
+            }
+
+            String torrentContentPath = torrentContentFile.getAbsolutePath();
+            File serverFile = new File(serverFilePath);
+            if (serverFile.exists()) {
+                // LOGGER.debug("skip, file exists for path: {}", serverFilePath);
+                return;
+            }
+            try {
+                Files.createLink(serverFile.toPath(), torrentContentFile.toPath());
+                LOGGER.debug("success create server file hard link, link: {}, existing: {}",
+                    serverFilePath, torrentContentPath);
+                FileEntity fileEntity = new FileEntity();
+                fileEntity.setName(fileName);
+                fileEntity.setDirName(torrentContentFile.getParentFile().getName());
+                fileEntity.setUrl(serverFilePath.replace(
+                    SystemVarUtils.getCurrentAppDirPath(), ""));
+                fileEntity.setOriginalPath(torrentContentPath);
+                fileEntity.setType(FileUtils.parseTypeByPostfix(postfix));
+                fileEntity.setPlace(FilePlace.LOCAL);
+                fileEntity.setSize(torrentContentFile.length());
+                fileEntity = fileService.create(fileEntity);
+                LOGGER.debug("save new file entity for name={}", fileName);
+
+                updateEpisodeUrlByFileEntity(torrentContentFile.getName(), fileEntity.getId());
+            } catch (RegexMatchingException regexMatchingException) {
+                LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
+            } catch (Exception e) {
+                LOGGER.error(
+                    "fail create server file hard link , "
+                        + "please let qbittorrent and ikaros instance in the same file system",
+                    e);
+            }
+        }
     }
 
     private void createServerFileHardLink(String torrentName, String torrentContentPath) {
@@ -458,91 +513,7 @@ public class TaskServiceImpl implements TaskService {
         // /downloads/xxx => /opt/ikaros/downloads/xxx
         torrentContentPath = addPrefixForQbittorrentDownloadPath(torrentContentPath);
         File torrentContentFile = new File(torrentContentPath);
-        if (torrentContentFile.isDirectory()) {
-            // 是目录，则上传目录下的所有文件到服务器目录
-            File[] files = torrentContentFile.listFiles();
-            if (files == null || files.length == 0) {
-                return;
-            }
-            for (File file : files) {
-                String fileName = file.getName();
-                List<FileEntity> existsFileEntityList = fileService.findListByName(fileName);
-                if (!existsFileEntityList.isEmpty()) {
-                    FileEntity existsFileEntity = existsFileEntityList.get(0);
-                    updateEpisodeUrlByFileEntity(torrentName, existsFileEntity.getId());
-                    LOGGER.debug("find exists file for name={}", fileName);
-                    continue;
-                }
-                String postfix = FileUtils.parseFilePostfix(fileName);
-                String uploadFilePath = FileUtils.buildAppUploadFilePath(postfix);
-                File uploadFile = new File(uploadFilePath);
-                if (uploadFile.exists()) {
-                    continue;
-                }
-                try {
-                    Files.createLink(uploadFile.toPath(), file.toPath());
-                    LOGGER.debug("copy server file hard link success, link={}, existing={}",
-                        uploadFilePath, torrentContentPath);
-                    FileEntity fileEntity = new FileEntity();
-                    fileEntity.setPlace(FilePlace.LOCAL);
-                    fileEntity
-                        .setUrl(uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""));
-                    fileEntity.setName(fileName);
-                    fileEntity.setType(FileUtils.parseTypeByPostfix(postfix));
-                    fileEntity = fileService.create(fileEntity);
-
-                    updateEpisodeUrlByFileEntity(torrentName, fileEntity.getId());
-                } catch (RegexMatchingException regexMatchingException) {
-                    LOGGER.warn("regex matching fail, msg: {}",
-                        regexMatchingException.getMessage());
-                } catch (Exception e) {
-                    LOGGER.error(
-                        "create server file hard link fail, "
-                            + "please let qbittorrent and ikaros instance in the same file system",
-                        e);
-                }
-            }
-        } else {
-            try {
-                // 是文件，则直接上传文件到服务器目录
-                String postfix = FileUtils.parseFilePostfix(torrentContentPath);
-                final String fileName = FileUtils.parseFileName(torrentContentPath);
-                // 如果已经存在对应的文件，则无需进行后续的步骤
-                List<FileEntity> existsFileEntityList = fileService.findListByName(fileName);
-                if (!existsFileEntityList.isEmpty()) {
-                    LOGGER.warn("skip, find exist file with name={}, fileEntity={}",
-                        fileName, JsonUtils.obj2Json(existsFileEntityList.get(0)));
-                    return;
-                }
-
-
-                String uploadFilePath = FileUtils.buildAppUploadFilePath(postfix);
-                File uploadFile = new File(uploadFilePath);
-                if (uploadFile.exists()) {
-                    return;
-                }
-                Files.createLink(uploadFile.toPath(), torrentContentFile.toPath());
-                LOGGER.debug("copy server file hard link success, link={}, existing={}",
-                    uploadFilePath, torrentContentPath);
-
-                FileEntity fileEntity = new FileEntity();
-                fileEntity.setPlace(FilePlace.LOCAL);
-                fileEntity
-                    .setUrl(uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""));
-                fileEntity.setName(fileName);
-                fileEntity.setType(FileUtils.parseTypeByPostfix(postfix));
-                fileEntity = fileService.create(fileEntity);
-
-                updateEpisodeUrlByFileEntity(torrentName, fileEntity.getId());
-            } catch (RegexMatchingException regexMatchingException) {
-                LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
-            } catch (Exception e) {
-                LOGGER.error(
-                    "create server file hard link fail, "
-                        + "please let qbittorrent and ikaros instance in the same file system",
-                    e);
-            }
-        }
+        createServerFileHardLinkRecursively(torrentContentFile);
     }
 
     private static String addPrefixForQbittorrentDownloadPath(String torrentContentPath) {
