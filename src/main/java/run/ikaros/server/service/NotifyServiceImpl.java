@@ -118,7 +118,7 @@ public class NotifyServiceImpl implements NotifyService, InitializingBean {
             properties.setProperty("mail.smtp.socketFactory.port",
                 String.valueOf(optionNotifyDTO.getMailSmtpPort()));
             properties.setProperty("mail.smtp.socketFactory.class",
-                "jakarta.net.ssl.SSLSocketFactory");
+                "javax.net.ssl.SSLSocketFactory");
             mailSender.setJavaMailProperties(properties);
         }
     }
