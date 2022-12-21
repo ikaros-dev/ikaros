@@ -1,6 +1,7 @@
 package run.ikaros.server.utils;
 
 import io.jsonwebtoken.io.IOException;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nonnull;
 import jakarta.xml.bind.DatatypeConverter;
 import run.ikaros.server.constants.FileConst;
 import run.ikaros.server.enums.FileType;
@@ -70,8 +72,6 @@ public class FileUtils {
         }
         return FileType.UNKNOWN;
     }
-
-
 
 
     public static byte[] checksum(byte[] bytes, FileUtils.Hash hash) throws RuntimeIkarosException {
@@ -168,5 +168,20 @@ public class FileUtils {
             .replace("<", "")
             .replace(">", "")
             .replace("|", "");
+    }
+
+    @Nonnull
+    public static File createDirWhenNotExists(@Nonnull String dirPath) {
+        if (StringUtils.isBlank(dirPath)) {
+            throw new IllegalArgumentException("dir must not be blank");
+        }
+        File dir = new File(dirPath);
+        if (dir.exists() && !dir.isDirectory()) {
+            throw new IllegalArgumentException("instance must be directory");
+        }
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir;
     }
 }
