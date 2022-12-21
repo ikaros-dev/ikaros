@@ -131,7 +131,7 @@ public class FileServiceImpl
 
         fileEntity.setUrl(url);
         fileEntity.setMd5(md5);
-        fileEntity.setSize(size);
+        fileEntity.setSize((long) size);
         fileEntity.setName(ikarosFile.getName() + "." + ikarosFile.getPostfix());
         fileEntity.setType(ikarosFile.getType());
         fileEntity.setPlace(place);
@@ -398,14 +398,13 @@ public class FileServiceImpl
             tempChunkFileCacheDir.delete();
 
             uploadName = uploadName.substring(0, uploadName.lastIndexOf("."));
-            FileEntity fileEntity = new FileEntity()
-                .setMd5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5))
-                .setPlace(FilePlace.LOCAL)
-                .setUrl(path2url(filePath))
-                .setName(uploadName + "." + postfix)
-                .setSize(Integer.valueOf(uploadLength))
-                .setType(FileUtils.parseTypeByPostfix(postfix));
-
+            FileEntity fileEntity = new FileEntity();
+            fileEntity.setMd5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5));
+            fileEntity.setPlace(FilePlace.LOCAL);
+            fileEntity.setUrl(path2url(filePath));
+            fileEntity.setName(uploadName + "." + postfix);
+            fileEntity.setSize(Long.valueOf(uploadLength));
+            fileEntity.setType(FileUtils.parseTypeByPostfix(postfix));
             fileRepository.saveAndFlush(fileEntity);
         }
     }

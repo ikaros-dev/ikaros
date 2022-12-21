@@ -1,5 +1,8 @@
 package run.ikaros.server.entity;
 
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.FileType;
 
@@ -12,8 +15,10 @@ import jakarta.persistence.Table;
 /**
  * @author liguohao
  */
+@Data
 @Entity
 @Table(name = "file")
+@EqualsAndHashCode(callSuper = true)
 public class FileEntity extends BaseEntity {
 
     @Column(nullable = false)
@@ -29,63 +34,20 @@ public class FileEntity extends BaseEntity {
     private FileType type = FileType.UNKNOWN;
     private String md5;
     @Column(nullable = false)
-    private Integer size = -1;
+    private Long size = -1L;
 
     @Enumerated(EnumType.STRING)
     private FilePlace place = FilePlace.LOCAL;
 
+    /**
+     * 文件在下载目录的绝对路径，目的是为了能够还原文件的结构
+     */
+    @Column(name = "original_path")
+    private String originalPath;
+    /**
+     * 文件在下载目录的目录名称，目的是为了能够还原文件的结构
+     */
+    @Column(name = "dir_name")
+    private String dirName;
 
-    public String getName() {
-        return name;
-    }
-
-    public FileEntity setName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    public String getMd5() {
-        return md5;
-    }
-
-    public FileEntity setMd5(String md5) {
-        this.md5 = md5;
-        return this;
-    }
-
-    public Integer getSize() {
-        return size;
-    }
-
-    public FileEntity setSize(Integer size) {
-        this.size = size;
-        return this;
-    }
-
-    public FileType getType() {
-        return type;
-    }
-
-    public FileEntity setType(FileType type) {
-        this.type = type;
-        return this;
-    }
-
-    public FilePlace getPlace() {
-        return place;
-    }
-
-    public FileEntity setPlace(FilePlace place) {
-        this.place = place;
-        return this;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public FileEntity setUrl(String url) {
-        this.url = url;
-        return this;
-    }
 }
