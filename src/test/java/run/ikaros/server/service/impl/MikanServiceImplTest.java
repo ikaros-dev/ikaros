@@ -3,10 +3,14 @@ package run.ikaros.server.service.impl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.core.service.MikanService;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.tripartite.mikan.service.MikanServiceImpl;
 import run.ikaros.server.service.OptionServiceImpl;
+import run.ikaros.server.utils.RestTemplateUtils;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author li-guohao
@@ -29,5 +33,17 @@ class MikanServiceImplTest {
         String bgmTvSubjectPageUrl =
             mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
         Assertions.assertNotNull(bgmTvSubjectPageUrl);
+    }
+
+    @Test
+    void getAnimePageUrlBySearch() {
+        String keyword = "[LoliHouse] Shinmai Renkinjutsushi no Tenpo Keiei"
+            + " - 12 [WebRip 1080p HEVC-10bit AAC SRTx2]";
+        RestTemplate restTemplate =
+            RestTemplateUtils.buildHttpProxyRestTemplate("127.0.0.1", 7890);
+        mikanService.setRestTemplate(restTemplate);
+
+        String animePageUrlBySearch = mikanService.getAnimePageUrlBySearch(keyword);
+        assertThat(animePageUrlBySearch).isNotBlank();
     }
 }

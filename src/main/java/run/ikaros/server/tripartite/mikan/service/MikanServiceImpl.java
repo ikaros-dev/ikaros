@@ -1,7 +1,9 @@
 package run.ikaros.server.tripartite.mikan.service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
+
 import jakarta.annotation.Nonnull;
 
 import org.jsoup.Jsoup;
@@ -14,7 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import run.ikaros.server.core.service.OptionService;
+import run.ikaros.server.core.tripartite.bgmtv.constants.BgmTvApiConst;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.enums.OptionMikan;
@@ -97,6 +101,35 @@ public class MikanServiceImpl implements MikanService, InitializingBean {
         }
         LOGGER.debug("completed get bgm tv subject page url by anime page url");
         return targetElement.attr("href");
+    }
+
+    @Override
+    public String getAnimePageUrlBySearch(@Nonnull String keyword) {
+        AssertUtils.notBlank(keyword, "keyword");
+        LOGGER.debug("starting get anime page url by search keyword:{}", keyword);
+        final String originalUrl = "https://mikanani.me/Home/Search?searchstr=";
+        final String url = originalUrl + keyword;
+
+        byte[] bytes =
+            restTemplate.getForObject(url,
+                byte[].class);
+        if (bytes == null) {
+            throw new MikanRequestException("search anime page url exception for keyword "
+                + keyword);
+        }
+        String content = new String(bytes, StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(content);
+        String animePageUrl = null;
+        try {
+            String bangumiUrl = document
+                .select("#sk-container .central-container ul li").get(0)
+                .select("a").attr("href");
+            animePageUrl = "https://mikanani.me" + bangumiUrl;
+        } catch (Exception exception) {
+            LOGGER.warn("get anime page url fail by search keyword:{}", keyword, exception);
+        }
+        LOGGER.debug("end find anime page url by keyword:{}  url:{}", keyword, animePageUrl);
+        return animePageUrl;
     }
 
     @Override
