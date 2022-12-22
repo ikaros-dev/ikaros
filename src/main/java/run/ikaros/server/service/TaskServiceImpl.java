@@ -323,7 +323,7 @@ public class TaskServiceImpl implements TaskService {
             // 创建两个文件硬链接：服务器上传目录 和 Jellyfin目录
             try {
                 createServerFileHardLink(name, contentPath);
-                LOGGER.info("create server file hard link success for name={}", name);
+                // LOGGER.info("create server file hard link success for name={}", name);
             } catch (Exception exception) {
                 LOGGER.warn("create server file hard link fail", exception);
             }
@@ -337,7 +337,7 @@ public class TaskServiceImpl implements TaskService {
             // 创建原始目录
             try {
                 createOriginalFileHardLink(name, contentPath);
-                LOGGER.info("create original dir file hard link success for name={}", name);
+                // LOGGER.info("create original dir file hard link success for name={}", name);
             } catch (Exception exception) {
                 LOGGER.warn("create original dir file hard link fail", exception);
             }
@@ -405,47 +405,66 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
+    private String getBgmTvSubjectIdByMikanSearchTorrentName(@Nonnull String torrentName) {
+        AssertUtils.notBlank(torrentName, "torrentName");
+        // 调用蜜柑计划查询页面，获取Bangumi页面地址
+        String animePageUrl = mikanService.getAnimePageUrlBySearch(torrentName);
+        String subjectIdStr =
+            mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
+        KVEntity kvEntity = new KVEntity();
+        kvEntity.setType(KVType.MIKAN_TORRENT_NAME__BGM_TV_SUBJECT_ID);
+        kvEntity.setKey(torrentName);
+        kvEntity.setValue(subjectIdStr);
+        kvService.save(kvEntity);
+        LOGGER.debug("save new relation for mikan torrent name and bgmtv subject id, "
+            + "torrent name: {}, bgmtv subject id: {}", torrentName, subjectIdStr);
+        return subjectIdStr;
+    }
+
     private void updateEpisodeUrlByFileEntity(String torrentName, Long fileId) {
         Map<String, String> torrentNameBgmTvSubjectIdMap =
             kvService.findMikanTorrentNameBgmTvSubjectIdMap();
+        String subjectIdStr;
         if (torrentNameBgmTvSubjectIdMap.containsKey(torrentName)) {
-            Long animeId;
-            String subjectIdStr = torrentNameBgmTvSubjectIdMap.get(torrentName);
+            subjectIdStr = torrentNameBgmTvSubjectIdMap.get(torrentName);
             if (StringUtils.isBlank(subjectIdStr)) {
-                LOGGER.warn("skip matching episode url by file entity for torrent name={}",
-                    torrentName);
-                return;
+                subjectIdStr = getBgmTvSubjectIdByMikanSearchTorrentName(torrentName);
             }
-            Long subjectId = Long.valueOf(subjectIdStr);
-            AnimeEntity animeEntity = animeService.findByBgmTvId(subjectId);
-            if (animeEntity == null) {
-                AnimeDTO animeDTO = bgmTvService.reqBgmtvSubject(subjectId);
-                if (animeDTO == null) {
-                    LOGGER.warn("skip matching episode url by file entity for torrent name={}",
-                        torrentName);
-                    return;
-                }
-                animeId = animeDTO.getId();
-            } else {
-                animeId = animeEntity.getId();
-            }
-            List<SeasonEntity> seasonEntityList = seasonService.findByAnimeId(animeId);
-            if (seasonEntityList.isEmpty()) {
-                LOGGER.warn("skip matching episode url by file entity for torrent name={}",
-                    torrentName);
-                return;
-            }
-
-            SeasonEntity seasonEntity = seasonEntityList.get(0);
-            SeasonMatchingEpParams seasonMatchingEpParams = new SeasonMatchingEpParams();
-            seasonMatchingEpParams.setSeasonId(seasonEntity.getId());
-            seasonMatchingEpParams.setFileIdList(List.of(fileId));
-            seasonMatchingEpParams.setIsNotify(true);
-            seasonService.matchingEpisodesUrlByFileIds(seasonMatchingEpParams);
         } else {
-            LOGGER.warn("skip matching episode url by file entity for torrent name={}",
-                torrentName);
+            subjectIdStr = getBgmTvSubjectIdByMikanSearchTorrentName(torrentName);
         }
+
+        Long subjectId = Long.valueOf(subjectIdStr);
+        Long animeId;
+        AnimeEntity animeEntity = animeService.findByBgmTvId(subjectId);
+        if (animeEntity == null) {
+            AnimeDTO animeDTO = bgmTvService.reqBgmtvSubject(subjectId);
+            if (animeDTO == null) {
+                LOGGER.warn("anime dto not found for subjectId={},"
+                        + " skip matching episode url by file entity for torrent name={}",
+                    subjectId,
+                    torrentName);
+                return;
+            }
+            animeId = animeDTO.getId();
+        } else {
+            animeId = animeEntity.getId();
+        }
+        List<SeasonEntity> seasonEntityList = seasonService.findByAnimeId(animeId);
+        if (seasonEntityList.isEmpty()) {
+            LOGGER.warn("season not found for animeId={}, "
+                    + "skip matching episode url by file entity for torrent name={}",
+                animeId,
+                torrentName);
+            return;
+        }
+
+        SeasonEntity seasonEntity = seasonEntityList.get(0);
+        SeasonMatchingEpParams seasonMatchingEpParams = new SeasonMatchingEpParams();
+        seasonMatchingEpParams.setSeasonId(seasonEntity.getId());
+        seasonMatchingEpParams.setFileIdList(List.of(fileId));
+        seasonMatchingEpParams.setIsNotify(true);
+        seasonService.matchingEpisodesUrlByFileIds(seasonMatchingEpParams);
     }
 
     private void createServerFileHardLinkRecursively(File torrentContentFile) {

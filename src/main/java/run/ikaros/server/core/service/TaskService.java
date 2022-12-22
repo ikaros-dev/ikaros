@@ -1,5 +1,6 @@
 package run.ikaros.server.core.service;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 /**

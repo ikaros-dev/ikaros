@@ -1,6 +1,7 @@
 package run.ikaros.server.core.service;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,4 +20,8 @@ public interface MikanService {
     @Nonnull
     @Retryable
     String getBgmTvSubjectPageUrlByAnimePageUrl(@Nonnull String animePageUrl);
+
+    @Nullable
+    @Retryable
+    String getAnimePageUrlBySearch(@Nonnull String keyword);
 }
