@@ -61,3 +61,9 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: INFO
     org.hibernate.type.descriptor.sql.BasicExtractor: INFO
     org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration: OFF
+
+springdoc:
+  api-docs:
+    enabled: true
+#  swagger-ui:
+#    path: /doc/openapi
