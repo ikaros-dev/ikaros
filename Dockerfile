@@ -22,13 +22,14 @@ RUN apk add --no-cache \
         ${CONFIG_DIR}
 
 COPY --chmod=755 build/libs/ikaros-*.jar ${WORKDIR_DIR}/app.jar
-COPY --chmod=755 entrypoint.sh ${WORKDIR_DIR}/entrypoint.sh
 
 WORKDIR ${CONFIG_DIR}
 EXPOSE 50000
 VOLUME [ "/opt/ikaros" ]
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+CMD chown -R "${PUID}":"${PGID}" "${WORKDIR_DIR}" "${CONFIG_DIR}"
+CMD umask "${UMASK}"
+CMD exec su-exec "${PUID}":"${PGID}" java "${JAVA_OPTS}" -jar ${WORKDIR_DIR}/app.jar
 
 #docker run -d \
 #-p 50000:50000 \
