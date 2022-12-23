@@ -21,11 +21,6 @@ public interface DefaultConst {
     String OPTION_COMMON_STATISTICS_CODE = "";
 
 
-    String OPTION_SEO_HIDE_FOR_SEARCH_ENGINE = Boolean.FALSE.toString();
-    String OPTION_SEO_KEYWORDS = "ikaros;cms;opensource";
-    String OPTION_SEO_SITE_DESCRIPTION = "ikaros, an open source acgmn cms application.";
-
-
     String OPTION_FILE_PLACE_SELECT = FilePlace.LOCAL.name();
 
 

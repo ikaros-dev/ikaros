@@ -7,6 +7,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
+import run.ikaros.server.model.dto.OptionBgmTvDTO;
 import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.model.dto.OptionNetworkDTO;
@@ -63,4 +64,7 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
 
     @Nonnull
     OptionNotifyDTO getOptionNotifyDTO();
+
+    @Nonnull
+    OptionBgmTvDTO getOptionBgmTvDTO();
 }

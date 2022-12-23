@@ -1,5 +1,6 @@
 package run.ikaros.server.listener;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -13,6 +14,7 @@ import jakarta.annotation.Nonnull;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 
+@Slf4j
 @Component
 public class OptionMikanEnableProxyUpdateEventListener implements
     ApplicationListener<MikanAndRssHttpProxyUpdateEvent> {
@@ -29,6 +31,7 @@ public class OptionMikanEnableProxyUpdateEventListener implements
     @Override
     public void onApplicationEvent(@Nonnull MikanAndRssHttpProxyUpdateEvent event) {
         AssertUtils.notNull(event, "OptionMikanEnableProxyUpdateEvent");
+        log.debug("receive MikanAndRssHttpProxyUpdateEvent");
 
         Boolean enable = event.getEnable();
         String httpProxyHost = event.getHttpProxyHost();

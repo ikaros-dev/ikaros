@@ -71,6 +71,7 @@ public class BgmTvRepositoryImpl implements BgmTvRepository, InitializingBean {
         headers.set(HttpHeaders.COOKIE, "chii_searchDateLine=0");
         headers.set(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
         if (StringUtils.isNotBlank(accessToken)) {
+            LOGGER.debug("update http head access token");
             headers.set(HttpHeaders.AUTHORIZATION, SecurityConst.TOKEN_PREFIX + accessToken);
         }
     }

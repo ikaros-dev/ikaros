@@ -3,7 +3,7 @@ package run.ikaros.server.model.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import run.ikaros.server.entity.AnimeEntity;
-import run.ikaros.server.entity.UserSubscribeEntity;
+import run.ikaros.server.entity.SubscribeEntity;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ import java.util.List;
 public class AnimeDTO extends AnimeEntity {
 
     private boolean isSub;
-    private UserSubscribeEntity subscribe;
+    private SubscribeEntity subscribe;
     private List<SeasonDTO> seasons;
 
 }

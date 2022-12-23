@@ -1,5 +1,6 @@
 package run.ikaros.server.listener;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import run.ikaros.server.core.service.AnimeService;
@@ -20,6 +21,7 @@ import jakarta.annotation.Nonnull;
  *     <li>给用户发送通知，告知更新</li>
  * </ol>
  */
+@Slf4j
 @Component
 public class SubscribeBgmTvSubjectEventListener implements
     ApplicationListener<SubscribeBgmTvSubjectEvent> {
@@ -32,6 +34,7 @@ public class SubscribeBgmTvSubjectEventListener implements
 
     @Override
     public void onApplicationEvent(@Nonnull SubscribeBgmTvSubjectEvent event) {
+        log.debug("receive SubscribeBgmTvSubjectEvent");
         // todo impl all steps
     }
 }

@@ -47,6 +47,7 @@ public class EpisodeUrlUpdateEventListener
 
     @Override
     public void onApplicationEvent(@NonNull EpisodeUrlUpdateEvent event) {
+        log.debug("receive EpisodeUrlUpdateEvent");
         final Long episodeId = event.getEpisodeId();
         final String oldUrl = event.getOldUrl();
         final String newUrl = event.getNewUrl();

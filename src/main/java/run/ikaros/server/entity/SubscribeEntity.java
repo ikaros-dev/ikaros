@@ -1,5 +1,8 @@
 package run.ikaros.server.entity;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import run.ikaros.server.enums.SubscribeProgress;
 import run.ikaros.server.enums.SubscribeType;
 
 import jakarta.persistence.Column;
@@ -8,8 +11,10 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
+@Data
 @Entity
 @Table(name = "subscribe")
+@EqualsAndHashCode(callSuper = true)
 public class SubscribeEntity extends BaseEntity {
 
     @Column(name = "user_id", nullable = false)
@@ -22,41 +27,9 @@ public class SubscribeEntity extends BaseEntity {
     @Column(name = "target_id", nullable = false)
     private Long targetId;
 
-    private String notes;
+    @Enumerated(EnumType.STRING)
+    private SubscribeProgress progress;
 
-    public Long getUserId() {
-        return userId;
-    }
+    private String additional;
 
-    public SubscribeEntity setUserId(Long userId) {
-        this.userId = userId;
-        return this;
-    }
-
-    public SubscribeType getType() {
-        return type;
-    }
-
-    public SubscribeEntity setType(SubscribeType type) {
-        this.type = type;
-        return this;
-    }
-
-    public Long getTargetId() {
-        return targetId;
-    }
-
-    public SubscribeEntity setTargetId(Long targetId) {
-        this.targetId = targetId;
-        return this;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public SubscribeEntity setNotes(String notes) {
-        this.notes = notes;
-        return this;
-    }
 }

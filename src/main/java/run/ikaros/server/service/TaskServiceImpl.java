@@ -11,9 +11,9 @@ import run.ikaros.server.core.service.MikanService;
 import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.RssService;
 import run.ikaros.server.core.service.SeasonService;
+import run.ikaros.server.core.service.SubscribeService;
 import run.ikaros.server.core.service.TaskService;
 import run.ikaros.server.core.service.UserService;
-import run.ikaros.server.core.service.UserSubscribeService;
 import run.ikaros.server.core.tripartite.bgmtv.constants.BgmTvConst;
 import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
 import run.ikaros.server.entity.AnimeEntity;
@@ -22,8 +22,8 @@ import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.KVEntity;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.entity.SeasonEntity;
+import run.ikaros.server.entity.SubscribeEntity;
 import run.ikaros.server.entity.UserEntity;
-import run.ikaros.server.entity.UserSubscribeEntity;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.KVType;
 import run.ikaros.server.enums.OptionCategory;
@@ -84,7 +84,7 @@ public class TaskServiceImpl implements TaskService {
     private final KVService kvService;
     private final QbittorrentClient qbittorrentClient;
     private final DmhyClient dmhyClient;
-    private final UserSubscribeService userSubscribeService;
+    private final SubscribeService subscribeService;
     private final UserService userService;
 
     private Set<String> hasHandledTorrentHashSet = new HashSet<>();
@@ -96,7 +96,7 @@ public class TaskServiceImpl implements TaskService {
                            AnimeService animeService,
                            KVService kvService,
                            QbittorrentClient qbittorrentClient, DmhyClient dmhyClient,
-                           UserSubscribeService userSubscribeService, UserService userService) {
+                           SubscribeService subscribeService, UserService userService) {
         this.rssService = rssService;
         this.optionService = optionService;
         this.mikanService = mikanService;
@@ -107,7 +107,7 @@ public class TaskServiceImpl implements TaskService {
         this.kvService = kvService;
         this.qbittorrentClient = qbittorrentClient;
         this.dmhyClient = dmhyClient;
-        this.userSubscribeService = userSubscribeService;
+        this.subscribeService = subscribeService;
         this.userService = userService;
     }
 
@@ -132,9 +132,9 @@ public class TaskServiceImpl implements TaskService {
         UserEntity userOnlyOne = userService.getUserOnlyOne();
         if (userOnlyOne != null) {
             Long userId = userOnlyOne.getId();
-            List<UserSubscribeEntity> userSubscribeEntityList =
-                userSubscribeService.findByUserIdAndStatus(userId, true);
-            for (UserSubscribeEntity userSubscribeEntity : userSubscribeEntityList) {
+            List<SubscribeEntity> userSubscribeEntityList =
+                subscribeService.findByUserIdAndStatus(userId, true);
+            for (SubscribeEntity userSubscribeEntity : userSubscribeEntityList) {
                 String additional = userSubscribeEntity.getAdditional();
                 if (StringUtils.isBlank(additional)) {
                     continue;
@@ -779,22 +779,22 @@ public class TaskServiceImpl implements TaskService {
             }
             userId = userOnlyOne.getId();
         }
-        List<UserSubscribeEntity> userSubscribeEntities =
-            userSubscribeService.findByUserIdAndStatus(userId, true);
-        for (UserSubscribeEntity userSubscribeEntity : userSubscribeEntities) {
+        List<SubscribeEntity> subscribeEntityList =
+            subscribeService.findByUserIdAndStatus(userId, true);
+        for (SubscribeEntity userSubscribeEntity : subscribeEntityList) {
             handleSingleUserSubscribe(userSubscribeEntity);
         }
         LOGGER.info("end exec task downloadSubscribeAnimeResource");
     }
 
-    private void handleSingleUserSubscribe(UserSubscribeEntity userSubscribeEntity) {
-        Long subscribeEntityId = userSubscribeEntity.getId();
+    private void handleSingleUserSubscribe(SubscribeEntity subscribeEntity) {
+        Long subscribeEntityId = subscribeEntity.getId();
         if (hasHandledSubscribeSet.contains(subscribeEntityId)) {
             return;
         }
 
-        if (userSubscribeEntity.getType().equals(SubscribeType.ANIME)) {
-            Long animeId = userSubscribeEntity.getTargetId();
+        if (subscribeEntity.getType().equals(SubscribeType.ANIME)) {
+            Long animeId = subscribeEntity.getTargetId();
             AnimeEntity animeEntity = animeService.getById(animeId);
             if (animeEntity == null) {
                 LOGGER.warn("not found anime record for id={}", animeId);
@@ -807,7 +807,7 @@ public class TaskServiceImpl implements TaskService {
                 return;
             }
 
-            String additional = userSubscribeEntity.getAdditional();
+            String additional = subscribeEntity.getAdditional();
             final List<String> tagList = RegexUtils.getFileTag(additional)
                 .stream()
                 .filter(tag -> !tag.matches(RegexConst.NUMBER_EPISODE_SEQUENCE))

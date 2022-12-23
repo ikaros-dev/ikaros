@@ -1,5 +1,6 @@
 package run.ikaros.server.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -26,7 +27,6 @@ import run.ikaros.server.model.dto.SeasonDTO;
 import run.ikaros.server.params.SeasonMatchingEpParams;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.BeanUtils;
-import run.ikaros.server.utils.FileUtils;
 import run.ikaros.server.utils.RegexUtils;
 import run.ikaros.server.utils.StringUtils;
 
@@ -45,13 +45,12 @@ import java.util.stream.Stream;
 /**
  * @author li-guohao
  */
+@Slf4j
 @Service
 @Transactional(rollbackOn = Exception.class)
 public class SeasonServiceImpl
     extends AbstractCrudService<SeasonEntity, Long>
     implements SeasonService, ApplicationContextAware {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SeasonServiceImpl.class);
-
     private final SeasonRepository seasonRepository;
     private final FileService fileService;
     private final EpisodeService episodeService;
@@ -113,7 +112,7 @@ public class SeasonServiceImpl
             final String fileName = fileEntity.getName();
             FileType fileType = fileEntity.getType();
             if (fileType != FileType.VIDEO) {
-                LOGGER.warn("skip matching, "
+                log.warn("skip matching, "
                     + "current file entity type is not video, file name={}", fileName);
                 continue;
             }
@@ -122,7 +121,7 @@ public class SeasonServiceImpl
             try {
                 episodeSeq = RegexUtils.getFileNameTagEpSeq(fileName);
             } catch (RegexMatchingException regexMatchingException) {
-                LOGGER.warn("fail matching seq by file name={}, exception msg={}", fileName,
+                log.warn("fail matching seq by file name={}, exception msg={}", fileName,
                     regexMatchingException.getMessage());
                 continue;
             }
@@ -130,7 +129,7 @@ public class SeasonServiceImpl
             List<EpisodeEntity> episodeEntityList =
                 episodeService.findBySeasonIdAndSeq(seasonId, episodeSeq);
             if (episodeEntityList.isEmpty()) {
-                LOGGER.warn("episode records not found where seasonId={} and seq={}",
+                log.warn("episode records not found where seasonId={} and seq={}",
                     seasonId, episodeSeq);
                 continue;
             }
@@ -144,10 +143,11 @@ public class SeasonServiceImpl
                             episodeEntity.getId(), oldEpisodeUrl, newEpisodeUrl,
                             fileEntity.getName(), seasonMatchingEpParams.getIsNotify());
                     applicationContext.publishEvent(episodeUrlUpdateEvent);
+                    log.debug("publish EpisodeUrlUpdateEvent");
                 }
                 episodeEntity.setUrl(newEpisodeUrl);
                 episodeService.save(episodeEntity);
-                LOGGER.debug("matching file and episode success,  "
+                log.debug("matching file and episode success,  "
                         + "fileId={} fileName={}, episodeTitle={} episodeSeq={} episodeUrl={}",
                     fileId, fileEntity.getName(),
                     episodeEntity.getTitle(), episodeSeq, newEpisodeUrl);
@@ -186,7 +186,7 @@ public class SeasonServiceImpl
             try {
                 title = RegexUtils.getMatchingEnglishStrWithoutTag(originalFileName);
             } catch (RegexMatchingException exception) {
-                LOGGER.warn("matching fail, skip for fileName={}, exception msg={}",
+                log.warn("matching fail, skip for fileName={}, exception msg={}",
                     originalFileName, exception.getMessage());
                 return;
             }
@@ -204,7 +204,7 @@ public class SeasonServiceImpl
         }
 
         if (seasonEntity == null) {
-            LOGGER.warn("matching season fail by file name={}", fileEntity.getName());
+            log.warn("matching season fail by file name={}", fileEntity.getName());
             return;
         }
 
@@ -215,7 +215,7 @@ public class SeasonServiceImpl
             .filter(episodeEntity -> seq.equals(episodeEntity.getSeq()))
             .findFirst();
         if (episodeEntityOptional.isEmpty()) {
-            LOGGER.warn("matching episode fail for seasonId={}, fileUrl={}",
+            log.warn("matching episode fail for seasonId={}, fileUrl={}",
                 seasonId, fileEntity.getUrl());
             return;
         }
@@ -229,10 +229,11 @@ public class SeasonServiceImpl
                     new EpisodeUrlUpdateEvent(this, episodeEntity.getId(), oldEpisodeUrl,
                         newEpisodeUrl, fileEntity.getName(), isNotify);
                 applicationContext.publishEvent(episodeUrlUpdateEvent);
+                log.debug("publish EpisodeUrlUpdateEvent");
             }
             episodeEntity.setUrl(fileEntity.getUrl());
             episodeService.save(episodeEntity);
-            LOGGER.debug(
+            log.debug(
                 "update episode url by file entity success, originalFileName={}, newUrl={}",
                 originalFileName, fileEntity.getUrl());
         }
@@ -290,10 +291,11 @@ public class SeasonServiceImpl
                     new EpisodeUrlUpdateEvent(this, episodeEntity.getId(), oldEpisodeUrl,
                         newEpisodeUrl, fileEntity.getName(), seasonMatchingEpParams.getIsNotify());
                 applicationContext.publishEvent(episodeUrlUpdateEvent);
+                log.debug("publish EpisodeUrlUpdateEvent");
             }
             episodeEntity.setUrl(newEpisodeUrl);
             episodeEntity = episodeService.save(episodeEntity);
-            LOGGER.debug("matching file and episode success,  "
+            log.debug("matching file and episode success,  "
                     + "fileId={} fileName={}, episodeTitle={} episodeSeq={} episodeUrl={}",
                 fileId, fileEntity.getName(),
                 episodeEntity.getTitle(), episodeEntity.getSeq(), newEpisodeUrl);
