@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,6 +12,7 @@ import run.ikaros.server.result.CommonResult;
 
 import jakarta.mail.MessagingException;
 
+@Tag(name = "通知")
 @RestController
 @RequestMapping("/notify")
 public class NotifyRestController {

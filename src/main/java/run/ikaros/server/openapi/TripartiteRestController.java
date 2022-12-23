@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,7 @@ import run.ikaros.server.utils.AssertUtils;
 
 import java.util.List;
 
+@Tag(name = "三方")
 @RestController
 @RequestMapping("/tripartite")
 public class TripartiteRestController {

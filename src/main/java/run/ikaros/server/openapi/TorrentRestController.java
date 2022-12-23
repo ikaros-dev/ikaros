@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,6 +9,7 @@ import run.ikaros.server.core.service.TorrentService;
 import run.ikaros.server.result.CommonResult;
 import run.ikaros.server.utils.AssertUtils;
 
+@Tag(name = "种子")
 @RestController
 @RequestMapping("/torrent")
 public class TorrentRestController {

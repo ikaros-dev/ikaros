@@ -2,6 +2,7 @@ package run.ikaros.server.openapi;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,6 +21,7 @@ import run.ikaros.server.utils.AssertUtils;
 /**
  * @author li-guohao
  */
+@Tag(name = "季度")
 @RestController
 @RequestMapping("/season")
 public class SeasonRestController {

@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.result.CommonResult;
@@ -34,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author guohao
  * @date 2022/09/07
  */
+@Tag(name = "文件")
 @RestController
 @RequestMapping("/file")
 public class FileRestController {

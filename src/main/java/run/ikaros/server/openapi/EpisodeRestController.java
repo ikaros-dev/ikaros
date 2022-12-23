@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,7 @@ import run.ikaros.server.utils.AssertUtils;
 /**
  * @author li-guohao
  */
+@Tag(name = "剧集")
 @RestController
 @RequestMapping("/episode")
 public class EpisodeRestController {

@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import java.util.List;
 
+@Tag(name = "歌曲")
 @RestController
 @RequestMapping("/song")
 public class SongRestController {
