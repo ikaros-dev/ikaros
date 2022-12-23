@@ -1,4 +1,4 @@
-create table if not exists episode
+create table if not exists key_value
 (
     id int8 NOT NULL,
     create_time timestamp(6) NULL,
