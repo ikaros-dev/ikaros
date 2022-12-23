@@ -1,6 +1,13 @@
+create sequence if not exists ikuser_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
 create table if not exists ikuser
 (
-    id int8 NOT NULL,
+    id int8 NOT NULL default nextval('ikuser_seq'),
     create_time timestamp(6) NULL,
     create_uid int8 NULL,
     status bool NULL,

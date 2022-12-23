@@ -1,7 +1,14 @@
+create sequence if not exists task_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
 create table if not exists task
 (
+    id int8 NOT NULL default nextval('task_seq'),
     dtype varchar(31) NOT NULL,
-    id int8 NOT NULL,
     create_time timestamp(6) NULL,
     create_uid int8 NULL,
     status bool NULL,

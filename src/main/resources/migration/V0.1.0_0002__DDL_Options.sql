@@ -1,6 +1,13 @@
+create sequence if not exists options_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
 create table if not exists options
 (
-    id int8 NOT NULL,
+    id int8 NOT NULL default nextval('options_seq'),
     create_time timestamp(6) NULL,
     create_uid int8 NULL,
     status bool NULL,

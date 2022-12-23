@@ -1,6 +1,13 @@
+create sequence if not exists anime_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
 create table if not exists anime
 (
-    id int8 NOT NULL,
+    id int8 NOT NULL default nextval('anime_seq'),
     create_time timestamp(6) NULL,
     create_uid int8 NULL,
     status bool NULL,
