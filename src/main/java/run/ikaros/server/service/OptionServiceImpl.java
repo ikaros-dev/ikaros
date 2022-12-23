@@ -1,6 +1,7 @@
 package run.ikaros.server.service;
 
 import jakarta.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -33,6 +34,7 @@ import run.ikaros.server.event.OptionNetworkUpdateEvent;
 import run.ikaros.server.event.OptionNotifyUpdateEvent;
 import run.ikaros.server.event.QbittorrentOptionUpdateEvent;
 import run.ikaros.server.exceptions.RecordNotFoundException;
+import run.ikaros.server.model.dto.OptionBgmTvDTO;
 import run.ikaros.server.model.dto.OptionDTO;
 import run.ikaros.server.model.dto.OptionItemDTO;
 import run.ikaros.server.model.dto.OptionNetworkDTO;
@@ -56,12 +58,11 @@ import java.util.stream.Stream;
  * @author guohao
  * @date 2022/10/18
  */
+@Slf4j
 @Service
 public class OptionServiceImpl
     extends AbstractCrudService<OptionEntity, Long>
     implements OptionService, ApplicationContextAware {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OptionServiceImpl.class);
-
     private final OptionRepository optionRepository;
     private final UserService userService;
     private ApplicationContext applicationContext;
@@ -98,7 +99,7 @@ public class OptionServiceImpl
                 .setValue(optionItemDTO.getValue())
                 .setType(optionItemDTO.getType())
                 .setCategory(optionItemDTO.getCategory());
-            LOGGER.debug("create new option record: {}", JsonUtils.obj2Json(optionEntity));
+            log.debug("create new option record: {}", JsonUtils.obj2Json(optionEntity));
             return optionRepository.saveAndFlush(optionEntity);
         } else {
             existOptionEntity.setValue(optionItemDTO.getValue())
@@ -337,6 +338,7 @@ public class OptionServiceImpl
                         optionNetworkDTO.getReadTimeout(),
                         optionNetworkDTO.getConnectTimeout());
                 applicationContext.publishEvent(mikanAndRssHttpProxyUpdateEvent);
+                log.debug("publish MikanAndRssHttpProxyUpdateEvent");
             }
 
             if (OptionCategory.BGMTV.name().equalsIgnoreCase(category)
@@ -351,7 +353,9 @@ public class OptionServiceImpl
                         optionNetworkDTO.getProxyHttpPort(),
                         optionNetworkDTO.getReadTimeout(),
                         optionNetworkDTO.getConnectTimeout());
+                log.debug("publish BgmTvHttpProxyUpdateEvent with enable={}", value);
                 applicationContext.publishEvent(bgmTvHttpProxyUpdateEvent);
+                log.debug("publish EpisodeUrlUpdateEvent");
             }
 
             if (OptionCategory.BGMTV.name().equalsIgnoreCase(category)
@@ -360,6 +364,7 @@ public class OptionServiceImpl
                 BgmTvTokenUpdateEvent bgmTvTokenUpdateEvent =
                     new BgmTvTokenUpdateEvent(this, value);
                 applicationContext.publishEvent(bgmTvTokenUpdateEvent);
+                log.debug("publish BgmTvTokenUpdateEvent");
             }
 
             if (OptionCategory.NETWORK.name().equalsIgnoreCase(category)) {
@@ -404,7 +409,9 @@ public class OptionServiceImpl
                             optionNetworkDTO.getConnectTimeout());
 
                     applicationContext.publishEvent(bgmTvHttpProxyUpdateEvent);
+                    log.debug("publish EpisodeUrlUpdateEvent");
                     applicationContext.publishEvent(mikanAndRssHttpProxyUpdateEvent);
+                    log.debug("publish MikanAndRssHttpProxyUpdateEvent");
                 }
                 if (OptionNetwork.PROXY_HTTP_PORT.name().equalsIgnoreCase(key)) {
                     OptionNetworkDTO optionNetworkDTO = getOptionNetworkDTO();
@@ -425,12 +432,14 @@ public class OptionServiceImpl
                             optionNetworkDTO.getConnectTimeout());
 
                     applicationContext.publishEvent(bgmTvHttpProxyUpdateEvent);
+                    log.debug("publish EpisodeUrlUpdateEvent");
                     applicationContext.publishEvent(mikanAndRssHttpProxyUpdateEvent);
+                    log.debug("publish MikanAndRssHttpProxyUpdateEvent");
                 }
             }
 
             if (value == null) {
-                LOGGER.warn("skip null value update for category={}, key={}, value={}",
+                log.warn("skip null value update for category={}, key={}, value={}",
                     category, key, value);
                 continue;
             }
@@ -451,16 +460,19 @@ public class OptionServiceImpl
 
             if (OptionCategory.QBITTORRENT.equals(optionCategory)) {
                 applicationContext.publishEvent(new QbittorrentOptionUpdateEvent(this));
+                log.debug("publish QbittorrentOptionUpdateEvent");
             }
 
             if (OptionCategory.NETWORK.equals(optionCategory)) {
                 applicationContext.publishEvent(
                     new OptionNetworkUpdateEvent(this, getOptionNetworkDTO()));
+                log.debug("publish OptionNetworkUpdateEvent");
             }
 
             if (OptionCategory.NOTIFY.equals(optionCategory)) {
                 applicationContext.publishEvent(
                     new OptionNotifyUpdateEvent(this, getOptionNotifyDTO()));
+                log.debug("publish OptionNotifyUpdateEvent");
             }
 
             OptionDTO optionDTO = new OptionDTO();
@@ -611,5 +623,24 @@ public class OptionServiceImpl
             }
         }
         return notifyDTO;
+    }
+
+    @Override
+    public OptionBgmTvDTO getOptionBgmTvDTO() {
+        OptionBgmTvDTO bgmTvDTO = new OptionBgmTvDTO();
+        List<OptionEntity> optionEntityList = findOptionByCategory(OptionCategory.BGMTV);
+        for (OptionEntity optionEntity : optionEntityList) {
+            final String key = optionEntity.getKey();
+            final String value = optionEntity.getValue();
+            if (OptionBgmTv.ENABLE_PROXY.name().equalsIgnoreCase(key)
+                && StringUtils.isNotBlank(value)) {
+                Boolean enableProxy = Boolean.valueOf(value);
+                bgmTvDTO.setEnableProxy(enableProxy);
+            }
+            if (OptionBgmTv.ACCESS_TOKEN.name().equalsIgnoreCase(key)) {
+                bgmTvDTO.setAccessToken(value);
+            }
+        }
+        return bgmTvDTO;
     }
 }

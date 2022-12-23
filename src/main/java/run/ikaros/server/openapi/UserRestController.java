@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import run.ikaros.server.constants.SecurityConst;
+import run.ikaros.server.core.service.SubscribeService;
 import run.ikaros.server.core.service.UserService;
-import run.ikaros.server.core.service.UserSubscribeService;
 import run.ikaros.server.entity.UserEntity;
 import run.ikaros.server.exceptions.RecordNotFoundException;
 import run.ikaros.server.model.dto.AuthUserDTO;
@@ -42,11 +42,11 @@ public class UserRestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
     private final UserService userService;
-    private final UserSubscribeService userSubscribeService;
+    private final SubscribeService subscribeService;
 
-    public UserRestController(UserService userService, UserSubscribeService userSubscribeService) {
+    public UserRestController(UserService userService, SubscribeService subscribeService) {
         this.userService = userService;
-        this.userSubscribeService = userSubscribeService;
+        this.subscribeService = subscribeService;
     }
 
     @PostMapping("/login")
@@ -108,7 +108,7 @@ public class UserRestController {
     @PutMapping("/subscribe/bgmtv/{subjectId}")
     public CommonResult<Boolean> saveUserSubscribeByBgmtvId(
         @PathVariable("subjectId") Long bgmtvSubjectId) {
-        userSubscribeService.saveUserAnimeSubscribeByBgmTvSubjectId(
+        subscribeService.saveUserAnimeSubscribeByBgmTvSubjectId(
             UserService.getCurrentLoginUserUid(),
             bgmtvSubjectId);
         return CommonResult.ok(Boolean.TRUE);
@@ -129,7 +129,7 @@ public class UserRestController {
                     StandardCharsets.UTF_8);
             LOGGER.debug("additional: {}", additional);
         }
-        userSubscribeService.saveUserAnimeSubscribe(
+        subscribeService.saveUserAnimeSubscribe(
             UserService.getCurrentLoginUserUid(),
             animeId, progress, additional);
         return CommonResult.ok(Boolean.TRUE);
@@ -143,14 +143,14 @@ public class UserRestController {
         byte[] bytes = Base64.getDecoder().decode(animeIdArrBase64Json);
         String animeIdArrJson = new String(bytes, StandardCharsets.UTF_8);
         Long[] animeIdArr = JsonUtils.json2ObjArr(animeIdArrJson, new TypeReference<Long[]>() {});
-        userSubscribeService.saveUserSubscribeWithBatchByAnimeIdArr(animeIdArr);
+        subscribeService.saveUserSubscribeWithBatchByAnimeIdArr(animeIdArr);
         return CommonResult.ok(Boolean.TRUE);
     }
 
     @DeleteMapping("/subscribe/anime/{id}")
     public CommonResult<Boolean> deleteUserSubscribeByAnimeId(
         @PathVariable("id") Long animeId) {
-        userSubscribeService.deleteUserAnimeSubscribe(
+        subscribeService.deleteUserAnimeSubscribe(
             UserService.getCurrentLoginUserUid(),
             animeId);
         return CommonResult.ok(Boolean.TRUE);

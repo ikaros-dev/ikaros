@@ -1,13 +1,14 @@
 package run.ikaros.server.tripartite.bgmtv.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.core.service.EpisodeService;
 import run.ikaros.server.core.service.FileService;
+import run.ikaros.server.core.service.OptionService;
 import run.ikaros.server.core.service.SeasonService;
 import run.ikaros.server.core.tripartite.bgmtv.constants.BgmTvConst;
 import run.ikaros.server.core.tripartite.bgmtv.repository.BgmTvRepository;
@@ -18,6 +19,7 @@ import run.ikaros.server.entity.FileEntity;
 import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.enums.SeasonType;
 import run.ikaros.server.model.dto.AnimeDTO;
+import run.ikaros.server.model.dto.OptionBgmTvDTO;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisode;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvEpisodeType;
 import run.ikaros.server.tripartite.bgmtv.model.BgmTvImages;
@@ -32,27 +34,30 @@ import run.ikaros.server.utils.StringUtils;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Service
-public class BgmTvServiceImpl implements BgmTvService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BgmTvServiceImpl.class);
+public class BgmTvServiceImpl implements BgmTvService, InitializingBean {
     private final BgmTvRepository bgmTvRepository;
 
     private final FileService fileService;
     private final AnimeService animeService;
     private final SeasonService seasonService;
     private final EpisodeService episodeService;
+    private final OptionService optionService;
 
     public BgmTvServiceImpl(BgmTvRepositoryImpl bgmTvRepository, FileService fileService,
                             AnimeService animeService, SeasonService seasonService,
-                            EpisodeService episodeService) {
+                            EpisodeService episodeService, OptionService optionService) {
         this.bgmTvRepository = bgmTvRepository;
         this.fileService = fileService;
         this.animeService = animeService;
         this.seasonService = seasonService;
         this.episodeService = episodeService;
+        this.optionService = optionService;
     }
 
 
@@ -104,16 +109,16 @@ public class BgmTvServiceImpl implements BgmTvService {
             }
             Long id = existAnimeEntity.getId();
             AnimeDTO animeDTO = animeService.findAnimeDTOById(id);
-            LOGGER.debug("anime exist, return this anime, subjectId={}, animeId={}", subjectId, id);
+            log.debug("anime exist, return this anime, subjectId={}, animeId={}", subjectId, id);
             return animeDTO;
         } else {
             // 创建新的动漫对象
-            LOGGER.debug("anime not exist, will  create a new, subjectId={}", subjectId);
+            log.debug("anime not exist, will  create a new, subjectId={}", subjectId);
 
             // 获取动漫信息
             BgmTvSubject bgmTvSubject = getSubject(subjectId);
             if (bgmTvSubject == null) {
-                LOGGER.warn("request bgmtv fail, response null subject");
+                log.warn("request bgmtv fail, response null subject");
                 return null;
             }
 
@@ -200,11 +205,24 @@ public class BgmTvServiceImpl implements BgmTvService {
 
     @Override
     public void refreshHttpHeaders(@Nullable String accessToken) {
+        log.debug("refresh http headers");
         bgmTvRepository.refreshHttpHeaders(accessToken);
     }
 
     @Override
     public BgmTvUserInfo getMe() {
         return bgmTvRepository.getMe();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        OptionBgmTvDTO optionBgmTvDTO = optionService.getOptionBgmTvDTO();
+        Boolean enableProxy = optionBgmTvDTO.getEnableProxy();
+        if (enableProxy) {
+            String accessToken = optionBgmTvDTO.getAccessToken();
+            if (StringUtils.isNotBlank(accessToken)) {
+                refreshHttpHeaders(accessToken);
+            }
+        }
     }
 }
