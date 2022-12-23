@@ -21,7 +21,7 @@ checkstyle {
 }
 
 ext {
-    springDocVersion = "1.6.14"
+    springDocVersion = "2.0.2"
     jwtVersion = "0.10.7"
     jsoupVersion = "1.15.3"
 }
@@ -42,10 +42,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation "org.springframework.boot:spring-boot-starter-mail"
 
-    implementation "org.springdoc:springdoc-openapi-ui:$springDocVersion"
-    // implementation "org.springdoc:springdoc-openapi-security:$springDocVersion"
-    // implementation "org.springdoc:springdoc-openapi-native:$springDocVersion"
-    // implementation "org.springdoc:springdoc-openapi-data-rest:$springDocVersion"
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion"
 
     implementation "io.jsonwebtoken:jjwt-api:$jwtVersion"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:$jwtVersion"
