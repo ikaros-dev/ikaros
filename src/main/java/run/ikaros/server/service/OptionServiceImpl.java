@@ -2,8 +2,6 @@ package run.ikaros.server.service;
 
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -26,7 +24,6 @@ import run.ikaros.server.enums.OptionMikan;
 import run.ikaros.server.enums.OptionNetwork;
 import run.ikaros.server.enums.OptionNotify;
 import run.ikaros.server.enums.OptionQbittorrent;
-import run.ikaros.server.enums.OptionSeo;
 import run.ikaros.server.event.BgmTvHttpProxyUpdateEvent;
 import run.ikaros.server.event.BgmTvTokenUpdateEvent;
 import run.ikaros.server.event.MikanAndRssHttpProxyUpdateEvent;
@@ -202,14 +199,6 @@ public class OptionServiceImpl
         saveOptionItem(new OptionItemDTO(OptionCommon.STATISTICS_CODE.name(),
             DefaultConst.OPTION_COMMON_STATISTICS_CODE,
             OptionCategory.COMMON));
-
-        // init option seo
-        saveOptionItem(new OptionItemDTO(OptionSeo.HIDE_FOR_SEARCH_ENGINE.name(),
-            DefaultConst.OPTION_SEO_HIDE_FOR_SEARCH_ENGINE, OptionCategory.SEO));
-        saveOptionItem(new OptionItemDTO(OptionSeo.KEYWORDS.name(),
-            DefaultConst.OPTION_SEO_KEYWORDS, OptionCategory.SEO));
-        saveOptionItem(new OptionItemDTO(OptionSeo.SITE_DESCRIPTION.name(),
-            DefaultConst.OPTION_SEO_SITE_DESCRIPTION, OptionCategory.SEO));
 
         // init option file
         saveOptionItem(new OptionItemDTO(OptionFile.PLACE_SELECT.name(),
