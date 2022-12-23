@@ -14,6 +14,7 @@ import run.ikaros.server.core.service.SeasonService;
 import run.ikaros.server.core.service.TaskService;
 import run.ikaros.server.core.service.UserService;
 import run.ikaros.server.core.service.UserSubscribeService;
+import run.ikaros.server.core.tripartite.bgmtv.constants.BgmTvConst;
 import run.ikaros.server.core.tripartite.bgmtv.service.BgmTvService;
 import run.ikaros.server.entity.AnimeEntity;
 import run.ikaros.server.entity.BaseEntity;
@@ -409,8 +410,12 @@ public class TaskServiceImpl implements TaskService {
         AssertUtils.notBlank(torrentName, "torrentName");
         // 调用蜜柑计划查询页面，获取Bangumi页面地址
         String animePageUrl = mikanService.getAnimePageUrlBySearch(torrentName);
-        String subjectIdStr =
+        if (StringUtils.isBlank(animePageUrl)) {
+            return null;
+        }
+        String subjectPageUrl =
             mikanService.getBgmTvSubjectPageUrlByAnimePageUrl(animePageUrl);
+        String subjectIdStr = subjectPageUrl.replace(BgmTvConst.SUBJECT_PREFIX, "");
         KVEntity kvEntity = new KVEntity();
         kvEntity.setType(KVType.MIKAN_TORRENT_NAME__BGM_TV_SUBJECT_ID);
         kvEntity.setKey(torrentName);
@@ -434,6 +439,10 @@ public class TaskServiceImpl implements TaskService {
             subjectIdStr = getBgmTvSubjectIdByMikanSearchTorrentName(torrentName);
         }
 
+        if (StringUtils.isBlank(subjectIdStr)) {
+            LOGGER.warn("skip matching because of subjectIdStr is blank");
+            return;
+        }
         Long subjectId = Long.valueOf(subjectIdStr);
         Long animeId;
         AnimeEntity animeEntity = animeService.findByBgmTvId(subjectId);
@@ -518,9 +527,7 @@ public class TaskServiceImpl implements TaskService {
                 LOGGER.warn("regex matching fail, msg: {}", regexMatchingException.getMessage());
             } catch (Exception e) {
                 LOGGER.error(
-                    "fail create server file hard link , "
-                        + "please let qbittorrent and ikaros instance in the same file system",
-                    e);
+                    "fail create server file hard link, exception: ", e);
             }
         }
     }
