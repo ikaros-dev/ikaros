@@ -21,7 +21,8 @@ RUN apk add --no-cache \
         ${WORKDIR_DIR} \
         ${CONFIG_DIR}
 
-RUN echo "IyEvYmluL3NoCgpjaG93biAtUiAiJHtQVUlEfSI6IiR7UEdJRH0iICIke1dPUktESVJfRElSfSIgIiR7Q09ORklHX0RJUn0iCgp1bWFzayAiJHtVTUFTS30iCgpleGVjIHN1LWV4ZWMgIiR7UFVJRH0iOiIke1BHSUR9IiBqYXZhICIke0pBVkFfT1BUU30iIC1qYXIgJHtXT1JLRElSX0RJUn0vYXBwLmphcgo=" | base64 -d > /app/entrypoint.sh
+# file ./config/script/entrypoint.sh base64 string
+RUN echo "IyEvYmluL3NoCgpjaG93biAtUiAiJHtQVUlEfSI6IiR7UEdJRH0iICIke1dPUktESVJfRElSfSIKY2hvd24gIiR7UFVJRH0iOiIke1BHSUR9IiAiJHtDT05GSUdfRElSfSIKCiB1bWFzayAiJHtVTUFTS30iCgpleGVjIHN1LWV4ZWMgIiR7UFVJRH0iOiIke1BHSUR9IiBqYXZhICR7SkFWQV9PUFRTfSAtamFyICR7V09SS0RJUl9ESVJ9L2FwcC5qYXI=" | base64 -d > /app/entrypoint.sh
 RUN chmod 755 /app/entrypoint.sh
 
 COPY --chmod=755 build/libs/ikaros-*.jar ${WORKDIR_DIR}/app.jar
