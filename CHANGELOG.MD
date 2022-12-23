@@ -10,6 +10,7 @@
 - 重构Docker镜像，增加PUID PGID Umask环境变量 #233
 - 接口文档使用 springdoc-openapi #228
 - 优化数据库表，去除重复的订阅表 #144
+- 引入flyway规范SQL更改 #86
 
 # Pages
 - 种子链接添加页面
