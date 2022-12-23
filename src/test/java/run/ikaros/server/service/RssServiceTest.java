@@ -1,8 +1,6 @@
 package run.ikaros.server.service;
 
-import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.web.client.RestTemplate;
 import run.ikaros.server.core.service.RssService;
 import run.ikaros.server.tripartite.mikan.model.MikanRssItem;
 
@@ -34,6 +32,9 @@ class RssServiceTest {
      */
     // @Test
     void downloadRssXmlFile() {
+        rssService.setProxy(
+            new Proxy(Proxy.Type.HTTP, new InetSocketAddress("192.168.2.229", 7890)));
+
         final String url = System.getenv("IKAROS_TEST_RSS_MIKAN_MY_SUB_URL");
         String downloadRssXmlFile = rssService.downloadRssXmlFile(url);
 

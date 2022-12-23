@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +31,7 @@ import java.util.Set;
  * @author guohao
  * @date 2022/10/19
  */
+@Tag(name = "设置")
 @RestController
 @RequestMapping("/option")
 public class OptionRestController {

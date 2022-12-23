@@ -1,5 +1,6 @@
 package run.ikaros.server.openapi;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.NestedRuntimeException;
@@ -24,6 +25,7 @@ import run.ikaros.server.utils.RestTemplateUtils;
 /**
  * @author li-guohao
  */
+@Tag(name = "网络")
 @RestController
 @RequestMapping("/network")
 public class NetworkRestController {

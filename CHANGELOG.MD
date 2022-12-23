@@ -8,6 +8,7 @@
 - 关于老番支持，种子下载完成后，会在应用目录下的 original 目录硬链接原始的文件结构
 - 应用启动前硬链接检查 #207
 - 重构Docker镜像，增加PUID PGID Umask环境变量 #233
+- 接口文档使用 springdoc-openapi #228
 
 # Pages
 - 种子链接添加页面

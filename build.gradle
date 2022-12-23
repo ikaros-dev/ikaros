@@ -21,7 +21,7 @@ checkstyle {
 }
 
 ext {
-    swaggerVersion = "3.0.0"
+    springDocVersion = "2.0.2"
     jwtVersion = "0.10.7"
     jsoupVersion = "1.15.3"
 }
@@ -42,8 +42,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation "org.springframework.boot:spring-boot-starter-mail"
 
-    // springfox 暂时无法适配 springboot3.0 具体请看：https://github.com/springfox/springfox/issues/4041#issuecomment-1355995033
-    // implementation "io.springfox:springfox-boot-starter:$swaggerVersion"
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion"
 
     implementation "io.jsonwebtoken:jjwt-api:$jwtVersion"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:$jwtVersion"

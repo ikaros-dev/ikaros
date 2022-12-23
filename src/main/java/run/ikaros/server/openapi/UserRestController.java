@@ -1,6 +1,7 @@
 package run.ikaros.server.openapi;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +35,7 @@ import java.util.Base64;
  * @author guohao
  * @date 2022/09/08
  */
+@Tag(name = "用户")
 @RestController
 @RequestMapping("/user")
 public class UserRestController {
