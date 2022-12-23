@@ -37,7 +37,6 @@ out/
 .vscode/
 
 ### Local Dev Files
-db/
 logs/
 upload/
 media/

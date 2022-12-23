@@ -218,7 +218,7 @@ public class BgmTvServiceImpl implements BgmTvService, InitializingBean {
     public void afterPropertiesSet() throws Exception {
         OptionBgmTvDTO optionBgmTvDTO = optionService.getOptionBgmTvDTO();
         Boolean enableProxy = optionBgmTvDTO.getEnableProxy();
-        if (enableProxy) {
+        if (enableProxy != null && enableProxy) {
             String accessToken = optionBgmTvDTO.getAccessToken();
             if (StringUtils.isNotBlank(accessToken)) {
                 refreshHttpHeaders(accessToken);

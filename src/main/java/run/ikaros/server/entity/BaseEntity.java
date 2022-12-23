@@ -31,7 +31,7 @@ public class BaseEntity {
      * 主键ID自增
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**

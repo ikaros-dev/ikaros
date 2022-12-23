@@ -31,7 +31,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
     open-in-view: false
 #    properties:
@@ -49,7 +49,12 @@ spring:
     cache: true
 
   flyway:
-    locations: migration
+    locations: classpath:migration
+    enabled: true
+    encoding: UTF-8
+    sql-migration-separator: __
+    clean-disabled: true
+    table: flyway_schema_history
 
 
 logging:
@@ -65,5 +70,3 @@ logging:
 springdoc:
   api-docs:
     enabled: true
-#  swagger-ui:
-#    path: /doc/openapi
