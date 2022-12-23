@@ -21,11 +21,6 @@ public class TemplateEngineTest {
     @Autowired
     TemplateEngine templateEngine;
 
-    @BeforeAll
-    static void beforeAll() {
-        System.setProperty("spring.profiles.active", "local");
-    }
-
     @Test
     public void animeUpdateTemplateRendering() {
         System.out.println(buildAnimeUpdateHtml());
@@ -52,7 +47,8 @@ public class TemplateEngineTest {
             一里有着组建乐队的梦想，但因为不敢向人主动搭话而一直没有成功，
             直到一天在公园中被伊地知虹夏发现并邀请进入缺少吉他手的“结束乐队”。可是，完全没有和他人合作经历的一里，
             在人前完全发挥不出原本的实力。为了努力克服沟通障碍，一里与“结束乐队”的成员们一同开始努力……""");
-        vars.put("coverImgUrl", "http://192.168.2.229:9090/upload/2022/12/5/8/51e966853f2f4729a83efe520a1376f4.jpg");
+        vars.put("coverImgUrl", "http://192.168.2.229:50000/upload/2022/12/5/8/"
+            + "51e966853f2f4729a83efe520a1376f4.jpg");
         vars.put("epUrlFileName",
             "[Sakurato] Bocchi the Rock! [10][HEVC-10bit 1080p AAC][CHS&CHT].mkv");
         context.setVariables(vars);
