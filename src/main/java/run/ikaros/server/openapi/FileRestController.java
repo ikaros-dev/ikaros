@@ -1,6 +1,8 @@
 package run.ikaros.server.openapi;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
 import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.result.CommonResult;
@@ -105,11 +107,9 @@ public class FileRestController {
         return CommonResult.ok(fileService.update(fileEntity));
     }
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     public CommonResult<PagingWrap<FileEntity>> listPaging(
-        Integer page, Integer size, String keyword, String type, String place) {
-        SearchFilesParams searchFilesParams = new SearchFilesParams().setPage(page).setSize(size)
-            .setType(type).setKeyword(keyword).setPlace(place);
+        @RequestBody SearchFilesParams searchFilesParams) {
         return CommonResult.ok(fileService.findFilesByPagingAndCondition(searchFilesParams));
     }
 
