@@ -1,8 +1,9 @@
 package run.ikaros.server.openapi;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestPart;
 import run.ikaros.server.core.service.FileService;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.result.CommonResult;
@@ -19,9 +20,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -37,12 +37,11 @@ import org.springframework.web.multipart.MultipartFile;
  * @author guohao
  * @date 2022/09/07
  */
+@Slf4j
 @Tag(name = "文件")
 @RestController
 @RequestMapping("/file")
 public class FileRestController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileRestController.class);
-
     private final FileService fileService;
 
     public FileRestController(FileService fileService) {
@@ -150,9 +149,17 @@ public class FileRestController {
             new String(Base64.getDecoder()
                 .decode(uploadName.getBytes(StandardCharsets.UTF_8)),
                 StandardCharsets.UTF_8);
+        try {
+            fileService.receiveAndHandleChunkFile(unique, uploadLength, uploadOffset, uploadName,
+                request.getInputStream().readAllBytes());
+        } catch (ClientAbortException clientAbortException) {
+            log.debug("upload file abort, unique={}", unique);
+        }
+    }
 
-        fileService.receiveAndHandleChunkFile(unique, uploadLength, uploadOffset, uploadName,
-            request.getInputStream().readAllBytes());
+    @DeleteMapping("/filepond/revert")
+    public void revertUploadFileByUnique(@RequestBody String unique) {
+        fileService.revertUploadChunkFileAndDir(unique);
     }
 
 

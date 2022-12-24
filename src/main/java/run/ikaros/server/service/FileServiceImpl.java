@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import jakarta.annotation.Nonnull;
 
+import lombok.extern.slf4j.Slf4j;
 import run.ikaros.server.enums.FilePlace;
 import run.ikaros.server.enums.FileType;
 import run.ikaros.server.core.service.FileService;
@@ -56,12 +57,11 @@ import org.springframework.web.multipart.MultipartFile;
  * @author guohao
  * @date 2022/09/07
  */
+@Slf4j
 @Service
 public class FileServiceImpl
     extends AbstractCrudService<FileEntity, Long>
     implements FileService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileServiceImpl.class);
-
     private final FileRepository fileRepository;
     private final IkarosProperties ikarosProperties;
     private final IkarosFileHandler fileHandler = new LocalIkarosFileHandler();
@@ -171,9 +171,9 @@ public class FileServiceImpl
             fileEntity.setStatus(false);
             fileRepository.saveAndFlush(fileEntity);
 
-            LOGGER.info("delete file entity, fileId={}", fileId);
+            log.info("delete file entity, fileId={}", fileId);
         } catch (RecordNotFoundException e) {
-            LOGGER.debug("not exist file entity for fileId={}, do nothing.", fileId);
+            log.debug("not exist file entity for fileId={}, do nothing.", fileId);
         }
     }
 
@@ -187,15 +187,15 @@ public class FileServiceImpl
         FileEntity existFileEntity = findById(fileId);
         if (existFileEntity == null) {
             // 不存在，则新增
-            LOGGER.debug("not exist file entity for fileId={}, do nothing.", fileId);
+            log.debug("not exist file entity for fileId={}, do nothing.", fileId);
             existFileEntity = fileRepository.saveAndFlush(fileEntity);
-            LOGGER.info("success add file entity: {}", existFileEntity);
+            log.info("success add file entity: {}", existFileEntity);
         } else {
             // 已经存在，则更新原有的
             final String oldExistFileEntityJson = JsonUtils.obj2Json(existFileEntity);
             BeanUtils.copyProperties(fileEntity, existFileEntity);
             existFileEntity = fileRepository.saveAndFlush(existFileEntity);
-            LOGGER.info("success update exist file entity, old: {} , new: {}",
+            log.info("success update exist file entity, old: {} , new: {}",
                 oldExistFileEntityJson, existFileEntity);
         }
         return existFileEntity;
@@ -243,7 +243,7 @@ public class FileServiceImpl
 
         IkarosFileOperateResult uploadResult = fileHandler.upload(ikarosFile);
         if (IkarosFileOperateResult.Status.OK == uploadResult.getStatus()) {
-            LOGGER.info("success upload file for path: {}", ikarosFile.getAbsolutePath());
+            log.info("success upload file for path: {}", ikarosFile.getAbsolutePath());
         }
         ikarosFile = uploadResult.getIkarosFile();
 
@@ -256,7 +256,7 @@ public class FileServiceImpl
         if (StringUtils.isNotBlank(location) && fileHandler.exist(location)) {
             IkarosFileOperateResult operateResult = fileHandler.delete(location);
             if (IkarosFileOperateResult.Status.OK == operateResult.getStatus()) {
-                LOGGER.info("success delete file for path: {}", location);
+                log.info("success delete file for path: {}", location);
             }
         }
     }
@@ -377,7 +377,7 @@ public class FileServiceImpl
             new File(SystemVarUtils.getOsCacheDirPath() + File.separator + unique);
         if (!tempChunkFileCacheDir.exists()) {
             tempChunkFileCacheDir.mkdirs();
-            LOGGER.debug("create temp dir: {}", tempChunkFileCacheDir);
+            log.debug("create temp dir: {}", tempChunkFileCacheDir);
         }
 
         AssertUtils.notNull(bytes, "file bytes must not be null");
@@ -385,7 +385,7 @@ public class FileServiceImpl
         long offset = Long.parseLong(uploadOffset) + bytes.length;
         File uploadedChunkCacheFile = new File(tempChunkFileCacheDir + File.separator + offset);
         Files.write(Path.of(uploadedChunkCacheFile.toURI()), bytes);
-        LOGGER.debug("upload chunk[{}] to path: {}", uploadOffset,
+        log.debug("upload chunk[{}] to path: {}", uploadOffset,
             uploadedChunkCacheFile.getAbsolutePath());
 
         if (offset == Long.parseLong(uploadLength)) {
@@ -406,6 +406,23 @@ public class FileServiceImpl
             fileEntity.setSize(Long.valueOf(uploadLength));
             fileEntity.setType(FileUtils.parseTypeByPostfix(postfix));
             fileRepository.saveAndFlush(fileEntity);
+        }
+    }
+
+    @Override
+    public void revertUploadChunkFileAndDir(@Nonnull String unique) {
+        AssertUtils.notBlank(unique, "unique");
+        log.debug("exec revertUploadChunkFileAndDir method for unique={}", unique);
+        String fileChunkCacheDirPath = SystemVarUtils.getOsCacheDirPath() + File.separator + unique;
+        File fileChunkCacheDir = new File(fileChunkCacheDirPath);
+        if (fileChunkCacheDir.exists()) {
+            for (File file : Objects.requireNonNull(fileChunkCacheDir.listFiles())) {
+                if (file.exists()) {
+                    file.delete();
+                }
+            }
+            fileChunkCacheDir.delete();
+            log.debug("remove uploading file with unique={}", unique);
         }
     }
 
@@ -452,7 +469,7 @@ public class FileServiceImpl
     }
 
     private String meringTempChunkFile(String unique, String postfix) throws IOException {
-        LOGGER.debug("All chunks upload has finish, will start merging files");
+        log.debug("All chunks upload has finish, will start merging files");
 
         File targetFile = new File(FileUtils.buildAppUploadFilePath(postfix));
         String absolutePath = targetFile.getAbsolutePath();
@@ -489,12 +506,12 @@ public class FileServiceImpl
                 int read = fileInputStream.read(bytes);
                 randomAccessFile.write(bytes);
                 targetFileWriteOffset += read;
-                LOGGER.debug("[{}] current merge targetFileWriteOffset: {}", chunkFile.getName(),
+                log.debug("[{}] current merge targetFileWriteOffset: {}", chunkFile.getName(),
                     targetFileWriteOffset);
             }
         }
 
-        LOGGER.debug("Merging all chunk files success, absolute path: {}", absolutePath);
+        log.debug("Merging all chunk files success, absolute path: {}", absolutePath);
         return absolutePath;
     }
 
@@ -515,7 +532,7 @@ public class FileServiceImpl
         if (SystemVarUtils.platformIsWindows()) {
             url = url.replace("\\", "/");
         }
-        LOGGER.debug("current url={}", url);
+        log.debug("current url={}", url);
         return url;
     }
 }
