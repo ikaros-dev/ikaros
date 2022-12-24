@@ -2,9 +2,12 @@ package run.ikaros.server.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
 import java.time.LocalDateTime;
 
-@Entity(name = "scheduled_task")
+@Entity
+@Table(name = "task")
 public class ScheduledTaskEntity extends TaskEntity {
 
     private String cron;
