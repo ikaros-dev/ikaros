@@ -65,6 +65,8 @@ public interface FileService extends CrudService<FileEntity, Long> {
                                    @Nonnull String uploadOffset, @Nonnull String uploadName,
                                    @Nonnull byte[] bytes) throws IOException;
 
+    void revertUploadChunkFileAndDir(@Nonnull String unique);
+
 
     @Nonnull
     default Long getEpisodeSeqFromName(@Nonnull String name) {
