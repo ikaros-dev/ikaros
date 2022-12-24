@@ -794,8 +794,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void scanImportDir2ImportNewFile() {
-        String importDirPath = SystemVarUtils.getCurrentAppDirPath()
-            + File.separator + AppConst.IMPORT;
+        String importDirPath = File.separator + AppConst.IMPORT;
         File importDir = new File(importDirPath);
         if (!importDir.exists()) {
             importDir.mkdirs();
@@ -819,8 +818,7 @@ public class TaskServiceImpl implements TaskService {
             // 获取相对于 import 目录的相对路径
             String absolutePath = file.getAbsolutePath();
             String dirRelativePath
-                = absolutePath.replace(SystemVarUtils.getCurrentAppDirPath()
-                + File.separator + AppConst.IMPORT, "");
+                = absolutePath.replace(File.separator + AppConst.IMPORT, "");
 
             File originalFile = null;
             try {
@@ -835,6 +833,12 @@ public class TaskServiceImpl implements TaskService {
                 // 移动文件到 original 目录
                 originalFile = new File(SystemVarUtils.getCurrentAppDirPath()
                     + File.separator + AppConst.ORIGINAL + dirRelativePath);
+                if (!originalFile.getParentFile().exists()) {
+                    originalFile.getParentFile().mkdirs();
+                }
+                if (originalFile.exists()) {
+                    originalFile.delete();
+                }
                 Files.move(file.toPath(), originalFile.toPath());
                 LOGGER.debug("move file from import dir to original dir,"
                     + "form:{}, to:{}", file.getAbsolutePath(), originalFile.getAbsolutePath());
