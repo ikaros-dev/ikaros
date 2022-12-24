@@ -820,7 +820,7 @@ public class TaskServiceImpl implements TaskService {
             String absolutePath = file.getAbsolutePath();
             String dirRelativePath
                 = absolutePath.replace(SystemVarUtils.getCurrentAppDirPath()
-                + File.separator + AppConst.IMPORT, absolutePath);
+                + File.separator + AppConst.IMPORT, "");
 
             File originalFile = null;
             try {
