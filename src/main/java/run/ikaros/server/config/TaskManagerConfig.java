@@ -101,6 +101,7 @@ public class TaskManagerConfig {
             }
         }
 
+        // media task
         OptionEntity enableGenerateMediaDirOptionEntity =
             optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
                 OptionApp.ENABLE_GENERATE_MEDIA_DIR_TASK.name());
@@ -111,6 +112,19 @@ public class TaskManagerConfig {
                 mediaService.generateMediaDir();
             }
         }
+
+        // monitor import dir
+        OptionEntity enableImportMonitorOptionEntity =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.APP,
+                OptionApp.ENABLE_IMPORT_MONITOR_TASK.name());
+        if (enableImportMonitorOptionEntity != null) {
+            String enableImportMonitorValue = enableImportMonitorOptionEntity.getValue();
+            LOGGER.debug("current app ENABLE_IMPORT_MONITOR_TASK={}", enableImportMonitorValue);
+            if (Boolean.TRUE.toString().equalsIgnoreCase(enableImportMonitorValue)) {
+                taskService.scanImportDir2ImportNewFile();
+            }
+        }
+
     }
 
 

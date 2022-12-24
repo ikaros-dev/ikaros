@@ -18,4 +18,5 @@ public interface AppConst {
     String MEDIA = "media";
     String UPLOAD = "upload";
     String DOWNLOADS = "downloads";
+    String IMPORT = "import";
 }

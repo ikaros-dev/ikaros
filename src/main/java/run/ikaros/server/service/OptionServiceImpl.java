@@ -3,6 +3,7 @@ package run.ikaros.server.service;
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.Example;
@@ -59,7 +60,7 @@ import java.util.stream.Stream;
 @Service
 public class OptionServiceImpl
     extends AbstractCrudService<OptionEntity, Long>
-    implements OptionService, ApplicationContextAware {
+    implements OptionService, ApplicationContextAware, InitializingBean {
     private final OptionRepository optionRepository;
     private final UserService userService;
     private ApplicationContext applicationContext;
@@ -163,6 +164,13 @@ public class OptionServiceImpl
         final String title = appInitRequest.getTitle();
         final String description = appInitRequest.getDescription();
 
+        initAllOptionItems(title, description);
+
+        return true;
+    }
+
+    @Override
+    public void initAllOptionItems(@Nullable String title, @Nullable String description) {
         // init option app
         saveOptionItem(new OptionItemDTO(OptionApp.IS_INIT.name(),
             DefaultConst.OPTION_APP_IS_INIT, OptionCategory.APP));
@@ -172,6 +180,8 @@ public class OptionServiceImpl
             DefaultConst.OPTION_APP_ENABLE_AUTO_ANIME_SUB_TASK, OptionCategory.APP));
         saveOptionItem(new OptionItemDTO(OptionApp.ENABLE_GENERATE_MEDIA_DIR_TASK.name(),
             DefaultConst.OPTION_APP_ENABLE_GENERATE_MEDIA_DIR_TASK, OptionCategory.APP));
+        saveOptionItem(new OptionItemDTO(OptionApp.ENABLE_IMPORT_MONITOR_TASK.name(),
+            DefaultConst.OPTION_APP_ENABLE_IMPORT_MONITOR_TASK, OptionCategory.APP));
 
         // init option common
         saveOptionItem(new OptionItemDTO(OptionCommon.TITLE.name(),
@@ -255,8 +265,6 @@ public class OptionServiceImpl
             DefaultConst.OPTION_NOTIFY_MAIL_SMTP_PASSWORD, OptionCategory.NOTIFY));
         saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_ACCOUNT_ALIAS.name(),
             DefaultConst.OPTION_NOTIFY_MAIL_SMTP_ACCOUNT_ALIAS, OptionCategory.NOTIFY));
-
-        return true;
     }
 
     @Nonnull
@@ -631,5 +639,10 @@ public class OptionServiceImpl
             }
         }
         return bgmTvDTO;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        initAllOptionItems(null, null);
     }
 }

@@ -9,6 +9,7 @@ public interface DefaultConst {
     String OPTION_APP_THEME = "simple";
     String OPTION_APP_ENABLE_AUTO_ANIME_SUB_TASK = Boolean.FALSE.toString();
     String OPTION_APP_ENABLE_GENERATE_MEDIA_DIR_TASK = Boolean.FALSE.toString();
+    String OPTION_APP_ENABLE_IMPORT_MONITOR_TASK = Boolean.FALSE.toString();
 
 
     String OPTION_COMMON_TITLE = "ikaros cms system";
