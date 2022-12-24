@@ -482,7 +482,7 @@ public class OptionServiceImpl
             if (OptionCategory.NOTIFY.equals(optionCategory)) {
                 applicationContext.publishEvent(
                     new OptionNotifyUpdateEvent(this, getOptionNotifyDTO()));
-                log.debug("publish OptionNotifyUpdateEvent");
+                // log.debug("publish OptionNotifyUpdateEvent");
             }
 
             OptionDTO optionDTO = new OptionDTO();

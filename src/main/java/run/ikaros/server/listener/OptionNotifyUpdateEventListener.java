@@ -22,7 +22,7 @@ public class OptionNotifyUpdateEventListener
 
     @Override
     public void onApplicationEvent(@Nonnull OptionNotifyUpdateEvent event) {
-        log.debug("receive OptionNotifyUpdateEvent");
+        // log.debug("receive OptionNotifyUpdateEvent");
         OptionNotifyDTO optionNotifyDTO = event.getOptionNotifyDTO();
         notifyService.refreshMailSender(optionNotifyDTO);
     }
