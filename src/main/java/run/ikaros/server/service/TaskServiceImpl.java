@@ -25,6 +25,7 @@ import run.ikaros.server.entity.SeasonEntity;
 import run.ikaros.server.entity.SubscribeEntity;
 import run.ikaros.server.entity.UserEntity;
 import run.ikaros.server.enums.FilePlace;
+import run.ikaros.server.enums.FileType;
 import run.ikaros.server.enums.KVType;
 import run.ikaros.server.enums.OptionCategory;
 import run.ikaros.server.enums.OptionJellyfin;
@@ -408,6 +409,11 @@ public class TaskServiceImpl implements TaskService {
 
     private String getBgmTvSubjectIdByMikanSearchTorrentName(@Nonnull String torrentName) {
         AssertUtils.notBlank(torrentName, "torrentName");
+        FileType fileType = FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(torrentName));
+        if (fileType != FileType.VIDEO) {
+            return null;
+        }
+
         // 调用蜜柑计划查询页面，获取Bangumi页面地址
         String animePageUrl = mikanService.getAnimePageUrlBySearch(torrentName);
         if (StringUtils.isBlank(animePageUrl)) {
@@ -429,14 +435,12 @@ public class TaskServiceImpl implements TaskService {
     private void updateEpisodeUrlByFileEntity(String torrentName, Long fileId) {
         Map<String, String> torrentNameBgmTvSubjectIdMap =
             kvService.findMikanTorrentNameBgmTvSubjectIdMap();
-        String subjectIdStr;
+        String subjectIdStr = null;
         if (torrentNameBgmTvSubjectIdMap.containsKey(torrentName)) {
             subjectIdStr = torrentNameBgmTvSubjectIdMap.get(torrentName);
             if (StringUtils.isBlank(subjectIdStr)) {
                 subjectIdStr = getBgmTvSubjectIdByMikanSearchTorrentName(torrentName);
             }
-        } else {
-            subjectIdStr = getBgmTvSubjectIdByMikanSearchTorrentName(torrentName);
         }
 
         if (StringUtils.isBlank(subjectIdStr)) {
