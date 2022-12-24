@@ -35,6 +35,7 @@ services:
       ikaros_networks:
     volumes:
       - ${IKAROS_APP_DIR}:/opt/ikaros
+      - ${IKAROS_APP_IMPORT_DIR}:/opt/ikaros/import
     ports:
       - "50000:50000"
     environment:
