@@ -169,102 +169,115 @@ public class OptionServiceImpl
         return true;
     }
 
+    private void saveInitOptionItem(String key, String value, OptionCategory category) {
+        OptionEntity existsOptionEntity = findOptionValueByCategoryAndKey(category, key);
+        if (existsOptionEntity == null) {
+            saveOptionItem(new OptionItemDTO(key, value, category));
+        } else {
+            if (!existsOptionEntity.getStatus()) {
+                existsOptionEntity.setStatus(true);
+                save(existsOptionEntity);
+            }
+        }
+    }
+
     @Override
     public void initAllOptionItems(@Nullable String title, @Nullable String description) {
         // init option app
-        saveOptionItem(new OptionItemDTO(OptionApp.IS_INIT.name(),
-            DefaultConst.OPTION_APP_IS_INIT, OptionCategory.APP));
-        saveOptionItem(new OptionItemDTO(OptionApp.THEME.name(),
-            DefaultConst.OPTION_APP_THEME, OptionCategory.APP));
-        saveOptionItem(new OptionItemDTO(OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name(),
-            DefaultConst.OPTION_APP_ENABLE_AUTO_ANIME_SUB_TASK, OptionCategory.APP));
-        saveOptionItem(new OptionItemDTO(OptionApp.ENABLE_GENERATE_MEDIA_DIR_TASK.name(),
-            DefaultConst.OPTION_APP_ENABLE_GENERATE_MEDIA_DIR_TASK, OptionCategory.APP));
-        saveOptionItem(new OptionItemDTO(OptionApp.ENABLE_IMPORT_MONITOR_TASK.name(),
-            DefaultConst.OPTION_APP_ENABLE_IMPORT_MONITOR_TASK, OptionCategory.APP));
+        saveInitOptionItem(OptionApp.IS_INIT.name(),
+            DefaultConst.OPTION_APP_IS_INIT, OptionCategory.APP);
+        saveInitOptionItem(OptionApp.THEME.name(),
+            DefaultConst.OPTION_APP_THEME, OptionCategory.APP);
+        saveInitOptionItem(OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name(),
+            DefaultConst.OPTION_APP_ENABLE_AUTO_ANIME_SUB_TASK, OptionCategory.APP);
+        saveInitOptionItem(OptionApp.ENABLE_GENERATE_MEDIA_DIR_TASK.name(),
+            DefaultConst.OPTION_APP_ENABLE_GENERATE_MEDIA_DIR_TASK, OptionCategory.APP);
+        saveInitOptionItem(OptionApp.ENABLE_IMPORT_MONITOR_TASK.name(),
+            DefaultConst.OPTION_APP_ENABLE_IMPORT_MONITOR_TASK, OptionCategory.APP);
 
         // init option common
-        saveOptionItem(new OptionItemDTO(OptionCommon.TITLE.name(),
+        saveInitOptionItem(OptionCommon.TITLE.name(),
             StringUtils.isNotBlank(title) ? title : DefaultConst.OPTION_COMMON_TITLE,
-            OptionCategory.COMMON));
-        saveOptionItem(new OptionItemDTO(OptionCommon.DESCRIPTION.name(),
+            OptionCategory.COMMON);
+        saveInitOptionItem(OptionCommon.DESCRIPTION.name(),
             StringUtils.isNotBlank(description) ? description :
                 DefaultConst.OPTION_COMMON_DESCRIPTION,
-            OptionCategory.COMMON));
-        saveOptionItem(new OptionItemDTO(OptionCommon.ADDRESS.name(),
+            OptionCategory.COMMON);
+        saveInitOptionItem(OptionCommon.ADDRESS.name(),
             DefaultConst.OPTION_COMMON_ADDRESS,
-            OptionCategory.COMMON));
-        saveOptionItem(new OptionItemDTO(OptionCommon.LOGO.name(),
+            OptionCategory.COMMON);
+        saveInitOptionItem(OptionCommon.LOGO.name(),
             DefaultConst.OPTION_COMMON_LOGO,
-            OptionCategory.COMMON));
-        saveOptionItem(new OptionItemDTO(OptionCommon.FAVICON.name(),
+            OptionCategory.COMMON);
+        saveInitOptionItem(OptionCommon.FAVICON.name(),
             DefaultConst.OPTION_COMMON_FAVICON,
-            OptionCategory.COMMON));
-        saveOptionItem(new OptionItemDTO(OptionCommon.HEADER.name(),
+            OptionCategory.COMMON);
+        saveInitOptionItem(OptionCommon.HEADER.name(),
             DefaultConst.OPTION_COMMON_HEADER,
-            OptionCategory.COMMON));
-        saveOptionItem(new OptionItemDTO(OptionCommon.FOOTER.name(),
+            OptionCategory.COMMON);
+        saveInitOptionItem(OptionCommon.FOOTER.name(),
             DefaultConst.OPTION_COMMON_FOOTER,
-            OptionCategory.COMMON));
-        saveOptionItem(new OptionItemDTO(OptionCommon.STATISTICS_CODE.name(),
+            OptionCategory.COMMON);
+        saveInitOptionItem(OptionCommon.STATISTICS_CODE.name(),
             DefaultConst.OPTION_COMMON_STATISTICS_CODE,
-            OptionCategory.COMMON));
+            OptionCategory.COMMON);
 
         // init option file
-        saveOptionItem(new OptionItemDTO(OptionFile.PLACE_SELECT.name(),
-            DefaultConst.OPTION_FILE_PLACE_SELECT, OptionCategory.FILE));
+        saveInitOptionItem(OptionFile.PLACE_SELECT.name(),
+            DefaultConst.OPTION_FILE_PLACE_SELECT,
+            OptionCategory.FILE);
 
         // init option network
-        saveOptionItem(new OptionItemDTO(OptionNetwork.PROXY_HTTP_HOST.name(),
-            DefaultConst.OPTION_NETWORK_PROXY_HTTP_HOST, OptionCategory.NETWORK));
-        saveOptionItem(new OptionItemDTO(OptionNetwork.PROXY_HTTP_PORT.name(),
-            DefaultConst.OPTION_NETWORK_PROXY_HTTP_PORT, OptionCategory.NETWORK));
-        saveOptionItem(new OptionItemDTO(OptionNetwork.CONNECT_TIMEOUT.name(),
-            DefaultConst.OPTION_NETWORK_CONNECT_TIMEOUT, OptionCategory.NETWORK));
-        saveOptionItem(new OptionItemDTO(OptionNetwork.READ_TIMEOUT.name(),
-            DefaultConst.OPTION_NETWORK_READ_TIMEOUT, OptionCategory.NETWORK));
+        saveInitOptionItem(OptionNetwork.PROXY_HTTP_HOST.name(),
+            DefaultConst.OPTION_NETWORK_PROXY_HTTP_HOST, OptionCategory.NETWORK);
+        saveInitOptionItem(OptionNetwork.PROXY_HTTP_PORT.name(),
+            DefaultConst.OPTION_NETWORK_PROXY_HTTP_PORT, OptionCategory.NETWORK);
+        saveInitOptionItem(OptionNetwork.CONNECT_TIMEOUT.name(),
+            DefaultConst.OPTION_NETWORK_CONNECT_TIMEOUT, OptionCategory.NETWORK);
+        saveInitOptionItem(OptionNetwork.READ_TIMEOUT.name(),
+            DefaultConst.OPTION_NETWORK_READ_TIMEOUT, OptionCategory.NETWORK);
 
         // init option qbittorrent
-        saveOptionItem(new OptionItemDTO(OptionQbittorrent.URL.name(),
-            DefaultConst.OPTION_QBITTORRENT_URL, OptionCategory.QBITTORRENT));
-        saveOptionItem(new OptionItemDTO(OptionQbittorrent.ENABLE_AUTH.name(),
-            DefaultConst.OPTION_QBITTORRENT_ENABLE_AUTH, OptionCategory.QBITTORRENT));
-        saveOptionItem(new OptionItemDTO(OptionQbittorrent.USERNAME.name(),
-            DefaultConst.OPTION_QBITTORRENT_USERNAME, OptionCategory.QBITTORRENT));
-        saveOptionItem(new OptionItemDTO(OptionQbittorrent.PASSWORD.name(),
-            DefaultConst.OPTION_QBITTORRENT_PASSWORD, OptionCategory.QBITTORRENT));
+        saveInitOptionItem(OptionQbittorrent.URL.name(),
+            DefaultConst.OPTION_QBITTORRENT_URL, OptionCategory.QBITTORRENT);
+        saveInitOptionItem(OptionQbittorrent.ENABLE_AUTH.name(),
+            DefaultConst.OPTION_QBITTORRENT_ENABLE_AUTH, OptionCategory.QBITTORRENT);
+        saveInitOptionItem(OptionQbittorrent.USERNAME.name(),
+            DefaultConst.OPTION_QBITTORRENT_USERNAME, OptionCategory.QBITTORRENT);
+        saveInitOptionItem(OptionQbittorrent.PASSWORD.name(),
+            DefaultConst.OPTION_QBITTORRENT_PASSWORD, OptionCategory.QBITTORRENT);
 
         // init option bgmtv
-        saveOptionItem(new OptionItemDTO(OptionBgmTv.ENABLE_PROXY.name(),
-            DefaultConst.OPTION_BGMTV_ENABLE_PROXY, OptionCategory.BGMTV));
-        saveOptionItem(new OptionItemDTO(OptionBgmTv.ACCESS_TOKEN.name(),
-            DefaultConst.OPTION_BGMTV_ACCESS_TOKEN, OptionCategory.BGMTV));
+        saveInitOptionItem(OptionBgmTv.ENABLE_PROXY.name(),
+            DefaultConst.OPTION_BGMTV_ENABLE_PROXY, OptionCategory.BGMTV);
+        saveInitOptionItem(OptionBgmTv.ACCESS_TOKEN.name(),
+            DefaultConst.OPTION_BGMTV_ACCESS_TOKEN, OptionCategory.BGMTV);
 
         // init option mikan
-        saveOptionItem(new OptionItemDTO(OptionMikan.MY_SUBSCRIBE_RSS.name(),
-            DefaultConst.OPTION_MIKAN_MY_SUBSCRIBE_RSS, OptionCategory.MIKAN));
-        saveOptionItem(new OptionItemDTO(OptionMikan.ENABLE_PROXY.name(),
-            DefaultConst.OPTION_MIKAN_ENABLE_PROXY, OptionCategory.MIKAN));
+        saveInitOptionItem(OptionMikan.MY_SUBSCRIBE_RSS.name(),
+            DefaultConst.OPTION_MIKAN_MY_SUBSCRIBE_RSS, OptionCategory.MIKAN);
+        saveInitOptionItem(OptionMikan.ENABLE_PROXY.name(),
+            DefaultConst.OPTION_MIKAN_ENABLE_PROXY, OptionCategory.MIKAN);
 
         // init option jellyfin
-        saveOptionItem(new OptionItemDTO(OptionJellyfin.MEDIA_DIR_PATH.name(),
-            DefaultConst.OPTION_JELLYFIN_MEDIA_DIR_PATH, OptionCategory.JELLYFIN));
+        saveInitOptionItem(OptionJellyfin.MEDIA_DIR_PATH.name(),
+            DefaultConst.OPTION_JELLYFIN_MEDIA_DIR_PATH, OptionCategory.JELLYFIN);
 
         // init option notify
-        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_ENABLE.name(),
-            DefaultConst.OPTION_NOTIFY_MAIL_ENABLE, OptionCategory.NOTIFY));
-        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_PROTOCOL.name(),
-            DefaultConst.OPTION_NOTIFY_MAIL_PROTOCOL, OptionCategory.NOTIFY));
-        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_HOST.name(),
-            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_HOST, OptionCategory.NOTIFY));
-        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_PORT.name(),
-            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_PORT, OptionCategory.NOTIFY));
-        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_ACCOUNT.name(),
-            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_ACCOUNT, OptionCategory.NOTIFY));
-        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_PASSWORD.name(),
-            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_PASSWORD, OptionCategory.NOTIFY));
-        saveOptionItem(new OptionItemDTO(OptionNotify.MAIL_SMTP_ACCOUNT_ALIAS.name(),
-            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_ACCOUNT_ALIAS, OptionCategory.NOTIFY));
+        saveInitOptionItem(OptionNotify.MAIL_ENABLE.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_ENABLE, OptionCategory.NOTIFY);
+        saveInitOptionItem(OptionNotify.MAIL_PROTOCOL.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_PROTOCOL, OptionCategory.NOTIFY);
+        saveInitOptionItem(OptionNotify.MAIL_SMTP_HOST.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_HOST, OptionCategory.NOTIFY);
+        saveInitOptionItem(OptionNotify.MAIL_SMTP_PORT.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_PORT, OptionCategory.NOTIFY);
+        saveInitOptionItem(OptionNotify.MAIL_SMTP_ACCOUNT.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_ACCOUNT, OptionCategory.NOTIFY);
+        saveInitOptionItem(OptionNotify.MAIL_SMTP_PASSWORD.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_PASSWORD, OptionCategory.NOTIFY);
+        saveInitOptionItem(OptionNotify.MAIL_SMTP_ACCOUNT_ALIAS.name(),
+            DefaultConst.OPTION_NOTIFY_MAIL_SMTP_ACCOUNT_ALIAS, OptionCategory.NOTIFY);
     }
 
     @Nonnull
