@@ -25,6 +25,9 @@
 # 演示视频
 https://www.bilibili.com/medialist/play/118744944?business=space_series&business_id=2872054
 
+# 功能介绍
+- [Ikaros Introduce Feature Doc](docs/introduce/feature.md)
+
 # 部署指南
 
 - [Docker Compose Doc](docs/deploy/deploy-with-docker-compose.md)
