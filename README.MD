@@ -78,4 +78,4 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 - Intellij 的开源许可
 
 # 声明
-Ikaros的作用是为了辅助个人对本地资源进行管理，如有侵犯请及时通过微信公众号私信联系我们。
+Ikaros的作用是为了辅助个人对本地资源进行管理，如有侵权请及时通过微信公众号私信联系我们。
