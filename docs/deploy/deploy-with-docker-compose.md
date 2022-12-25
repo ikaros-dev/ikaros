@@ -28,7 +28,7 @@
 ```shell
 export IKAROS_APP_DIR=/opt/ikaros
 export IKAROS_DB_PASSWORD=openpostgresql
-export IKAROS_DOCKER_TAG=v0.1.0-rc.1
+export IKAROS_DOCKER_TAG=v0.1.0-rc.2
 export IKAROS_APP_URL_PREFIX=http://localhost:50000
 export IKAROS_APP_IMPORT_DIR=/share/storage/番剧
 ```
@@ -82,8 +82,9 @@ docker-compose -f docker-compose-no-jellyfin.yml up -d
 这个镜像默认的WebUI用户名密码是: admin@adminadmin
 
 
-如果你网络不好，需要HTTP代理，推荐直接部署一个全局模式的`clash`容器, 
-记得使用 host 模式，不然容器间网络隔离很麻烦，HTTP代理连不上。
-
 ## jellyfin
 这个添加媒体库就行，选择 `/media` 或者你部署jellyfin容器时的更改的目录
+
+## 网络
+如果你网络不好，需要HTTP代理，推荐直接部署一个全局模式的`clash`容器, 
+记得使用 host 模式，不然容器间网络隔离很麻烦，HTTP代理连不上。
