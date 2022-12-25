@@ -9,7 +9,7 @@ ENV PUID=0 \
     TZ=Asia/Shanghai \
     JAVA_OPTS="-Dikaros.log-level=DEBUG" \
     CONFIG_DIR=/opt/ikaros \
-    IMPORT_DIR=/import \
+    IMPORT_DIR=/opt/import \
     WORKDIR_DIR=/app
 
 RUN apk add --no-cache \

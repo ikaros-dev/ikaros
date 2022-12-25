@@ -164,7 +164,20 @@ public class OptionServiceImpl
         final String title = appInitRequest.getTitle();
         final String description = appInitRequest.getDescription();
 
-        initAllOptionItems(title, description);
+        saveOptionItem(
+            new OptionItemDTO(OptionApp.IS_INIT.name(), Boolean.TRUE.toString(),
+                OptionCategory.APP));
+
+        if (StringUtils.isNotBlank(title)) {
+            saveOptionItem(
+                new OptionItemDTO(OptionCommon.TITLE.name(), title, OptionCategory.COMMON));
+        }
+
+        if (StringUtils.isNotBlank(description)) {
+            saveOptionItem(
+                new OptionItemDTO(OptionCommon.DESCRIPTION.name(), description,
+                    OptionCategory.COMMON));
+        }
 
         return true;
     }
@@ -182,7 +195,7 @@ public class OptionServiceImpl
     }
 
     @Override
-    public void initAllOptionItems(@Nullable String title, @Nullable String description) {
+    public void updateAllOptionItems() {
         // init option app
         saveInitOptionItem(OptionApp.IS_INIT.name(),
             DefaultConst.OPTION_APP_IS_INIT, OptionCategory.APP);
@@ -197,12 +210,9 @@ public class OptionServiceImpl
 
         // init option common
         saveInitOptionItem(OptionCommon.TITLE.name(),
-            StringUtils.isNotBlank(title) ? title : DefaultConst.OPTION_COMMON_TITLE,
-            OptionCategory.COMMON);
+            DefaultConst.OPTION_COMMON_TITLE, OptionCategory.COMMON);
         saveInitOptionItem(OptionCommon.DESCRIPTION.name(),
-            StringUtils.isNotBlank(description) ? description :
-                DefaultConst.OPTION_COMMON_DESCRIPTION,
-            OptionCategory.COMMON);
+            DefaultConst.OPTION_COMMON_DESCRIPTION, OptionCategory.COMMON);
         saveInitOptionItem(OptionCommon.ADDRESS.name(),
             DefaultConst.OPTION_COMMON_ADDRESS,
             OptionCategory.COMMON);
@@ -656,6 +666,6 @@ public class OptionServiceImpl
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        initAllOptionItems(null, null);
+        updateAllOptionItems();
     }
 }

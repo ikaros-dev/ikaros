@@ -58,7 +58,9 @@ import jakarta.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -794,7 +796,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void scanImportDir2ImportNewFile() {
-        String importDirPath = File.separator + AppConst.IMPORT;
+        String importDirPath = SystemVarUtils.getCurrentImportDirPath();
         File importDir = new File(importDirPath);
         if (!importDir.exists()) {
             importDir.mkdirs();
@@ -831,27 +833,33 @@ public class TaskServiceImpl implements TaskService {
                 }
 
                 // 移动文件到 original 目录
-                originalFile = new File(SystemVarUtils.getCurrentAppDirPath()
-                    + File.separator + AppConst.ORIGINAL + dirRelativePath);
-                if (!originalFile.getParentFile().exists()) {
-                    originalFile.getParentFile().mkdirs();
-                }
-                if (originalFile.exists()) {
-                    originalFile.delete();
-                }
-                Files.move(file.toPath(), originalFile.toPath());
-                LOGGER.debug("move file from import dir to original dir,"
-                    + "form:{}, to:{}", file.getAbsolutePath(), originalFile.getAbsolutePath());
+                // originalFile = new File(SystemVarUtils.getCurrentAppDirPath()
+                //     + File.separator + AppConst.ORIGINAL + dirRelativePath);
+                // if (!originalFile.getParentFile().exists()) {
+                //     originalFile.getParentFile().mkdirs();
+                // }
+                // if (originalFile.exists()) {
+                //     originalFile.delete();
+                // }
+                // Files.move(file.toPath(), originalFile.toPath());
+                // LOGGER.debug("move file from import dir to original dir,"
+                //     + "form:{}, to:{}", file.getAbsolutePath(), originalFile.getAbsolutePath());
 
-                // 创建文件硬链接
+                // 创建上传文件目录
                 String uploadFilePath
                     = FileUtils.buildAppUploadFilePath(FileUtils.parseFilePostfix(name));
                 File uploadFile = new File(uploadFilePath);
-                Files.createLink(uploadFile.toPath(), originalFile.toPath());
-                LOGGER.debug("create upload file hard link form original dir, "
-                        + "link={}, existing={}",
-                    uploadFile.getAbsolutePath(), originalFile.getAbsolutePath());
 
+                // 创建文件硬链接
+                // Files.createLink(uploadFile.toPath(), originalFile.toPath());
+                // LOGGER.debug("create upload file hard link form original dir, "
+                //         + "link={}, existing={}",
+                //     uploadFile.getAbsolutePath(), originalFile.getAbsolutePath());
+
+                // 硬链接限制太多，暂时不进行支持，直接进行复制
+                Files.copy(file.toPath(), uploadFile.toPath());
+                LOGGER.debug("copy file from: {}, to: {}",
+                    file.getAbsolutePath(), uploadFile.getAbsolutePath());
 
                 FileEntity fileEntity = new FileEntity();
                 fileEntity.setPlace(FilePlace.LOCAL);
@@ -868,18 +876,18 @@ public class TaskServiceImpl implements TaskService {
             } catch (Exception e) {
                 LOGGER.error("exec handleImportDirFile exception", e);
             } finally {
-                if (originalFile != null && originalFile.exists()) {
-                    try {
-                        Files.move(originalFile.toPath(), file.toPath());
-                        LOGGER.debug("move file from original dir to import dir,"
-                            + "form:{}, to:{}",
-                            originalFile.getAbsolutePath(), file.getAbsolutePath());
-                    } catch (IOException e) {
-                        LOGGER.error("move file from origin dir to import dir fail, "
-                                + " original dir file path={}, import dir file path={}",
-                            originalFile.getAbsolutePath(), file.getAbsolutePath());
-                    }
-                }
+                // if (originalFile != null && originalFile.exists()) {
+                //     try {
+                //         Files.move(originalFile.toPath(), file.toPath());
+                //         LOGGER.debug("move file from original dir to import dir,"
+                //             + "form:{}, to:{}",
+                //             originalFile.getAbsolutePath(), file.getAbsolutePath());
+                //     } catch (IOException e) {
+                //         LOGGER.error("move file from origin dir to import dir fail, "
+                //                 + " original dir file path={}, import dir file path={}",
+                //             originalFile.getAbsolutePath(), file.getAbsolutePath());
+                //     }
+                // }
             }
         }
     }

@@ -11,8 +11,8 @@ services:
       ikaros_networks:
     volumes:
       - ${IKAROS_APP_DIR}/database:/var/lib/postgresql/data
-    ports:
-      - "55432:5432"
+    #ports:
+    #  - "55432:5432"
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
@@ -35,7 +35,7 @@ services:
       ikaros_networks:
     volumes:
       - ${IKAROS_APP_DIR}:/opt/ikaros
-      - ${IKAROS_APP_IMPORT_DIR}:/import
+      - ${IKAROS_APP_IMPORT_DIR}:/opt/import
     ports:
       - "50000:50000"
     environment:
