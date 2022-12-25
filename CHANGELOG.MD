@@ -11,7 +11,7 @@
 - 引入flyway规范SQL更改 #86
 - 较为方便的导入已有的番剧的方式 #221
 
-# Pages
+## Pages
 - 种子链接添加页面
 
 ## Documentations
