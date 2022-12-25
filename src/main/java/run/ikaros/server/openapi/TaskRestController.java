@@ -29,4 +29,10 @@ public class TaskRestController {
         return CommonResult.ok();
     }
 
+    @GetMapping("/scanImportDir2ImportNewFile")
+    public CommonResult<Boolean> scanImportDir2ImportNewFile() {
+        taskService.scanImportDir2ImportNewFile();
+        return CommonResult.ok(Boolean.TRUE);
+    }
+
 }

@@ -2,6 +2,12 @@
 
 <hr>
 
+# 前言
+目前**仅供体验**功能，**不推荐使用在生产环境下(正式使用)**
+
+# 文档适用范围
+当前只适用于[DockerHub Ikaros Tags](https://hub.docker.com/r/ikarosrun/ikaros/tags)为`dev`的镜像，旧的tag暂时不适用
+
 # 根目录
 
 目录需要在同一个目录下，不然硬链接创建会失效
@@ -15,6 +21,7 @@
 - `IKAROS_DB_PASSWORD`: ikaros的数据库密码，建议设置复杂点的密码
 - `IKAROS_DOCKER_TAG`: ikaros的dockerhub的tag，可以查看[DockerHub Ikaros Tags](https://hub.docker.com/r/ikarosrun/ikaros/tags)找到您要部署的版本
 - `IKAROS_APP_URL_PREFIX`: ikaros的服务端URL前缀，如`http://localhost:9090` 或者 `http://demo.ikaros.run`
+- `IKAROS_APP_IMPORT_DIR`: ikaros的导入目录，您可以挂载相同文件系统下的已经存在了媒体的目录，如无需这个功能，挂载个空目录即可
 
 使用命令进行设置
 
@@ -23,6 +30,7 @@ export IKAROS_APP_DIR=/opt/ikaros
 export IKAROS_DB_PASSWORD=openpostgresql
 export IKAROS_DOCKER_TAG=v0.1.0-rc.1
 export IKAROS_APP_URL_PREFIX=http://localhost:50000
+export IKAROS_APP_IMPORT_DIR=/share/storage/番剧
 ```
 
 - /opt/ikaros: Ikaros应用目录

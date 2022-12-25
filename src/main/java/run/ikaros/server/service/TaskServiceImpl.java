@@ -3,6 +3,7 @@ package run.ikaros.server.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import run.ikaros.server.constants.AppConst;
 import run.ikaros.server.constants.RegexConst;
 import run.ikaros.server.core.service.AnimeService;
 import run.ikaros.server.core.service.FileService;
@@ -57,7 +58,9 @@ import jakarta.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -789,6 +792,104 @@ public class TaskServiceImpl implements TaskService {
             handleSingleUserSubscribe(userSubscribeEntity);
         }
         LOGGER.info("end exec task downloadSubscribeAnimeResource");
+    }
+
+    @Override
+    public void scanImportDir2ImportNewFile() {
+        String importDirPath = SystemVarUtils.getCurrentImportDirPath();
+        File importDir = new File(importDirPath);
+        if (!importDir.exists()) {
+            importDir.mkdirs();
+            LOGGER.debug("mkdir import dir, path={}", importDirPath);
+        }
+        handleImportDirFile(importDir);
+    }
+
+    private void handleImportDirFile(File file) {
+        if (file.isDirectory()) {
+            // dir
+            for (File f : Objects.requireNonNull(file.listFiles())) {
+                handleImportDirFile(f);
+            }
+        } else {
+            // file
+            if (!file.exists()) {
+                return;
+            }
+
+            // 获取相对于 import 目录的相对路径
+            String absolutePath = file.getAbsolutePath();
+            String dirRelativePath
+                = absolutePath.replace(File.separator + AppConst.IMPORT, "");
+
+            File originalFile = null;
+            try {
+
+                // 查询文件是否已经导入
+                String name = file.getName();
+                List<FileEntity> existsFileEntityList = fileService.findListByName(name);
+                if (!existsFileEntityList.isEmpty()) {
+                    return;
+                }
+
+                // 移动文件到 original 目录
+                // originalFile = new File(SystemVarUtils.getCurrentAppDirPath()
+                //     + File.separator + AppConst.ORIGINAL + dirRelativePath);
+                // if (!originalFile.getParentFile().exists()) {
+                //     originalFile.getParentFile().mkdirs();
+                // }
+                // if (originalFile.exists()) {
+                //     originalFile.delete();
+                // }
+                // Files.move(file.toPath(), originalFile.toPath());
+                // LOGGER.debug("move file from import dir to original dir,"
+                //     + "form:{}, to:{}", file.getAbsolutePath(), originalFile.getAbsolutePath());
+
+                // 创建上传文件目录
+                String uploadFilePath
+                    = FileUtils.buildAppUploadFilePath(FileUtils.parseFilePostfix(name));
+                File uploadFile = new File(uploadFilePath);
+
+                // 创建文件硬链接
+                // Files.createLink(uploadFile.toPath(), originalFile.toPath());
+                // LOGGER.debug("create upload file hard link form original dir, "
+                //         + "link={}, existing={}",
+                //     uploadFile.getAbsolutePath(), originalFile.getAbsolutePath());
+
+                // 硬链接限制太多，暂时不进行支持，直接进行复制
+                Files.copy(file.toPath(), uploadFile.toPath());
+                LOGGER.debug("copy file from: {}, to: {}",
+                    file.getAbsolutePath(), uploadFile.getAbsolutePath());
+
+                FileEntity fileEntity = new FileEntity();
+                fileEntity.setPlace(FilePlace.LOCAL);
+                fileEntity.setDirName(file.getParentFile().getName());
+                fileEntity.setName(name);
+                fileEntity.setType(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(name)));
+                fileEntity.setUrl(
+                    uploadFilePath.replace(SystemVarUtils.getCurrentAppDirPath(), ""));
+                fileEntity.setType(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(name)));
+                fileEntity.setOriginalPath(uploadFilePath);
+                fileService.save(fileEntity);
+                LOGGER.debug("save file entity form original dir for file name={}", name);
+                LOGGER.debug("success import file form path={}", file.getAbsolutePath());
+            } catch (Exception e) {
+                LOGGER.error("exec handleImportDirFile exception", e);
+            } finally {
+                // if (originalFile != null && originalFile.exists()) {
+                //     try {
+                //         Files.move(originalFile.toPath(), file.toPath());
+                //         LOGGER.debug("move file from original dir to import dir,"
+                //             + "form:{}, to:{}",
+                //             originalFile.getAbsolutePath(), file.getAbsolutePath());
+                //     } catch (IOException e) {
+                //         LOGGER.error("move file from origin dir to import dir fail, "
+                //                 + " original dir file path={}, import dir file path={}",
+                //             originalFile.getAbsolutePath(), file.getAbsolutePath());
+                //     }
+                // }
+            }
+        }
     }
 
     private void handleSingleUserSubscribe(SubscribeEntity subscribeEntity) {

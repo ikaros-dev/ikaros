@@ -49,6 +49,8 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
     @Transactional
     boolean appInit(@Nonnull AppInitRequest appInitRequest, boolean isCoerce);
 
+    void updateAllOptionItems();
+
     @Nonnull
     List<OptionDTO> findOptions(@Nullable String category);
 

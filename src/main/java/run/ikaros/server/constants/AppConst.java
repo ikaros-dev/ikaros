@@ -12,10 +12,12 @@ public interface AppConst {
         String PACKAGE_NAME = "run.ikaros.server.openapi";
     }
 
+    String APP = "ikaros";
     String DEFAULT_THEME = "simple";
     String PAGE_POSTFIX = "themes";
     String ORIGINAL = "original";
     String MEDIA = "media";
     String UPLOAD = "upload";
     String DOWNLOADS = "downloads";
+    String IMPORT = "import";
 }

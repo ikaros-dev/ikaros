@@ -22,6 +22,7 @@ public class SystemVarUtils {
 
     static {
         LOGGER.debug("current app dir path: {}", getCurrentAppDirPath());
+        LOGGER.debug("current app import dir path: {}", getCurrentImportDirPath());
         LOGGER.debug("current app user name: {}", getCurrentUserName());
         LOGGER.debug("current app user home: {}", getCurrentUserDirPath());
         LOGGER.debug("current cache tmp dir path: {}", getOsCacheDirPath());
@@ -33,6 +34,11 @@ public class SystemVarUtils {
      */
     public static String getCurrentAppDirPath() {
         return System.getProperty("user.dir");
+    }
+
+    public static String getCurrentImportDirPath() {
+        return SystemVarUtils.getCurrentAppDirPath().replace(File.separatorChar + AppConst.APP, "")
+            + File.separator + AppConst.IMPORT;
     }
 
 
