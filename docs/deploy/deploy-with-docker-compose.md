@@ -21,7 +21,7 @@
 - `IKAROS_DB_PASSWORD`: ikaros的数据库密码，建议设置复杂点的密码
 - `IKAROS_DOCKER_TAG`: ikaros的dockerhub的tag，可以查看[DockerHub Ikaros Tags](https://hub.docker.com/r/ikarosrun/ikaros/tags)找到您要部署的版本
 - `IKAROS_APP_URL_PREFIX`: ikaros的服务端URL前缀，如`http://localhost:9090` 或者 `http://demo.ikaros.run`
-- `IKAROS_APP_IMPORT_DIR`: ikaros的导入目录，您可以挂载相同文件系统下的已经存在了媒体的目录，如无需这个功能，挂载个空目录即可
+- `IKAROS_APP_IMPORT_DIR`: ikaros的导入目录，您可以挂载相同文件系统下的一个空目录，ikaros会半小时扫描一次这个目录，将目录里的文件通过**复制**的方式录入数据库文件管理
 
 使用命令进行设置
 
@@ -30,7 +30,7 @@ export IKAROS_APP_DIR=/opt/ikaros
 export IKAROS_DB_PASSWORD=openpostgresql
 export IKAROS_DOCKER_TAG=v0.1.0-rc.2
 export IKAROS_APP_URL_PREFIX=http://localhost:50000
-export IKAROS_APP_IMPORT_DIR=/share/storage/番剧
+export IKAROS_APP_IMPORT_DIR=/share/storage/ikaros
 ```
 
 - /opt/ikaros: Ikaros应用目录
