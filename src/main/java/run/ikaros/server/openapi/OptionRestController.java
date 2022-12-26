@@ -86,6 +86,7 @@ public class OptionRestController {
     ) {
         OptionResponse optionResponse = new OptionResponse();
         List<OptionDTO> optionDTOList = optionService.saveWithRequest(saveOptionRequest);
+        optionService.publishEventWithRequest(saveOptionRequest);
         Map<String, String> kvMap = new HashMap<>();
         for (OptionDTO optionDTO : optionDTOList) {
             String category = optionDTO.getCategory();
