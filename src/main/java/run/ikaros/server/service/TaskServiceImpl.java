@@ -61,6 +61,7 @@ import java.io.IOException;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -436,22 +437,34 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void updateEpisodeUrlByFileEntity(String torrentName, Long fileId) {
-        Map<String, String> torrentNameBgmTvSubjectIdMap =
-            kvService.findMikanTorrentNameBgmTvSubjectIdMap();
-        String subjectIdStr = null;
-        if (torrentNameBgmTvSubjectIdMap.containsKey(
-            torrentName.replace(RegexConst.FILE_POSTFIX, "")
-        )) {
-            subjectIdStr = torrentNameBgmTvSubjectIdMap.get(torrentName);
-            if (StringUtils.isBlank(subjectIdStr)) {
-                subjectIdStr = getBgmTvSubjectIdByMikanSearchTorrentName(torrentName);
-            }
+        LOGGER.debug("current episode url matching torrentName={}, fileId={}", torrentName, fileId);
+        List<KVEntity> kvEntityList = new ArrayList<>();
+        try {
+            String matchingEnglishStr = RegexUtils.getMatchingEnglishStrWithoutTag(torrentName);
+            kvEntityList.addAll(
+                kvService.findKVEntitiesByTypeAndKeyLike(
+                    KVType.MIKAN_TORRENT_NAME__BGM_TV_SUBJECT_ID,
+                    matchingEnglishStr));
+            String matchingChineseStr =
+                RegexUtils.getMatchingChineseStrWithoutTag(torrentName);
+            kvEntityList.addAll(
+                kvService.findKVEntitiesByTypeAndKeyLike(
+                    KVType.MIKAN_TORRENT_NAME__BGM_TV_SUBJECT_ID,
+                    matchingChineseStr)
+            );
+        } catch (Exception exception) {
+            LOGGER.debug("matching by english or chinese keyword fail, torrent name:{}",
+                torrentName);
         }
 
-        if (StringUtils.isBlank(subjectIdStr)) {
-            LOGGER.warn("skip matching because of subjectIdStr is blank");
+        if (kvEntityList.isEmpty()) {
+            LOGGER.debug("skip matching because of not found subject id from database ");
             return;
         }
+
+        KVEntity kvEntity = kvEntityList.get(0);
+        String subjectIdStr = kvEntity.getValue();
+        LOGGER.debug("find subject id = {}", subjectIdStr);
         Long subjectId = Long.valueOf(subjectIdStr);
         Long animeId;
         AnimeEntity animeEntity = animeService.findByBgmTvId(subjectId);
@@ -505,14 +518,19 @@ public class TaskServiceImpl implements TaskService {
                 .filter(BaseEntity::getStatus)
                 .toList();
             if (!existsFileEntityList.isEmpty()) {
-                // LOGGER.debug("skip, file exists for path: {}", serverFilePath);
+                FileEntity existsFileEntity = existsFileEntityList.get(0);
+                Long existsFileEntityId = existsFileEntity.getId();
+                LOGGER.debug("skip import file, will start matching, "
+                        + "file record exists for id: {}, current handle torrent: {}",
+                    existsFileEntityId, fileName);
+                updateEpisodeUrlByFileEntity(torrentContentFile.getName(), existsFileEntityId);
                 return;
             }
 
             String torrentContentPath = torrentContentFile.getAbsolutePath();
             File serverFile = new File(serverFilePath);
             if (serverFile.exists()) {
-                // LOGGER.debug("skip, file exists for path: {}", serverFilePath);
+                LOGGER.debug("skip, file exists for path: {}", serverFilePath);
                 return;
             }
             try {

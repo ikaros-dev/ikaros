@@ -2,6 +2,9 @@
 更新日志文档，版本顺序从新到旧，最新版本在最前(上)面。
 
 # 0.1.0-rc.3
+## Features
+- 优化Qbittorrent完成后的种子的剧集匹配 #266
+
 ## Bugfix
 - qbittorrent配置无法正常更新 #259
 
