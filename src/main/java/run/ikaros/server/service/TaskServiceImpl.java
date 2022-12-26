@@ -450,8 +450,8 @@ public class TaskServiceImpl implements TaskService {
             LOGGER.debug("matching success by english str: {}, torrent name: {}",
                 matchingEnglishStr, torrentName);
         } catch (Exception exception) {
-            LOGGER.debug("matching fail by english str: {}, torrent name: {}",
-                matchingEnglishStr, torrentName, exception);
+            LOGGER.warn("matching fail by english str: {}, torrent name: {}",
+                matchingEnglishStr, torrentName);
         }
 
         String matchingChineseStr = null;
@@ -465,8 +465,8 @@ public class TaskServiceImpl implements TaskService {
             LOGGER.debug("matching success by chinese str: {}, torrent name: {}",
                 matchingChineseStr, torrentName);
         } catch (Exception exception) {
-            LOGGER.debug("matching fail by chinese str: {}, torrent name: {}",
-                matchingChineseStr, torrentName, exception);
+            LOGGER.warn("matching fail by chinese str: {}, torrent name: {}",
+                matchingChineseStr, torrentName);
         }
 
         if (kvEntityList.isEmpty()) {
