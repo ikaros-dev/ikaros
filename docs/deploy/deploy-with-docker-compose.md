@@ -21,7 +21,7 @@
 - `IKAROS_DB_PASSWORD`: ikaros的数据库密码，建议设置复杂点的密码
 - `IKAROS_DOCKER_TAG`: ikaros的dockerhub的tag，可以查看[DockerHub Ikaros Tags](https://hub.docker.com/r/ikarosrun/ikaros/tags)找到您要部署的版本
 - `IKAROS_APP_URL_PREFIX`: ikaros的服务端URL前缀，如`http://localhost:9090` 或者 `http://demo.ikaros.run`
-- `IKAROS_APP_IMPORT_DIR`: ikaros的导入目录，您可以挂载相同文件系统下的一个空目录，ikaros会半小时扫描一次这个目录，将目录里的文件通过**复制**的方式录入数据库文件管理
+- `IKAROS_APP_IMPORT_DIR`: ikaros的导入目录，您可以挂载相同文件系统下的一个空目录，ikaros会半小时扫描一次这个目录(需要在 后台/系统设置/应用 开启导入目录自动扫描并保存)，将目录里的文件通过**复制**的方式录入数据库文件管理。比较推荐的方式是：在您存储了大量番剧的目录里建一个子目录比如ikaros，挂载这个子目录给ikaros，需要导入的时候把已有的番剧移动至这个目录即可
 
 使用命令进行设置
 
