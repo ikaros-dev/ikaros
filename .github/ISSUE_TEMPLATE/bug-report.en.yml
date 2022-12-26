@@ -28,8 +28,8 @@ body:
         to choose the component that you found the bug.
       multiple: false
       options:
-        - "Backend Server (li-guohao/ikaros)"
-        - "Admin UI (li-guohao/ikaros-admin)"
+        - "Backend Server (ikaros-dev/ikaros)"
+        - "Admin UI (ikaros-dev/ikaros-admin)"
     validations:
       required: true
 
