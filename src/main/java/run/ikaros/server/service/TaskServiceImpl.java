@@ -439,7 +439,9 @@ public class TaskServiceImpl implements TaskService {
         Map<String, String> torrentNameBgmTvSubjectIdMap =
             kvService.findMikanTorrentNameBgmTvSubjectIdMap();
         String subjectIdStr = null;
-        if (torrentNameBgmTvSubjectIdMap.containsKey(torrentName)) {
+        if (torrentNameBgmTvSubjectIdMap.containsKey(
+            torrentName.replace(RegexConst.FILE_POSTFIX, "")
+        )) {
             subjectIdStr = torrentNameBgmTvSubjectIdMap.get(torrentName);
             if (StringUtils.isBlank(subjectIdStr)) {
                 subjectIdStr = getBgmTvSubjectIdByMikanSearchTorrentName(torrentName);
