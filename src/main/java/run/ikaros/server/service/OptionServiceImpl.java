@@ -336,6 +336,51 @@ public class OptionServiceImpl
             String key = entry.getKey();
             String value = entry.getValue();
 
+
+
+            if (value == null) {
+                log.warn("skip null value update for category={}, key={}, value={}",
+                    category, key, value);
+                continue;
+            }
+
+            OptionEntity optionEntity =
+                optionRepository.findByCategoryAndKeyAndStatus(optionCategory, key, true);
+
+            if (optionEntity != null) {
+                optionEntity.setValue(value);
+            } else {
+                optionEntity = new OptionEntity();
+                optionEntity.setCategory(optionCategory);
+                optionEntity.setKey(key);
+                optionEntity.setValue(value);
+            }
+            optionEntity = save(optionEntity);
+
+            OptionDTO optionDTO = new OptionDTO();
+            optionDTO.setCategory(category);
+            optionDTO.setKey(optionEntity.getKey());
+            optionDTO.setValue(optionEntity.getValue());
+            optionDTOList.add(optionDTO);
+        }
+        return optionDTOList;
+    }
+
+    @Override
+    public void publishEventWithRequest(@Nonnull SaveOptionRequest saveOptionRequest) {
+        AssertUtils.notNull(saveOptionRequest, "saveOptionRequest");
+        String category = saveOptionRequest.getCategory();
+        Map<String, String> kvMap = saveOptionRequest.getKvMap();
+        if (!OptionCategory.CATEGORY_SET.contains(category)) {
+            throw new IllegalArgumentException("please input correct category name from: "
+                + JsonUtils.obj2Json(OptionCategory.CATEGORY_SET));
+        }
+        final OptionCategory optionCategory = OptionCategory.valueOf(category);
+
+        for (Map.Entry<String, String> entry : kvMap.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
             // 需要针对特殊配置项预留较为通用的校验钩子
             if (OptionCategory.APP.name().equalsIgnoreCase(category)
                 && OptionApp.ENABLE_AUTO_ANIME_SUB_TASK.name().equalsIgnoreCase(key)) {
@@ -458,26 +503,6 @@ public class OptionServiceImpl
                 }
             }
 
-            if (value == null) {
-                log.warn("skip null value update for category={}, key={}, value={}",
-                    category, key, value);
-                continue;
-            }
-
-            OptionEntity optionEntity =
-                optionRepository.findByCategoryAndKeyAndStatus(optionCategory, key, true);
-
-            if (optionEntity != null) {
-                optionEntity.setValue(value);
-            } else {
-                optionEntity = new OptionEntity();
-                optionEntity.setCategory(optionCategory);
-                optionEntity.setKey(key);
-                optionEntity.setValue(value);
-            }
-            optionEntity = save(optionEntity);
-
-
             if (OptionCategory.QBITTORRENT.equals(optionCategory)) {
                 applicationContext.publishEvent(new QbittorrentOptionUpdateEvent(this));
                 log.debug("publish QbittorrentOptionUpdateEvent");
@@ -494,14 +519,7 @@ public class OptionServiceImpl
                     new OptionNotifyUpdateEvent(this, getOptionNotifyDTO()));
                 // log.debug("publish OptionNotifyUpdateEvent");
             }
-
-            OptionDTO optionDTO = new OptionDTO();
-            optionDTO.setCategory(category);
-            optionDTO.setKey(optionEntity.getKey());
-            optionDTO.setValue(optionEntity.getValue());
-            optionDTOList.add(optionDTO);
         }
-        return optionDTOList;
     }
 
     private void checkNetworkHttpProxyHasConfig() {

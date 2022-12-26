@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -29,6 +30,7 @@ import run.ikaros.server.tripartite.qbittorrent.model.QbTorrentInfo;
 import run.ikaros.server.exceptions.QbittorrentRequestException;
 import run.ikaros.server.utils.AssertUtils;
 import run.ikaros.server.utils.JsonUtils;
+import run.ikaros.server.utils.RestTemplateUtils;
 import run.ikaros.server.utils.StringUtils;
 
 import jakarta.annotation.Nonnull;
@@ -51,7 +53,7 @@ public class QbittorrentClient implements InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(QbittorrentClient.class);
     private String category = DefaultConst.OPTION_QBITTORRENT_CATEGORY;
     private String categorySavePath = DefaultConst.OPTION_QBITTORRENT_CATEGORY_SAVE_PATH;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = RestTemplateUtils.buildRestTemplate();
     private final OptionService optionService;
     /**
      * API前缀，例如：http://192.168.2.229:60101
@@ -86,6 +88,7 @@ public class QbittorrentClient implements InitializingBean {
         return this;
     }
 
+    @Async
     public synchronized void refreshHttpHeadersCookies() {
         OptionQbittorrentDTO optionQbittorrentDTO = optionService.getOptionQbittorrentDTO();
         if (StringUtils.isNotBlank(optionQbittorrentDTO.getUrlPrefix())) {
@@ -141,21 +144,19 @@ public class QbittorrentClient implements InitializingBean {
     }
 
     public String getUrlPrefix() {
-        if (StringUtils.isBlank(urlPrefix)) {
-            OptionEntity optionEntity =
-                optionService.findOptionValueByCategoryAndKey(OptionCategory.QBITTORRENT,
-                    OptionQbittorrent.URL.name());
+        OptionEntity optionEntity =
+            optionService.findOptionValueByCategoryAndKey(OptionCategory.QBITTORRENT,
+                OptionQbittorrent.URL.name());
 
-            if (optionEntity == null || StringUtils.isBlank(optionEntity.getValue())) {
-                throw new QbittorrentRequestException("qbittorrent url prefix config not set");
-            }
+        if (optionEntity == null || StringUtils.isBlank(optionEntity.getValue())) {
+            throw new QbittorrentRequestException("qbittorrent url prefix config not set");
+        }
 
-            urlPrefix = optionEntity.getValue();
+        urlPrefix = optionEntity.getValue();
 
-            // 如果最后一个字符是 / 则去掉
-            if (urlPrefix.charAt(urlPrefix.length() - 1) == '/') {
-                urlPrefix = urlPrefix.substring(0, urlPrefix.length() - 1);
-            }
+        // 如果最后一个字符是 / 则去掉
+        if (urlPrefix.charAt(urlPrefix.length() - 1) == '/') {
+            urlPrefix = urlPrefix.substring(0, urlPrefix.length() - 1);
         }
         return urlPrefix;
     }

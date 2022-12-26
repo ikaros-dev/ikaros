@@ -4,6 +4,8 @@ import java.util.List;
 import jakarta.annotation.Nonnull;
 
 import org.springframework.lang.Nullable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.Transactional;
 import run.ikaros.server.entity.OptionEntity;
 import run.ikaros.server.enums.OptionCategory;
@@ -57,6 +59,9 @@ public interface OptionService extends CrudService<OptionEntity, Long> {
     @Nonnull
     @Transactional
     List<OptionDTO> saveWithRequest(@Nonnull SaveOptionRequest saveOptionRequest);
+
+    @Async
+    void publishEventWithRequest(@Nonnull SaveOptionRequest saveOptionRequest);
 
     @Nonnull
     OptionNetworkDTO getOptionNetworkDTO();
