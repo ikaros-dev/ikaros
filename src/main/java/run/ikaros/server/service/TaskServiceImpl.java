@@ -439,22 +439,34 @@ public class TaskServiceImpl implements TaskService {
     private void updateEpisodeUrlByFileEntity(String torrentName, Long fileId) {
         LOGGER.debug("current episode url matching torrentName={}, fileId={}", torrentName, fileId);
         List<KVEntity> kvEntityList = new ArrayList<>();
+
+        String matchingEnglishStr = null;
         try {
-            String matchingEnglishStr = RegexUtils.getMatchingEnglishStrWithoutTag(torrentName);
+            matchingEnglishStr = RegexUtils.getMatchingEnglishStrWithoutTag(torrentName);
             kvEntityList.addAll(
                 kvService.findKVEntitiesByTypeAndKeyLike(
                     KVType.MIKAN_TORRENT_NAME__BGM_TV_SUBJECT_ID,
                     matchingEnglishStr));
-            String matchingChineseStr =
+            LOGGER.debug("matching success by english str: {}, torrent name: {}",
+                matchingEnglishStr, torrentName);
+        } catch (Exception exception) {
+            LOGGER.debug("matching fail by english str: {}, torrent name: {}",
+                matchingEnglishStr, torrentName, exception);
+        }
+
+        String matchingChineseStr = null;
+        try {
+            matchingChineseStr =
                 RegexUtils.getMatchingChineseStrWithoutTag(torrentName);
             kvEntityList.addAll(
                 kvService.findKVEntitiesByTypeAndKeyLike(
                     KVType.MIKAN_TORRENT_NAME__BGM_TV_SUBJECT_ID,
-                    matchingChineseStr)
-            );
+                    matchingChineseStr));
+            LOGGER.debug("matching success by chinese str: {}, torrent name: {}",
+                matchingChineseStr, torrentName);
         } catch (Exception exception) {
-            LOGGER.debug("matching by english or chinese keyword fail, torrent name:{}",
-                torrentName);
+            LOGGER.debug("matching fail by chinese str: {}, torrent name: {}",
+                matchingChineseStr, torrentName, exception);
         }
 
         if (kvEntityList.isEmpty()) {
