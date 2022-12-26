@@ -74,8 +74,9 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
 # 感谢
 
-- 项目中用到的所有开源项目和参考的所有开源项目
 - Intellij 的开源许可
+- 项目中用到的所有开源项目
+- 参考的所有开源项目, 特别是 开源管理项目[halo](https://github.com/halo-dev/halo) , 在插件、前端拓展等多个方面的方案很有价值值得借鉴, ikaros很多地方都是参考的 [halo](https://github.com/halo-dev/halo), 非常感谢。
 
 # 声明
 Ikaros的作用是为了辅助个人对本地资源进行管理，如有侵权请及时通过微信公众号私信联系我们。
