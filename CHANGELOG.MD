@@ -1,12 +1,15 @@
 # CHANGELOG
 更新日志文档，版本顺序从新到旧，最新版本在最前(上)面。
 
-# 0.1.0-rc.3
+# 0.1.1
 ## Features
 - 优化Qbittorrent完成后的种子的剧集匹配 #266
 
 ## Bugfix
 - qbittorrent配置无法正常更新 #259
+
+## Documentations
+- 更新并正式启用RFC文档仓库: https://github.com/ikaros-dev/rfcs
 
 # 0.1.0-rc.2
 ## Features
