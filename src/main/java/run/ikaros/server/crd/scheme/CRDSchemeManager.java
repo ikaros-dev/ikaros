@@ -1,7 +1,9 @@
-package run.ikaros.server.crd;
+package run.ikaros.server.crd.scheme;
 
 import jakarta.annotation.Nonnull;
 import org.springframework.lang.NonNull;
+import run.ikaros.server.crd.CustomResourceDefinition;
+import run.ikaros.server.crd.GroupVersionKind;
 
 import java.util.List;
 import java.util.Objects;

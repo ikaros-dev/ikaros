@@ -1,4 +1,4 @@
-package run.ikaros.server.crd;
+package run.ikaros.server.crd.store;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotNull;

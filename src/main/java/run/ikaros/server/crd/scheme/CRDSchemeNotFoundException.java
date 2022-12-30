@@ -1,4 +1,4 @@
-package run.ikaros.server.crd;
+package run.ikaros.server.crd.scheme;
 
 /**
  * @author: li-guohao

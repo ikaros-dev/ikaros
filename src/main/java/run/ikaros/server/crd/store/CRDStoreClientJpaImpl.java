@@ -1,4 +1,4 @@
-package run.ikaros.server.crd;
+package run.ikaros.server.crd.store;
 
 import org.springframework.stereotype.Service;
 import run.ikaros.server.core.repository.CustomRepository;
