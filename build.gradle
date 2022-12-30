@@ -65,6 +65,8 @@ dependencies {
     // jsoup
     implementation "org.jsoup:jsoup:$jsoupVersion"
 
+    implementation 'org.pf4j:pf4j:3.8.0'
+
     // lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

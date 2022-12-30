@@ -36,4 +36,23 @@ public class CustomEntity {
      */
     @Version
     private Long version;
+
+    public CustomEntity() {
+    }
+
+    public CustomEntity(String name, byte[] data) {
+        this.name = name;
+        this.data = data;
+    }
+
+    public CustomEntity(String name, Long version) {
+        this.name = name;
+        this.version = version;
+    }
+
+    public CustomEntity(String name, byte[] data, Long version) {
+        this.name = name;
+        this.data = data;
+        this.version = version;
+    }
 }
