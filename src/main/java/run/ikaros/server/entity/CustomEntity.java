@@ -1,5 +1,8 @@
 package run.ikaros.server.entity;
 
+import jakarta.persistence.Basic;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
@@ -12,6 +15,7 @@ import lombok.Data;
  * @author: li-guohao
  */
 @Data
+@Entity
 @Table(name = "custom")
 public class CustomEntity {
     /**
@@ -24,6 +28,7 @@ public class CustomEntity {
      * 数据，使用 Base64 格式编码存储
      */
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     private byte[] data;
 
     /**

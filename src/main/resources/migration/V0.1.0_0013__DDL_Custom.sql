@@ -1,7 +1,7 @@
 create table if not exists custom
 (
     name    varchar(255) not null,
-    data    bytea,
+    data    oid NULL,
     version bigint,
     primary key (name)
 );
