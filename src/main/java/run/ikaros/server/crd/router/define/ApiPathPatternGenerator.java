@@ -9,7 +9,7 @@ public interface ApiPathPatternGenerator {
 
     String pathPattern();
 
-    default String buildExtensionPathPattern(CRDScheme scheme) {
+    default String buildCRDPathPattern(CRDScheme scheme) {
         var gvk = scheme.groupVersionKind();
         StringBuilder pattern = new StringBuilder();
         if (gvk.hasGroup()) {

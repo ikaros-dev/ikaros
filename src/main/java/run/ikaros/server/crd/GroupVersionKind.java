@@ -14,7 +14,7 @@ public record GroupVersionKind(String group, String version, String kind) {
 
     /**
      * @return Group Version Kind has group, if true is core api, false is crd apis
-     * @see ApiPathPatternGenerator#buildExtensionPathPattern(CRDScheme)
+     * @see ApiPathPatternGenerator#buildCRDPathPattern(CRDScheme)
      */
     public boolean hasGroup() {
         return StringUtils.hasText(group);

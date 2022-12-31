@@ -28,6 +28,6 @@ public class CRDCreateHandler implements CreateHandler {
 
     @Override
     public String pathPattern() {
-        return buildExtensionPathPattern(scheme);
+        return buildCRDPathPattern(scheme);
     }
 }
