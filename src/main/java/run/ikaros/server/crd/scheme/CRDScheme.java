@@ -25,8 +25,8 @@ public record CRDScheme(Class<? extends CustomResourceDefinition> type,
         var gvk = type.getAnnotation(GVK.class);
         if (gvk == null) {
             throw new CRDException(
-                String.format("Annotation %s needs to be on Extension %s", GVK.class.getName(),
-                    type.getName()));
+                String.format("Annotation %s needs to use on CustomResourceDefinition %s",
+                    GVK.class.getName(), type.getName()));
         }
         return gvk;
     }

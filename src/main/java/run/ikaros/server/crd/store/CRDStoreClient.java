@@ -1,8 +1,8 @@
 package run.ikaros.server.crd.store;
 
 import jakarta.annotation.Nonnull;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.transaction.annotation.Transactional;
+import run.ikaros.server.crd.CustomResourceDefinition;
 import run.ikaros.server.entity.CustomEntity;
 
 import java.util.List;

@@ -2,6 +2,7 @@ package run.ikaros.server.crd.store;
 
 import org.springframework.stereotype.Service;
 import run.ikaros.server.core.repository.CustomRepository;
+import run.ikaros.server.crd.CustomResourceDefinition;
 import run.ikaros.server.entity.CustomEntity;
 
 import java.util.List;
