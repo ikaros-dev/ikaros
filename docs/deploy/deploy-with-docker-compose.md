@@ -6,7 +6,7 @@
 目前**仅供体验**功能，**不推荐使用在生产环境下(正式使用)**
 
 # 文档适用范围
-当前只适用于[DockerHub Ikaros Tags](https://hub.docker.com/r/ikarosrun/ikaros/tags)为`dev`的镜像，旧的tag暂时不适用
+当前只适用于[DockerHub Ikaros Tags](https://hub.docker.com/r/ikarosrun/ikaros/tags)为`v0.1.0`的镜像，旧的tag暂时不适用
 
 # 根目录
 
@@ -28,7 +28,7 @@
 ```shell
 export IKAROS_APP_DIR=/opt/ikaros
 export IKAROS_DB_PASSWORD=openpostgresql
-export IKAROS_DOCKER_TAG=v0.1.0-rc.2
+export IKAROS_DOCKER_TAG=v0.1.0
 export IKAROS_APP_URL_PREFIX=http://localhost:50000
 export IKAROS_APP_IMPORT_DIR=/share/storage/ikaros
 ```
