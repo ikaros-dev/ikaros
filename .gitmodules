@@ -1,3 +1,0 @@
-[submodule "default-theme"]
-	path = src/main/resources/templates/themes/simple
-	url = https://github.com/ikaros-dev/ikaros-theme-simple.git

@@ -1,1 +1,0 @@
-"use strict";(self["webpackChunkvue_antd_pro"]=self["webpackChunkvue_antd_pro"]||[]).push([[293,936],{45828:function(e,u,a){a.r(u);var d=a(95082),n=a(19861);u["default"]=(0,d.Z)((0,d.Z)({},n["default"]),{},{"dashboard.index.breadcrumb.description":"仪表盘面板"})},19861:function(e,u,a){a.r(u),u["default"]={}}}]);
