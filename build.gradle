@@ -20,12 +20,6 @@ repositories {
     maven { url 'https://repo.spring.io/milestone' }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
 bootJar {
     manifest {
         attributes "Implementation-Title": "Ikaros Application",
@@ -70,18 +64,22 @@ dependencies {
     implementation "org.jsoup:jsoup:$jsoup"
     implementation "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
 
+    // lombok
     compileOnly 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+    // database
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     runtimeOnly 'mysql:mysql-connector-java'
 
+    // unit tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation "org.mockito:mockito-core"
