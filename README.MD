@@ -23,13 +23,10 @@
 
 
 # 功能介绍
-- [Ikaros Introduce Feature Doc](docs/introduce/feature.md)
+WIP
 
 # 部署指南
-
-- [Docker Compose Doc](docs/deploy/deploy-with-docker-compose.md)
-- [docker-compose.yml](docs/deploy/docker-compose.yml)
-- [docker-compose-no-jellyfin.yml](docs/deploy/docker-compose-no-jellyfin.yml)
+WIP
 
 # 官方平台汇总
 
@@ -69,7 +66,6 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
 # 文档归总
 
-- [BUILD.MD](BUILD.MD) : 编译指南
 - [CONTRIBUTING.MD](CONTRIBUTING.MD) : 贡献指南
 - [CHANGELOG.MD](CHANGELOG.MD) : 更新日志
 
