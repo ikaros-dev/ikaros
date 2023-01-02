@@ -1,0 +1,27 @@
+server:
+  port: 50000
+
+spring:
+  output:
+    ansi:
+      enabled: always
+  thymeleaf:
+    cache: false
+
+ikaros:
+  work-dir: ${user.home}/ikaros-dev
+logging:
+  level:
+    run.ikaros.server: DEBUG
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+  show-actuator: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

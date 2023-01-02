@@ -1,0 +1,42 @@
+server:
+  port: 50000
+  compression:
+    enabled: true
+  error:
+    whitelabel:
+        enabled: false
+spring:
+  output:
+    ansi:
+      enabled: detect
+  sql:
+    init:
+      mode: always
+      platform: h2
+  codec:
+    max-in-memory-size: 10MB
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:${user.home}/.ikaros/db/ikaros;AUTO_SERVER=TRUE
+    username: ikaros
+    password: ikaros
+
+
+ikaros:
+  external-url: "http://${server.address:localhost}:${server.port}"
+  work-dir: ${user.home}/.ikaros
+
+
+springdoc:
+  api-docs:
+    enabled: false
+
+logging:
+  file:
+    name: ${ikaros.work-dir}/logs/ikaros.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      total-size-cap: 1GB
+      max-history: 2

@@ -1,19 +1,93 @@
 plugins {
+    id 'org.springframework.boot' version '3.0.1'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id "checkstyle"
     id 'java'
 }
 
-group 'run.ikaros.server'
-version '1.0-SNAPSHOT'
+group "run.ikaros.server"
+sourceCompatibility = JavaVersion.VERSION_17
+
+checkstyle {
+    toolVersion = "9.3"
+    showViolations = false
+    ignoreFailures = false
+}
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
 }
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+bootJar {
+    manifest {
+        attributes "Implementation-Title": "Ikaros Application",
+                "Implementation-Version": archiveVersion
+    }
+}
+
+ext {
+    commonsLang3 = "3.12.0"
+    pf4j = '3.8.0'
+    jsoup = '1.15.3'
+    springDocOpenAPI = "2.0.0"
+}
+
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+    implementation 'org.springframework.security:spring-security-oauth2-resource-server'
+
+    // OpenAPI
+    implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:$springDocOpenAPI"
+    implementation 'org.openapi4j:openapi-schema-validator:1.0.7'
+    implementation "net.bytebuddy:byte-buddy"
+
+    // Apache Lucene
+    implementation 'org.apache.lucene:lucene-core:9.4.1'
+    implementation 'org.apache.lucene:lucene-queryparser:9.4.1'
+    implementation 'org.apache.lucene:lucene-highlighter:9.4.1'
+    implementation 'cn.shenyanchao.ik-analyzer:ik-analyzer:9.0.0'
+
+    implementation "org.apache.commons:commons-lang3:$commonsLang3"
+    implementation "org.pf4j:pf4j:$pf4j"
+    implementation "org.jsoup:jsoup:$jsoup"
+    implementation "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
+
+    compileOnly 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    runtimeOnly 'mysql:mysql-connector-java'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation "org.mockito:mockito-core"
+    testImplementation 'org.assertj:assertj-core'
 }
 
-test {
+tasks.named('test') {
     useJUnitPlatform()
 }
