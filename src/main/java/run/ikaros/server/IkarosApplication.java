@@ -12,8 +12,8 @@ import run.ikaros.server.infra.properties.IkarosProperties;
  */
 @EnableConfigurationProperties({IkarosProperties.class})
 @SpringBootApplication(scanBasePackages = "run.ikaros.server")
-public class Application {
+public class IkarosApplication {
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(IkarosApplication.class, args);
     }
 }

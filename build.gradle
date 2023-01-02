@@ -63,6 +63,7 @@ dependencies {
     implementation "org.pf4j:pf4j:$pf4j"
     implementation "org.jsoup:jsoup:$jsoup"
     implementation "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
+    implementation 'org.flywaydb:flyway-core'
 
     // lombok
     compileOnly 'org.projectlombok:lombok'

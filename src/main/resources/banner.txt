@@ -1,0 +1,10 @@
+${AnsiColor.BLUE}
+  ###
+  #  #    #   ##   #####   ####   ####
+  #  #   #   #  #  #    # #    # #
+  #  ####   #    # #    # #    #  ####
+  #  #  #   ###### #####  #    #      #
+  #  #   #  #    # #   #  #    # #    #
+ ### #    # #    # #    #  ####   ####
+ ${AnsiColor.BRIGHT_YELLOW}
+ Version: ${application.version}${AnsiColor.BLACK}

@@ -1,3 +1,6 @@
+ikaros:
+  external-url: "http://${server.address:localhost}:${server.port}"
+
 server:
   port: 50000
   compression:
@@ -9,23 +12,21 @@ spring:
   output:
     ansi:
       enabled: detect
-  sql:
-    init:
-      mode: always
-      platform: h2
   codec:
     max-in-memory-size: 10MB
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:${user.home}/.ikaros/db/ikaros;AUTO_SERVER=TRUE
-    username: ikaros
-    password: ikaros
-
-
-ikaros:
-  external-url: "http://${server.address:localhost}:${server.port}"
-  work-dir: ${user.home}/.ikaros
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${IKAROS_DB_URL:localhost:55432}/${IKAROS_DB_NAME:ikaros}
+    username: ${IKAROS_DB_USERNAME:ikaros}
+    password: ${IKAROS_DB_PASSWORD:ikaros}
+  flyway:
+    locations: classpath:migration
+    enabled: true
+    encoding: UTF-8
+    sql-migration-separator: __
+    clean-disabled: true
+    table: flyway_schema_history
 
 
 springdoc:
@@ -34,7 +35,7 @@ springdoc:
 
 logging:
   file:
-    name: ${ikaros.work-dir}/logs/ikaros.log
+    name: ./logs/ikaros.log
   logback:
     rollingpolicy:
       max-file-size: 10MB

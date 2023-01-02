@@ -8,8 +8,6 @@ spring:
   thymeleaf:
     cache: false
 
-ikaros:
-  work-dir: ${user.home}/ikaros-dev
 logging:
   level:
     run.ikaros.server: DEBUG
