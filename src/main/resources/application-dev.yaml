@@ -2,9 +2,6 @@ server:
   port: 50000
 
 spring:
-  output:
-    ansi:
-      enabled: always
   thymeleaf:
     cache: false
   jpa:

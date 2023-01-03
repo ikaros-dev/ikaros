@@ -9,9 +9,6 @@ server:
     whitelabel:
         enabled: false
 spring:
-  output:
-    ansi:
-      enabled: detect
   codec:
     max-in-memory-size: 10MB
   datasource:

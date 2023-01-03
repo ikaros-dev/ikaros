@@ -10,9 +10,6 @@ server:
       enabled: false
 
 spring:
-  output:
-    ansi:
-      enabled: always
   thymeleaf:
     cache: false
   sql:
