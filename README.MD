@@ -17,7 +17,7 @@
 <a href="https://hub.docker.com/r/ikarosrun/ikaros"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/liguohaocn/ikaros?style=flat-square" /></a>
 <a href="#"><img alt="Codecov" src="https://codecov.io/github/ikaros-dev/ikaros/branch/master/graph/badge.svg?token=jotejZaRVK" /></a>
 <a href="https://github.com/ikaros-dev/ikaros/commits"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/ikaros-dev/ikaros.svg?style=flat-square" /></a>
-<a href="https://github.com/ikaros-dev/ikaros/actions"><img alt="GitHub Workflow Build Status" src="https://img.shields.io/github/actions/workflow/status/ikaros-dev/ikaros/ikaros_ci_build_dev_container.yml?branch=master&style=flat-square" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/actions"><img alt="GitHub workflow build status" src="https://img.shields.io/github/actions/workflow/status/ikaros-dev/ikaros/CI.yml?branch=master&style=flat-square" /></a>
 <br />
 </p>
 
