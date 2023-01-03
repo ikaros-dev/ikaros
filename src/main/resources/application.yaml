@@ -27,7 +27,10 @@ spring:
     sql-migration-separator: __
     clean-disabled: true
     table: flyway_schema_history
-
+  jpa:
+    show-sql: off
+    hibernate:
+      ddl-auto: validate
 
 springdoc:
   api-docs:

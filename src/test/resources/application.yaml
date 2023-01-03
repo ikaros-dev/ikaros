@@ -27,6 +27,10 @@ spring:
     url: jdbc:h2:mem:ikaros
     username: ikaros
     password: ikaros
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
 
 
 springdoc:
