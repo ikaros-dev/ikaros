@@ -70,7 +70,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
@@ -96,4 +95,13 @@ tasks.named('test') {
 
 jacocoTestReport {
     dependsOn test
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "run/ikaros/server/IkarosApplication.class",
+                    "run/ikaros/server/infra/properties/*",
+                    "run/ikaros/server/store/entity/*"
+            ])
+        }))
+    }
 }

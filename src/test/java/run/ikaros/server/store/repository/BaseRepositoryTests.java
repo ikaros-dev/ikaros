@@ -3,7 +3,6 @@ package run.ikaros.server.store.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +11,11 @@ import run.ikaros.server.test.store.repository.base.BaseTestEntity;
 import run.ikaros.server.test.store.repository.base.BaseTestRepository;
 
 /**
+ * BaseRepository unit test.
+ *
  * @author: li-guohao
+ * @see BaseRepository
  */
-@Slf4j
 @DataJpaTest
 public class BaseRepositoryTests {
 
