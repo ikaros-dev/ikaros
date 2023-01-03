@@ -1,6 +1,7 @@
 plugins {
     id 'org.springframework.boot' version '3.0.1'
     id 'io.spring.dependency-management' version '1.1.0'
+    id 'org.graalvm.buildtools.native' version '0.9.19'
     id 'checkstyle'
     id 'jacoco'
     id 'java'
@@ -14,11 +15,17 @@ checkstyle {
     showViolations = false
     ignoreFailures = false
 }
+checkstyleAot.enabled = false
+checkstyleAotTest.enabled = false
 
 repositories {
     mavenLocal()
     mavenCentral()
     maven { url 'https://repo.spring.io/milestone' }
+}
+
+graalvmNative {
+//    testSupport = false
 }
 
 bootJar {
