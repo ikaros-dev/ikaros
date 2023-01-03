@@ -1,10 +1,12 @@
+# 文档状态
+WIP
 # 编译环境
 
 - JDK: 17
 - Gradle: 7.5
-- SpringBoot: 2.5.12
-- CheckStyle: 8.39
-- Vue: 2
+- SpringBoot: 3.0.1
+- CheckStyle: 9.3
+- Vue: 3
 
 git module 初始化
 
@@ -38,7 +40,7 @@ Mac或者Linux
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
 
-配置插件过程中版本选择`8.39`，还会让填变量值，填入如下值
+配置插件过程中版本选择`9.3`，还会让填变量值，填入如下值
 
 ```text
 checkstyle-suppressions.xml
@@ -62,7 +64,7 @@ git submodule update
 
 ## 代码格式化
 
-`Setting` => `Editor` => `Code Style` => `Java` 
+`Setting` => `Editor` => `Code Style` => `Java`
 
 => `Scheme` 选择 `Project`
 

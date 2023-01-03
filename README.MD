@@ -11,7 +11,6 @@
 <p align="center">ACGMN全拼是：Anime(动画) + Comic(漫画) + Game(游戏) + Music(音乐) + Novel(小说)</p>
 
 <p align="center">
-<a href="https://github.com/ikaros-dev/ikaros/blob/master/LICENSE"><img alt="LICENSE" src="https://img.shields.io/github/license/ikaros-dev/ikaros?style=flat-square" /></a>
 <a href="https://github.com/ikaros-dev/ikaros/releases"><img alt="Github Releases" src="https://img.shields.io/github/v/release/ikaros-dev/ikaros?include_prereleases&style=flat-square" /></a>
 <a href="https://github.com/ikaros-dev/ikaros/stargazers"><img alt="GitHub Stargazers" src="https://img.shields.io/github/stars/ikaros-dev/ikaros.svg?style=flat-square&label=Stars&logo=github" /></a>
 <a href="https://github.com/ikaros-dev/ikaros/issues"><img src="https://img.shields.io/github/issues/ikaros-dev/ikaros?color=blue&style=flat-square"/></a>
@@ -23,13 +22,19 @@
 
 
 # 功能介绍
-- [Ikaros Introduce Feature Doc](docs/introduce/feature.md)
+WIP
 
 # 部署指南
+WIP
 
-- [Docker Compose Doc](docs/deploy/deploy-with-docker-compose.md)
-- [docker-compose.yml](docs/deploy/docker-compose.yml)
-- [docker-compose-no-jellyfin.yml](docs/deploy/docker-compose-no-jellyfin.yml)
+# 许可证
+<a href="https://github.com/ikaros-dev/ikaros/blob/master/LICENSE"><img alt="LICENSE" src="https://img.shields.io/github/license/ikaros-dev/ikaros?style=flat-square" /></a>
+
+Ikaros 使用 AGPL-v3.0 协议开源，请遵守开源协议。
+
+# 声明
+Ikaros的作用是为了辅助**个人**对本地资源进行管理，类似于是C/S架构的文件管理器。
+
 
 # 官方平台汇总
 
@@ -69,7 +74,6 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
 # 文档归总
 
-- [BUILD.MD](BUILD.MD) : 编译指南
 - [CONTRIBUTING.MD](CONTRIBUTING.MD) : 贡献指南
 - [CHANGELOG.MD](CHANGELOG.MD) : 更新日志
 
@@ -77,7 +81,4 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
 - Intellij 的开源许可
 - 项目中用到的所有开源项目
-- 参考的所有开源项目, 特别是 开源管理项目[halo](https://github.com/halo-dev/halo) , 在插件、前端拓展等多个方面的方案很有价值值得借鉴, ikaros很多地方都是参考的 [halo](https://github.com/halo-dev/halo), 非常感谢。
-
-# 声明
-Ikaros的作用是为了辅助个人对本地资源进行管理，如有侵权请及时通过微信公众号私信联系我们。
+- 参考的所有开源项目

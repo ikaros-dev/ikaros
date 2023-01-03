@@ -1,8 +1,2 @@
-pluginManagement {
-	repositories {
-		maven { url 'https://plugins.gradle.org/m2/' }
-		maven { url 'https://repo.spring.io/milestone' }
-		gradlePluginPortal()
-	}
-}
 rootProject.name = 'ikaros'
+

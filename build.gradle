@@ -1,93 +1,107 @@
 plugins {
-    id 'org.springframework.boot' version '3.0.0'
+    id 'org.springframework.boot' version '3.0.1'
     id 'io.spring.dependency-management' version '1.1.0'
+    id 'checkstyle'
+    id 'jacoco'
     id 'java'
-    id "checkstyle"
 }
 
-group = "run.ikaros.server"
-description = "ikaros, an open source acgmn cms application."
+group "run.ikaros.server"
 sourceCompatibility = JavaVersion.VERSION_17
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven { url "https://repo.spring.io/milestone" }
-}
 checkstyle {
-    toolVersion = "8.39"
+    toolVersion = "9.3"
     showViolations = false
     ignoreFailures = false
 }
 
-ext {
-    springDocVersion = "2.0.2"
-    jwtVersion = "0.10.7"
-    jsoupVersion = "1.15.3"
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
 }
 
-jar {
-    enabled = false
+bootJar {
+    manifest {
+        attributes "Implementation-Title": "Ikaros Application",
+                "Implementation-Version": archiveVersion
+    }
 }
+
+ext {
+    commonsLang3 = "3.12.0"
+    pf4j = '3.8.0'
+    jsoup = '1.15.3'
+    springDocOpenAPI = "2.0.0"
+}
+
 
 dependencies {
-    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
-
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.springframework.boot:spring-boot-starter-freemarker'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation "org.springframework.boot:spring-boot-starter-mail"
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion"
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+    implementation 'org.springframework.security:spring-security-oauth2-resource-server'
 
-    implementation "io.jsonwebtoken:jjwt-api:$jwtVersion"
-    runtimeOnly "io.jsonwebtoken:jjwt-impl:$jwtVersion"
-    runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jwtVersion"
+    // OpenAPI
+    implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:$springDocOpenAPI"
+    implementation 'org.openapi4j:openapi-schema-validator:1.0.7'
+    implementation "net.bytebuddy:byte-buddy"
 
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-    implementation 'com.fasterxml.jackson.core:jackson-core'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    // Apache Lucene
+    implementation 'org.apache.lucene:lucene-core:9.4.1'
+    implementation 'org.apache.lucene:lucene-queryparser:9.4.1'
+    implementation 'org.apache.lucene:lucene-highlighter:9.4.1'
+    implementation 'cn.shenyanchao.ik-analyzer:ik-analyzer:9.0.0'
 
-    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
-
-
-    // fix: class file for jakarta.annotation.meta.When not found
-    implementation 'com.google.code.findbugs:jsr305:3.0.2'
-
-    // retry
-    implementation 'org.springframework.retry:spring-retry'
-    implementation 'org.springframework:spring-aspects'
-
-    // jsoup
-    implementation "org.jsoup:jsoup:$jsoupVersion"
+    implementation "org.apache.commons:commons-lang3:$commonsLang3"
+    implementation "org.pf4j:pf4j:$pf4j"
+    implementation "org.jsoup:jsoup:$jsoup"
+    implementation "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
+    implementation 'org.flywaydb:flyway-core'
 
     // lombok
     compileOnly 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation 'org.flywaydb:flyway-core'
-    runtimeOnly 'com.h2database:h2'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // database
     runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    runtimeOnly 'mysql:mysql-connector-java'
 
+    // unit tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation "org.mockito:mockito-core"
     testImplementation 'org.assertj:assertj-core'
-    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-    maxHeapSize="1G"
+    finalizedBy jacocoTestReport
 }
 
-gradle.projectsEvaluated {
-    tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+jacocoTestReport {
+    dependsOn test
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "run/ikaros/server/IkarosApplication.class",
+                    "run/ikaros/server/infra/properties/*",
+                    "run/ikaros/server/store/entity/*"
+            ])
+        }))
     }
 }
