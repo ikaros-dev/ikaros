@@ -71,7 +71,6 @@ dependencies {
     implementation "org.pf4j:pf4j:$pf4j"
     implementation "org.jsoup:jsoup:$jsoup"
     implementation "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
-    implementation 'org.flywaydb:flyway-core'
 
     // lombok
     compileOnly 'org.projectlombok:lombok'
@@ -84,9 +83,7 @@ dependencies {
 
     // database
     runtimeOnly 'org.postgresql:postgresql'
-    runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
-    runtimeOnly 'mysql:mysql-connector-java'
+    testRuntimeOnly 'com.h2database:h2'
 
     // unit tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

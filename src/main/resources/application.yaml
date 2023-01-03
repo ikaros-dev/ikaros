@@ -20,17 +20,14 @@ spring:
     url: jdbc:postgresql://${IKAROS_DB_URL:localhost:55432}/${IKAROS_DB_NAME:ikaros}
     username: ${IKAROS_DB_USERNAME:ikaros}
     password: ${IKAROS_DB_PASSWORD:ikaros}
-  flyway:
-    locations: classpath:migration
-    enabled: true
-    encoding: UTF-8
-    sql-migration-separator: __
-    clean-disabled: true
-    table: flyway_schema_history
   jpa:
     show-sql: off
     hibernate:
       ddl-auto: validate
+  sql:
+    init:
+      mode: always
+      platform: postgresql
 
 springdoc:
   api-docs:
