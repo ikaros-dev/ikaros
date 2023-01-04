@@ -18,12 +18,8 @@ spring:
       platform: h2
   codec:
     max-in-memory-size: 10MB
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:ikaros
-    username: ikaros
-    password: ikaros
+  r2dbc:
+    url: r2dbc:h2:mem:ikaros
   jpa:
     hibernate:
       ddl-auto: create-drop

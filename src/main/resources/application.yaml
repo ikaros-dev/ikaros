@@ -11,10 +11,8 @@ server:
 spring:
   codec:
     max-in-memory-size: 10MB
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${IKAROS_DB_URL:localhost:55432}/${IKAROS_DB_NAME:ikaros}
+  r2dbc:
+    url: r2dbc:pool:postgresql://${IKAROS_DB_URL:localhost:55432}/${IKAROS_DB_NAME:ikaros}
     username: ${IKAROS_DB_USERNAME:ikaros}
     password: ${IKAROS_DB_PASSWORD:ikaros}
   jpa:

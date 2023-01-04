@@ -2,8 +2,8 @@ package run.ikaros.server.file;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.function.RouterFunction;
-import org.springframework.web.servlet.function.ServerResponse;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import run.ikaros.server.endpoint.CustomEndpoint;
 
 @Slf4j

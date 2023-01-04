@@ -48,8 +48,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
 
     // Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -83,11 +84,14 @@ dependencies {
 
     // database
     runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'org.postgresql:r2dbc-postgresql'
+    testRuntimeOnly 'io.r2dbc:r2dbc-h2'
     testRuntimeOnly 'com.h2database:h2'
 
     // unit tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'io.projectreactor:reactor-test'
     testImplementation "org.mockito:mockito-core"
     testImplementation 'org.assertj:assertj-core'
 }
