@@ -1,17 +1,16 @@
-package run.ikaros.server.file;
+package run.ikaros.server.core.file;
 
 import java.util.Map;
 import org.pf4j.ExtensionPoint;
 import org.springframework.http.codec.multipart.FilePart;
-import run.ikaros.server.store.entity.FileEntity;
 
 public interface FileHandler extends ExtensionPoint {
-    FileEntity upload(UploadContext context);
+    File upload(UploadContext context);
 
-    FileEntity delete(FileEntity entity);
+    File delete(File file);
 
     interface UploadContext {
-        FilePart file();
+        FilePart filepart();
 
         Map<String, Object> metadata();
     }

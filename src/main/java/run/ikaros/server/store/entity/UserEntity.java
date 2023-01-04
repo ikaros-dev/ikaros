@@ -6,8 +6,11 @@ import static jakarta.persistence.FetchType.LAZY;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
@@ -17,6 +20,9 @@ import org.springframework.data.relational.core.mapping.Table;
  */
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "ikuser")
 @EqualsAndHashCode(callSuper = true)
 public class UserEntity extends BaseEntity {
@@ -46,10 +52,9 @@ public class UserEntity extends BaseEntity {
 
     private String email;
 
+    private Boolean enable;
 
-    private Boolean enable = true;
-
-    private Boolean nonLocked = true;
+    private Boolean nonLocked;
 
     private String avatar;
     private String lastLoginIp;
