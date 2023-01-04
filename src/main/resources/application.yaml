@@ -12,9 +12,9 @@ spring:
   codec:
     max-in-memory-size: 10MB
   r2dbc:
-    url: r2dbc:pool:postgresql://${IKAROS_DB_URL:localhost:55432}/${IKAROS_DB_NAME:ikaros}
-    username: ${IKAROS_DB_USERNAME:ikaros}
-    password: ${IKAROS_DB_PASSWORD:ikaros}
+    url: r2dbc:pool:postgresql://localhost:5432/ikaros
+    username: ikaros
+    password: openpostgresql
   jpa:
     show-sql: off
     hibernate:
