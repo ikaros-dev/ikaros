@@ -7,7 +7,7 @@ package run.ikaros.server.store.enums;
  */
 public enum MetadataType {
     OPTION,
-    RESOURCE,
+    SUBJECT,
     BOX,
     FILE,
     FOLDER,

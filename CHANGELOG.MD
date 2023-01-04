@@ -7,6 +7,7 @@
 
 ## 依赖
 - 引入jacoco统计测试覆盖率
+- 从servlet切换到webflux
 
 ## 自动化编译
 - 引入codecev自动进行测试覆盖率计算
