@@ -148,17 +148,17 @@ create table if not exists option
     CONSTRAINT option_pkey PRIMARY KEY (id)
 );
 
--- resource
-create sequence if not exists resource_seq
+-- subject
+create sequence if not exists subject_seq
     increment 1
     start 1
     minvalue 1
     cache 1
     no cycle;
 
-create table if not exists resource
+create table if not exists subject
 (
-    id int8 NOT NULL default nextval('resource_seq'),
+    id int8 NOT NULL default nextval('subject_seq'),
     create_time timestamp(6) NULL,
     create_uid int8 NULL,
     status bool NULL,
@@ -168,5 +168,5 @@ create table if not exists resource
     box_id int8 NULL,
     fid int8 NULL,
     "type" varchar(255) NULL,
-    CONSTRAINT resource_pkey PRIMARY KEY (id)
+    CONSTRAINT subject_pkey PRIMARY KEY (id)
 );
