@@ -4,8 +4,6 @@ server:
 spring:
   thymeleaf:
     cache: false
-  jpa:
-    show-sql: true
 
 logging:
   level:

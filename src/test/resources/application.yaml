@@ -20,10 +20,6 @@ spring:
     max-in-memory-size: 10MB
   r2dbc:
     url: r2dbc:h2:mem:///ikaros?MODE=MySQL&DB_CLOSE_ON_EXIT=FALSE
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
 
 springdoc:
   api-docs:

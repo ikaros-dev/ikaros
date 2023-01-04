@@ -10,5 +10,5 @@ public interface UserService {
 
     Mono<User> getUser(String username);
 
-    Mono<User> updatePassword(String username, String newPassword);
+    Mono<User> updatePassword(String username, String rawPassword);
 }

@@ -1,9 +1,9 @@
 package run.ikaros.server.store.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
@@ -12,18 +12,17 @@ import org.springframework.data.relational.core.mapping.Table;
  * @author liguohao
  */
 @Data
-@Entity
 @Table(name = "folder")
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class FolderEntity extends BaseEntity {
 
-    @Column(name = "parent_id", nullable = false)
+    @Column("parent_id")
     private Long parentId;
 
     /**
      * folder name.
      */
-    @Column(nullable = false)
     private String name;
 
 }

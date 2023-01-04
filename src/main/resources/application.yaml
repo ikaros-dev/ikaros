@@ -15,10 +15,6 @@ spring:
     url: r2dbc:pool:postgresql://localhost:5432/ikaros
     username: ikaros
     password: openpostgresql
-  jpa:
-    show-sql: off
-    hibernate:
-      ddl-auto: validate
   sql:
     init:
       mode: always

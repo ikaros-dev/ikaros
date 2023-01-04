@@ -1,13 +1,10 @@
 package run.ikaros.server.store.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import run.ikaros.server.store.enums.SubjectType;
 
 /**
  * a subject contain a file(or folder) and metadata.
@@ -15,16 +12,13 @@ import run.ikaros.server.store.enums.SubjectType;
  * @author liguohao
  */
 @Data
-@Entity
 @Table(name = "subject")
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class SubjectEntity extends BaseEntity {
 
-    @Enumerated(EnumType.STRING)
-    private SubjectType type;
-
+    private String type;
     private Long fid;
-
-    @Column(name = "box_id")
+    @Column("box_id")
     private Long boxId;
 }

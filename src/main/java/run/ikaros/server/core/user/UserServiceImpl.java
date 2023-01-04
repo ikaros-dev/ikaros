@@ -1,8 +1,10 @@
 package run.ikaros.server.core.user;
 
 import org.springframework.data.domain.Example;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.UserRepository;
@@ -10,17 +12,23 @@ import run.ikaros.server.store.repository.UserRepository;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository repository) {
+    public UserServiceImpl(UserRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Mono<User> save(User user) {
         Assert.notNull(user, "'user' must not be null");
-        final UserEntity userEntity = user.entity();
-        Assert.notNull(userEntity, "'userEntity' must not be null");
-        return repository.save(userEntity)
+        return Mono.just(user)
+            .map(User::entity)
+            .switchIfEmpty(
+                Mono.error(() -> new IllegalArgumentException("'entity' must not be null")))
+            .map(userEntity -> userEntity.setPassword(
+                passwordEncoder.encode(userEntity.getPassword())))
+            .flatMap(repository::save)
             .map(User::new);
     }
 
@@ -43,11 +51,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<User> updatePassword(String username, String newPassword) {
+    public Mono<User> updatePassword(String username, String rawPassword) {
         Assert.hasText(username, "'username' must has text");
-        Assert.hasText(newPassword, "'newPassword' must has text");
-        return repository
-            .save(getUser(username).block().entity())
+        Assert.hasText(rawPassword, "'rawPassword' must has text");
+        return getUser(username)
+            .map(User::entity)
+            .filter(userEntity -> !StringUtils.hasText(userEntity.getPassword())
+                || !passwordEncoder.matches(rawPassword, userEntity.getPassword()))
+            .map(userEntity -> userEntity.setPassword(passwordEncoder.encode(rawPassword)))
+            .flatMap(repository::save)
             .map(User::new);
     }
 }

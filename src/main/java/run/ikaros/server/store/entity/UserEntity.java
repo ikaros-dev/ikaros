@@ -1,16 +1,13 @@
 package run.ikaros.server.store.entity;
 
 
-import static jakarta.persistence.FetchType.LAZY;
-
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
@@ -19,11 +16,11 @@ import org.springframework.data.relational.core.mapping.Table;
  * @author liguohao
  */
 @Data
-@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "ikuser")
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class UserEntity extends BaseEntity {
 
@@ -42,8 +39,6 @@ public class UserEntity extends BaseEntity {
      */
     private String nickname;
 
-    @Basic(fetch = LAZY)
-    @Column(length = 50000)
     private String introduce;
 
     private String telephone;
@@ -58,6 +53,6 @@ public class UserEntity extends BaseEntity {
 
     private String avatar;
     private String lastLoginIp;
-    private Long lastLoginTime;
+    private LocalDateTime lastLoginTime;
 
 }

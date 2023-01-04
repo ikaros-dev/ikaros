@@ -1,9 +1,8 @@
 package run.ikaros.server.store.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
@@ -12,10 +11,9 @@ import org.springframework.data.relational.core.mapping.Table;
  * @author: li-guohao
  */
 @Data
-@Entity
 @Table(name = "option")
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class OptionEntity extends BaseEntity {
-    @Column(nullable = false)
     private String name;
 }

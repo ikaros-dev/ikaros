@@ -1,16 +1,10 @@
 package run.ikaros.server.store.entity;
 
-import static jakarta.persistence.FetchType.LAZY;
-
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import run.ikaros.server.store.enums.MetadataType;
 
 /**
  * option unit entity, key-value type, only save diminutive option config item.
@@ -18,17 +12,15 @@ import run.ikaros.server.store.enums.MetadataType;
  * @author: li-guohao
  */
 @Data
-@Entity
 @Table(name = "metadata")
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class MetadataEntity extends BaseEntity {
-    @Column(name = "host_id", nullable = false)
+    @Column("host_id")
     private Long hostId;
-    @Column(name = "meta_key", nullable = false)
+    @Column("meta_key")
     private String key;
-    @Basic(fetch = LAZY)
-    @Column(name = "meta_value", length = 50000)
+    @Column("meta_value")
     private String value;
-    @Enumerated(EnumType.STRING)
-    private MetadataType type;
+    private String type;
 }

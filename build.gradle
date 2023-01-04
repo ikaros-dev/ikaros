@@ -38,7 +38,7 @@ ext {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+//    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
@@ -105,7 +105,8 @@ jacocoTestReport {
             fileTree(dir: it, exclude: [
                     "run/ikaros/server/IkarosApplication.class",
                     "run/ikaros/server/infra/properties/*",
-                    "run/ikaros/server/store/entity/*"
+                    "run/ikaros/server/store/entity/*",
+                    "run/ikaros/server/store/enums/*"
             ])
         }))
     }

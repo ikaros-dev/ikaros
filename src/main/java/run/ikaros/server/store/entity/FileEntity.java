@@ -1,14 +1,11 @@
 package run.ikaros.server.store.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import run.ikaros.server.store.enums.FilePlace;
-import run.ikaros.server.store.enums.FileType;
 
 /**
  * file entity.
@@ -16,42 +13,37 @@ import run.ikaros.server.store.enums.FileType;
  * @author liguohao
  */
 @Data
-@Entity
 @Table(name = "file")
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class FileEntity extends BaseEntity {
 
-    @Column(name = "folder_id", nullable = false)
+    @Column("folder_id")
     private Long folderId;
 
-    @Column(nullable = false)
     private String url;
 
     /**
      * filename with postfix.
      */
-    @Column(nullable = false)
     private String name;
 
-
-    @Enumerated(EnumType.STRING)
-    private FileType type = FileType.UNKNOWN;
+    private String type;
     private String md5;
     private Long size = -1L;
 
-    @Enumerated(EnumType.STRING)
     private FilePlace place = FilePlace.LOCAL;
 
     /**
      * original path in file system.
      */
-    @Column(name = "original_path")
+    @Column("original_path")
     private String originalPath;
 
     /**
      * file original name before upload.
      */
-    @Column(name = "original_name")
+    @Column("original_name")
     private String originalName;
 
 }
