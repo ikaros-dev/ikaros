@@ -7,4 +7,14 @@ package run.ikaros.server.core.constant;
  */
 public interface SecurityConst {
     String DEFAULT_ROLE = "MASTER";
+
+    interface AnonymousUser {
+        String PRINCIPAL = "anonymousUser";
+
+        String Role = "anonymous";
+
+        static boolean isAnonymousUser(String principal) {
+            return PRINCIPAL.equals(principal);
+        }
+    }
 }

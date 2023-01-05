@@ -8,4 +8,5 @@ package run.ikaros.server.core.constant;
 public interface AppConst {
     String LOGIN_SUCCESS_LOCATION = "/console/";
     String LOGIN_FAILURE_LOCATION = "/console?error#/login";
+    String LOGOUT_SUCCESS_LOCATION = "/console/?logout";
 }
