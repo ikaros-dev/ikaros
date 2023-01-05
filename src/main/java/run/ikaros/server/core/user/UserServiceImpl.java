@@ -1,5 +1,7 @@
 package run.ikaros.server.core.user;
 
+import static run.ikaros.server.core.user.UserService.addEncodingIdPrefixIfNotExists;
+
 import org.springframework.data.domain.Example;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -56,7 +58,8 @@ public class UserServiceImpl implements UserService {
         return getUser(username)
             .map(User::entity)
             .filter(userEntity -> !StringUtils.hasText(userEntity.getPassword())
-                || !passwordEncoder.matches(rawPassword, userEntity.getPassword()))
+                || !passwordEncoder.matches(rawPassword,
+                addEncodingIdPrefixIfNotExists(userEntity.getPassword())))
             .map(userEntity -> userEntity.setPassword(passwordEncoder.encode(rawPassword)))
             .flatMap(repository::save)
             .map(User::new);

@@ -52,8 +52,8 @@ class UserServiceTest {
     @Test
     void updatePassword() {
         final String username = "test1";
-        final String oldPassword = "{bcrypt}old password";
-        final String newPassword = "{bcrypt}new password";
+        final String oldPassword = "old password";
+        final String newPassword = "new password";
         // create user
         Mono.just(UserEntity.builder()
                 .username(username)
@@ -65,12 +65,14 @@ class UserServiceTest {
 
         Mono<String> encodedPasswordMono = userService.getUser(username)
             .map(User::entity)
-            .flatMap(userEntity -> Mono.just(userEntity.getPassword()));
+            .flatMap(userEntity -> Mono.just(userEntity.getPassword()))
+            .map(UserService::addEncodingIdPrefixIfNotExists);
 
         StepVerifier.create(
                 encodedPasswordMono
                     .flatMap(encodedPassword -> Mono.just(
-                        passwordEncoder.matches(oldPassword, encodedPassword)))
+                        passwordEncoder.matches(oldPassword,
+                            encodedPassword)))
             ).expectNext(Boolean.TRUE)
             .verifyComplete();
 
