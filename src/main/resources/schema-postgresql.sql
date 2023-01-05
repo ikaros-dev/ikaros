@@ -37,7 +37,6 @@ create table if not exists file
     update_time timestamp(6) NULL,
     update_uid int8 NULL,
     "version" int8 NULL,
-    folder_id int8 NOT NULL,
     md5 varchar(255) NULL,
     name varchar(255) NOT NULL,
     original_name varchar(255) NULL,
