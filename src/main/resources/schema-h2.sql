@@ -106,3 +106,22 @@ create table if not exists subject
     type varchar(255) NULL,
     CONSTRAINT subject_pkey PRIMARY KEY (id)
 );
+
+-- custom
+create table if not exists custom
+(
+    id int8 NOT NULL auto_increment,
+    create_time timestamp(6) NULL,
+    create_uid int8 NULL,
+    status bool NULL,
+    update_time timestamp(6) NULL,
+    update_uid int8 NULL,
+    version int8 NULL,
+    api_version varchar(255) NOT NULL ,
+    kind varchar(255) NOT NULL ,
+    name varchar(255) NOT NULL UNIQUE ,
+    generateName varchar(255) NULL ,
+    labels blob,
+    annotations blob,
+    CONSTRAINT custom_pkey PRIMARY KEY (id)
+);
