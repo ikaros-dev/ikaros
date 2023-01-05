@@ -44,6 +44,11 @@ class UserServiceTest {
                     .flatMap(userEntity -> Mono.just(userEntity.getUsername())))
             .expectNext(test1)
             .verifyComplete();
+
+        // verify throw UserNotFoundException when get not exists user
+        StepVerifier.create(userService.getUser("not-exists-user"))
+            .expectError(UserNotFoundException.class)
+            .verify();
     }
 
     @Test
@@ -60,22 +65,33 @@ class UserServiceTest {
             .flatMap(userService::save)
             .block();
 
-        String password = userService.getUser(username)
+        Mono<String> encodedPasswordMono = userService.getUser(username)
             .map(User::entity)
-            .flatMap(userEntity -> Mono.just(userEntity.getPassword()))
-            .block();
-        assertThat(passwordEncoder.matches(oldPassword, password)).isTrue();
+            .flatMap(userEntity -> Mono.just(userEntity.getPassword()));
 
+        StepVerifier.create(
+                encodedPasswordMono
+                    .flatMap(encodedPassword -> Mono.just(
+                        passwordEncoder.matches(oldPassword, encodedPassword)))
+            ).expectNext(Boolean.TRUE)
+            .verifyComplete();
 
         // update user password
         userService.updatePassword(username, newPassword).block();
 
-        // verify password
-        password = userService.getUser(username)
-            .map(User::entity)
-            .flatMap(userEntity -> Mono.just(userEntity.getPassword()))
-            .block();
-        assertThat(passwordEncoder.matches(oldPassword, password)).isFalse();
-        assertThat(passwordEncoder.matches(newPassword, password)).isTrue();
+        StepVerifier.create(
+                encodedPasswordMono
+                    .flatMap(encodedPassword -> Mono.just(
+                        passwordEncoder.matches(oldPassword, encodedPassword)
+                    ))
+            ).expectNext(Boolean.FALSE)
+            .verifyComplete();
+        StepVerifier.create(
+                encodedPasswordMono
+                    .flatMap(encodedPassword -> Mono.just(
+                        passwordEncoder.matches(newPassword, encodedPassword)
+                    ))
+            ).expectNext(Boolean.TRUE)
+            .verifyComplete();
     }
 }
