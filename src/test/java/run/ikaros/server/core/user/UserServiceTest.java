@@ -1,7 +1,5 @@
 package run.ikaros.server.core.user;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +88,27 @@ class UserServiceTest {
                 encodedPasswordMono
                     .flatMap(encodedPassword -> Mono.just(
                         passwordEncoder.matches(newPassword, encodedPassword)
+                    ))
+            ).expectNext(Boolean.TRUE)
+            .verifyComplete();
+
+        // update by same password
+        userService.updatePassword(username, newPassword).block();
+        StepVerifier.create(
+                encodedPasswordMono
+                    .flatMap(encodedPassword -> Mono.just(
+                        passwordEncoder.matches(newPassword, encodedPassword)
+                    ))
+            ).expectNext(Boolean.TRUE)
+            .verifyComplete();
+
+        // update by not same password
+        final String newPassword2 = "newPassword2";
+        userService.updatePassword(username, newPassword2).block();
+        StepVerifier.create(
+                encodedPasswordMono
+                    .flatMap(encodedPassword -> Mono.just(
+                        passwordEncoder.matches(newPassword2, encodedPassword)
                     ))
             ).expectNext(Boolean.TRUE)
             .verifyComplete();

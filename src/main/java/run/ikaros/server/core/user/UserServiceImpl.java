@@ -22,10 +22,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<User> save(User user) {
         Assert.notNull(user, "'user' must not be null");
+        Assert.notNull(user.entity(), "'user entity' must not be null");
         return Mono.just(user)
             .map(User::entity)
-            .switchIfEmpty(
-                Mono.error(() -> new IllegalArgumentException("'entity' must not be null")))
             .map(userEntity -> userEntity.setPassword(
                 passwordEncoder.encode(userEntity.getPassword())))
             .flatMap(repository::save)
