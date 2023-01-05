@@ -28,6 +28,8 @@ WIP
 # 部署指南
 WIP
 
+旧版本仅供体验功能，**不推荐正式使用**，部署指导文档: [docker compose 方式部署指导手册(v0.1.0)](https://github.com/ikaros-dev/ikaros/blob/v0.1.0/docs/deploy/deploy-with-docker-compose.md)
+
 # 许可证
 <a href="https://github.com/ikaros-dev/ikaros/blob/master/LICENSE"><img alt="LICENSE" src="https://img.shields.io/github/license/ikaros-dev/ikaros?style=flat-square" /></a>
 
