@@ -35,21 +35,6 @@ create table if not exists file
     CONSTRAINT file_pkey PRIMARY KEY (id)
 );
 
--- folder
-create table if not exists folder
-(
-    id int8 NOT NULL auto_increment,
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    version int8 NULL,
-    name varchar(255) NOT NULL,
-    parent_id int8 NOT NULL,
-    CONSTRAINT folder_pkey PRIMARY KEY (id)
-);
-
 -- ikuser
 create table if not exists ikuser
 (
