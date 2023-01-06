@@ -17,7 +17,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @EqualsAndHashCode(callSuper = true)
 public class SubjectEntity extends BaseEntity {
 
-    private String type;
+    private Long type;
     private Long fid;
     @Column("box_id")
     private Long boxId;
