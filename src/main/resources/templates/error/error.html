@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title th:text="${status} + ' | ' + ${#strings.defaultString(error, 'Internal server error')}"></title>
+</head>
+<body>
+
+<div align="center">
+    <h1><span th:text="${status}"/> <span th:text="${error}"/></h1>
+    <table>
+        <tr>
+            <td>message</td>
+            <td><span th:text="${message}"/></td>
+        </tr>
+        <tr>
+            <td>timestamp</td>
+            <td><span th:text="${timestamp}"/></td>
+        </tr>
+        <tr>
+            <td>path</td>
+            <td><span th:text="${path}"/></td>
+        </tr>
+        <tr>
+            <td>requestId</td>
+            <td><span th:text="${requestId}"/></td>
+        </tr>
+        <tr>
+            <td>status</td>
+            <td><span th:text="${status}"/></td>
+        </tr>
+        <tr>
+            <td>error</td>
+            <td><span th:text="${error}"/></td>
+        </tr>
+        <tr th:if="${not #strings.isEmpty(exception)}">
+            <td>exception</td>
+            <td><span th:text="${exception}"/></td>
+        </tr>
+        <tr th:if="${not #strings.isEmpty(errors)}">
+            <td>errors</td>
+            <td><span th:text="${errors}"/></td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

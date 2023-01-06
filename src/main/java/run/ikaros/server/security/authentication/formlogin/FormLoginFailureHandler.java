@@ -32,7 +32,7 @@ public class FormLoginFailureHandler implements ServerAuthenticationFailureHandl
                     return ServerResponse.status(HttpStatus.UNAUTHORIZED)
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(Map.of(
-                            "error", exception.getLocalizedMessage()
+                            "templates/error", exception.getLocalizedMessage()
                         ))
                         .flatMap(serverResponse -> serverResponse.writeTo(
                             webFilterExchange.getExchange(), context));

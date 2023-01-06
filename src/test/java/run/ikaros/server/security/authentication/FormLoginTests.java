@@ -4,17 +4,17 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.core.constant.SecurityConst;
 
@@ -23,7 +23,6 @@ import run.ikaros.server.core.constant.SecurityConst;
  *
  * @author: li-guohao
  */
-@Disabled
 @SpringBootTest
 @AutoConfigureWebTestClient
 public class FormLoginTests {
@@ -35,7 +34,7 @@ public class FormLoginTests {
 
     @BeforeEach
     void setUp(@Autowired PasswordEncoder passwordEncoder) {
-        when(userDetailsService.findByUsername(Mockito.anyString()))
+        when(userDetailsService.findByUsername("user"))
             .thenReturn(Mono.just(
                 User.builder()
                     .username("user")
@@ -50,11 +49,39 @@ public class FormLoginTests {
 
     @Test
     void login() {
-        webClient.post()
+        webClient
+            .post()
             .uri("/login")
-            .bodyValue("username=user&password=password")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .body(BodyInserters.fromFormData("username", "user")
+                .with("password", "password"))
             .exchange()
             .expectStatus()
-            .is2xxSuccessful();
+            .is3xxRedirection();
+
+        // MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        // formData.add("username", "user");
+        // formData.add("password", "password");
+        // webClient
+        //     .post()
+        //     .uri("/login")
+        //     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+        //     .body(BodyInserters.fromFormData(formData))
+        //     .exchange()
+        //     .expectStatus()
+        //     .is3xxRedirection();
+    }
+
+    @Test
+    void loginWithUserNotExists() {
+        webClient
+            .post()
+            .uri("/login")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .body(BodyInserters.fromFormData("username", "not-exists-user")
+                .with("password", "password"))
+            .exchange()
+            .expectStatus()
+            .is5xxServerError();
     }
 }

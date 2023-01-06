@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import run.ikaros.server.infra.exception.NotFoundException;
 import run.ikaros.server.store.entity.UserEntity;
 
 @SpringBootTest
@@ -45,7 +46,7 @@ class UserServiceTest {
 
         // verify throw UserNotFoundException when get not exists user
         StepVerifier.create(userService.getUser("not-exists-user"))
-            .expectError(UserNotFoundException.class)
+            .expectError(NotFoundException.class)
             .verify();
     }
 

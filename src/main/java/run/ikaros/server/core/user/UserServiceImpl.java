@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+import run.ikaros.server.infra.exception.NotFoundException;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.UserRepository;
 
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
                 UserEntity.builder()
                     .username(username)
                     .build()))
-            .switchIfEmpty(Mono.error(() -> new UserNotFoundException(
+            .switchIfEmpty(Mono.error(() -> new NotFoundException(
                 String.format("user not found for username=%s", username))))
             .map(User::new);
     }
