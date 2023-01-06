@@ -101,8 +101,7 @@ create table if not exists subject
     update_uid int8 NULL,
     version int8 NULL,
     box_id int8 NULL,
-    fid int8 NULL,
-    type int8 NOT NULL,
+    file_id int8 NULL,
     CONSTRAINT subject_pkey PRIMARY KEY (id)
 );
 
