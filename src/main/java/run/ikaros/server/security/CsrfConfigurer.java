@@ -9,7 +9,6 @@ import org.springframework.security.web.server.csrf.ServerCsrfTokenRequestAttrib
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.stereotype.Component;
-import run.ikaros.server.security.authentication.SecurityConfigurer;
 
 @Component
 public class CsrfConfigurer implements SecurityConfigurer {

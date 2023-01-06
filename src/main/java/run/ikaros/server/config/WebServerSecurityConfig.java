@@ -1,6 +1,5 @@
 package run.ikaros.server.config;
 
-import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN;
 import static org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN;
 import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
@@ -16,7 +15,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -25,10 +23,8 @@ import org.springframework.security.web.server.util.matcher.MediaTypeServerWebEx
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.infra.constant.SecurityConst;
 import run.ikaros.server.infra.properties.IkarosProperties;
-import run.ikaros.server.security.DefaultUserDetailService;
 import run.ikaros.server.security.MasterInitializer;
-import run.ikaros.server.security.authentication.SecurityConfigurer;
-import run.ikaros.server.security.authorization.RequestAuthorizationManager;
+import run.ikaros.server.security.SecurityConfigurer;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -39,27 +35,12 @@ public class WebServerSecurityConfig {
     }
 
     @Bean
-    ReactiveUserDetailsService userDetailsService(UserService userService) {
-        return new DefaultUserDetailService(userService);
-    }
-
-    @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     SecurityWebFilterChain apiFilterChain(ServerHttpSecurity http,
                                           ObjectProvider<SecurityConfigurer> securityConfigurers) {
-        // main config
-        http.securityMatcher(pathMatchers("/api/**", "/apis/**", "/login", "/logout"))
-            .authorizeExchange().anyExchange()
-            .access(new RequestAuthorizationManager())
-            .and()
-            .formLogin(withDefaults())
-            .logout(withDefaults())
-            .httpBasic(withDefaults());
-
         // integrate with other configurers separately
         securityConfigurers.orderedStream()
             .forEach(securityConfigurer -> securityConfigurer.configure(http));
-
         return http.build();
     }
 

@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import run.ikaros.server.security.authentication.SecurityConfigurer;
 
 @Component
 public class CorsConfigurer implements SecurityConfigurer {

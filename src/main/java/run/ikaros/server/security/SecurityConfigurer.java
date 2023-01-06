@@ -1,4 +1,4 @@
-package run.ikaros.server.security.authentication;
+package run.ikaros.server.security;
 
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 
