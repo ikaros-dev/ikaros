@@ -4,11 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
+import run.ikaros.server.infra.exception.NotFoundException;
 import run.ikaros.server.infra.properties.SecurityProperties;
 import run.ikaros.server.store.entity.UserEntity;
 
@@ -39,7 +39,7 @@ public class MasterInitializer {
     @EventListener
     public Mono<Void> initialize(ApplicationReadyEvent readyEvent) {
         return userService.getUser(initializer.getMasterUsername())
-            .onErrorResume(UsernameNotFoundException.class, user -> createMaster())
+            .onErrorResume(NotFoundException.class, user -> createMaster())
             .then();
     }
 

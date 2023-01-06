@@ -18,9 +18,6 @@ public interface SecurityConst {
         }
     }
 
-    String API_CORE_MATCHER = "/api/**";
-    String API_PLUGIN_MATCHER = "/apis/**";
-
     // todo 安全性考虑，这里需要从环境变量读取，或者在 初始化时在数据库随机生成一条
     String JWT_SECRET_KEY = "v8y/B?E(G+KbPeShVmYq3t6w9z$C&F)J@McQfTjWnZr4u7x!A%D*G-KaPdRgUkXp";
     String TOKEN_PREFIX = "Bearer ";

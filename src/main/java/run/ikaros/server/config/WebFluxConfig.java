@@ -88,7 +88,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
         var cacheControl = CacheControl.maxAge(Duration.ofDays(365 / 2));
 
         // Mandatory resource mapping
-        registry.addResourceHandler("/upload/**")
+        var uploadRegistration = registry.addResourceHandler("/upload/**")
             .addResourceLocations(FILE_URL_PREFIX + attachmentsRoot.resolve("upload") + "/")
             .setUseLastModified(true)
             .setCacheControl(cacheControl);
