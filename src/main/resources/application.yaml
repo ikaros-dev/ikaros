@@ -3,7 +3,7 @@ ikaros:
   work-dir: ./
 
 server:
-  port: 50000
+  port: 9999
   compression:
     enabled: true
   error:
