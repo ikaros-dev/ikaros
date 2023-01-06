@@ -1,4 +1,4 @@
-package run.ikaros.server.core.constant;
+package run.ikaros.server.infra.constant;
 
 /**
  * application constants.

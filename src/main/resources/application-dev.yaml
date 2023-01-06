@@ -1,6 +1,3 @@
-server:
-  port: 50000
-
 spring:
   thymeleaf:
     cache: false

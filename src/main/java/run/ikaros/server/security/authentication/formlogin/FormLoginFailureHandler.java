@@ -11,7 +11,7 @@ import org.springframework.security.web.server.authentication.RedirectServerAuth
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.core.constant.AppConst;
+import run.ikaros.server.infra.constant.AppConst;
 
 public class FormLoginFailureHandler implements ServerAuthenticationFailureHandler {
     private final ServerResponse.Context context;

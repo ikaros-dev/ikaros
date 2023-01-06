@@ -16,7 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.core.constant.SecurityConst;
+import run.ikaros.server.infra.constant.SecurityConst;
 
 /**
  * unit test for user authentication by form login.
@@ -80,6 +80,19 @@ public class FormLoginTests {
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
             .body(BodyInserters.fromFormData("username", "not-exists-user")
                 .with("password", "password"))
+            .exchange()
+            .expectStatus()
+            .is5xxServerError();
+    }
+
+    @Test
+    void loginWithUserPasswordIncorrect() {
+        webClient
+            .post()
+            .uri("/login")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .body(BodyInserters.fromFormData("username", "user")
+                .with("password", "password-incorrect"))
             .exchange()
             .expectStatus()
             .is5xxServerError();

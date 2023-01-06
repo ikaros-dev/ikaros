@@ -10,7 +10,7 @@ import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.logout.RedirectServerLogoutSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.core.constant.AppConst;
+import run.ikaros.server.infra.constant.AppConst;
 
 public class LogoutSuccessHandler implements ServerLogoutSuccessHandler {
 

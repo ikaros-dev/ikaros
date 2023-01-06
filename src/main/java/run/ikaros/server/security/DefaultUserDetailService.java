@@ -3,9 +3,9 @@ package run.ikaros.server.security;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.core.constant.SecurityConst;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
+import run.ikaros.server.infra.constant.SecurityConst;
 
 /**
  * ikaros default user detail service.

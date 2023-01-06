@@ -10,27 +10,27 @@
 <div align="center">
     <h1><span th:text="${status}"/> <span th:text="${error}"/></h1>
     <table>
-        <tr>
+        <tr th:if="${not #strings.isEmpty(message)}">
             <td>message</td>
             <td><span th:text="${message}"/></td>
         </tr>
-        <tr>
+        <tr th:if="${not #strings.isEmpty(timestamp)}">
             <td>timestamp</td>
             <td><span th:text="${timestamp}"/></td>
         </tr>
-        <tr>
+        <tr th:if="${not #strings.isEmpty(path)}">
             <td>path</td>
             <td><span th:text="${path}"/></td>
         </tr>
-        <tr>
+        <tr th:if="${not #strings.isEmpty(requestId)}">
             <td>requestId</td>
             <td><span th:text="${requestId}"/></td>
         </tr>
-        <tr>
+        <tr th:if="${not #strings.isEmpty(status)}">
             <td>status</td>
             <td><span th:text="${status}"/></td>
         </tr>
-        <tr>
+        <tr th:if="${not #strings.isEmpty(error)}">
             <td>error</td>
             <td><span th:text="${error}"/></td>
         </tr>
