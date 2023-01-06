@@ -33,7 +33,6 @@ ext {
     pf4j = '3.8.0'
     jsoup = '1.15.3'
     springDocOpenAPI = "2.0.0"
-    jwtVersion = "0.10.7"
 }
 
 
@@ -47,6 +46,8 @@ dependencies {
 
     // Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+    implementation 'org.springframework.security:spring-security-oauth2-resource-server'
 
     // OpenAPI
     implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:$springDocOpenAPI"
@@ -63,11 +64,6 @@ dependencies {
     implementation "org.pf4j:pf4j:$pf4j"
     implementation "org.jsoup:jsoup:$jsoup"
     implementation "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
-
-    // jwt
-    implementation "io.jsonwebtoken:jjwt-api:$jwtVersion"
-    runtimeOnly "io.jsonwebtoken:jjwt-impl:$jwtVersion"
-    runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jwtVersion"
 
     // lombok
     compileOnly 'org.projectlombok:lombok'

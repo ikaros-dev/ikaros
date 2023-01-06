@@ -4,7 +4,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -24,7 +23,6 @@ import run.ikaros.server.infra.constant.SecurityConst;
  *
  * @author: li-guohao
  */
-@Disabled("not support form login")
 @SpringBootTest
 @AutoConfigureWebTestClient
 public class FormLoginTests {

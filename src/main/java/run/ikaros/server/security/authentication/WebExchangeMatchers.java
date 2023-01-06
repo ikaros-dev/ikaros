@@ -1,4 +1,4 @@
-package run.ikaros.server.security;
+package run.ikaros.server.security.authentication;
 
 import java.util.Set;
 import org.springframework.http.MediaType;
