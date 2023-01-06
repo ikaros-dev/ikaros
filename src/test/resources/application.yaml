@@ -1,5 +1,6 @@
 ikaros:
   external-url: "http://${server.address:localhost}:${server.port}"
+  work-dir: ./
 
 server:
   port: 51000
@@ -19,12 +20,7 @@ spring:
   codec:
     max-in-memory-size: 10MB
   r2dbc:
-    url: r2dbc:h2:mem:///ikaros
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-
+    url: r2dbc:h2:mem:///ikaros?MODE=MySQL&DB_CLOSE_ON_EXIT=FALSE
 
 springdoc:
   api-docs:

@@ -1,11 +1,6 @@
-server:
-  port: 50000
-
 spring:
   thymeleaf:
     cache: false
-  jpa:
-    show-sql: true
 
 logging:
   level:

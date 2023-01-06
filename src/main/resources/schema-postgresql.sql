@@ -37,7 +37,6 @@ create table if not exists file
     update_time timestamp(6) NULL,
     update_uid int8 NULL,
     "version" int8 NULL,
-    folder_id int8 NOT NULL,
     md5 varchar(255) NULL,
     name varchar(255) NOT NULL,
     original_name varchar(255) NULL,
@@ -47,28 +46,6 @@ create table if not exists file
     "type" varchar(255) NULL,
     url varchar(255) NOT NULL,
     CONSTRAINT file_pkey PRIMARY KEY (id)
-);
-
--- folder
-create sequence if not exists folder_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
-create table if not exists folder
-(
-    id int8 NOT NULL default nextval('folder_seq'),
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    "version" int8 NULL,
-    name varchar(255) NOT NULL,
-    parent_id int8 NOT NULL,
-    CONSTRAINT folder_pkey PRIMARY KEY (id)
 );
 
 -- ikuser
@@ -169,4 +146,30 @@ create table if not exists subject
     fid int8 NULL,
     "type" varchar(255) NULL,
     CONSTRAINT subject_pkey PRIMARY KEY (id)
+);
+
+-- custom
+create sequence if not exists custom_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
+create table if not exists custom
+(
+    id int8 NOT NULL default nextval('custom_seq'),
+    create_time timestamp(6) NULL,
+    create_uid int8 NULL,
+    status bool NULL,
+    update_time timestamp(6) NULL,
+    update_uid int8 NULL,
+    "version" int8 NULL,
+    api_version varchar(255) NOT NULL,
+    kind varchar(255) NOT NULL,
+    name varchar(255) NOT NULL UNIQUE,
+    generateName varchar(255),
+    labels bytea,
+    annotations bytea,
+    CONSTRAINT custom_pkey PRIMARY KEY (id)
 );

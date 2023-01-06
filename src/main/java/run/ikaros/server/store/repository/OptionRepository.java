@@ -1,5 +1,6 @@
 package run.ikaros.server.store.repository;
 
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import run.ikaros.server.store.entity.OptionEntity;
 
 /**
@@ -8,5 +9,5 @@ import run.ikaros.server.store.entity.OptionEntity;
  * @author: li-guohao
  * @see OptionEntity
  */
-public interface OptionRepository extends BaseRepository<OptionEntity> {
+public interface OptionRepository extends R2dbcRepository<OptionEntity, Long> {
 }

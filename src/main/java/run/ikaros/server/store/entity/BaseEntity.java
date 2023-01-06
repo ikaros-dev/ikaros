@@ -1,19 +1,12 @@
 package run.ikaros.server.store.entity;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Version;
-import java.util.Date;
+import java.time.LocalDateTime;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
+import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
+import org.springframework.data.relational.core.mapping.Column;
 
 /**
  * base entity.
@@ -21,8 +14,7 @@ import org.springframework.data.annotation.LastModifiedDate;
  * @author li-guohao
  */
 @Data
-@NoArgsConstructor
-@MappedSuperclass
+@Accessors(chain = true)
 //todo impl @EntityListeners(AuditingEntityListener.class)
 public class BaseEntity {
 
@@ -30,7 +22,6 @@ public class BaseEntity {
      * base entity id, generate by identity.
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
@@ -41,30 +32,30 @@ public class BaseEntity {
     /**
      * create record user id.
      */
-    @CreatedBy
-    @Column(name = "create_uid")
+    // @CreatedBy
+    @Column("create_uid")
     private Long createUid;
 
     /**
      * record create time.
      */
-    @CreatedDate
-    @Column(name = "create_time")
-    private Date createTime;
+    // @CreatedDate
+    @Column("create_time")
+    private LocalDateTime createTime;
 
     /**
      * record last modified user id.
      */
-    @LastModifiedBy
-    @Column(name = "update_uid")
+    // @LastModifiedBy
+    @Column("update_uid")
     private Long updateUid;
 
     /**
      * record last modified time.
      */
-    @LastModifiedDate
-    @Column(name = "update_time")
-    private Date updateTime;
+    // @LastModifiedDate
+    @Column("update_time")
+    private LocalDateTime updateTime;
 
     /**
      * optimistic lock field.
