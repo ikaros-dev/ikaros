@@ -12,10 +12,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
+import run.ikaros.server.infra.constant.AppConst;
 import run.ikaros.server.infra.constant.SecurityConst;
 
 /**
@@ -31,9 +33,11 @@ public class FormLoginTests {
     WebTestClient webClient;
     @MockBean
     ReactiveUserDetailsService userDetailsService;
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @BeforeEach
-    void setUp(@Autowired PasswordEncoder passwordEncoder) {
+    void setUp() {
         when(userDetailsService.findByUsername("user"))
             .thenReturn(Mono.just(
                 User.builder()
@@ -56,8 +60,8 @@ public class FormLoginTests {
             .body(BodyInserters.fromFormData("username", "user")
                 .with("password", "password"))
             .exchange()
-            .expectStatus()
-            .is3xxRedirection();
+            .expectStatus().is3xxRedirection()
+            .expectHeader().location(AppConst.LOGIN_SUCCESS_LOCATION);
 
         // MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         // formData.add("username", "user");
@@ -74,15 +78,20 @@ public class FormLoginTests {
 
     @Test
     void loginWithUserNotExists() {
+        final String notExistsUsername = "not-exists-user";
+        when(userDetailsService.findByUsername(notExistsUsername))
+            .thenReturn(Mono.error(
+                new UsernameNotFoundException("not found for username=" + notExistsUsername)));
+
         webClient
             .post()
             .uri("/login")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .body(BodyInserters.fromFormData("username", "not-exists-user")
+            .body(BodyInserters.fromFormData("username", notExistsUsername)
                 .with("password", "password"))
             .exchange()
-            .expectStatus()
-            .is5xxServerError();
+            .expectStatus().is3xxRedirection()
+            .expectHeader().location(AppConst.LOGIN_FAILURE_LOCATION);
     }
 
     @Test
@@ -94,7 +103,7 @@ public class FormLoginTests {
             .body(BodyInserters.fromFormData("username", "user")
                 .with("password", "password-incorrect"))
             .exchange()
-            .expectStatus()
-            .is5xxServerError();
+            .expectStatus().is3xxRedirection()
+            .expectHeader().location(AppConst.LOGIN_FAILURE_LOCATION);
     }
 }
