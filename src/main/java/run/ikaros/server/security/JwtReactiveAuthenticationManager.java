@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * ikaros jwt authentication manager,
- * container jwt decode logic,
+ * jwt decode logic and validate,
  * reference from AbstractUserDetailsReactiveAuthenticationManager.
  *
  * @see org.springframework.security.authentication.AbstractUserDetailsReactiveAuthenticationManager
@@ -15,6 +15,6 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         // TODO decode jwt and validate it
-        return null;
+        return Mono.just(authentication);
     }
 }
