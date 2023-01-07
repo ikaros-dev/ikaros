@@ -6,10 +6,7 @@ package run.ikaros.server.store.enums;
  * @author: li-guohao
  */
 public enum MetadataType {
-    OPTION,
+    SETTING,
     SUBJECT,
-    BOX,
-    FILE,
-    FOLDER,
-    CUSTOM
+    FILE
 }

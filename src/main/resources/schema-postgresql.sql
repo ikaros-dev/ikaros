@@ -104,17 +104,17 @@ create table if not exists metadata
     CONSTRAINT metadata_pkey PRIMARY KEY (id)
 );
 
--- option
-create sequence if not exists option_seq
+-- setting
+create sequence if not exists setting_seq
     increment 1
     start 1
     minvalue 1
     cache 1
     no cycle;
 
-create table if not exists option
+create table if not exists setting
 (
-    id int8 NOT NULL default nextval('option_seq'),
+    id int8 NOT NULL default nextval('setting_seq'),
     create_time timestamp(6) NULL,
     create_uid int8 NULL,
     status bool NULL,
@@ -122,7 +122,7 @@ create table if not exists option
     update_uid int8 NULL,
     "version" int8 NULL,
     name varchar(255) NOT NULL,
-    CONSTRAINT option_pkey PRIMARY KEY (id)
+    CONSTRAINT setting_pkey PRIMARY KEY (id)
 );
 
 -- subject

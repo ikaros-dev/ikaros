@@ -76,8 +76,8 @@ create table if not exists metadata
     CONSTRAINT metadata_pkey PRIMARY KEY (id)
 );
 
--- option
-create table if not exists `option`
+-- setting
+create table if not exists `setting`
 (
     id int8 NOT NULL auto_increment,
     create_time timestamp(6) NULL,
@@ -87,7 +87,7 @@ create table if not exists `option`
     update_uid int8 NULL,
     version int8 NULL,
     name varchar(255) NOT NULL,
-    CONSTRAINT option_pkey PRIMARY KEY (id)
+    CONSTRAINT setting_pkey PRIMARY KEY (id)
 );
 
 -- subject
