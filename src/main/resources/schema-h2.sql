@@ -1,18 +1,3 @@
--- box
-create table if not exists box
-(
-    id int8 NOT NULL auto_increment,
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    version int8 NULL,
-    name varchar(255) NOT NULL,
-    parent_id int8 NOT NULL,
-    CONSTRAINT box_pkey PRIMARY KEY (id)
-);
-
 -- file
 create table if not exists file
 (
