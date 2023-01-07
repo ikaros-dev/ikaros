@@ -23,7 +23,6 @@ public class SubjectEntity {
      */
     @Version
     private Long version;
-    @Column("subject_group")
     private String group;
     @Column("api_version")
     private String apiVersion;

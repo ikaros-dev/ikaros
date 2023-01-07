@@ -1,4 +1,6 @@
 package run.ikaros.server.core.user;
 
-public record User() {
+import run.ikaros.server.store.entity.UserEntity;
+
+public record User(UserEntity entity) {
 }

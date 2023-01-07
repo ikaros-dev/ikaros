@@ -1,76 +1,125 @@
--- subject
-create table if not exists subject
+-- box
+create table if not exists box
 (
-    id            int8         not null auto_increment,
-    parent_id     int8         not null,
-    version       int8         null,
-    subject_group varchar(255) not null,
-    api_version   varchar(255) not null,
-    kind          varchar(255) not null,
-    plural        varchar(255) null,
-    singular      varchar(255) null,
-    name          varchar(255) null,
-    url           varchar(255) null,
-    constraint gvk unique (subject_group, api_version, kind),
-    constraint subject_pkey primary key (id)
+    id int8 NOT NULL auto_increment,
+    create_time timestamp(6) NULL,
+    create_uid int8 NULL,
+    status bool NULL,
+    update_time timestamp(6) NULL,
+    update_uid int8 NULL,
+    version int8 NULL,
+    name varchar(255) NOT NULL,
+    parent_id int8 NOT NULL,
+    CONSTRAINT box_pkey PRIMARY KEY (id)
 );
 
-create index if not exists subject_index_subject_group
-    on subject (subject_group);
-create index if not exists subject_index_api_version
-    on subject (api_version);
-create index if not exists subject_index_kind
-    on subject (kind);
-create index if not exists subject_index_name
-    on subject (name);
+-- file
+create table if not exists file
+(
+    id int8 NOT NULL auto_increment,
+    create_time timestamp(6) NULL,
+    create_uid int8 NULL,
+    status bool NULL,
+    update_time timestamp(6) NULL,
+    update_uid int8 NULL,
+    version int8 NULL,
+    md5 varchar(255) NULL,
+    name varchar(255) NOT NULL,
+    original_name varchar(255) NULL,
+    original_path varchar(255) NULL,
+    place varchar(255) NULL,
+    size int8 NULL,
+    type varchar(255) NULL,
+    url varchar(255) NOT NULL,
+    CONSTRAINT file_pkey PRIMARY KEY (id)
+);
 
+-- ikuser
+create table if not exists ikuser
+(
+    id int8 NOT NULL auto_increment,
+    create_time timestamp(6) NULL,
+    create_uid int8 NULL,
+    status bool NULL,
+    update_time timestamp(6) NULL,
+    update_uid int8 NULL,
+    version int8 NULL,
+    avatar varchar(255) NULL,
+    email varchar(255) NULL,
+    enable bool NULL,
+    introduce varchar(50000) NULL,
+    last_login_ip varchar(255) NULL,
+    last_login_time int8 NULL,
+    nickname varchar(255) NULL,
+    non_locked bool NULL,
+    password varchar(255) NULL,
+    site varchar(255) NULL,
+    telephone varchar(255) NULL,
+    username varchar(255) NULL,
+    CONSTRAINT ikuser_pkey PRIMARY KEY (id)
+);
 
 -- metadata
 create table if not exists metadata
 (
-    id         int8         not null auto_increment,
-    version    int8         null,
-    subject_id int8         not null,
-    meta_key   varchar(255) not null,
-    meta_value varchar(255) null,
-    constraint metadata_pkey primary key (id)
+    id int8 NOT NULL auto_increment,
+    create_time timestamp(6) NULL,
+    create_uid int8 NULL,
+    status bool NULL,
+    update_time timestamp(6) NULL,
+    update_uid int8 NULL,
+    version int8 NULL,
+    host_id int8 NOT NULL,
+    meta_key varchar(255) NOT NULL,
+    type varchar(255) NULL,
+    meta_value varchar(50000) NULL,
+    CONSTRAINT metadata_pkey PRIMARY KEY (id)
 );
 
-create index if not exists metadata_index_subject_id
-    on metadata (subject_id);
-create index if not exists metadata_index_meta_key
-    on metadata (meta_key);
-
-
--- specification
-create table if not exists specification
+-- option
+create table if not exists `option`
 (
-    id         int8         not null auto_increment,
-    version    int8         null,
-    subject_id int8         not null,
-    spec_key   varchar(255) not null,
-    spec_value varchar(255) null,
-    constraint specification_pkey primary key (id)
+    id int8 NOT NULL auto_increment,
+    create_time timestamp(6) NULL,
+    create_uid int8 NULL,
+    status bool NULL,
+    update_time timestamp(6) NULL,
+    update_uid int8 NULL,
+    version int8 NULL,
+    name varchar(255) NOT NULL,
+    CONSTRAINT option_pkey PRIMARY KEY (id)
 );
 
-create index if not exists specification_index_subject_id
-    on specification (subject_id);
-create index if not exists specification_index_spec_key
-    on specification (spec_key);
-
-
--- status
-create table if not exists status
+-- subject
+create table if not exists subject
 (
-    id           int8         not null auto_increment,
-    version      int8         null,
-    subject_id   int8         not null,
-    status_key   varchar(255) not null,
-    status_value varchar(255) null,
-    constraint status_pkey primary key (id)
+    id int8 NOT NULL auto_increment,
+    create_time timestamp(6) NULL,
+    create_uid int8 NULL,
+    status bool NULL,
+    update_time timestamp(6) NULL,
+    update_uid int8 NULL,
+    version int8 NULL,
+    box_id int8 NULL,
+    file_id int8 NULL,
+    CONSTRAINT subject_pkey PRIMARY KEY (id)
 );
 
-create index if not exists status_index_subject_id
-    on status (subject_id);
-create index if not exists status_index_status_key
-    on status (status_key);
+-- custom
+create table if not exists custom
+(
+    id int8 NOT NULL auto_increment,
+    create_time timestamp(6) NULL,
+    create_uid int8 NULL,
+    status bool NULL,
+    update_time timestamp(6) NULL,
+    update_uid int8 NULL,
+    version int8 NULL,
+    api_version varchar(255) NOT NULL ,
+    kind varchar(255) NOT NULL ,
+    name varchar(255) NOT NULL UNIQUE ,
+    generateName varchar(255) NULL ,
+    labels blob,
+    annotations blob,
+    CONSTRAINT custom_pkey PRIMARY KEY (id)
+);
