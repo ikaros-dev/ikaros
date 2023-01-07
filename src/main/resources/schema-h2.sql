@@ -33,7 +33,6 @@ create table if not exists metadata
     subject_id int8         not null,
     meta_key   varchar(255) not null,
     meta_value varchar(255) null,
-    constraint metadata_subject_key unique (subject_id, meta_key),
     constraint metadata_pkey primary key (id)
 );
 
@@ -51,7 +50,6 @@ create table if not exists specification
     subject_id int8         not null,
     spec_key   varchar(255) not null,
     spec_value varchar(255) null,
-    constraint specification_subject_key unique (subject_id, spec_key),
     constraint specification_pkey primary key (id)
 );
 
@@ -69,7 +67,6 @@ create table if not exists status
     subject_id   int8         not null,
     status_key   varchar(255) not null,
     status_value varchar(255) null,
-    constraint status_subject_key unique (subject_id, status_key),
     constraint status_pkey primary key (id)
 );
 
