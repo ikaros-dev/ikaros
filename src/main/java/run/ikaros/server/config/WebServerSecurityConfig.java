@@ -7,7 +7,6 @@ import static org.springframework.security.web.server.util.matcher.ServerWebExch
 
 import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -16,17 +15,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.MediaTypeServerWebExchangeMatcher;
-import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.infra.constant.SecurityConst;
-import run.ikaros.server.infra.properties.IkarosProperties;
-import run.ikaros.server.security.DefaultUserDetailService;
-import run.ikaros.server.security.MasterInitializer;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 import run.ikaros.server.security.authorization.RequestAuthorizationManager;
 
@@ -38,10 +32,10 @@ public class WebServerSecurityConfig {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    @Bean
-    ReactiveUserDetailsService userDetailsService(UserService userService) {
-        return new DefaultUserDetailService(userService);
-    }
+    //    @Bean
+    //    ReactiveUserDetailsService userDetailsService(UserService userService) {
+    //        return new DefaultUserDetailService(userService);
+    //    }
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -82,13 +76,14 @@ public class WebServerSecurityConfig {
         return http.build();
     }
 
-    @Bean
-    @ConditionalOnProperty(name = "ikaros.security.initializer.disabled",
-        havingValue = "false",
-        matchIfMissing = true)
-    MasterInitializer superAdminInitializer(IkarosProperties ikarosProperties,
-                                            UserService userService) {
-        return new MasterInitializer(ikarosProperties.getSecurity().getInitializer(), userService);
-    }
+    // @Bean
+    // @ConditionalOnProperty(name = "ikaros.security.initializer.disabled",
+    //     havingValue = "false",
+    //     matchIfMissing = true)
+    // MasterInitializer superAdminInitializer(IkarosProperties ikarosProperties,
+    //                                         UserService userService) {
+    //     return new MasterInitializer(ikarosProperties.getSecurity().getInitializer(),
+    //     userService);
+    // }
 
 }

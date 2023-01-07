@@ -1,84 +1,40 @@
--- box
-create sequence if not exists box_seq
+-- subject
+create sequence if not exists subject_seq
     increment 1
     start 1
     minvalue 1
     cache 1
     no cycle;
 
-create table if not exists box
+create table if not exists subject
 (
-    id int8 NOT NULL default nextval('box_seq'),
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    "version" int8 NULL,
-    name varchar(255) NOT NULL,
-    parent_id int8 NOT NULL,
-    CONSTRAINT box_pkey PRIMARY KEY (id)
+    id            int8         not null default nextval('subject_seq'),
+    parent_id     int8         not null,
+    version       int8         null,
+    subject_group varchar(255) not null,
+    api_version   varchar(255) not null,
+    kind          varchar(255) not null,
+    plural        varchar(255) null,
+    singular      varchar(255) null,
+    name          varchar(255) null,
+    url           varchar(255) null,
+    constraint subject_gvk unique (subject_group, api_version, kind),
+    constraint subject_pkey primary key (id)
 );
 
--- file
-create sequence if not exists file_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
+create index if not exists subject_index_subject_group
+    on subject
+        using btree (subject_group);
+create index if not exists subject_index_api_version
+    on subject
+        using btree (api_version);
+create index if not exists subject_index_kind
+    on subject
+        using btree (kind);
+create index if not exists subject_index_name
+    on subject
+        using btree (name);
 
-create table if not exists file
-(
-    id int8 NOT NULL default nextval('file_seq'),
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    "version" int8 NULL,
-    md5 varchar(255) NULL,
-    name varchar(255) NOT NULL,
-    original_name varchar(255) NULL,
-    original_path varchar(255) NULL,
-    place varchar(255) NULL,
-    "size" int8 NULL,
-    "type" varchar(255) NULL,
-    url varchar(255) NOT NULL,
-    CONSTRAINT file_pkey PRIMARY KEY (id)
-);
-
--- ikuser
-create sequence if not exists ikuser_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
-create table if not exists ikuser
-(
-    id int8 NOT NULL default nextval('ikuser_seq'),
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    "version" int8 NULL,
-    avatar varchar(255) NULL,
-    email varchar(255) NULL,
-    "enable" bool NULL,
-    introduce varchar(50000) NULL,
-    last_login_ip varchar(255) NULL,
-    last_login_time int8 NULL,
-    nickname varchar(255) NULL,
-    non_locked bool NULL,
-    "password" varchar(255) NULL,
-    site varchar(255) NULL,
-    telephone varchar(255) NULL,
-    username varchar(255) NULL,
-    CONSTRAINT ikuser_pkey PRIMARY KEY (id)
-);
 
 -- metadata
 create sequence if not exists metadata_seq
@@ -90,85 +46,69 @@ create sequence if not exists metadata_seq
 
 create table if not exists metadata
 (
-    id int8 NOT NULL default nextval('metadata_seq'),
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    "version" int8 NULL,
-    host_id int8 NOT NULL,
-    meta_key varchar(255) NOT NULL,
-    "type" varchar(255) NULL,
-    meta_value varchar(50000) NULL,
-    CONSTRAINT metadata_pkey PRIMARY KEY (id)
+    id         int8         not null default nextval('metadata_seq'),
+    version    int8         null,
+    subject_id int8         not null,
+    meta_key   varchar(255) not null,
+    meta_value varchar(255) null,
+    constraint metadata_pkey primary key (id)
 );
 
--- option
-create sequence if not exists option_seq
+create index if not exists metadata_index_subject_id
+    on metadata
+        using btree (subject_id);
+create index if not exists metadata_index_meta_key
+    on metadata
+        using btree (meta_key);
+
+
+-- specification
+create sequence if not exists specification_seq
     increment 1
     start 1
     minvalue 1
     cache 1
     no cycle;
 
-create table if not exists option
+create table if not exists specification
 (
-    id int8 NOT NULL default nextval('option_seq'),
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    "version" int8 NULL,
-    name varchar(255) NOT NULL,
-    CONSTRAINT option_pkey PRIMARY KEY (id)
+    id         int8         not null default nextval('specification_seq'),
+    version    int8         null,
+    subject_id int8         not null,
+    spec_key   varchar(255) not null,
+    spec_value varchar(255) null,
+    constraint specification_pkey primary key (id)
 );
 
--- subject
-create sequence if not exists subject_seq
+create index if not exists specification_index_subject_id
+    on specification
+        using btree (subject_id);
+create index if not exists specification_index_spec_key
+    on specification
+        using btree (spec_key);
+
+
+-- status
+create sequence if not exists status_seq
     increment 1
     start 1
     minvalue 1
     cache 1
     no cycle;
 
-create table if not exists subject
+create table if not exists status
 (
-    id int8 NOT NULL default nextval('subject_seq'),
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    "version" int8 NULL,
-    box_id int8 NULL,
-    file_id int8 NULL,
-    CONSTRAINT subject_pkey PRIMARY KEY (id)
+    id           int8         not null default nextval('status_seq'),
+    version      int8         null,
+    subject_id   int8         not null,
+    status_key   varchar(255) not null,
+    status_value varchar(255) null,
+    constraint status_pkey primary key (id)
 );
 
--- custom
-create sequence if not exists custom_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
-create table if not exists custom
-(
-    id int8 NOT NULL default nextval('custom_seq'),
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    "version" int8 NULL,
-    api_version varchar(255) NOT NULL,
-    kind varchar(255) NOT NULL,
-    name varchar(255) NOT NULL UNIQUE,
-    generateName varchar(255),
-    labels bytea,
-    annotations bytea,
-    CONSTRAINT custom_pkey PRIMARY KEY (id)
-);
+create index if not exists status_index_subject_id
+    on status
+        using btree (subject_id);
+create index if not exists status_index_status_key
+    on status
+        using btree (status_key);
