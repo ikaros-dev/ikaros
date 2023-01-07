@@ -19,6 +19,6 @@ public class SubjectEntity extends BaseEntity {
 
     @Column("file_id")
     private Long fileId;
-    @Column("box_id")
-    private Long boxId;
+    @Column("parent_id")
+    private Long parentId;
 }
