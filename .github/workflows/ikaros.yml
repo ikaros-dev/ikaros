@@ -32,6 +32,8 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
           java-version: 17
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
       - name: Check code style
         run: ./gradlew check -x test
   test:
@@ -46,31 +48,10 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
           java-version: 17
-      - name: Run tests
-        run: ./gradlew test
-      - name: Generate jacoco unit test coverage report xml
-        run: ./gradlew jacocoTestReport
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./build/reports/jacoco/test/jacocoTestReport.xml
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Set up JDK 17
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'temurin'
-          cache: 'gradle'
-          java-version: 17
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-      - name: Build with Gradle
-        run: ./gradlew clean build
+      - name: Run tests
+        run: ./gradlew test
       - name: Generate jacoco unit test coverage report xml
         run: ./gradlew jacocoTestReport
       - name: Upload coverage to Codecov
