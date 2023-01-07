@@ -68,14 +68,16 @@ create sequence if not exists setting_seq
 
 create table if not exists setting
 (
-    id          int8         NOT NULL default nextval('setting_seq'),
-    create_time timestamp(6) NULL,
-    create_uid  int8         NULL,
-    status      bool         NULL,
-    update_time timestamp(6) NULL,
-    update_uid  int8         NULL,
-    "version"   int8         NULL,
-    name        varchar(255) NOT NULL,
+    id            int8         NOT NULL default nextval('setting_seq'),
+    create_time   timestamp(6) NULL,
+    create_uid    int8         NULL,
+    status        bool         NULL,
+    update_time   timestamp(6) NULL,
+    update_uid    int8         NULL,
+    "version"     int8         NULL,
+    category      varchar(255) NOT NULL,
+    setting_key   varchar(255) NOT NULL,
+    setting_value varchar(255) NULL,
     CONSTRAINT setting_pkey PRIMARY KEY (id)
 );
 
