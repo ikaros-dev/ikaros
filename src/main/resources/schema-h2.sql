@@ -44,22 +44,6 @@ create table if not exists ikuser
     CONSTRAINT ikuser_pkey PRIMARY KEY (id)
 );
 
--- metadata
-create table if not exists metadata
-(
-    id int8 NOT NULL auto_increment,
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    version int8 NULL,
-    host_id int8 NOT NULL,
-    meta_key varchar(255) NOT NULL,
-    type varchar(255) NULL,
-    meta_value varchar(50000) NULL,
-    CONSTRAINT metadata_pkey PRIMARY KEY (id)
-);
 
 -- setting
 create table if not exists `setting`
@@ -73,19 +57,4 @@ create table if not exists `setting`
     version int8 NULL,
     name varchar(255) NOT NULL,
     CONSTRAINT setting_pkey PRIMARY KEY (id)
-);
-
--- subject
-create table if not exists subject
-(
-    id int8 NOT NULL auto_increment,
-    create_time timestamp(6) NULL,
-    create_uid int8 NULL,
-    status bool NULL,
-    update_time timestamp(6) NULL,
-    update_uid int8 NULL,
-    version int8 NULL,
-    parent_id int8 NULL,
-    file_id int8 NULL,
-    CONSTRAINT subject_pkey PRIMARY KEY (id)
 );
