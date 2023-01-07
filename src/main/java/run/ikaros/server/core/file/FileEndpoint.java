@@ -18,6 +18,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.endpoint.CoreEndpoint;
+import run.ikaros.server.infra.constant.OpenApiConst;
 
 @Slf4j
 @Component
@@ -30,7 +31,7 @@ public class FileEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = "core.api.server.ikaros.run/v1alpha1/File";
+        var tag = OpenApiConst.CORE_GROUP + "/File";
         return SpringdocRouteBuilder.route()
             .POST("/files/upload", contentType(MediaType.MULTIPART_FORM_DATA), this::upload,
                 builder -> builder

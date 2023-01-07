@@ -6,6 +6,7 @@ import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import run.ikaros.server.infra.constant.OpenApiConst;
 
 public class CoreEndpointsBuilder implements EndpointsBuilder<CoreEndpoint, CoreEndpointsBuilder> {
     private final List<RouterFunction<ServerResponse>> routerFunctions;
@@ -24,7 +25,7 @@ public class CoreEndpointsBuilder implements EndpointsBuilder<CoreEndpoint, Core
     public RouterFunction<ServerResponse> build() {
         SpringdocRouteBuilder routeBuilder = SpringdocRouteBuilder.route();
         routerFunctions.forEach((routerFunction) -> {
-            routeBuilder.nest(RequestPredicates.path("/api"),
+            routeBuilder.nest(RequestPredicates.path("/api/" + OpenApiConst.CORE_VERSION),
                 () -> routerFunction,
                 builder -> builder.operationId("CoreEndpoints")
                     .description("Core Endpoint")
