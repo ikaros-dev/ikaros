@@ -25,6 +25,8 @@ import org.springframework.web.reactive.resource.PathResourceResolver;
 import org.springframework.web.reactive.result.view.ViewResolutionResultHandler;
 import org.springframework.web.reactive.result.view.ViewResolver;
 import reactor.core.publisher.Mono;
+import run.ikaros.server.endpoint.CoreEndpoint;
+import run.ikaros.server.endpoint.CoreEndpointsBuilder;
 import run.ikaros.server.infra.properties.IkarosProperties;
 
 @Configuration
@@ -67,6 +69,13 @@ public class WebFluxConfig implements WebFluxConfigurer {
             .and(route(GET("/console/"),
                 this::serveConsoleIndex
             ));
+    }
+
+    @Bean
+    RouterFunction<ServerResponse> coreEndpoints(ApplicationContext context) {
+        var builder = new CoreEndpointsBuilder();
+        context.getBeansOfType(CoreEndpoint.class).values().forEach(builder::add);
+        return builder.build();
     }
 
     private Mono<ServerResponse> serveConsoleIndex(ServerRequest request) {

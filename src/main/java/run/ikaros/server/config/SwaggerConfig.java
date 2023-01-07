@@ -14,15 +14,28 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
     /**
-     * config openapi group.
+     * config core openapi group.
      *
-     * @return openapi group
+     * @return core openapi group
      */
     @Bean
-    public GroupedOpenApi openApiDocket() {
+    public GroupedOpenApi coreApiDocket() {
         return GroupedOpenApi.builder()
-            .group("ikaros-openApi")
+            .group("CoreOpenApi")
             .pathsToMatch("/api/**")
+            .build();
+    }
+
+    /**
+     * config custom openapi group.
+     *
+     * @return custom openapi group
+     */
+    @Bean
+    public GroupedOpenApi customApiDocket() {
+        return GroupedOpenApi.builder()
+            .group("CustomOpenApi")
+            .pathsToMatch("/apis/**")
             .build();
     }
 
@@ -45,12 +58,18 @@ public class SwaggerConfig {
                 .url("https://ikaros.run"))
             .addSecurityItem(new SecurityRequirement().addList("IkarosBearerAuth"))
             .components(new Components()
-                .addSecuritySchemes("IkarosBearerAuth",
+                .addSecuritySchemes("BasicAuth",
                     new SecurityScheme()
                         .name("IkarosBearerAuth")
                         .type(SecurityScheme.Type.HTTP)
+                        .scheme("basic"))
+                .addSecuritySchemes("BearerAuth",
+                    new SecurityScheme()
+                        .name("BearerAuth")
+                        .type(SecurityScheme.Type.HTTP)
                         .scheme("Bearer")
-                        .bearerFormat("JWT")));
+                        .bearerFormat("JWT")
+                        ));
     }
 
 }
