@@ -23,11 +23,6 @@ import run.ikaros.server.infra.constant.OpenApiConst;
 @Slf4j
 @Component
 public class FileEndpoint implements CoreEndpoint {
-    private final FileService fileService;
-
-    public FileEndpoint(FileService fileService) {
-        this.fileService = fileService;
-    }
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
@@ -77,9 +72,6 @@ public class FileEndpoint implements CoreEndpoint {
 
         @Schema(requiredMode = REQUIRED, description = "Storage policy name")
         String getPolicyName();
-
-        @Schema(description = "The name of the group to which the file belongs")
-        String getGroupName();
 
     }
 }
