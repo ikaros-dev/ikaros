@@ -2,8 +2,8 @@ package run.ikaros.server.store.entity;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
@@ -16,10 +16,13 @@ import org.springframework.data.relational.core.mapping.Table;
  */
 @Data
 @Builder
-@Table("custom")
+@Table("extension")
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-public class CustomEntity extends BaseEntity {
+public class ExtensionEntity {
+    @Id
+    private Long id;
+    private String group;
+    private String version;
+    private String kind;
     private String name;
-    private byte[] data;
 }
