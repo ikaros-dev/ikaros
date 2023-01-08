@@ -11,8 +11,6 @@ import run.ikaros.server.store.entity.CustomMetadataEntity;
 
 class CustomConverterTest {
 
-    CustomConverter customConverter = new DelegateCustomConverter();
-
     @Test
     void convert() {
         String title = "demo custom -- 0001";
@@ -25,7 +23,7 @@ class CustomConverterTest {
             .setTitle(title)
             .setUser(new DemoCustom.User()
                 .setUsername("username"));
-        CustomDto customDto = customConverter.convertTo(demoCustom);
+        CustomDto customDto = CustomConverter.convertTo(demoCustom);
         CustomEntity customEntity = customDto.customEntity();
         assertThat(customEntity.getGroup()).isEqualTo(DemoCustom.GROUP);
         assertThat(customEntity.getVersion()).isEqualTo(DemoCustom.VERSION);
@@ -36,7 +34,7 @@ class CustomConverterTest {
         assertThat(customMetadataEntities.size()).isEqualTo(
             DemoCustom.class.getDeclaredFields().length - 1);
 
-        DemoCustom demoCustom1 = customConverter.convertFrom(DemoCustom.class, customDto);
+        DemoCustom demoCustom1 = CustomConverter.convertFrom(DemoCustom.class, customDto);
         assertThat(demoCustom1).isNotEqualTo(demoCustom);
         assertThat(demoCustom1.getHeaderMap()).isEqualTo(demoCustom.getHeaderMap());
         assertThat(demoCustom1.getTime()).isEqualTo(demoCustom.getTime());
