@@ -14,7 +14,7 @@ spring:
     max-in-memory-size: 10MB
   r2dbc:
     url: r2dbc:pool:postgresql://localhost:5432/ikaros
-    username: ikaros
+    username: postgres
     password: openpostgresql
   sql:
     init:
