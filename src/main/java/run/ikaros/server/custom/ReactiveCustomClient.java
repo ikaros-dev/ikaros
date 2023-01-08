@@ -1,4 +1,4 @@
-package run.ikaros.server.extension;
+package run.ikaros.server.custom;
 
 import java.util.Comparator;
 import java.util.function.Predicate;
@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.server.core.result.PageResult;
 
 
-public interface ReactiveExtensionClient {
+public interface ReactiveCustomClient {
 
     <E> E create(E extension);
 

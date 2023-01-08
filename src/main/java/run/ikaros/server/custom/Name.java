@@ -1,4 +1,4 @@
-package run.ikaros.server.extension;
+package run.ikaros.server.custom;
 
 
 import java.lang.annotation.ElementType;

@@ -1,4 +1,4 @@
-package run.ikaros.server.extension;
+package run.ikaros.server.custom;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Extension {
+public @interface Custom {
     /**
      * extension group.
      */

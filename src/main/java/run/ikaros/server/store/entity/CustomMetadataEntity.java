@@ -14,15 +14,15 @@ import org.springframework.data.relational.core.mapping.Table;
  */
 @Data
 @Builder
-@Table("extension_metadata")
+@Table("custom_metadata")
 @Accessors(chain = true)
-public class ExtensionMetadataEntity {
+public class CustomMetadataEntity {
     @Id
     private Long id;
-    @Column("e_id")
-    private Long extensionId;
-    @Column("em_key")
+    @Column("custom_id")
+    private Long customId;
+    @Column("cm_key")
     private String key;
-    @Column("em_value")
+    @Column("cm_value")
     private byte[] value;
 }

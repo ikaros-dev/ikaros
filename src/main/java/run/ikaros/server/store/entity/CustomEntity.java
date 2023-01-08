@@ -16,9 +16,9 @@ import org.springframework.data.relational.core.mapping.Table;
  */
 @Data
 @Builder
-@Table("extension")
+@Table("custom")
 @Accessors(chain = true)
-public class ExtensionEntity {
+public class CustomEntity {
     @Id
     private Long id;
     private String group;
