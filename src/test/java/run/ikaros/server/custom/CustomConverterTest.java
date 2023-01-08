@@ -14,7 +14,7 @@ class CustomConverterTest {
     CustomConverter customConverter = new DelegateCustomConverter();
 
     @Test
-    void convertTo() {
+    void convert() {
         String title = "demo custom -- 0001";
         DemoCustom demoCustom = new DemoCustom()
             .setFlag(Boolean.FALSE)
@@ -36,9 +36,11 @@ class CustomConverterTest {
         assertThat(customMetadataEntities.size()).isEqualTo(
             DemoCustom.class.getDeclaredFields().length - 1);
 
+        DemoCustom demoCustom1 = customConverter.convertFrom(DemoCustom.class, customDto);
+        assertThat(demoCustom1).isNotEqualTo(demoCustom);
+        assertThat(demoCustom1.getHeaderMap()).isEqualTo(demoCustom.getHeaderMap());
+        assertThat(demoCustom1.getTime()).isEqualTo(demoCustom.getTime());
+
     }
 
-    @Test
-    void convertFrom() {
-    }
 }

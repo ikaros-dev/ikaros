@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -157,6 +158,11 @@ public class DelegateCustomConverter implements CustomConverter {
                 byte[] bytes = metadataMap.get(fieldName);
                 try {
                     Object fieldValue = objectMapper.readerFor(fieldType).readValue(bytes);
+                    if (Modifier.isStatic(field.getModifiers())
+                        || Modifier.isFinal(field.getModifiers())) {
+                        // skip static and final field
+                        continue;
+                    }
                     if (field.trySetAccessible()) {
                         field.set(custom, fieldValue);
                     } else {
