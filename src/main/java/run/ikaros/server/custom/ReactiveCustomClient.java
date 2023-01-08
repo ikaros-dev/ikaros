@@ -9,19 +9,19 @@ import run.ikaros.server.core.result.PageResult;
 
 public interface ReactiveCustomClient {
 
-    <E> E create(E extension);
+    <C> Mono<C> create(C custom);
 
-    <E> E update(E extension);
+    <C> Mono<C> update(C custom);
 
-    <E> E delete(E extension);
+    <C> Mono<C> delete(C custom);
 
-    <E> Mono<E> get(Class<E> type, String name);
+    <C> Mono<C> get(Class<C> type, String name);
 
-    <E> Mono<E> fetch(Class<E> type, String name);
+    <C> Mono<C> fetch(Class<C> type, String name);
 
-    <E> Mono<PageResult<E>> list(Class<E> type, Predicate<E> predicate,
-                                                   Comparator<E> comparator, int page, int size);
+    <C> Mono<PageResult<C>> list(Class<C> type, Predicate<C> predicate,
+                                                   Comparator<C> comparator, int page, int size);
 
-    <E> Flux<E> list(Class<E> type, Predicate<E> predicate,
-                                       Comparator<E> comparator);
+    <C> Flux<C> list(Class<C> type, Predicate<C> predicate,
+                                       Comparator<C> comparator);
 }

@@ -2,14 +2,15 @@ package run.ikaros.server.custom;
 
 import java.util.Comparator;
 import java.util.function.Predicate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.core.result.PageResult;
 import run.ikaros.server.store.repository.CustomMetadataRepository;
 import run.ikaros.server.store.repository.CustomRepository;
 
-@Component
+@Service
 public class ReactiveCustomClientImpl implements ReactiveCustomClient {
 
     private final CustomRepository customRepository;
@@ -21,39 +22,56 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
         this.metadataRepository = metadataRepository;
     }
 
+
     @Override
-    public <E> E create(E extension) {
+    @SuppressWarnings("unchecked")
+    @Transactional(rollbackFor = Exception.class)
+    public <C> Mono<C> create(C custom) {
+        return Mono.just(custom)
+            .map(CustomConverter::convertTo)
+            .flatMap(customDto -> customRepository.save(customDto.customEntity())
+                .flatMap(customEntity -> Mono.just(customDto)))
+            .map(customDto -> {
+                Mono.just(customDto.customMetadataEntityList())
+                    .filter(customMetadataEntityList -> !customMetadataEntityList.isEmpty())
+                    .flatMapMany(customMetadataEntityList -> Flux.fromStream(
+                        customMetadataEntityList.stream()))
+                    .map(metadataRepository::save)
+
+                ;
+                return customDto;
+            })
+            .map(customDto -> (C) CustomConverter.convertFrom(custom.getClass(), customDto));
+    }
+
+    @Override
+    public <C> Mono<C> update(C custom) {
         return null;
     }
 
     @Override
-    public <E> E update(E extension) {
+    public <C> Mono<C> delete(C custom) {
         return null;
     }
 
     @Override
-    public <E> E delete(E extension) {
+    public <C> Mono<C> get(Class<C> type, String name) {
         return null;
     }
 
     @Override
-    public <E> Mono<E> get(Class<E> type, String name) {
+    public <C> Mono<C> fetch(Class<C> type, String name) {
         return null;
     }
 
     @Override
-    public <E> Mono<E> fetch(Class<E> type, String name) {
+    public <C> Mono<PageResult<C>> list(Class<C> type, Predicate<C> predicate,
+                                        Comparator<C> comparator, int page, int size) {
         return null;
     }
 
     @Override
-    public <E> Mono<PageResult<E>> list(Class<E> type, Predicate<E> predicate,
-                                        Comparator<E> comparator, int page, int size) {
-        return null;
-    }
-
-    @Override
-    public <E> Flux<E> list(Class<E> type, Predicate<E> predicate, Comparator<E> comparator) {
+    public <C> Flux<C> list(Class<C> type, Predicate<C> predicate, Comparator<C> comparator) {
         return null;
     }
 }
