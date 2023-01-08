@@ -49,7 +49,7 @@ public class CustomConverter {
             .name(name)
             .build();
 
-        List<CustomMetadataEntity> extensionMetadataEntities = new ArrayList<>();
+        List<CustomMetadataEntity> customMetadataEntities = new ArrayList<>();
         for (Field field : Arrays.stream(cls.getDeclaredFields())
             .filter(field -> !field.isAnnotationPresent(Name.class))
             .toList()) {
@@ -57,7 +57,7 @@ public class CustomConverter {
             try {
                 if (field.trySetAccessible()) {
                     Object fieldValue = field.get(custom);
-                    extensionMetadataEntities.add(CustomMetadataEntity.builder()
+                    customMetadataEntities.add(CustomMetadataEntity.builder()
                         .key(fieldName)
                         .value(objectMapper.writeValueAsBytes(fieldValue))
                         .build());
@@ -75,22 +75,22 @@ public class CustomConverter {
             }
         }
 
-        return new CustomDto(customEntity, extensionMetadataEntities);
+        return new CustomDto(customEntity, customMetadataEntities);
     }
 
-    private static <E> String getNameFieldValue(E extension, Class<?> cls) {
+    private static <C> String getNameFieldValue(C custom, Class<?> cls) {
         Field nameField = getNameField(cls);
         String name;
         try {
             nameField.setAccessible(true);
-            name = (String) nameField.get(extension);
+            name = (String) nameField.get(custom);
         } catch (IllegalAccessException e) {
             throw new CustomConvertException(
-                "get extension name filed value fail for name=" + nameField.getName(), e);
+                "get custom name filed value fail for name=" + nameField.getName(), e);
         }
         if (!StringUtils.hasText(name)) {
             throw new CustomConvertException(
-                "get extension name filed value fail for name=" + nameField.getName());
+                "get custom name filed value fail for name=" + nameField.getName());
         }
         return name;
     }

@@ -1,6 +1,7 @@
 package run.ikaros.server.store.repository;
 
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import reactor.core.publisher.Mono;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 
 /**
@@ -11,4 +12,5 @@ import run.ikaros.server.store.entity.CustomMetadataEntity;
  */
 public interface CustomMetadataRepository
     extends R2dbcRepository<CustomMetadataEntity, Long> {
+    Mono<Void> deleteAllByCustomId(Long customId);
 }

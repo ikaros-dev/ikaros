@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
@@ -21,6 +22,7 @@ import org.springframework.data.relational.core.mapping.Table;
 public class CustomEntity {
     @Id
     private Long id;
+    @Column("c_group")
     private String group;
     private String version;
     private String kind;
