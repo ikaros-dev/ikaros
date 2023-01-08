@@ -108,7 +108,7 @@ create sequence if not exists extension_metadata_seq
     cache 1
     no cycle;
 
-create table if not exists extension
+create table if not exists extension_metadata
 (
     id          int8         not null default nextval('extension_metadata_seq'),
     e_id int8 not null ,
