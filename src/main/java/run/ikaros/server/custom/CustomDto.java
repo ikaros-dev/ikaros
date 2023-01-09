@@ -10,10 +10,11 @@ import run.ikaros.server.store.entity.CustomMetadataEntity;
 public record CustomDto(@Nonnull CustomEntity customEntity,
                         @Nullable List<CustomMetadataEntity> customMetadataEntityList) {
 
-    void updateMetadataCustomId() {
+    CustomDto updateMetadataCustomId() {
         Long customId = customEntity.getId();
         Assert.notNull(customId, "custom id must not null");
         customMetadataEntityList.forEach(
             customMetadataEntity -> customMetadataEntity.setCustomId(customId));
+        return this;
     }
 }

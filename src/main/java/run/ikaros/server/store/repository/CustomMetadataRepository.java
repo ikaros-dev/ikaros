@@ -13,4 +13,6 @@ import run.ikaros.server.store.entity.CustomMetadataEntity;
 public interface CustomMetadataRepository
     extends R2dbcRepository<CustomMetadataEntity, Long> {
     Mono<Void> deleteAllByCustomId(Long customId);
+
+    Mono<CustomMetadataEntity> findByCustomIdAndKey(Long customId, String key);
 }
