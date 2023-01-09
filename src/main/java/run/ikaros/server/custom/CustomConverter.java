@@ -40,7 +40,7 @@ public class CustomConverter {
         Assert.notNull(customAnnotation,
             "class must annotation by @run.ikaros.server.custom.Custom");
 
-        String name = getNameFieldValue(custom, cls);
+        String name = getNameFieldValue(custom);
 
         CustomEntity customEntity = CustomEntity.builder()
             .group(customAnnotation.group())
@@ -78,8 +78,15 @@ public class CustomConverter {
         return new CustomDto(customEntity, customMetadataEntities);
     }
 
-    private static <C> String getNameFieldValue(C custom, Class<?> cls) {
-        Field nameField = getNameField(cls);
+    /**
+     * get current custom instance @Name field value.
+     *
+     * @param custom a custom instance
+     * @param <C>    custom instance class type
+     * @return current custom instance @Name field value
+     */
+    public static <C> String getNameFieldValue(C custom) {
+        Field nameField = getNameField(custom.getClass());
         String name;
         try {
             nameField.setAccessible(true);

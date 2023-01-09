@@ -55,8 +55,16 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    @Transactional(rollbackFor = Exception.class)
     public <C> Mono<C> delete(C custom) {
-        return null;
+        Assert.notNull(custom, "'custom' must not null");
+        return findCustomEntityOne(custom.getClass(), CustomConverter.getNameFieldValue(custom))
+            .flatMap(customEntity -> repository.delete(customEntity)
+                .then(Mono.just(customEntity)))
+            .flatMap(customEntity -> metadataRepository.deleteAllByCustomId(
+                customEntity.getId()))
+            .then(Mono.just(custom));
     }
 
     @Override
@@ -66,22 +74,23 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .then(repository.deleteAll());
     }
 
-    @Override
-    public <C> Mono<C> get(Class<C> type, String name) {
-        return null;
-    }
-
-    @Override
-    public <C> Mono<C> fetch(Class<C> type, String name) {
+    private <C> Mono<CustomEntity> findCustomEntityOne(Class<C> type, String name) {
         Assert.notNull(type, "'type' must not null");
         Assert.hasText(name, "'name' must has text");
         Custom annotation = type.getAnnotation(Custom.class);
         return repository.findOne(Example.of(CustomEntity.builder()
-                .group(annotation.group())
-                .version(annotation.version())
-                .kind(annotation.kind())
-                .name(name)
-                .build()))
+            .group(annotation.group())
+            .version(annotation.version())
+            .kind(annotation.kind())
+            .name(name)
+            .build()));
+    }
+
+    @Override
+    public <C> Mono<C> findOne(Class<C> type, String name) {
+        Assert.notNull(type, "'type' must not null");
+        Assert.hasText(name, "'name' must has text");
+        return findCustomEntityOne(type, name)
             .switchIfEmpty(Mono.error(new NotFoundException("custom not found for name=" + name)))
             .flatMap(customEntity -> metadataRepository.findAll(
                     Example.of(CustomMetadataEntity.builder()
@@ -95,13 +104,13 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
-    public <C> Mono<PageResult<C>> list(Class<C> type, Predicate<C> predicate,
-                                        Comparator<C> comparator, int page, int size) {
+    public <C> Mono<PageResult<C>> findAllWithPage(Class<C> type, Predicate<C> predicate,
+                                                   Comparator<C> comparator, int page, int size) {
         return null;
     }
 
     @Override
-    public <C> Flux<C> list(Class<C> type, Predicate<C> predicate, Comparator<C> comparator) {
+    public <C> Flux<C> findAll(Class<C> type, Predicate<C> predicate, Comparator<C> comparator) {
         return null;
     }
 }

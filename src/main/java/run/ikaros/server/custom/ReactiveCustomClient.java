@@ -17,13 +17,11 @@ public interface ReactiveCustomClient {
 
     Mono<Void> deleteAll();
 
-    <C> Mono<C> get(Class<C> type, String name);
+    <C> Mono<C> findOne(Class<C> type, String name);
 
-    <C> Mono<C> fetch(Class<C> type, String name);
+    <C> Mono<PageResult<C>> findAllWithPage(Class<C> type, Predicate<C> predicate,
+                                    Comparator<C> comparator, int page, int size);
 
-    <C> Mono<PageResult<C>> list(Class<C> type, Predicate<C> predicate,
-                                                   Comparator<C> comparator, int page, int size);
-
-    <C> Flux<C> list(Class<C> type, Predicate<C> predicate,
-                                       Comparator<C> comparator);
+    <C> Flux<C> findAll(Class<C> type, Predicate<C> predicate,
+                        Comparator<C> comparator);
 }
