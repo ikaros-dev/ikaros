@@ -55,40 +55,31 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     @Transactional(rollbackFor = Exception.class)
     public <C> Mono<C> update(C custom) {
         Assert.notNull(custom, "'custom' must not null");
-        return findCustomEntityOne(custom.getClass(), CustomConverter.getNameFieldValue(custom))
-            .checkpoint("find custom entity by class and @Name field value")
+        String name = CustomConverter.getNameFieldValue(custom);
+        return findCustomEntityOne(custom.getClass(), name)
+            .switchIfEmpty(Mono.error(new NotFoundException("custom not found for name=" + name)))
             .flatMap(customEntity -> Mono.just(custom)
                 .map(CustomConverter::convertTo)
-                .checkpoint("convert custom to customDto")
                 .flatMap(customDto -> Mono.just(customDto)
                     .flatMap(customDtoTmp -> Mono.just(customDtoTmp.customEntity()))
                     .map(customEntityTmp -> customEntityTmp.setId(customEntity.getId()))
                     .then(Mono.just(customDto)))
-                .checkpoint("update customDto custom id")
                 .map(CustomDto::updateMetadataCustomId)
-                .checkpoint("update customDto metadata customId by exists custom id")
                 .flatMap(customDto -> Mono.just(customDto.customMetadataEntityList())
                     .filter(customMetadataEntityList -> !customMetadataEntityList.isEmpty())
-                    .checkpoint("filter customDto metadata list is not empty")
                     .flatMapMany(customMetadataEntityList -> Flux.fromStream(
                         customMetadataEntityList.stream()))
                     .flatMap(customMetadataEntity -> metadataRepository.findByCustomIdAndKey(
                             customMetadataEntity.getCustomId(), customMetadataEntity.getKey())
-                        .checkpoint("find metadata exists")
-                        .switchIfEmpty(metadataRepository.save(customMetadataEntity)
-                            .checkpoint("add new metadata entity for key="
-                                + customMetadataEntity.getKey()))
+                        .switchIfEmpty(metadataRepository.save(customMetadataEntity))
                         .filter(existsCustomMetadataEntity ->
                             !(Objects.nonNull(existsCustomMetadataEntity.getValue())
                                 && Objects.nonNull(customMetadataEntity.getValue())
                                 && Arrays.equals(existsCustomMetadataEntity.getValue(),
                                 customMetadataEntity.getValue()))
                         )
-                        .checkpoint("filter same metadata value if database record exists")
                         .flatMap(existsCustomMetadataEntity -> metadataRepository.save(
-                            existsCustomMetadataEntity.setValue(
-                                customMetadataEntity.getValue()))
-                            .checkpoint("update metadata value to database")
+                            existsCustomMetadataEntity.setValue(customMetadataEntity.getValue()))
                         )
                     )
                     .then()

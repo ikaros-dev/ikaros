@@ -55,7 +55,79 @@ class ReactiveCustomClientTest {
     }
 
     @Test
-    void update() {
+    void updateWithoutField() {
+        String title = "title 001";
+        LocalDateTime time = LocalDateTime.now();
+        DemoCustom demoCustom = new DemoCustom();
+        demoCustom.setHead(Byte.parseByte("1"))
+            .setFlag(Boolean.TRUE)
+            .setTitle(title)
+            .setTime(time)
+            .setUser(new DemoCustom.User().setUsername("user"));
+
+        StepVerifier.create(reactiveCustomClient.create(demoCustom)
+                .flatMap(demoCustom1 -> Mono.just(demoCustom1.getTitle())))
+            .expectNext(title)
+            .expectComplete()
+            .verify();
+
+        Mono<DemoCustom> findOneResult = reactiveCustomClient.findOne(DemoCustom.class, title);
+        StepVerifier.create(findOneResult.flatMap(demoCustom1 -> Mono.just(demoCustom1.getTime())))
+            .expectNext(time)
+            .verifyComplete();
+        StepVerifier.create(findOneResult.flatMap(demoCustom1 -> Mono.just(demoCustom1.getFlag())))
+            .expectNext(Boolean.TRUE)
+            .verifyComplete();
+        StepVerifier.create(findOneResult.flatMap(demoCustom1 -> Mono.just(demoCustom1.getUser())
+            .flatMap(user -> Mono.just(user.getUsername()))))
+            .expectNext("user")
+            .verifyComplete();
+
+        LocalDateTime newTime = LocalDateTime.now();
+        demoCustom.setTime(newTime)
+            .setFlag(Boolean.FALSE)
+            .setUser(new DemoCustom.User().setUsername("newUser"));
+
+        StepVerifier.create(reactiveCustomClient.update(demoCustom))
+            .expectNext(demoCustom).verifyComplete();
+
+        StepVerifier.create(findOneResult.flatMap(demoCustom1 -> Mono.just(demoCustom1.getTime())))
+            .expectNext(newTime)
+            .verifyComplete();
+        StepVerifier.create(findOneResult.flatMap(demoCustom1 -> Mono.just(demoCustom1.getFlag())))
+            .expectNext(Boolean.FALSE)
+            .verifyComplete();
+        StepVerifier.create(findOneResult.flatMap(demoCustom1 -> Mono.just(demoCustom1.getUser())
+                .flatMap(user -> Mono.just(user.getUsername()))))
+            .expectNext("newUser")
+            .verifyComplete();
+
+    }
+
+    @Test
+    void updateWithNameField() {
+        String title = "title 001";
+        LocalDateTime time = LocalDateTime.now();
+        DemoCustom demoCustom = new DemoCustom();
+        demoCustom.setHead(Byte.parseByte("1"))
+            .setFlag(Boolean.TRUE)
+            .setTitle(title)
+            .setTime(time)
+            .setUser(new DemoCustom.User().setUsername("user"));
+
+        StepVerifier.create(reactiveCustomClient.create(demoCustom)
+                .flatMap(demoCustom1 -> Mono.just(demoCustom1.getTitle())))
+            .expectNext(title)
+            .expectComplete()
+            .verify();
+
+        Mono<DemoCustom> findOneResult = reactiveCustomClient.findOne(DemoCustom.class, title);
+        StepVerifier.create(findOneResult.flatMap(demoCustom1 -> Mono.just(demoCustom1.getTime())))
+            .expectNext(time)
+            .verifyComplete();
+
+
+
     }
 
     @Test
@@ -87,6 +159,12 @@ class ReactiveCustomClientTest {
             .verify();
 
         StepVerifier.create(findOneResult)
+            .expectError(NotFoundException.class)
+            .verify();
+
+        demoCustom.setTitle("newTitle");
+
+        StepVerifier.create(reactiveCustomClient.update(demoCustom))
             .expectError(NotFoundException.class)
             .verify();
 
