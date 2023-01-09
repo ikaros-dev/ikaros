@@ -1,13 +1,17 @@
 package run.ikaros.server.custom;
 
+import static run.ikaros.server.custom.CustomConverter.getNameFieldValue;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Predicate;
 import org.springframework.data.domain.Example;
+import org.springframework.data.util.Predicates;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.core.result.PageResult;
@@ -34,8 +38,9 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     @SuppressWarnings("unchecked")
     @Transactional(rollbackFor = Exception.class)
     public <C> Mono<C> create(C custom) {
-        Assert.notNull(custom, "'custom' must not null");
-        return Mono.just(custom)
+        return Mono.justOrEmpty(custom)
+            .filter(Objects::nonNull)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'custom' must not null")))
             .map(CustomConverter::convertTo)
             .flatMap(customDto -> repository.save(customDto.customEntity())
                 .flatMap(customEntity -> Mono.just(customDto)))
@@ -54,10 +59,12 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public <C> Mono<C> update(C custom) {
-        Assert.notNull(custom, "'custom' must not null");
-        String name = CustomConverter.getNameFieldValue(custom);
-        return findCustomEntityOne(custom.getClass(), name)
-            .switchIfEmpty(Mono.error(new NotFoundException("custom not found for name=" + name)))
+        return Mono.justOrEmpty(custom)
+            .filter(Objects::nonNull)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'custom' must not null")))
+            .flatMap(obj -> findCustomEntityOne(custom.getClass(), getNameFieldValue(custom)))
+            .switchIfEmpty(Mono.error(
+                new NotFoundException("custom not found for name=" + getNameFieldValue(custom))))
             .flatMap(customEntity -> Mono.just(custom)
                 .map(CustomConverter::convertTo)
                 .flatMap(customDto -> Mono.just(customDto)
@@ -85,19 +92,22 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
                     .then()
                 )
             )
-            .then(Mono.just(custom));
+            .then(Mono.justOrEmpty(custom));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public <C> Mono<C> delete(C custom) {
-        Assert.notNull(custom, "'custom' must not null");
-        return findCustomEntityOne(custom.getClass(), CustomConverter.getNameFieldValue(custom))
+        return Mono.justOrEmpty(custom)
+            .filter(Objects::nonNull)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'custom' must not null")))
+            .flatMap(obj -> findCustomEntityOne(custom.getClass(),
+                getNameFieldValue(custom)))
             .flatMap(customEntity -> repository.delete(customEntity)
                 .then(Mono.just(customEntity)))
             .flatMap(customEntity -> metadataRepository.deleteAllByCustomId(
                 customEntity.getId()))
-            .then(Mono.just(custom));
+            .then(Mono.justOrEmpty(custom));
     }
 
     @Override
@@ -108,22 +118,29 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     private <C> Mono<CustomEntity> findCustomEntityOne(Class<C> type, String name) {
-        Assert.notNull(type, "'type' must not null");
-        Assert.hasText(name, "'name' must has text");
-        Custom annotation = type.getAnnotation(Custom.class);
-        return repository.findOne(Example.of(CustomEntity.builder()
-            .group(annotation.group())
-            .version(annotation.version())
-            .kind(annotation.kind())
-            .name(name)
-            .build()));
+        return Mono.justOrEmpty(type)
+            .filter(Objects::nonNull)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'type' must not null")))
+            .flatMap(obj -> Mono.justOrEmpty(name))
+            .filter(StringUtils::hasText)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'name' must has text")))
+            .flatMap(obj -> repository.findOne(Example.of(CustomEntity.builder()
+                .group(type.getAnnotation(Custom.class).group())
+                .version(type.getAnnotation(Custom.class).version())
+                .kind(type.getAnnotation(Custom.class).kind())
+                .name(name)
+                .build())));
     }
 
     @Override
     public <C> Mono<C> findOne(Class<C> type, String name) {
-        Assert.notNull(type, "'type' must not null");
-        Assert.hasText(name, "'name' must has text");
-        return findCustomEntityOne(type, name)
+        return Mono.justOrEmpty(type)
+            .filter(Objects::nonNull)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'type' must not null")))
+            .flatMap(obj -> Mono.justOrEmpty(name))
+            .filter(StringUtils::hasText)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'name' must has text")))
+            .flatMap(obj -> findCustomEntityOne(type, name))
             .switchIfEmpty(Mono.error(new NotFoundException("custom not found for name=" + name)))
             .flatMap(customEntity -> metadataRepository.findAll(
                     Example.of(CustomMetadataEntity.builder()
@@ -137,13 +154,29 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
-    public <C> Mono<PageResult<C>> findAllWithPage(Class<C> type, Predicate<C> predicate,
-                                                   Comparator<C> comparator, int page, int size) {
+    public <C> Mono<PageResult<C>> findAllWithPage(Class<C> type, int page, int size,
+                                                   Predicate<C> predicate,
+                                                   Comparator<C> comparator) {
+        Assert.notNull(type, "'type' must not null");
         return null;
     }
 
     @Override
-    public <C> Flux<C> findAll(Class<C> type, Predicate<C> predicate, Comparator<C> comparator) {
-        return null;
+    public <C> Flux<C> findAll(Class<C> type, Predicate<C> predicate) {
+        return Mono.justOrEmpty(type)
+            .filter(Objects::nonNull)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'type' must not null")))
+            .flatMapMany(obj -> repository.findAll(Example.of(CustomEntity.builder()
+                .group(type.getAnnotation(Custom.class).group())
+                .version(type.getAnnotation(Custom.class).version())
+                .kind(type.getAnnotation(Custom.class).kind())
+                .build())))
+            .flatMap(customEntity -> metadataRepository.findAllByCustomId(customEntity.getId())
+                .collectList()
+                .flatMap(customMetadataEntityList ->
+                    Mono.just(new CustomDto(customEntity, customMetadataEntityList))))
+            .map(customDto -> CustomConverter.convertFrom(type, customDto))
+            .filter(Objects.isNull(predicate) ? Predicates.isTrue() : predicate);
     }
+
 }

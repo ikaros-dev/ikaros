@@ -1,5 +1,7 @@
 package run.ikaros.server.custom;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.Comparator;
 import java.util.function.Predicate;
 import reactor.core.publisher.Flux;
@@ -19,9 +21,11 @@ public interface ReactiveCustomClient {
 
     <C> Mono<C> findOne(Class<C> type, String name);
 
-    <C> Mono<PageResult<C>> findAllWithPage(Class<C> type, Predicate<C> predicate,
-                                    Comparator<C> comparator, int page, int size);
+    <C> Mono<PageResult<C>> findAllWithPage(@Nonnull Class<C> type,
+                                            @Nullable int page, @Nullable int size,
+                                            @Nullable Predicate<C> predicate,
+                                            @Nullable Comparator<C> comparator);
 
-    <C> Flux<C> findAll(Class<C> type, Predicate<C> predicate,
-                        Comparator<C> comparator);
+    <C> Flux<C> findAll(@Nonnull Class<C> type, @Nullable Predicate<C> predicate);
+
 }

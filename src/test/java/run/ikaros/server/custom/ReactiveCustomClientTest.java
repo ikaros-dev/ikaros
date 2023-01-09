@@ -1,6 +1,7 @@
 package run.ikaros.server.custom;
 
 import java.time.LocalDateTime;
+import java.util.function.Predicate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +18,21 @@ class ReactiveCustomClientTest {
 
     @AfterEach
     void tearDown() {
-        reactiveCustomClient.deleteAll().block();
+        StepVerifier.create(reactiveCustomClient.deleteAll())
+            .verifyComplete();
     }
 
     @Test
     void createAndFindOne() {
         String title = "title 001";
+        StepVerifier.create(reactiveCustomClient.create(null))
+            .expectErrorMessage("'custom' must not null").verify();
+
+        StepVerifier.create(reactiveCustomClient.findOne(null, title))
+            .expectErrorMessage("'type' must not null").verify();
+        StepVerifier.create(reactiveCustomClient.findOne(DemoCustom.class, ""))
+            .expectErrorMessage("'name' must has text").verify();
+
         DemoCustom demoCustom = new DemoCustom();
         demoCustom.setHead(Byte.parseByte("1"))
             .setFlag(Boolean.TRUE)
@@ -79,7 +89,7 @@ class ReactiveCustomClientTest {
             .expectNext(Boolean.TRUE)
             .verifyComplete();
         StepVerifier.create(findOneResult.flatMap(demoCustom1 -> Mono.just(demoCustom1.getUser())
-            .flatMap(user -> Mono.just(user.getUsername()))))
+                .flatMap(user -> Mono.just(user.getUsername()))))
             .expectNext("user")
             .verifyComplete();
 
@@ -106,6 +116,9 @@ class ReactiveCustomClientTest {
 
     @Test
     void updateWithNameField() {
+        StepVerifier.create(reactiveCustomClient.update(null))
+            .expectErrorMessage("'custom' must not null").verify();
+
         String title = "title 001";
         LocalDateTime time = LocalDateTime.now();
         DemoCustom demoCustom = new DemoCustom();
@@ -127,11 +140,13 @@ class ReactiveCustomClientTest {
             .verifyComplete();
 
 
-
     }
 
     @Test
     void delete() {
+        StepVerifier.create(reactiveCustomClient.delete(null))
+            .expectErrorMessage("'custom' must not null").verify();
+
         String title = "title 001";
         LocalDateTime time = LocalDateTime.now();
         DemoCustom demoCustom = new DemoCustom();
@@ -170,5 +185,42 @@ class ReactiveCustomClientTest {
 
     }
 
+    @Test
+    void findAll() {
+        StepVerifier.create(reactiveCustomClient.findAll(null, null))
+            .expectErrorMessage("'type' must not null")
+            .verify();
+
+        String titlePrefix = "title-";
+        for (int i = 0; i < 8; i++) {
+            String title = titlePrefix + i;
+            DemoCustom demoCustom = new DemoCustom();
+            demoCustom.setFlag(Boolean.TRUE)
+                .setTitle(title)
+                .setNumber((long) i);
+
+            StepVerifier.create(reactiveCustomClient.create(demoCustom)
+                    .flatMap(demoCustom1 -> Mono.just(demoCustom1.getTitle())))
+                .expectNext(title)
+                .expectComplete()
+                .verify();
+        }
+
+        // test findAll
+        StepVerifier.create(reactiveCustomClient.findAll(DemoCustom.class, null)
+                .flatMap(demoCustom -> Mono.just(demoCustom.getTitle())))
+            .expectNext(titlePrefix + 0, titlePrefix + 1, titlePrefix + 2, titlePrefix + 3)
+            .expectNext(titlePrefix + 4, titlePrefix + 5, titlePrefix + 6, titlePrefix + 7)
+            .verifyComplete();
+
+
+        // test findAll with predicate
+        Predicate<DemoCustom> predicate =
+            demoCustom -> (titlePrefix + 1).equals(demoCustom.getTitle());
+        StepVerifier.create(reactiveCustomClient.findAll(DemoCustom.class, predicate)
+                .flatMap(demoCustom -> Mono.just(demoCustom.getTitle())))
+            .expectNext(titlePrefix + 1)
+            .verifyComplete();
+    }
 
 }

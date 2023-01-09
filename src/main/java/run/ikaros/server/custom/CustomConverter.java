@@ -86,6 +86,9 @@ public class CustomConverter {
      * @return current custom instance @Name field value
      */
     public static <C> String getNameFieldValue(C custom) {
+        if (custom == null) {
+            return null;
+        }
         Field nameField = getNameField(custom.getClass());
         String name;
         try {
