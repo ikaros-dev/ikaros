@@ -1,4 +1,4 @@
-package run.ikaros.server.core.result;
+package run.ikaros.server.core.warp;
 
 
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
@@ -15,7 +15,7 @@ import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 @Data
-public class PageResult<T> implements Streamable<T> {
+public class PagingWrap<T> implements Streamable<T> {
 
     @Schema(description = "Page number, starts from 1. If not set or equal to 0, it means no "
         + "pagination.", requiredMode = REQUIRED)
@@ -39,7 +39,7 @@ public class PageResult<T> implements Streamable<T> {
      * @param total total
      * @param items item list
      */
-    public PageResult(int page, int size, long total, List<T> items) {
+    public PagingWrap(int page, int size, long total, List<T> items) {
         Assert.isTrue(total >= 0, "Total elements must be greater than or equal to 0");
         if (page < 0) {
             page = 0;
@@ -56,7 +56,7 @@ public class PageResult<T> implements Streamable<T> {
         this.items = items;
     }
 
-    public PageResult(List<T> items) {
+    public PagingWrap(List<T> items) {
         this(0, 0, items.size(), items);
     }
 
@@ -112,8 +112,8 @@ public class PageResult<T> implements Streamable<T> {
     }
 
 
-    public static <T> PageResult<T> emptyResult() {
-        return new PageResult<>(List.of());
+    public static <T> PagingWrap<T> emptyResult() {
+        return new PagingWrap<>(List.of());
     }
 
     /**

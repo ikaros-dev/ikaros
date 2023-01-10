@@ -6,8 +6,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import run.ikaros.server.core.warp.PagingWrap;
 import run.ikaros.server.infra.exception.NotFoundException;
 
 @SpringBootTest
@@ -223,4 +225,61 @@ class ReactiveCustomClientTest {
             .verifyComplete();
     }
 
+
+    @Test
+    void findAllWithPage() {
+        StepVerifier.create(reactiveCustomClient.findAllWithPage(null, null, null, null))
+            .expectError(IllegalArgumentException.class).verify();
+
+        long number = 9;
+        String titlePrefix = "title-";
+        for (int i = 1; i <= number; i++) {
+            String title = titlePrefix + i;
+            DemoCustom demoCustom = new DemoCustom();
+            demoCustom.setFlag(Boolean.TRUE)
+                .setTitle(title)
+                .setNumber((long) i);
+            StepVerifier.create(reactiveCustomClient.create(demoCustom)
+                    .flatMap(demoCustom1 -> Mono.just(demoCustom1.getTitle())))
+                .expectNext(title).verifyComplete();
+        }
+
+        Mono<PagingWrap<DemoCustom>> findFirstPageWithoutPre =
+            reactiveCustomClient.findAllWithPage(DemoCustom.class, 1, 4, null);
+        StepVerifier.create(findFirstPageWithoutPre
+                .flatMap(pageWarp -> Mono.just(pageWarp.getTotal())))
+            .expectNext(number).verifyComplete();
+        StepVerifier.create(findFirstPageWithoutPre
+                .flatMap(pageWarp -> Mono.just(pageWarp.getTotalPages())))
+            .expectNext(3L).verifyComplete();
+        StepVerifier.create(findFirstPageWithoutPre
+                .flatMapMany(pageWarp -> Flux.fromStream(pageWarp.getItems().stream()))
+                .flatMap(demoCustom -> Mono.just(demoCustom.getTitle())))
+            .expectNext(titlePrefix + 1, titlePrefix + 2, titlePrefix + 3, titlePrefix + 4)
+            .verifyComplete();
+        StepVerifier.create(reactiveCustomClient.findAllWithPage(DemoCustom.class, 2, 4, null)
+                .flatMapMany(pageWarp -> Flux.fromStream(pageWarp.getItems().stream()))
+                .flatMap(demoCustom -> Mono.just(demoCustom.getTitle())))
+            .expectNext(titlePrefix + 5, titlePrefix + 6, titlePrefix + 7, titlePrefix + 8)
+            .verifyComplete();
+        StepVerifier.create(reactiveCustomClient.findAllWithPage(DemoCustom.class, 3, 4, null)
+                .flatMapMany(pageWarp -> Flux.fromStream(pageWarp.getItems().stream()))
+                .flatMap(demoCustom -> Mono.just(demoCustom.getTitle())))
+            .expectNext(titlePrefix + 9)
+            .verifyComplete();
+
+        StepVerifier.create(reactiveCustomClient.findAllWithPage(DemoCustom.class, 1, 4,
+                    demoCustom -> !(titlePrefix + 3).equals(demoCustom.getTitle()))
+                .flatMapMany(pageWarp -> Flux.fromStream(pageWarp.getItems().stream()))
+                .flatMap(demoCustom -> Mono.just(demoCustom.getTitle())))
+            .expectNext(titlePrefix + 1, titlePrefix + 2, titlePrefix + 4)
+            .verifyComplete();
+        StepVerifier.create(reactiveCustomClient.findAllWithPage(DemoCustom.class, 1, 4,
+                    demoCustom -> (titlePrefix + 3).equals(demoCustom.getTitle()))
+                .flatMapMany(pageWarp -> Flux.fromStream(pageWarp.getItems().stream()))
+                .flatMap(demoCustom -> Mono.just(demoCustom.getTitle())))
+            .expectNext(titlePrefix + 3)
+            .verifyComplete();
+
+    }
 }

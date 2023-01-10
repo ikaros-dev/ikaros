@@ -3,18 +3,17 @@ package run.ikaros.server.custom;
 import static run.ikaros.server.custom.CustomConverter.getNameFieldValue;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Predicate;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Predicates;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.core.result.PageResult;
+import run.ikaros.server.core.warp.PagingWrap;
 import run.ikaros.server.infra.exception.NotFoundException;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
@@ -154,11 +153,28 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
-    public <C> Mono<PageResult<C>> findAllWithPage(Class<C> type, int page, int size,
-                                                   Predicate<C> predicate,
-                                                   Comparator<C> comparator) {
-        Assert.notNull(type, "'type' must not null");
-        return null;
+    public <C> Mono<PagingWrap<C>> findAllWithPage(Class<C> type, Integer page, Integer size,
+                                                   Predicate<C> predicate) {
+        final int finalPage = (page == null || page <= 0) ? 1 : page;
+        final int finalSize = (size == null || size <= 0) ? 5 : size;
+        return Mono.justOrEmpty(type)
+            .filter(Objects::nonNull)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'type' must not null")))
+            .flatMap(obj -> repository.findAllByGroupAndVersionAndKind(
+                    type.getAnnotation(Custom.class).group(),
+                    type.getAnnotation(Custom.class).version(),
+                    type.getAnnotation(Custom.class).kind(),
+                    PageRequest.of(finalPage - 1, finalSize))
+                .flatMap(customEntity -> metadataRepository.findAllByCustomId(customEntity.getId())
+                    .collectList()
+                    .flatMap(customMetadataEntities ->
+                        Mono.just(new CustomDto(customEntity, customMetadataEntities))))
+                .map(customDto -> CustomConverter.convertFrom(type, customDto))
+                .filter(Objects.isNull(predicate) ? Predicates.isTrue() : predicate)
+                .collectList()
+                .flatMap(customList -> repository.count()
+                    .flatMap(total ->
+                        Mono.just(new PagingWrap<C>(finalPage, finalSize, total, customList)))));
     }
 
     @Override
