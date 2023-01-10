@@ -6,7 +6,6 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -62,13 +61,13 @@ public class PagingWrap<T> implements Streamable<T> {
 
     @Schema(description = "Indicates whether current page is the first page.",
         requiredMode = REQUIRED)
-    public boolean isFirst() {
+    public boolean isFirstPage() {
         return !hasPrevious();
     }
 
     @Schema(description = "Indicates whether current page is the last page.",
         requiredMode = REQUIRED)
-    public boolean isLast() {
+    public boolean isLastPage() {
         return !hasNext();
     }
 
@@ -116,20 +115,4 @@ public class PagingWrap<T> implements Streamable<T> {
         return new PagingWrap<>(List.of());
     }
 
-    /**
-     * Manually paginate the List collection.
-     */
-    public static <T> List<T> subList(List<T> list, int page, int size) {
-        if (page < 1) {
-            return list;
-        }
-        List<T> listSort = new ArrayList<>();
-        int total = list.size();
-        int pageStart = page == 1 ? 0 : (page - 1) * size;
-        int pageEnd = Math.min(total, page * size);
-        if (total > pageStart) {
-            listSort = list.subList(pageStart, pageEnd);
-        }
-        return listSort;
-    }
 }

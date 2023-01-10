@@ -1,9 +1,10 @@
 package run.ikaros.server.custom;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -50,32 +51,53 @@ public class CustomConverter {
             .build();
 
         List<CustomMetadataEntity> customMetadataEntities = new ArrayList<>();
-        for (Field field : Arrays.stream(cls.getDeclaredFields())
+        Arrays.stream(cls.getDeclaredFields())
             .filter(field -> !field.isAnnotationPresent(Name.class))
-            .toList()) {
-            String fieldName = field.getName();
-            try {
-                if (field.trySetAccessible()) {
-                    Object fieldValue = field.get(custom);
-                    customMetadataEntities.add(CustomMetadataEntity.builder()
-                        .key(fieldName)
-                        .value(objectMapper.writeValueAsBytes(fieldValue))
-                        .build());
-                } else {
-                    throw new CustomConvertException("set field accessible fail for for class: "
-                        + cls + " and field name:" + fieldName);
-                }
-            } catch (IllegalAccessException e) {
-                throw new CustomConvertException(
-                    "get field value fail for class: " + cls + " and field name:" + fieldName, e);
-            } catch (JsonProcessingException e) {
-                throw new CustomConvertException(
-                    "convert field value to bytes fail for class: " + cls + " and field name:"
-                        + fieldName, e);
-            }
-        }
+            .forEach(field -> customMetadataEntities.add(
+                covertCustomFieldToMetadataEntity(custom, field, objectMapper)
+            ));
 
         return new CustomDto(customEntity, customMetadataEntities);
+    }
+
+    /**
+     * convert Custom Field to CustomMetadataEntity.
+     *
+     * @param custom a Custom instance
+     * @param field  a Custom instance Field
+     * @param om     json converter
+     * @param <C>    Custom class type
+     * @return a CustomMetadataEntity instance
+     */
+    public static <C> CustomMetadataEntity covertCustomFieldToMetadataEntity(@Nonnull C custom,
+                                                                             @Nonnull Field field,
+                                                                             @Nullable
+                                                                             ObjectMapper om) {
+        Assert.notNull(custom, "'custom' must not null");
+        Assert.notNull(field, "'field' must not null");
+        if (field.isAnnotationPresent(Name.class)) {
+            throw new IllegalArgumentException(
+                "@Name field can not convert CustomMetadataEntity instance, class: "
+                    + custom.getClass() + ", filed name: " + field.getName());
+        }
+
+        Class<?> cls = custom.getClass();
+        String fieldName = field.getName();
+        if (om == null) {
+            om = objectMapper;
+        }
+        try {
+            field.setAccessible(true);
+            Object fieldValue = field.get(custom);
+            return CustomMetadataEntity.builder()
+                .key(fieldName)
+                .value(om.writeValueAsBytes(fieldValue))
+                .build();
+        } catch (Exception e) {
+            throw new CustomConvertException(
+                "convert custom field to metadata entity fail for class: " + cls
+                    + " and field name:" + fieldName, e);
+        }
     }
 
     /**
@@ -140,13 +162,8 @@ public class CustomConverter {
         C custom;
         try {
             custom = customType.getDeclaredConstructor().newInstance();
-            if (nameField.trySetAccessible()) {
-                nameField.set(custom, name);
-            } else {
-                throw new CustomConvertException(
-                    "set custom @Name field value fail for custom class="
-                        + customType);
-            }
+            nameField.setAccessible(true);
+            nameField.set(custom, name);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                  | NoSuchMethodException e) {
             throw new CustomConvertException(
@@ -186,13 +203,8 @@ public class CustomConverter {
                         // skip static and final field
                         continue;
                     }
-                    if (field.trySetAccessible()) {
-                        field.set(custom, fieldValue);
-                    } else {
-                        throw new CustomConvertException(
-                            "set custom field value fail for class="
-                                + customType + ". field=" + fieldName);
-                    }
+                    field.setAccessible(true);
+                    field.set(custom, fieldValue);
                 } catch (IOException | IllegalAccessException e) {
                     throw new CustomConvertException(
                         "read custom field value fail form metadata entity value for class="
