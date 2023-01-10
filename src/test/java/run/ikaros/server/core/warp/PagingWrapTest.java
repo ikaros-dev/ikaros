@@ -1,6 +1,7 @@
 package run.ikaros.server.core.warp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,9 +10,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * @author: li-guohao
- */
 class PagingWrapTest {
 
     @BeforeEach
@@ -94,6 +92,9 @@ class PagingWrapTest {
         PagingWrap<String> pagingWrap =
             new PagingWrap<String>(1, 4, 10, List.of("1", "2", "3", "4"));
         assertThat(pagingWrap.getTotalPages()).isEqualTo(3);
+
+        pagingWrap = new PagingWrap<>(1, 0, 10, List.of());
+        assertThat(pagingWrap.getTotalPages()).isEqualTo(1);
     }
 
     @Test
@@ -123,8 +124,30 @@ class PagingWrapTest {
     }
 
     @Test
+    void testToString() {
+        List<String> strList = List.of("1", "2", "3", "4");
+        PagingWrap<String> pagingWrap = new PagingWrap<String>(1, 4, 10, strList);
+        assertThat(pagingWrap.toString())
+            .isEqualTo("PagingWrap(page=1, size=4, total=10, items=[1, 2, 3, 4])");
+    }
+
+    @Test
+    void testHashCode() {
+        List<String> strList = List.of("1", "2", "3", "4");
+        PagingWrap<String> pagingWrap = new PagingWrap<String>(1, 4, 10, strList);
+        assertThat(pagingWrap.hashCode()).isNotZero();
+    }
+
+    @Test
     void testIllegalArg() {
         PagingWrap<Object> objects = new PagingWrap<>(-1, -2, 40L, null);
         assertThat(objects.getItems()).isEqualTo(Collections.emptyList());
+        try {
+            new PagingWrap<>(1, 2, -1L, null);
+            fail("process should not run this");
+        } catch (IllegalArgumentException illegalArgumentException) {
+            assertThat(illegalArgumentException.getMessage()).isEqualTo(
+                "Total elements must be greater than or equal to 0");
+        }
     }
 }

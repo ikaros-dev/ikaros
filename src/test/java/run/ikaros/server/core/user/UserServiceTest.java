@@ -1,5 +1,10 @@
 package run.ikaros.server.core.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static run.ikaros.server.core.user.UserService.DEFAULT_PASSWORD_ENCODING_ID_PREFIX;
+import static run.ikaros.server.test.TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +26,24 @@ class UserServiceTest {
     @AfterEach
     void tearDown() {
         userService.deleteAll().block();
+    }
+
+    @Test
+    void addEncodingIdPrefixIfNotExists() {
+        try {
+            UserService.addEncodingIdPrefixIfNotExists("");
+            fail(PROCESS_SHOULD_NOT_RUN_TO_THIS);
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("'rawPassword' must has text");
+        }
+
+        String password = "password";
+
+        assertThat(UserService.addEncodingIdPrefixIfNotExists(password))
+            .isEqualTo(DEFAULT_PASSWORD_ENCODING_ID_PREFIX + password);
+        assertThat(UserService.addEncodingIdPrefixIfNotExists(
+            DEFAULT_PASSWORD_ENCODING_ID_PREFIX + password))
+            .isEqualTo(DEFAULT_PASSWORD_ENCODING_ID_PREFIX + password);
     }
 
     @Test
