@@ -4,6 +4,12 @@ name: Ikaros CI
 
 # Controls when the workflow will run
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - "**"
+      - "!**.md"
   pull_request:
     branches:
       - master
@@ -11,13 +17,6 @@ on:
     paths:
       - "**"
       - "!**.md"
-    push:
-      branches:
-        - master
-        - release-*
-      paths:
-        - "**"
-        - "!**.md"
 
 jobs:
   check:
