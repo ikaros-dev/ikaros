@@ -7,18 +7,18 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
- * a container for store resource logically.
+ * setting entity.
  *
- * @author liguohao
+ * @author: li-guohao
  */
 @Data
-@Table(name = "box")
+@Table(name = "setting")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class BoxEntity extends BaseEntity {
-
-    @Column("parent_id")
-    private Long parentId;
-
-    private String name;
+public class SettingEntity extends BaseEntity {
+    private String category;
+    @Column("setting_key")
+    private String key;
+    @Column("setting_value")
+    private String value;
 }

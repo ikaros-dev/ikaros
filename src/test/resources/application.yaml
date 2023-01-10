@@ -1,6 +1,6 @@
 ikaros:
   external-url: "http://${server.address:localhost}:${server.port}"
-  work-dir: ./
+  work-dir: ${user.dir}/build/
 
 server:
   port: 51000

@@ -1,6 +1,6 @@
 ikaros:
   external-url: "http://${server.address:localhost}:${server.port}"
-  work-dir: ./
+  work-dir: ${user.dir}/
 
 server:
   port: 9999
@@ -13,8 +13,8 @@ spring:
   codec:
     max-in-memory-size: 10MB
   r2dbc:
-    url: r2dbc:pool:postgresql://localhost:5432/ikaros
-    username: ikaros
+    url: r2dbc:pool:postgresql://localhost:5432/postgres
+    username: postgres
     password: openpostgresql
   sql:
     init:

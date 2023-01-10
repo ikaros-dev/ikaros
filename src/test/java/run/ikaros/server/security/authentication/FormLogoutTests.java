@@ -59,10 +59,10 @@ public class FormLogoutTests {
 
         // logout
         webClient
-            .get()
+            .post()
             .uri("/logout")
             .exchange()
-            .expectStatus().is2xxSuccessful()
-            .expectHeader().contentType(MediaType.TEXT_HTML);
+            .expectStatus().is3xxRedirection()
+            .expectHeader().location(AppConst.LOGOUT_SUCCESS_LOCATION);
     }
 }
