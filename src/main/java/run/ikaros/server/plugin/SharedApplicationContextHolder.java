@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import run.ikaros.server.custom.ReactiveCustomClient;
 
 /**
- * a holder for {@link SharedApplicationContext},
+ * A holder for {@link SharedApplicationContext},
  * can register some beans to {@link SharedApplicationContext}
  * such as {@link ReactiveCustomClient}.
  *
@@ -24,7 +24,7 @@ public class SharedApplicationContextHolder {
     }
 
     /**
-     * get shared applicationContext with single-instance-mode.
+     * Get shared applicationContext with single-instance-mode.
      *
      * @return a shared applicationContext
      */
@@ -48,7 +48,7 @@ public class SharedApplicationContextHolder {
         DefaultListableBeanFactory beanFactory =
             (DefaultListableBeanFactory) sharedApplicationContext.getBeanFactory();
 
-        // register shared object here;
+        // Register shared object here
         ReactiveCustomClient reactiveCustomClient =
             rootApplicationContext.getBean(ReactiveCustomClient.class);
         beanFactory.registerSingleton("reactiveCustomClient", reactiveCustomClient);
