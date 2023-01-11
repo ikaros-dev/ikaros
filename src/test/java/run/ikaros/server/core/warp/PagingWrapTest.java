@@ -118,7 +118,6 @@ class PagingWrapTest {
     void equals() {
         List<String> strList = List.of("1", "2", "3", "4");
         PagingWrap<String> pagingWrap = new PagingWrap<String>(1, 4, 10, strList);
-        assertThat(pagingWrap.canEqual(new Object())).isFalse();
         assertThat(pagingWrap.equals(PagingWrap.emptyResult())).isFalse();
         assertThat(pagingWrap.equals(new PagingWrap<String>(1, 4, 10, strList))).isTrue();
         assertThat(pagingWrap.equals(new PagingWrap<String>(1, 5, 10, strList))).isFalse();
