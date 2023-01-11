@@ -9,7 +9,6 @@ import reactor.core.publisher.Mono;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.infra.exception.NotFoundException;
-import run.ikaros.server.infra.properties.SecurityProperties;
 import run.ikaros.server.store.entity.UserEntity;
 
 @Slf4j

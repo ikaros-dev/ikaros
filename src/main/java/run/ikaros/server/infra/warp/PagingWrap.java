@@ -1,4 +1,4 @@
-package run.ikaros.server.core.warp;
+package run.ikaros.server.infra.warp;
 
 
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;

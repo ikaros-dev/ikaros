@@ -25,6 +25,7 @@ import org.springframework.web.reactive.resource.PathResourceResolver;
 import org.springframework.web.reactive.result.view.ViewResolutionResultHandler;
 import org.springframework.web.reactive.result.view.ViewResolver;
 import reactor.core.publisher.Mono;
+import run.ikaros.server.console.ConsoleProperties;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.endpoint.CoreEndpointsBuilder;
 import run.ikaros.server.infra.properties.IkarosProperties;
@@ -35,10 +36,20 @@ public class WebFluxConfig implements WebFluxConfigurer {
 
     private final ApplicationContext applicationContext;
     private final IkarosProperties ikarosProperties;
+    private final ConsoleProperties consoleProperties;
 
-    public WebFluxConfig(ApplicationContext applicationContext, IkarosProperties ikarosProperties) {
+    /**
+     * construct a {@link WebFluxConfig} instance.
+     *
+     * @param applicationContext root application context
+     * @param ikarosProperties   ikaros prop
+     * @param consoleProperties  console prop
+     */
+    public WebFluxConfig(ApplicationContext applicationContext, IkarosProperties ikarosProperties,
+                         ConsoleProperties consoleProperties) {
         this.applicationContext = applicationContext;
         this.ikarosProperties = ikarosProperties;
+        this.consoleProperties = consoleProperties;
     }
 
     @Bean
@@ -79,7 +90,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
     }
 
     private Mono<ServerResponse> serveConsoleIndex(ServerRequest request) {
-        var indexLocation = ikarosProperties.getConsole().getLocation() + "index.html";
+        var indexLocation = consoleProperties.getLocation() + "index.html";
         var indexResource = applicationContext.getResource(indexLocation);
         try {
             return ServerResponse.ok()
@@ -104,7 +115,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
 
         // For console project
         registry.addResourceHandler("/console/**")
-            .addResourceLocations(ikarosProperties.getConsole().getLocation())
+            .addResourceLocations(consoleProperties.getLocation())
             .setCacheControl(cacheControl)
             .setUseLastModified(true)
             .resourceChain(true)
