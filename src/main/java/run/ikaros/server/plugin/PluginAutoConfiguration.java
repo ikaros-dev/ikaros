@@ -2,6 +2,7 @@ package run.ikaros.server.plugin;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.Objects;
 import org.pf4j.CompoundPluginLoader;
 import org.pf4j.CompoundPluginRepository;
 import org.pf4j.DefaultPluginRepository;
@@ -28,17 +29,21 @@ public class PluginAutoConfiguration {
     @Bean
     public IkarosPluginManager ikarosPluginManager(PluginProperties pluginProperties) {
         // Setup RuntimeMode
-        System.setProperty("pf4j.mode", pluginProperties.getRuntimeMode().toString());
+        RuntimeMode runtimeMode = RuntimeMode.DEPLOYMENT;
+        if (Objects.nonNull(pluginProperties.getRuntimeMode())) {
+            runtimeMode = pluginProperties.getRuntimeMode();
+        }
+        System.setProperty("pf4j.mode", runtimeMode.toString());
         // Setup Plugin folder
         String pluginsRoot =
             StringUtils.hasText(pluginProperties.getPluginsRoot())
                 ? pluginProperties.getPluginsRoot()
                 : "plugins";
         System.setProperty("pf4j.pluginsDir", pluginsRoot);
-        String appHome = System.getProperty("app.home");
-        if (RuntimeMode.DEPLOYMENT == pluginProperties.getRuntimeMode()
-            && StringUtils.hasText(appHome)) {
-            System.setProperty("pf4j.pluginsDir", appHome + File.separator + pluginsRoot);
+        String appDir = System.getProperty("user.dir");
+        if (RuntimeMode.DEPLOYMENT == runtimeMode
+            && StringUtils.hasText(appDir)) {
+            System.setProperty("pf4j.pluginsDir", appDir + File.separator + pluginsRoot);
         }
         // New instance
         IkarosPluginManager ikarosPluginManager = new IkarosPluginManager() {

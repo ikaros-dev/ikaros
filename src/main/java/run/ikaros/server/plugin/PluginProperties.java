@@ -7,7 +7,6 @@ import lombok.Data;
 import org.pf4j.PluginLoader;
 import org.pf4j.RuntimeMode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.validation.annotation.Validated;
 
 /**
  * Properties for plugin.
@@ -16,7 +15,6 @@ import org.springframework.validation.annotation.Validated;
  * @see PluginAutoConfiguration
  */
 @Data
-@Validated
 @ConfigurationProperties(prefix = "ikaros.plugin")
 public class PluginProperties {
 
