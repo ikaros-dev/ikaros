@@ -1,3 +1,7 @@
+ikaros:
+  plugin:
+    runtime-mode: development
+
 spring:
   thymeleaf:
     cache: false

@@ -1,6 +1,8 @@
 ikaros:
   external-url: "http://${server.address:localhost}:${server.port}"
   work-dir: ${user.dir}/build/
+  plugin:
+    runtime-mode: development
 
 server:
   port: 51000

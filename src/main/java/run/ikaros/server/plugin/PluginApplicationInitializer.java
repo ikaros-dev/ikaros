@@ -43,7 +43,7 @@ public class PluginApplicationInitializer {
             rootApplicationContext.getBean(SharedApplicationContextHolder.class);
     }
 
-    public ApplicationContext getPluginApplicationContext(String pluginId) {
+    public PluginApplicationContext getPluginApplicationContext(String pluginId) {
         return contextRegistry.getByPluginId(pluginId);
     }
 
