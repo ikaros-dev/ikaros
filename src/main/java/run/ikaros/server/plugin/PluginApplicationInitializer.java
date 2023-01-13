@@ -1,9 +1,13 @@
 package run.ikaros.server.plugin;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginWrapper;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigUtils;
@@ -94,9 +98,8 @@ public class PluginApplicationInitializer {
 
     private PluginApplicationContext createPluginApplicationContext(String pluginId) {
         Assert.notNull(pluginId, "'pluginId' must not be null");
-        PluginWrapper plugin = ikarosPluginManager.getPlugin(pluginId);
-        ClassLoader pluginClassLoader = plugin.getPluginClassLoader();
-
+        PluginWrapper pluginWrapper = ikarosPluginManager.getPlugin(pluginId);
+        ClassLoader pluginClassLoader = pluginWrapper.getPluginClassLoader();
 
         StopWatch stopWatch =
             new StopWatch(String.format("create-plugin-application-context-%s", pluginId));
@@ -118,13 +121,41 @@ public class PluginApplicationInitializer {
         AnnotationConfigUtils.registerAnnotationConfigProcessors(beanFactory);
         stopWatch.stop();
 
-        beanFactory.registerSingleton("pluginWrapper", ikarosPluginManager.getPlugin(pluginId));
+        beanFactory.registerSingleton("pluginWrapper", pluginWrapper);
+
+        createBasePluginBeanIfNotExists(pluginApplicationContext, pluginWrapper);
 
         log.debug("Total millis: {} ms -> {} for [{}]", stopWatch.getTotalTimeMillis(),
             stopWatch.prettyPrint(), pluginId);
 
         contextRegistry.register(pluginId, pluginApplicationContext);
         return pluginApplicationContext;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void createBasePluginBeanIfNotExists(PluginApplicationContext pluginApplicationContext,
+                                                 PluginWrapper pluginWrapper) {
+        ConfigurableListableBeanFactory beanFactory = pluginApplicationContext.getBeanFactory();
+        PluginDescriptor pluginDescriptor = pluginWrapper.getDescriptor();
+        String pluginClass = pluginDescriptor.getPluginClass();
+        ClassLoader pluginClassLoader = pluginWrapper.getPluginClassLoader();
+        Class<BasePlugin> cls = null;
+        try {
+
+            cls = (Class<BasePlugin>) pluginClassLoader.loadClass(pluginClass);
+            beanFactory.getBean(cls);
+        } catch (NoSuchBeanDefinitionException noSuchBeanDefinitionException) {
+            try {
+                BasePlugin plugin =
+                    Objects.requireNonNull(cls).getDeclaredConstructor(PluginWrapper.class)
+                        .newInstance(pluginWrapper);
+                beanFactory.registerSingleton(pluginDescriptor.getPluginId(), plugin);
+            } catch (Exception e) {
+                throw new PluginException("create BasePlugin Bean fail", e);
+            }
+        } catch (ClassNotFoundException e) {
+            throw new PluginException("class not found for class: " + pluginClass, e);
+        }
     }
 
     private Set<Class<?>> findCandidateComponents(String pluginId) {

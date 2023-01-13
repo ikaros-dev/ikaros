@@ -14,8 +14,8 @@ import org.pf4j.PluginManager;
  * to change {@link ClassLoadingStrategy}
  * from default {@link ClassLoadingStrategy#PDA} to {@link ClassLoadingStrategy#APD}.
  *
- * @see IkarosPluginManager
  * @author li-guohao
+ * @see IkarosPluginManager
  */
 public class IkarosDevelopmentPluginLoader extends DevelopmentPluginLoader {
     public IkarosDevelopmentPluginLoader(PluginManager pluginManager) {
@@ -29,8 +29,12 @@ public class IkarosDevelopmentPluginLoader extends DevelopmentPluginLoader {
             new PluginClassLoader(pluginManager, pluginDescriptor,
                 getClass().getClassLoader(), ClassLoadingStrategy.APD);
 
-        loadClasses(pluginPath, pluginClassLoader);
-        loadJars(pluginPath, pluginClassLoader);
+        if (pluginPath.toFile().isDirectory()) {
+            loadClasses(pluginPath, pluginClassLoader);
+            loadJars(pluginPath, pluginClassLoader);
+        } else {
+            pluginClassLoader.addFile(pluginPath.toFile());
+        }
 
         return pluginClassLoader;
     }

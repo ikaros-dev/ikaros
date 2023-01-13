@@ -14,6 +14,8 @@ import run.ikaros.server.custom.Name;
  * <pre>
  * # A unique name
  * name: plugin-starter
+ * # plugin entry class that extends BasePlugin
+ * clazz: run.ikaros.plugin.starter.StarterPlugin
  * # plugin 'version' is a valid semantic version string (see semver.org).
  * version: 1.0.0
  * requires: "*"
@@ -33,6 +35,7 @@ public class Plugin {
 
     @Name
     private String name;
+    private String clazz;
     /**
      * plugin version.
      *
