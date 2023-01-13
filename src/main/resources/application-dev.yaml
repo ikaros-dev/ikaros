@@ -1,6 +1,10 @@
 ikaros:
   plugin:
     runtime-mode: development
+    fixed-plugin-path:
+      - C:\Develop\ikaros-dev\plugin-starter
+#    enabled-plugins:
+#      - plugin-starter
 
 spring:
   thymeleaf:

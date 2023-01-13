@@ -188,7 +188,7 @@ public class IkarosPluginManager extends DefaultPluginManager
             }
         }
 
-        log.info("[Halo] {} plugins are started in {}ms. {} failed",
+        log.info("[Ikaros] {} plugins are started in {}ms. {} failed",
             getPlugins(PluginState.STARTED).size(),
             System.currentTimeMillis() - ts, startingErrors.size());
     }

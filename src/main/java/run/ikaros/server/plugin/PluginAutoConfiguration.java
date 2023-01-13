@@ -70,10 +70,7 @@ public class PluginAutoConfiguration {
 
             @Override
             protected PluginStatusProvider createPluginStatusProvider() {
-                if (PropertyPluginStatusProvider.isPropertySet(pluginProperties)) {
-                    return new PropertyPluginStatusProvider(pluginProperties);
-                }
-                return super.createPluginStatusProvider();
+                return new PropertyPluginStatusProvider(pluginProperties);
             }
 
             @Override
