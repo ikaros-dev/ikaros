@@ -16,6 +16,8 @@ public interface ReactiveCustomClient {
 
     <C> Mono<C> delete(C custom);
 
+    <C> Mono<C> delete(Class<C> clazz, String name);
+
     Mono<Void> deleteAll();
 
     <C> Mono<C> findOne(Class<C> type, String name);

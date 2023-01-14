@@ -215,4 +215,18 @@ public class CustomConverter {
 
         return custom;
     }
+
+    /**
+     * gvk.
+     *
+     * @return group version kind
+     * @see GroupVersionKind
+     */
+    public static GroupVersionKind gvk(Class<?> clazz) {
+        Custom annotation = clazz.getAnnotation(Custom.class);
+        if (annotation == null) {
+            return new GroupVersionKind("", "", "");
+        }
+        return new GroupVersionKind(annotation.group(), annotation.version(), annotation.kind());
+    }
 }

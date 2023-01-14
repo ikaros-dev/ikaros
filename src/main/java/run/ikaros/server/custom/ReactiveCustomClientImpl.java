@@ -110,6 +110,18 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
+    public <C> Mono<C> delete(Class<C> clazz, String name) {
+        return Mono.justOrEmpty(clazz)
+            .filter(Objects::nonNull)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'clazz' must not null")))
+            .flatMap(obj -> Mono.justOrEmpty(name))
+            .filter(StringUtils::hasText)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'name' must has text")))
+            .flatMap(n -> findOne(clazz, n))
+            .flatMap(this::delete);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Mono<Void> deleteAll() {
         return metadataRepository.deleteAll()
