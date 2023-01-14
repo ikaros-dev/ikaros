@@ -7,6 +7,7 @@ import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
 import static org.springframework.web.reactive.function.server.RequestPredicates.contentType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -19,10 +20,17 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.constant.OpenApiConst;
+import run.ikaros.server.plugin.ExtensionComponentsFinder;
 
 @Slf4j
 @Component
 public class FileEndpoint implements CoreEndpoint {
+
+    private final ExtensionComponentsFinder extensionComponentsFinder;
+
+    public FileEndpoint(ExtensionComponentsFinder extensionComponentsFinder) {
+        this.extensionComponentsFinder = extensionComponentsFinder;
+    }
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
@@ -54,6 +62,7 @@ public class FileEndpoint implements CoreEndpoint {
 
 
     Mono<ServerResponse> upload(ServerRequest request) {
+        List<FileHandler> extensions = extensionComponentsFinder.getExtensions(FileHandler.class);
         return Mono.empty();
     }
 

@@ -68,19 +68,18 @@ public class PluginApplicationInitializer {
         }
 
         StopWatch stopWatch =
-            new StopWatch(String.format("init-plugin-application-context-%s", pluginId));
+            new StopWatch(String.format("[%s]InitPluginAppContext", pluginId));
 
-        stopWatch.start(String.format("create plugin application context for [%s] ", pluginId));
+        stopWatch.start("CreatePluginAppContext");
         PluginApplicationContext pluginApplicationContext =
             createPluginApplicationContext(pluginId);
         stopWatch.stop();
 
-        stopWatch.start(String.format("find plugin candidate components for [%s] ", pluginId));
+        stopWatch.start("FindPluginCandidateComponents");
         Set<Class<?>> candidateComponents = findCandidateComponents(pluginId);
         stopWatch.stop();
 
-        stopWatch.start(
-            String.format("register all plugin candidate component bean for [%s] ", pluginId));
+        stopWatch.start("RegisterCandidateComponents");
         for (Class<?> component : candidateComponents) {
             log.debug("register a plugin component class [{}] to context for [{}]",
                 component, pluginId);
@@ -88,12 +87,14 @@ public class PluginApplicationInitializer {
         }
         stopWatch.stop();
 
-        stopWatch.start(String.format("refresh plugin application context for [%s] ", pluginId));
+        stopWatch.start("RefreshPluginAppContext");
         pluginApplicationContext.refresh();
         stopWatch.stop();
 
-        log.debug("initApplicationContext total millis: {} ms -> {} for [{}]",
-            stopWatch.getTotalTimeMillis(), stopWatch.prettyPrint(), pluginId);
+        log.debug("[{}] initApplicationContext total millis: {} ms -> {}", pluginId,
+            stopWatch.getTotalTimeMillis(), stopWatch.prettyPrint());
+
+        contextRegistry.register(pluginId, pluginApplicationContext);
     }
 
     private PluginApplicationContext createPluginApplicationContext(String pluginId) {
@@ -102,20 +103,37 @@ public class PluginApplicationInitializer {
         ClassLoader pluginClassLoader = pluginWrapper.getPluginClassLoader();
 
         StopWatch stopWatch =
-            new StopWatch(String.format("create-plugin-application-context-%s", pluginId));
+            new StopWatch("CreatePluginAppContext");
 
-        stopWatch.start(String.format("create plugin application context for [%s]", pluginId));
+        stopWatch.start("CreatePluginAppContext");
         PluginApplicationContext pluginApplicationContext =
-            new PluginApplicationContext(pluginId, sharedApplicationContextHolder.getInstance());
+            new PluginApplicationContext(pluginId);
+        pluginApplicationContext.setParent(sharedApplicationContextHolder.getInstance());
         pluginApplicationContext.setClassLoader(pluginClassLoader);
+        pluginApplicationContext.getBeanFactory().setBeanClassLoader(pluginClassLoader);
         stopWatch.stop();
 
-        stopWatch.start(String.format("create plugin default resource loader for [%s]", pluginId));
+        stopWatch.start("CreatePluginDefaultResourceLoader");
         DefaultResourceLoader defaultResourceLoader = new DefaultResourceLoader(pluginClassLoader);
         pluginApplicationContext.setResourceLoader(defaultResourceLoader);
         stopWatch.stop();
 
-        stopWatch.start(String.format("register annotation config processors for [%s]", pluginId));
+
+
+        stopWatch.start("RegisterPluginExtensionAnnotationPostProcessor");
+        Class<?> cls;
+        try {
+            cls = pluginClassLoader.loadClass(pluginWrapper.getDescriptor().getPluginClass());
+        } catch (ClassNotFoundException e) {
+            throw new PluginException("load plugin class fail", e);
+        }
+        PluginExtensionAnnotationPostProcessor pluginExtensionAnnotationPostProcessor
+            = new PluginExtensionAnnotationPostProcessor(cls.getPackageName());
+        pluginExtensionAnnotationPostProcessor.postProcessBeanDefinitionRegistry(
+            pluginApplicationContext);
+        stopWatch.stop();
+
+        stopWatch.start("RegisterAnnotationConfigProcessors");
         DefaultListableBeanFactory beanFactory =
             (DefaultListableBeanFactory) pluginApplicationContext.getBeanFactory();
         AnnotationConfigUtils.registerAnnotationConfigProcessors(beanFactory);
@@ -123,12 +141,11 @@ public class PluginApplicationInitializer {
 
         beanFactory.registerSingleton("pluginWrapper", pluginWrapper);
 
-        createBasePluginBeanIfNotExists(pluginApplicationContext, pluginWrapper);
+        // createBasePluginBeanIfNotExists(pluginApplicationContext, pluginWrapper);
 
-        log.debug("Total millis: {} ms -> {} for [{}]", stopWatch.getTotalTimeMillis(),
-            stopWatch.prettyPrint(), pluginId);
+        log.debug("[{}] Total millis: {} ms -> {}", pluginId, stopWatch.getTotalTimeMillis(),
+            stopWatch.prettyPrint());
 
-        contextRegistry.register(pluginId, pluginApplicationContext);
         return pluginApplicationContext;
     }
 
@@ -161,9 +178,9 @@ public class PluginApplicationInitializer {
     private Set<Class<?>> findCandidateComponents(String pluginId) {
         Assert.notNull(pluginId, "'pluginId' must not be null");
         StopWatch stopWatch =
-            new StopWatch(String.format("find-plugin-candidate-components-%s", pluginId));
+            new StopWatch("FindPluginCandidateComponents");
 
-        stopWatch.start(String.format("get extension class names for [%s]", pluginId));
+        stopWatch.start("GetExtensionClassNames");
         Set<String> extensionClassNames = ikarosPluginManager.getExtensionClassNames(pluginId);
         if (extensionClassNames == null) {
             log.debug("No components class names found for plugin [{}]", pluginId);
@@ -188,8 +205,8 @@ public class PluginApplicationInitializer {
             }
         }
 
-        log.debug("total millis: {}ms -> {} for [{}]",
-            stopWatch.getTotalTimeMillis(), stopWatch.prettyPrint(), pluginId);
+        log.debug("[{}] total millis: {}ms -> {}", pluginId,
+            stopWatch.getTotalTimeMillis(), stopWatch.prettyPrint());
         return candidateComponents;
     }
 

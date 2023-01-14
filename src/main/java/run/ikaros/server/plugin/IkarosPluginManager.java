@@ -21,6 +21,7 @@ import org.pf4j.PluginState;
 import org.pf4j.PluginStateEvent;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -39,7 +40,7 @@ import run.ikaros.server.plugin.event.IkarosPluginStoppedEvent;
 
 @Slf4j
 public class IkarosPluginManager extends DefaultPluginManager
-    implements ApplicationContextAware, InitializingBean {
+    implements ApplicationContextAware, InitializingBean, DisposableBean {
     private final Map<String, PluginStartingError> startingErrors = new HashMap<>();
 
     private ApplicationContext rootApplicationContext;
@@ -57,6 +58,11 @@ public class IkarosPluginManager extends DefaultPluginManager
             = new PluginApplicationInitializer(this, rootApplicationContext);
     }
 
+    @Override
+    public void destroy() throws Exception {
+        stopPlugins();
+    }
+
     final PluginApplicationContext getPluginApplicationContext(String pluginId) {
         return pluginApplicationInitializer.getPluginApplicationContext(pluginId);
     }
@@ -68,8 +74,7 @@ public class IkarosPluginManager extends DefaultPluginManager
 
     @Override
     protected ExtensionFinder createExtensionFinder() {
-        // todo optimize extension load by read META-INF/plugin-components.idx file
-        return super.createExtensionFinder();
+        return new IkarosExtensionFinder(this);
     }
 
     public PluginStartingError getPluginStartingError(String pluginId) {
@@ -96,7 +101,6 @@ public class IkarosPluginManager extends DefaultPluginManager
             new IkarosPluginStateChangedEvent(this, event.getPlugin(), event.getOldState()));
         super.firePluginStateEvent(event);
     }
-
 
 
     @Override
@@ -244,7 +248,7 @@ public class IkarosPluginManager extends DefaultPluginManager
             // create plugin instance and start it
             pluginWrapper.getPlugin().start();
 
-            //requestMappingManager.registerHandlerMappings(pluginWrapper);
+            // requestMappingManager.registerHandlerMappings(pluginWrapper);
 
             pluginWrapper.setPluginState(PluginState.STARTED);
             startedPlugins.add(pluginWrapper);
