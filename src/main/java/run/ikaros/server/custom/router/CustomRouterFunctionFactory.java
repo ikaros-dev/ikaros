@@ -54,7 +54,7 @@ public class CustomRouterFunctionFactory {
             .GET(listHandler.pathPattern(), listHandler,
                 builder -> {
                     builder.operationId("List" + scheme.plural())
-                        .description("List " + gvk)
+                        .description("List " + scheme.plural())
                         .tag(kind)
                         .response(responseBuilder().responseCode("200")
                             .description("Response " + kind)
@@ -62,7 +62,7 @@ public class CustomRouterFunctionFactory {
                 })
             .GET(listPagingHandler.pathPattern(), listPagingHandler,
                 builder -> builder.operationId("Get" + scheme.plural() + "by paging.")
-                    .description("Get " + scheme.plural() + "by paging.")
+                    .description("Get " + scheme.plural() + " by paging.")
                     .tag(kind)
                     .parameter(parameterBuilder().in(ParameterIn.PATH)
                         .name("page")
@@ -75,7 +75,7 @@ public class CustomRouterFunctionFactory {
                         .implementation(PagingWrap.class)))
             .POST(createHandler.pathPattern(), createHandler,
                 builder -> builder.operationId("Create" + scheme.singular())
-                    .description("Create " + gvk)
+                    .description("Create " + scheme.singular())
                     .tag(kind)
                     .requestBody(requestBodyBuilder()
                         .description("Fresh " + kind)
@@ -85,7 +85,7 @@ public class CustomRouterFunctionFactory {
                         .implementation(scheme.type())))
             .PUT(updateHandler.pathPattern(), updateHandler,
                 builder -> builder.operationId("Update" + scheme.singular())
-                    .description("Update " + gvk)
+                    .description("Update " + scheme.singular())
                     .tag(kind)
                     .parameter(parameterBuilder().in(ParameterIn.PATH)
                         .name("name")
@@ -98,7 +98,7 @@ public class CustomRouterFunctionFactory {
                         .implementation(scheme.type())))
             .DELETE(deleteHandler.pathPattern(), deleteHandler,
                 builder -> builder.operationId("Delete" + scheme.singular())
-                    .description("Delete " + gvk)
+                    .description("Delete " + scheme.singular())
                     .tag(kind)
                     .parameter(parameterBuilder().in(ParameterIn.PATH)
                         .name("name")
