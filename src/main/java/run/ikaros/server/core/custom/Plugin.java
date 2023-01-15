@@ -7,6 +7,7 @@ import lombok.Data;
 import org.pf4j.PluginState;
 import run.ikaros.server.custom.Custom;
 import run.ikaros.server.custom.Name;
+import run.ikaros.server.infra.constant.OpenApiConst;
 
 /**
  * Plugin custom model.
@@ -30,8 +31,8 @@ import run.ikaros.server.custom.Name;
  * </pre>
  */
 @Data
-@Custom(group = "plugin.ikaros.run", version = "v1alpha1", kind = "Plugin",
-    singular = "plugin", plural = "plugins")
+@Custom(group = OpenApiConst.CORE_GROUP, version = OpenApiConst.CORE_VERSION,
+    kind = "Plugin", singular = "plugin", plural = "plugins")
 public class Plugin {
 
     @Name

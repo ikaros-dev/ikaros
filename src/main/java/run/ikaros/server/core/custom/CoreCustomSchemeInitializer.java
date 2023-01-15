@@ -23,7 +23,7 @@ public class CoreCustomSchemeInitializer implements ApplicationListener<Applicat
 
     @Override
     public void onApplicationEvent(@NonNull ApplicationStartedEvent event) {
-        // plugin.ikaros.run
+        // core.ikaros.run
         schemeManager.register(Plugin.class);
 
         eventPublisher.publishEvent(new SchemeInitializedEvent(this));
