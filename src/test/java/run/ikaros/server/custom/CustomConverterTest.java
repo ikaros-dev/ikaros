@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import run.ikaros.server.custom.exception.CustomConvertException;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 import run.ikaros.server.test.TestConst;
@@ -138,7 +139,8 @@ class CustomConverterTest {
         // CustomConverter.getNameFieldValue(testCustom2);
     }
 
-    @Custom(group = "test.ikaros.run", version = "v1", kind = "TestCustom1")
+    @Custom(group = "test.ikaros.run", version = "v1", kind = "TestCustom1",
+        singular = "test", plural = "tests")
     static class TestCustom1 {
         @Name
         private String title;
@@ -165,7 +167,8 @@ class CustomConverterTest {
     }
 
 
-    @Custom(group = "test.ikaros.run", version = "v1", kind = "TestCustom2")
+    @Custom(group = "test.ikaros.run", version = "v1", kind = "TestCustom2",
+        singular = "test", plural = "tests")
     static class TestCustom2 {
         @Name
         private String title;

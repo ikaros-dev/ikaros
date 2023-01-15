@@ -30,7 +30,8 @@ import run.ikaros.server.custom.Name;
  * </pre>
  */
 @Data
-@Custom(group = "plugin.ikaros.run", version = "v1alpha1", kind = "Plugin")
+@Custom(group = "plugin.ikaros.run", version = "v1alpha1", kind = "Plugin",
+    singular = "plugin", plural = "plugins")
 public class Plugin {
 
     @Name
@@ -43,9 +44,9 @@ public class Plugin {
      */
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED,
         pattern = "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-("
-        + "(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\."
-        + "(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\"
-        + ".[0-9a-zA-Z-]+)*))?$")
+            + "(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\."
+            + "(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\"
+            + ".[0-9a-zA-Z-]+)*))?$")
     private String version;
     private String requires;
     private Author author;
@@ -58,7 +59,7 @@ public class Plugin {
     private Map<String, String> dependencies = new HashMap<>(4);
 
     @Data
-    public class Author {
+    public static class Author {
         private String name;
         private String website;
     }

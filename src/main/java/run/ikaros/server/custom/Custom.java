@@ -23,4 +23,13 @@ public @interface Custom {
      */
     String kind();
 
+    /**
+     * Custom singular.
+     */
+    String singular();
+
+    /**
+     * Custom plural.
+     */
+    String plural();
 }

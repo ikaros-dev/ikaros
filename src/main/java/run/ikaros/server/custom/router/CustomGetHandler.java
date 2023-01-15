@@ -7,22 +7,22 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.custom.Custom;
 import run.ikaros.server.custom.ReactiveCustomClient;
+import run.ikaros.server.custom.scheme.CustomScheme;
 
 public class CustomGetHandler implements CustomRouterFunctionFactory.GetHandler {
     private final ReactiveCustomClient customClient;
-    private final Class<?> clazz;
+    private final CustomScheme scheme;
 
-    public CustomGetHandler(ReactiveCustomClient customClient, Class<?> clazz) {
+    public CustomGetHandler(ReactiveCustomClient customClient, CustomScheme scheme) {
         this.customClient = customClient;
-        this.clazz = clazz;
+        this.scheme = scheme;
     }
 
     @Override
     public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
         var customName = request.pathVariable("name");
-        return customClient.findOne(clazz, customName)
+        return customClient.findOne(scheme.type(), customName)
             .flatMap(custom -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(custom));
@@ -30,7 +30,6 @@ public class CustomGetHandler implements CustomRouterFunctionFactory.GetHandler 
 
     @Override
     public String pathPattern() {
-        Custom custom = clazz.getAnnotation(Custom.class);
-        return buildExtensionPathPattern(custom) + "/{name}";
+        return buildExtensionPathPattern(scheme.groupVersionKind()) + "/{name}";
     }
 }

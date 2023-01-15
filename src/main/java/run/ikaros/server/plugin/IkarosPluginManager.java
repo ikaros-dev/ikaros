@@ -366,8 +366,4 @@ public class IkarosPluginManager extends DefaultPluginManager
         return pluginWrapper;
     }
 
-    @Override
-    public boolean deletePlugin(String pluginId) {
-        return super.deletePlugin(pluginId);
-    }
 }

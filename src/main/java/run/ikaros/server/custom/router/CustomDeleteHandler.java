@@ -7,22 +7,23 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.custom.Custom;
 import run.ikaros.server.custom.ReactiveCustomClient;
+import run.ikaros.server.custom.scheme.CustomScheme;
 
 public class CustomDeleteHandler implements CustomRouterFunctionFactory.GetHandler {
     private final ReactiveCustomClient customClient;
-    private final Class<?> clazz;
+    private final CustomScheme scheme;
 
-    public CustomDeleteHandler(ReactiveCustomClient customClient, Class<?> clazz) {
+    public CustomDeleteHandler(ReactiveCustomClient customClient,
+                               CustomScheme scheme) {
         this.customClient = customClient;
-        this.clazz = clazz;
+        this.scheme = scheme;
     }
 
     @Override
     public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
         var customName = request.pathVariable("name");
-        return customClient.delete(clazz, customName)
+        return customClient.delete(scheme.type(), customName)
             .flatMap(custom -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(custom));
@@ -30,7 +31,6 @@ public class CustomDeleteHandler implements CustomRouterFunctionFactory.GetHandl
 
     @Override
     public String pathPattern() {
-        Custom custom = clazz.getAnnotation(Custom.class);
-        return buildExtensionPathPattern(custom) + "/{name}";
+        return buildExtensionPathPattern(scheme.groupVersionKind()) + "/{name}";
     }
 }

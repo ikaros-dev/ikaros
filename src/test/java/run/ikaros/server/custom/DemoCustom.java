@@ -2,7 +2,8 @@ package run.ikaros.server.custom;
 
 import java.time.LocalDateTime;
 
-@Custom(group = DemoCustom.GROUP, version = DemoCustom.VERSION, kind = DemoCustom.KIND)
+@Custom(group = DemoCustom.GROUP, version = DemoCustom.VERSION, kind = DemoCustom.KIND,
+    singular = "demo", plural = "demos")
 public class DemoCustom {
     public static final String GROUP = "demo.ikaros.run";
     public static final String VERSION = "v1alpha1";

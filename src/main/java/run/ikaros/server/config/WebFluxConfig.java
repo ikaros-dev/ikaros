@@ -29,6 +29,7 @@ import run.ikaros.server.console.ConsoleProperties;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.endpoint.CoreEndpointsBuilder;
 import run.ikaros.server.infra.properties.IkarosProperties;
+import run.ikaros.server.plugin.PluginApplicationContextRegistry;
 
 @Configuration
 public class WebFluxConfig implements WebFluxConfigurer {
@@ -86,6 +87,10 @@ public class WebFluxConfig implements WebFluxConfigurer {
     RouterFunction<ServerResponse> coreEndpoints(ApplicationContext context) {
         var builder = new CoreEndpointsBuilder();
         context.getBeansOfType(CoreEndpoint.class).values().forEach(builder::add);
+        PluginApplicationContextRegistry.getInstance().getPluginApplicationContexts()
+            .forEach(pluginApplicationContext ->
+                pluginApplicationContext.getBeansOfType(CoreEndpoint.class).values()
+                    .forEach(builder::add));
         return builder.build();
     }
 

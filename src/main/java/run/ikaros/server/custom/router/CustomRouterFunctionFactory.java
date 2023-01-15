@@ -10,20 +10,19 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import run.ikaros.server.custom.Custom;
-import run.ikaros.server.custom.CustomConverter;
 import run.ikaros.server.custom.GroupVersionKind;
 import run.ikaros.server.custom.ReactiveCustomClient;
+import run.ikaros.server.custom.scheme.CustomScheme;
 import run.ikaros.server.infra.warp.PagingWrap;
 
 public class CustomRouterFunctionFactory {
 
     private final ReactiveCustomClient client;
-    private final Class<?> clazz;
+    private final CustomScheme scheme;
 
-    public CustomRouterFunctionFactory(ReactiveCustomClient client, Custom custom, Class<?> clazz) {
+    public CustomRouterFunctionFactory(CustomScheme scheme, ReactiveCustomClient client) {
         this.client = client;
-        this.clazz = clazz;
+        this.scheme = scheme;
     }
 
     /**
@@ -33,16 +32,16 @@ public class CustomRouterFunctionFactory {
      */
     @NonNull
     public RouterFunction<ServerResponse> create() {
-        var createHandler = new CustomCreateHandler(client, clazz);
-        var deleteHandler = new CustomDeleteHandler(client, clazz);
-        var getHandler = new CustomGetHandler(client, clazz);
-        var listHandler = new CustomListHandler(client, clazz);
-        var updateHandler = new CustomUpdateHandler(client, clazz);
-        GroupVersionKind gvk = CustomConverter.gvk(clazz);
+        var createHandler = new CustomCreateHandler(client, scheme);
+        var deleteHandler = new CustomDeleteHandler(client, scheme);
+        var getHandler = new CustomGetHandler(client, scheme);
+        var listHandler = new CustomListHandler(client, scheme);
+        var updateHandler = new CustomUpdateHandler(client, scheme);
+        GroupVersionKind gvk = scheme.groupVersionKind();
         String kind = gvk.kind();
         return SpringdocRouteBuilder.route()
             .GET(getHandler.pathPattern(), getHandler,
-                builder -> builder.operationId("Get" + gvk)
+                builder -> builder.operationId("Get" + scheme.singular())
                     .description("Get " + gvk)
                     .tag(kind)
                     .parameter(parameterBuilder().in(ParameterIn.PATH)
@@ -50,10 +49,10 @@ public class CustomRouterFunctionFactory {
                         .description("Name of " + kind))
                     .response(responseBuilder().responseCode("200")
                         .description("Response single " + kind)
-                        .implementation(clazz)))
+                        .implementation(scheme.getClass())))
             .GET(listHandler.pathPattern(), listHandler,
                 builder -> {
-                    builder.operationId("List" + gvk)
+                    builder.operationId("List" + scheme.plural())
                         .description("List " + gvk)
                         .tag(kind)
                         .response(responseBuilder().responseCode("200")
@@ -61,30 +60,30 @@ public class CustomRouterFunctionFactory {
                             .implementation(PagingWrap.class));
                 })
             .POST(createHandler.pathPattern(), createHandler,
-                builder -> builder.operationId("Create" + gvk)
+                builder -> builder.operationId("Create" + scheme.singular())
                     .description("Create " + gvk)
                     .tag(kind)
                     .requestBody(requestBodyBuilder()
                         .description("Fresh " + kind)
-                        .implementation(clazz))
+                        .implementation(scheme.type()))
                     .response(responseBuilder().responseCode("200")
                         .description("Response " + kind + " created just now")
-                        .implementation(clazz)))
+                        .implementation(scheme.type())))
             .PUT(updateHandler.pathPattern(), updateHandler,
-                builder -> builder.operationId("Update" + gvk)
+                builder -> builder.operationId("Update" + scheme.singular())
                     .description("Update " + gvk)
                     .tag(kind)
                     .parameter(parameterBuilder().in(ParameterIn.PATH)
                         .name("name")
-                        .description("Name of " + kind))
+                        .description("Name of " + scheme.singular()))
                     .requestBody(requestBodyBuilder()
                         .description("Updated " + kind)
-                        .implementation(clazz))
+                        .implementation(scheme.type()))
                     .response(responseBuilder().responseCode("200")
                         .description("Response " + kind + " updated just now")
-                        .implementation(clazz)))
+                        .implementation(scheme.type())))
             .DELETE(deleteHandler.pathPattern(), deleteHandler,
-                builder -> builder.operationId("Delete" + gvk)
+                builder -> builder.operationId("Delete" + scheme.singular())
                     .description("Delete " + gvk)
                     .tag(kind)
                     .parameter(parameterBuilder().in(ParameterIn.PATH)
@@ -99,11 +98,11 @@ public class CustomRouterFunctionFactory {
 
         String pathPattern();
 
-        static String buildExtensionPathPattern(Custom custom) {
+        static String buildExtensionPathPattern(GroupVersionKind gvk) {
             return "/apis"
-                + '/' + custom.group()
-                + '/' + custom.version()
-                + '/' + custom.kind();
+                + '/' + gvk.group()
+                + '/' + gvk.version()
+                + '/' + gvk.kind();
         }
     }
 

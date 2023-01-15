@@ -8,25 +8,24 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.custom.Custom;
 import run.ikaros.server.custom.ReactiveCustomClient;
+import run.ikaros.server.custom.scheme.CustomScheme;
 
 public class CustomUpdateHandler implements CustomRouterFunctionFactory.GetHandler {
     private final ReactiveCustomClient customClient;
-    private final Class<?> clazz;
+    private final CustomScheme scheme;
 
-    public CustomUpdateHandler(ReactiveCustomClient customClient, Class<?> clazz) {
+    public CustomUpdateHandler(ReactiveCustomClient customClient,
+                               CustomScheme scheme) {
         this.customClient = customClient;
-        this.clazz = clazz;
+        this.scheme = scheme;
     }
 
     @Override
     public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
-        var customName = request.pathVariable("name");
-        return request.bodyToMono(clazz)
+        return request.bodyToMono(scheme.type())
             .switchIfEmpty(Mono.error(() -> new ServerWebInputException(
-                "Can not read body to:" + clazz
-            )))
+                "Can not read body to:" + scheme.type())))
             .flatMap(customClient::update)
             .flatMap(updated -> ServerResponse
                 .ok()
@@ -36,7 +35,6 @@ public class CustomUpdateHandler implements CustomRouterFunctionFactory.GetHandl
 
     @Override
     public String pathPattern() {
-        Custom custom = clazz.getAnnotation(Custom.class);
-        return buildExtensionPathPattern(custom) + "/{name}";
+        return buildExtensionPathPattern(scheme.groupVersionKind());
     }
 }
