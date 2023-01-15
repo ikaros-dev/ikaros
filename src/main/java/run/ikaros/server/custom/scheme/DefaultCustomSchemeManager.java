@@ -4,9 +4,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
+@Slf4j
 public class DefaultCustomSchemeManager implements CustomSchemeManager {
 
     private final List<CustomScheme> schemes;

@@ -10,6 +10,7 @@ import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.custom.ReactiveCustomClient;
 import run.ikaros.server.custom.scheme.CustomScheme;
+import run.ikaros.server.infra.exception.NotFoundException;
 
 public class CustomUpdateHandler implements CustomRouterFunctionFactory.GetHandler {
     private final ReactiveCustomClient customClient;
@@ -30,7 +31,8 @@ public class CustomUpdateHandler implements CustomRouterFunctionFactory.GetHandl
             .flatMap(updated -> ServerResponse
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(updated));
+                .bodyValue(updated))
+            .onErrorResume(NotFoundException.class, e -> ServerResponse.notFound().build());
     }
 
     @Override

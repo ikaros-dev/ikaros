@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.custom.ReactiveCustomClient;
 import run.ikaros.server.custom.scheme.CustomScheme;
+import run.ikaros.server.infra.exception.NotFoundException;
 
 public class CustomGetHandler implements CustomRouterFunctionFactory.GetHandler {
     private final ReactiveCustomClient customClient;
@@ -25,7 +26,8 @@ public class CustomGetHandler implements CustomRouterFunctionFactory.GetHandler 
         return customClient.findOne(scheme.type(), customName)
             .flatMap(custom -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(custom));
+                .bodyValue(custom))
+            .onErrorResume(NotFoundException.class, e -> ServerResponse.notFound().build());
     }
 
     @Override

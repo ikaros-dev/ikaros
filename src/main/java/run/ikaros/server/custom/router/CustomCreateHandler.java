@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.server.custom.ReactiveCustomClient;
 import run.ikaros.server.custom.exception.CustomException;
 import run.ikaros.server.custom.scheme.CustomScheme;
+import run.ikaros.server.infra.exception.NotFoundException;
 
 public class CustomCreateHandler implements CustomRouterFunctionFactory.GetHandler {
     private final ReactiveCustomClient customClient;
@@ -32,7 +33,8 @@ public class CustomCreateHandler implements CustomRouterFunctionFactory.GetHandl
             .flatMap(custom -> ServerResponse
                 .created(URI.create(pathPattern() + "/" + getNameFieldValue(custom)))
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(custom));
+                .bodyValue(custom))
+            .onErrorResume(NotFoundException.class, e -> ServerResponse.notFound().build());
     }
 
     @Override

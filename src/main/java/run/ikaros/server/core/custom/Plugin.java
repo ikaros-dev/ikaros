@@ -47,7 +47,8 @@ public class Plugin {
         pattern = "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-("
             + "(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\."
             + "(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\"
-            + ".[0-9a-zA-Z-]+)*))?$")
+            + ".[0-9a-zA-Z-]+)*))?$",
+        example = "1.0.0")
     private String version;
     private String requires;
     private Author author;

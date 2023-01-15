@@ -37,19 +37,20 @@ public class CustomRouterFunctionFactory {
         var getHandler = new CustomGetHandler(client, scheme);
         var listHandler = new CustomListHandler(client, scheme);
         var updateHandler = new CustomUpdateHandler(client, scheme);
+        var listPagingHandler = new CustomListPagingHandler(client, scheme);
         GroupVersionKind gvk = scheme.groupVersionKind();
         String kind = gvk.kind();
         return SpringdocRouteBuilder.route()
             .GET(getHandler.pathPattern(), getHandler,
                 builder -> builder.operationId("Get" + scheme.singular())
-                    .description("Get " + gvk)
+                    .description("Get " + scheme.singular())
                     .tag(kind)
                     .parameter(parameterBuilder().in(ParameterIn.PATH)
                         .name("name")
                         .description("Name of " + kind))
                     .response(responseBuilder().responseCode("200")
                         .description("Response single " + kind)
-                        .implementation(scheme.getClass())))
+                        .implementation(scheme.type())))
             .GET(listHandler.pathPattern(), listHandler,
                 builder -> {
                     builder.operationId("List" + scheme.plural())
@@ -57,8 +58,21 @@ public class CustomRouterFunctionFactory {
                         .tag(kind)
                         .response(responseBuilder().responseCode("200")
                             .description("Response " + kind)
-                            .implementation(PagingWrap.class));
+                            .implementation(scheme.type()));
                 })
+            .GET(listPagingHandler.pathPattern(), listPagingHandler,
+                builder -> builder.operationId("Get" + scheme.plural() + "by paging.")
+                    .description("Get " + scheme.plural() + "by paging.")
+                    .tag(kind)
+                    .parameter(parameterBuilder().in(ParameterIn.PATH)
+                        .name("page")
+                        .description("Page of " + kind))
+                    .parameter(parameterBuilder().in(ParameterIn.PATH)
+                        .name("size")
+                        .description("Size of" + kind))
+                    .response(responseBuilder().responseCode("200")
+                        .description("Response" + kind)
+                        .implementation(PagingWrap.class)))
             .POST(createHandler.pathPattern(), createHandler,
                 builder -> builder.operationId("Create" + scheme.singular())
                     .description("Create " + gvk)

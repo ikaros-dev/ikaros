@@ -11,28 +11,29 @@ import run.ikaros.server.custom.ReactiveCustomClient;
 import run.ikaros.server.custom.scheme.CustomScheme;
 import run.ikaros.server.infra.exception.NotFoundException;
 
-public class CustomDeleteHandler implements CustomRouterFunctionFactory.GetHandler {
+public class CustomListPagingHandler implements CustomRouterFunctionFactory.GetHandler {
     private final ReactiveCustomClient customClient;
     private final CustomScheme scheme;
 
-    public CustomDeleteHandler(ReactiveCustomClient customClient,
-                               CustomScheme scheme) {
+    public CustomListPagingHandler(ReactiveCustomClient customClient, CustomScheme scheme) {
         this.customClient = customClient;
         this.scheme = scheme;
     }
 
     @Override
     public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
-        var customName = request.pathVariable("name");
-        return customClient.delete(scheme.type(), customName)
-            .flatMap(custom -> ServerResponse.ok()
+        var page = request.pathVariable("page");
+        var size = request.pathVariable("size");
+        return customClient.findAllWithPage(scheme.type(), Integer.valueOf(page),
+                Integer.valueOf(size), null)
+            .flatMap(pagingWrap -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(custom))
+                .bodyValue(pagingWrap))
             .onErrorResume(NotFoundException.class, e -> ServerResponse.notFound().build());
     }
 
     @Override
     public String pathPattern() {
-        return buildExtensionPathPattern(scheme.groupVersionKind()) + "/{name}";
+        return buildExtensionPathPattern(scheme.groupVersionKind()) + "/{page}/{size}";
     }
 }

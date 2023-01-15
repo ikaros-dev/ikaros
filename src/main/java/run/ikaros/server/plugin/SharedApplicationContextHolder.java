@@ -4,6 +4,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import run.ikaros.server.custom.ReactiveCustomClient;
+import run.ikaros.server.custom.scheme.CustomSchemeManager;
 
 /**
  * A holder for {@link SharedApplicationContext},
@@ -52,6 +53,11 @@ public class SharedApplicationContextHolder {
         ReactiveCustomClient reactiveCustomClient =
             rootApplicationContext.getBean(ReactiveCustomClient.class);
         beanFactory.registerSingleton("reactiveCustomClient", reactiveCustomClient);
+
+        // Register custom scheme manager
+        CustomSchemeManager customSchemeManager =
+            rootApplicationContext.getBean(CustomSchemeManager.class);
+        beanFactory.registerSingleton("schemeManager", customSchemeManager);
 
         // TODO add more shared instance here
 
