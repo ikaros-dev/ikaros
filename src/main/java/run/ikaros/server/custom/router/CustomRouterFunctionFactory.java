@@ -112,11 +112,11 @@ public class CustomRouterFunctionFactory {
 
         String pathPattern();
 
-        static String buildExtensionPathPattern(GroupVersionKind gvk) {
+        static String buildCustomPathPatternPrefix(CustomScheme scheme) {
+            GroupVersionKind gvk = scheme.groupVersionKind();
             return "/apis"
                 + '/' + gvk.group()
-                + '/' + gvk.version()
-                + '/' + gvk.kind();
+                + '/' + gvk.version();
         }
     }
 

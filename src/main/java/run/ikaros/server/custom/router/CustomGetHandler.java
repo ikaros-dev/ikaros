@@ -1,6 +1,6 @@
 package run.ikaros.server.custom.router;
 
-import static run.ikaros.server.custom.router.CustomRouterFunctionFactory.PathPatternGenerator.buildExtensionPathPattern;
+import static run.ikaros.server.custom.router.CustomRouterFunctionFactory.PathPatternGenerator.buildCustomPathPatternPrefix;
 
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
@@ -32,6 +32,8 @@ public class CustomGetHandler implements CustomRouterFunctionFactory.GetHandler 
 
     @Override
     public String pathPattern() {
-        return buildExtensionPathPattern(scheme.groupVersionKind()) + "/{name}";
+        return buildCustomPathPatternPrefix(scheme)
+            + '/' + scheme.singular()
+            + "/{name}";
     }
 }
