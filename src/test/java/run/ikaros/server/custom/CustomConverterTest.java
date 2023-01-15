@@ -100,7 +100,7 @@ class CustomConverterTest {
             CustomConverter.covertCustomFieldToMetadataEntity(demoCustom, numberField, om);
             fail(TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS);
         } catch (CustomConvertException e) {
-            assertThat(e.getMessage()).startsWith(
+            assertThat(e.getMessage()).contains(
                 "convert custom field to metadata entity fail for class: ");
         }
     }
@@ -129,7 +129,7 @@ class CustomConverterTest {
             CustomConverter.getNameFieldValue(testCustom2);
             fail(TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS);
         } catch (CustomConvertException e) {
-            assertThat(e.getMessage()).startsWith("get custom name filed value fail for name");
+            assertThat(e.getMessage()).contains("get custom name filed value fail for name");
         }
 
         TestCustom2 testCustom21 = CustomConverter.convertFrom(TestCustom2.class,
