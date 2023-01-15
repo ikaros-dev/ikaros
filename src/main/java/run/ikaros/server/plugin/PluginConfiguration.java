@@ -12,17 +12,20 @@ import org.pf4j.PluginManager;
 import org.pf4j.PluginRepository;
 import org.pf4j.PluginStatusProvider;
 import org.pf4j.RuntimeMode;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
+import run.ikaros.server.plugin.FixedPathDevelopmentPluginRepository;
+import run.ikaros.server.plugin.IkarosDevelopmentPluginLoader;
+import run.ikaros.server.plugin.IkarosJarPluginLoader;
+import run.ikaros.server.plugin.IkarosPluginManager;
+import run.ikaros.server.plugin.PluginProperties;
+import run.ikaros.server.plugin.PropertyPluginStatusProvider;
 
 @Configuration(proxyBeanMethods = false)
-@AutoConfigureAfter(SqlInitializationAutoConfiguration.class)
 @EnableConfigurationProperties(PluginProperties.class)
-public class PluginAutoConfiguration {
+public class PluginConfiguration {
 
     /**
      * New a {@link IkarosPluginManager} instance to manager plugin.

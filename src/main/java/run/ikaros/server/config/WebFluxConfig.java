@@ -31,7 +31,7 @@ import run.ikaros.server.endpoint.CoreEndpointsBuilder;
 import run.ikaros.server.infra.properties.IkarosProperties;
 import run.ikaros.server.plugin.PluginApplicationContextRegistry;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class WebFluxConfig implements WebFluxConfigurer {
 
 

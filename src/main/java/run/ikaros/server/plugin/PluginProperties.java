@@ -12,7 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Properties for plugin.
  *
  * @author li-guohao
- * @see PluginAutoConfiguration
+ * @see PluginConfiguration
  */
 @Data
 @ConfigurationProperties(prefix = "ikaros.plugin")

@@ -31,12 +31,9 @@ public class MasterInitializer {
 
     /**
      * init master user after application ready.
-     *
-     * @param readyEvent app ready event
-     * @return void
      */
-    @EventListener
-    public Mono<Void> initialize(ApplicationReadyEvent readyEvent) {
+    @EventListener(ApplicationReadyEvent.class)
+    public Mono<Void> initialize() {
         return userService.getUser(initializer.getMasterUsername())
             .onErrorResume(NotFoundException.class, user -> createMaster())
             .then();

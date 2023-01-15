@@ -28,10 +28,10 @@ import run.ikaros.server.infra.constant.SecurityConst;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 import run.ikaros.server.security.authorization.RequestAuthorizationManager;
 
-@Configuration
 @EnableWebFluxSecurity
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(SecurityProperties.class)
-public class SecurityAutoConfiguration {
+public class SecurityConfiguration {
     @Bean
     PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
