@@ -4,6 +4,7 @@ ikaros:
   plugin:
     runtime-mode: deployment
     plugins-root: ${ikaros.work-dir}/plugins
+    system-version: 1.0.0-SNAPSHOT
 
 server:
   port: 9999
@@ -36,3 +37,5 @@ logging:
       max-file-size: 10MB
       total-size-cap: 1GB
       max-history: 2
+  level:
+    run.ikaros.server: INFO

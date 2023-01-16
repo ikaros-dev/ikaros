@@ -53,7 +53,8 @@ public class YamlPluginFinder {
 
         log.debug("Lookup plugin descriptor in '{}'", propertiesPath);
         if (Files.notExists(propertiesPath)) {
-            throw new PluginRuntimeException("Cannot find '{}' path", propertiesPath);
+            throw new PluginRuntimeException("Cannot find '{}' in resource path for plugin: '{}'",
+                propertiesPath, pluginPath);
         }
         Resource propertyResource = new FileSystemResource(propertiesPath);
         YamlPluginLoader yamlPluginLoader = new YamlPluginLoader(propertyResource);

@@ -33,7 +33,7 @@ import run.ikaros.server.infra.constant.OpenApiConst;
 @Data
 @Custom(group = OpenApiConst.CORE_GROUP, version = OpenApiConst.CORE_VERSION,
     kind = "Plugin", singular = "plugin", plural = "plugins")
-public class Plugin {
+public class  Plugin {
 
     @Name
     private String name;

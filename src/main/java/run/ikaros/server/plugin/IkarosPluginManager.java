@@ -59,7 +59,7 @@ public class IkarosPluginManager extends DefaultPluginManager
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         stopPlugins();
     }
 
@@ -79,6 +79,10 @@ public class IkarosPluginManager extends DefaultPluginManager
 
     public PluginStartingError getPluginStartingError(String pluginId) {
         return startingErrors.get(pluginId);
+    }
+
+    public void clearPluginStaringError() {
+        startingErrors.clear();
     }
 
     @Override
@@ -169,8 +173,6 @@ public class IkarosPluginManager extends DefaultPluginManager
                     pluginApplicationInitializer.onStartUp(pluginWrapper.getPluginId());
 
                     pluginWrapper.getPlugin().start();
-
-                    // requestMappingManager.registerHandlerMappings(pluginWrapper);
 
                     pluginWrapper.setPluginState(PluginState.STARTED);
                     pluginWrapper.setFailedException(null);
@@ -359,9 +361,19 @@ public class IkarosPluginManager extends DefaultPluginManager
 
     @Override
     protected PluginWrapper loadPluginFromPath(Path pluginPath) {
-        PluginWrapper pluginWrapper = super.loadPluginFromPath(pluginPath);
-        rootApplicationContext.publishEvent(new IkarosPluginLoadedEvent(this, pluginWrapper));
-        return pluginWrapper;
+        return super.loadPluginFromPath(pluginPath);
     }
 
+    @Override
+    public String loadPlugin(Path pluginPath) {
+        String pluginId = super.loadPlugin(pluginPath);
+        PluginWrapper pluginWrapper = getPlugin(pluginId);
+        rootApplicationContext.publishEvent(new IkarosPluginLoadedEvent(this, pluginWrapper));
+        return pluginId;
+    }
+
+    @Override
+    protected void resolvePlugins() {
+        super.resolvePlugins();
+    }
 }
