@@ -1,8 +1,10 @@
 package run.ikaros.server.plugin;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginStatusProvider;
 
@@ -19,20 +21,27 @@ import org.pf4j.PluginStatusProvider;
  */
 @Slf4j
 public class PropertyPluginStatusProvider implements PluginStatusProvider {
-    private final List<String> enabledPlugins;
-    private final List<String> disabledPlugins;
+    private final Set<String> enabledPlugins;
+    private final Set<String> disabledPlugins;
 
     /**
      * Construct instance by {@link PluginProperties}.
      *
-     * @param pluginProperties    plugin props
+     * @param pluginProperties plugin props
      */
     public PropertyPluginStatusProvider(PluginProperties pluginProperties) {
-        this.enabledPlugins = pluginProperties.getEnabledPlugins() != null
-            ? Arrays.asList(pluginProperties.getEnabledPlugins()) : new ArrayList<>();
+        this.enabledPlugins = new HashSet<>();
+        if (Objects.nonNull(pluginProperties.getEnabledPlugins())) {
+            this.enabledPlugins.addAll(Arrays.stream(pluginProperties.getEnabledPlugins())
+                .collect(Collectors.toSet()));
+        }
         log.info("Enabled plugins: {}", enabledPlugins);
-        this.disabledPlugins = pluginProperties.getDisabledPlugins() != null
-            ? Arrays.asList(pluginProperties.getDisabledPlugins()) : new ArrayList<>();
+
+        this.disabledPlugins = new HashSet<>();
+        if (Objects.nonNull(pluginProperties.getDisabledPlugins())) {
+            this.disabledPlugins.addAll(Arrays.stream(pluginProperties.getDisabledPlugins())
+                .collect(Collectors.toSet()));
+        }
         log.info("Disabled plugins: {}", disabledPlugins);
     }
 

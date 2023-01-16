@@ -211,8 +211,6 @@ public class IkarosPluginManager extends DefaultPluginManager
         checkPluginId(pluginId);
 
         PluginWrapper pluginWrapper = getPlugin(pluginId);
-        // checkExtensionFinderReady(pluginWrapper);
-
         PluginDescriptor pluginDescriptor = pluginWrapper.getDescriptor();
         PluginState pluginState = pluginWrapper.getPluginState();
         if (PluginState.STARTED == pluginState) {
