@@ -34,7 +34,7 @@ public class FileEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_GROUP + "/File";
+        var tag = OpenApiConst.CORE_VERSION + "/File";
         return SpringdocRouteBuilder.route()
             .POST("/files/upload", contentType(MediaType.MULTIPART_FORM_DATA), this::upload,
                 builder -> builder

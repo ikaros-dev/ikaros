@@ -56,20 +56,22 @@ public class SwaggerConfig {
             .externalDocs(new ExternalDocumentation()
                 .description("Ikaros Official Site")
                 .url("https://ikaros.run"))
-            .addSecurityItem(new SecurityRequirement().addList("IkarosBearerAuth"))
             .components(new Components()
                 .addSecuritySchemes("BasicAuth",
                     new SecurityScheme()
-                        .name("IkarosBearerAuth")
+                        .name("BasicAuth")
                         .type(SecurityScheme.Type.HTTP)
-                        .scheme("basic"))
+                        .scheme("Basic"))
                 .addSecuritySchemes("BearerAuth",
                     new SecurityScheme()
                         .name("BearerAuth")
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("Bearer")
-                        .bearerFormat("JWT")
-                        ));
+                        .bearerFormat("JWT"))
+            )
+            .addSecurityItem(new SecurityRequirement()
+                .addList("BasicAuth").addList("BearerAuth")
+            );
     }
 
 }
