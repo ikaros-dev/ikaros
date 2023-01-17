@@ -1,15 +1,10 @@
 package run.ikaros.server.plugin;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginWrapper;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.util.Assert;
@@ -30,21 +25,19 @@ public class PluginApplicationInitializer {
     private final PluginApplicationContextRegistry contextRegistry =
         PluginApplicationContextRegistry.getInstance();
     private final IkarosPluginManager ikarosPluginManager;
-    private final ApplicationContext rootApplicationContext;
     private final SharedApplicationContextHolder sharedApplicationContextHolder;
 
     /**
      * Construct a plugin application initializer.
      *
-     * @param ikarosPluginManager    ikaros plugin manager
-     * @param rootApplicationContext ikaros root application context
+     * @param ikarosPluginManager            ikaros plugin manager
+     * @param sharedApplicationContextHolder shared application context holder instance
      */
-    public PluginApplicationInitializer(IkarosPluginManager ikarosPluginManager,
-                                        ApplicationContext rootApplicationContext) {
+    public PluginApplicationInitializer(
+        IkarosPluginManager ikarosPluginManager,
+        SharedApplicationContextHolder sharedApplicationContextHolder) {
         this.ikarosPluginManager = ikarosPluginManager;
-        this.rootApplicationContext = rootApplicationContext;
-        this.sharedApplicationContextHolder =
-            rootApplicationContext.getBean(SharedApplicationContextHolder.class);
+        this.sharedApplicationContextHolder = sharedApplicationContextHolder;
     }
 
     public PluginApplicationContext getPluginApplicationContext(String pluginId) {
@@ -119,7 +112,6 @@ public class PluginApplicationInitializer {
         stopWatch.stop();
 
 
-
         stopWatch.start("RegisterPluginExtensionAnnotationPostProcessor");
         Class<?> cls;
         try {
@@ -147,32 +139,6 @@ public class PluginApplicationInitializer {
             stopWatch.prettyPrint());
 
         return pluginApplicationContext;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void createBasePluginBeanIfNotExists(PluginApplicationContext pluginApplicationContext,
-                                                 PluginWrapper pluginWrapper) {
-        ConfigurableListableBeanFactory beanFactory = pluginApplicationContext.getBeanFactory();
-        PluginDescriptor pluginDescriptor = pluginWrapper.getDescriptor();
-        String pluginClass = pluginDescriptor.getPluginClass();
-        ClassLoader pluginClassLoader = pluginWrapper.getPluginClassLoader();
-        Class<BasePlugin> cls = null;
-        try {
-
-            cls = (Class<BasePlugin>) pluginClassLoader.loadClass(pluginClass);
-            beanFactory.getBean(cls);
-        } catch (NoSuchBeanDefinitionException noSuchBeanDefinitionException) {
-            try {
-                BasePlugin plugin =
-                    Objects.requireNonNull(cls).getDeclaredConstructor(PluginWrapper.class)
-                        .newInstance(pluginWrapper);
-                beanFactory.registerSingleton(pluginDescriptor.getPluginId(), plugin);
-            } catch (Exception e) {
-                throw new PluginException("create BasePlugin Bean fail", e);
-            }
-        } catch (ClassNotFoundException e) {
-            throw new PluginException("class not found for class: " + pluginClass, e);
-        }
     }
 
     private Set<Class<?>> findCandidateComponents(String pluginId) {

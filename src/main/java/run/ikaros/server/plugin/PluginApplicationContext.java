@@ -1,7 +1,5 @@
 package run.ikaros.server.plugin;
 
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
@@ -22,25 +20,8 @@ public class PluginApplicationContext extends GenericApplicationContext {
         this.pluginId = pluginId;
     }
 
-    public PluginApplicationContext(String pluginId, DefaultListableBeanFactory beanFactory) {
-        super(beanFactory);
-        this.pluginId = pluginId;
-    }
-
-    public PluginApplicationContext(String pluginId, ApplicationContext parent) {
-        super(parent);
-        this.pluginId = pluginId;
-    }
-
-    public PluginApplicationContext(String pluginId, ApplicationContext parent,
-                                    DefaultListableBeanFactory beanFactory) {
-        super(beanFactory, parent);
-        this.pluginId = pluginId;
-    }
-
     public String getPluginId() {
         return pluginId;
     }
-
 
 }

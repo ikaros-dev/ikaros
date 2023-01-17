@@ -53,7 +53,8 @@ public class IkarosPluginManager extends DefaultPluginManager
     @Override
     public void afterPropertiesSet() {
         this.pluginApplicationInitializer
-            = new PluginApplicationInitializer(this, rootApplicationContext);
+            = new PluginApplicationInitializer(this,
+            rootApplicationContext.getBean(SharedApplicationContextHolder.class));
     }
 
     @Override
