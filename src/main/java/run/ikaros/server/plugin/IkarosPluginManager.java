@@ -1,7 +1,6 @@
 package run.ikaros.server.plugin;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,7 +36,6 @@ import run.ikaros.server.plugin.event.IkarosPluginStoppedEvent;
  *
  * @author: li-guohao
  */
-
 @Slf4j
 public class IkarosPluginManager extends DefaultPluginManager
     implements ApplicationContextAware, InitializingBean, DisposableBean {
@@ -299,30 +297,18 @@ public class IkarosPluginManager extends DefaultPluginManager
     }
 
     /**
-     * Unload plugin and restart.
-     *
-     * @param restartStartedOnly If true, only reload started plugin
+     * Unload all plugin and restart.
      */
-    public void reloadPlugins(boolean restartStartedOnly) {
-        doStopPlugins();
-        List<String> startedPluginIds = new ArrayList<>();
-        getPlugins().forEach(plugin -> {
-            if (plugin.getPluginState() == PluginState.STARTED) {
-                startedPluginIds.add(plugin.getPluginId());
-            }
-            unloadPlugin(plugin.getPluginId());
-        });
-        loadPlugins();
-        if (restartStartedOnly) {
-            startedPluginIds.forEach(pluginId -> {
-                // restart started plugin
-                if (getPlugin(pluginId) != null) {
-                    doStartPlugin(pluginId);
-                }
-            });
-        } else {
-            startPlugins();
-        }
+    public void reloadPlugins() {
+        getPlugins().forEach(pluginWrapper -> reloadPlugin(pluginWrapper.getPluginId()));
+    }
+
+    /**
+     * Unload all has started plugin and restart.
+     */
+    public void reloadStartedPlugins() {
+        getPlugins(PluginState.STARTED)
+            .forEach(pluginWrapper -> reloadPlugin(pluginWrapper.getPluginId()));
     }
 
     /**
@@ -349,13 +335,10 @@ public class IkarosPluginManager extends DefaultPluginManager
      * Release plugin holding release on stop.
      */
     public void releaseAdditionalResources(String pluginId) {
-        // removePluginComponentsCache(pluginId);
-        // release request mapping
-        // requestMappingManager.removeHandlerMappings(pluginId);
         try {
             pluginApplicationInitializer.contextDestroyed(pluginId);
         } catch (Exception e) {
-            log.trace("Plugin application context close failed. ", e);
+            log.debug("Plugin application context close failed. ", e);
         }
     }
 

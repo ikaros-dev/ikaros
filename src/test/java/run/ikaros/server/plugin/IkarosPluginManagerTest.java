@@ -12,7 +12,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.pf4j.DefaultPluginDescriptor;
 import org.pf4j.PluginAlreadyLoadedException;
+import org.pf4j.PluginDescriptor;
+import org.pf4j.PluginRuntimeException;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,12 +120,69 @@ class IkarosPluginManagerTest {
         assertThat(childPluginWrapper.getPluginState()).isEqualByComparingTo(PluginState.STARTED);
     }
 
+
+    @Test
+    void startPluginWhenCallPluginApplicationInitializerDotOnstartUpThrowException()
+        throws NoSuchFieldException, IllegalAccessException {
+        String pluginId = loadPluginIfNotLoaded(pluginPath);
+        Field pluginApplicationInitializerField =
+            MemberMatcher.field(IkarosPluginManager.class, "pluginApplicationInitializer");
+        Object originalFieldValue = pluginApplicationInitializerField.get(ikarosPluginManager);
+        RuntimeException expectException = new RuntimeException("expect exception");
+        PluginApplicationInitializer initializer = Mockito.mock(PluginApplicationInitializer.class);
+        Mockito.doThrow(expectException).when(initializer).onStartUp(pluginId);
+        try {
+            pluginApplicationInitializerField.set(ikarosPluginManager, initializer);
+            ikarosPluginManager.startPlugin(pluginId);
+            assertThat(ikarosPluginManager.getPluginStartingError(pluginId)).isNotNull();
+        } finally {
+            pluginApplicationInitializerField.set(ikarosPluginManager, originalFieldValue);
+        }
+    }
+
+    @Test
+    void startPluginWhenStateIsDisabledAndCanNotEnable()
+        throws NoSuchFieldException, IllegalAccessException {
+        String pluginId = loadPluginIfNotLoaded(pluginPath);
+        PluginWrapper pluginWrapper = ikarosPluginManager.getPlugin(pluginId);
+        // set state is disabled
+        MemberMatcher.field(PluginWrapper.class, "pluginState")
+            .set(pluginWrapper, PluginState.DISABLED);
+        // set requires is not check pass
+        PluginDescriptor pluginDescriptor = pluginWrapper.getDescriptor();
+        MemberMatcher.field(DefaultPluginDescriptor.class, "requires")
+            .set(pluginDescriptor, ">2000.0.0");
+        // start plugin
+        assertThat(ikarosPluginManager.startPlugin(pluginId))
+            .isEqualByComparingTo(PluginState.DISABLED);
+    }
+
     @Test
     void startPlugins() {
         loadPluginIfNotLoaded(parentPluginPath);
         loadPluginIfNotLoaded(childPluginPath);
         ikarosPluginManager.startPlugins();
     }
+
+    @Test
+    void startPluginsWhenCallPluginApplicationInitializerDotOnstartUpThrowException()
+        throws NoSuchFieldException, IllegalAccessException {
+        String pluginId = loadPluginIfNotLoaded(pluginPath);
+        Field pluginApplicationInitializerField =
+            MemberMatcher.field(IkarosPluginManager.class, "pluginApplicationInitializer");
+        Object originalFieldValue = pluginApplicationInitializerField.get(ikarosPluginManager);
+        RuntimeException expectException = new RuntimeException("expect exception");
+        PluginApplicationInitializer initializer = Mockito.mock(PluginApplicationInitializer.class);
+        Mockito.doThrow(expectException).when(initializer).onStartUp(Mockito.anyString());
+        try {
+            pluginApplicationInitializerField.set(ikarosPluginManager, initializer);
+            ikarosPluginManager.startPlugins();
+            assertThat(ikarosPluginManager.getPluginStartingError(pluginId)).isNotNull();
+        } finally {
+            pluginApplicationInitializerField.set(ikarosPluginManager, originalFieldValue);
+        }
+    }
+
 
     @Test
     void getPluginApplicationContext() {
@@ -195,20 +255,115 @@ class IkarosPluginManagerTest {
             rootApplicationContextField.set(ikarosPluginManager, originalFieldValue);
         }
 
-        // when plugin has dependency
-        // String parentPluginId = loadPluginIfNotLoaded(parentPluginPath);
-        // String childPluginId = loadPluginIfNotLoaded(childPluginPath);
-        // PluginWrapper childPluginWrapper = ikarosPluginManager.getPlugin(childPluginId);
-        // ikarosPluginManager.startPlugin(childPluginId);
-        // assertThat(ikarosPluginManager.getPlugin(parentPluginId).getPluginState())
-        //     .isEqualByComparingTo(PluginState.STARTED);
-        // assertThat(childPluginWrapper.getPluginState())
-        //     .isEqualByComparingTo(PluginState.STARTED);
-        //
-        // ikarosPluginManager.stopPlugin(childPluginId);
-        // assertThat(ikarosPluginManager.getPlugin(parentPluginId).getPluginState())
-        //     .isEqualByComparingTo(PluginState.STOPPED);
-        // assertThat(childPluginWrapper.getPluginState())
-        //     .isEqualByComparingTo(PluginState.STOPPED);
+    }
+
+    @Test
+    void stopPluginWhenHasDependent() {
+        String parentPluginId = loadPluginIfNotLoaded(parentPluginPath);
+        String childPluginId = loadPluginIfNotLoaded(childPluginPath);
+        ikarosPluginManager.startPlugin(childPluginId);
+        assertThat(ikarosPluginManager.getPlugin(parentPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STARTED);
+        assertThat(ikarosPluginManager.getPlugin(childPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STARTED);
+
+        ikarosPluginManager.stopPlugin(parentPluginId);
+        assertThat(ikarosPluginManager.getPlugin(parentPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STOPPED);
+        assertThat(ikarosPluginManager.getPlugin(childPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STOPPED);
+    }
+
+    @Test
+    void stopPluginsWhenSinglePluginHasStarted() {
+        String pluginId = loadPluginIfNotLoaded(pluginPath);
+        ikarosPluginManager.startPlugin(pluginId);
+        ikarosPluginManager.stopPlugins();
+        assertThat(ikarosPluginManager.getPlugin(pluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STOPPED);
+    }
+
+    @Test
+    void stopPluginsWhenStopSinglePluginThrowException()
+        throws NoSuchFieldException, IllegalAccessException {
+        String pluginId = loadPluginIfNotLoaded(pluginPath);
+        ikarosPluginManager.startPlugin(pluginId);
+        ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
+        PluginRuntimeException expectException = new PluginRuntimeException("mock");
+        Mockito.doThrow(expectException)
+            .when(applicationContext).publishEvent(Mockito.any());
+        Field rootApplicationContextField =
+            MemberMatcher.field(IkarosPluginManager.class, "rootApplicationContext");
+        Object originalFieldValue = rootApplicationContextField.get(ikarosPluginManager);
+        try {
+            assertThat(ikarosPluginManager.getPluginStartingError(pluginId)).isNull();
+            rootApplicationContextField.set(ikarosPluginManager, applicationContext);
+            ikarosPluginManager.stopPlugins();
+            assertThat(ikarosPluginManager.getPluginStartingError(pluginId)).isNotNull();
+        } finally {
+            rootApplicationContextField.set(ikarosPluginManager, originalFieldValue);
+        }
+    }
+
+    @Test
+    void reloadPlugin() {
+        String pluginId = loadPluginIfNotLoaded(pluginPath);
+        ikarosPluginManager.startPlugin(pluginId);
+        assertThat(ikarosPluginManager.reloadPlugin(pluginId))
+            .isEqualByComparingTo(PluginState.STARTED);
+    }
+
+    @Test
+    void reloadPluginWhenLoadFail() throws NoSuchFieldException, IllegalAccessException {
+        String pluginId = loadPluginIfNotLoaded(pluginPath);
+        ikarosPluginManager.startPlugin(pluginId);
+        // in order to load fail, need set plugin path is null
+        PluginWrapper pluginWrapper = ikarosPluginManager.getPlugin(pluginId);
+        MemberMatcher.field(PluginWrapper.class, "pluginPath").set(pluginWrapper, null);
+        assertThat(ikarosPluginManager.reloadPlugin(pluginId)).isNull();
+    }
+
+
+    @Test
+    void reloadStartedPlugins() {
+        String parentPluginId = loadPluginIfNotLoaded(parentPluginPath);
+        String childPluginId = loadPluginIfNotLoaded(childPluginPath);
+
+        ikarosPluginManager.startPlugin(parentPluginId);
+        ikarosPluginManager.startPlugin(childPluginId);
+        ikarosPluginManager.stopPlugin(childPluginId);
+        assertThat(ikarosPluginManager.getPlugin(parentPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STARTED);
+        assertThat(ikarosPluginManager.getPlugin(childPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STOPPED);
+        ikarosPluginManager.reloadStartedPlugins();
+        assertThat(ikarosPluginManager.getPlugin(parentPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STARTED);
+        assertThat(ikarosPluginManager.getPlugin(childPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STOPPED);
+    }
+
+    @Test
+    void reloadPlugins() {
+        String parentPluginId = loadPluginIfNotLoaded(parentPluginPath);
+        String childPluginId = loadPluginIfNotLoaded(childPluginPath);
+
+        ikarosPluginManager.startPlugin(parentPluginId);
+        ikarosPluginManager.startPlugin(childPluginId);
+        ikarosPluginManager.stopPlugin(childPluginId);
+        assertThat(ikarosPluginManager.getPlugin(parentPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STARTED);
+        assertThat(ikarosPluginManager.getPlugin(childPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STOPPED);
+        ikarosPluginManager.reloadPlugins();
+        assertThat(ikarosPluginManager.getPlugin(parentPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STARTED);
+        assertThat(ikarosPluginManager.getPlugin(childPluginId).getPluginState())
+            .isEqualByComparingTo(PluginState.STARTED);
+    }
+
+    @Test
+    void releaseAdditionalResourcesWhenFail() {
+        ikarosPluginManager.releaseAdditionalResources(null);
     }
 }
