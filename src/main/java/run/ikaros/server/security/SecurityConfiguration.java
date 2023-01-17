@@ -51,6 +51,10 @@ public class SecurityConfiguration {
             .authorizeExchange().anyExchange()
             .access(new RequestAuthorizationManager())
             .and()
+            .anonymous(spec -> {
+                spec.authorities(SecurityConst.AnonymousUser.Role);
+                spec.principal(SecurityConst.AnonymousUser.PRINCIPAL);
+            })
             .formLogin(withDefaults())
             .logout(withDefaults())
             .httpBasic(withDefaults());
