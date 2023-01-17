@@ -49,7 +49,7 @@ class IkarosExtensionFactoryTest {
 
 
     @Test
-    void createUseSpringWhenManagerNotFoundPlugin() {
+    void createUseSpringWhenManagerNotFoundPluginAndNotNewInstance() {
         IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager());
         IkarosExtensionFactory extensionFactory = new IkarosExtensionFactory(pluginManager);
         PluginWrapper pluginWrapper = Mockito.mock(PluginWrapper.class);
@@ -58,6 +58,17 @@ class IkarosExtensionFactoryTest {
         Assertions.assertThatExceptionOfType(PluginException.class)
             .isThrownBy(() -> extensionFactory.create(NotNewInstance.class))
             .withMessageContaining("new extension cls instance fail");
+    }
+
+    @Test
+    void createUseSpringWhenManagerNotFoundPluginAndCanNewInstance() {
+        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager());
+        IkarosExtensionFactory extensionFactory = new IkarosExtensionFactory(pluginManager);
+        PluginWrapper pluginWrapper = Mockito.mock(PluginWrapper.class);
+        Mockito.when(pluginWrapper.getPlugin())
+            .thenReturn(null);
+        Assertions.assertThat(extensionFactory.create(CanNewInstance.class))
+                .isInstanceOf(CanNewInstance.class);
     }
 
     @Test
