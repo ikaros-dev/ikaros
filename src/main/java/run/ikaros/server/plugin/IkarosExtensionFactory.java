@@ -1,7 +1,6 @@
 package run.ikaros.server.plugin;
 
 import jakarta.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -110,8 +109,7 @@ public class IkarosExtensionFactory implements ExtensionFactory {
         T t;
         try {
             t = extensionClass.getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException
-                 | InvocationTargetException | NoSuchMethodException e) {
+        } catch (ReflectiveOperationException e) {
             throw new PluginException("new extension cls instance fail", e);
         }
         return t;
