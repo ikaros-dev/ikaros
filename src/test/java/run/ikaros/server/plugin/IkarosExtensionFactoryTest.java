@@ -2,8 +2,6 @@ package run.ikaros.server.plugin;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.pf4j.PluginManager;
 
 class IkarosExtensionFactoryTest {
 
@@ -18,7 +16,7 @@ class IkarosExtensionFactoryTest {
     @Test
     void createNotUseSpring() {
         IkarosExtensionFactory ikarosExtensionFactory
-            = new IkarosExtensionFactory(Mockito.any(PluginManager.class), false);
+            = new IkarosExtensionFactory(new IkarosPluginManager(), false);
         Assertions.assertThat(ikarosExtensionFactory.create(CanNewInstance.class))
             .isInstanceOf(CanNewInstance.class);
     }
@@ -26,7 +24,7 @@ class IkarosExtensionFactoryTest {
     @Test
     void createNotUseSpringAndHasReflectException() {
         IkarosExtensionFactory ikarosExtensionFactory
-            = new IkarosExtensionFactory(Mockito.any(PluginManager.class), false);
+            = new IkarosExtensionFactory(new IkarosPluginManager(), false);
         Assertions.assertThatExceptionOfType(PluginException.class)
             .isThrownBy(() -> ikarosExtensionFactory.create(NotNewInstance.class))
             .withMessageContaining("new extension cls instance fail");
