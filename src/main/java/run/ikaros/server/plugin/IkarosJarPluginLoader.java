@@ -29,6 +29,5 @@ public class IkarosJarPluginLoader extends JarPluginLoader {
                 getClass().getClassLoader(), ClassLoadingStrategy.APD);
         pluginClassLoader.addFile(pluginPath.toFile());
         return pluginClassLoader;
-
     }
 }
