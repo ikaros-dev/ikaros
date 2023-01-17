@@ -9,18 +9,27 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Custom {
     /**
-     * extension group.
+     * custom group.
      */
     String group();
 
     /**
-     * extension version.
+     * custom version.
      */
     String version();
 
     /**
-     * extension kind.
+     * custom kind.
      */
     String kind();
 
+    /**
+     * Custom singular.
+     */
+    String singular();
+
+    /**
+     * Custom plural.
+     */
+    String plural();
 }

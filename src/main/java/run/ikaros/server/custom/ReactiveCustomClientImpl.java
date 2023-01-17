@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.core.warp.PagingWrap;
 import run.ikaros.server.infra.exception.NotFoundException;
+import run.ikaros.server.infra.warp.PagingWrap;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 import run.ikaros.server.store.repository.CustomMetadataRepository;
@@ -107,6 +107,18 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .flatMap(customEntity -> metadataRepository.deleteAllByCustomId(
                 customEntity.getId()))
             .then(Mono.justOrEmpty(custom));
+    }
+
+    @Override
+    public <C> Mono<C> delete(Class<C> clazz, String name) {
+        return Mono.justOrEmpty(clazz)
+            .filter(Objects::nonNull)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'clazz' must not null")))
+            .flatMap(obj -> Mono.justOrEmpty(name))
+            .filter(StringUtils::hasText)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("'name' must has text")))
+            .flatMap(n -> findOne(clazz, n))
+            .flatMap(this::delete);
     }
 
     @Override

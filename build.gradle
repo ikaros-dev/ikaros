@@ -37,6 +37,8 @@ ext {
 
 
 dependencies {
+    compileOnly 'com.google.code.findbugs:annotations:3.0.1'
+
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
@@ -69,6 +71,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
@@ -77,8 +80,8 @@ dependencies {
     // database
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.postgresql:r2dbc-postgresql'
-    testRuntimeOnly 'io.r2dbc:r2dbc-h2'
-    testRuntimeOnly 'com.h2database:h2'
+    runtimeOnly 'io.r2dbc:r2dbc-h2'
+    runtimeOnly 'com.h2database:h2'
 
     // unit tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

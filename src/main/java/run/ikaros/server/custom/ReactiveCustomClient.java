@@ -5,7 +5,7 @@ import jakarta.annotation.Nullable;
 import java.util.function.Predicate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.core.warp.PagingWrap;
+import run.ikaros.server.infra.warp.PagingWrap;
 
 
 public interface ReactiveCustomClient {
@@ -15,6 +15,8 @@ public interface ReactiveCustomClient {
     <C> Mono<C> update(C custom);
 
     <C> Mono<C> delete(C custom);
+
+    <C> Mono<C> delete(Class<C> clazz, String name);
 
     Mono<Void> deleteAll();
 

@@ -1,3 +1,11 @@
+ikaros:
+  plugin:
+    runtime-mode: development
+    fixed-plugin-path:
+      - C:\\Develop\\ikaros-dev\\dev-plugins\\plugin-starter
+    enabled-plugins:
+      - plugin-starter
+
 spring:
   thymeleaf:
     cache: false
@@ -5,6 +13,7 @@ spring:
 logging:
   level:
     run.ikaros.server: DEBUG
+    org.pf4j.AbstractPluginManager: DEBUG
 springdoc:
   api-docs:
     enabled: true

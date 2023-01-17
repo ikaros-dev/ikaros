@@ -16,7 +16,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import run.ikaros.server.infra.exception.CustomConvertException;
+import run.ikaros.server.custom.exception.CustomConvertException;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 
@@ -215,5 +215,19 @@ public class CustomConverter {
         }
 
         return custom;
+    }
+
+    /**
+     * gvk.
+     *
+     * @return group version kind
+     * @see GroupVersionKind
+     */
+    public static GroupVersionKind gvk(Class<?> clazz) {
+        Custom annotation = clazz.getAnnotation(Custom.class);
+        if (annotation == null) {
+            return new GroupVersionKind("", "", "");
+        }
+        return new GroupVersionKind(annotation.group(), annotation.version(), annotation.kind());
     }
 }

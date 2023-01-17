@@ -6,6 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -47,7 +48,12 @@ class CustomRepositoryTest {
 
 
 
-        StepVerifier.create(customRepository.count()).expectNext(count).verifyComplete();
+        StepVerifier.create(customRepository.findAll(Example.of(CustomEntity.builder()
+                    .group(group).version(version).kind(kind)
+                    .build()))
+                .collectList()
+                .flatMap(customEntities -> Mono.just(customEntities.size())))
+            .expectNext((int) count).verifyComplete();
         StepVerifier.create(customRepository.findAllByGroupAndVersionAndKind(group, version, kind,
                     PageRequest.of(0, 4))
                 .flatMap(customEntity -> Mono.just(customEntity.getName())))

@@ -1,4 +1,4 @@
-package run.ikaros.server.infra.exception;
+package run.ikaros.server.custom.exception;
 
 public class CustomConvertException extends CustomException {
     public CustomConvertException(String message) {

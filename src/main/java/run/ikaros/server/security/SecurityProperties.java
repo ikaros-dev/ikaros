@@ -1,8 +1,12 @@
-package run.ikaros.server.infra.properties;
+package run.ikaros.server.security;
 
 import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 @Data
+@Validated
+@ConfigurationProperties(prefix = "ikaros.security")
 public class SecurityProperties {
 
     private final Initializer initializer = new Initializer();

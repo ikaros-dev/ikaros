@@ -1,4 +1,4 @@
-package run.ikaros.server.config;
+package run.ikaros.server.security;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN;
@@ -8,6 +8,7 @@ import static org.springframework.security.web.server.util.matcher.ServerWebExch
 import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -24,15 +25,13 @@ import org.springframework.security.web.server.util.matcher.AndServerWebExchange
 import org.springframework.security.web.server.util.matcher.MediaTypeServerWebExchangeMatcher;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.infra.constant.SecurityConst;
-import run.ikaros.server.infra.properties.IkarosProperties;
-import run.ikaros.server.security.DefaultUserDetailService;
-import run.ikaros.server.security.MasterInitializer;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 import run.ikaros.server.security.authorization.RequestAuthorizationManager;
 
-@Configuration
 @EnableWebFluxSecurity
-public class WebServerSecurityConfig {
+@Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(SecurityProperties.class)
+public class SecurityConfiguration {
     @Bean
     PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
@@ -86,9 +85,8 @@ public class WebServerSecurityConfig {
     @ConditionalOnProperty(name = "ikaros.security.initializer.disabled",
         havingValue = "false",
         matchIfMissing = true)
-    MasterInitializer superAdminInitializer(IkarosProperties ikarosProperties,
+    MasterInitializer superAdminInitializer(SecurityProperties securityProperties,
                                             UserService userService) {
-        return new MasterInitializer(ikarosProperties.getSecurity().getInitializer(), userService);
+        return new MasterInitializer(securityProperties.getInitializer(), userService);
     }
-
 }

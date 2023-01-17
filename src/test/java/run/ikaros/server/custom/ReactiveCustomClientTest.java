@@ -9,8 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.server.core.warp.PagingWrap;
 import run.ikaros.server.infra.exception.NotFoundException;
+import run.ikaros.server.infra.warp.PagingWrap;
 
 @SpringBootTest
 class ReactiveCustomClientTest {

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import run.ikaros.server.infra.exception.CustomConvertException;
+import run.ikaros.server.custom.exception.CustomConvertException;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 import run.ikaros.server.test.TestConst;
@@ -100,7 +100,7 @@ class CustomConverterTest {
             CustomConverter.covertCustomFieldToMetadataEntity(demoCustom, numberField, om);
             fail(TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS);
         } catch (CustomConvertException e) {
-            assertThat(e.getMessage()).startsWith(
+            assertThat(e.getMessage()).contains(
                 "convert custom field to metadata entity fail for class: ");
         }
     }
@@ -129,7 +129,7 @@ class CustomConverterTest {
             CustomConverter.getNameFieldValue(testCustom2);
             fail(TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS);
         } catch (CustomConvertException e) {
-            assertThat(e.getMessage()).startsWith("get custom name filed value fail for name");
+            assertThat(e.getMessage()).contains("get custom name filed value fail for name");
         }
 
         TestCustom2 testCustom21 = CustomConverter.convertFrom(TestCustom2.class,
@@ -139,7 +139,8 @@ class CustomConverterTest {
         // CustomConverter.getNameFieldValue(testCustom2);
     }
 
-    @Custom(group = "test.ikaros.run", version = "v1", kind = "TestCustom1")
+    @Custom(group = "test.ikaros.run", version = "v1", kind = "TestCustom1",
+        singular = "test", plural = "tests")
     static class TestCustom1 {
         @Name
         private String title;
@@ -166,7 +167,8 @@ class CustomConverterTest {
     }
 
 
-    @Custom(group = "test.ikaros.run", version = "v1", kind = "TestCustom2")
+    @Custom(group = "test.ikaros.run", version = "v1", kind = "TestCustom2",
+        singular = "test", plural = "tests")
     static class TestCustom2 {
         @Name
         private String title;

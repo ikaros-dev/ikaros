@@ -9,7 +9,6 @@ import reactor.core.publisher.Mono;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.infra.exception.NotFoundException;
-import run.ikaros.server.infra.properties.SecurityProperties;
 import run.ikaros.server.store.entity.UserEntity;
 
 @Slf4j
@@ -32,12 +31,9 @@ public class MasterInitializer {
 
     /**
      * init master user after application ready.
-     *
-     * @param readyEvent app ready event
-     * @return void
      */
-    @EventListener
-    public Mono<Void> initialize(ApplicationReadyEvent readyEvent) {
+    @EventListener(ApplicationReadyEvent.class)
+    public Mono<Void> initialize() {
         return userService.getUser(initializer.getMasterUsername())
             .onErrorResume(NotFoundException.class, user -> createMaster())
             .then();

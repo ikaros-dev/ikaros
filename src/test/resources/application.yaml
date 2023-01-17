@@ -1,6 +1,9 @@
 ikaros:
   external-url: "http://${server.address:localhost}:${server.port}"
   work-dir: ${user.dir}/build/
+  plugin:
+    runtime-mode: development
+    system-version: 1.0.0-SNAPSHOT
 
 server:
   port: 51000
@@ -29,6 +32,7 @@ springdoc:
 logging:
   level:
     run.ikaros.server: DEBUG
+    org.pf4j.AbstractPluginManager: DEBUG
   file:
     name: ./build/logs/ikaros.log
   logback:

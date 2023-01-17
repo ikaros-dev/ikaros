@@ -1,6 +1,5 @@
 package run.ikaros.server.infra.properties;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.nio.file.Path;
@@ -21,8 +20,4 @@ public class IkarosProperties {
     private Path workDir;
     @NotNull
     private URI externalUrl;
-    @Valid
-    private final SecurityProperties security = new SecurityProperties();
-    @Valid
-    private final ConsoleProperties console = new ConsoleProperties();
 }
