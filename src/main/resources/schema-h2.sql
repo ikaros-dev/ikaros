@@ -4,7 +4,7 @@ create table if not exists file
     id            int8         not null auto_increment,
     create_time   timestamp(6) null,
     create_uid    int8         null,
-    status        bool         null,
+    delete_status bool         null,
     update_time   timestamp(6) null,
     update_uid    int8         null,
     version       int8         null,
@@ -25,7 +25,7 @@ create table if not exists ikuser
     id              int8           not null auto_increment,
     create_time     timestamp(6)   null,
     create_uid      int8           null,
-    status          bool           null,
+    delete_status   bool           null,
     update_time     timestamp(6)   null,
     update_uid      int8           null,
     version         int8           null,
@@ -48,11 +48,11 @@ create table if not exists ikuser
 -- custom
 create table if not exists `custom`
 (
-    id          int8         not null auto_increment,
-    c_group     varchar(255) not null,
-    version     varchar(255) not null,
-    kind        varchar(255) not null,
-    name        varchar(255) not null,
+    id      int8         not null auto_increment,
+    c_group varchar(255) not null,
+    version varchar(255) not null,
+    kind    varchar(255) not null,
+    name    varchar(255) not null,
     constraint custom_gvkn unique (c_group, version, kind, name),
     constraint custom_pkey primary key (id)
 );
@@ -60,10 +60,10 @@ create table if not exists `custom`
 -- custom_metadata
 create table if not exists `custom_metadata`
 (
-    id       int8         not null auto_increment,
-    custom_id     int8         not null,
-    cm_key   varchar(255) not null,
-    cm_value blob,
+    id        int8         not null auto_increment,
+    custom_id int8         not null,
+    cm_key    varchar(255) not null,
+    cm_value  blob,
     constraint custom_metadata_e_id_em_key unique (custom_id, cm_key),
     constraint custom_metadata_pkey primary key (id)
 );

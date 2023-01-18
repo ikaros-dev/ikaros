@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
@@ -52,7 +53,9 @@ public class UserEntity extends BaseEntity {
     private Boolean nonLocked;
 
     private String avatar;
+    @Column("last_login_ip")
     private String lastLoginIp;
+    @Column("last_login_time")
     private LocalDateTime lastLoginTime;
 
 }

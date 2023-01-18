@@ -27,7 +27,8 @@ public class BaseEntity {
     /**
      * record status, it is logic delete, has deleted is false, normal is true.
      */
-    private Boolean status = true;
+    @Column("delete_status")
+    private Boolean deleteStatus = true;
 
     /**
      * create record user id.

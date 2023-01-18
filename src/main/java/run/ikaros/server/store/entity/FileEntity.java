@@ -17,7 +17,8 @@ import run.ikaros.server.store.enums.FilePlace;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class FileEntity extends BaseEntity {
-
+    @Column("folder_id")
+    private Long folderId;
     private String url;
 
     /**

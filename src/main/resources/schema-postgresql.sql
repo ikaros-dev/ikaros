@@ -11,7 +11,7 @@ create table if not exists file
     id            int8         not null default nextval('file_seq'),
     create_time   timestamp(6) null,
     create_uid    int8         null,
-    status        bool         null,
+    delete_status bool         null,
     update_time   timestamp(6) null,
     update_uid    int8         null,
     "version"     int8         null,
@@ -39,7 +39,7 @@ create table if not exists ikuser
     id              int8           not null default nextval('ikuser_seq'),
     create_time     timestamp(6)   null,
     create_uid      int8           null,
-    status          bool           null,
+    delete_status   bool           null,
     update_time     timestamp(6)   null,
     update_uid      int8           null,
     "version"       int8           null,
@@ -68,11 +68,11 @@ create sequence if not exists custom_seq
 
 create table if not exists custom
 (
-    id          int8         not null default nextval('custom_seq'),
-    c_group     varchar(255) not null,
-    "version"   varchar(255) not null,
-    kind        varchar(255) not null,
-    name        varchar(255) not null,
+    id        int8         not null default nextval('custom_seq'),
+    c_group   varchar(255) not null,
+    "version" varchar(255) not null,
+    kind      varchar(255) not null,
+    name      varchar(255) not null,
     constraint custom_gvkn unique (c_group, "version", kind, name),
     constraint custom_pkey primary key (id)
 );
@@ -87,10 +87,10 @@ create sequence if not exists custom_metadata_seq
 
 create table if not exists custom_metadata
 (
-    id          int8         not null default nextval('custom_metadata_seq'),
-    custom_id int8 not null ,
-    cm_key        varchar(255) not null,
-    cm_value        bytea,
+    id        int8         not null default nextval('custom_metadata_seq'),
+    custom_id int8         not null,
+    cm_key    varchar(255) not null,
+    cm_value  bytea,
     constraint custom_metadata_custom_id_em_key unique (custom_id, cm_key),
     constraint custom_metadata_pkey primary key (id)
 );
