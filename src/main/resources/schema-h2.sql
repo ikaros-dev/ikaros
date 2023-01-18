@@ -45,23 +45,6 @@ create table if not exists ikuser
 );
 
 
--- setting
-create table if not exists `setting`
-(
-    id            int8         not null auto_increment,
-    create_time   timestamp(6) null,
-    create_uid    int8         null,
-    status        bool         null,
-    update_time   timestamp(6) null,
-    update_uid    int8         null,
-    version       int8         null,
-    category      varchar(255) not null,
-    setting_key   varchar(255) not null,
-    setting_value varchar(255) null,
-    constraint setting_pkey primary key (id)
-);
-
-
 -- custom
 create table if not exists `custom`
 (
