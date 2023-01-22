@@ -15,7 +15,7 @@ import org.springframework.data.relational.core.mapping.Column;
  */
 @Data
 @Accessors(chain = true)
-//todo impl @EntityListeners(AuditingEntityListener.class)
+// todo impl @EntityListeners(AuditingEntityListener.class)
 public class BaseEntity {
 
     /**
