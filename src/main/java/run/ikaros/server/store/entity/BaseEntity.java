@@ -59,9 +59,10 @@ public class BaseEntity {
     private LocalDateTime updateTime;
 
     /**
-     * optimistic lock field.
+     * optimistic lock version field.
      */
     @Version
-    private Long version;
+    @Column("ol_version")
+    private Long optimisticLockVersion;
 
 }
