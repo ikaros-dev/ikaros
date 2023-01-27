@@ -6,8 +6,10 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+import run.ikaros.server.core.user.RoleService;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
+import run.ikaros.server.infra.constant.SecurityConst;
 import run.ikaros.server.infra.exception.NotFoundException;
 import run.ikaros.server.store.entity.UserEntity;
 
@@ -16,17 +18,20 @@ public class MasterInitializer {
 
     private final SecurityProperties.Initializer initializer;
     private final UserService userService;
+    private final RoleService roleService;
 
     /**
      * default master tomoki init.
      *
      * @param initializer security init properties
      * @param userService user service
+     * @param roleService role service
      */
     public MasterInitializer(SecurityProperties.Initializer initializer,
-                             UserService userService) {
+                             UserService userService, RoleService roleService) {
         this.initializer = initializer;
         this.userService = userService;
+        this.roleService = roleService;
     }
 
     /**
@@ -40,14 +45,18 @@ public class MasterInitializer {
     }
 
     private Mono<User> createMaster() {
-        return Mono.just(UserEntity.builder()
+        return roleService.createIfNotExist(SecurityConst.ROLE_MASTER)
+            .flatMap(roleEntity -> Mono.just(roleEntity.getId()))
+            .flatMap(roleId -> Mono.just(UserEntity.builder()
                 .username(initializer.getMasterUsername())
                 .password(getPassword())
+                .roleId(roleId)
                 .nickname(initializer.getMasterNickname())
-                .build())
+                .build()))
             .map(User::new)
             .flatMap(userService::save);
     }
+
 
     private String getPassword() {
         var password = this.initializer.getMasterPassword();

@@ -25,6 +25,9 @@ import org.springframework.data.relational.core.mapping.Table;
 @EqualsAndHashCode(callSuper = true)
 public class UserEntity extends BaseEntity {
 
+    @Column("role_id")
+    private Long roleId;
+
     /**
      * username.
      */
