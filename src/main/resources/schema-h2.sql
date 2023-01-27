@@ -1,13 +1,95 @@
+-- authority
+create table if not exists authority
+(
+    id            int8         not null auto_increment,
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    role_id       int8         not null,
+    method        varchar(255) not null,
+    allow         bool         not null,
+    url           varchar(255) not null,
+    constraint authority_pkey primary key (id)
+);
+
+-- character
+create table if not exists character
+(
+    id            int8           not null auto_increment,
+    create_time   timestamp(6)   null,
+    create_uid    int8           null,
+    delete_status bool           null,
+    update_time   timestamp(6)   null,
+    update_uid    int8           null,
+    ol_version    int8           null,
+    name          varchar(255)   not null,
+    infobox       varchar(50000) null,
+    summary       varchar(50000) null,
+    constraint character_pkey primary key (id)
+);
+
+-- collection
+create table if not exists collection
+(
+    id            int8         not null auto_increment,
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    user_id       int8         not null,
+    subject_id    int8         not null,
+    status        int8         not null,
+    constraint collection_pkey primary key (id)
+);
+
+-- episode
+create table if not exists episode
+(
+    id            int8           not null auto_increment,
+    create_time   timestamp(6)   null,
+    create_uid    int8           null,
+    delete_status bool           null,
+    update_time   timestamp(6)   null,
+    update_uid    int8           null,
+    ol_version    int8           null,
+    subject_id    int8           not null,
+    name          varchar(255)   not null,
+    name_cn       varchar(255)   null,
+    description   varchar(50000) null,
+    air_time      timestamp(6)   null,
+    constraint episode_pkey primary key (id)
+);
+
+-- episode_file
+create table if not exists episode_file
+(
+    id            int8         not null auto_increment,
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    episode_id    int8         not null,
+    file_id       int8         not null,
+    constraint episode_file_pkey primary key (id)
+);
+
 -- file
 create table if not exists file
 (
     id            int8         not null auto_increment,
     create_time   timestamp(6) null,
     create_uid    int8         null,
-    status        bool         null,
+    delete_status bool         null,
     update_time   timestamp(6) null,
     update_uid    int8         null,
-    version       int8         null,
+    ol_version    int8         null,
     md5           varchar(255) null,
     name          varchar(255) not null,
     original_name varchar(255) null,
@@ -19,16 +101,143 @@ create table if not exists file
     constraint file_pkey primary key (id)
 );
 
+-- folder
+create table if not exists folder
+(
+    id            int8         not null auto_increment,
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    parent_id     int8         not null,
+    name          varchar(255) not null,
+    constraint folder_pkey primary key (id)
+);
+
+-- person_character
+create table if not exists person_character
+(
+    id            int8         not null auto_increment,
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    person_id     int8         not null,
+    character_id  int8         not null,
+    constraint person_character_pkey primary key (id)
+);
+
+-- person
+create table if not exists person
+(
+    id            int8           not null auto_increment,
+    create_time   timestamp(6)   null,
+    create_uid    int8           null,
+    delete_status bool           null,
+    update_time   timestamp(6)   null,
+    update_uid    int8           null,
+    ol_version    int8           null,
+    name          varchar(255)   not null,
+    infobox       varchar(50000) null,
+    summary       varchar(50000) null,
+    constraint person_pkey primary key (id)
+);
+
+
+-- role
+create table if not exists role
+(
+    id            int8         not null auto_increment,
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    name          varchar(255) not null,
+    constraint role_pkey primary key (id)
+);
+
+-- subject_character
+create table if not exists subject_character
+(
+    id            int8         not null auto_increment,
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    subject_id    int8         not null,
+    character_id  int8         not null,
+    constraint subject_character_pkey primary key (id)
+);
+
+-- subject
+create table if not exists subject
+(
+    id            int8           not null auto_increment,
+    create_time   timestamp(6)   null,
+    create_uid    int8           null,
+    delete_status bool           null,
+    update_time   timestamp(6)   null,
+    update_uid    int8           null,
+    ol_version    int8           null,
+    type          int8           not null,
+    name          varchar(255)   not null,
+    name_cn       varchar(255)   null,
+    infobox       varchar(50000) null,
+    platform      varchar(255)   null,
+    summary       varchar(50000) null,
+    nsfw          bool           not null,
+    constraint subject_pkey primary key (id)
+);
+
+-- subject_person
+create table if not exists subject_person
+(
+    id            int8         not null auto_increment,
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    subject_id    int8         not null,
+    person_id     int8         not null,
+    constraint subject_person_pkey primary key (id)
+);
+
+-- subject_relation
+create table if not exists subject_relation
+(
+    id                  int8         not null auto_increment,
+    create_time         timestamp(6) null,
+    create_uid          int8         null,
+    delete_status       bool         null,
+    update_time         timestamp(6) null,
+    update_uid          int8         null,
+    ol_version          int8         null,
+    subject_id          int8         not null,
+    relation_type       int8         not null,
+    relation_subject_id int8         not null,
+    constraint subject_relation_pkey primary key (id)
+);
+
 -- ikuser
 create table if not exists ikuser
 (
     id              int8           not null auto_increment,
     create_time     timestamp(6)   null,
     create_uid      int8           null,
-    status          bool           null,
+    delete_status   bool           null,
     update_time     timestamp(6)   null,
     update_uid      int8           null,
-    version         int8           null,
+    ol_version      int8           null,
     avatar          varchar(255)   null,
     email           varchar(255)   null,
     enable          bool           null,
@@ -45,31 +254,14 @@ create table if not exists ikuser
 );
 
 
--- setting
-create table if not exists `setting`
-(
-    id            int8         not null auto_increment,
-    create_time   timestamp(6) null,
-    create_uid    int8         null,
-    status        bool         null,
-    update_time   timestamp(6) null,
-    update_uid    int8         null,
-    version       int8         null,
-    category      varchar(255) not null,
-    setting_key   varchar(255) not null,
-    setting_value varchar(255) null,
-    constraint setting_pkey primary key (id)
-);
-
-
 -- custom
 create table if not exists `custom`
 (
-    id          int8         not null auto_increment,
-    c_group     varchar(255) not null,
-    version     varchar(255) not null,
-    kind        varchar(255) not null,
-    name        varchar(255) not null,
+    id      int8         not null auto_increment,
+    c_group varchar(255) not null,
+    version varchar(255) not null,
+    kind    varchar(255) not null,
+    name    varchar(255) not null,
     constraint custom_gvkn unique (c_group, version, kind, name),
     constraint custom_pkey primary key (id)
 );
@@ -77,10 +269,10 @@ create table if not exists `custom`
 -- custom_metadata
 create table if not exists `custom_metadata`
 (
-    id       int8         not null auto_increment,
-    custom_id     int8         not null,
-    cm_key   varchar(255) not null,
-    cm_value blob,
+    id        int8         not null auto_increment,
+    custom_id int8         not null,
+    cm_key    varchar(255) not null,
+    cm_value  blob,
     constraint custom_metadata_e_id_em_key unique (custom_id, cm_key),
     constraint custom_metadata_pkey primary key (id)
 );

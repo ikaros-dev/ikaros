@@ -1,24 +1,24 @@
 package run.ikaros.server.store.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-/**
- * setting entity.
- *
- * @author: li-guohao
- */
 @Data
-@Table(name = "setting")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "episode_file")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class SettingEntity extends BaseEntity {
-    private String category;
-    @Column("setting_key")
-    private String key;
-    @Column("setting_value")
-    private String value;
+public class EpisodeFileEntity extends BaseEntity {
+    @Column("episode_id")
+    private Long episodeId;
+    @Column("file_id")
+    private Long fileId;
 }

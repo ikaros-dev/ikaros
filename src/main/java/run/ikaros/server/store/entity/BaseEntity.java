@@ -15,7 +15,7 @@ import org.springframework.data.relational.core.mapping.Column;
  */
 @Data
 @Accessors(chain = true)
-//todo impl @EntityListeners(AuditingEntityListener.class)
+// todo impl @EntityListeners(AuditingEntityListener.class)
 public class BaseEntity {
 
     /**
@@ -27,7 +27,8 @@ public class BaseEntity {
     /**
      * record status, it is logic delete, has deleted is false, normal is true.
      */
-    private Boolean status = true;
+    @Column("delete_status")
+    private Boolean deleteStatus = false;
 
     /**
      * create record user id.
@@ -58,9 +59,10 @@ public class BaseEntity {
     private LocalDateTime updateTime;
 
     /**
-     * optimistic lock field.
+     * optimistic lock version field.
      */
     @Version
-    private Long version;
+    @Column("ol_version")
+    private Long optimisticLockVersion;
 
 }
