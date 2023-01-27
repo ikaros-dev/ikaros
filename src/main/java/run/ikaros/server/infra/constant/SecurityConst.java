@@ -6,7 +6,7 @@ package run.ikaros.server.infra.constant;
  * @author: li-guohao
  */
 public interface SecurityConst {
-    String DEFAULT_ROLE = "MASTER";
+    String ROLE_MASTER = "MASTER";
 
     interface AnonymousUser {
         String PRINCIPAL = "anonymousUser";

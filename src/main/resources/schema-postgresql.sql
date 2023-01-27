@@ -342,6 +342,7 @@ create table if not exists ikuser
     update_time     timestamp(6)   null,
     update_uid      int8           null,
     ol_version      int8           null,
+    role_id         int8           null,
     avatar          varchar(255)   null,
     email           varchar(255)   null,
     "enable"        bool           null,

@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.MediaTypeServerWebExchangeMatcher;
+import run.ikaros.server.core.user.RoleService;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.infra.constant.SecurityConst;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
@@ -38,8 +39,9 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    ReactiveUserDetailsService userDetailsService(UserService userService) {
-        return new DefaultUserDetailService(userService);
+    ReactiveUserDetailsService userDetailsService(UserService userService,
+                                                  RoleService roleService) {
+        return new DefaultUserDetailService(userService, roleService);
     }
 
     @Bean
@@ -90,7 +92,7 @@ public class SecurityConfiguration {
         havingValue = "false",
         matchIfMissing = true)
     MasterInitializer superAdminInitializer(SecurityProperties securityProperties,
-                                            UserService userService) {
-        return new MasterInitializer(securityProperties.getInitializer(), userService);
+                                            UserService userService, RoleService roleService) {
+        return new MasterInitializer(securityProperties.getInitializer(), userService, roleService);
     }
 }

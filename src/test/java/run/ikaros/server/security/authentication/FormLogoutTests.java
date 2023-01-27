@@ -37,7 +37,7 @@ public class FormLogoutTests {
                     .username("user")
                     .password("password")
                     .passwordEncoder(passwordEncoder::encode)
-                    .roles(SecurityConst.DEFAULT_ROLE)
+                    .roles(SecurityConst.ROLE_MASTER)
                     .build()
             ));
 
