@@ -6,6 +6,7 @@ package run.ikaros.server.infra.constant;
  * @author: li-guohao
  */
 public interface SecurityConst {
+    String PREFIX = "ROLE_";
     String ROLE_MASTER = "MASTER";
 
     interface AnonymousUser {
