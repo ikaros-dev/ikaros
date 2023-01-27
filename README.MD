@@ -28,7 +28,12 @@ WIP
 # 部署指南
 WIP
 
-旧版本仅供体验功能，**不推荐正式使用**，部署指导文档: [docker compose 方式部署指导手册(v0.1.0)](https://github.com/ikaros-dev/ikaros/blob/v0.1.0/docs/deploy/deploy-with-docker-compose.md)
+# 旧版本v0.1.0
+旧版本仅供体验功能，**不推荐正式使用**，
+
+部署指导文档: [docker compose 方式部署指导手册(v0.1.0)](https://github.com/ikaros-dev/ikaros/blob/v0.1.0/docs/deploy/deploy-with-docker-compose.md)
+
+功能介绍：https://github.com/ikaros-dev/ikaros/blob/v0.1.0/docs/introduce/feature.md
 
 # 许可证
 <a href="https://github.com/ikaros-dev/ikaros/blob/master/LICENSE"><img alt="LICENSE" src="https://img.shields.io/github/license/ikaros-dev/ikaros?style=flat-square" /></a>
@@ -45,8 +50,6 @@ PS: 暂时只有下方这些，后续会有官网、社区、官网文档等等
 
 - GitHub: [Ikaros project github offical repo](https://github.com/ikaros-dev/ikaros)
 - 微信公众号：见下方[微信公众号](#微信公众号)
-- QQ群：749098345 名称是：Ikaros开源
-- 哔哩哔哩：https://space.bilibili.com/118744944/dynamic
 - TG群组：https://t.me/run_ikaros
 - TG频道：https://t.me/run_ikaros_channel
 - 论坛：[Ikaros GitHub Discussions](https://github.com/orgs/ikaros-dev/discussions)
