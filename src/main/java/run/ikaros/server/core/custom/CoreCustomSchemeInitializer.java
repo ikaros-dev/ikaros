@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import run.ikaros.server.core.file.FileSetting;
 import run.ikaros.server.custom.scheme.CustomSchemeManager;
 import run.ikaros.server.custom.scheme.SchemeInitializedEvent;
 
@@ -25,6 +26,7 @@ public class CoreCustomSchemeInitializer implements ApplicationListener<Applicat
     public void onApplicationEvent(@NonNull ApplicationStartedEvent event) {
         // core.ikaros.run
         schemeManager.register(Plugin.class);
+        schemeManager.register(FileSetting.class);
 
         eventPublisher.publishEvent(new SchemeInitializedEvent(this));
     }
