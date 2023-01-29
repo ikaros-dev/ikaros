@@ -18,6 +18,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+import run.ikaros.server.custom.ReactiveCustomClient;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.constant.OpenApiConst;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
@@ -27,9 +28,12 @@ import run.ikaros.server.plugin.ExtensionComponentsFinder;
 public class FileEndpoint implements CoreEndpoint {
 
     private final ExtensionComponentsFinder extensionComponentsFinder;
+    private final ReactiveCustomClient reactiveCustomClient;
 
-    public FileEndpoint(ExtensionComponentsFinder extensionComponentsFinder) {
+    public FileEndpoint(ExtensionComponentsFinder extensionComponentsFinder,
+                        ReactiveCustomClient reactiveCustomClient) {
         this.extensionComponentsFinder = extensionComponentsFinder;
+        this.reactiveCustomClient = reactiveCustomClient;
     }
 
     @Override
@@ -63,6 +67,9 @@ public class FileEndpoint implements CoreEndpoint {
 
     Mono<ServerResponse> upload(ServerRequest request) {
         List<FileHandler> extensions = extensionComponentsFinder.getExtensions(FileHandler.class);
+        // reactiveCustomClient.findAll(FilePolicy.class, null)
+        //     .collectList()
+        //     .flatMap(filePolicies -> Mono.just(filePolicies.get(0)))
         return Mono.empty();
     }
 

@@ -13,8 +13,8 @@ import run.ikaros.server.infra.constant.OpenApiConst;
 @NoArgsConstructor
 @AllArgsConstructor
 @Custom(group = OpenApiConst.FILE_GROUP, version = OpenApiConst.FILE_VERSION,
-    kind = "FilePolicy", singular = "policy", plural = "policies")
-public class FilePolicy {
+    kind = "FileSetting", singular = "setting", plural = "settings")
+public class FileSetting {
     @Name
-    private String name;
+    private String policy;
 }

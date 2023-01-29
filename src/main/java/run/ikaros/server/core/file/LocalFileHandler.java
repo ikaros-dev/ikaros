@@ -5,6 +5,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class LocalFileHandler implements FileHandler {
     @Override
+    public String policy() {
+        return FileConst.POLICY_LOCAL;
+    }
+
+    @Override
     public File upload(UploadContext context) {
         return null;
     }
