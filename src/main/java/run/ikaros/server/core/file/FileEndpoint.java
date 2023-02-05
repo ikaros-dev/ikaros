@@ -3,10 +3,12 @@ package run.ikaros.server.core.file;
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.content.Builder.contentBuilder;
+import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
 import static org.springframework.web.reactive.function.BodyExtractors.toMultipartData;
 import static org.springframework.web.reactive.function.server.RequestPredicates.contentType;
 
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import java.util.Objects;
@@ -72,15 +74,20 @@ public class FileEndpoint implements CoreEndpoint {
                         ))
                     .response(responseBuilder().implementation(File.class))
                     .build())
-            .GET("/files", this::search,
+            .GET("/files", this::list,
                 builder -> {
                     builder
                         .operationId("SearchFiles")
                         .tag(tag);
                 }
             )
-            .DELETE("/files", this::delete,
-                builder -> builder.operationId("DeleteFiles").tag(tag))
+            .DELETE("/file/{id}", this::deleteById,
+                builder -> builder.operationId("DeleteFile").tag(tag)
+                    .parameter(parameterBuilder().name("id")
+                        .description("File ID")
+                        .in(ParameterIn.PATH)
+                        .required(true).implementation(
+                            Long.class)))
             // TODO large multipart file upload support
             .build();
     }
@@ -116,7 +123,7 @@ public class FileEndpoint implements CoreEndpoint {
                     .type(URI.create(e.getClass().getSimpleName())).build()));
     }
 
-    Mono<ServerResponse> search(ServerRequest request) {
+    Mono<ServerResponse> list(ServerRequest request) {
         return fileRepository.findAll()
             .map(File::new)
             .collectList()
@@ -125,8 +132,21 @@ public class FileEndpoint implements CoreEndpoint {
                 .bodyValue(files));
     }
 
-    Mono<ServerResponse> delete(ServerRequest request) {
-        return Mono.empty();
+    Mono<ServerResponse> deleteById(ServerRequest request) {
+        return Mono.just(request.pathVariable("id"))
+            .flatMap(fileId -> Mono.just(Long.valueOf(fileId)))
+            .flatMap(fileRepository::findById)
+            .map(File::new)
+            .flatMap(file -> Flux.fromStream(
+                    extensionComponentsFinder.getExtensions(FileHandler.class).stream())
+                .filter(fileHandler -> fileHandler.policy()
+                    .equalsIgnoreCase(file.entity().getPlace().toString()))
+                .collectList().flatMap(fileHandlers -> Mono.just(fileHandlers.get(0)))
+                .flatMap(fileHandler -> fileHandler.delete(file)))
+            .flatMap(file -> ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("Delete success"))
+            .switchIfEmpty(ServerResponse.notFound().build());
     }
 
     public interface UploadRequest {

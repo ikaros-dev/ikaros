@@ -5,15 +5,20 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import run.ikaros.server.core.file.FileConst;
 import run.ikaros.server.store.enums.FileType;
 
+@Slf4j
 public class FileUtils {
 
     static final Set<String> IMAGES =
@@ -147,5 +152,25 @@ public class FileUtils {
             .replace(">", "")
             .replace("|", "");
     }
+
+
+    public static void deletePathAndContentIfExists(Path path) throws IOException {
+        deleteFileAndChild(path.toFile());
+    }
+
+    private static void deleteFileAndChild(File parentFile) throws IOException {
+        if (parentFile == null) {
+            return;
+        }
+        if (parentFile.listFiles() == null) {
+            return;
+        }
+        for (File file : Objects.requireNonNull(parentFile.listFiles())) {
+            deleteFileAndChild(file);
+            Files.deleteIfExists(file.toPath());
+            log.debug("Delete file in path: {}", file.toPath());
+        }
+    }
+
 
 }

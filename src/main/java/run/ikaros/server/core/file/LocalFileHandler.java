@@ -75,7 +75,22 @@ public class LocalFileHandler implements FileHandler {
 
     @Override
     public Mono<File> delete(File file) {
-        return null;
+        return Mono.justOrEmpty(file)
+            .flatMap(file1 -> Mono.just(file1.entity()))
+            .flatMap(entity -> fileRepository.delete(entity).then(Mono.just(entity)))
+            .flatMap(entity -> Mono.just(entity.getOriginalPath()))
+            .flatMap(path -> Mono.just(new java.io.File(path)))
+            .flatMap(file1 -> Mono.just(file1.toPath()))
+            .flatMap(path -> {
+                try {
+                    Files.delete(path);
+                    log.debug("Delete file {} in path: {}", path.getFileName(), path);
+                    return Mono.just(path);
+                } catch (IOException e) {
+                    return Mono.error(new RuntimeException(e));
+                }
+            })
+            .then(Mono.just(file));
     }
 
 
