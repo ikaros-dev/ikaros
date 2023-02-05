@@ -90,6 +90,7 @@ create table if not exists file
     update_time   timestamp(6) null,
     update_uid    int8         null,
     ol_version    int8         null,
+    folder_id     int8         null,
     md5           varchar(255) null,
     name          varchar(255) not null,
     original_name varchar(255) null,

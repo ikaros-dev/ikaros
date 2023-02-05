@@ -26,6 +26,7 @@ import org.springframework.web.reactive.result.view.ViewResolutionResultHandler;
 import org.springframework.web.reactive.result.view.ViewResolver;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.console.ConsoleProperties;
+import run.ikaros.server.core.file.FileConst;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.endpoint.CoreEndpointsBuilder;
 import run.ikaros.server.infra.properties.IkarosProperties;
@@ -109,12 +110,12 @@ public class WebFluxConfig implements WebFluxConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        var attachmentsRoot = ikarosProperties.getWorkDir().resolve("attachments");
+        var uploadRoot = ikarosProperties.getWorkDir().resolve(FileConst.LOCAL_UPLOAD_DIR_NAME);
         var cacheControl = CacheControl.maxAge(Duration.ofDays(365 / 2));
 
         // Mandatory resource mapping
         var uploadRegistration = registry.addResourceHandler("/upload/**")
-            .addResourceLocations(FILE_URL_PREFIX + attachmentsRoot.resolve("upload") + "/")
+            .addResourceLocations(FILE_URL_PREFIX + uploadRoot + "/")
             .setUseLastModified(true)
             .setCacheControl(cacheControl);
 

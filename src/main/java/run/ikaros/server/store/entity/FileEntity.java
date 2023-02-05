@@ -1,7 +1,10 @@
 package run.ikaros.server.store.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -14,6 +17,9 @@ import run.ikaros.server.store.enums.FilePlace;
  */
 @Data
 @Table(name = "file")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class FileEntity extends BaseEntity {
@@ -28,9 +34,9 @@ public class FileEntity extends BaseEntity {
 
     private String type;
     private String md5;
-    private Long size = -1L;
+    private Long size;
 
-    private FilePlace place = FilePlace.LOCAL;
+    private FilePlace place;
 
     /**
      * original path in file system.
