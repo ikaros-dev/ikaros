@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.beans.factory.config.YamlProcessor;
 import org.springframework.core.io.Resource;
-import run.ikaros.server.core.custom.Plugin;
+import run.ikaros.server.plugin.custom.Plugin;
 
 /**
  * <p>Process the content in yaml that matches the {@link DocumentMatcher} and convert it to an

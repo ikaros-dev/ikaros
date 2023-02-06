@@ -6,9 +6,9 @@ import org.pf4j.PluginWrapper;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import run.ikaros.server.core.custom.Plugin;
 import run.ikaros.server.custom.ReactiveCustomClient;
 import run.ikaros.server.infra.exception.NotFoundException;
+import run.ikaros.server.plugin.custom.Plugin;
 
 @Slf4j
 @Component

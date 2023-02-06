@@ -1,4 +1,4 @@
-package run.ikaros.server.core.custom;
+package run.ikaros.server.plugin.custom;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.HashMap;

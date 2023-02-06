@@ -1,4 +1,4 @@
-package run.ikaros.server.core.custom;
+package run.ikaros.server.core;
 
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -9,6 +9,7 @@ import run.ikaros.server.core.file.FilePolicy;
 import run.ikaros.server.core.file.FileSetting;
 import run.ikaros.server.custom.scheme.CustomSchemeManager;
 import run.ikaros.server.custom.scheme.SchemeInitializedEvent;
+import run.ikaros.server.plugin.custom.Plugin;
 
 @Component
 public class CoreCustomSchemeInitializer implements ApplicationListener<ApplicationStartedEvent> {
@@ -25,7 +26,7 @@ public class CoreCustomSchemeInitializer implements ApplicationListener<Applicat
 
     @Override
     public void onApplicationEvent(@NonNull ApplicationStartedEvent event) {
-        // core.ikaros.run
+        // plugin.ikaros.run
         schemeManager.register(Plugin.class);
 
         // file.ikaros.run

@@ -10,7 +10,7 @@ import org.pf4j.PluginState;
 import org.pf4j.util.FileUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import run.ikaros.server.core.custom.Plugin;
+import run.ikaros.server.plugin.custom.Plugin;
 
 /**
  * Reading plugin descriptor data from plugin.yaml.
