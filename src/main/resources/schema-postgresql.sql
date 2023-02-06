@@ -132,7 +132,7 @@ create table if not exists file
     update_time   timestamp(6) null,
     update_uid    int8         null,
     ol_version    int8         null,
-    folder_id    int8         null,
+    folder_id     int8         null,
     md5           varchar(255) null,
     name          varchar(255) not null,
     original_name varchar(255) null,
@@ -281,6 +281,31 @@ create table if not exists subject
     constraint subject_pkey primary key (id)
 );
 
+-- subject_image
+create sequence if not exists subject_image_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
+create table if not exists subject_image
+(
+    id            int8         not null default nextval('subject_image_seq'),
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    subject_id    int8         null,
+    large         varchar(255) null,
+    common        varchar(255) null,
+    medium        varchar(255) null,
+    grid          varchar(255) null,
+    constraint subject_image_pkey primary key (id)
+);
+
 -- subject_person
 create sequence if not exists subject_person_seq
     increment 1
@@ -311,7 +336,7 @@ create sequence if not exists subject_relation_seq
     cache 1
     no cycle;
 
-create table if not exists subject_person
+create table if not exists subject_relation
 (
     id                  int8         not null default nextval('subject_relation_seq'),
     create_time         timestamp(6) null,
