@@ -10,6 +10,12 @@ import run.ikaros.server.infra.constant.OpenApiConst;
 @Slf4j
 // @Component
 public class SubjectEndpoint implements CoreEndpoint {
+    private final SubjectService subjectService;
+
+    public SubjectEndpoint(SubjectService subjectService) {
+        this.subjectService = subjectService;
+    }
+
     @Override
     public RouterFunction<ServerResponse> endpoint() {
         var tag = OpenApiConst.CORE_VERSION + "/Subject";

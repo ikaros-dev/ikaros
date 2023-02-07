@@ -1,7 +1,9 @@
 package run.ikaros.server.store.repository;
 
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
-import run.ikaros.server.store.entity.SubjectEntity;
+import reactor.core.publisher.Mono;
+import run.ikaros.server.store.entity.SubjectImageEntity;
 
-public interface SubjectImageRepository extends R2dbcRepository<SubjectEntity, Long> {
+public interface SubjectImageRepository extends R2dbcRepository<SubjectImageEntity, Long> {
+    Mono<SubjectImageEntity> findBySubjectId(Long subjectId);
 }

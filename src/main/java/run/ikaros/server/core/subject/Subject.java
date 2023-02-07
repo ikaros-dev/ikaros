@@ -18,6 +18,7 @@ import run.ikaros.server.store.enums.SubjectType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class Subject {
+    private Long id;
     private SubjectType type;
     private String name;
     @JsonProperty("name_cn")
