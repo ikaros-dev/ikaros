@@ -34,4 +34,6 @@ public class SubjectEntity extends BaseEntity {
      * Can search by anonymous access.
      */
     private Boolean nsfw;
+    @Column("bgmtv_id")
+    private Long bgmtvId;
 }

@@ -8,9 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import run.ikaros.server.store.entity.EpisodeEntity;
-import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.enums.CollectionStatus;
+import run.ikaros.server.store.enums.SubjectType;
 
 @Data
 @Builder
@@ -19,9 +18,24 @@ import run.ikaros.server.store.enums.CollectionStatus;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class Subject {
-    private SubjectEntity entity;
-    private List<EpisodeEntity> episodes;
+    private SubjectType type;
+    private String name;
+    @JsonProperty("name_cn")
+    private String nameCn;
+    private String infobox;
+    private String platform;
+    private String summary;
+    /**
+     * Can search by anonymous access.
+     */
+    private Boolean nsfw;
+    @JsonProperty("bgmtv_id")
+    private Long bgmtvId;
+
+    private SubjectImage image;
+    private List<Episode> episodes;
     @JsonProperty("total_episodes")
     private Long totalEpisodes;
-    private CollectionStatus collection;
+    @JsonProperty("collection_status")
+    private CollectionStatus collectionStatus;
 }

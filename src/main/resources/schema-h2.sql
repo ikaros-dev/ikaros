@@ -195,6 +195,7 @@ create table if not exists subject
     platform      varchar(255)   null,
     summary       varchar(50000) null,
     nsfw          bool           not null,
+    bgmtv_id      int8           null,
     constraint subject_pkey primary key (id)
 );
 
