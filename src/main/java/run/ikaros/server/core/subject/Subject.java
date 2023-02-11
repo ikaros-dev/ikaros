@@ -1,6 +1,9 @@
 package run.ikaros.server.core.subject;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +22,10 @@ import run.ikaros.server.store.enums.SubjectType;
 @Accessors(chain = true)
 public class Subject {
     private Long id;
+    @Schema(requiredMode = REQUIRED)
     private SubjectType type;
+
+    @Schema(requiredMode = REQUIRED)
     private String name;
     @JsonProperty("name_cn")
     private String nameCn;
@@ -29,6 +35,7 @@ public class Subject {
     /**
      * Can search by anonymous access.
      */
+    @Schema(requiredMode = REQUIRED)
     private Boolean nsfw;
     @JsonProperty("bgmtv_id")
     private Long bgmtvId;

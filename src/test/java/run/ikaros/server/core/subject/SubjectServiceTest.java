@@ -35,6 +35,36 @@ class SubjectServiceTest {
     }
 
     @Test
+    void findByIdWhenRecordExists() {
+        var subject = createSubjectInstance();
+        AtomicLong subjectId = new AtomicLong();
+        try {
+            StepVerifier.create(subjectService.save(subject))
+                .expectNextMatches(subject1 -> {
+                    boolean flag = Objects.nonNull(subject1.getId());
+                    if (flag) {
+                        subjectId.set(subject1.getId());
+                    }
+                    return flag;
+                })
+                .verifyComplete();
+
+            // Verify findById when subject record exists
+            StepVerifier.create(subjectService.findById(subjectId.get()))
+                .expectNextMatches(subject1 -> subject.canEqual(subject1)
+                    && subjectId.get() == subject1.getId()
+                    && subject.getType().equals(subject1.getType())
+                    && Objects.nonNull(subject1.getImage())
+                    && subject.getImage().getCommon()
+                    .equals(subject1.getImage().getCommon()))
+                .verifyComplete();
+        } finally {
+            StepVerifier.create(subjectService.deleteById(subjectId.get()))
+                .verifyComplete();
+        }
+    }
+
+    @Test
     void findByBgmIdWhenIdNotGtZero() {
         try {
             subjectService.findByBgmId(Long.MIN_VALUE).block();

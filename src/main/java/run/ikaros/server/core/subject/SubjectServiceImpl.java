@@ -2,11 +2,15 @@ package run.ikaros.server.core.subject;
 
 import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
+import java.util.Objects;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.infra.exception.NotFoundException;
+import run.ikaros.server.infra.warp.PagingWrap;
+import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.CollectionEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
@@ -51,23 +55,22 @@ public class SubjectServiceImpl implements SubjectService {
     @Override
     public Mono<Subject> findById(Long id) {
         Assert.isTrue(id > 0, "'id' must gt 0.");
-        return subjectRepository.existsById(id)
-            .filter(flag -> flag)
+        return subjectRepository.findById(id)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("Not found subject record by id: " + id)))
-            .flatMap(flag -> Mono.just(id))
-            .flatMap(subjectRepository::findById)
             .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject())
                 .map(subject -> subject.setType(SubjectType.codeOf(subjectEntity.getType()))))
             .flatMap(subject -> subjectImageRepository.findBySubjectId(subject.getId())
-                .flatMap(subjectImageEntity ->
-                    copyProperties(subjectImageEntity, new SubjectImage()))
-                .flatMap(subjectImage -> Mono.just(subject.setImage(subjectImage))))
+                .flatMap(
+                    subjectImageEntity -> copyProperties(subjectImageEntity, new SubjectImage()))
+                .flatMap(subjectImage -> Mono.just(subject.setImage(subjectImage)))
+                .switchIfEmpty(Mono.just(subject)))
             .flatMap(subject -> episodeRepository.findBySubjectId(subject.getId())
                 .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
                 .collectList()
-                .map(episodes -> subject.setTotalEpisodes((long) episodes.size())
-                    .setEpisodes(episodes)));
+                .flatMap(episodes -> Mono.just(subject.setTotalEpisodes((long) episodes.size())
+                    .setEpisodes(episodes)))
+                .switchIfEmpty(Mono.just(subject)));
     }
 
     @Override
@@ -84,24 +87,32 @@ public class SubjectServiceImpl implements SubjectService {
     public Mono<Subject> save(Subject subject) {
         Assert.notNull(subject, "'subject' must not be null.");
         return Mono.just(subject)
+            .filter(subject1 -> Objects.nonNull(subject1.getType()))
+            .switchIfEmpty(
+                Mono.error(new IllegalArgumentException("subject type must not be null")))
             // Save subject entity
-            .flatMap(sub -> copyProperties(sub, new SubjectEntity()))
-            .map(subjectEntity -> subjectEntity.setType(subject.getType().getCode()))
-            .flatMap(subjectRepository::save)
-            // Set subject id after save to database
-            .flatMap(subjectEntity -> Mono.just(subject.setId(subjectEntity.getId())))
+            .flatMap(subject1 -> copyProperties(subject1, new SubjectEntity())
+                .map(subjectEntity -> subjectEntity.setType(subject1.getType().getCode()))
+                .flatMap(subjectRepository::save)
+                .flatMap(subjectEntity -> Mono.just(subject1.setId(subjectEntity.getId()))
+                    .map(subject2 ->
+                        subject2.setType(SubjectType.codeOf(subjectEntity.getType())))))
             // Save subject image entity
-            .flatMap(subjectEntity -> Mono.just(subject.getImage()))
-            .flatMap(subjectImage -> copyProperties(subjectImage,
-                new SubjectImageEntity().setSubjectId(subject.getId())))
-            .flatMap(subjectImageRepository::save)
+            .flatMap(subject1 -> Mono.just(subject1.getImage())
+                .flatMap(subjectImage -> copyProperties(subjectImage, new SubjectImageEntity())
+                    .map(subjectImageEntity -> subjectImageEntity.setSubjectId(subject1.getId()))
+                    .flatMap(subjectImageRepository::save)
+                    .map(subjectImageEntity -> subjectImage.setId(subjectImageEntity.getId()))
+                    .flatMap(subjectImage1 -> Mono.just(subject1.setImage(subjectImage1)))))
             // Save episode entity
-            .flatMap(subjectImageEntity -> Mono.just(subject.getEpisodes()))
-            .flatMapMany(episodes -> Flux.fromStream(episodes.stream()))
-            .flatMap(episode -> copyProperties(episode,
-                new EpisodeEntity().setSubjectId(subject.getId())))
-            .flatMap(episodeRepository::save)
-            .then(Mono.just(subject));
+            .flatMap(subject1 -> Mono.just(subject1.getEpisodes())
+                .flatMapMany(episodes -> Flux.fromStream(episodes.stream()))
+                .flatMap(episode -> copyProperties(episode, new EpisodeEntity())
+                    .map(episodeEntity -> episodeEntity.setSubjectId(subject1.getId()))
+                    .flatMap(episodeRepository::save)
+                    .flatMap(episodeEntity -> Mono.just(episode.setId(episodeEntity.getId()))))
+                .collectList()
+                .flatMap(episodes -> Mono.just(subject1.setEpisodes(episodes))));
     }
 
     @Override
@@ -115,5 +126,23 @@ public class SubjectServiceImpl implements SubjectService {
             .then(subjectImageRepository.deleteBySubjectId(id))
             // Delete episode entities
             .then(episodeRepository.deleteAllBySubjectId(id));
+    }
+
+    @Override
+    public Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pagingWrap) {
+        Assert.notNull(pagingWrap, "'pagingWrap' must not be null");
+        Assert.isTrue(pagingWrap.getPage() > 0, "'pagingWrap' page must gt 0");
+        Assert.isTrue(pagingWrap.getSize() > 0, "'pagingWrap' size must gt 0");
+        return Mono.just(pagingWrap)
+            .flatMap(pagingWrap1 ->
+                subjectRepository.findAllBy(
+                        PageRequest.of(pagingWrap1.getPage() - 1, pagingWrap1.getSize()))
+                    .map(BaseEntity::getId)
+                    .flatMap(this::findById)
+                    .collectList()
+                    .flatMap(subjects -> subjectRepository.count()
+                        .flatMap(total -> Mono.just(
+                            new PagingWrap<>(pagingWrap1.getPage(), pagingWrap1.getSize(), total,
+                                subjects)))));
     }
 }

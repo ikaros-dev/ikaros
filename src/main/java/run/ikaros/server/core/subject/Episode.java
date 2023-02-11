@@ -15,6 +15,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class Episode {
+    private Long id;
     @JsonProperty("subject_id")
     private Long subjectId;
     private String name;

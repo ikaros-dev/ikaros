@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode
 public class EpisodeResource {
+    private Long id;
     @JsonProperty("file_id")
     private Long fileId;
     @JsonProperty("episode_id")
