@@ -213,6 +213,7 @@ create table if not exists subject_image
     large         varchar(255) null,
     common        varchar(255) null,
     medium        varchar(255) null,
+    small        varchar(255) null,
     grid          varchar(255) null,
     constraint subject_image_pkey primary key (id)
 );

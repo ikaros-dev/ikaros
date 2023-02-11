@@ -12,6 +12,7 @@ import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.entity.SubjectImageEntity;
+import run.ikaros.server.store.enums.SubjectType;
 import run.ikaros.server.store.repository.CollectionRepository;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
@@ -56,7 +57,8 @@ public class SubjectServiceImpl implements SubjectService {
                 Mono.error(new NotFoundException("Not found subject record by id: " + id)))
             .flatMap(flag -> Mono.just(id))
             .flatMap(subjectRepository::findById)
-            .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject()))
+            .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject())
+                .map(subject -> subject.setType(SubjectType.codeOf(subjectEntity.getType()))))
             .flatMap(subject -> subjectImageRepository.findBySubjectId(subject.getId())
                 .flatMap(subjectImageEntity ->
                     copyProperties(subjectImageEntity, new SubjectImage()))
@@ -86,8 +88,10 @@ public class SubjectServiceImpl implements SubjectService {
             .flatMap(sub -> copyProperties(sub, new SubjectEntity()))
             .map(subjectEntity -> subjectEntity.setType(subject.getType().getCode()))
             .flatMap(subjectRepository::save)
+            // Set subject id after save to database
+            .flatMap(subjectEntity -> Mono.just(subject.setId(subjectEntity.getId())))
             // Save subject image entity
-            .flatMap(subEntity -> Mono.just(subject.getImage()))
+            .flatMap(subjectEntity -> Mono.just(subject.getImage()))
             .flatMap(subjectImage -> copyProperties(subjectImage,
                 new SubjectImageEntity().setSubjectId(subject.getId())))
             .flatMap(subjectImageRepository::save)
@@ -110,7 +114,6 @@ public class SubjectServiceImpl implements SubjectService {
             // Delete subject image entity
             .then(subjectImageRepository.deleteBySubjectId(id))
             // Delete episode entities
-            .then(episodeRepository.deleteAllBySubjectId(id))
-            .then();
+            .then(episodeRepository.deleteAllBySubjectId(id));
     }
 }
