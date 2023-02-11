@@ -22,7 +22,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
 
 
     @Override
-    public Flux<SubjectRelation> findBySubjectId(Long subjectId) {
+    public Flux<SubjectRelation> findAllBySubjectId(Long subjectId) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt zero.");
         return subjectRelationRepository.findAllBySubjectId(subjectId)
             .collectList()

@@ -87,7 +87,7 @@ class SubjectRelationServiceTest {
     }
 
     @Test
-    void findBySubjectId() {
+    void findAllBySubjectId() {
         final long random = new Random().nextLong(1, 100000);
         SubjectRelation subjectRelation = SubjectRelation.builder()
             .subject(Long.MAX_VALUE)
@@ -95,7 +95,7 @@ class SubjectRelationServiceTest {
             .relationSubjects(Set.of(random, 9L))
             .build();
 
-        StepVerifier.create(subjectRelationService.findBySubjectId(Long.MAX_VALUE))
+        StepVerifier.create(subjectRelationService.findAllBySubjectId(Long.MAX_VALUE))
             .expectNextCount(0).verifyComplete();
 
         StepVerifier.create(subjectRelationService.findBySubjectIdAndType(Long.MAX_VALUE,
@@ -108,7 +108,7 @@ class SubjectRelationServiceTest {
                 -> subjectRelation1.getRelationSubjects().contains(random))
             .verifyComplete();
 
-        StepVerifier.create(subjectRelationService.findBySubjectId(Long.MAX_VALUE))
+        StepVerifier.create(subjectRelationService.findAllBySubjectId(Long.MAX_VALUE))
             .expectNext(subjectRelation)
             .verifyComplete();
 

@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.server.store.enums.SubjectRelationType;
 
 public interface SubjectRelationService {
-    Flux<SubjectRelation> findBySubjectId(Long subjectId);
+    Flux<SubjectRelation> findAllBySubjectId(Long subjectId);
 
     Mono<SubjectRelation> findBySubjectIdAndType(Long subjectId, SubjectRelationType relationType);
 

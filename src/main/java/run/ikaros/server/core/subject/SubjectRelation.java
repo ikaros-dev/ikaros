@@ -27,7 +27,9 @@ public class SubjectRelation {
      * @see SubjectRelationType#getCode()
      */
     @Schema(requiredMode = REQUIRED)
+    @JsonProperty("relation_type")
     private SubjectRelationType relationType;
+
     @JsonProperty("relation_subjects")
     @Schema(requiredMode = REQUIRED)
     private Set<Long> relationSubjects;
