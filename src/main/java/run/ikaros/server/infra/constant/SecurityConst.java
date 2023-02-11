@@ -9,6 +9,8 @@ public interface SecurityConst {
     String PREFIX = "ROLE_";
     String ROLE_MASTER = "MASTER";
 
+    Long UID_WHEN_NO_AUTH = 0L;
+
     interface AnonymousUser {
         String PRINCIPAL = "anonymousUser";
 

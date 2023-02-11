@@ -8,7 +8,7 @@ import org.pf4j.PluginDependency;
 import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.util.FileUtils;
-import run.ikaros.server.core.custom.Plugin;
+import run.ikaros.server.plugin.custom.Plugin;
 
 @Slf4j
 public class YamlPluginDescriptorFinder implements PluginDescriptorFinder {
