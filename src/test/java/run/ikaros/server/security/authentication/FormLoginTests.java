@@ -106,4 +106,24 @@ public class FormLoginTests {
             .expectStatus().is3xxRedirection()
             .expectHeader().location(AppConst.LOGIN_FAILURE_LOCATION);
     }
+
+    @Test
+    void logout() {
+        webClient
+            .post()
+            .uri("/login")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .body(BodyInserters.fromFormData("username", "user")
+                .with("password", "password"))
+            .exchange()
+            .expectStatus().is3xxRedirection()
+            .expectHeader().location(AppConst.LOGIN_SUCCESS_LOCATION);
+
+        webClient
+            .post()
+            .uri("/logout")
+            .exchange()
+            .expectStatus().is3xxRedirection()
+            .expectHeader().location(AppConst.LOGOUT_SUCCESS_LOCATION);
+    }
 }
