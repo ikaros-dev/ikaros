@@ -1,5 +1,8 @@
 package run.ikaros.server.store.enums;
 
+import java.util.Arrays;
+import org.springframework.util.Assert;
+
 public enum SubjectRelationType {
     OTHER(1),
     ANIME(2),
@@ -34,5 +37,18 @@ public enum SubjectRelationType {
 
     public int getCode() {
         return code;
+    }
+
+    /**
+     * Get {@link SubjectRelationType} by type code.
+     *
+     * @param code type code, a {@link Integer} instance
+     * @return {@link SubjectRelationType} instance
+     */
+    public static SubjectRelationType codeOf(Integer code) {
+        Assert.isTrue(code > 0, "'code' must gt 0.");
+        return Arrays.stream(SubjectRelationType.values())
+            .filter(subjectRelationType -> code.equals(subjectRelationType.getCode()))
+            .findFirst().orElse(SubjectRelationType.OTHER);
     }
 }
