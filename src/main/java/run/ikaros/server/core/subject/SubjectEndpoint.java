@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.constant.OpenApiConst;
+import run.ikaros.server.infra.exception.NotFoundException;
 
 @Slf4j
 @Component
@@ -50,6 +51,7 @@ public class SubjectEndpoint implements CoreEndpoint {
             .flatMap(subject -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(subject))
+            .onErrorResume(NotFoundException.class, err -> ServerResponse.notFound().build())
             .switchIfEmpty(ServerResponse.notFound().build());
     }
 
