@@ -4,8 +4,8 @@ package run.ikaros.server.core.subject;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
@@ -34,6 +34,7 @@ import run.ikaros.server.store.repository.SubjectRelationRepository;
 
 @SpringBootTest
 @AutoConfigureWebTestClient
+// @SuppressWarnings("unchecked")
 class SubjectRelationEndpointTest {
 
     @Autowired
@@ -65,7 +66,6 @@ class SubjectRelationEndpointTest {
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     void findAllBySubjectId() {
         final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
 
@@ -77,15 +77,15 @@ class SubjectRelationEndpointTest {
             .expectStatus().isOk()
             .expectBody()
             .consumeWith(entityExchangeResult -> {
-                ArrayList subjectRelationList =
-                    JsonUtils.json2obj(new String(
-                            Objects.requireNonNull(entityExchangeResult.getResponseBody()),
-                            StandardCharsets.UTF_8),
-                        ArrayList.class);
-                Assertions.assertThat(subjectRelationList).isNotNull();
-                Assertions.assertThat(subjectRelationList).isNotEmpty();
+                SubjectRelation[] subjectRelations = JsonUtils.json2ObjArr(new String(
+                        Objects.requireNonNull(entityExchangeResult.getResponseBody()),
+                        StandardCharsets.UTF_8),
+                    new TypeReference<>() {
+                    });
+                Assertions.assertThat(subjectRelations).isNotNull();
+                Assertions.assertThat(subjectRelations).isNotEmpty();
 
-                Object subjectRelation1 = subjectRelationList.get(0);
+                Object subjectRelation1 = subjectRelations[0];
                 SubjectRelation subjectRelation2 =
                     JsonUtils.json2obj(JsonUtils.obj2Json(subjectRelation1), SubjectRelation.class);
                 Assertions.assertThat(subjectRelation2).isNotNull();
@@ -144,7 +144,7 @@ class SubjectRelationEndpointTest {
     }
 
     @Test
-    void removeSubjectRelation() {
+    void removeSubjectRelationWhenRelationSubjectsIsArr() {
         final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
 
         webTestClient.get()
@@ -174,6 +174,66 @@ class SubjectRelationEndpointTest {
                 .queryParam("subject_id", Long.MAX_VALUE)
                 .queryParam("relation_type", SubjectRelationType.COMIC.getCode())
                 .queryParam("relation_subjects", JsonUtils.obj2Json(Set.of(random)))
+                .build())
+            .header(HttpHeaders.AUTHORIZATION, "Basic "
+                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+            .exchange()
+            .expectStatus().isOk();
+
+        webTestClient.get()
+            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation/"
+                + Long.MAX_VALUE + "/" + SubjectRelationType.COMIC.getCode())
+            .header(HttpHeaders.AUTHORIZATION, "Basic "
+                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .consumeWith(entityExchangeResult -> {
+                SubjectRelation subjectRelation1 =
+                    JsonUtils.json2obj(new String(
+                            Objects.requireNonNull(entityExchangeResult.getResponseBody()),
+                            StandardCharsets.UTF_8),
+                        SubjectRelation.class);
+                Assertions.assertThat(subjectRelation1).isNotNull();
+                Assertions.assertThat(subjectRelation1.getSubject()).isEqualTo(Long.MAX_VALUE);
+                Assertions.assertThat(subjectRelation1.getRelationType())
+                    .isEqualTo(SubjectRelationType.COMIC);
+                Assertions.assertThat(subjectRelation1.getRelationSubjects().contains(random))
+                    .isFalse();
+            });
+    }
+
+    @Test
+    void removeSubjectRelationWhenRelationSubjectsIsNum() {
+        final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
+
+        webTestClient.get()
+            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation/"
+                + Long.MAX_VALUE + "/" + SubjectRelationType.COMIC.getCode())
+            .header(HttpHeaders.AUTHORIZATION, "Basic "
+                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .consumeWith(entityExchangeResult -> {
+                SubjectRelation subjectRelation1 =
+                    JsonUtils.json2obj(new String(
+                            Objects.requireNonNull(entityExchangeResult.getResponseBody()),
+                            StandardCharsets.UTF_8),
+                        SubjectRelation.class);
+                Assertions.assertThat(subjectRelation1).isNotNull();
+                Assertions.assertThat(subjectRelation1.getSubject()).isEqualTo(Long.MAX_VALUE);
+                Assertions.assertThat(subjectRelation1.getRelationType())
+                    .isEqualTo(SubjectRelationType.COMIC);
+                Assertions.assertThat(subjectRelation1.getRelationSubjects()).contains(random);
+            });
+
+        webTestClient.delete()
+            .uri(uriBuilder -> uriBuilder
+                .path("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation")
+                .queryParam("subject_id", Long.MAX_VALUE)
+                .queryParam("relation_type", SubjectRelationType.COMIC.getCode())
+                .queryParam("relation_subjects", JsonUtils.obj2Json(random))
                 .build())
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))

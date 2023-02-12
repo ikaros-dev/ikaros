@@ -5,11 +5,11 @@ import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuil
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -41,6 +41,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                     .tag(tag)
                     .operationId("GetSubjectRelationsById")
                     .parameter(parameterBuilder()
+                        .name("subjectId")
                         .in(ParameterIn.PATH)
                         .description("Subject id")
                         .implementation(Long.class)
@@ -50,14 +51,16 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                     .tag(tag)
                     .operationId("GetSubjectRelationByIdAndType")
                     .parameter(parameterBuilder()
+                        .name("subjectId")
                         .in(ParameterIn.PATH)
                         .description("Subject id")
                         .implementation(Long.class)
                         .required(true))
                     .parameter(parameterBuilder()
+                        .name("relationType")
                         .in(ParameterIn.PATH)
                         .description("Subject relation type")
-                        .implementation(Integer.class)
+                        .implementation(SubjectRelationType.class)
                         .required(true)))
             .POST("/subject-relation", this::createSubjectRelation,
                 builder -> builder
@@ -90,7 +93,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .in(ParameterIn.QUERY)
                         .name("relation_subjects")
                         .description("Relation subjects")
-                        .implementation(HashSet.class))
+                        .implementation(String.class))
             ).build();
     }
 
@@ -110,7 +113,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
         String subjectId = request.pathVariable("subjectId");
         String relationType = request.pathVariable("relationType");
         return subjectRelationService.findBySubjectIdAndType(Long.valueOf(subjectId),
-                SubjectRelationType.codeOf(Integer.valueOf(relationType)))
+                StringUtils.isNumeric(relationType)
+                    ? SubjectRelationType.codeOf(Integer.valueOf(relationType))
+                    : SubjectRelationType.valueOf(relationType))
             .filter(subjectRelation -> !subjectRelation.getRelationSubjects().isEmpty())
             .flatMap(subjectRelation -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -138,12 +143,20 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
         Assert.isTrue(relationSubjects.isPresent(), "'relation_subjects' must not be empty");
         SubjectRelation subjectRelation = SubjectRelation.builder()
             .subject(Long.valueOf(subjectId.get()))
-            .relationType(SubjectRelationType.codeOf(Integer.valueOf(relationType.get())))
-            .relationSubjects(
+            .relationType(
+                StringUtils.isNumeric(relationType.get())
+                    ? SubjectRelationType.codeOf(Integer.valueOf(relationType.get()))
+                    : SubjectRelationType.valueOf(relationType.get()))
+            .build();
+        if (relationSubjects.get().startsWith("[") && relationSubjects.get().endsWith("]")) {
+            subjectRelation.setRelationSubjects(
                 Set.of(Objects.requireNonNull(
                     JsonUtils.json2ObjArr(relationSubjects.get(), new TypeReference<>() {
-                    }))))
-            .build();
+                    }))));
+        } else {
+            subjectRelation.setRelationSubjects(Set.of(Long.valueOf(relationSubjects.get())));
+        }
+
         return Mono.just(subjectRelation)
             .flatMap(subjectRelationService::removeSubjectRelation)
             .flatMap(subjectRelation1 -> ServerResponse.ok()
