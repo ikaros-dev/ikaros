@@ -299,8 +299,8 @@ create table if not exists `custom_metadata`
     constraint custom_metadata_pkey primary key (id)
 );
 
--- config
-create table if not exists config
+-- profile
+create table if not exists profile
 (
     id            int8         not null auto_increment,
     create_time   timestamp(6) null,
@@ -309,8 +309,8 @@ create table if not exists config
     update_time   timestamp(6) null,
     update_uid    int8         null,
     ol_version    int8         null,
-    c_name        varchar(255) not null,
-    c_key         varchar(255) not null,
-    c_value       varchar(255) null,
-    constraint config_pkey primary key (id)
+    p_name        varchar(255) not null,
+    p_key         varchar(255) not null,
+    p_value       varchar(255) null,
+    constraint profile_pkey primary key (id)
 );

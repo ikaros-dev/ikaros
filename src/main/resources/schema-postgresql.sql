@@ -424,25 +424,25 @@ create table if not exists custom_metadata
 );
 
 
--- config
-create sequence if not exists config_seq
+-- profile
+create sequence if not exists profile_seq
     increment 1
     start 1
     minvalue 1
     cache 1
     no cycle;
 
-create table if not exists config
+create table if not exists profile
 (
-    id            int8         not null default nextval('config_seq'),
+    id            int8         not null default nextval('profile_seq'),
     create_time   timestamp(6) null,
     create_uid    int8         null,
     delete_status bool         null,
     update_time   timestamp(6) null,
     update_uid    int8         null,
     ol_version    int8         null,
-    c_name        varchar(255) not null,
-    c_key         varchar(255) not null,
-    c_value       varchar(255) null,
-    constraint config_pkey primary key (id)
+    p_name        varchar(255) not null,
+    p_key         varchar(255) not null,
+    p_value       varchar(255) null,
+    constraint profile_pkey primary key (id)
 );

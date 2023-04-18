@@ -13,14 +13,14 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "config")
+@Table(name = "profile")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class ConfigEntity extends BaseEntity {
-    @Column("c_name")
+public class ProfileEntity extends BaseEntity {
+    @Column("p_name")
     private String name;
-    @Column("c_key")
+    @Column("p_key")
     private String key;
-    @Column("c_value")
+    @Column("p_value")
     private String value;
 }
