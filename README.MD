@@ -1,4 +1,3 @@
-# 介绍
 
 <p align="center">
     <a href="#" target="_blank">
@@ -22,10 +21,15 @@
 </p>
 
 
-# 功能介绍
-WIP
+# 特性
+- 统一资源管理: 所有的资源由统一的平台进行管理，再也不用东一个西一个了
+- 元数据支持: 您是否看着全是罗马音的一堆资源不明所以，ikaros支持资源元数据
+- 快捷的搜索: 即使您有几十万资源，一样可以提供毫秒级的搜索响应
+- 插件支持: ikaros本体只提供最为基础的功能，其它附加功能由插件提供
+- 客户端支持: 各个主流平台的客户端，包括不限于Windows, 安卓
+- 文件加密分段上云: 支持主流云端的加密分段备份，在保障数据安全的前提下将云端的优势利用起来
 
-# 部署指南
+# 快速开始
 WIP
 
 # 旧版本v0.1.0
@@ -44,9 +48,7 @@ Ikaros 使用 AGPL-v3.0 协议开源，请遵守开源协议。
 Ikaros的作用是为了辅助**个人**对本地资源进行管理，类似于是C/S架构的文件管理器。
 
 
-# 官方平台汇总
-
-PS: 暂时只有下方这些，后续会有官网、社区、官网文档等等
+# 社区汇总
 
 - GitHub: [Ikaros project github offical repo](https://github.com/ikaros-dev/ikaros)
 - 微信公众号：见下方[微信公众号](#微信公众号)
@@ -68,7 +70,6 @@ TG群组和频道，很多不方便的朋友没法及时收到通知，我们创
 # 主要仓库
 
 - [ikaros](https://github.com/ikaros-dev/ikaros): 基于Java的服务端
-- [console](https://github.com/ikaros-dev/console): 基于Vue的Web管理端
 - [app](https://github.com/ikaros-dev/app): 基于Flutter的移动端
 - [rfcs](https://github.com/ikaros-dev/rfcs): RFC文档
 
@@ -78,7 +79,7 @@ Project: https://github.com/orgs/ikaros-dev/projects
 
 Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
-# 文档归总
+# 相关文档
 
 - [CONTRIBUTING.MD](CONTRIBUTING.MD) : 贡献指南
 - [CHANGELOG.MD](CHANGELOG.MD) : 更新日志

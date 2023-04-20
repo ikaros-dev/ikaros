@@ -15,6 +15,7 @@
 - 实现较为简单的文件上传查询和删除接口(大文件暂不支持)
 - Subject(条目)的CRUD接口实现
 - SubjectRelation(条目关系)的CRUD接口实现
+- 合并console项目到主仓库ikars
 
 ## 依赖
 - 引入jacoco统计测试覆盖率
