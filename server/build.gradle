@@ -1,0 +1,90 @@
+plugins {
+    id 'org.springframework.boot' version '3.0.1'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id "com.gorylenko.gradle-git-properties" version "2.3.2"
+    id "checkstyle"
+    id 'java'
+    id 'jacoco'
+    id "io.freefair.lombok" version "8.0.0-rc2"
+}
+
+group = "run.ikaros.server"
+sourceCompatibility = JavaVersion.VERSION_17
+
+checkstyle {
+    toolVersion = "9.3"
+    showViolations = false
+    ignoreFailures = false
+}
+
+repositories {
+    mavenCentral()
+
+    maven { url 'https://repo.spring.io/milestone' }
+    mavenLocal()
+}
+
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+springBoot {
+    buildInfo()
+}
+
+bootJar {
+    manifest {
+        attributes "Implementation-Title": "Ikaros Application",
+                "Implementation-Version": archiveVersion
+    }
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+ext {
+    commonsLang3 = "3.12.0"
+    pf4j = '3.9.0'
+    jsoup = '1.15.3'
+    springDocOpenAPI = "2.0.2"
+}
+
+dependencies {
+    implementation project(':api')
+
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    annotationProcessor "org.springframework:spring-context-indexer"
+
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'io.projectreactor:reactor-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+tasks.named('jacocoTestReport') {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+//    afterEvaluate {
+//        classDirectories.setFrom(files(classDirectories.files.collect {
+//            fileTree(dir: it, exclude: [
+//                    "run/ikaros/core/IkarosApplication.class",
+//                    "run/ikaros/core/infra/properties/*",
+//                    "run/ikaros/core/store/entity/*",
+//                    "run/ikaros/core/store/enums/*"
+//            ])
+//        }))
+//    }
+}
+

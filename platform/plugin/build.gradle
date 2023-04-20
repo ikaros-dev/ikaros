@@ -12,7 +12,7 @@ javaPlatform {
 }
 
 dependencies {
-    api platform(project(':platform:core'))
+    api platform(project(':platform:server'))
     constraints {
         api project(':api')
         // TODO other plugin API dependencies

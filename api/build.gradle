@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    api platform(project(':platform:core'))
+    api platform(project(':platform:server'))
 
     api 'org.springframework.boot:spring-boot-starter-actuator'
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -51,7 +51,7 @@ dependencies {
 
 java {
     withSourcesJar()
-    withJavadocJar()
+//    withJavadocJar()
 }
 
 tasks.named('test') {
