@@ -213,7 +213,7 @@ create table if not exists subject_image
     large         varchar(255) null,
     common        varchar(255) null,
     medium        varchar(255) null,
-    small        varchar(255) null,
+    small         varchar(255) null,
     grid          varchar(255) null,
     constraint subject_image_pkey primary key (id)
 );
@@ -297,4 +297,20 @@ create table if not exists `custom_metadata`
     cm_value  blob,
     constraint custom_metadata_e_id_em_key unique (custom_id, cm_key),
     constraint custom_metadata_pkey primary key (id)
+);
+
+-- profile
+create table if not exists profile
+(
+    id            int8         not null auto_increment,
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    p_name        varchar(255) not null,
+    p_key         varchar(255) not null,
+    p_value       varchar(255) null,
+    constraint profile_pkey primary key (id)
 );
