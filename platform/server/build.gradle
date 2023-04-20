@@ -1,0 +1,55 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+    id 'org.springframework.boot' version '3.0.1' apply false
+    id 'java-platform'
+    id 'maven-publish'
+}
+
+group = 'run.ikaros.platform.core'
+description = 'Platform of ikaros core.'
+
+ext {
+    commonsLang3 = "3.12.0"
+    pf4j = '3.8.0'
+    jsoup = '1.15.3'
+    springDocOpenAPI = "2.0.0"
+}
+
+javaPlatform {
+    allowDependencies()
+}
+
+dependencies {
+    api platform(SpringBootPlugin.BOM_COORDINATES)
+
+    constraints {
+        api "org.springdoc:springdoc-openapi-starter-webflux-ui:$springDocOpenAPI"
+        api 'org.openapi4j:openapi-schema-validator:1.0.7'
+
+        api "org.apache.commons:commons-lang3:$commonsLang3"
+        api "org.pf4j:pf4j:$pf4j"
+        api "org.jsoup:jsoup:$jsoup"
+        api "org.springframework.integration:spring-integration-core"
+        api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
+
+        runtime 'io.r2dbc:r2dbc-h2'
+        runtime 'org.postgresql:postgresql'
+        runtime 'org.postgresql:r2dbc-postgresql'
+        runtime 'org.mariadb:r2dbc-mariadb:1.1.4'
+        runtime 'com.github.jasync-sql:jasync-r2dbc-mysql:2.1.23'
+    }
+
+}
+
+publishing {
+    publications {
+        applicationPlatform(MavenPublication) {
+            from components.javaPlatform
+        }
+    }
+
+    repositories {
+        mavenLocal()
+    }
+}

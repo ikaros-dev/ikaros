@@ -5,4 +5,5 @@ pluginManagement {
     }
 }
 rootProject.name = 'ikaros'
+include 'api', 'server', 'platform:server', 'platform:plugin'
 

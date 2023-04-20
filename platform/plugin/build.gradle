@@ -1,0 +1,31 @@
+plugins {
+    id 'java-platform'
+    id 'maven-publish'
+}
+
+group = 'run.ikaros.platform.plugin'
+description = 'This is the platform that other plugins depend on. ' +
+        'We can put the plugin API as a dependency at here.'
+
+javaPlatform {
+    allowDependencies()
+}
+
+dependencies {
+    api platform(project(':platform:server'))
+    constraints {
+        api project(':api')
+        // TODO other plugin API dependencies
+    }
+}
+
+publishing {
+    publications {
+        pluginPlatform(MavenPublication) {
+            from components.javaPlatform
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
