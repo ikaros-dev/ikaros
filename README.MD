@@ -67,12 +67,6 @@ TG群组和频道，很多不方便的朋友没法及时收到通知，我们创
 
 ![image](https://user-images.githubusercontent.com/46225881/205643915-e41b46a3-b094-4e50-8458-9417139add7a.png)
 
-# 主要仓库
-
-- [ikaros](https://github.com/ikaros-dev/ikaros): 基于Java的服务端
-- [app](https://github.com/ikaros-dev/app): 基于Flutter的移动端
-- [rfcs](https://github.com/ikaros-dev/rfcs): RFC文档
-
 # 项目进度
 
 Project: https://github.com/orgs/ikaros-dev/projects
