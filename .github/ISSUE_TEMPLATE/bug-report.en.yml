@@ -28,8 +28,11 @@ body:
         to choose the component that you found the bug.
       multiple: false
       options:
-        - "Backend Server (ikaros-dev/ikaros)"
-        - "Admin UI (ikaros-dev/ikaros-admin)"
+        - "server"
+        - "console"
+        - "app"
+        - "plugin"
+        - "rfc"
     validations:
       required: true
 
