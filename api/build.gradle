@@ -1,0 +1,70 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id "io.freefair.lombok" version "8.0.0-rc2"
+}
+
+
+group = 'run.ikaros.api'
+description = 'API of ikaros project, connecting by other projects.'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api platform(project(':platform:core'))
+
+    api 'org.springframework.boot:spring-boot-starter-actuator'
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+    api 'org.springframework.boot:spring-boot-starter-mail'
+    api 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    api 'org.springframework.boot:spring-boot-starter-webflux'
+    api 'org.springframework.boot:spring-boot-starter-validation'
+    api 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+
+    // Spring Security
+    api 'org.springframework.boot:spring-boot-starter-security'
+    api 'org.springframework.security:spring-security-oauth2-jose'
+    api 'org.springframework.security:spring-security-oauth2-client'
+    api 'org.springframework.security:spring-security-oauth2-resource-server'
+
+    api "org.springdoc:springdoc-openapi-starter-webflux-ui"
+    api 'org.openapi4j:openapi-schema-validator'
+    api "net.bytebuddy:byte-buddy"
+
+    api "org.apache.commons:commons-lang3"
+    api "org.pf4j:pf4j"
+    api "org.jsoup:jsoup"
+    api "org.springframework.integration:spring-integration-core"
+    api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
+
+    runtimeOnly 'io.r2dbc:r2dbc-h2'
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'org.postgresql:r2dbc-postgresql'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'io.projectreactor:reactor-test'
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        library(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
