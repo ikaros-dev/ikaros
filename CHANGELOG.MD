@@ -17,6 +17,7 @@
 - SubjectRelation(条目关系)的CRUD接口实现
 - 合并console项目到主仓库ikaros
 - 调整项目为多模块结构
+- 合并app和rfcs项目到主仓库ikaros
 
 ## 依赖
 - 引入jacoco统计测试覆盖率
