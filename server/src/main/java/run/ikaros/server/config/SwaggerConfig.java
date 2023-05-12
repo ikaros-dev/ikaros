@@ -40,6 +40,19 @@ public class SwaggerConfig {
     }
 
     /**
+     * config all openapi group.
+     *
+     * @return all openapi group
+     */
+    @Bean
+    public GroupedOpenApi allApiDocket() {
+        return GroupedOpenApi.builder()
+            .group("AllOpenApi")
+            .pathsToMatch("/**")
+            .build();
+    }
+
+    /**
      * ikaros openapi description info.
      *
      * @return openapi instance
