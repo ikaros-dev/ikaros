@@ -10,7 +10,7 @@ const count = ref(0)
     <h1>{{ msg }}</h1>
 
     <div class="card">
-        <p>Hello Ikaros</p>
+        <p>Hello World</p>
         <el-button round  @click="count++">count is {{ count }}</el-button>
         <p>
             Edit

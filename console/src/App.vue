@@ -8,7 +8,7 @@ import HelloWorld from './components/HelloWorld.vue'
       <img src="/favicon.ico" class="logo" alt="Ikaros logo" />
     </a>
   </div>
-  <HelloWorld msg="Ikaros Console" />
+  <HelloWorld msg="Welcome to Ikaros Console" />
 </template>
 
 <style scoped>
