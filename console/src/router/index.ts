@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
+// eslint-disable-next-line import/no-unresolved
 import routesConfig from './routes.config';
 
 const router = createRouter({

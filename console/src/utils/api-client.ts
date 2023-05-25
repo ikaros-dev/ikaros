@@ -15,6 +15,7 @@ axiosInstance.interceptors.response.use(
 
 axiosInstance.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
+// eslint-disable-next-line no-shadow, no-unused-vars
 function setupApiClient(axios: AxiosInstance) {
 	return {
 		// todo need add api client types
@@ -23,4 +24,5 @@ function setupApiClient(axios: AxiosInstance) {
 
 const apiClient = setupApiClient(axiosInstance);
 
+// eslint-disable-next-line import/prefer-default-export
 export { apiClient };
