@@ -11,6 +11,8 @@ on:
       - "**"
       - "!**.md"
       - "!**.MD"
+    paths-ignore:
+      - "console/**"
   pull_request:
     branches:
       - master
@@ -19,6 +21,8 @@ on:
       - "**"
       - "!**.md"
       - "!**.MD"
+    paths-ignore:
+      - "console/**"
 
 jobs:
   check:
