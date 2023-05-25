@@ -8,27 +8,27 @@ on:
     branches:
       - master
     paths:
-      - "api/**"
-      - "config/checkstyle/**"
-      - "gradle/wrapper/**"
-      - "platform/**"
-      - "server/**"
-      - "gradle.properties"
-      - "lombok.config"
-      - "settings.gradle"
+      - 'api/**'
+      - 'config/checkstyle/**'
+      - 'gradle/wrapper/**'
+      - 'platform/**'
+      - 'server/**'
+      - 'gradle.properties'
+      - 'lombok.config'
+      - 'settings.gradle'
   pull_request:
     branches:
       - master
       - release-*
     paths:
-      - "api/**"
-      - "config/checkstyle/**"
-      - "gradle/wrapper/**"
-      - "platform/**"
-      - "server/**"
-      - "gradle.properties"
-      - "lombok.config"
-      - "settings.gradle"
+      - 'api/**'
+      - 'config/checkstyle/**'
+      - 'gradle/wrapper/**'
+      - 'platform/**'
+      - 'server/**'
+      - 'gradle.properties'
+      - 'lombok.config'
+      - 'settings.gradle'
 
 jobs:
   check:
