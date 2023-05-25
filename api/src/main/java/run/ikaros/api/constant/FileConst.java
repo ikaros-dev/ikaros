@@ -3,8 +3,6 @@ package run.ikaros.api.constant;
 public interface FileConst {
     String POLICY_LOCAL = "LOCAL";
     String LOCAL_UPLOAD_DIR_NAME = "upload";
-    Long DEFAULT_FOLDER_ID = -1L;
-
 
     interface Postfix {
         String[] IMAGES = {
