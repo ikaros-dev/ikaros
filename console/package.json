@@ -7,7 +7,6 @@
     "dev": "vite",
     "preview": "vite preview",
     "build": "vue-tsc && vite build",
-    "build:pro": "vue-tsc --noEmit && vite build --mode production",
     "lint": "eslint \"src/**/*.{js,vue,ts}\" --fix",
     "lint:css": "stylelint **/*.{vue,css,sass,scss} --fix",
     "prettier-format": "prettier --config .prettierrc.cjs \"src/**/*.{vue,js,ts}\" --write"
