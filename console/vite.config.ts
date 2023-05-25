@@ -1,29 +1,21 @@
-import { defineConfig, loadEnv, resolveBaseUrl, resolveConfig } from 'vite'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import VueJsx from "@vitejs/plugin-vue-jsx";
 import { fileURLToPath, URL } from "url";
-import Compression from "vite-compression-plugin";
+import Compression from "vite-plugin-compression2";
+import eslintPlugin from 'vite-plugin-eslint'
 
 
 export default ({ mode }: { mode: string }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const isProduction = mode === "production";
 
   return defineConfig({
     base: env.VITE_BASE_URL,
     plugins: [
       vue(),
       VueJsx(),
+      eslintPlugin(),
       Compression(),
-      AutoImport({
-        resolvers: [ElementPlusResolver()],
-      }),
-      Components({
-        resolvers: [ElementPlusResolver()],
-      }),
     ],
     server: {
       port: 3000,

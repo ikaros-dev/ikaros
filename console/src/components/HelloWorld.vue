@@ -1,21 +1,20 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import { ref } from 'vue';
 
-defineProps<{ msg: string }>()
+defineProps<{ msg: string }>();
 
-const count = ref(0)
+const count = ref(0);
 </script>
 
 <template>
-    <h1>{{ msg }}</h1>
+	<h1>{{ msg }}</h1>
 
-    <div class="card">
-        <p>Hello World</p>
-        <el-button round  @click="count++">count is {{ count }}</el-button>
-        <p>
-            Edit
-            <code>components/HelloWorld.vue</code> to test HMR
-        </p>
-    </div>
-
+	<div class="card">
+		<p>Hello World</p>
+		<el-button round @click="count++">count is {{ count }}</el-button>
+		<p>
+			Edit
+			<code>components/HelloWorld.vue</code> to test HMR
+		</p>
+	</div>
 </template>
