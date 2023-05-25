@@ -16,8 +16,6 @@ on:
       - "gradle.properties"
       - "lombok.config"
       - "settings.gradle"
-      - "!**.md"
-      - "!**.MD"
   pull_request:
     branches:
       - master
@@ -31,8 +29,6 @@ on:
       - "gradle.properties"
       - "lombok.config"
       - "settings.gradle"
-      - "!**.md"
-      - "!**.MD"
 
 jobs:
   check:
