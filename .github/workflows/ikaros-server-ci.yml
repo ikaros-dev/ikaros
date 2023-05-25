@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Ikaros CI
+name: Ikaros Server CI
 
 # Controls when the workflow will run
 on:
@@ -8,17 +8,27 @@ on:
     branches:
       - master
     paths:
-      - "**"
-      - "!**.md"
-      - "!**.MD"
+      - 'api/**'
+      - 'config/checkstyle/**'
+      - 'gradle/wrapper/**'
+      - 'platform/**'
+      - 'server/**'
+      - 'gradle.properties'
+      - 'lombok.config'
+      - 'settings.gradle'
   pull_request:
     branches:
       - master
       - release-*
     paths:
-      - "**"
-      - "!**.md"
-      - "!**.MD"
+      - 'api/**'
+      - 'config/checkstyle/**'
+      - 'gradle/wrapper/**'
+      - 'platform/**'
+      - 'server/**'
+      - 'gradle.properties'
+      - 'lombok.config'
+      - 'settings.gradle'
 
 jobs:
   check:
