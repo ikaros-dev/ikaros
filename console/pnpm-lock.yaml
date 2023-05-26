@@ -123,6 +123,9 @@ devDependencies:
   stylelint-config-standard-scss:
     specifier: ^9.0.0
     version: 9.0.0(postcss@8.4.23)(stylelint@15.6.2)
+  stylelint-config-standard-vue:
+    specifier: ^1.0.0
+    version: 1.0.0(postcss-html@1.5.0)(stylelint@15.6.2)
   stylelint-less:
     specifier: ^1.0.6
     version: 1.0.6(stylelint@15.6.2)
@@ -5048,6 +5051,20 @@ packages:
       postcss: 8.4.23
       stylelint: 15.6.2
       stylelint-config-recommended-scss: 11.0.0(postcss@8.4.23)(stylelint@15.6.2)
+      stylelint-config-standard: 33.0.0(stylelint@15.6.2)
+    dev: true
+
+  /stylelint-config-standard-vue@1.0.0(postcss-html@1.5.0)(stylelint@15.6.2):
+    resolution: {integrity: sha512-wAzU7p6DSlo04pWfCbOcaMq09Nojt0FEsbdxhCBTdC7IguD9ZVl7FP/bvyA0HAHjZGC4JkW7m6WiQaoVMDSuFw==}
+    engines: {node: ^12 || >=14}
+    peerDependencies:
+      postcss-html: ^1.0.0
+      stylelint: '>=14.0.0'
+    dependencies:
+      postcss-html: 1.5.0
+      stylelint: 15.6.2
+      stylelint-config-html: 1.1.0(postcss-html@1.5.0)(stylelint@15.6.2)
+      stylelint-config-recommended-vue: 1.4.0(postcss-html@1.5.0)(stylelint@15.6.2)
       stylelint-config-standard: 33.0.0(stylelint@15.6.2)
     dev: true
 

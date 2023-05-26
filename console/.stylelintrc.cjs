@@ -18,5 +18,10 @@ module.exports = {
 			customSyntax: 'postcss-less',
 			extends: ['stylelint-config-recommended-less'],
 		},
+		{
+			files: ['*.vue', '**/*.vue'],
+			customSyntax: 'postcss-html',
+			extends: ['stylelint-config-recommended-vue'],
+		},
 	],
 };
