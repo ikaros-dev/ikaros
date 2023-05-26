@@ -8,7 +8,6 @@
     "preview": "vite preview",
     "build": "vue-tsc && vite build",
     "lint": "eslint \"src/**/*.{js,vue,ts}\" --fix",
-    "lint:css": "stylelint **/*.{vue,css,sass,scss} --fix",
     "prettier-format": "prettier --config .prettierrc.cjs \"src/**/*.{vue,js,ts}\" --write"
   },
   "dependencies": {
@@ -48,15 +47,6 @@
     "postcss-html": "^1.5.0",
     "prettier": "^2.8.7",
     "sass": "^1.56.2",
-    "stylelint": "^15.6.2",
-    "stylelint-config-recommended-less": "^1.0.4",
-    "stylelint-config-recommended-scss": "^12.0.0",
-    "stylelint-config-recommended-vue": "^1.4.0",
-    "stylelint-config-standard": "^33.0.0",
-    "stylelint-config-standard-scss": "^9.0.0",
-    "stylelint-config-standard-vue": "^1.0.0",
-    "stylelint-less": "^1.0.6",
-    "stylelint-scss": "^5.0.0",
     "typescript": "^4.9.5",
     "unplugin-auto-import": "^0.16.2",
     "unplugin-vue-components": "^0.24.1",
@@ -65,8 +55,6 @@
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-externals": "^0.6.2",
     "vite-plugin-html": "^3.2.0",
-    "vite-plugin-static-copy": "^0.11.1",
-    "vite-plugin-stylelint": "^4.3.0",
     "vitest": "^0.25.3",
     "vue-tsc": "^1.0.24"
   },
@@ -74,9 +62,6 @@
     "*.{js,jsx,vue,ts,tsx}": [
       "npm run lint",
       "npm run prettier-format"
-    ],
-    "*.{vue,less,css,scss,sass}": [
-      "npm run lint:css"
     ]
   }
 }
