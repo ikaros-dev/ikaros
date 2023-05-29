@@ -4,13 +4,9 @@ import VueJsx from '@vitejs/plugin-vue-jsx';
 import { fileURLToPath, URL } from 'url';
 import Compression from 'vite-plugin-compression2';
 import eslintPlugin from 'vite-plugin-eslint';
-import stylelitPlugin from 'vite-plugin-stylelint';
 // ElementPlus
-// eslint-disable-next-line import/no-unresolved
 import AutoImport from 'unplugin-auto-import/vite';
-// eslint-disable-next-line import/no-unresolved
 import Components from 'unplugin-vue-components/vite';
-// eslint-disable-next-line import/no-unresolved
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 
 export default ({ mode }: { mode: string }) => {
@@ -23,7 +19,6 @@ export default ({ mode }: { mode: string }) => {
 			VueJsx(),
 			eslintPlugin(),
 			Compression(),
-			stylelitPlugin(),
 			AutoImport({
 				resolvers: [ElementPlusResolver()],
 			}),

@@ -11,7 +11,7 @@ const count = ref(0);
 
 	<div class="card">
 		<p>Hello World</p>
-		<el-button round @click="count++">count is {{ count }}</el-button>
+		<el-button round @click="count++"> count is {{ count }} </el-button>
 		<p>
 			Edit
 			<code>components/HelloWorld.vue</code> to test HMR

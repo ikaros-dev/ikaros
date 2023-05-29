@@ -24,5 +24,4 @@ function setupApiClient(axios: AxiosInstance) {
 
 const apiClient = setupApiClient(axiosInstance);
 
-// eslint-disable-next-line import/prefer-default-export
 export { apiClient };
