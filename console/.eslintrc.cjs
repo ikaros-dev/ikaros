@@ -8,6 +8,7 @@ module.exports = {
 		'eslint:recommended',
 		'plugin:vue/vue3-recommended',
 		'prettier',
+		'./.eslintrc-auto-import.json'
 	],
 	parser: 'vue-eslint-parser',
 	parserOptions: {

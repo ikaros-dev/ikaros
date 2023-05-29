@@ -4,7 +4,6 @@ import VueJsx from '@vitejs/plugin-vue-jsx';
 import { fileURLToPath, URL } from 'url';
 import Compression from 'vite-plugin-compression2';
 import eslintPlugin from 'vite-plugin-eslint';
-// ElementPlus
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
@@ -20,6 +19,11 @@ export default ({ mode }: { mode: string }) => {
 			eslintPlugin(),
 			Compression(),
 			AutoImport({
+				dts: true,
+				eslintrc: {
+					enabled: true,
+				},
+				imports: ['vue', 'vue-router', '@vueuse/core'],
 				resolvers: [ElementPlusResolver()],
 			}),
 			Components({
