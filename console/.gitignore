@@ -33,3 +33,6 @@ coverage
 *auto*.json
 .stylelintcache
 
+# ts build info, such as version
+tsconfig.tsbuildinfo
+
