@@ -14,8 +14,10 @@
     "noEmit": true,
     "types": ["vite/client", "element-plus/global"],
 		"baseUrl": ".",
+    "composite": true,
+    "noImplicitAny": false,
     "paths": {
-			"@/": ["scr/"],
+			"@/*": ["./src/*"],
 			"*.ts": ["*"]
 		}
   },
