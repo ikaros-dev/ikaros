@@ -25,6 +25,9 @@ dependencies:
   pinia:
     specifier: ^2.0.33
     version: 2.0.33(typescript@4.9.5)(vue@3.2.47)
+  pinia-plugin-persist:
+    specifier: ^1.0.0
+    version: 1.0.0(pinia@2.0.33)(vue@3.2.47)
   vue:
     specifier: ^3.2.45
     version: 3.2.47
@@ -4261,6 +4264,21 @@ packages:
     hasBin: true
     dev: true
 
+  /pinia-plugin-persist@1.0.0(pinia@2.0.33)(vue@3.2.47):
+    resolution: {integrity: sha512-M4hBBd8fz/GgNmUPaaUsC29y1M09lqbXrMAHcusVoU8xlQi1TqgkWnnhvMikZwr7Le/hVyMx8KUcumGGrR6GVw==}
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0
+      pinia: ^2.0.0
+      vue: ^2.0.0 || >=3.0.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+    dependencies:
+      pinia: 2.0.33(typescript@4.9.5)(vue@3.2.47)
+      vue: 3.2.47
+      vue-demi: 0.12.5(vue@3.2.47)
+    dev: false
+
   /pinia@2.0.33(typescript@4.9.5)(vue@3.2.47):
     resolution: {integrity: sha512-HOj1yVV2itw6rNIrR2f7+MirGNxhORjrULL8GWgRwXsGSvEqIQ+SE0MYt6cwtpegzCda3i+rVTZM+AM7CG+kRg==}
     peerDependencies:
@@ -5264,6 +5282,21 @@ packages:
       - supports-color
       - terser
     dev: true
+
+  /vue-demi@0.12.5(vue@3.2.47):
+    resolution: {integrity: sha512-BREuTgTYlUr0zw0EZn3hnhC3I6gPWv+Kwh4MCih6QcAeaTlaIX0DwOVN0wHej7hSvDPecz4jygy/idsgKfW58Q==}
+    engines: {node: '>=12'}
+    hasBin: true
+    requiresBuild: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+    dependencies:
+      vue: 3.2.47
+    dev: false
 
   /vue-demi@0.14.5(vue@3.2.47):
     resolution: {integrity: sha512-o9NUVpl/YlsGJ7t+xuqJKx8EBGf1quRhCiT6D/J0pfwmk9zUwYkC7yrF4SZCe6fETvSM3UNL2edcbYrSyc4QHA==}
