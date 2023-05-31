@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useLayoutStore } from '@/stores/layout';
+import menus from './menus.config.ts';
+
 const layoutStore = useLayoutStore();
 </script>
 
@@ -11,7 +13,47 @@ const layoutStore = useLayoutStore();
 		:collapse="!layoutStore.asideIsExtend"
 		style="width: 100%; height: 100%; position: relative"
 	>
-		<el-menu-item index="0">
+		<div v-for="item in menus" :key="item.id">
+			<span v-if="item.children && item.children.length">
+				<el-sub-menu :index="item.id.toString()">
+					<template #title>
+						<el-icon>
+							<component :is="item.elIcon"></component>
+						</el-icon>
+						<span>{{ item.name }}</span>
+					</template>
+					<el-menu-item
+						v-for="item2 in item.children"
+						:key="item2.id"
+						:index="item2.id.toString()"
+						:route="item2.path"
+					>
+						<el-icon>
+							<component :is="item2.elIcon"></component>
+						</el-icon>
+						<span>{{ item2.name }}</span>
+					</el-menu-item>
+				</el-sub-menu>
+			</span>
+			<span v-else>
+				<el-menu-item :index="item.id.toString()" :route="item.path">
+					<el-icon>
+						<component :is="item.elIcon"></component>
+					</el-icon>
+					<span>{{ item.name }}</span>
+				</el-menu-item>
+			</span>
+		</div>
+	</el-menu>
+	<!-- 
+	<el-menu
+		router
+		unique-opened
+		default-active="0"
+		:collapse="!layoutStore.asideIsExtend"
+		style="width: 100%; height: 100%; position: relative"
+	>
+		<el-menu-item index="0" route="/dashboard">
 			<el-icon><Odometer /></el-icon>
 			<span>仪表盘</span>
 		</el-menu-item>
@@ -92,7 +134,7 @@ const layoutStore = useLayoutStore();
 
 		<el-sub-menu index="9">
 			<template #title>
-				<el-icon><setting /></el-icon>
+				<el-icon><Setting /></el-icon>
 				<span>系统</span>
 			</template>
 			<el-menu-item index="9-1" route="/plugin">
@@ -108,7 +150,7 @@ const layoutStore = useLayoutStore();
 				<span>设置</span>
 			</el-menu-item>
 		</el-sub-menu>
-	</el-menu>
+	</el-menu> -->
 </template>
 
 <style lang="scss" scoped></style>

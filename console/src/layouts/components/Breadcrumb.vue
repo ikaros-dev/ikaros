@@ -1,25 +1,25 @@
 <script setup lang="ts">
-// import { useRoute } from 'vue-router';
-// const route = useRoute();
+import { useRoute } from 'vue-router';
+const route = useRoute();
 // const router = useRouter();
 
 // const breadcrumbList = ref([]);
 
-// const initBreadcrumbList = () => {
-// 	console.log(route.matched);
-// 	breadcrumbList.value = route.matched;
+const initBreadcrumbList = () => {
+	console.log(route.matched);
+	// breadcrumbList.value = route.matched;
+};
+// const handleRedirect = (path) => {
+// 	router.push(path);
 // };
-// // const handleRedirect = (path) => {
-// // 	router.push(path);
-// // };
 
-// watch(
-// 	route,
-// 	() => {
-// 		initBreadcrumbList();
-// 	},
-// 	{ deep: true, immediate: true }
-// );
+watch(
+	route,
+	() => {
+		initBreadcrumbList();
+	},
+	{ deep: true, immediate: true }
+);
 </script>
 
 <template>
