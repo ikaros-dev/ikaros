@@ -5,7 +5,6 @@ import { useLayoutStore } from '@/stores/layout';
 const layoutStore = useLayoutStore();
 
 const toggleClick = () => {
-	console.log('current aside extend state', layoutStore.asideIsExtend);
 	layoutStore.switchLayoutAsideExtendState();
 };
 </script>
