@@ -23,8 +23,6 @@ const asideWidth = computed(() => {
 		>
 			<el-header><Header /></el-header>
 			<el-main class="ik-blc-main">
-				<p>Main</p>
-				<br />
 				<RouterView />
 			</el-main>
 			<!-- <el-footer height="30px"><Footer /></el-footer> -->

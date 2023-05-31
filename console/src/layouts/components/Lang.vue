@@ -10,7 +10,7 @@ const hiht = () => {
 
 <template>
 	<el-dropdown @command="handleCommand">
-		<el-icon :size="40"><Operation /></el-icon>
+		<el-icon :size="40"><Location /></el-icon>
 		<template #dropdown>
 			<el-dropdown-menu>
 				<el-dropdown-item command="zh" :disabled="currentLanguage === 'zh'"
