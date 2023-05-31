@@ -3,7 +3,7 @@ import { createPinia } from 'pinia';
 import piniaPersist from 'pinia-plugin-persist';
 import App from './App.vue';
 import router from './router';
-import './reset.scss';
+import '@/styles/reset.scss';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 
 const pinia = createPinia();

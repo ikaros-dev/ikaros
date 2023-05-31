@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 
 interface LayoutStoreState {
-	// Aside是否是展开的状态
 	asideIsExtend: boolean;
 }
 

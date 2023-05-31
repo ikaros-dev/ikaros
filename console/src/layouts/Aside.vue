@@ -1,7 +1,13 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useLayoutStore } from '@/stores/layout';
+const layoutStore = useLayoutStore();
+</script>
 
 <template>
-	<el-menu>
+	<el-menu
+		:collapse="!layoutStore.asideIsExtend"
+		style="width: 100%; height: 100%; position: relative"
+	>
 		<el-sub-menu index="1">
 			<template #title>
 				<el-icon><DataAnalysis /></el-icon>
