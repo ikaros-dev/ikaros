@@ -7,7 +7,7 @@ const getIdByPath = (path) => {
 		return defaultId;
 	}
 
-	console.log(menus);
+	// console.log(menus);
 	const items: MenuItem[] = [];
 	menus.forEach((menu) => {
 		if (menu.children && menu.children.length && menu.children.length > 0) {
