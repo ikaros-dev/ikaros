@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router';
+import Aside from './Aside.vue';
 </script>
 
 <template>
 	<!-- 此处样式撑满所有屏幕 -->
 	<el-container style="height: 100%; width: 100%; position: absolute">
-		<el-aside class="ik-bl-aside"> Aside </el-aside>
+		<el-aside> <Aside /> </el-aside>
 		<el-container>
 			<el-header class="ik-blc-header">Header</el-header>
 			<el-main class="ik-blc-main">
@@ -22,10 +22,10 @@ import { RouterView } from 'vue-router';
 .ik-bl-header {
 	background-color: blue;
 }
-.ik-bl-aside {
-	background-color: brown;
-	width: 200px;
-}
+// .ik-bl-aside {
+// 	// background-color: brown;
+// 	width: 200px;
+// }
 .ik-blc-main {
 	background-color: aliceblue;
 }
