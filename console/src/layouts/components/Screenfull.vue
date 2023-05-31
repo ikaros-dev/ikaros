@@ -22,8 +22,8 @@ onBeforeMount(() => {
 </script>
 
 <template>
-	<div id="screenFul" @click="handleFullScreen">
-		<el-icon :size="40" class="screenFulIcon">
+	<div id="screenFul" class="screenFulIcon" @click="handleFullScreen">
+		<el-icon :size="40">
 			<span v-if="!icon"><FullScreen /></span>
 			<span v-else><Close /></span>
 		</el-icon>

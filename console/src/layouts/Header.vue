@@ -2,8 +2,6 @@
 import Hamburger from './components/Hamburger.vue';
 import Avatar from './components/Avatar.vue';
 import Breadcrumb from './components/Breadcrumb.vue';
-import Screenfull from './components/Screenfull.vue';
-import Lang from './components/Lang.vue';
 </script>
 
 <template>
@@ -12,8 +10,6 @@ import Lang from './components/Lang.vue';
 		<Breadcrumb />
 
 		<div class="navbar-right">
-			<Screenfull class="navbar-item" />
-			<Lang class="navbar-item" />
 			<Avatar class="navbar-item" />
 		</div>
 	</div>
