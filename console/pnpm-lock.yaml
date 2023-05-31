@@ -111,6 +111,9 @@ devDependencies:
   sass:
     specifier: ^1.56.2
     version: 1.56.2
+  screenfull:
+    specifier: ^6.0.2
+    version: 6.0.2
   typescript:
     specifier: ^4.9.5
     version: 4.9.5
@@ -4526,6 +4529,11 @@ packages:
       chokidar: 3.5.3
       immutable: 4.3.0
       source-map-js: 1.0.2
+    dev: true
+
+  /screenfull@6.0.2:
+    resolution: {integrity: sha512-AQdy8s4WhNvUZ6P8F6PB21tSPIYKniic+Ogx0AacBMjKP1GUHN2E9URxQHtCusiwxudnCKkdy4GrHXPPJSkCCw==}
+    engines: {node: ^14.13.1 || >=16.0.0}
     dev: true
 
   /scule@1.0.0:

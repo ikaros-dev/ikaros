@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import Aside from './Aside.vue';
+import Header from './Header.vue';
+import Footer from './Footer.vue';
 </script>
 
 <template>
@@ -7,29 +9,23 @@ import Aside from './Aside.vue';
 	<el-container style="height: 100%; width: 100%; position: absolute">
 		<el-aside> <Aside /> </el-aside>
 		<el-container>
-			<el-header class="ik-blc-header">Header</el-header>
+			<el-header><Header /></el-header>
 			<el-main class="ik-blc-main">
 				<p>Main</p>
 				<br />
 				<RouterView />
 			</el-main>
-			<el-footer class="ik-blc-footer">Footer</el-footer>
+			<el-footer><Footer /></el-footer>
 		</el-container>
 	</el-container>
 </template>
 
 <style lang="scss" scoped>
-.ik-bl-header {
-	background-color: blue;
-}
-// .ik-bl-aside {
-// 	// background-color: brown;
-// 	width: 200px;
-// }
 .ik-blc-main {
 	background-color: aliceblue;
 }
-.ik-blc-footer {
-	background-color: whitesmoke;
+.el-header {
+	padding: 0;
+	margin: 0;
 }
 </style>
