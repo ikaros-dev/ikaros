@@ -15,7 +15,7 @@ import Footer from './Footer.vue';
 				<br />
 				<RouterView />
 			</el-main>
-			<el-footer><Footer /></el-footer>
+			<el-footer height="30px"><Footer /></el-footer>
 		</el-container>
 	</el-container>
 </template>
