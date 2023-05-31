@@ -1,6 +1,5 @@
 import { Component } from 'vue';
 import {
-	Odometer,
 	DataAnalysis,
 	Edit,
 	Files,
@@ -28,13 +27,13 @@ export interface MenuItem {
 }
 
 export const menus: Array<MenuItem> = [
-	{
-		id: '0',
-		path: '/dashboard',
-		name: '仪表盘',
-		elIcon: Odometer,
-		children: [],
-	},
+	// {
+	// 	id: '0',
+	// 	path: '/dashboard',
+	// 	name: '仪表盘',
+	// 	elIcon: Odometer,
+	// 	children: [],
+	// },
 	{
 		id: '1',
 		path: '#',

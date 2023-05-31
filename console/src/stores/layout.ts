@@ -1,17 +1,13 @@
 import { defineStore } from 'pinia';
 import { menus, MenuItem } from '@/layouts/menus.config';
 
-interface LayoutStoreState {
-	asideIsExtend: boolean;
-	currentActiveId: string;
-}
-
 const getIdByPath = (path) => {
 	const defaultId = '0';
 	if ('/' === path || '/dashboard' === path) {
 		return defaultId;
 	}
 
+	console.log(menus);
 	const items: MenuItem[] = [];
 	menus.forEach((menu) => {
 		if (menu.children && menu.children.length && menu.children.length > 0) {
@@ -26,6 +22,11 @@ const getIdByPath = (path) => {
 
 	return items.length ? items[0] && items[0].id : defaultId;
 };
+
+interface LayoutStoreState {
+	asideIsExtend: boolean;
+	currentActiveId: string;
+}
 
 export const useLayoutStore = defineStore('layout', {
 	state: (): LayoutStoreState => ({
