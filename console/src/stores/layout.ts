@@ -2,11 +2,13 @@ import { defineStore } from 'pinia';
 
 interface LayoutStoreState {
 	asideIsExtend: boolean;
+	currentActivePath: string;
 }
 
 export const useLayoutStore = defineStore('layout', {
 	state: (): LayoutStoreState => ({
 		asideIsExtend: true,
+		currentActivePath: '0',
 	}),
 	actions: {
 		switchLayoutAsideExtendState() {

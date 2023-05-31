@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
 const route = useRoute();
-// const router = useRouter();
+const router = useRouter();
 
-// const breadcrumbList = ref([]);
+let breadcrumbList: Ref = ref([]);
 
 const initBreadcrumbList = () => {
-	console.log(route.matched);
-	// breadcrumbList.value = route.matched;
+	// console.log(route.matched);
+	breadcrumbList.value = route.matched;
 };
-// const handleRedirect = (path) => {
-// 	router.push(path);
-// };
+const handleRedirect = (path) => {
+	router.push(path);
+};
 
 watch(
 	route,
@@ -23,24 +23,24 @@ watch(
 </script>
 
 <template>
-	<el-breadcrumb separator="/">
+	<!-- <el-breadcrumb separator="/">
 		<el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
 		<el-breadcrumb-item
 			><a href="/">promotion management</a></el-breadcrumb-item
 		>
 		<el-breadcrumb-item>promotion list</el-breadcrumb-item>
 		<el-breadcrumb-item>promotion detail</el-breadcrumb-item>
-	</el-breadcrumb>
-	<!-- <el-breadcrumb separator="/">
+	</el-breadcrumb> -->
+	<el-breadcrumb separator="/">
 		<el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index">
-			<span class="no-redirect" v-if="index === breadcrumbList.length - 1">{{
-				$t(`menus.${item.name}`)
-			}}</span>
-			<span class="redirect" v-else @click="handleRedirect(item.path)">{{
-				$t(`menus.${item.name}`)
+			<span v-if="index === breadcrumbList.length - 1" class="no-redirect">
+				{{ item.name }}
+			</span>
+			<span v-else class="redirect" @click="handleRedirect(item.path)">{{
+				item.name
 			}}</span>
 		</el-breadcrumb-item>
-	</el-breadcrumb> -->
+	</el-breadcrumb>
 </template>
 
 <style lang="scss" scoped>

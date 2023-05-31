@@ -3,13 +3,17 @@ import { useLayoutStore } from '@/stores/layout';
 import menus from './menus.config';
 
 const layoutStore = useLayoutStore();
+
+const savePath = (path) => {
+	layoutStore.currentActivePath = path;
+};
 </script>
 
 <template>
 	<el-menu
 		router
 		unique-opened
-		default-active="0"
+		:default-active="layoutStore.currentActivePath"
 		:collapse="!layoutStore.asideIsExtend"
 		style="width: 100%; height: 100%; position: relative"
 	>
@@ -27,6 +31,7 @@ const layoutStore = useLayoutStore();
 						:key="item2.id"
 						:index="item2.id.toString()"
 						:route="item2.path"
+						@click="savePath(item2.path)"
 					>
 						<el-icon>
 							<component :is="item2.elIcon"></component>
@@ -36,7 +41,11 @@ const layoutStore = useLayoutStore();
 				</el-sub-menu>
 			</span>
 			<span v-else>
-				<el-menu-item :index="item.id.toString()" :route="item.path">
+				<el-menu-item
+					:index="item.id.toString()"
+					:route="item.path"
+					@click="savePath(item.path)"
+				>
 					<el-icon>
 						<component :is="item.elIcon"></component>
 					</el-icon>
