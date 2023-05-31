@@ -4,6 +4,7 @@ import type { RouteRecordRaw } from 'vue-router';
 export const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/login',
+		name: '登录',
 		component: () => import('@/views/system/Login.vue'),
 	},
 	{

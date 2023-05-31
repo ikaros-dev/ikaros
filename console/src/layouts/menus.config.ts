@@ -14,9 +14,9 @@ import {
 	Orange,
 } from '@element-plus/icons-vue';
 
-interface MenuItem {
+export interface MenuItem {
 	// menu item index
-	id: number;
+	id: string;
 	// menu item route
 	path: string;
 	// menu item span
@@ -29,27 +29,27 @@ interface MenuItem {
 
 export const menus: Array<MenuItem> = [
 	{
-		id: 0,
+		id: '0',
 		path: '/dashboard',
 		name: '仪表盘',
 		elIcon: Odometer,
 		children: [],
 	},
 	{
-		id: 1,
+		id: '1',
 		path: '#',
 		name: '番剧',
 		elIcon: DataAnalysis,
 		children: [
 			{
-				id: 11,
+				id: '11',
 				path: '/anime/edit',
 				name: '编辑',
 				elIcon: Edit,
 				children: [],
 			},
 			{
-				id: 12,
+				id: '12',
 				path: '/anime/list',
 				name: '列表',
 				elIcon: Files,
@@ -58,20 +58,20 @@ export const menus: Array<MenuItem> = [
 		],
 	},
 	{
-		id: 2,
+		id: '2',
 		path: '#',
 		name: '漫画',
 		elIcon: Picture,
 		children: [
 			{
-				id: 21,
+				id: '21',
 				path: '/comic/edit',
 				name: '编辑',
 				elIcon: Edit,
 				children: [],
 			},
 			{
-				id: 22,
+				id: '22',
 				path: '/comic/list',
 				name: '列表',
 				elIcon: Files,
@@ -80,20 +80,20 @@ export const menus: Array<MenuItem> = [
 		],
 	},
 	{
-		id: 3,
+		id: '3',
 		path: '#',
 		name: '游戏',
 		elIcon: Ship,
 		children: [
 			{
-				id: 31,
+				id: '31',
 				path: '/game/edit',
 				name: '编辑',
 				elIcon: Edit,
 				children: [],
 			},
 			{
-				id: 32,
+				id: '32',
 				path: '/game/list',
 				name: '列表',
 				elIcon: Files,
@@ -102,20 +102,20 @@ export const menus: Array<MenuItem> = [
 		],
 	},
 	{
-		id: 4,
+		id: '4',
 		path: '#',
 		name: '音声',
 		elIcon: Headset,
 		children: [
 			{
-				id: 41,
+				id: '41',
 				path: '/music/edit',
 				name: '编辑',
 				elIcon: Edit,
 				children: [],
 			},
 			{
-				id: 42,
+				id: '42',
 				path: '/music/list',
 				name: '列表',
 				elIcon: Files,
@@ -124,20 +124,20 @@ export const menus: Array<MenuItem> = [
 		],
 	},
 	{
-		id: 5,
+		id: '5',
 		path: '#',
 		name: '小说',
 		elIcon: Collection,
 		children: [
 			{
-				id: 51,
+				id: '51',
 				path: '/novel/edit',
 				name: '编辑',
 				elIcon: Edit,
 				children: [],
 			},
 			{
-				id: 52,
+				id: '52',
 				path: '/novel/list',
 				name: '列表',
 				elIcon: Files,
@@ -146,27 +146,27 @@ export const menus: Array<MenuItem> = [
 		],
 	},
 	{
-		id: 9,
+		id: '9',
 		path: '#',
 		name: '系统',
 		elIcon: Setting,
 		children: [
 			{
-				id: 91,
+				id: '91',
 				path: '/plugin',
 				name: '插件',
 				elIcon: Tools,
 				children: [],
 			},
 			{
-				id: 92,
+				id: '92',
 				path: '/profile',
 				name: '个人',
 				elIcon: UserFilled,
 				children: [],
 			},
 			{
-				id: 93,
+				id: '93',
 				path: '/setting',
 				name: '设置',
 				elIcon: Orange,

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useLayoutStore } from '@/stores/layout';
-import menus from './menus.config';
+import { menus } from './menus.config';
 
 const layoutStore = useLayoutStore();
 
-const savePath = (path) => {
-	layoutStore.currentActivePath = path;
+const saveCurrentActiveId = (id) => {
+	layoutStore.currentActiveId = id;
 };
 </script>
 
@@ -13,7 +13,7 @@ const savePath = (path) => {
 	<el-menu
 		router
 		unique-opened
-		:default-active="layoutStore.currentActivePath"
+		:default-active="layoutStore.currentActiveId"
 		:collapse="!layoutStore.asideIsExtend"
 		style="width: 100%; height: 100%; position: relative"
 	>
@@ -31,7 +31,7 @@ const savePath = (path) => {
 						:key="item2.id"
 						:index="item2.id.toString()"
 						:route="item2.path"
-						@click="savePath(item2.path)"
+						@click="saveCurrentActiveId(item2.id)"
 					>
 						<el-icon>
 							<component :is="item2.elIcon"></component>
@@ -44,7 +44,7 @@ const savePath = (path) => {
 				<el-menu-item
 					:index="item.id.toString()"
 					:route="item.path"
-					@click="savePath(item.path)"
+					@click="saveCurrentActiveId(item.id)"
 				>
 					<el-icon>
 						<component :is="item.elIcon"></component>
