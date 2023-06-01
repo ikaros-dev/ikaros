@@ -12,13 +12,15 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["vite/client"],
+    "types": ["vite/client", "element-plus/global"],
 		"baseUrl": ".",
+    "composite": true,
+    "noImplicitAny": false,
     "paths": {
-			"@/": ["scr/"],
+			"@/*": ["./src/*"],
 			"*.ts": ["*"]
 		}
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "auto-imports.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

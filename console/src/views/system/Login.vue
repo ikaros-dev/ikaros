@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-	<RouterView />
+	<div>Login</div>
 </template>
 
-<style scoped lang="scss"></style>
+<style lang="scss" scoped></style>

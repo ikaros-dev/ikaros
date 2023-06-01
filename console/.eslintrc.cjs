@@ -5,9 +5,10 @@ module.exports = {
 		node: true,
 	},
 	extends: [
-		'plugin:vue/vue3-strongly-recommended',
-		'airbnb-base',
-		'prettier'
+		'eslint:recommended',
+		'plugin:vue/vue3-recommended',
+		'prettier',
+		'./.eslintrc-auto-import.json'
 	],
 	parser: 'vue-eslint-parser',
 	parserOptions: {
@@ -40,10 +41,10 @@ module.exports = {
 		'import/extensions': ['.js', '.jsx', '.ts', '.tsx', '.mjs'],
 	},
 	rules: {
+		'vue/multi-word-component-names': 0,
 		'import/no-extraneous-dependencies': 0,
 		'no-param-reassing': 0,
-		'vue/multi-word-commponent-names': 0,
 		'vue/attribute-hyphenation': 0,
-		'vue/v-on-event-hyphenation': 0,
+		'vue/v-on-event-hyphenation': 0
 	},
 };
