@@ -1,0 +1,49 @@
+{
+  "name": "@runikaros/shared",
+  "version": "0.0.1",
+  "description": "Project ikaros console shared package",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "ikaros",
+    "shared"
+  ],
+  "author": {
+    "name": "ikaros-dev",
+    "url": "https://github.com/ikaros-dev"
+  },
+  "main": "./dist/ikaros-shared.iife.js",
+  "module": "./dist/ikaros-shared.iife.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/ikaros-shared.es.js"
+    },
+    "./dist/style.css": "./dist/style.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ikaros-dev/ikaros.git",
+    "directory": "/console/packages/shared"
+  },
+  "bugs": {
+    "url": "https://github.com/ikaros-dev/ikaros/issues"
+  },
+  "homepage": "https://github.com/ikaros-dev/ikaros",
+  "license": "AGPL-3.0",
+  "devDependencies": {
+    "vite-plugin-dts": "^2.3.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.2.37",
+    "vue-router": "^4.1.6"
+  }
+}
