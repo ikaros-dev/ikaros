@@ -10,8 +10,12 @@
     "lint": "eslint \"src/**/*.{js,vue,ts}\" --fix",
     "prettier-format": "prettier --config .prettierrc.cjs \"src/**/*.{vue,js,ts}\" --write"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
+    "@runikaros/shared": "workspace:*",
     "@vueuse/components": "^9.6.0",
     "@vueuse/core": "^9.6.0",
     "@vueuse/router": "^9.6.0",
