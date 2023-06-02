@@ -1,21 +1,49 @@
 {
-  "name": "@ikaros-dev/shared",
-  "private": true,
+  "name": "@runikaros/shared",
   "version": "0.0.1",
+  "description": "Project ikaros console shared package",
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "vue": "^3.2.47",
-    "vue-router": "^4.1.6"
+  "keywords": [
+    "ikaros",
+    "shared"
+  ],
+  "author": {
+    "name": "ikaros-dev",
+    "url": "https://github.com/ikaros-dev"
   },
+  "main": "./dist/ikaros-shared.iife.js",
+  "module": "./dist/ikaros-shared.iife.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/ikaros-shared.es.js"
+    },
+    "./dist/style.css": "./dist/style.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ikaros-dev/ikaros.git",
+    "directory": "/console/packages/shared"
+  },
+  "bugs": {
+    "url": "https://github.com/ikaros-dev/ikaros/issues"
+  },
+  "homepage": "https://github.com/ikaros-dev/ikaros",
+  "license": "AGPL-3.0",
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.1.0",
-    "typescript": "^5.0.2",
-    "vite": "^4.3.9",
-    "vue-tsc": "^1.4.2"
+    "vite-plugin-dts": "^2.3.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.2.37",
+    "vue-router": "^4.1.6"
   }
 }
