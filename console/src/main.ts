@@ -3,7 +3,7 @@ import { createPinia } from 'pinia';
 import piniaPersist from 'pinia-plugin-persist';
 import App from './App.vue';
 import router from './router';
-import i18n from './locales';
+import { setupI18n } from './locales';
 import '@/styles/reset.scss';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 
@@ -18,7 +18,7 @@ pinia.use(piniaPersist);
 
 const app = createApp(App);
 app.use(pinia);
-app.use(i18n);
+setupI18n(app);
 
 function loadElementPlusIconsVue() {
 	for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
