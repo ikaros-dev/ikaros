@@ -1,0 +1,3 @@
+const coreModules = [];
+
+export { coreModules };
