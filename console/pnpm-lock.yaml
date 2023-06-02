@@ -7,6 +7,9 @@ importers:
       '@element-plus/icons-vue':
         specifier: ^2.1.0
         version: 2.1.0(vue@3.2.47)
+      '@runikaros/api-client':
+        specifier: workspace:*
+        version: link:packages/api-client
       '@runikaros/shared':
         specifier: workspace:*
         version: link:packages/shared
