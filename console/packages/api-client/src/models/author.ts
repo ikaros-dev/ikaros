@@ -12,6 +12,22 @@
  * Do not edit the class manually.
  */
 
-export * from './api';
-export * from './configuration';
-export * from './models';
+/**
+ *
+ * @export
+ * @interface Author
+ */
+export interface Author {
+	/**
+	 *
+	 * @type {string}
+	 * @memberof Author
+	 */
+	name?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof Author
+	 */
+	website?: string;
+}

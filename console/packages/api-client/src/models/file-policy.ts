@@ -12,6 +12,16 @@
  * Do not edit the class manually.
  */
 
-export * from './api';
-export * from './configuration';
-export * from './models';
+/**
+ *
+ * @export
+ * @interface FilePolicy
+ */
+export interface FilePolicy {
+	/**
+	 *
+	 * @type {string}
+	 * @memberof FilePolicy
+	 */
+	name?: string;
+}
