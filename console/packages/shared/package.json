@@ -1,6 +1,6 @@
 {
   "name": "@runikaros/shared",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Project ikaros console shared package",
   "files": [
     "dist"
@@ -32,12 +32,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ikaros-dev/ikaros.git",
-    "directory": "/console/packages/shared"
+    "directory": "console/packages/shared"
   },
   "bugs": {
     "url": "https://github.com/ikaros-dev/ikaros/issues"
   },
-  "homepage": "https://github.com/ikaros-dev/ikaros",
+  "homepage": "https://github.com/ikaros-dev/ikaros/blob/master/console/packages/shared#readme",
   "license": "AGPL-3.0",
   "devDependencies": {
     "vite-plugin-dts": "^2.3.0"
