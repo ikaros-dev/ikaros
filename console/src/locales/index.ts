@@ -11,4 +11,4 @@ export function setupI18n(app: App) {
 	app.use(i18n);
 }
 
-export { i18n };
+export default i18n;
