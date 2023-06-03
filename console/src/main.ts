@@ -121,6 +121,7 @@ function loadStyle(href: string) {
 }
 
 // const pluginErrorMessages: Array<string> = [];
+// eslint-disable-next-line no-unused-vars
 async function loadPluginModules() {
 	const { data } = await apiClient.plugin.getpluginsbyPaging({
 		page: '0',
@@ -138,7 +139,7 @@ async function initApp() {
 	try {
 		loadElementPlusIconsVue();
 		loadCoreModules();
-		loadPluginModules();
+		// loadPluginModules();
 	} catch (e) {
 		console.log('Init app fail: ', e);
 	} finally {
