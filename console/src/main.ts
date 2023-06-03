@@ -12,6 +12,7 @@ import type { RouteRecordRaw } from 'vue-router';
 
 import { coreModules } from './modules';
 import { usePluginModuleStore } from '@/stores/plugin';
+import { apiClient } from '@/utils/api-client';
 
 const pinia = createPinia();
 pinia.use(piniaPersist);
@@ -120,6 +121,13 @@ function loadStyle(href: string) {
 }
 
 // const pluginErrorMessages: Array<string> = [];
+async function loadPluginModules() {
+	const { data } = await apiClient.plugin.getpluginsbyPaging({
+		page: '0',
+		size: '0',
+	});
+	console.log('all-plugins', data);
+}
 
 // Start init app.
 (async function () {
@@ -130,6 +138,7 @@ async function initApp() {
 	try {
 		loadElementPlusIconsVue();
 		loadCoreModules();
+		loadPluginModules();
 	} catch (e) {
 		console.log('Init app fail: ', e);
 	} finally {

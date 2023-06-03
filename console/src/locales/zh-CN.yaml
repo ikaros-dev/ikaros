@@ -1,4 +1,14 @@
 core:
+  common:
+    elmsg:
+      network_error: API网络错误
+      request_parameter_error: 请求参数异常
+      login_expired: 登录超时
+      forbidden: 403 无权访问
+      not_found: 404 没有找到
+      server_internal_error_with_title: 服务端内部错误
+      unknown_error_with_title: 未知的错误
+
   login:
     title: 登录
     fields:

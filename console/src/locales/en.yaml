@@ -1,4 +1,13 @@
 core:
+  common:
+    elmsg:
+      network_error: API network error
+      request_parameter_error: Request parameters error
+      login_expired: Login expired
+      forbidden: 403 Forbidden
+      not_found: 404 Not found
+      server_internal_error_with_title: Server internal error with title
+      unknown_error_with_title: Unknow error with title
   login:
     title: Login
     fields:
@@ -39,7 +48,7 @@ core:
     title: Account binding
     common:
       toast:
-        mounted:
+        mounted: >-
           The current login method is not bound to an account, Please bind or
           sign up a new account first
     operations:
@@ -76,6 +85,5 @@ core:
         button: Profile
       visit_homepage:
         title: Visit homepage
-  dashboard:
   dashboard:
     title: Dashboard
