@@ -15,8 +15,8 @@
   ],
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
-    "@runikaros/shared": "workspace:*",
     "@runikaros/api-client": "workspace:*",
+    "@runikaros/shared": "workspace:*",
     "@vueuse/components": "^9.6.0",
     "@vueuse/core": "^9.6.0",
     "@vueuse/router": "^9.6.0",
@@ -32,6 +32,7 @@
   "devDependencies": {
     "@commitlint/cli": "^17.6.3",
     "@commitlint/config-conventional": "^17.6.3",
+    "@intlify/unplugin-vue-i18n": "^0.11.0",
     "@types/eslint": "^8.40.0",
     "@types/node": "^18.11.19",
     "@typescript-eslint/eslint-plugin": "^5.59.7",
