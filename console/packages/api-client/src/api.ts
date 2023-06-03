@@ -12,6 +12,6 @@
  * Do not edit the class manually.
  */
 
-export * from './api/core-ikaros-run-v1alpha1-plugin-api';
 export * from './api/file-ikaros-run-v1alpha1-file-policy-api';
 export * from './api/file-ikaros-run-v1alpha1-file-setting-api';
+export * from './api/plugin-ikaros-run-v1alpha1-plugin-api';
