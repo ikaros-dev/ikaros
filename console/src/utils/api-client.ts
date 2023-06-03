@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosError } from 'axios';
 import { i18n } from '../locales';
-import { CoreIkarosRunV1alpha1PluginApi } from '@runikaros/api-client';
+import { PluginIkarosRunV1alpha1PluginApi } from '@runikaros/api-client';
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -74,7 +74,7 @@ function setupApiClient(axios: AxiosInstance) {
 		// core endpoints
 
 		// custom endpoints
-		plugin: new CoreIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
+		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
 	};
 }
 
