@@ -1,7 +1,6 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosError } from 'axios';
 import { i18n } from '../locales';
-import { ElMessage } from 'element-plus';
 import { CoreIkarosRunV1alpha1PluginApi } from '@runikaros/api-client';
 
 const baseURL = import.meta.env.VITE_API_URL;
@@ -23,14 +22,14 @@ axiosInstance.interceptors.response.use(
 	(response) => response,
 	async (error: AxiosError<ProblemDetail>) => {
 		if (/Network Error/.test(error.message)) {
-			ElMessage.error(i18n.global.t('core.common.elmsg.network_error'));
+			console.error(i18n.global.t('core.common.elmsg.network_error'), error);
 			return Promise.reject(error);
 		}
 
 		const errorResponse = error.response;
 
 		if (!errorResponse) {
-			ElMessage.error(i18n.global.t('core.common.elmsg.network_error'));
+			console.error(i18n.global.t('core.common.elmsg.network_error'), error);
 			return Promise.reject(error);
 		}
 
@@ -39,26 +38,29 @@ axiosInstance.interceptors.response.use(
 		const { title } = errorResponse.data;
 
 		if (status === 400) {
-			ElMessage.error(
-				i18n.global.t('core.common.elmsg.request_parameter_error', { title })
+			console.error(
+				i18n.global.t('core.common.elmsg.request_parameter_error', { title }),
+				error
 			);
 		} else if (status === 401) {
 			// const userStore = useUserStore();
 			// userStore.loginModalVisible = true;
-			ElMessage.warning(i18n.global.t('core.common.elmsg.login_expired'));
+			console.error(i18n.global.t('core.common.elmsg.login_expired'), error);
 		} else if (status === 403) {
-			ElMessage.error(i18n.global.t('core.common.elmsg.forbidden'));
+			console.error(i18n.global.t('core.common.elmsg.forbidden'), error);
 		} else if (status === 404) {
-			ElMessage.error(i18n.global.t('core.common.elmsg.not_found'));
+			console.error(i18n.global.t('core.common.elmsg.not_found'), error);
 		} else if (status === 500) {
-			ElMessage.error(
-				i18n.global.t('core.common.elmsg.server_internal_error_with_title')
+			console.error(
+				i18n.global.t('core.common.elmsg.server_internal_error_with_title'),
+				error
 			);
 		} else {
-			ElMessage.error(
+			console.error(
 				i18n.global.t('core.common.elmsg.unknown_error_with_title', {
 					title,
-				})
+				}),
+				error
 			);
 		}
 
