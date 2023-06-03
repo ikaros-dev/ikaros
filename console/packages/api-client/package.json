@@ -2,9 +2,6 @@
   "name": "@runikaros/api-client",
   "version": "0.0.2",
   "description": "Project ikaros console api-client package",
-  "files": [
-    "dist"
-  ],
   "type": "module",
   "scripts": {
     "dev": "unbuild --stub",
@@ -29,16 +26,6 @@
       "url": "https://liguohao.cn"
     }
   ],
-  "main": "./dist/ikaros-api-client.iife.js",
-  "module": "./dist/ikaros-api-client.iife.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/ikaros-api-client.es.js"
-    },
-    "./dist/style.css": "./dist/style.css"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ikaros-dev/ikaros.git",
@@ -49,6 +36,27 @@
   },
   "homepage": "https://github.com/ikaros-dev/ikaros/blob/master/console/packages/api-client#readme",
   "license": "AGPL-3.0",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*",
+        "./dist/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.5.2",
     "@types/node": "^18.13.0",
