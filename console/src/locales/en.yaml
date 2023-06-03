@@ -3,7 +3,7 @@ core:
     elmsg:
       network_error: API network error
       request_parameter_error: Request parameters error
-      login_expired: Login expired
+      unauthorized: 401 Unauthorized
       forbidden: 403 Forbidden
       not_found: 404 Not found
       server_internal_error_with_title: Server internal error with title

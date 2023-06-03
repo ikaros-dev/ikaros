@@ -43,9 +43,7 @@ axiosInstance.interceptors.response.use(
 				error
 			);
 		} else if (status === 401) {
-			// const userStore = useUserStore();
-			// userStore.loginModalVisible = true;
-			console.error(i18n.global.t('core.common.elmsg.login_expired'), error);
+			console.error(i18n.global.t('core.common.elmsg.unauthorized'), error);
 		} else if (status === 403) {
 			console.error(i18n.global.t('core.common.elmsg.forbidden'), error);
 		} else if (status === 404) {
