@@ -31,7 +31,7 @@ import run.ikaros.api.custom.Name;
  * </pre>
  */
 @Data
-@Custom(group = OpenApiConst.CORE_GROUP, version = OpenApiConst.CORE_VERSION,
+@Custom(group = OpenApiConst.PLUGIN_GROUP, version = OpenApiConst.CORE_VERSION,
     kind = "Plugin", singular = "plugin", plural = "plugins")
 public class Plugin {
 

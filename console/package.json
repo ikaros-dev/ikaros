@@ -10,8 +10,13 @@
     "lint": "eslint \"src/**/*.{js,vue,ts}\" --fix",
     "prettier-format": "prettier --config .prettierrc.cjs \"src/**/*.{vue,js,ts}\" --write"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
+    "@runikaros/api-client": "workspace:*",
+    "@runikaros/shared": "workspace:*",
     "@vueuse/components": "^9.6.0",
     "@vueuse/core": "^9.6.0",
     "@vueuse/router": "^9.6.0",
@@ -27,6 +32,7 @@
   "devDependencies": {
     "@commitlint/cli": "^17.6.3",
     "@commitlint/config-conventional": "^17.6.3",
+    "@intlify/unplugin-vue-i18n": "^0.11.0",
     "@types/eslint": "^8.40.0",
     "@types/node": "^18.11.19",
     "@typescript-eslint/eslint-plugin": "^5.59.7",
@@ -50,7 +56,6 @@
     "postcss-html": "^1.5.0",
     "prettier": "^2.8.7",
     "sass": "^1.56.2",
-    "screenfull": "^6.0.2",
     "typescript": "^4.9.5",
     "unplugin-auto-import": "^0.16.2",
     "unplugin-vue-components": "^0.24.1",

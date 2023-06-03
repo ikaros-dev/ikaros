@@ -1,0 +1,17 @@
+.gitignore
+.npmignore
+api.ts
+api/file-ikaros-run-v1alpha1-file-policy-api.ts
+api/file-ikaros-run-v1alpha1-file-setting-api.ts
+api/plugin-ikaros-run-v1alpha1-plugin-api.ts
+base.ts
+common.ts
+configuration.ts
+git_push.sh
+index.ts
+models/author.ts
+models/file-policy.ts
+models/file-setting.ts
+models/index.ts
+models/paging-wrap.ts
+models/plugin.ts

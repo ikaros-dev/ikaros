@@ -1,0 +1,89 @@
+core:
+  common:
+    elmsg:
+      network_error: API network error
+      request_parameter_error: Request parameters error
+      unauthorized: 401 Unauthorized
+      forbidden: 403 Forbidden
+      not_found: 404 Not found
+      server_internal_error_with_title: Server internal error with title
+      unknown_error_with_title: Unknow error with title
+  login:
+    title: Login
+    fields:
+      username:
+        placeholder: Username
+      password:
+        placeholder: Password
+    operations:
+      submit:
+        toast_success: Login successful
+        toast_failed: Login failed, incorrect username or password
+        toast_csrf: CSRF Token expired, please try again
+      signup:
+        label: No account
+        button: Sign up
+      return_login:
+        label: Already have an account
+        button: Sign in
+    button: Login
+    modal:
+      title: Re-login
+  signup:
+    title: Sign up
+    fields:
+      username:
+        placeholder: Username
+      display_name:
+        placeholder: Display name
+      password:
+        placeholder: Password
+      password_confirm:
+        placeholder: Confirm password
+    operations:
+      submit:
+        button: Sign up
+        toast_success: Sign up successfully
+  binding:
+    title: Account binding
+    common:
+      toast:
+        mounted: >-
+          The current login method is not bound to an account, Please bind or
+          sign up a new account first
+    operations:
+      login_and_bind:
+        button: Login and Bind
+      signup_and_bind:
+        button: Signup and Bind
+      bind:
+        toast_success: Binding successfully
+        toast_failed: Binding failed, no enabled login method found
+  sidebar:
+    search:
+      placeholder: Search
+    menu:
+      groups:
+        content: Content
+        interface: Interface
+        system: System
+        tool: Tool
+      items:
+        dashboard: Dashboard
+        attachments: Attachments
+        plugins: Plugins
+        users: Users
+        settings: Settings
+        actuator: Actuator
+        anime: Animes
+        comic: Comics
+        game: Games
+        music: Musics
+        novel: Novels
+    operations:
+      profile:
+        button: Profile
+      visit_homepage:
+        title: Visit homepage
+  dashboard:
+    title: Dashboard

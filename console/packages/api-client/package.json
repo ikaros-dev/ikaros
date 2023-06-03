@@ -1,0 +1,69 @@
+{
+  "name": "@runikaros/api-client",
+  "version": "0.0.3",
+  "description": "Project ikaros console api-client package",
+  "type": "module",
+  "scripts": {
+    "dev": "unbuild --stub",
+    "build": "unbuild",
+    "lint": "eslint \"src/**/*.{js,vue,ts}\" --fix",
+    "prettier-format": "prettier --config .prettierrc.cjs \"src/**/*.{vue,js,ts}\" --write",
+    "typecheck": "tsc --noEmit",
+    "release": "bumpp",
+    "gen": "openapi-generator-cli generate -i http://localhost:9999/v3/api-docs/CustomOpenApi -g typescript-axios -c ./src/.openapi_config.yaml -o ./src --type-mappings='set=Array' && pnpm lint && pnpm prettier-format"
+  },
+  "keywords": [
+    "ikaros",
+    "api-client"
+  ],
+  "author": {
+    "name": "ikaros-dev",
+    "url": "https://github.com/ikaros-dev"
+  },
+  "contributors": [
+    {
+      "name": "GuoHao Li",
+      "url": "https://liguohao.cn"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ikaros-dev/ikaros.git",
+    "directory": "console/packages/api-client"
+  },
+  "bugs": {
+    "url": "https://github.com/ikaros-dev/ikaros/issues"
+  },
+  "homepage": "https://github.com/ikaros-dev/ikaros/blob/master/console/packages/api-client#readme",
+  "license": "AGPL-3.0",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*",
+        "./dist/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.5.2",
+    "@types/node": "^18.13.0",
+    "axios": "^0.27.2",
+    "bumpp": "^8.2.1",
+    "typescript": "^4.9.5",
+    "unbuild": "^0.7.6",
+    "vitest": "^0.18.1"
+  }
+}
