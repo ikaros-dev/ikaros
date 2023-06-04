@@ -143,7 +143,13 @@ export const V1alpha1SubjectRelationApiAxiosParamCreator = function (
 				'relationType',
 				relationType
 			);
-			const localVarPath = `/api/v1alpha1/subject-relation`;
+			const localVarPath =
+				`/api/v1alpha1/subject-relation/{subjectId}/{relationType}`
+					.replace(`{${'subjectId'}}`, encodeURIComponent(String(subjectId)))
+					.replace(
+						`{${'relationType'}}`,
+						encodeURIComponent(String(relationType))
+					);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -166,14 +172,6 @@ export const V1alpha1SubjectRelationApiAxiosParamCreator = function (
 			// authentication BearerAuth required
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			if (subjectId !== undefined) {
-				localVarQueryParameter['subjectId'] = subjectId;
-			}
-
-			if (relationType !== undefined) {
-				localVarQueryParameter['relationType'] = relationType;
-			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -201,7 +199,11 @@ export const V1alpha1SubjectRelationApiAxiosParamCreator = function (
 		): Promise<RequestArgs> => {
 			// verify required parameter 'subjectId' is not null or undefined
 			assertParamExists('getSubjectRelationsById', 'subjectId', subjectId);
-			const localVarPath = `/api/v1alpha1/subject-relations`;
+			const localVarPath =
+				`/api/v1alpha1/subject-relations/{subjectId}`.replace(
+					`{${'subjectId'}}`,
+					encodeURIComponent(String(subjectId))
+				);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -224,10 +226,6 @@ export const V1alpha1SubjectRelationApiAxiosParamCreator = function (
 			// authentication BearerAuth required
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			if (subjectId !== undefined) {
-				localVarQueryParameter['subjectId'] = subjectId;
-			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -303,15 +301,15 @@ export const V1alpha1SubjectRelationApiAxiosParamCreator = function (
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			if (subjectId !== undefined) {
-				localVarQueryParameter['subjectId'] = subjectId;
+				localVarQueryParameter['subject_id'] = subjectId;
 			}
 
 			if (relationType !== undefined) {
-				localVarQueryParameter['relationType'] = relationType;
+				localVarQueryParameter['relation_type'] = relationType;
 			}
 
 			if (relationSubjects !== undefined) {
-				localVarQueryParameter['relationSubjects'] = relationSubjects;
+				localVarQueryParameter['relation_subjects'] = relationSubjects;
 			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);

@@ -59,7 +59,10 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 		): Promise<RequestArgs> => {
 			// verify required parameter 'id' is not null or undefined
 			assertParamExists('deleteSubjectById', 'id', id);
-			const localVarPath = `/api/v1alpha1/subject`;
+			const localVarPath = `/api/v1alpha1/subject/{id}`.replace(
+				`{${'id'}}`,
+				encodeURIComponent(String(id))
+			);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -82,10 +85,6 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 			// authentication BearerAuth required
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			if (id !== undefined) {
-				localVarQueryParameter['id'] = id;
-			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -226,7 +225,10 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 		): Promise<RequestArgs> => {
 			// verify required parameter 'id' is not null or undefined
 			assertParamExists('searchSubjectById', 'id', id);
-			const localVarPath = `/api/v1alpha1/subject`;
+			const localVarPath = `/api/v1alpha1/subject/{id}`.replace(
+				`{${'id'}}`,
+				encodeURIComponent(String(id))
+			);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -249,10 +251,6 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 			// authentication BearerAuth required
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			if (id !== undefined) {
-				localVarQueryParameter['id'] = id;
-			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
