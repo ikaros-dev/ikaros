@@ -303,15 +303,15 @@ export const V1alpha1SubjectRelationApiAxiosParamCreator = function (
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			if (subjectId !== undefined) {
-				localVarQueryParameter['subject_id'] = subjectId;
+				localVarQueryParameter['subjectId'] = subjectId;
 			}
 
 			if (relationType !== undefined) {
-				localVarQueryParameter['relation_type'] = relationType;
+				localVarQueryParameter['relationType'] = relationType;
 			}
 
 			if (relationSubjects !== undefined) {
-				localVarQueryParameter['relation_subjects'] = relationSubjects;
+				localVarQueryParameter['relationSubjects'] = relationSubjects;
 			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
