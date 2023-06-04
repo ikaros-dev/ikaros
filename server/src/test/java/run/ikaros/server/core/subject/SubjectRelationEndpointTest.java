@@ -70,10 +70,7 @@ class SubjectRelationEndpointTest {
         final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
 
         webTestClient.get()
-            .uri(uriBuilder ->
-                    uriBuilder.path("/api/" + OpenApiConst.CORE_VERSION + "/subject-relations")
-                        .queryParam("subjectId", Long.MAX_VALUE)
-                .build())
+            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relations/" + Long.MAX_VALUE)
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
             .exchange()
@@ -104,11 +101,8 @@ class SubjectRelationEndpointTest {
         final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
 
         webTestClient.get()
-            .uri(uriBuilder ->
-                uriBuilder.path("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation")
-                    .queryParam("subjectId", Long.MAX_VALUE)
-                    .queryParam("relationType", SubjectRelationType.COMIC.getCode())
-                    .build())
+            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation/"
+                + Long.MAX_VALUE + "/" + SubjectRelationType.COMIC.getCode())
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
             .exchange()
@@ -154,11 +148,8 @@ class SubjectRelationEndpointTest {
         final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
 
         webTestClient.get()
-            .uri(uriBuilder ->
-                uriBuilder.path("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation")
-                    .queryParam("subjectId", Long.MAX_VALUE)
-                    .queryParam("relationType", SubjectRelationType.COMIC.getCode())
-                    .build())
+            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation/"
+                + Long.MAX_VALUE + "/" + SubjectRelationType.COMIC.getCode())
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
             .exchange()
@@ -180,9 +171,9 @@ class SubjectRelationEndpointTest {
         webTestClient.delete()
             .uri(uriBuilder -> uriBuilder
                 .path("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation")
-                .queryParam("subjectId", Long.MAX_VALUE)
-                .queryParam("relationType", SubjectRelationType.COMIC.getCode())
-                .queryParam("relationSubjects", JsonUtils.obj2Json(Set.of(random)))
+                .queryParam("subject_id", Long.MAX_VALUE)
+                .queryParam("relation_type", SubjectRelationType.COMIC.getCode())
+                .queryParam("relation_subjects", JsonUtils.obj2Json(Set.of(random)))
                 .build())
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
@@ -190,11 +181,8 @@ class SubjectRelationEndpointTest {
             .expectStatus().isOk();
 
         webTestClient.get()
-            .uri(uriBuilder ->
-                uriBuilder.path("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation")
-                    .queryParam("subjectId", Long.MAX_VALUE)
-                    .queryParam("relationType", SubjectRelationType.COMIC.getCode())
-                    .build())
+            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation/"
+                + Long.MAX_VALUE + "/" + SubjectRelationType.COMIC.getCode())
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
             .exchange()
@@ -220,11 +208,8 @@ class SubjectRelationEndpointTest {
         final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
 
         webTestClient.get()
-            .uri(uriBuilder ->
-                uriBuilder.path("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation")
-                    .queryParam("subjectId", Long.MAX_VALUE)
-                    .queryParam("relationType", SubjectRelationType.COMIC.getCode())
-                    .build())
+            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation/"
+                + Long.MAX_VALUE + "/" + SubjectRelationType.COMIC.getCode())
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
             .exchange()
@@ -246,9 +231,9 @@ class SubjectRelationEndpointTest {
         webTestClient.delete()
             .uri(uriBuilder -> uriBuilder
                 .path("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation")
-                .queryParam("subjectId", Long.MAX_VALUE)
-                .queryParam("relationType", SubjectRelationType.COMIC.getCode())
-                .queryParam("relationSubjects", JsonUtils.obj2Json(random))
+                .queryParam("subject_id", Long.MAX_VALUE)
+                .queryParam("relation_type", SubjectRelationType.COMIC.getCode())
+                .queryParam("relation_subjects", JsonUtils.obj2Json(random))
                 .build())
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
@@ -256,11 +241,8 @@ class SubjectRelationEndpointTest {
             .expectStatus().isOk();
 
         webTestClient.get()
-            .uri(uriBuilder ->
-                uriBuilder.path("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation")
-                    .queryParam("subjectId", Long.MAX_VALUE)
-                    .queryParam("relationType", SubjectRelationType.COMIC.getCode())
-                    .build())
+            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation/"
+                + Long.MAX_VALUE + "/" + SubjectRelationType.COMIC.getCode())
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
             .exchange()

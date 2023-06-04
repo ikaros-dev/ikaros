@@ -54,9 +54,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public Mono<Subject> findById(Long id) {
-        if (id <= 0) {
-            return Mono.empty();
-        }
+        Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.findById(id)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("Not found subject record by id: " + id)))
@@ -77,9 +75,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public Mono<Subject> findByBgmId(Long bgmtvId) {
-        if (bgmtvId <= 0) {
-            return Mono.empty();
-        }
+        Assert.isTrue(bgmtvId > 0, "'bgmtvId' must gt 0.");
         return Mono.just(bgmtvId)
             .flatMap(subjectRepository::findByBgmtvId)
             .switchIfEmpty(
@@ -121,9 +117,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public Mono<Void> deleteById(Long id) {
-        if (id <= 0) {
-            return Mono.empty();
-        }
+        Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.existsById(id)
             .filter(flag -> flag)
             // Delete subject entity
