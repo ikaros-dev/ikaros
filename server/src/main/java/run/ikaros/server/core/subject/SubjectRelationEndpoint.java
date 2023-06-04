@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -17,8 +18,10 @@ import org.springframework.util.Assert;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.exception.ParamException;
 import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.utils.JsonUtils;
@@ -36,29 +39,29 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
     public RouterFunction<ServerResponse> endpoint() {
         var tag = OpenApiConst.CORE_VERSION + "/SubjectRelation";
         return SpringdocRouteBuilder.route()
-            .GET("/subject-relations/{subjectId}", this::findAllBySubjectId,
+            .GET("/subject-relations", this::findAllBySubjectId,
                 builder -> builder
                     .tag(tag)
                     .operationId("GetSubjectRelationsById")
                     .parameter(parameterBuilder()
                         .name("subjectId")
-                        .in(ParameterIn.PATH)
+                        .in(ParameterIn.QUERY)
                         .description("Subject id")
                         .implementation(Long.class)
                         .required(true)))
-            .GET("/subject-relation/{subjectId}/{relationType}", this::findBySubjectIdAndType,
+            .GET("/subject-relation", this::findBySubjectIdAndType,
                 builder -> builder
                     .tag(tag)
                     .operationId("GetSubjectRelationByIdAndType")
                     .parameter(parameterBuilder()
                         .name("subjectId")
-                        .in(ParameterIn.PATH)
+                        .in(ParameterIn.QUERY)
                         .description("Subject id")
                         .implementation(Long.class)
                         .required(true))
                     .parameter(parameterBuilder()
                         .name("relationType")
-                        .in(ParameterIn.PATH)
+                        .in(ParameterIn.QUERY)
                         .description("Subject relation type")
                         .implementation(SubjectRelationType.class)
                         .required(true)))
@@ -98,7 +101,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> findAllBySubjectId(ServerRequest request) {
-        return Mono.just(request.pathVariable("subjectId"))
+        return Mono.just(request.queryParam("subjectId").orElse("-1"))
             .map(Long::valueOf)
             .flatMap(subjectId -> subjectRelationService.findAllBySubjectId(subjectId)
                 .collectList())
@@ -109,9 +112,10 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
             .switchIfEmpty(ServerResponse.notFound().build());
     }
 
-    private Mono<ServerResponse> findBySubjectIdAndType(ServerRequest request) {
-        String subjectId = request.pathVariable("subjectId");
-        String relationType = request.pathVariable("relationType");
+    private Mono<ServerResponse> findBySubjectIdAndType(ServerRequest request)  {
+        String subjectId = request.queryParam("subjectId").orElse("-1");
+        String relationType = request.queryParam("relationType").orElseThrow(
+            () -> new ParamException("Param relationType is required."));
         return subjectRelationService.findBySubjectIdAndType(Long.valueOf(subjectId),
                 StringUtils.isNumeric(relationType)
                     ? SubjectRelationType.codeOf(Integer.valueOf(relationType))

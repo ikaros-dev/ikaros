@@ -49,14 +49,15 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .required(true)
                         .implementation(Long.class)))
-            .GET("/subject/{id}", this::getById,
+            .GET("/subject", this::getById,
                 builder -> {
                     builder
                         .operationId("SearchSubjectById")
                         .tag(tag)
-                        .parameter(parameterBuilder().name("id")
+                        .parameter(parameterBuilder()
+                            .name("id")
                             .description("Subject ID")
-                            .in(ParameterIn.PATH)
+                            .in(ParameterIn.QUERY)
                             .required(true)
                             .implementation(Long.class))
                         .description("Search single subject by id.");
@@ -72,13 +73,14 @@ public class SubjectEndpoint implements CoreEndpoint {
                             .mediaType(MediaType.APPLICATION_JSON_VALUE)
                             .schema(schemaBuilder().implementation(Subject.class))
                         )))
-            .DELETE("/subject/{id}", this::deleteById,
+            .DELETE("/subject", this::deleteById,
                 builder -> builder.operationId("DeleteSubjectById")
                     .tag(tag)
                     .description("Delete subject by id.")
                     .parameter(parameterBuilder()
+                        .name("id")
                         .required(true)
-                        .in(ParameterIn.PATH)
+                        .in(ParameterIn.QUERY)
                         .description("Subject id")
                         .implementation(Long.class)))
             .build();
@@ -102,7 +104,7 @@ public class SubjectEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {
-        return Mono.just(request.pathVariable("id"))
+        return Mono.just(request.queryParam("id").orElse("-1"))
             .map(Long::valueOf)
             .flatMap(subjectService::findById)
             .flatMap(subject -> ServerResponse.ok()
@@ -121,7 +123,7 @@ public class SubjectEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
-        return Mono.just(request.pathVariable("id"))
+        return Mono.just(request.queryParam("id").orElse("-1"))
             .map(Long::valueOf)
             .flatMap(subjectService::deleteById)
             .then(ServerResponse.ok().build());
