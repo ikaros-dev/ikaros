@@ -1,6 +1,6 @@
 {
   "name": "@runikaros/api-client",
-  "version": "0.0.3",
+  "version": "0.0.6",
   "description": "Project ikaros console api-client package",
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "prettier-format": "prettier --config .prettierrc.cjs \"src/**/*.{vue,js,ts}\" --write",
     "typecheck": "tsc --noEmit",
     "release": "bumpp",
-    "gen": "openapi-generator-cli generate -i http://localhost:9999/v3/api-docs/CustomOpenApi -g typescript-axios -c ./src/.openapi_config.yaml -o ./src --type-mappings='set=Array' && pnpm lint && pnpm prettier-format"
+    "gen": "openapi-generator-cli generate -i http://localhost:9999/v3/api-docs/AllOpenApi -g typescript-axios -c ./src/.openapi_config.yaml -o ./src --type-mappings='set=Array' && pnpm lint && pnpm prettier-format"
   },
   "keywords": [
     "ikaros",

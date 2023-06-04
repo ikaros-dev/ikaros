@@ -54,7 +54,8 @@ public class SubjectEndpoint implements CoreEndpoint {
                     builder
                         .operationId("SearchSubjectById")
                         .tag(tag)
-                        .parameter(parameterBuilder().name("id")
+                        .parameter(parameterBuilder()
+                            .name("id")
                             .description("Subject ID")
                             .in(ParameterIn.PATH)
                             .required(true)
@@ -77,6 +78,7 @@ public class SubjectEndpoint implements CoreEndpoint {
                     .tag(tag)
                     .description("Delete subject by id.")
                     .parameter(parameterBuilder()
+                        .name("id")
                         .required(true)
                         .in(ParameterIn.PATH)
                         .description("Subject id")

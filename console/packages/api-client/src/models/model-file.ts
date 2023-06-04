@@ -12,9 +12,20 @@
  * Do not edit the class manually.
  */
 
-export * from './api/file-ikaros-run-v1alpha1-file-policy-api';
-export * from './api/file-ikaros-run-v1alpha1-file-setting-api';
-export * from './api/plugin-ikaros-run-v1alpha1-plugin-api';
-export * from './api/v1alpha1-file-api';
-export * from './api/v1alpha1-subject-api';
-export * from './api/v1alpha1-subject-relation-api';
+// May contain unused imports in some cases
+// @ts-ignore
+import { FileEntity } from './file-entity';
+
+/**
+ *
+ * @export
+ * @interface ModelFile
+ */
+export interface ModelFile {
+	/**
+	 *
+	 * @type {FileEntity}
+	 * @memberof ModelFile
+	 */
+	entity?: FileEntity;
+}
