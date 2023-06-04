@@ -19,7 +19,6 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.exception.ParamException;
 import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.utils.JsonUtils;
@@ -37,29 +36,29 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
     public RouterFunction<ServerResponse> endpoint() {
         var tag = OpenApiConst.CORE_VERSION + "/SubjectRelation";
         return SpringdocRouteBuilder.route()
-            .GET("/subject-relations", this::findAllBySubjectId,
+            .GET("/subject-relations/{subjectId}", this::findAllBySubjectId,
                 builder -> builder
                     .tag(tag)
                     .operationId("GetSubjectRelationsById")
                     .parameter(parameterBuilder()
                         .name("subjectId")
-                        .in(ParameterIn.QUERY)
+                        .in(ParameterIn.PATH)
                         .description("Subject id")
                         .implementation(Long.class)
                         .required(true)))
-            .GET("/subject-relation", this::findBySubjectIdAndType,
+            .GET("/subject-relation/{subjectId}/{relationType}", this::findBySubjectIdAndType,
                 builder -> builder
                     .tag(tag)
                     .operationId("GetSubjectRelationByIdAndType")
                     .parameter(parameterBuilder()
                         .name("subjectId")
-                        .in(ParameterIn.QUERY)
+                        .in(ParameterIn.PATH)
                         .description("Subject id")
                         .implementation(Long.class)
                         .required(true))
                     .parameter(parameterBuilder()
                         .name("relationType")
-                        .in(ParameterIn.QUERY)
+                        .in(ParameterIn.PATH)
                         .description("Subject relation type")
                         .implementation(SubjectRelationType.class)
                         .required(true)))
@@ -99,7 +98,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> findAllBySubjectId(ServerRequest request) {
-        return Mono.just(request.queryParam("subjectId").orElse("-1"))
+        return Mono.just(request.pathVariable("subjectId"))
             .map(Long::valueOf)
             .flatMap(subjectId -> subjectRelationService.findAllBySubjectId(subjectId)
                 .collectList())
@@ -110,10 +109,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
             .switchIfEmpty(ServerResponse.notFound().build());
     }
 
-    private Mono<ServerResponse> findBySubjectIdAndType(ServerRequest request)  {
-        String subjectId = request.queryParam("subjectId").orElse("-1");
-        String relationType = request.queryParam("relationType").orElseThrow(
-            () -> new ParamException("Param relationType is required."));
+    private Mono<ServerResponse> findBySubjectIdAndType(ServerRequest request) {
+        String subjectId = request.pathVariable("subjectId");
+        String relationType = request.pathVariable("relationType");
         return subjectRelationService.findBySubjectIdAndType(Long.valueOf(subjectId),
                 StringUtils.isNumeric(relationType)
                     ? SubjectRelationType.codeOf(Integer.valueOf(relationType))
