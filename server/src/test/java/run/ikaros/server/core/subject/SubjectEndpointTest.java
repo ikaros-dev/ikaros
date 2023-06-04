@@ -81,8 +81,12 @@ class SubjectEndpointTest {
         Mockito.when(subjectService.findById(exceptId))
             .thenAnswer((Answer<Mono<Subject>>) invocation -> exceptSubject);
 
+        long finalExceptId = exceptId;
         webTestClient.get()
-            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject/" + exceptId)
+            .uri(uriBuilder ->
+                uriBuilder.path("/api/" + OpenApiConst.CORE_VERSION + "/subject")
+                    .queryParam("id", finalExceptId)
+                    .build())
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
             .exchange()
@@ -247,7 +251,10 @@ class SubjectEndpointTest {
         } finally {
             if (subject.getId() != null) {
                 webTestClient.delete()
-                    .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject/" + subject.getId())
+                    .uri(uriBuilder ->
+                        uriBuilder.path("/api/" + OpenApiConst.CORE_VERSION + "/subject")
+                            .queryParam("id", subject.getId())
+                            .build())
                     .header(HttpHeaders.AUTHORIZATION, "Basic "
                         + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
                     .exchange()

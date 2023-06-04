@@ -80,19 +80,19 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder()
                         .required(true)
                         .in(ParameterIn.QUERY)
-                        .name("subject_id")
+                        .name("subjectId")
                         .description("Subject id")
                         .implementation(Long.class))
                     .parameter(parameterBuilder()
                         .required(true)
                         .in(ParameterIn.QUERY)
-                        .name("relation_type")
+                        .name("relationType")
                         .description("Subject relation type code")
                         .implementation(SubjectRelationType.class))
                     .parameter(parameterBuilder()
                         .required(true)
                         .in(ParameterIn.QUERY)
-                        .name("relation_subjects")
+                        .name("relationSubjects")
                         .description("Relation subjects")
                         .implementation(String.class))
             ).build();
@@ -137,12 +137,12 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
 
 
     private Mono<ServerResponse> removeSubjectRelation(ServerRequest request) {
-        Optional<String> subjectId = request.queryParam("subject_id");
-        Assert.isTrue(subjectId.isPresent(), "'subject_id' must not be empty");
-        Optional<String> relationType = request.queryParam("relation_type");
-        Assert.isTrue(relationType.isPresent(), "'relation_type' must not be empty");
-        Optional<String> relationSubjects = request.queryParam("relation_subjects");
-        Assert.isTrue(relationSubjects.isPresent(), "'relation_subjects' must not be empty");
+        Optional<String> subjectId = request.queryParam("subjectId");
+        Assert.isTrue(subjectId.isPresent(), "'subjectId' must not be empty");
+        Optional<String> relationType = request.queryParam("relationType");
+        Assert.isTrue(relationType.isPresent(), "'relationType' must not be empty");
+        Optional<String> relationSubjects = request.queryParam("relationSubjects");
+        Assert.isTrue(relationSubjects.isPresent(), "'relationSubjects' must not be empty");
         SubjectRelation subjectRelation = SubjectRelation.builder()
             .subject(Long.valueOf(subjectId.get()))
             .relationType(
