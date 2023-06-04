@@ -20,6 +20,35 @@ pnpm build
 
 ## 发布版本
 
+1. 先启动服务端
+
+2. 生成 TS 代码
+
 ```bash
-pnpm release
+pnpm gen
+```
+
+3. `package.json` 版本 patch 号加一，
+   例子：从 `0.0.0` => `0.0.1`
+
+4. 编译 TS 代码
+
+```bash
+pnpm build
+```
+
+5. npm 发布，如果未登录需要先登录
+
+```bash
+npm login
+```
+
+```bash
+npm publish
+```
+
+6. git 提交
+
+```bash
+git commit -am "build: gen new api-client and publish to npm center repo in @runikaros/api-client"
 ```
