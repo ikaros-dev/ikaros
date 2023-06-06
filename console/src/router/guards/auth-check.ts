@@ -30,6 +30,7 @@ export function setupAuthCheckGuard(router: Router) {
 							redirect_uri: to.query.redirect_uri,
 						},
 					});
+					return;
 				} else {
 					next({
 						name: 'Dashboard',
