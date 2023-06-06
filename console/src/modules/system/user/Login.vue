@@ -103,6 +103,7 @@ onMounted(() => {
 					v-model="form.password"
 					type="password"
 					:placeholder="i18n.global.t('core.login.fields.password.placeholder')"
+					@keyup.enter="handleLogin"
 				></el-input>
 			</el-form-item>
 			<el-button type="primary" class="login-button" @click="handleLogin">{{
