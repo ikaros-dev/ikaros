@@ -39,6 +39,7 @@ const generateMenus = () => {
 		}),
 		[
 			(route: RouteRecordRaw) => !route.meta?.core,
+			// @ts-ignore
 			(route: RouteRecordRaw) => route.meta?.menu?.priority || 0,
 		]
 	);
