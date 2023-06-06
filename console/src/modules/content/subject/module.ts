@@ -1,27 +1,27 @@
 import { definePlugin } from '@runikaros/shared';
 import BasicLayout from '@/layouts/BasicLayout.vue';
-import Files from './Files.vue';
-import { Files as FilesIcon } from '@element-plus/icons-vue';
+import Subjects from './Subjects.vue';
+import { Collection } from '@element-plus/icons-vue';
 
 export default definePlugin({
-	name: 'FileList',
+	name: 'Subjects',
 	components: {},
 	routes: [
 		{
-			path: '/files',
+			path: '/subjects',
 			component: BasicLayout,
 			children: [
 				{
 					path: '',
-					name: 'Files',
-					component: Files,
+					name: 'Subjects',
+					component: Subjects,
 					meta: {
-						title: 'core.file.title',
+						title: 'core.subject.title',
 						menu: {
-							name: 'core.sidebar.menu.items.files',
+							name: 'core.sidebar.menu.items.subjects',
 							group: 'content',
-							icon: markRaw(FilesIcon),
-							priority: 0,
+							icon: markRaw(Collection),
+							priority: 1,
 						},
 					},
 				},

@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-	<div>Core module file list.</div>
+	<div>Core module files.</div>
 </template>
 
 <style lang="scss" scoped></style>

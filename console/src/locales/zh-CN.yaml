@@ -72,7 +72,8 @@ core:
       items:
         dashboard: 仪表盘
         profile: 我的
-        file: 文件
+        files: 文件
+        subjects: 条目
         plugins: 插件
         users: 用户
         settings: 设置
@@ -93,3 +94,5 @@ core:
     title: 个人中心
   file:
     title: 文件
+  subject:
+    title: 条目

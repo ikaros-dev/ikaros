@@ -74,7 +74,8 @@ core:
       items:
         dashboard: Dashboard
         profile: Profile
-        file: Files
+        files: Files
+        subjects: Subjects
         plugins: Plugins
         users: Users
         settings: Settings
@@ -95,3 +96,5 @@ core:
     title: Profile
   file:
     title: Files
+  subject:
+    title: Subjects
