@@ -21,11 +21,11 @@ const app = createApp(App);
 app.use(pinia);
 setupI18n(app);
 
-function registerModule(pluginModule: PluginModule, core: boolean) {
+function registerModule(module: PluginModule, core: boolean) {
 	// Register module all components.
-	if (pluginModule.components) {
-		Object.keys(pluginModule.components).forEach((key) => {
-			const component = pluginModule.components?.[key];
+	if (module.components) {
+		Object.keys(module.components).forEach((key) => {
+			const component = module.components?.[key];
 			if (component) {
 				app.component(key, component);
 			}
@@ -33,14 +33,14 @@ function registerModule(pluginModule: PluginModule, core: boolean) {
 	}
 
 	// Register module all routes
-	if (pluginModule.routes) {
-		if (!Array.isArray(pluginModule.routes)) {
+	if (module.routes) {
+		if (!Array.isArray(module.routes)) {
 			return;
 		}
 
-		resetRouteMeta(pluginModule.routes);
+		resetRouteMeta(module.routes);
 
-		for (const route of pluginModule.routes) {
+		for (const route of module.routes) {
 			if ('parentName' in route) {
 				router.addRoute(route.parentName, route.route);
 			} else {
@@ -83,7 +83,7 @@ function loadCoreModules() {
 }
 
 // eslint-disable-next-line no-unused-vars
-const pluginModuleStore = usePluginModuleStore();
+const moduleStore = usePluginModuleStore();
 
 // eslint-disable-next-line no-unused-vars
 function loadStyle(href: string) {
@@ -115,7 +115,6 @@ function loadStyle(href: string) {
 }
 
 // const pluginErrorMessages: Array<string> = [];
-// eslint-disable-next-line no-unused-vars
 async function loadPluginModules() {
 	const { data } = await apiClient.plugin.getpluginsbyPaging({
 		page: '1',

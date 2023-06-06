@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { useLayoutStore } from '@/stores/layout';
+import { i18n } from '@/locales';
+
+const t = i18n.global.t;
 const route = useRoute();
 const router = useRouter();
 const layoutStore = useLayoutStore();
@@ -7,7 +10,7 @@ const layoutStore = useLayoutStore();
 let breadcrumbList: Ref = ref([]);
 
 const initBreadcrumbList = () => {
-	// console.log(route.matched);
+	console.log('route.matched: ', route.matched);
 	breadcrumbList.value = route.matched;
 };
 
@@ -26,13 +29,13 @@ watch(
 </script>
 
 <template>
-	<el-breadcrumb separator="/">
+	<el-breadcrumb separator=" ">
 		<el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index">
 			<span v-if="index === breadcrumbList.length - 1" class="no-redirect">
-				{{ item.name }}
+				{{ t(item.meta.title) }}
 			</span>
 			<span v-else class="redirect" @click="handleRedirect(item.path)">
-				{{ item.name }}
+				{{ item?.meta?.title ? t(item.meta.title) : item.name }}
 			</span>
 		</el-breadcrumb-item>
 	</el-breadcrumb>

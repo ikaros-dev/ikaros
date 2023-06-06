@@ -71,6 +71,7 @@ core:
         tool: 工具
       items:
         dashboard: 仪表盘
+        profile: 我的
         attachments: 附件
         plugins: 插件
         users: 用户
@@ -88,3 +89,5 @@ core:
         title: 访问首页
   dashboard:
     title: 仪表板
+  profile:
+    title: 个人中心

@@ -10,7 +10,6 @@ export default definePlugin({
 		{
 			path: '/',
 			component: BasicLayout,
-			name: 'Root',
 			redirect: '/dashboard',
 			children: [
 				{

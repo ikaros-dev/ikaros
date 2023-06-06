@@ -1,5 +1,6 @@
 import Dashboard from './dashboard/module';
+import User from './system/user/module';
 
-const coreModules = [Dashboard];
+const coreModules = [Dashboard, User];
 
 export { coreModules };

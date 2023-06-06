@@ -73,6 +73,7 @@ core:
         tool: Tool
       items:
         dashboard: Dashboard
+        profile: Profile
         attachments: Attachments
         plugins: Plugins
         users: Users
@@ -90,3 +91,5 @@ core:
         title: Visit homepage
   dashboard:
     title: Dashboard
+  profile:
+    title: Profile
