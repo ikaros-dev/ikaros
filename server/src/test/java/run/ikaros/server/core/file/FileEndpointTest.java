@@ -1,6 +1,5 @@
 package run.ikaros.server.core.file;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
 import java.io.IOException;
@@ -14,25 +13,22 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Example;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.server.infra.properties.IkarosProperties;
 import run.ikaros.server.infra.utils.FileUtils;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
+import run.ikaros.server.security.SecurityProperties;
 import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.repository.FileRepository;
 
@@ -42,8 +38,6 @@ class FileEndpointTest {
 
     @Autowired
     WebTestClient webTestClient;
-    @MockBean
-    ReactiveUserDetailsService userDetailsService;
     @SpyBean
     ExtensionComponentsFinder extensionComponentsFinder;
     @Autowired
@@ -52,19 +46,17 @@ class FileEndpointTest {
     FileRepository fileRepository;
     @Autowired
     IkarosProperties ikarosProperties;
+    @Autowired
+    SecurityProperties securityProperties;
+
+    private String username;
+    private String password;
 
     @BeforeEach
     void setUp() {
-        when(userDetailsService.findByUsername("tomoki"))
-            .thenReturn(Mono.just(
-                User.builder()
-                    .username("tomoki")
-                    .password("password")
-                    .passwordEncoder(passwordEncoder::encode)
-                    .roles(SecurityConst.ROLE_MASTER)
-                    .build()
-            ));
         webTestClient = webTestClient.mutateWith(csrf());
+        username = securityProperties.getInitializer().getMasterUsername();
+        password = securityProperties.getInitializer().getMasterPassword();
     }
 
     @AfterEach
@@ -94,7 +86,7 @@ class FileEndpointTest {
         webTestClient.post()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/files/upload")
             .header(HttpHeaders.AUTHORIZATION, "Basic "
-                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .body(BodyInserters.fromMultipartData(multipartBodyBuilder.build()))
             .exchange()
             .expectStatus().isOk();
@@ -110,7 +102,7 @@ class FileEndpointTest {
         webTestClient.post()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/files/upload")
             .header(HttpHeaders.AUTHORIZATION, "Basic "
-                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .body(BodyInserters.fromMultipartData(multipartBodyBuilder.build()))
             .exchange()
             .expectStatus().isNotFound();
@@ -129,7 +121,7 @@ class FileEndpointTest {
         webTestClient.post()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/files/upload")
             .header(HttpHeaders.AUTHORIZATION, "Basic "
-                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .body(BodyInserters.fromMultipartData(multipartBodyBuilder.build()))
             .exchange()
             .expectStatus().isNotFound();
@@ -140,7 +132,7 @@ class FileEndpointTest {
         webTestClient.get()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/files")
             .header(HttpHeaders.AUTHORIZATION, "Basic "
-                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()
             .expectStatus().isOk();
     }
@@ -150,7 +142,7 @@ class FileEndpointTest {
         webTestClient.delete()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/file" + "/-1")
             .header(HttpHeaders.AUTHORIZATION, "Basic "
-                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()
             .expectStatus().isNotFound();
 
@@ -163,7 +155,7 @@ class FileEndpointTest {
         webTestClient.post()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/files/upload")
             .header(HttpHeaders.AUTHORIZATION, "Basic "
-                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .body(BodyInserters.fromMultipartData(multipartBodyBuilder.build()))
             .exchange()
             .expectStatus().isOk();
@@ -176,7 +168,7 @@ class FileEndpointTest {
         webTestClient.delete()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/file" + "/" + fileId)
             .header(HttpHeaders.AUTHORIZATION, "Basic "
-                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()
             .expectStatus().isOk();
     }

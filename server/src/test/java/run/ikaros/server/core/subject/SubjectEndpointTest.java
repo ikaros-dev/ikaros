@@ -1,6 +1,5 @@
 package run.ikaros.server.core.subject;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,16 +20,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.infra.utils.JsonUtils;
+import run.ikaros.server.security.SecurityProperties;
 
 @SpringBootTest
 @AutoConfigureWebTestClient
@@ -41,22 +38,18 @@ class SubjectEndpointTest {
     @Autowired
     WebTestClient webTestClient;
     @SpyBean
-    ReactiveUserDetailsService userDetailsService;
-    @SpyBean
     SubjectService subjectService;
+    @Autowired
+    SecurityProperties securityProperties;
+
+    private String username;
+    private String password;
 
     @BeforeEach
     void setUp() {
-        when(userDetailsService.findByUsername("tomoki"))
-            .thenReturn(Mono.just(
-                User.builder()
-                    .username("tomoki")
-                    .password("password")
-                    .passwordEncoder(passwordEncoder::encode)
-                    .roles(SecurityConst.ROLE_MASTER)
-                    .build()
-            ));
         webTestClient = webTestClient.mutateWith(csrf());
+        username = securityProperties.getInitializer().getMasterUsername();
+        password = securityProperties.getInitializer().getMasterPassword();
     }
 
     @Test
@@ -64,7 +57,7 @@ class SubjectEndpointTest {
         webTestClient.get()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject/" + "10")
             .header(HttpHeaders.AUTHORIZATION, "Basic "
-                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()
             .expectStatus().isNotFound();
     }
@@ -84,7 +77,7 @@ class SubjectEndpointTest {
         webTestClient.get()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject/" + exceptId)
             .header(HttpHeaders.AUTHORIZATION, "Basic "
-                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()
             .expectStatus().isOk()
             .expectBody(Subject.class);
@@ -120,7 +113,7 @@ class SubjectEndpointTest {
             .get()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/subjects/1/50")
             .header(HttpHeaders.AUTHORIZATION, "Basic "
-                + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()
             .expectStatus().isNotFound();
     }
@@ -135,7 +128,7 @@ class SubjectEndpointTest {
                 .post()
                 .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject")
                 .header(HttpHeaders.AUTHORIZATION, "Basic "
-                    + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                    + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(subject)
                 .exchange()
@@ -156,7 +149,7 @@ class SubjectEndpointTest {
                 .get()
                 .uri("/api/" + OpenApiConst.CORE_VERSION + "/subjects/1/50")
                 .header(HttpHeaders.AUTHORIZATION, "Basic "
-                    + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                    + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -195,7 +188,7 @@ class SubjectEndpointTest {
                 .post()
                 .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject")
                 .header(HttpHeaders.AUTHORIZATION, "Basic "
-                    + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                    + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(subject)
                 .exchange()
@@ -228,7 +221,7 @@ class SubjectEndpointTest {
                 .post()
                 .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject")
                 .header(HttpHeaders.AUTHORIZATION, "Basic "
-                    + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                    + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(subject)
                 .exchange()
@@ -249,7 +242,7 @@ class SubjectEndpointTest {
                 webTestClient.delete()
                     .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject/" + subject.getId())
                     .header(HttpHeaders.AUTHORIZATION, "Basic "
-                        + HttpHeaders.encodeBasicAuth("tomoki", "password", StandardCharsets.UTF_8))
+                        + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
                     .exchange()
                     .expectStatus().isOk();
             }

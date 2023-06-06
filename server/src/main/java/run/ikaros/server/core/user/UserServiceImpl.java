@@ -3,15 +3,12 @@ package run.ikaros.server.core.user;
 import static run.ikaros.server.core.user.UserService.addEncodingIdPrefixIfNotExists;
 
 import org.springframework.data.domain.Example;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.UserRepository;
 
@@ -50,8 +47,8 @@ public class UserServiceImpl implements UserService {
                 UserEntity.builder()
                     .username(username)
                     .build()))
-            .switchIfEmpty(Mono.error(() -> new NotFoundException(
-                String.format("user not found for username=%s", username))))
+            .switchIfEmpty(Mono.error(() -> new UsernameNotFoundException(
+                String.format("Not found for username=%s", username))))
             .map(User::new);
     }
 

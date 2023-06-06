@@ -4,6 +4,10 @@ ikaros:
   plugin:
     runtime-mode: development
     system-version: 1.0.0-SNAPSHOT
+  security:
+    initializer:
+      master-username: tomoki
+      master-password: tomoki
 
 server:
   port: 51000
