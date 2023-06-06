@@ -27,7 +27,7 @@ const menus = ref<MenuGroupType[]>([] as MenuGroupType[]);
 const minimenus = ref<MenuItemType[]>([] as MenuItemType[]);
 
 const generateMenus = () => {
-	console.log('router.getRoutes(): ', router.getRoutes());
+	// console.log('router.getRoutes(): ', router.getRoutes());
 	// sort by menu.priority and meta.core
 	const currentRoutes = sortBy(
 		router.getRoutes().filter((route) => {
@@ -120,8 +120,8 @@ const generateMenus = () => {
 
 onMounted(generateMenus);
 
-console.log('menus', menus);
-console.log('minimenus', minimenus);
+// console.log('menus', menus);
+// console.log('minimenus', minimenus);
 </script>
 
 <template>

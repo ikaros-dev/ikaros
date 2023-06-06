@@ -10,7 +10,7 @@ const layoutStore = useLayoutStore();
 let breadcrumbList: Ref = ref([]);
 
 const initBreadcrumbList = () => {
-	console.log('route.matched: ', route.matched);
+	// console.log('route.matched: ', route.matched);
 	breadcrumbList.value = route.matched;
 };
 

@@ -120,7 +120,7 @@ async function loadPluginModules() {
 		page: '1',
 		size: '10',
 	});
-	console.log('all-plugins', data);
+	console.log('Load all-plugins: ', data);
 }
 
 // Start init app.
