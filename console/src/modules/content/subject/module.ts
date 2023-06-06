@@ -1,7 +1,7 @@
 import { definePlugin } from '@runikaros/shared';
 import BasicLayout from '@/layouts/BasicLayout.vue';
 import Subjects from './Subjects.vue';
-import { Collection } from '@element-plus/icons-vue';
+import { Tickets } from '@element-plus/icons-vue';
 
 export default definePlugin({
 	name: 'Subjects',
@@ -20,7 +20,7 @@ export default definePlugin({
 						menu: {
 							name: 'core.sidebar.menu.items.subjects',
 							group: 'content',
-							icon: markRaw(Collection),
+							icon: markRaw(Tickets),
 							priority: 1,
 						},
 					},
