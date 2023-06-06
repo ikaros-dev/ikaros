@@ -22,14 +22,14 @@ pnpm build
 
 1. 先启动服务端
 
-2. 生成 TS 代码
+2. `package.json` 版本 patch 号加一，
+   例子：从 `0.0.0` => `0.0.1`
+
+3. 生成 TS 代码
 
 ```bash
 pnpm gen
 ```
-
-3. `package.json` 版本 patch 号加一，
-   例子：从 `0.0.0` => `0.0.1`
 
 4. 编译 TS 代码
 
@@ -49,6 +49,8 @@ npm publish
 
 6. git 提交
 
+选择当前目录下的更改进行`git add`
+
 ```bash
-git commit -am "build: gen new api-client and publish to npm center repo in @runikaros/api-client"
+git commit -m "build: gen new api-client@x.y.z and publish to npm center repo in @runikaros/api-client"
 ```
