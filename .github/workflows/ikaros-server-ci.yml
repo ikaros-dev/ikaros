@@ -16,6 +16,7 @@ on:
       - 'gradle.properties'
       - 'lombok.config'
       - 'settings.gradle'
+      - '!console/**'
   pull_request:
     branches:
       - master
@@ -29,6 +30,7 @@ on:
       - 'gradle.properties'
       - 'lombok.config'
       - 'settings.gradle'
+      - '!console/**'
 
 jobs:
   check:
