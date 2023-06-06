@@ -1,6 +1,7 @@
 core:
   common:
-    elmsg:
+    exception:
+      title: 应用异常
       network_error: API网络错误
       request_parameter_error: 请求参数异常
       unauthorized: 401 未经授权
@@ -8,14 +9,15 @@ core:
       not_found: 404 没有找到
       server_internal_error_with_title: 服务端内部错误
       unknown_error_with_title: 未知的错误
-
   login:
     title: 登录
     fields:
       username:
         placeholder: 用户名
+        rule: 请输入用户名
       password:
         placeholder: 密码
+        rule: 请输入密码
     operations:
       submit:
         toast_success: 登录成功

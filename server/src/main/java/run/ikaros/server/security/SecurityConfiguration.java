@@ -1,6 +1,5 @@
 package run.ikaros.server.security;
 
-import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN;
 import static org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN;
 import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
@@ -49,17 +48,14 @@ public class SecurityConfiguration {
     SecurityWebFilterChain apiFilterChain(ServerHttpSecurity http,
                                           ObjectProvider<SecurityConfigurer> securityConfigurers) {
         // main config
-        http.securityMatcher(pathMatchers("/api/**", "/apis/**", "/login", "/logout"))
+        http.securityMatcher(pathMatchers(SecurityConst.SECURITY_MATCHER_PATHS))
             .authorizeExchange().anyExchange()
             .access(new RequestAuthorizationManager())
             .and()
             .anonymous(spec -> {
                 spec.authorities(SecurityConst.AnonymousUser.Role);
                 spec.principal(SecurityConst.AnonymousUser.PRINCIPAL);
-            })
-            .formLogin(withDefaults())
-            .logout(withDefaults())
-            .httpBasic(withDefaults());
+            });
 
         // integrate with other configurers separately
         securityConfigurers.orderedStream()

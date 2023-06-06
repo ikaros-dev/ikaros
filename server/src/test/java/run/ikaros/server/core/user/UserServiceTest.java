@@ -2,29 +2,22 @@ package run.ikaros.server.core.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 import static run.ikaros.server.core.user.UserService.DEFAULT_PASSWORD_ENCODING_ID_PREFIX;
 import static run.ikaros.server.test.TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.api.constant.AppConst;
-import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.server.security.SecurityProperties;
 import run.ikaros.server.store.entity.UserEntity;
 
 @SpringBootTest
@@ -37,22 +30,16 @@ class UserServiceTest {
     PasswordEncoder passwordEncoder;
     @Autowired
     WebTestClient webClient;
-    @SpyBean
-    ReactiveUserDetailsService userDetailsService;
+    @Autowired
+    SecurityProperties securityProperties;
+    String username;
+    String password;
 
     @BeforeEach
     void setUp() {
-        when(userDetailsService.findByUsername("user"))
-            .thenReturn(Mono.just(
-                org.springframework.security.core.userdetails.User.builder()
-                    .username("user")
-                    .password("password")
-                    .passwordEncoder(passwordEncoder::encode)
-                    .roles(SecurityConst.ROLE_MASTER)
-                    .build()
-            ));
-
         webClient = webClient.mutateWith(csrf());
+        username = securityProperties.getInitializer().getMasterUsername();
+        password = securityProperties.getInitializer().getMasterPassword();
     }
 
     @AfterEach
@@ -93,15 +80,15 @@ class UserServiceTest {
 
         // verify get user
         StepVerifier.create(
-                userService.getUser(test1)
+                userService.getUserByUsername(test1)
                     .map(User::entity)
                     .flatMap(userEntity -> Mono.just(userEntity.getUsername())))
             .expectNext(test1)
             .verifyComplete();
 
-        // verify throw UserNotFoundException when get not exists user
-        StepVerifier.create(userService.getUser("not-exists-user"))
-            .expectError(NotFoundException.class)
+        // verify throw UsernameNotFoundException when get not exists user
+        StepVerifier.create(userService.getUserByUsername("not-exists-user"))
+            .expectError(UsernameNotFoundException.class)
             .verify();
     }
 
@@ -119,7 +106,7 @@ class UserServiceTest {
             .flatMap(userService::save)
             .block();
 
-        Mono<String> encodedPasswordMono = userService.getUser(username)
+        Mono<String> encodedPasswordMono = userService.getUserByUsername(username)
             .map(User::entity)
             .flatMap(userEntity -> Mono.just(userEntity.getPassword()))
             .map(UserService::addEncodingIdPrefixIfNotExists);
@@ -172,24 +159,5 @@ class UserServiceTest {
             .verifyComplete();
     }
 
-    @Test
-    void getCurrentLoginUserIdWhenUserNotLogin() {
-        Assertions.assertThat(UserService.getCurrentLoginUserId())
-            .isEqualTo(SecurityConst.UID_WHEN_NO_AUTH);
-    }
 
-    @Test
-    void getCurrentLoginUserIdWhenUserHasLogin() {
-        webClient
-            .post()
-            .uri("/login")
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .body(BodyInserters.fromFormData("username", "user")
-                .with("password", "password"))
-            .exchange()
-            .expectStatus().is3xxRedirection()
-            .expectHeader().location(AppConst.LOGIN_SUCCESS_LOCATION);
-
-        // todo verify get current login user id after login
-    }
 }

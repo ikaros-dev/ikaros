@@ -75,14 +75,6 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
 			localVarHeaderParameter['Content-Type'] = 'application/json';
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -136,14 +128,6 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -189,14 +173,6 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			};
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -247,14 +223,6 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -292,14 +260,6 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			};
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -347,14 +307,6 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			};
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			localVarHeaderParameter['Content-Type'] = 'application/json';
 

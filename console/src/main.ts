@@ -4,8 +4,7 @@ import piniaPersist from 'pinia-plugin-persist';
 import App from './App.vue';
 import router from './router';
 import { setupI18n } from './locales';
-import '@/styles/reset.scss';
-import * as ElementPlusIconsVue from '@element-plus/icons-vue';
+import './styles/index.scss';
 
 import type { PluginModule, RouteRecordAppend } from '@runikaros/shared';
 import type { RouteRecordRaw } from 'vue-router';
@@ -13,6 +12,7 @@ import type { RouteRecordRaw } from 'vue-router';
 import { coreModules } from './modules';
 import { usePluginModuleStore } from '@/stores/plugin';
 import { apiClient } from '@/utils/api-client';
+import { useUserStore } from './stores/user';
 
 const pinia = createPinia();
 pinia.use(piniaPersist);
@@ -20,12 +20,6 @@ pinia.use(piniaPersist);
 const app = createApp(App);
 app.use(pinia);
 setupI18n(app);
-
-function loadElementPlusIconsVue() {
-	for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-		app.component(key, component);
-	}
-}
 
 function registerModule(pluginModule: PluginModule, core: boolean) {
 	// Register module all components.
@@ -137,8 +131,14 @@ async function loadPluginModules() {
 
 async function initApp() {
 	try {
-		loadElementPlusIconsVue();
 		loadCoreModules();
+		const userStore = useUserStore();
+		await userStore.fetchCurrentUser();
+
+		if (userStore.isAnonymous) {
+			return;
+		}
+
 		loadPluginModules();
 	} catch (e) {
 		console.log('Init app fail: ', e);

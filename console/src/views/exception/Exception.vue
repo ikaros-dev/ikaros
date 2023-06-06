@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useRouter } from 'vue-router';
+import { i18n } from '@/locales';
 
 withDefaults(
 	defineProps<{
@@ -8,7 +9,7 @@ withDefaults(
 		message?: string;
 	}>(),
 	{
-		title: undefined,
+		title: i18n.global.t('core.common.exception.title'),
 		message: undefined,
 	}
 );

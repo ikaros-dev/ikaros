@@ -1,12 +1,36 @@
 import BasicLayout from '@/layouts/BasicLayout.vue';
 import type { RouteRecordRaw } from 'vue-router';
 import type { MenuGroupType } from '@runikaros/shared';
+import NotFound from '@/views/exception/NotFound.vue';
+import Forbidden from '@/views/exception/Forbidden.vue';
+import Redirect from '@/views/system/Redirect.vue';
 
 export const routes: Array<RouteRecordRaw> = [
 	{
+		path: '/:pathMatch(.*)*',
+		component: BasicLayout,
+		children: [{ path: '', name: 'NotFound', component: NotFound }],
+	},
+	{
+		path: '/403',
+		component: BasicLayout,
+		children: [
+			{
+				path: '',
+				name: 'Forbidden',
+				component: Forbidden,
+			},
+		],
+	},
+	{
 		path: '/login',
-		name: '登录',
-		component: () => import('@/views/system/Login.vue'),
+		name: 'Login',
+		component: () => import('@/modules/system/user/Login.vue'),
+	},
+	{
+		path: '/redirect',
+		name: 'Redirect',
+		component: Redirect,
 	},
 	{
 		path: '/',

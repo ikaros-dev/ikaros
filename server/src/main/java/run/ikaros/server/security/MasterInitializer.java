@@ -4,10 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.server.core.user.RoleService;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
@@ -39,12 +39,14 @@ public class MasterInitializer {
      */
     @EventListener(ApplicationReadyEvent.class)
     public Mono<Void> initialize() {
-        return userService.getUser(initializer.getMasterUsername())
-            .onErrorResume(NotFoundException.class, user -> createMaster())
+        return userService.getUserByUsername(initializer.getMasterUsername())
+            .onErrorResume(UsernameNotFoundException.class, user -> createMaster())
             .then();
     }
 
     private Mono<User> createMaster() {
+        log.debug("Create init user form username={} and role={}",
+            initializer.getMasterUsername(), SecurityConst.ROLE_MASTER);
         return roleService.createIfNotExist(SecurityConst.ROLE_MASTER)
             .flatMap(roleEntity -> Mono.just(roleEntity.getId()))
             .flatMap(roleId -> Mono.just(UserEntity.builder()

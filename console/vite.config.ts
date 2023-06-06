@@ -8,6 +8,7 @@ import Compression from 'vite-plugin-compression2';
 import eslintPlugin from 'vite-plugin-eslint';
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
+import Icons from 'unplugin-icons/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 
 export default ({ mode }: { mode: string }) => {
@@ -20,6 +21,7 @@ export default ({ mode }: { mode: string }) => {
 			VueJsx(),
 			eslintPlugin(),
 			Compression(),
+			Icons(),
 			AutoImport({
 				dts: true,
 				eslintrc: {
@@ -37,6 +39,10 @@ export default ({ mode }: { mode: string }) => {
 		],
 		server: {
 			port: 3000,
+			proxy: {
+				// 匹配所有URL路径不包含 /console/的路径的请求，代理到服务端
+				'^(?!^/console/).*': env.VITE_SERVER_URL,
+			},
 		},
 		resolve: {
 			alias: {

@@ -23,7 +23,7 @@ public class DefaultUserDetailService implements ReactiveUserDetailsService {
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {
-        return userService.getUser(username)
+        return userService.getUserByUsername(username)
             .map(User::entity)
             .flatMap(userEntity -> roleService.findNameById(userEntity.getRoleId())
                 .map(role -> org.springframework.security.core.userdetails.User.builder()

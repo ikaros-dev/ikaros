@@ -9,6 +9,7 @@ import org.springframework.security.web.server.csrf.ServerCsrfTokenRequestAttrib
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.stereotype.Component;
+import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 
 @Component
@@ -17,8 +18,8 @@ public class CsrfConfigurer implements SecurityConfigurer {
     public void configure(ServerHttpSecurity http) {
         var csrfMatcher = new AndServerWebExchangeMatcher(
             CsrfWebFilter.DEFAULT_CSRF_MATCHER,
-            new NegatedServerWebExchangeMatcher(pathMatchers("/api/**", "/apis/**")
-            ));
+            new NegatedServerWebExchangeMatcher(
+                pathMatchers(SecurityConst.SECURITY_MATCHER_PATHS)));
 
         http.csrf().csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new ServerCsrfTokenRequestAttributeHandler())

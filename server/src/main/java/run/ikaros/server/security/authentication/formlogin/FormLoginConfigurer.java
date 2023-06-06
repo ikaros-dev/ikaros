@@ -7,10 +7,16 @@ import run.ikaros.server.security.authentication.SecurityConfigurer;
 @Component
 public class FormLoginConfigurer implements SecurityConfigurer {
 
+    private final FormLoginSuccessHandler formLoginSuccessHandler;
+
+    public FormLoginConfigurer(FormLoginSuccessHandler formLoginSuccessHandler) {
+        this.formLoginSuccessHandler = formLoginSuccessHandler;
+    }
+
     @Override
     public void configure(ServerHttpSecurity http) {
         http.formLogin()
-            .authenticationSuccessHandler(new FormLoginSuccessHandler())
+            .authenticationSuccessHandler(formLoginSuccessHandler)
             .authenticationFailureHandler(new FormLoginFailureHandler())
         ;
     }
