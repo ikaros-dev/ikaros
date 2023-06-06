@@ -3,11 +3,14 @@ package run.ikaros.server.core.user;
 import static run.ikaros.server.core.user.UserService.addEncodingIdPrefixIfNotExists;
 
 import org.springframework.data.domain.Example;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.UserRepository;
@@ -40,7 +43,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<User> getUser(String username) {
+    public Mono<User> getUserByUsername(String username) {
         Assert.hasText(username, "'username' must has text");
         return repository
             .findOne(Example.of(
@@ -56,7 +59,7 @@ public class UserServiceImpl implements UserService {
     public Mono<User> updatePassword(String username, String rawPassword) {
         Assert.hasText(username, "'username' must has text");
         Assert.hasText(rawPassword, "'rawPassword' must has text");
-        return getUser(username)
+        return getUserByUsername(username)
             .map(User::entity)
             .filter(userEntity -> !StringUtils.hasText(userEntity.getPassword())
                 || !passwordEncoder.matches(rawPassword,

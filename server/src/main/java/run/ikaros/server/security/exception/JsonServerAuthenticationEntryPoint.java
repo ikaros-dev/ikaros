@@ -1,4 +1,4 @@
-package run.ikaros.server.security.authentication.formlogin;
+package run.ikaros.server.security.exception;
 
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.StringUtils;
@@ -7,23 +7,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.server.WebFilterExchange;
-import org.springframework.security.web.server.authentication.RedirectServerAuthenticationFailureHandler;
-import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
+import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.constant.AppConst;
 import run.ikaros.server.infra.model.CommonResult;
 import run.ikaros.server.infra.utils.JsonUtils;
 
-public class FormLoginFailureHandler implements ServerAuthenticationFailureHandler {
-    private final ServerAuthenticationFailureHandler defaultHandler =
-        new RedirectServerAuthenticationFailureHandler(AppConst.LOGIN_FAILURE_LOCATION);
+public class JsonServerAuthenticationEntryPoint implements ServerAuthenticationEntryPoint {
 
     @Override
-    public Mono<Void> onAuthenticationFailure(WebFilterExchange webFilterExchange,
-                                              AuthenticationException ex) {
-        ServerHttpResponse response = webFilterExchange.getExchange().getResponse();
+    public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException ex) {
+        ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         CommonResult result = new CommonResult();

@@ -2,10 +2,11 @@ package run.ikaros.server.core.user;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.constant.SecurityConst;
 
 public interface UserService {
     String DEFAULT_PASSWORD_ENCODING_ID_PREFIX = "{bcrypt}";
@@ -27,25 +28,8 @@ public interface UserService {
 
     Mono<Void> deleteAll();
 
-    Mono<User> getUser(String username);
+    Mono<User> getUserByUsername(String username);
 
     Mono<User> updatePassword(String username, String rawPassword);
 
-
-    /**
-     * Get current login user id.
-     *
-     * @return user id
-     */
-    static Long getCurrentLoginUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null
-            && StringUtils.isNotBlank((String) authentication.getCredentials())) {
-            // String token = (String) authentication.getCredentials();
-            // return Long.valueOf(
-            //     String.valueOf(JwtUtils.getTokenHeaderValue(token, SecurityConst.HEADER_UID)));
-            // todo get user info and return uid
-        }
-        return SecurityConst.UID_WHEN_NO_AUTH;
-    }
 }

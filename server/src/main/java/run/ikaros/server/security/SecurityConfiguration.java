@@ -6,6 +6,7 @@ import static org.springframework.security.web.server.header.XFrameOptionsServer
 import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
 
 import java.util.Set;
+import org.springframework.aop.support.MethodMatchers;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -49,17 +50,14 @@ public class SecurityConfiguration {
     SecurityWebFilterChain apiFilterChain(ServerHttpSecurity http,
                                           ObjectProvider<SecurityConfigurer> securityConfigurers) {
         // main config
-        http.securityMatcher(pathMatchers("/api/**", "/apis/**", "/login", "/logout"))
+        http.securityMatcher(pathMatchers(SecurityConst.SECURITY_MATCHER_PATHS))
             .authorizeExchange().anyExchange()
             .access(new RequestAuthorizationManager())
             .and()
             .anonymous(spec -> {
                 spec.authorities(SecurityConst.AnonymousUser.Role);
                 spec.principal(SecurityConst.AnonymousUser.PRINCIPAL);
-            })
-            .formLogin(withDefaults())
-            .logout(withDefaults())
-            .httpBasic(withDefaults());
+            });
 
         // integrate with other configurers separately
         securityConfigurers.orderedStream()

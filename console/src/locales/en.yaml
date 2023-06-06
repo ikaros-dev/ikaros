@@ -1,6 +1,7 @@
 core:
   common:
-    elmsg:
+    exception:
+      title: Application exception
       network_error: API network error
       request_parameter_error: Request parameters error
       unauthorized: 401 Unauthorized
@@ -13,8 +14,10 @@ core:
     fields:
       username:
         placeholder: Username
+        rule: Please input username
       password:
         placeholder: Password
+        rule: Please input password
     operations:
       submit:
         toast_success: Login successful

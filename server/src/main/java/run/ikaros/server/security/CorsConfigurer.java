@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 
 @Component
@@ -26,8 +27,9 @@ public class CorsConfigurer implements SecurityConfigurer {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
 
         var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);
-        source.registerCorsConfiguration("/apis/**", configuration);
+        for (String securityMatcherPath : SecurityConst.SECURITY_MATCHER_PATHS) {
+            source.registerCorsConfiguration(securityMatcherPath, configuration);
+        }
         return source;
     }
 }

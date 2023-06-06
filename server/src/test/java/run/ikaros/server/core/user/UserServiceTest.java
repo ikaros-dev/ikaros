@@ -93,14 +93,14 @@ class UserServiceTest {
 
         // verify get user
         StepVerifier.create(
-                userService.getUser(test1)
+                userService.getUserByUsername(test1)
                     .map(User::entity)
                     .flatMap(userEntity -> Mono.just(userEntity.getUsername())))
             .expectNext(test1)
             .verifyComplete();
 
         // verify throw UserNotFoundException when get not exists user
-        StepVerifier.create(userService.getUser("not-exists-user"))
+        StepVerifier.create(userService.getUserByUsername("not-exists-user"))
             .expectError(NotFoundException.class)
             .verify();
     }
@@ -119,7 +119,7 @@ class UserServiceTest {
             .flatMap(userService::save)
             .block();
 
-        Mono<String> encodedPasswordMono = userService.getUser(username)
+        Mono<String> encodedPasswordMono = userService.getUserByUsername(username)
             .map(User::entity)
             .flatMap(userEntity -> Mono.just(userEntity.getPassword()))
             .map(UserService::addEncodingIdPrefixIfNotExists);
@@ -174,7 +174,7 @@ class UserServiceTest {
 
     @Test
     void getCurrentLoginUserIdWhenUserNotLogin() {
-        Assertions.assertThat(UserService.getCurrentLoginUserId())
+        Assertions.assertThat(userService.getCurrentLoginUserId())
             .isEqualTo(SecurityConst.UID_WHEN_NO_AUTH);
     }
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useLayoutStore } from '@/stores/layout';
 import { menus } from './menus.config';
+import { Odometer } from '@element-plus/icons-vue';
 
 const layoutStore = useLayoutStore();
 

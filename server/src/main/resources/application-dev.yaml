@@ -3,6 +3,10 @@ ikaros:
     runtime-mode: development
     fixed-plugin-path:
     enabled-plugins:
+  security:
+    initializer:
+      master-username: tomoki
+      master-password: tomoki
 
 spring:
   thymeleaf:
@@ -17,7 +21,7 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
-  show-actuator: false
+  show-actuator: true
 
 management:
   endpoints:

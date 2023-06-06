@@ -2,7 +2,9 @@ package run.ikaros.server.security;
 
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.server.core.user.RoleService;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
@@ -23,7 +25,9 @@ public class DefaultUserDetailService implements ReactiveUserDetailsService {
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {
-        return userService.getUser(username)
+        return userService.getUserByUsername(username)
+            .onErrorResume(NotFoundException.class,
+                error -> Mono.error(new UsernameNotFoundException(error.getMessage())))
             .map(User::entity)
             .flatMap(userEntity -> roleService.findNameById(userEntity.getRoleId())
                 .map(role -> org.springframework.security.core.userdetails.User.builder()

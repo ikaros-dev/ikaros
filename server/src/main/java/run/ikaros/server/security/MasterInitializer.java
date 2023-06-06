@@ -39,7 +39,7 @@ public class MasterInitializer {
      */
     @EventListener(ApplicationReadyEvent.class)
     public Mono<Void> initialize() {
-        return userService.getUser(initializer.getMasterUsername())
+        return userService.getUserByUsername(initializer.getMasterUsername())
             .onErrorResume(NotFoundException.class, user -> createMaster())
             .then();
     }

@@ -11,6 +11,12 @@ public interface SecurityConst {
 
     Long UID_WHEN_NO_AUTH = 0L;
 
+    // String LOGIN_PAGE_PATH = "/console/#/login";
+
+    String[] SECURITY_MATCHER_PATHS = new String[]{
+        "/api/**", "/apis/**", "/login", "/logout"
+    };
+
     interface AnonymousUser {
         String PRINCIPAL = "anonymousUser";
 
