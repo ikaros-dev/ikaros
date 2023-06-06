@@ -4,7 +4,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.server.custom.scheme.CustomSchemeManager;
+import run.ikaros.api.custom.scheme.CustomSchemeManager;
 
 /**
  * A holder for {@link SharedApplicationContext},

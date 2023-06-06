@@ -30,9 +30,12 @@ import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.core.file.File;
+import run.ikaros.api.core.file.FileHandler;
+import run.ikaros.api.core.file.FilePolicy;
 import run.ikaros.api.custom.ReactiveCustomClient;
+import run.ikaros.api.endpoint.CoreEndpoint;
 import run.ikaros.api.exception.NotFoundException;
-import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.repository.FileRepository;
 

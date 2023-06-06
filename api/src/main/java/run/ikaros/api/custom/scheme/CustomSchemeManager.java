@@ -1,4 +1,4 @@
-package run.ikaros.server.custom.scheme;
+package run.ikaros.api.custom.scheme;
 
 import java.util.List;
 import java.util.Objects;

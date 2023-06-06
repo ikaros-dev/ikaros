@@ -7,6 +7,7 @@ import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.endpoint.CoreEndpoint;
 
 public class CoreEndpointsBuilder implements EndpointsBuilder<CoreEndpoint, CoreEndpointsBuilder> {
     private final List<RouterFunction<ServerResponse>> routerFunctions;

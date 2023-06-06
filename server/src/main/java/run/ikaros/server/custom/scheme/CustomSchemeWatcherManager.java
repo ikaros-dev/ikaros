@@ -2,6 +2,7 @@ package run.ikaros.server.custom.scheme;
 
 import java.util.List;
 import org.springframework.lang.NonNull;
+import run.ikaros.api.custom.scheme.CustomScheme;
 
 public interface CustomSchemeWatcherManager {
 

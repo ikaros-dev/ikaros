@@ -5,10 +5,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import run.ikaros.api.core.file.FilePolicy;
+import run.ikaros.api.core.file.FileSetting;
+import run.ikaros.api.custom.scheme.CustomSchemeManager;
 import run.ikaros.api.plugin.custom.Plugin;
-import run.ikaros.server.core.file.FilePolicy;
-import run.ikaros.server.core.file.FileSetting;
-import run.ikaros.server.custom.scheme.CustomSchemeManager;
 import run.ikaros.server.custom.scheme.SchemeInitializedEvent;
 
 @Component

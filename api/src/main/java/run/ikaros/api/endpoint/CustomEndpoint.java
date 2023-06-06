@@ -1,4 +1,4 @@
-package run.ikaros.server.endpoint;
+package run.ikaros.api.endpoint;
 
 
 public interface CustomEndpoint extends Endpoint {

@@ -1,6 +1,6 @@
 package run.ikaros.server.core.file;
 
-import static run.ikaros.server.core.file.FileConst.DEFAULT_FOLDER_ID;
+import static run.ikaros.api.core.file.FileConst.DEFAULT_FOLDER_ID;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,10 +12,13 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Component;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.file.File;
+import run.ikaros.api.core.file.FileConst;
+import run.ikaros.api.core.file.FileHandler;
+import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.server.infra.properties.IkarosProperties;
 import run.ikaros.server.infra.utils.FileUtils;
-import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.repository.FileRepository;
 
 @Slf4j

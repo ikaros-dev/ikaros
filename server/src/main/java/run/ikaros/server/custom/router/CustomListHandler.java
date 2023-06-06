@@ -8,8 +8,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
+import run.ikaros.api.custom.scheme.CustomScheme;
 import run.ikaros.api.exception.NotFoundException;
-import run.ikaros.server.custom.scheme.CustomScheme;
 
 public class CustomListHandler implements CustomRouterFunctionFactory.GetHandler {
     private final ReactiveCustomClient customClient;

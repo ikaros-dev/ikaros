@@ -1,4 +1,4 @@
-package run.ikaros.server.store.entity;
+package run.ikaros.api.store.entity;
 
 
 import java.time.LocalDateTime;

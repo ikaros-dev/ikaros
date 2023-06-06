@@ -16,9 +16,9 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.endpoint.CoreEndpoint;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.wrap.PagingWrap;
-import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
 @Component
@@ -42,7 +42,7 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .required(true)
                         .implementation(Long.class)
-                        )
+                    )
                     .parameter(parameterBuilder()
                         .name("size")
                         .description("Search page size")

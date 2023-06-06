@@ -12,8 +12,8 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import run.ikaros.api.custom.GroupVersionKind;
 import run.ikaros.api.custom.ReactiveCustomClient;
+import run.ikaros.api.custom.scheme.CustomScheme;
 import run.ikaros.api.wrap.PagingWrap;
-import run.ikaros.server.custom.scheme.CustomScheme;
 
 public class CustomRouterFunctionFactory {
 

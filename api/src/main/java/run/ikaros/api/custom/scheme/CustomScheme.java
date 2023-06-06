@@ -1,4 +1,4 @@
-package run.ikaros.server.custom.scheme;
+package run.ikaros.api.custom.scheme;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.core.converter.ModelConverters;
