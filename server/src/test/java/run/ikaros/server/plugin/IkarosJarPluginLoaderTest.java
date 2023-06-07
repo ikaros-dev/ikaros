@@ -14,7 +14,7 @@ class IkarosJarPluginLoaderTest {
     @Test
     void loadPlugin() throws NoSuchFieldException, IllegalAccessException {
         IkarosJarPluginLoader ikarosJarPluginLoader
-            = new IkarosJarPluginLoader(new IkarosPluginManager(runtimeMode));
+            = new IkarosJarPluginLoader(new IkarosPluginManager());
         PluginClassLoader pluginClassLoader = (PluginClassLoader) ikarosJarPluginLoader
             .loadPlugin(new File("").toPath(),
                 Mockito.mock(PluginDescriptor.class));

@@ -21,7 +21,7 @@ class IkarosExtensionFactoryTest {
     @Test
     void createNotUseSpring() {
         IkarosExtensionFactory ikarosExtensionFactory
-            = new IkarosExtensionFactory(new IkarosPluginManager(runtimeMode), false);
+            = new IkarosExtensionFactory(new IkarosPluginManager(), false);
         Assertions.assertThat(ikarosExtensionFactory.create(CanNewInstance.class))
             .isInstanceOf(CanNewInstance.class);
     }
@@ -29,7 +29,7 @@ class IkarosExtensionFactoryTest {
     @Test
     void createNotUseSpringAndHasReflectException() {
         IkarosExtensionFactory ikarosExtensionFactory
-            = new IkarosExtensionFactory(new IkarosPluginManager(runtimeMode), false);
+            = new IkarosExtensionFactory(new IkarosPluginManager(), false);
         Assertions.assertThatExceptionOfType(PluginException.class)
             .isThrownBy(() -> ikarosExtensionFactory.create(NotNewInstance.class))
             .withMessageContaining("new extension cls instance fail");
@@ -51,7 +51,7 @@ class IkarosExtensionFactoryTest {
 
     @Test
     void createUseSpringWhenManagerNotFoundPluginAndNotNewInstance() {
-        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager(runtimeMode));
+        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager());
         IkarosExtensionFactory extensionFactory = new IkarosExtensionFactory(pluginManager);
         PluginWrapper pluginWrapper = Mockito.mock(PluginWrapper.class);
         Mockito.when(pluginWrapper.getPlugin())
@@ -63,7 +63,7 @@ class IkarosExtensionFactoryTest {
 
     @Test
     void createUseSpringWhenManagerNotFoundPluginAndCanNewInstance() {
-        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager(runtimeMode));
+        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager());
         IkarosExtensionFactory extensionFactory = new IkarosExtensionFactory(pluginManager);
         PluginWrapper pluginWrapper = Mockito.mock(PluginWrapper.class);
         Mockito.when(pluginWrapper.getPlugin())
@@ -74,7 +74,7 @@ class IkarosExtensionFactoryTest {
 
     @Test
     void createUseSpringWhenPluginIsExtendsBasePluginAndPluginApplicationContextNoExists() {
-        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager(runtimeMode));
+        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager());
         IkarosExtensionFactory extensionFactory = new IkarosExtensionFactory(pluginManager);
         PluginWrapper pluginWrapper = Mockito.mock(PluginWrapper.class);
         TestBasePlugin testBasePlugin = Mockito.spy(new TestBasePlugin(pluginWrapper));
@@ -89,7 +89,7 @@ class IkarosExtensionFactoryTest {
 
     @Test
     void createUseSpringWhenPluginIsExtendsBasePluginAndPluginApplicationContextExists() {
-        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager(runtimeMode));
+        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager());
         IkarosExtensionFactory extensionFactory = new IkarosExtensionFactory(pluginManager);
         PluginWrapper pluginWrapper = Mockito.mock(PluginWrapper.class);
         TestBasePlugin testBasePlugin = Mockito.spy(new TestBasePlugin(pluginWrapper));
@@ -117,7 +117,7 @@ class IkarosExtensionFactoryTest {
     @Test
     void createUseSpringWhenPluginIsExtendsPluginAndPluginApplicationContextNoExists()
         throws NoSuchFieldException, IllegalAccessException {
-        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager(runtimeMode));
+        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager());
         IkarosExtensionFactory extensionFactory = new IkarosExtensionFactory(pluginManager);
         PluginWrapper pluginWrapper = Mockito.mock(PluginWrapper.class);
         TestPlugin testPlugin = Mockito.spy(new TestPlugin(pluginWrapper));
@@ -140,7 +140,7 @@ class IkarosExtensionFactoryTest {
     @Test
     void createUseSpringWhenPluginIsExtendsPluginAndPluginApplicationContextExists()
         throws NoSuchFieldException, IllegalAccessException {
-        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager(runtimeMode));
+        IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager());
         IkarosExtensionFactory extensionFactory = new IkarosExtensionFactory(pluginManager);
         PluginWrapper pluginWrapper = Mockito.mock(PluginWrapper.class);
         TestPlugin testPlugin = Mockito.spy(new TestPlugin(pluginWrapper));

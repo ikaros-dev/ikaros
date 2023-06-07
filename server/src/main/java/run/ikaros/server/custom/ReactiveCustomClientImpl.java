@@ -186,8 +186,12 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
                 .map(customDto -> CustomConverter.convertFrom(type, customDto))
                 .filter(Objects.isNull(predicate) ? Predicates.isTrue() : predicate)
                 .collectList()
-                .map(customList ->
-                    new PagingWrap<C>(finalPage, finalSize, customList.size(), customList)));
+                .flatMap(customList ->
+                    repository.countCustomEntitiesByGroupAndVersionAndKind(
+                        type.getAnnotation(Custom.class).group(),
+                        type.getAnnotation(Custom.class).version(),
+                        type.getAnnotation(Custom.class).kind())
+                        .map(count -> new PagingWrap<C>(finalPage, finalSize, count, customList))));
     }
 
     @Override
