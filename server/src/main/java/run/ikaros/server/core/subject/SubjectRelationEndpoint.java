@@ -19,8 +19,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.endpoint.CoreEndpoint;
 import run.ikaros.api.store.enums.SubjectRelationType;
+import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.utils.JsonUtils;
 
 @Slf4j

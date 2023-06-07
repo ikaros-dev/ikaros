@@ -96,3 +96,8 @@ core:
     title: 文件
   subject:
     title: 条目
+  plugin:
+    loader:
+      message:
+        entry_load_failed: "{name}：加载插件入口文件失败"
+        style_load_failed: "{name}：加载插件样式文件失败"

@@ -3,11 +3,12 @@ ikaros:
     runtime-mode: development
     fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-starter
     enabled-plugins:
-      - plugin-starter
+      - PluginStarter
   security:
     initializer:
       master-username: tomoki
       master-password: tomoki
+  work-dir: ${user.home}/ikaros-dev
 
 spring:
   thymeleaf:

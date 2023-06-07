@@ -37,14 +37,4 @@ export const useUserStore = defineStore('user', {
 			}
 		},
 	},
-	// In order to config pinia-plugin-persist, please see https://github.com/Seb-L/pinia-plugin-persist
-	// persist: {
-	// 	enabled: true,
-	// 	strategies: [
-	// 		{
-	// 			key: 'ikaros-store-user',
-	// 			storage: localStorage,
-	// 		},
-	// 	],
-	// },
 });

@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.endpoint.CoreEndpoint;
+import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
 @Component

@@ -4,7 +4,7 @@ package run.ikaros.server.core.subject;
 // import org.springframework.stereotype.Component;
 // import org.springframework.web.reactive.function.server.RouterFunction;
 // import org.springframework.web.reactive.function.server.ServerResponse;
-// import run.ikaros.api.endpoint.CoreEndpoint;
+// import run.ikaros.server.endpoint.CoreEndpoint;
 // import run.ikaros.api.constant.OpenApiConst;
 //
 // @Slf4j

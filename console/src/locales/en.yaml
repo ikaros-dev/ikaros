@@ -98,3 +98,8 @@ core:
     title: Files
   subject:
     title: Subjects
+  plugin:
+    loader:
+      message:
+        entry_load_failed: "{name}: Failed to load plugin entry file"
+        style_load_failed: "{name}: Failed to load plugin stylesheet file"

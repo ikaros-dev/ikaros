@@ -1,6 +1,7 @@
 package run.ikaros.api.plugin.custom;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
@@ -59,6 +60,15 @@ public class Plugin {
     private String license;
     private PluginState state;
     private Map<String, String> dependencies = new HashMap<>(4);
+    private Path loadLocation;
+    /**
+     * 插件入口，一般是编译后的JS文件.
+     */
+    private String entry;
+    /**
+     * 插件样式，一般是编译后的一个CSS文件.
+     */
+    private String stylesheet;
 
     @Data
     public static class Author {

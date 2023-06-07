@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.plugin.custom.Plugin;
+import run.ikaros.server.plugin.resource.BundleResourceUtils;
 
 @Slf4j
 @Component
@@ -56,10 +57,24 @@ public class PluginPropertiesEnablesInit {
         author.setName(pluginDescriptor.getProvider());
         plugin.setAuthor(author);
         plugin.setLicense(pluginDescriptor.getLicense());
+        plugin.setLoadLocation(pluginWrapper.getPluginPath());
+        setPluginStaticResourceIfExists(pluginId, plugin);
         reactiveCustomClient.findOne(Plugin.class, pluginId)
             .onErrorResume(NotFoundException.class, e -> reactiveCustomClient.create(plugin))
             .flatMap(reactiveCustomClient::update)
             .block();
     }
+
+
+    private void setPluginStaticResourceIfExists(String pluginId, Plugin plugin) {
+        // Console bundle entry js.
+        String jsBundlePath = BundleResourceUtils.getJsBundlePath(ikarosPluginManager, pluginId);
+        plugin.setEntry(jsBundlePath);
+        // Console bundle style css.
+        String cssBundlePath =
+            BundleResourceUtils.getCssBundlePath(ikarosPluginManager, plugin.getName());
+        plugin.setStylesheet(cssBundlePath);
+    }
+
 
 }

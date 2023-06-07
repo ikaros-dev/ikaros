@@ -27,7 +27,7 @@ const menus = ref<MenuGroupType[]>([] as MenuGroupType[]);
 const minimenus = ref<MenuItemType[]>([] as MenuItemType[]);
 
 const generateMenus = () => {
-	// console.log('router.getRoutes(): ', router.getRoutes());
+	console.log('router.getRoutes(): ', router.getRoutes());
 	// sort by menu.priority and meta.core
 	const currentRoutes = sortBy(
 		router.getRoutes().filter((route) => {
@@ -119,6 +119,10 @@ const generateMenus = () => {
 		.filter((item) => item.mobile);
 };
 
+const switchActivePath = (index) => {
+	layoutStore.currentActivePath = index;
+};
+
 onMounted(generateMenus);
 
 // console.log('menus', menus);
@@ -129,46 +133,11 @@ onMounted(generateMenus);
 	<el-menu
 		router
 		unique-opened
-		:default-active="layoutStore.currentActiveId"
+		:default-active="layoutStore.currentActivePath"
 		:collapse="!layoutStore.asideIsExtend"
 		style="width: 100%; height: 100%; position: relative"
+		@select="switchActivePath"
 	>
-		<!-- <el-menu-item
-			index="0"
-			route="/dashboard"
-			@click="saveCurrentActiveId('0')"
-		>
-			<el-icon>
-				<Odometer />
-			</el-icon>
-			<template #title>
-				<span>仪表盘</span>
-			</template>
-		</el-menu-item> -->
-
-		<!-- <el-sub-menu v-for="(item, index) in menuOld" :key="index" :index="item.id">
-			<template #title>
-				<el-icon>
-					<component :is="item.elIcon"></component>
-				</el-icon>
-				<span>{{ item.name }}</span>
-			</template>
-			<el-menu-item
-				v-for="item2 in item.children"
-				:key="item2.id"
-				:index="item2.id.toString()"
-				:route="item2.path"
-				@click="saveCurrentActiveId(item2.id)"
-			>
-				<el-icon>
-					<component :is="item2.elIcon"></component>
-				</el-icon>
-				<template #title>
-					<span>{{ item2.name }}</span>
-				</template>
-			</el-menu-item>
-		</el-sub-menu> -->
-
 		<div v-for="group in menus" :key="group.id">
 			<div v-if="!group.id || !group.name">
 				<el-menu-item
@@ -182,7 +151,7 @@ onMounted(generateMenus);
 						<component :is="item.icon"></component>
 					</el-icon>
 					<template #title>
-						<span>{{ t(item.name) }}</span>
+						<span>{{ !!item.name ? t(item.name) : item.name }}</span>
 					</template>
 				</el-menu-item>
 			</div>
@@ -202,7 +171,7 @@ onMounted(generateMenus);
 							<component :is="item.icon"></component>
 						</el-icon>
 						<template #title>
-							<span>{{ t(item.name) }}</span>
+							<span>{{ !!item.name ? t(item.name) : item.name }}</span>
 						</template>
 					</el-menu-item>
 				</el-menu-item-group>
