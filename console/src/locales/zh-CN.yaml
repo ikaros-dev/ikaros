@@ -71,7 +71,9 @@ core:
         tool: 工具
       items:
         dashboard: 仪表盘
-        attachments: 附件
+        profile: 我的
+        files: 文件
+        subjects: 条目
         plugins: 插件
         users: 用户
         settings: 设置
@@ -88,3 +90,14 @@ core:
         title: 访问首页
   dashboard:
     title: 仪表板
+  profile:
+    title: 个人中心
+  file:
+    title: 文件
+  subject:
+    title: 条目
+  plugin:
+    loader:
+      message:
+        entry_load_failed: "{name}：加载插件入口文件失败"
+        style_load_failed: "{name}：加载插件样式文件失败"

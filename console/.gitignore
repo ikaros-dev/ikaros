@@ -36,3 +36,5 @@ coverage
 # ts build info, such as version
 tsconfig.tsbuildinfo
 
+# others
+vite.config.ts.timestamp-*.mjs

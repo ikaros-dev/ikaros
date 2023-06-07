@@ -8,6 +8,7 @@ export function setupAuthCheckGuard(router: Router) {
 		const userStore = useUserStore();
 
 		if (userStore.isAnonymous) {
+			// console.log('Anonymous redirect to: ', to)
 			if (whiteList.includes(to.name as string)) {
 				next();
 				return;
@@ -21,7 +22,7 @@ export function setupAuthCheckGuard(router: Router) {
 			});
 			return;
 		} else {
-			// console.log('redirect: ', to)
+			// console.log('Not anonymous redirect to: ', to)
 			if (to.name === 'Login') {
 				if (to.query.redirect_uri) {
 					next({

@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.server.custom.scheme.CustomScheme;
+import run.ikaros.api.custom.scheme.CustomScheme;
 import run.ikaros.server.custom.scheme.CustomSchemeWatcherManager;
 import run.ikaros.server.custom.scheme.CustomSchemeWatcherManager.SchemeRegistered;
 import run.ikaros.server.custom.scheme.CustomSchemeWatcherManager.SchemeUnregistered;

@@ -14,9 +14,11 @@ import run.ikaros.api.plugin.custom.Plugin;
 public class YamlPluginDescriptorFinder implements PluginDescriptorFinder {
 
     private final YamlPluginFinder yamlPluginFinder;
+    private final IkarosPluginManager pluginManager;
 
-    public YamlPluginDescriptorFinder() {
-        this.yamlPluginFinder = new YamlPluginFinder();
+    public YamlPluginDescriptorFinder(IkarosPluginManager pluginManager) {
+        this.yamlPluginFinder = new YamlPluginFinder(pluginManager);
+        this.pluginManager = pluginManager;
     }
 
     @Override

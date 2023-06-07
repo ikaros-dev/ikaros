@@ -7,6 +7,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import run.ikaros.api.custom.scheme.CustomScheme;
+import run.ikaros.api.custom.scheme.CustomSchemeManager;
 
 @Slf4j
 public class DefaultCustomSchemeManager implements CustomSchemeManager {

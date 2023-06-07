@@ -7,8 +7,11 @@ import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
 import { randomUUID } from '@/utils/id';
 import qs from 'qs';
+// import Dashboard from '@/modules/dashboard/Dashboard.vue';
 
 const { t } = useI18n();
+// const route = useRoute();
+// const router = useRouter();
 
 const handleGenerateToken = async () => {
 	const token = randomUUID();
@@ -55,6 +58,11 @@ const handleLogin = async () => {
 		await userStore.fetchCurrentUser();
 
 		// Reload page
+		// if (route.query.redirect_uri) {
+		// 	window.location.reload();
+		// } else {
+		// 	router.push(Dashboard);
+		// }
 		window.location.reload();
 	} catch (e: unknown) {
 		console.error('Failed to login', e);

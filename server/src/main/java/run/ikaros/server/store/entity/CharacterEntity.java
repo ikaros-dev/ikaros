@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Table;
+import run.ikaros.api.store.entity.BaseEntity;
 
 @Data
 @Builder

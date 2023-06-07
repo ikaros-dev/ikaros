@@ -1,9 +1,8 @@
 import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import piniaPersist from 'pinia-plugin-persist';
 import App from './App.vue';
 import router from './router';
-import { setupI18n } from './locales';
+import { setupI18n, i18n } from './locales';
+import { setupPinia } from './stores';
 import './styles/index.scss';
 
 import type { PluginModule, RouteRecordAppend } from '@runikaros/shared';
@@ -12,20 +11,18 @@ import type { RouteRecordRaw } from 'vue-router';
 import { coreModules } from './modules';
 import { usePluginModuleStore } from '@/stores/plugin';
 import { apiClient } from '@/utils/api-client';
-import { useUserStore } from './stores/user';
-
-const pinia = createPinia();
-pinia.use(piniaPersist);
+import { useUserStore } from '@/stores/user';
+import { ElMessage } from 'element-plus';
 
 const app = createApp(App);
-app.use(pinia);
 setupI18n(app);
+setupPinia(app);
 
-function registerModule(pluginModule: PluginModule, core: boolean) {
+function registerModule(module: PluginModule, core: boolean) {
 	// Register module all components.
-	if (pluginModule.components) {
-		Object.keys(pluginModule.components).forEach((key) => {
-			const component = pluginModule.components?.[key];
+	if (module.components) {
+		Object.keys(module.components).forEach((key) => {
+			const component = module.components?.[key];
 			if (component) {
 				app.component(key, component);
 			}
@@ -33,14 +30,14 @@ function registerModule(pluginModule: PluginModule, core: boolean) {
 	}
 
 	// Register module all routes
-	if (pluginModule.routes) {
-		if (!Array.isArray(pluginModule.routes)) {
+	if (module.routes) {
+		if (!Array.isArray(module.routes)) {
 			return;
 		}
 
-		resetRouteMeta(pluginModule.routes);
+		resetRouteMeta(module.routes);
 
-		for (const route of pluginModule.routes) {
+		for (const route of module.routes) {
 			if ('parentName' in route) {
 				router.addRoute(route.parentName, route.route);
 			} else {
@@ -82,10 +79,6 @@ function loadCoreModules() {
 	});
 }
 
-// eslint-disable-next-line no-unused-vars
-const pluginModuleStore = usePluginModuleStore();
-
-// eslint-disable-next-line no-unused-vars
 function loadStyle(href: string) {
 	return new Promise(function (resolve, reject) {
 		let shouldAppend = false;
@@ -114,14 +107,79 @@ function loadStyle(href: string) {
 	});
 }
 
-// const pluginErrorMessages: Array<string> = [];
-// eslint-disable-next-line no-unused-vars
+const pluginErrorMessages: Array<string> = [];
+const pluginModuleStore = usePluginModuleStore();
 async function loadPluginModules() {
 	const { data } = await apiClient.plugin.getpluginsbyPaging({
 		page: '1',
-		size: '10',
+		size: '99999',
 	});
-	console.log('all-plugins', data);
+	console.log('Load all-plugins: ', data);
+
+	// Get all started plugins
+	const plugins = data.items.filter((plugin) => {
+		// @ts-ignore
+		const { entry, stylesheet } = plugin || {};
+		// @ts-ignore
+		return plugin.state === 'STARTED' && (!!entry || !!stylesheet);
+	});
+
+	for (const plugin of plugins) {
+		// @ts-ignore
+		const { entry, stylesheet } = plugin || {
+			entry: '',
+			stylesheet: '',
+		};
+
+		if (entry) {
+			try {
+				const { load } = useScriptTag(
+					// @ts-ignore
+					`${import.meta.env.VITE_API_URL}${plugin?.entry}`
+				);
+
+				await load();
+
+				// @ts-ignore
+				const pluginModule = window[plugin.name];
+
+				if (pluginModule) {
+					registerModule(pluginModule, false);
+					pluginModuleStore.registerPluginModule({
+						...pluginModule,
+					});
+				}
+			} catch (e) {
+				const message = i18n.global.t(
+					'core.plugin.loader.message.entry_load_failed',
+					// @ts-ignore
+					{ name: plugin.name }
+				);
+				console.error(message, e);
+				pluginErrorMessages.push(message);
+			}
+		}
+
+		if (stylesheet) {
+			try {
+				await loadStyle(`${import.meta.env.VITE_API_URL}${stylesheet}`);
+			} catch (e) {
+				const message = i18n.global.t(
+					'core.plugin.loader.message.style_load_failed',
+					// @ts-ignore
+					{ name: plugin.name }
+				);
+				console.error(message, e);
+				pluginErrorMessages.push(message);
+			}
+		}
+	}
+
+	if (pluginErrorMessages.length > 0) {
+		pluginErrorMessages.forEach((message) => {
+			ElMessage.error(message);
+		});
+	}
 }
 
 // Start init app.
@@ -139,7 +197,11 @@ async function initApp() {
 			return;
 		}
 
-		loadPluginModules();
+		try {
+			await loadPluginModules();
+		} catch (e) {
+			console.error('Failed to load plugins', e);
+		}
 	} catch (e) {
 		console.log('Init app fail: ', e);
 	} finally {

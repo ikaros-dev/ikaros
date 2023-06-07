@@ -1,6 +1,5 @@
 package run.ikaros.server.plugin;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,6 +54,6 @@ public class PluginApplicationContextRegistry {
     }
 
     public List<PluginApplicationContext> getPluginApplicationContexts() {
-        return new ArrayList<>(registry.values());
+        return List.copyOf(registry.values());
     }
 }

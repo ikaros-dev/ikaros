@@ -18,7 +18,7 @@ const router = useRouter();
 const toUserProfile = () => {
 	const userProfileRoutePath = '/profile';
 	router.push(userProfileRoutePath);
-	layoutStore.updateCurrentActionIdByRoutePath(userProfileRoutePath);
+	layoutStore.updatecurrentActivePathByRoutePath(userProfileRoutePath);
 };
 
 const lougout = async () => {

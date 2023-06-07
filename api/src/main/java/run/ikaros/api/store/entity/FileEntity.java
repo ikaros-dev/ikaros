@@ -1,4 +1,4 @@
-package run.ikaros.server.store.entity;
+package run.ikaros.api.store.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

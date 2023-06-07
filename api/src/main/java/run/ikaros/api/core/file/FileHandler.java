@@ -1,4 +1,4 @@
-package run.ikaros.server.core.file;
+package run.ikaros.api.core.file;
 
 import java.util.Map;
 import org.pf4j.ExtensionPoint;

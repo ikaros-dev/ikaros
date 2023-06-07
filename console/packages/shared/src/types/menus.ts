@@ -10,7 +10,7 @@ export type CoreMenuGroupId =
 export interface MenuGroupType {
 	id: CoreMenuGroupId | string;
 	name?: string;
-	priority: number;
+	priority?: number;
 	items?: MenuItemType[];
 }
 

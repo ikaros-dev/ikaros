@@ -42,7 +42,7 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .required(true)
                         .implementation(Long.class)
-                        )
+                    )
                     .parameter(parameterBuilder()
                         .name("size")
                         .description("Search page size")

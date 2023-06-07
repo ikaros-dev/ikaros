@@ -95,7 +95,7 @@ public class IkarosPluginManager extends DefaultPluginManager
 
     @Override
     protected PluginDescriptorFinder createPluginDescriptorFinder() {
-        return new YamlPluginDescriptorFinder();
+        return new YamlPluginDescriptorFinder(this);
     }
 
     @Override

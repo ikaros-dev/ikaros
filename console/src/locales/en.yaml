@@ -73,7 +73,9 @@ core:
         tool: Tool
       items:
         dashboard: Dashboard
-        attachments: Attachments
+        profile: Profile
+        files: Files
+        subjects: Subjects
         plugins: Plugins
         users: Users
         settings: Settings
@@ -90,3 +92,14 @@ core:
         title: Visit homepage
   dashboard:
     title: Dashboard
+  profile:
+    title: Profile
+  file:
+    title: Files
+  subject:
+    title: Subjects
+  plugin:
+    loader:
+      message:
+        entry_load_failed: "{name}: Failed to load plugin entry file"
+        style_load_failed: "{name}: Failed to load plugin stylesheet file"

@@ -15,25 +15,26 @@ withDefaults(
 );
 
 const router = useRouter();
+const toDashboard = () => {
+	router.push('/');
+};
 </script>
 
 <template>
-	<div style="align-content: center">
+	<div>
+		<h1>
+			{{ code }}
+		</h1>
+
+		<p>
+			{{ title }}
+		</p>
+
+		<p>{{ message }}</p>
+
 		<div>
-			<h1>
-				{{ code }}
-			</h1>
-
-			<p>
-				{{ title }}
-			</p>
-
-			<p>{{ message }}</p>
-
-			<div>
-				<ElButton @click="router.back()"> Back </ElButton>
-				<ElButton :route="{ name: 'Dashboard' }"> Dashboard </ElButton>
-			</div>
+			<ElButton @click="router.back()"> Back </ElButton>
+			<ElButton @click="toDashboard"> Dashboard </ElButton>
 		</div>
 	</div>
 </template>

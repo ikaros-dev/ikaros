@@ -22,13 +22,15 @@ public class YamlPluginFinder {
     static final DevelopmentPluginClasspath PLUGIN_CLASSPATH = new DevelopmentPluginClasspath();
     public static final String DEFAULT_PROPERTIES_FILE_NAME = "plugin.yaml";
     private final String propertiesFileName;
+    private final IkarosPluginManager pluginManager;
 
-    public YamlPluginFinder() {
-        this(DEFAULT_PROPERTIES_FILE_NAME);
+    public YamlPluginFinder(IkarosPluginManager pluginManager) {
+        this(DEFAULT_PROPERTIES_FILE_NAME, pluginManager);
     }
 
-    public YamlPluginFinder(String propertiesFileName) {
+    public YamlPluginFinder(String propertiesFileName, IkarosPluginManager pluginManager) {
         this.propertiesFileName = propertiesFileName;
+        this.pluginManager = pluginManager;
     }
 
     /**
@@ -59,6 +61,7 @@ public class YamlPluginFinder {
         Resource propertyResource = new FileSystemResource(propertiesPath);
         YamlPluginLoader yamlPluginLoader = new YamlPluginLoader(propertyResource);
         return yamlPluginLoader.load();
+
     }
 
     protected Path getManifestPath(Path pluginPath, String propertiesFileName) {
