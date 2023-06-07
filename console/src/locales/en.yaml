@@ -1,3 +1,4 @@
+Root: Root
 core:
   common:
     exception:

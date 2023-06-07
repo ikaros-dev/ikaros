@@ -1,11 +1,23 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import {
+	createRouter,
+	createWebHistory,
+	type RouteLocationNormalized,
+	type RouteLocationNormalizedLoaded,
+} from 'vue-router';
 import routesConfig from './routes.config';
 import { setupAuthCheckGuard } from './guards/auth-check';
 
 const router = createRouter({
-	history: createWebHashHistory(import.meta.env.BASE_URL),
+	history: createWebHistory(import.meta.env.BASE_URL),
 	routes: routesConfig,
-	scrollBehavior: () => ({ left: 0, top: 0 }),
+	scrollBehavior: (
+		to: RouteLocationNormalized,
+		from: RouteLocationNormalizedLoaded
+	) => {
+		if (to.name !== from.name) {
+			return { left: 0, top: 0 };
+		}
+	},
 });
 
 setupAuthCheckGuard(router);
