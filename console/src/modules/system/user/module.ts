@@ -31,7 +31,7 @@ export default definePlugin({
 						name: 'core.sidebar.menu.items.profile',
 						group: 'system',
 						icon: markRaw(UserFilled),
-						priority: 0,
+						priority: 1,
 					},
 				},
 			},

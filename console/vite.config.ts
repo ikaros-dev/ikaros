@@ -10,6 +10,7 @@ import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import Icons from 'unplugin-icons/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
+import IconsResolver from 'unplugin-icons/resolver';
 
 export default ({ mode }: { mode: string }) => {
 	const env = loadEnv(mode, process.cwd(), '');
@@ -21,7 +22,9 @@ export default ({ mode }: { mode: string }) => {
 			VueJsx(),
 			eslintPlugin(),
 			Compression(),
-			Icons(),
+			Icons({
+				autoInstall: true,
+			}),
 			AutoImport({
 				dts: true,
 				eslintrc: {
@@ -31,7 +34,7 @@ export default ({ mode }: { mode: string }) => {
 				resolvers: [ElementPlusResolver()],
 			}),
 			Components({
-				resolvers: [ElementPlusResolver()],
+				resolvers: [ElementPlusResolver(), IconsResolver()],
 			}),
 			VueI18nPlugin({
 				include: [path.resolve(__dirname, './src/locales/*.yaml')],
