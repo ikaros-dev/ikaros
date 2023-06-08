@@ -71,6 +71,9 @@ importers:
       '@commitlint/config-conventional':
         specifier: ^17.6.3
         version: 17.6.3
+      '@iconify-json/ep':
+        specifier: ^1.1.10
+        version: 1.1.10
       '@iconify-json/icon-park-outline':
         specifier: ^1.1.11
         version: 1.1.11
@@ -1230,6 +1233,12 @@ packages:
 
   /@humanwhocodes/object-schema@1.2.1:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
+    dev: true
+
+  /@iconify-json/ep@1.1.10:
+    resolution: {integrity: sha512-1N3H28hbulsw3UNZjAZ1c7BhK9mLiw8VrngQc58xNQ7dnzaUgtKN81aqkrZ9ffDXcfJGL3Rk9Yc3/QrSSI24sg==}
+    dependencies:
+      '@iconify/types': 2.0.0
     dev: true
 
   /@iconify-json/icon-park-outline@1.1.11:

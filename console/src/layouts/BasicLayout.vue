@@ -23,7 +23,9 @@ const asideWidth = computed(() => {
 		>
 			<el-header><Header /></el-header>
 			<el-main class="ik-blc-main">
-				<RouterView />
+				<el-card shadow="never">
+					<RouterView />
+				</el-card>
 			</el-main>
 		</el-container>
 	</el-container>
@@ -32,7 +34,8 @@ const asideWidth = computed(() => {
 <style lang="scss" scoped>
 @import '@/styles/variables.module.scss';
 .ik-blc-main {
-	background-color: rgb(245, 245, 245);
+	// background-color: rgb(245, 245, 245);
+	background-color: rgba(212, 226, 248, 0.244);
 }
 .el-header {
 	padding: 0;

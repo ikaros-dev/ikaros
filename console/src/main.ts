@@ -114,7 +114,7 @@ async function loadPluginModules() {
 		page: '1',
 		size: '99999',
 	});
-	console.log('Load all-plugins: ', data);
+	// console.log('Load all-plugins: ', data);
 
 	// Get all started plugins
 	const plugins = data.items.filter((plugin) => {
