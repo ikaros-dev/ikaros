@@ -1,24 +1,28 @@
 import BasicLayout from '@/layouts/BasicLayout.vue';
 import type { RouteRecordRaw } from 'vue-router';
 import type { MenuGroupType, RouteRecordAppend } from '@runikaros/shared';
-import NotFound from '@/views/exception/NotFound.vue';
-import Forbidden from '@/views/exception/Forbidden.vue';
-import Redirect from '@/views/system/Redirect.vue';
 
 export const routes: Array<RouteRecordRaw | RouteRecordAppend> = [
 	{
 		path: '/:pathMatch(.*)*',
 		component: BasicLayout,
-		children: [{ path: '', name: 'NotFound', component: NotFound }],
+		children: [
+			{
+				path: '',
+				name: 'NotFound',
+				component: () => import('@/views/exception/NotFound.vue'),
+			},
+		],
 	},
 	{
 		path: '/forbidden',
 		component: BasicLayout,
+		redirect: '/forbidden',
 		children: [
 			{
 				path: '',
 				name: 'Forbidden',
-				component: Forbidden,
+				component: () => import('@/views/exception/Forbidden.vue'),
 			},
 		],
 	},
@@ -30,7 +34,7 @@ export const routes: Array<RouteRecordRaw | RouteRecordAppend> = [
 	{
 		path: '/redirect',
 		name: 'Redirect',
-		component: Redirect,
+		component: () => import('@/views/system/Redirect.vue'),
 	},
 ];
 
