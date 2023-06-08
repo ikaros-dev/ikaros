@@ -1,8 +1,9 @@
 import BasicLayout from '@/layouts/BasicLayout.vue';
 import type { RouteRecordRaw } from 'vue-router';
-import type { MenuGroupType, RouteRecordAppend } from '@runikaros/shared';
+import type { MenuGroupType } from '@runikaros/shared';
+import Redirect from '@/views/system/Redirect.vue';
 
-export const routes: Array<RouteRecordRaw | RouteRecordAppend> = [
+export const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/:pathMatch(.*)*',
 		component: BasicLayout,
@@ -34,7 +35,7 @@ export const routes: Array<RouteRecordRaw | RouteRecordAppend> = [
 	{
 		path: '/redirect',
 		name: 'Redirect',
-		component: () => import('@/views/system/Redirect.vue'),
+		component: () => Redirect,
 	},
 ];
 
