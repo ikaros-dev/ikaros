@@ -9,6 +9,7 @@ export default definePlugin({
 	routes: [
 		{
 			path: '/',
+			name: 'Root',
 			component: BasicLayout,
 			redirect: '/dashboard',
 			children: [
@@ -18,7 +19,6 @@ export default definePlugin({
 					component: Dashboard,
 					meta: {
 						title: 'core.dashboard.title',
-						searchable: true,
 						menu: {
 							name: 'core.sidebar.menu.items.dashboard',
 							group: 'dashboard',

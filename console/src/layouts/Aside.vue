@@ -3,12 +3,7 @@ import { useLayoutStore } from '@/stores/layout';
 // import { menus as menuOld } from './menus.config';
 // import { Odometer } from '@element-plus/icons-vue';
 import type { MenuGroupType, MenuItemType } from '@runikaros/shared';
-import {
-	// RouterView,
-	// useRoute,
-	useRouter,
-	type RouteRecordRaw,
-} from 'vue-router';
+import { useRouter, type RouteRecordRaw } from 'vue-router';
 import sortBy from 'lodash.sortby';
 import { coreMenuGroups } from '@/router/routes.config';
 import { i18n } from '@/locales';
@@ -18,16 +13,12 @@ const layoutStore = useLayoutStore();
 // const route = useRoute();
 const router = useRouter();
 
-const saveCurrentActiveId = (id) => {
-	layoutStore.currentActiveId = id;
-};
-
 // Generate menus by routes
 const menus = ref<MenuGroupType[]>([] as MenuGroupType[]);
 const minimenus = ref<MenuItemType[]>([] as MenuItemType[]);
 
 const generateMenus = () => {
-	console.log('router.getRoutes(): ', router.getRoutes());
+	// console.log('router.getRoutes(): ', router.getRoutes());
 	// sort by menu.priority and meta.core
 	const currentRoutes = sortBy(
 		router.getRoutes().filter((route) => {
@@ -141,17 +132,18 @@ onMounted(generateMenus);
 		<div v-for="group in menus" :key="group.id">
 			<div v-if="!group.id || !group.name">
 				<el-menu-item
-					v-for="item in minimenus"
+					v-for="item in group.items"
 					:key="item.path"
 					:index="item.path"
 					:route="item.path"
-					@click="saveCurrentActiveId(item.path)"
 				>
 					<el-icon>
 						<component :is="item.icon"></component>
 					</el-icon>
 					<template #title>
-						<span>{{ !!item.name ? t(item.name) : item.name }}</span>
+						<span>
+							{{ i18n.global.te(item.name) ? t(item.name) : item.name }}
+						</span>
 					</template>
 				</el-menu-item>
 			</div>
@@ -165,35 +157,19 @@ onMounted(generateMenus);
 						:key="item.path"
 						:index="item.path"
 						:route="item.path"
-						@click="saveCurrentActiveId(item.path)"
 					>
 						<el-icon>
 							<component :is="item.icon"></component>
 						</el-icon>
 						<template #title>
-							<span>{{ !!item.name ? t(item.name) : item.name }}</span>
+							<span>
+								{{ i18n.global.te(item.name) ? t(item.name) : item.name }}
+							</span>
 						</template>
 					</el-menu-item>
 				</el-menu-item-group>
 			</div>
 		</div>
-
-		<!-- <el-menu-item-group title="Group One">
-			<el-menu-item index="1-1">
-				<el-icon><Odometer /></el-icon>
-				item one
-			</el-menu-item>
-			<el-menu-item index="1-2">
-				<el-icon><Odometer /></el-icon>
-				item two
-			</el-menu-item>
-		</el-menu-item-group>
-		<el-menu-item-group title="Group Two">
-			<el-menu-item index="1-3">
-				<el-icon><Odometer /></el-icon>
-				item three
-			</el-menu-item>
-		</el-menu-item-group> -->
 	</el-menu>
 </template>
 

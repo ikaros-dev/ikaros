@@ -10,13 +10,15 @@ const layoutStore = useLayoutStore();
 let breadcrumbList: Ref = ref([]);
 
 const initBreadcrumbList = () => {
-	// console.log('route.matched: ', route.matched);
+	console.log('route.matched: ', route.matched);
 	breadcrumbList.value = route.matched;
 };
 
 const handleRedirect = (path) => {
-	router.push(path);
-	layoutStore.updateCurrentActionIdByRoutePath(path);
+	if (path) {
+		router.push(path);
+		layoutStore.updatecurrentActivePathByRoutePath(path);
+	}
 };
 
 watch(
@@ -29,13 +31,24 @@ watch(
 </script>
 
 <template>
-	<el-breadcrumb separator=" ">
+	<el-breadcrumb separator="/">
 		<el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index">
-			<span v-if="index === breadcrumbList.length - 1" class="no-redirect">
-				{{ t(item.meta.title) }}
-			</span>
-			<span v-else class="redirect" @click="handleRedirect(item.path)">
-				{{ item?.meta?.title ? t(item.meta.title) : item.name }}
+			<span
+				v-if="item && ((item.meta && item.meta.title) || item.name)"
+				:class="
+					index === breadcrumbList.length - 1 ? 'no-redirect' : 'redirect'
+				"
+				@click="handleRedirect(item?.path)"
+			>
+				{{
+					item?.meta?.title
+						? i18n.global.te(item?.meta?.title)
+							? t(item?.meta?.title)
+							: item?.meta?.title
+						: i18n.global.te(item?.name)
+						? t(item?.name)
+						: item?.name
+				}}
 			</span>
 		</el-breadcrumb-item>
 	</el-breadcrumb>

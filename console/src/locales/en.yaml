@@ -1,3 +1,4 @@
+Root: Root
 core:
   common:
     exception:
@@ -9,6 +10,10 @@ core:
       not_found: 404 Not found
       server_internal_error_with_title: Server internal error with title
       unknown_error_with_title: Unknow error with title
+  forbidden:
+    title: Forbidden
+  notFound:
+    title: NotFound
   login:
     title: Login
     fields:
