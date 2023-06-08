@@ -9,7 +9,7 @@ export const routes: Array<RouteRecordRaw | RouteRecordAppend> = [
 		children: [
 			{
 				path: '',
-				name: 'NotFound',
+				name: 'core.notFound.title',
 				component: () => import('@/views/exception/NotFound.vue'),
 			},
 		],
@@ -21,7 +21,7 @@ export const routes: Array<RouteRecordRaw | RouteRecordAppend> = [
 		children: [
 			{
 				path: '',
-				name: 'Forbidden',
+				name: 'core.forbidden.title',
 				component: () => import('@/views/exception/Forbidden.vue'),
 			},
 		],

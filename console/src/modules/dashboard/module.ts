@@ -15,7 +15,7 @@ export default definePlugin({
 			children: [
 				{
 					path: 'dashboard',
-					name: 'core.dashboard.title',
+					name: 'Dashboard',
 					component: Dashboard,
 					meta: {
 						title: 'core.dashboard.title',

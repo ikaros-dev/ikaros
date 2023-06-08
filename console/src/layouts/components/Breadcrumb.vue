@@ -33,15 +33,22 @@ watch(
 <template>
 	<el-breadcrumb separator="/">
 		<el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index">
-			<span v-if="index === breadcrumbList.length - 1" class="no-redirect">
+			<span
+				v-if="item && ((item.meta && item.meta.title) || item.name)"
+				:class="
+					index === breadcrumbList.length - 1 ? 'no-redirect' : 'redirect'
+				"
+				@click="handleRedirect(item?.path)"
+			>
 				{{
-					i18n.global.te(item?.meta?.title)
-						? t(item?.meta?.title)
-						: item?.meta?.title
+					item?.meta?.title
+						? i18n.global.te(item?.meta?.title)
+							? t(item?.meta?.title)
+							: item?.meta?.title
+						: i18n.global.te(item?.name)
+						? t(item?.name)
+						: item?.name
 				}}
-			</span>
-			<span v-else class="redirect" @click="handleRedirect(item?.path)">
-				{{ i18n.global.te(item?.name) ? t(item?.name) : item?.name }}
 			</span>
 		</el-breadcrumb-item>
 	</el-breadcrumb>

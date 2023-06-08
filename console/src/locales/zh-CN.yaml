@@ -10,6 +10,10 @@ core:
       not_found: 404 没有找到
       server_internal_error_with_title: 服务端内部错误
       unknown_error_with_title: 未知的错误
+  forbidden:
+    title: 禁止访问
+  notFound:
+    title: 没有找到
   login:
     title: 登录
     fields:
