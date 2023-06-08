@@ -1,7 +1,6 @@
 import BasicLayout from '@/layouts/BasicLayout.vue';
 import type { RouteRecordRaw } from 'vue-router';
 import type { MenuGroupType } from '@runikaros/shared';
-import Redirect from '@/views/system/Redirect.vue';
 
 export const routes: Array<RouteRecordRaw> = [
 	{
@@ -35,7 +34,7 @@ export const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/redirect',
 		name: 'Redirect',
-		component: () => Redirect,
+		component: () => import('@/views/system/Redirect.vue'),
 	},
 ];
 
