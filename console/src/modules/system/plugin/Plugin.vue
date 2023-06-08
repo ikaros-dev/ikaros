@@ -120,7 +120,7 @@ onMounted(getPluginsFromServer);
 		</template>
 		<div>
 			<el-table :data="plugins" style="width: 100%">
-				<el-table-column prop="logo" label="图标" width="150">
+				<el-table-column prop="logo" label="图标" width="80">
 					<template #default="scope">
 						<el-avatar
 							shape="square"
@@ -129,8 +129,8 @@ onMounted(getPluginsFromServer);
 						/>
 					</template>
 				</el-table-column>
-				<el-table-column prop="name" label="名称" width="120" />
-				<el-table-column prop="author.name" label="作者" width="120" />
+				<el-table-column prop="name" label="名称" width="150" />
+				<el-table-column prop="author.name" label="作者" width="200" />
 				<el-table-column prop="description" label="描述" />
 				<el-table-column prop="state" label="状态" align="right" width="65">
 					<template #default="scope">
