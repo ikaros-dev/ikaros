@@ -75,6 +75,14 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			localVarHeaderParameter['Content-Type'] = 'application/json';
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -128,6 +136,14 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -177,6 +193,14 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -192,7 +216,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
 			};
 		},
 		/**
-		 * Get policy
+		 * Get policy By Name.
 		 * @param {string} name Name of FilePolicy
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -222,6 +246,71 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
 			};
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Get policy meta value by name and metaName.
+		 * @param {string} name Name of FilePolicy
+		 * @param {string} metaName MetaName of FilePolicy
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		getpolicyMeta: async (
+			name: string,
+			metaName: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('getpolicyMeta', 'name', name);
+			// verify required parameter 'metaName' is not null or undefined
+			assertParamExists('getpolicyMeta', 'metaName', metaName);
+			const localVarPath =
+				`/apis/file.ikaros.run/v1alpha1/policy/{name}/{metaName}`
+					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
+					.replace(`{${'metaName'}}`, encodeURIComponent(String(metaName)));
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -260,6 +349,14 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
 			};
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -308,6 +405,14 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			localVarHeaderParameter['Content-Type'] = 'application/json';
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -320,6 +425,74 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
 			};
 			localVarRequestOptions.data = serializeDataIfNeeded(
 				filePolicy,
+				localVarRequestOptions,
+				configuration
+			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Update policy metadata value.
+		 * @param {string} name Name of policy
+		 * @param {string} metaName MetaName of policy
+		 * @param {string} body Updated policy Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		updatepolicyMeta: async (
+			name: string,
+			metaName: string,
+			body: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('updatepolicyMeta', 'name', name);
+			// verify required parameter 'metaName' is not null or undefined
+			assertParamExists('updatepolicyMeta', 'metaName', metaName);
+			// verify required parameter 'body' is not null or undefined
+			assertParamExists('updatepolicyMeta', 'body', body);
+			const localVarPath =
+				`/apis/file.ikaros.run/v1alpha1/policy/{name}/{metaName}`
+					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
+					.replace(`{${'metaName'}}`, encodeURIComponent(String(metaName)));
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'PUT',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				body,
 				localVarRequestOptions,
 				configuration
 			);
@@ -416,7 +589,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
 			);
 		},
 		/**
-		 * Get policy
+		 * Get policy By Name.
 		 * @param {string} name Name of FilePolicy
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -429,6 +602,32 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
 		> {
 			const localVarAxiosArgs = await localVarAxiosParamCreator.getpolicy(
 				name,
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Get policy meta value by name and metaName.
+		 * @param {string} name Name of FilePolicy
+		 * @param {string} metaName MetaName of FilePolicy
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async getpolicyMeta(
+			name: string,
+			metaName: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.getpolicyMeta(
+				name,
+				metaName,
 				options
 			);
 			return createRequestFunction(
@@ -477,6 +676,36 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
 				filePolicy,
 				options
 			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Update policy metadata value.
+		 * @param {string} name Name of policy
+		 * @param {string} metaName MetaName of policy
+		 * @param {string} body Updated policy Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async updatepolicyMeta(
+			name: string,
+			metaName: string,
+			body: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.updatepolicyMeta(
+					name,
+					metaName,
+					body,
+					options
+				);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -545,7 +774,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
 				.then((request) => request(axios, basePath));
 		},
 		/**
-		 * Get policy
+		 * Get policy By Name.
 		 * @param {FileIkarosRunV1alpha1FilePolicyApiGetpolicyRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -556,6 +785,24 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
 		): AxiosPromise<FilePolicy> {
 			return localVarFp
 				.getpolicy(requestParameters.name, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Get policy meta value by name and metaName.
+		 * @param {FileIkarosRunV1alpha1FilePolicyApiGetpolicyMetaRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		getpolicyMeta(
+			requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetpolicyMetaRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.getpolicyMeta(
+					requestParameters.name,
+					requestParameters.metaName,
+					options
+				)
 				.then((request) => request(axios, basePath));
 		},
 		/**
@@ -582,6 +829,25 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
 				.updatepolicy(
 					requestParameters.name,
 					requestParameters.filePolicy,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Update policy metadata value.
+		 * @param {FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyMetaRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		updatepolicyMeta(
+			requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyMetaRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<FilePolicy> {
+			return localVarFp
+				.updatepolicyMeta(
+					requestParameters.name,
+					requestParameters.metaName,
+					requestParameters.body,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -653,6 +919,27 @@ export interface FileIkarosRunV1alpha1FilePolicyApiGetpolicyRequest {
 }
 
 /**
+ * Request parameters for getpolicyMeta operation in FileIkarosRunV1alpha1FilePolicyApi.
+ * @export
+ * @interface FileIkarosRunV1alpha1FilePolicyApiGetpolicyMetaRequest
+ */
+export interface FileIkarosRunV1alpha1FilePolicyApiGetpolicyMetaRequest {
+	/**
+	 * Name of FilePolicy
+	 * @type {string}
+	 * @memberof FileIkarosRunV1alpha1FilePolicyApiGetpolicyMeta
+	 */
+	readonly name: string;
+
+	/**
+	 * MetaName of FilePolicy
+	 * @type {string}
+	 * @memberof FileIkarosRunV1alpha1FilePolicyApiGetpolicyMeta
+	 */
+	readonly metaName: string;
+}
+
+/**
  * Request parameters for updatepolicy operation in FileIkarosRunV1alpha1FilePolicyApi.
  * @export
  * @interface FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyRequest
@@ -671,6 +958,34 @@ export interface FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyRequest {
 	 * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatepolicy
 	 */
 	readonly filePolicy?: FilePolicy;
+}
+
+/**
+ * Request parameters for updatepolicyMeta operation in FileIkarosRunV1alpha1FilePolicyApi.
+ * @export
+ * @interface FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyMetaRequest
+ */
+export interface FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyMetaRequest {
+	/**
+	 * Name of policy
+	 * @type {string}
+	 * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyMeta
+	 */
+	readonly name: string;
+
+	/**
+	 * MetaName of policy
+	 * @type {string}
+	 * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyMeta
+	 */
+	readonly metaName: string;
+
+	/**
+	 * Updated policy Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+	 * @type {string}
+	 * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyMeta
+	 */
+	readonly body: string;
 }
 
 /**
@@ -733,7 +1048,7 @@ export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
 	}
 
 	/**
-	 * Get policy
+	 * Get policy By Name.
 	 * @param {FileIkarosRunV1alpha1FilePolicyApiGetpolicyRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
@@ -745,6 +1060,26 @@ export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
 	) {
 		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
 			.getpolicy(requestParameters.name, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Get policy meta value by name and metaName.
+	 * @param {FileIkarosRunV1alpha1FilePolicyApiGetpolicyMetaRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof FileIkarosRunV1alpha1FilePolicyApi
+	 */
+	public getpolicyMeta(
+		requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetpolicyMetaRequest,
+		options?: AxiosRequestConfig
+	) {
+		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
+			.getpolicyMeta(
+				requestParameters.name,
+				requestParameters.metaName,
+				options
+			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
@@ -775,6 +1110,27 @@ export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
 			.updatepolicy(
 				requestParameters.name,
 				requestParameters.filePolicy,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Update policy metadata value.
+	 * @param {FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyMetaRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof FileIkarosRunV1alpha1FilePolicyApi
+	 */
+	public updatepolicyMeta(
+		requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatepolicyMetaRequest,
+		options?: AxiosRequestConfig
+	) {
+		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
+			.updatepolicyMeta(
+				requestParameters.name,
+				requestParameters.metaName,
+				requestParameters.body,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));

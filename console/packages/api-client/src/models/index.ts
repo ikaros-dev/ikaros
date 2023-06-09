@@ -8,6 +8,8 @@ export * from './link';
 export * from './model-file';
 export * from './paging-wrap';
 export * from './plugin';
+export * from './plugin-load-location';
+export * from './plugin-load-location-file-system';
 export * from './subject';
 export * from './subject-image';
 export * from './subject-relation';

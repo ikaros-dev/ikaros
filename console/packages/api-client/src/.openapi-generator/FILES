@@ -24,6 +24,8 @@ models/index.ts
 models/link.ts
 models/model-file.ts
 models/paging-wrap.ts
+models/plugin-load-location-file-system.ts
+models/plugin-load-location.ts
 models/plugin.ts
 models/subject-image.ts
 models/subject-relation.ts

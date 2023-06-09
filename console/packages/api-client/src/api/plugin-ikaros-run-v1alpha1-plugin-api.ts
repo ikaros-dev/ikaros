@@ -75,6 +75,14 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			localVarHeaderParameter['Content-Type'] = 'application/json';
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -128,6 +136,14 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -143,7 +159,7 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 			};
 		},
 		/**
-		 * Get plugin
+		 * Get plugin By Name.
 		 * @param {string} name Name of Plugin
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -173,6 +189,71 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 			};
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Get plugin meta value by name and metaName.
+		 * @param {string} name Name of Plugin
+		 * @param {string} metaName MetaName of Plugin
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		getpluginMeta: async (
+			name: string,
+			metaName: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('getpluginMeta', 'name', name);
+			// verify required parameter 'metaName' is not null or undefined
+			assertParamExists('getpluginMeta', 'metaName', metaName);
+			const localVarPath =
+				`/apis/plugin.ikaros.run/v1alpha1/plugin/{name}/{metaName}`
+					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
+					.replace(`{${'metaName'}}`, encodeURIComponent(String(metaName)));
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -223,6 +304,14 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -260,6 +349,14 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 			};
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -308,6 +405,14 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			localVarHeaderParameter['Content-Type'] = 'application/json';
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -320,6 +425,74 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 			};
 			localVarRequestOptions.data = serializeDataIfNeeded(
 				plugin,
+				localVarRequestOptions,
+				configuration
+			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Update plugin metadata value.
+		 * @param {string} name Name of plugin
+		 * @param {string} metaName MetaName of plugin
+		 * @param {string} body Updated plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		updatepluginMeta: async (
+			name: string,
+			metaName: string,
+			body: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('updatepluginMeta', 'name', name);
+			// verify required parameter 'metaName' is not null or undefined
+			assertParamExists('updatepluginMeta', 'metaName', metaName);
+			// verify required parameter 'body' is not null or undefined
+			assertParamExists('updatepluginMeta', 'body', body);
+			const localVarPath =
+				`/apis/plugin.ikaros.run/v1alpha1/plugin/{name}/{metaName}`
+					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
+					.replace(`{${'metaName'}}`, encodeURIComponent(String(metaName)));
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'PUT',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				body,
 				localVarRequestOptions,
 				configuration
 			);
@@ -389,7 +562,7 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 			);
 		},
 		/**
-		 * Get plugin
+		 * Get plugin By Name.
 		 * @param {string} name Name of Plugin
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -402,6 +575,32 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 		> {
 			const localVarAxiosArgs = await localVarAxiosParamCreator.getplugin(
 				name,
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Get plugin meta value by name and metaName.
+		 * @param {string} name Name of Plugin
+		 * @param {string} metaName MetaName of Plugin
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async getpluginMeta(
+			name: string,
+			metaName: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.getpluginMeta(
+				name,
+				metaName,
 				options
 			);
 			return createRequestFunction(
@@ -480,6 +679,36 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 				configuration
 			);
 		},
+		/**
+		 * Update plugin metadata value.
+		 * @param {string} name Name of plugin
+		 * @param {string} metaName MetaName of plugin
+		 * @param {string} body Updated plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async updatepluginMeta(
+			name: string,
+			metaName: string,
+			body: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.updatepluginMeta(
+					name,
+					metaName,
+					body,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
 	};
 };
 
@@ -523,7 +752,7 @@ export const PluginIkarosRunV1alpha1PluginApiFactory = function (
 				.then((request) => request(axios, basePath));
 		},
 		/**
-		 * Get plugin
+		 * Get plugin By Name.
 		 * @param {PluginIkarosRunV1alpha1PluginApiGetpluginRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -534,6 +763,24 @@ export const PluginIkarosRunV1alpha1PluginApiFactory = function (
 		): AxiosPromise<Plugin> {
 			return localVarFp
 				.getplugin(requestParameters.name, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Get plugin meta value by name and metaName.
+		 * @param {PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		getpluginMeta(
+			requestParameters: PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.getpluginMeta(
+					requestParameters.name,
+					requestParameters.metaName,
+					options
+				)
 				.then((request) => request(axios, basePath));
 		},
 		/**
@@ -576,6 +823,25 @@ export const PluginIkarosRunV1alpha1PluginApiFactory = function (
 		): AxiosPromise<Plugin> {
 			return localVarFp
 				.updateplugin(requestParameters.name, requestParameters.plugin, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Update plugin metadata value.
+		 * @param {PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		updatepluginMeta(
+			requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<Plugin> {
+			return localVarFp
+				.updatepluginMeta(
+					requestParameters.name,
+					requestParameters.metaName,
+					requestParameters.body,
+					options
+				)
 				.then((request) => request(axios, basePath));
 		},
 	};
@@ -624,6 +890,27 @@ export interface PluginIkarosRunV1alpha1PluginApiGetpluginRequest {
 }
 
 /**
+ * Request parameters for getpluginMeta operation in PluginIkarosRunV1alpha1PluginApi.
+ * @export
+ * @interface PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest
+ */
+export interface PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest {
+	/**
+	 * Name of Plugin
+	 * @type {string}
+	 * @memberof PluginIkarosRunV1alpha1PluginApiGetpluginMeta
+	 */
+	readonly name: string;
+
+	/**
+	 * MetaName of Plugin
+	 * @type {string}
+	 * @memberof PluginIkarosRunV1alpha1PluginApiGetpluginMeta
+	 */
+	readonly metaName: string;
+}
+
+/**
  * Request parameters for getpluginsbyPaging operation in PluginIkarosRunV1alpha1PluginApi.
  * @export
  * @interface PluginIkarosRunV1alpha1PluginApiGetpluginsbyPagingRequest
@@ -666,6 +953,34 @@ export interface PluginIkarosRunV1alpha1PluginApiUpdatepluginRequest {
 }
 
 /**
+ * Request parameters for updatepluginMeta operation in PluginIkarosRunV1alpha1PluginApi.
+ * @export
+ * @interface PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest
+ */
+export interface PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest {
+	/**
+	 * Name of plugin
+	 * @type {string}
+	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatepluginMeta
+	 */
+	readonly name: string;
+
+	/**
+	 * MetaName of plugin
+	 * @type {string}
+	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatepluginMeta
+	 */
+	readonly metaName: string;
+
+	/**
+	 * Updated plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+	 * @type {string}
+	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatepluginMeta
+	 */
+	readonly body: string;
+}
+
+/**
  * PluginIkarosRunV1alpha1PluginApi - object-oriented interface
  * @export
  * @class PluginIkarosRunV1alpha1PluginApi
@@ -705,7 +1020,7 @@ export class PluginIkarosRunV1alpha1PluginApi extends BaseAPI {
 	}
 
 	/**
-	 * Get plugin
+	 * Get plugin By Name.
 	 * @param {PluginIkarosRunV1alpha1PluginApiGetpluginRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
@@ -717,6 +1032,26 @@ export class PluginIkarosRunV1alpha1PluginApi extends BaseAPI {
 	) {
 		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
 			.getplugin(requestParameters.name, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Get plugin meta value by name and metaName.
+	 * @param {PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof PluginIkarosRunV1alpha1PluginApi
+	 */
+	public getpluginMeta(
+		requestParameters: PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest,
+		options?: AxiosRequestConfig
+	) {
+		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
+			.getpluginMeta(
+				requestParameters.name,
+				requestParameters.metaName,
+				options
+			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
@@ -765,6 +1100,27 @@ export class PluginIkarosRunV1alpha1PluginApi extends BaseAPI {
 	) {
 		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
 			.updateplugin(requestParameters.name, requestParameters.plugin, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Update plugin metadata value.
+	 * @param {PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof PluginIkarosRunV1alpha1PluginApi
+	 */
+	public updatepluginMeta(
+		requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest,
+		options?: AxiosRequestConfig
+	) {
+		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
+			.updatepluginMeta(
+				requestParameters.name,
+				requestParameters.metaName,
+				requestParameters.body,
+				options
+			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }

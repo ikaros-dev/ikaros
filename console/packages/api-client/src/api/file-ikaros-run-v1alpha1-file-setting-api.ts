@@ -75,6 +75,14 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			localVarHeaderParameter['Content-Type'] = 'application/json';
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -128,6 +136,14 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -143,7 +159,7 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			};
 		},
 		/**
-		 * Get setting
+		 * Get setting By Name.
 		 * @param {string} name Name of FileSetting
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -173,6 +189,71 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			};
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Get setting meta value by name and metaName.
+		 * @param {string} name Name of FileSetting
+		 * @param {string} metaName MetaName of FileSetting
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		getsettingMeta: async (
+			name: string,
+			metaName: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('getsettingMeta', 'name', name);
+			// verify required parameter 'metaName' is not null or undefined
+			assertParamExists('getsettingMeta', 'metaName', metaName);
+			const localVarPath =
+				`/apis/file.ikaros.run/v1alpha1/setting/{name}/{metaName}`
+					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
+					.replace(`{${'metaName'}}`, encodeURIComponent(String(metaName)));
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -223,6 +304,14 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -260,6 +349,14 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			};
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -308,6 +405,14 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			const localVarHeaderParameter = {} as any;
 			const localVarQueryParameter = {} as any;
 
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
 			localVarHeaderParameter['Content-Type'] = 'application/json';
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -320,6 +425,74 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
 			};
 			localVarRequestOptions.data = serializeDataIfNeeded(
 				fileSetting,
+				localVarRequestOptions,
+				configuration
+			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Update setting metadata value.
+		 * @param {string} name Name of setting
+		 * @param {string} metaName MetaName of setting
+		 * @param {string} body Updated setting Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		updatesettingMeta: async (
+			name: string,
+			metaName: string,
+			body: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('updatesettingMeta', 'name', name);
+			// verify required parameter 'metaName' is not null or undefined
+			assertParamExists('updatesettingMeta', 'metaName', metaName);
+			// verify required parameter 'body' is not null or undefined
+			assertParamExists('updatesettingMeta', 'body', body);
+			const localVarPath =
+				`/apis/file.ikaros.run/v1alpha1/setting/{name}/{metaName}`
+					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
+					.replace(`{${'metaName'}}`, encodeURIComponent(String(metaName)));
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'PUT',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				body,
 				localVarRequestOptions,
 				configuration
 			);
@@ -389,7 +562,7 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
 			);
 		},
 		/**
-		 * Get setting
+		 * Get setting By Name.
 		 * @param {string} name Name of FileSetting
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -402,6 +575,32 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
 		> {
 			const localVarAxiosArgs = await localVarAxiosParamCreator.getsetting(
 				name,
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Get setting meta value by name and metaName.
+		 * @param {string} name Name of FileSetting
+		 * @param {string} metaName MetaName of FileSetting
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async getsettingMeta(
+			name: string,
+			metaName: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.getsettingMeta(
+				name,
+				metaName,
 				options
 			);
 			return createRequestFunction(
@@ -484,6 +683,36 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
 				configuration
 			);
 		},
+		/**
+		 * Update setting metadata value.
+		 * @param {string} name Name of setting
+		 * @param {string} metaName MetaName of setting
+		 * @param {string} body Updated setting Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async updatesettingMeta(
+			name: string,
+			metaName: string,
+			body: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FileSetting>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.updatesettingMeta(
+					name,
+					metaName,
+					body,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
 	};
 };
 
@@ -527,7 +756,7 @@ export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
 				.then((request) => request(axios, basePath));
 		},
 		/**
-		 * Get setting
+		 * Get setting By Name.
 		 * @param {FileIkarosRunV1alpha1FileSettingApiGetsettingRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -538,6 +767,24 @@ export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
 		): AxiosPromise<FileSetting> {
 			return localVarFp
 				.getsetting(requestParameters.name, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Get setting meta value by name and metaName.
+		 * @param {FileIkarosRunV1alpha1FileSettingApiGetsettingMetaRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		getsettingMeta(
+			requestParameters: FileIkarosRunV1alpha1FileSettingApiGetsettingMetaRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.getsettingMeta(
+					requestParameters.name,
+					requestParameters.metaName,
+					options
+				)
 				.then((request) => request(axios, basePath));
 		},
 		/**
@@ -582,6 +829,25 @@ export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
 				.updatesetting(
 					requestParameters.name,
 					requestParameters.fileSetting,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Update setting metadata value.
+		 * @param {FileIkarosRunV1alpha1FileSettingApiUpdatesettingMetaRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		updatesettingMeta(
+			requestParameters: FileIkarosRunV1alpha1FileSettingApiUpdatesettingMetaRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<FileSetting> {
+			return localVarFp
+				.updatesettingMeta(
+					requestParameters.name,
+					requestParameters.metaName,
+					requestParameters.body,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -632,6 +898,27 @@ export interface FileIkarosRunV1alpha1FileSettingApiGetsettingRequest {
 }
 
 /**
+ * Request parameters for getsettingMeta operation in FileIkarosRunV1alpha1FileSettingApi.
+ * @export
+ * @interface FileIkarosRunV1alpha1FileSettingApiGetsettingMetaRequest
+ */
+export interface FileIkarosRunV1alpha1FileSettingApiGetsettingMetaRequest {
+	/**
+	 * Name of FileSetting
+	 * @type {string}
+	 * @memberof FileIkarosRunV1alpha1FileSettingApiGetsettingMeta
+	 */
+	readonly name: string;
+
+	/**
+	 * MetaName of FileSetting
+	 * @type {string}
+	 * @memberof FileIkarosRunV1alpha1FileSettingApiGetsettingMeta
+	 */
+	readonly metaName: string;
+}
+
+/**
  * Request parameters for getsettingsbyPaging operation in FileIkarosRunV1alpha1FileSettingApi.
  * @export
  * @interface FileIkarosRunV1alpha1FileSettingApiGetsettingsbyPagingRequest
@@ -674,6 +961,34 @@ export interface FileIkarosRunV1alpha1FileSettingApiUpdatesettingRequest {
 }
 
 /**
+ * Request parameters for updatesettingMeta operation in FileIkarosRunV1alpha1FileSettingApi.
+ * @export
+ * @interface FileIkarosRunV1alpha1FileSettingApiUpdatesettingMetaRequest
+ */
+export interface FileIkarosRunV1alpha1FileSettingApiUpdatesettingMetaRequest {
+	/**
+	 * Name of setting
+	 * @type {string}
+	 * @memberof FileIkarosRunV1alpha1FileSettingApiUpdatesettingMeta
+	 */
+	readonly name: string;
+
+	/**
+	 * MetaName of setting
+	 * @type {string}
+	 * @memberof FileIkarosRunV1alpha1FileSettingApiUpdatesettingMeta
+	 */
+	readonly metaName: string;
+
+	/**
+	 * Updated setting Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+	 * @type {string}
+	 * @memberof FileIkarosRunV1alpha1FileSettingApiUpdatesettingMeta
+	 */
+	readonly body: string;
+}
+
+/**
  * FileIkarosRunV1alpha1FileSettingApi - object-oriented interface
  * @export
  * @class FileIkarosRunV1alpha1FileSettingApi
@@ -713,7 +1028,7 @@ export class FileIkarosRunV1alpha1FileSettingApi extends BaseAPI {
 	}
 
 	/**
-	 * Get setting
+	 * Get setting By Name.
 	 * @param {FileIkarosRunV1alpha1FileSettingApiGetsettingRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
@@ -725,6 +1040,26 @@ export class FileIkarosRunV1alpha1FileSettingApi extends BaseAPI {
 	) {
 		return FileIkarosRunV1alpha1FileSettingApiFp(this.configuration)
 			.getsetting(requestParameters.name, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Get setting meta value by name and metaName.
+	 * @param {FileIkarosRunV1alpha1FileSettingApiGetsettingMetaRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof FileIkarosRunV1alpha1FileSettingApi
+	 */
+	public getsettingMeta(
+		requestParameters: FileIkarosRunV1alpha1FileSettingApiGetsettingMetaRequest,
+		options?: AxiosRequestConfig
+	) {
+		return FileIkarosRunV1alpha1FileSettingApiFp(this.configuration)
+			.getsettingMeta(
+				requestParameters.name,
+				requestParameters.metaName,
+				options
+			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
@@ -775,6 +1110,27 @@ export class FileIkarosRunV1alpha1FileSettingApi extends BaseAPI {
 			.updatesetting(
 				requestParameters.name,
 				requestParameters.fileSetting,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Update setting metadata value.
+	 * @param {FileIkarosRunV1alpha1FileSettingApiUpdatesettingMetaRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof FileIkarosRunV1alpha1FileSettingApi
+	 */
+	public updatesettingMeta(
+		requestParameters: FileIkarosRunV1alpha1FileSettingApiUpdatesettingMetaRequest,
+		options?: AxiosRequestConfig
+	) {
+		return FileIkarosRunV1alpha1FileSettingApiFp(this.configuration)
+			.updatesettingMeta(
+				requestParameters.name,
+				requestParameters.metaName,
+				requestParameters.body,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));
