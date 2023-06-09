@@ -13,7 +13,7 @@ import run.ikaros.api.custom.scheme.CustomScheme;
 import run.ikaros.api.exception.NotFoundException;
 
 
-public class CustomUpdateHandler implements CustomRouterFunctionFactory.GetHandler {
+public class CustomUpdateHandler implements CustomRouterFunctionFactory.UpdateHandler {
     private final ReactiveCustomClient customClient;
     private final CustomScheme scheme;
 

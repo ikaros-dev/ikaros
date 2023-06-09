@@ -28,6 +28,8 @@ spring:
     max-in-memory-size: 10MB
   r2dbc:
     url: r2dbc:h2:mem:///ikaros?MODE=MySQL&DB_CLOSE_ON_EXIT=FALSE
+  jpa:
+    show-sql: true
 
 springdoc:
   api-docs:
@@ -37,6 +39,10 @@ logging:
   level:
     run.ikaros.server: DEBUG
     org.pf4j.AbstractPluginManager: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
+    org.springframework.r2dbc.core.DefaultDatabaseClient: DEBUG
+
   file:
     name: ./build/logs/ikaros.log
   logback:

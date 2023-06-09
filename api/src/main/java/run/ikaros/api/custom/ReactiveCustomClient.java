@@ -2,6 +2,7 @@ package run.ikaros.api.custom;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
 import java.util.function.Predicate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,12 @@ public interface ReactiveCustomClient {
     <C> Mono<C> create(C custom);
 
     <C> Mono<C> update(C custom);
+
+    <C> Mono<Void> updateOneMeta(@Nonnull Class<C> clazz, @NotBlank String name,
+                                 @NotBlank String metaName, @Nullable byte[] metaNewVal);
+
+    <C> Mono<byte[]> fetchOneMeta(@Nonnull Class<C> clazz, @NotBlank String name,
+                                  @NotBlank String metaName);
 
     <C> Mono<C> delete(C custom);
 

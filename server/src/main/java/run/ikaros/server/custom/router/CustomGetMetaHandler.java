@@ -2,8 +2,7 @@ package run.ikaros.server.custom.router;
 
 import static run.ikaros.server.custom.router.CustomRouterFunctionFactory.PathPatternGenerator.buildCustomPathPatternPrefix;
 
-import org.springframework.http.MediaType;
-import org.springframework.lang.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -11,31 +10,31 @@ import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomScheme;
 import run.ikaros.api.exception.NotFoundException;
 
-public class CustomListPagingHandler implements CustomRouterFunctionFactory.ListHandler {
+@Slf4j
+public class CustomGetMetaHandler implements CustomRouterFunctionFactory.GetMetaHandler {
     private final ReactiveCustomClient customClient;
     private final CustomScheme scheme;
 
-    public CustomListPagingHandler(ReactiveCustomClient customClient, CustomScheme scheme) {
+    public CustomGetMetaHandler(ReactiveCustomClient customClient, CustomScheme scheme) {
         this.customClient = customClient;
         this.scheme = scheme;
     }
 
     @Override
-    public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
-        var page = request.pathVariable("page");
-        var size = request.pathVariable("size");
-        return customClient.findAllWithPage(scheme.type(), Integer.valueOf(page),
-                Integer.valueOf(size), null)
-            .flatMap(pagingWrap -> ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(pagingWrap))
+    public Mono<ServerResponse> handle(ServerRequest request) {
+        var customName = request.pathVariable("name");
+        var metaName = request.pathVariable("metaName");
+        return customClient.fetchOneMeta(scheme.type(), customName, metaName)
+            .flatMap(metaVal -> ServerResponse.ok()
+                .bodyValue(metaVal))
             .onErrorResume(NotFoundException.class, e -> ServerResponse.notFound().build());
     }
 
     @Override
     public String pathPattern() {
         return buildCustomPathPatternPrefix(scheme)
-            + '/' + scheme.plural()
-            + "/{page}/{size}";
+            + '/' + scheme.singular()
+            + "/{name}"
+            + "/{metaName}";
     }
 }
