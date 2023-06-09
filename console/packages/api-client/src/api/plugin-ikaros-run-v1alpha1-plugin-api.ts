@@ -55,7 +55,7 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		createplugin: async (
+		createPlugin: async (
 			plugin?: Plugin,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
@@ -110,12 +110,12 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		deleteplugin: async (
+		deletePlugin: async (
 			name: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'name' is not null or undefined
-			assertParamExists('deleteplugin', 'name', name);
+			assertParamExists('deletePlugin', 'name', name);
 			const localVarPath =
 				`/apis/plugin.ikaros.run/v1alpha1/plugin/{name}`.replace(
 					`{${'name'}}`,
@@ -164,12 +164,12 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		getplugin: async (
+		getPlugin: async (
 			name: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'name' is not null or undefined
-			assertParamExists('getplugin', 'name', name);
+			assertParamExists('getPlugin', 'name', name);
 			const localVarPath =
 				`/apis/plugin.ikaros.run/v1alpha1/plugin/{name}`.replace(
 					`{${'name'}}`,
@@ -219,15 +219,15 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		getpluginMeta: async (
+		getPluginMeta: async (
 			name: string,
 			metaName: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'name' is not null or undefined
-			assertParamExists('getpluginMeta', 'name', name);
+			assertParamExists('getPluginMeta', 'name', name);
 			// verify required parameter 'metaName' is not null or undefined
-			assertParamExists('getpluginMeta', 'metaName', metaName);
+			assertParamExists('getPluginMeta', 'metaName', metaName);
 			const localVarPath =
 				`/apis/plugin.ikaros.run/v1alpha1/plugin/{name}/{metaName}`
 					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
@@ -276,15 +276,15 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		getpluginsbyPaging: async (
+		getPluginsByPaging: async (
 			page: string,
 			size: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'page' is not null or undefined
-			assertParamExists('getpluginsbyPaging', 'page', page);
+			assertParamExists('getPluginsByPaging', 'page', page);
 			// verify required parameter 'size' is not null or undefined
-			assertParamExists('getpluginsbyPaging', 'size', size);
+			assertParamExists('getPluginsByPaging', 'size', size);
 			const localVarPath =
 				`/apis/plugin.ikaros.run/v1alpha1/plugins/{page}/{size}`
 					.replace(`{${'page'}}`, encodeURIComponent(String(page)))
@@ -331,7 +331,7 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		listplugins: async (
+		listPlugins: async (
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/plugins`;
@@ -379,13 +379,13 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		updateplugin: async (
+		updatePlugin: async (
 			name: string,
 			plugin?: Plugin,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'name' is not null or undefined
-			assertParamExists('updateplugin', 'name', name);
+			assertParamExists('updatePlugin', 'name', name);
 			const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/plugin`.replace(
 				`{${'name'}}`,
 				encodeURIComponent(String(name))
@@ -438,22 +438,22 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 		 * Update plugin metadata value.
 		 * @param {string} name Name of plugin
 		 * @param {string} metaName MetaName of plugin
-		 * @param {string} body Updated plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+		 * @param {string} body Updated Plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		updatepluginMeta: async (
+		updatePluginMeta: async (
 			name: string,
 			metaName: string,
 			body: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'name' is not null or undefined
-			assertParamExists('updatepluginMeta', 'name', name);
+			assertParamExists('updatePluginMeta', 'name', name);
 			// verify required parameter 'metaName' is not null or undefined
-			assertParamExists('updatepluginMeta', 'metaName', metaName);
+			assertParamExists('updatePluginMeta', 'metaName', metaName);
 			// verify required parameter 'body' is not null or undefined
-			assertParamExists('updatepluginMeta', 'body', body);
+			assertParamExists('updatePluginMeta', 'body', body);
 			const localVarPath =
 				`/apis/plugin.ikaros.run/v1alpha1/plugin/{name}/{metaName}`
 					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
@@ -521,13 +521,13 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async createplugin(
+		async createPlugin(
 			plugin?: Plugin,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.createplugin(
+			const localVarAxiosArgs = await localVarAxiosParamCreator.createPlugin(
 				plugin,
 				options
 			);
@@ -544,13 +544,13 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async deleteplugin(
+		async deletePlugin(
 			name: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.deleteplugin(
+			const localVarAxiosArgs = await localVarAxiosParamCreator.deletePlugin(
 				name,
 				options
 			);
@@ -567,13 +567,13 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async getplugin(
+		async getPlugin(
 			name: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.getplugin(
+			const localVarAxiosArgs = await localVarAxiosParamCreator.getPlugin(
 				name,
 				options
 			);
@@ -591,14 +591,14 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async getpluginMeta(
+		async getPluginMeta(
 			name: string,
 			metaName: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.getpluginMeta(
+			const localVarAxiosArgs = await localVarAxiosParamCreator.getPluginMeta(
 				name,
 				metaName,
 				options
@@ -617,7 +617,7 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async getpluginsbyPaging(
+		async getPluginsByPaging(
 			page: string,
 			size: string,
 			options?: AxiosRequestConfig
@@ -625,7 +625,7 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
 		> {
 			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.getpluginsbyPaging(page, size, options);
+				await localVarAxiosParamCreator.getPluginsByPaging(page, size, options);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -638,12 +638,12 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async listplugins(
+		async listPlugins(
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.listplugins(
+			const localVarAxiosArgs = await localVarAxiosParamCreator.listPlugins(
 				options
 			);
 			return createRequestFunction(
@@ -660,14 +660,14 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async updateplugin(
+		async updatePlugin(
 			name: string,
 			plugin?: Plugin,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.updateplugin(
+			const localVarAxiosArgs = await localVarAxiosParamCreator.updatePlugin(
 				name,
 				plugin,
 				options
@@ -683,11 +683,11 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 		 * Update plugin metadata value.
 		 * @param {string} name Name of plugin
 		 * @param {string} metaName MetaName of plugin
-		 * @param {string} body Updated plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+		 * @param {string} body Updated Plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async updatepluginMeta(
+		async updatePluginMeta(
 			name: string,
 			metaName: string,
 			body: string,
@@ -696,7 +696,7 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
 		> {
 			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.updatepluginMeta(
+				await localVarAxiosParamCreator.updatePluginMeta(
 					name,
 					metaName,
 					body,
@@ -725,58 +725,58 @@ export const PluginIkarosRunV1alpha1PluginApiFactory = function (
 	return {
 		/**
 		 * Create plugin
-		 * @param {PluginIkarosRunV1alpha1PluginApiCreatepluginRequest} requestParameters Request parameters.
+		 * @param {PluginIkarosRunV1alpha1PluginApiCreatePluginRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		createplugin(
-			requestParameters: PluginIkarosRunV1alpha1PluginApiCreatepluginRequest = {},
+		createPlugin(
+			requestParameters: PluginIkarosRunV1alpha1PluginApiCreatePluginRequest = {},
 			options?: AxiosRequestConfig
 		): AxiosPromise<Plugin> {
 			return localVarFp
-				.createplugin(requestParameters.plugin, options)
+				.createPlugin(requestParameters.plugin, options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
 		 * Delete plugin
-		 * @param {PluginIkarosRunV1alpha1PluginApiDeletepluginRequest} requestParameters Request parameters.
+		 * @param {PluginIkarosRunV1alpha1PluginApiDeletePluginRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		deleteplugin(
-			requestParameters: PluginIkarosRunV1alpha1PluginApiDeletepluginRequest,
+		deletePlugin(
+			requestParameters: PluginIkarosRunV1alpha1PluginApiDeletePluginRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<void> {
 			return localVarFp
-				.deleteplugin(requestParameters.name, options)
+				.deletePlugin(requestParameters.name, options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
 		 * Get plugin By Name.
-		 * @param {PluginIkarosRunV1alpha1PluginApiGetpluginRequest} requestParameters Request parameters.
+		 * @param {PluginIkarosRunV1alpha1PluginApiGetPluginRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		getplugin(
-			requestParameters: PluginIkarosRunV1alpha1PluginApiGetpluginRequest,
+		getPlugin(
+			requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<Plugin> {
 			return localVarFp
-				.getplugin(requestParameters.name, options)
+				.getPlugin(requestParameters.name, options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
 		 * Get plugin meta value by name and metaName.
-		 * @param {PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest} requestParameters Request parameters.
+		 * @param {PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		getpluginMeta(
-			requestParameters: PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest,
+		getPluginMeta(
+			requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<void> {
 			return localVarFp
-				.getpluginMeta(
+				.getPluginMeta(
 					requestParameters.name,
 					requestParameters.metaName,
 					options
@@ -785,16 +785,16 @@ export const PluginIkarosRunV1alpha1PluginApiFactory = function (
 		},
 		/**
 		 * Get plugins by paging.
-		 * @param {PluginIkarosRunV1alpha1PluginApiGetpluginsbyPagingRequest} requestParameters Request parameters.
+		 * @param {PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		getpluginsbyPaging(
-			requestParameters: PluginIkarosRunV1alpha1PluginApiGetpluginsbyPagingRequest,
+		getPluginsByPaging(
+			requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<PagingWrap> {
 			return localVarFp
-				.getpluginsbyPaging(
+				.getPluginsByPaging(
 					requestParameters.page,
 					requestParameters.size,
 					options
@@ -806,37 +806,37 @@ export const PluginIkarosRunV1alpha1PluginApiFactory = function (
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		listplugins(options?: AxiosRequestConfig): AxiosPromise<Plugin> {
+		listPlugins(options?: AxiosRequestConfig): AxiosPromise<Plugin> {
 			return localVarFp
-				.listplugins(options)
+				.listPlugins(options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
 		 * Update plugin
-		 * @param {PluginIkarosRunV1alpha1PluginApiUpdatepluginRequest} requestParameters Request parameters.
+		 * @param {PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		updateplugin(
-			requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatepluginRequest,
+		updatePlugin(
+			requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<Plugin> {
 			return localVarFp
-				.updateplugin(requestParameters.name, requestParameters.plugin, options)
+				.updatePlugin(requestParameters.name, requestParameters.plugin, options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
 		 * Update plugin metadata value.
-		 * @param {PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest} requestParameters Request parameters.
+		 * @param {PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		updatepluginMeta(
-			requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest,
+		updatePluginMeta(
+			requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<Plugin> {
 			return localVarFp
-				.updatepluginMeta(
+				.updatePluginMeta(
 					requestParameters.name,
 					requestParameters.metaName,
 					requestParameters.body,
@@ -848,134 +848,134 @@ export const PluginIkarosRunV1alpha1PluginApiFactory = function (
 };
 
 /**
- * Request parameters for createplugin operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for createPlugin operation in PluginIkarosRunV1alpha1PluginApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiCreatepluginRequest
+ * @interface PluginIkarosRunV1alpha1PluginApiCreatePluginRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiCreatepluginRequest {
+export interface PluginIkarosRunV1alpha1PluginApiCreatePluginRequest {
 	/**
 	 * Fresh Plugin
 	 * @type {Plugin}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiCreateplugin
+	 * @memberof PluginIkarosRunV1alpha1PluginApiCreatePlugin
 	 */
 	readonly plugin?: Plugin;
 }
 
 /**
- * Request parameters for deleteplugin operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for deletePlugin operation in PluginIkarosRunV1alpha1PluginApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiDeletepluginRequest
+ * @interface PluginIkarosRunV1alpha1PluginApiDeletePluginRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiDeletepluginRequest {
+export interface PluginIkarosRunV1alpha1PluginApiDeletePluginRequest {
 	/**
 	 * Name of Plugin
 	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiDeleteplugin
+	 * @memberof PluginIkarosRunV1alpha1PluginApiDeletePlugin
 	 */
 	readonly name: string;
 }
 
 /**
- * Request parameters for getplugin operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for getPlugin operation in PluginIkarosRunV1alpha1PluginApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiGetpluginRequest
+ * @interface PluginIkarosRunV1alpha1PluginApiGetPluginRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiGetpluginRequest {
+export interface PluginIkarosRunV1alpha1PluginApiGetPluginRequest {
 	/**
 	 * Name of Plugin
 	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiGetplugin
+	 * @memberof PluginIkarosRunV1alpha1PluginApiGetPlugin
 	 */
 	readonly name: string;
 }
 
 /**
- * Request parameters for getpluginMeta operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for getPluginMeta operation in PluginIkarosRunV1alpha1PluginApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest
+ * @interface PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest {
+export interface PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest {
 	/**
 	 * Name of Plugin
 	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiGetpluginMeta
+	 * @memberof PluginIkarosRunV1alpha1PluginApiGetPluginMeta
 	 */
 	readonly name: string;
 
 	/**
 	 * MetaName of Plugin
 	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiGetpluginMeta
+	 * @memberof PluginIkarosRunV1alpha1PluginApiGetPluginMeta
 	 */
 	readonly metaName: string;
 }
 
 /**
- * Request parameters for getpluginsbyPaging operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for getPluginsByPaging operation in PluginIkarosRunV1alpha1PluginApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiGetpluginsbyPagingRequest
+ * @interface PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiGetpluginsbyPagingRequest {
+export interface PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest {
 	/**
 	 * Page of Plugin
 	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiGetpluginsbyPaging
+	 * @memberof PluginIkarosRunV1alpha1PluginApiGetPluginsByPaging
 	 */
 	readonly page: string;
 
 	/**
 	 * Size ofPlugin
 	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiGetpluginsbyPaging
+	 * @memberof PluginIkarosRunV1alpha1PluginApiGetPluginsByPaging
 	 */
 	readonly size: string;
 }
 
 /**
- * Request parameters for updateplugin operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for updatePlugin operation in PluginIkarosRunV1alpha1PluginApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiUpdatepluginRequest
+ * @interface PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiUpdatepluginRequest {
+export interface PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest {
 	/**
 	 * Name of plugin
 	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdateplugin
+	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatePlugin
 	 */
 	readonly name: string;
 
 	/**
 	 * Updated Plugin
 	 * @type {Plugin}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdateplugin
+	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatePlugin
 	 */
 	readonly plugin?: Plugin;
 }
 
 /**
- * Request parameters for updatepluginMeta operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for updatePluginMeta operation in PluginIkarosRunV1alpha1PluginApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest
+ * @interface PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest {
+export interface PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest {
 	/**
 	 * Name of plugin
 	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatepluginMeta
+	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatePluginMeta
 	 */
 	readonly name: string;
 
 	/**
 	 * MetaName of plugin
 	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatepluginMeta
+	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatePluginMeta
 	 */
 	readonly metaName: string;
 
 	/**
-	 * Updated plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+	 * Updated Plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
 	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatepluginMeta
+	 * @memberof PluginIkarosRunV1alpha1PluginApiUpdatePluginMeta
 	 */
 	readonly body: string;
 }
@@ -989,65 +989,65 @@ export interface PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest {
 export class PluginIkarosRunV1alpha1PluginApi extends BaseAPI {
 	/**
 	 * Create plugin
-	 * @param {PluginIkarosRunV1alpha1PluginApiCreatepluginRequest} requestParameters Request parameters.
+	 * @param {PluginIkarosRunV1alpha1PluginApiCreatePluginRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof PluginIkarosRunV1alpha1PluginApi
 	 */
-	public createplugin(
-		requestParameters: PluginIkarosRunV1alpha1PluginApiCreatepluginRequest = {},
+	public createPlugin(
+		requestParameters: PluginIkarosRunV1alpha1PluginApiCreatePluginRequest = {},
 		options?: AxiosRequestConfig
 	) {
 		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-			.createplugin(requestParameters.plugin, options)
+			.createPlugin(requestParameters.plugin, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
 	/**
 	 * Delete plugin
-	 * @param {PluginIkarosRunV1alpha1PluginApiDeletepluginRequest} requestParameters Request parameters.
+	 * @param {PluginIkarosRunV1alpha1PluginApiDeletePluginRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof PluginIkarosRunV1alpha1PluginApi
 	 */
-	public deleteplugin(
-		requestParameters: PluginIkarosRunV1alpha1PluginApiDeletepluginRequest,
+	public deletePlugin(
+		requestParameters: PluginIkarosRunV1alpha1PluginApiDeletePluginRequest,
 		options?: AxiosRequestConfig
 	) {
 		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-			.deleteplugin(requestParameters.name, options)
+			.deletePlugin(requestParameters.name, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
 	/**
 	 * Get plugin By Name.
-	 * @param {PluginIkarosRunV1alpha1PluginApiGetpluginRequest} requestParameters Request parameters.
+	 * @param {PluginIkarosRunV1alpha1PluginApiGetPluginRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof PluginIkarosRunV1alpha1PluginApi
 	 */
-	public getplugin(
-		requestParameters: PluginIkarosRunV1alpha1PluginApiGetpluginRequest,
+	public getPlugin(
+		requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginRequest,
 		options?: AxiosRequestConfig
 	) {
 		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-			.getplugin(requestParameters.name, options)
+			.getPlugin(requestParameters.name, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
 	/**
 	 * Get plugin meta value by name and metaName.
-	 * @param {PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest} requestParameters Request parameters.
+	 * @param {PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof PluginIkarosRunV1alpha1PluginApi
 	 */
-	public getpluginMeta(
-		requestParameters: PluginIkarosRunV1alpha1PluginApiGetpluginMetaRequest,
+	public getPluginMeta(
+		requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest,
 		options?: AxiosRequestConfig
 	) {
 		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-			.getpluginMeta(
+			.getPluginMeta(
 				requestParameters.name,
 				requestParameters.metaName,
 				options
@@ -1057,17 +1057,17 @@ export class PluginIkarosRunV1alpha1PluginApi extends BaseAPI {
 
 	/**
 	 * Get plugins by paging.
-	 * @param {PluginIkarosRunV1alpha1PluginApiGetpluginsbyPagingRequest} requestParameters Request parameters.
+	 * @param {PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof PluginIkarosRunV1alpha1PluginApi
 	 */
-	public getpluginsbyPaging(
-		requestParameters: PluginIkarosRunV1alpha1PluginApiGetpluginsbyPagingRequest,
+	public getPluginsByPaging(
+		requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest,
 		options?: AxiosRequestConfig
 	) {
 		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-			.getpluginsbyPaging(
+			.getPluginsByPaging(
 				requestParameters.page,
 				requestParameters.size,
 				options
@@ -1081,41 +1081,41 @@ export class PluginIkarosRunV1alpha1PluginApi extends BaseAPI {
 	 * @throws {RequiredError}
 	 * @memberof PluginIkarosRunV1alpha1PluginApi
 	 */
-	public listplugins(options?: AxiosRequestConfig) {
+	public listPlugins(options?: AxiosRequestConfig) {
 		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-			.listplugins(options)
+			.listPlugins(options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
 	/**
 	 * Update plugin
-	 * @param {PluginIkarosRunV1alpha1PluginApiUpdatepluginRequest} requestParameters Request parameters.
+	 * @param {PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof PluginIkarosRunV1alpha1PluginApi
 	 */
-	public updateplugin(
-		requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatepluginRequest,
+	public updatePlugin(
+		requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest,
 		options?: AxiosRequestConfig
 	) {
 		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-			.updateplugin(requestParameters.name, requestParameters.plugin, options)
+			.updatePlugin(requestParameters.name, requestParameters.plugin, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
 	/**
 	 * Update plugin metadata value.
-	 * @param {PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest} requestParameters Request parameters.
+	 * @param {PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof PluginIkarosRunV1alpha1PluginApi
 	 */
-	public updatepluginMeta(
-		requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatepluginMetaRequest,
+	public updatePluginMeta(
+		requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest,
 		options?: AxiosRequestConfig
 	) {
 		return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-			.updatepluginMeta(
+			.updatePluginMeta(
 				requestParameters.name,
 				requestParameters.metaName,
 				requestParameters.body,
