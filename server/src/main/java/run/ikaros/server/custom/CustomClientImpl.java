@@ -12,7 +12,6 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Predicates;
 import org.springframework.r2dbc.connection.R2dbcTransactionManager;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.ReactiveTransactionManager;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.util.Assert;

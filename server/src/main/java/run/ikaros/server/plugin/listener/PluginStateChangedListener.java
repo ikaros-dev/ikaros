@@ -1,6 +1,5 @@
 package run.ikaros.server.plugin.listener;
 
-import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
