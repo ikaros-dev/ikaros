@@ -69,14 +69,12 @@ public class CustomRouterFunctionFactory {
                     .response(responseBuilder().responseCode("200")
                         .description("Response single " + gvk.kind() + " metadata value.")))
             .GET(listHandler.pathPattern(), listHandler,
-                builder -> {
-                    builder.operationId("List" + upperCaseFirst(scheme.plural()))
-                        .description("List " + scheme.plural())
-                        .tag(tag)
-                        .response(responseBuilder().responseCode("200")
-                            .description("Response " + gvk.kind())
-                            .implementation(scheme.type()));
-                })
+                builder -> builder.operationId("List" + upperCaseFirst(scheme.plural()))
+                    .description("List " + scheme.plural())
+                    .tag(tag)
+                    .response(responseBuilder().responseCode("200")
+                        .description("Response " + gvk.kind())
+                        .implementation(scheme.type())))
             .GET(listPagingHandler.pathPattern(), listPagingHandler,
                 builder -> builder.operationId("Get" + upperCaseFirst(scheme.plural())
                         + "ByPaging.")
