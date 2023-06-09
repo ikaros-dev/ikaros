@@ -110,7 +110,7 @@ function loadStyle(href: string) {
 const pluginErrorMessages: Array<string> = [];
 const pluginModuleStore = usePluginModuleStore();
 async function loadPluginModules() {
-	const { data } = await apiClient.plugin.getpluginsbyPaging({
+	const { data } = await apiClient.plugin.getPluginsByPaging({
 		page: '1',
 		size: '99999',
 	});
