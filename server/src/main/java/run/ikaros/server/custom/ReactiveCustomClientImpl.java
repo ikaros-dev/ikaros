@@ -107,8 +107,12 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
         Assert.isTrue(StringUtils.hasText(name), "'name' must has text");
         Assert.isTrue(StringUtils.hasText(metaName), "'metaName' must has text");
         Custom annotation = clazz.getAnnotation(Custom.class);
-        return repository.findByGroupAndVersionAndKindAndName(annotation.group(),
-                annotation.version(), annotation.kind(), name)
+        return fetchOneMeta(clazz, name, metaName)
+            .filter(oldMetaValBytes -> oldMetaValBytes != metaNewVal)
+            .switchIfEmpty(Mono.empty())
+            .flatMap(oldMetaValBytes -> repository.findByGroupAndVersionAndKindAndName(
+                annotation.group(),
+                annotation.version(), annotation.kind(), name))
             .map(CustomEntity::getId)
             .flatMap(customId -> metadataRepository.updateValueByCustomIdAndKeyAndValue(customId,
                 metaName, metaNewVal));
