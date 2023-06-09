@@ -101,6 +101,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public <C> Mono<Void> updateOneMeta(@Nonnull Class<C> clazz, @NotBlank String name,
                                         @NotBlank String metaName, @Nullable byte[] metaNewVal) {
         Assert.notNull(clazz, "'clazz' must not null.");
@@ -127,6 +128,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
         return findCustomEntityOne(clazz, name)
             .map(CustomEntity::getId)
             .flatMap(customId -> metadataRepository.findByCustomIdAndKey(customId, metaName))
+            .switchIfEmpty(Mono.error(new NotFoundException("Not found metadata for class: " + clazz
+            + ", name: " + name + ", metaName: " + metaName)))
             .map(CustomMetadataEntity::getValue);
     }
 
@@ -146,6 +149,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public <C> Mono<C> delete(Class<C> clazz, String name) {
         return Mono.justOrEmpty(clazz)
             .filter(Objects::nonNull)
