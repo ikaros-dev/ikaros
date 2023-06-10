@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { apiClient } from '@/utils/api-client';
 import { Search, ArrowDown } from '@element-plus/icons-vue';
-import { Plugin } from '@runikaros/api-client';
+import {
+	Plugin,
+	V1alpha1PluginApiOperatePluginStateByIdRequest,
+} from '@runikaros/api-client';
 import { More } from '@element-plus/icons-vue';
 // eslint-disable-next-line no-unused-vars
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -37,10 +40,10 @@ const onCurrentPageChange = (val: number) => {
 // eslint-disable-next-line no-unused-vars
 const stateStrMap: Map<string, string> = new Map([
 	['ALL', '状态'],
-	['STARTED', '启用'],
+	['STARTED', '启动'],
 	['STOPPED', '停用'],
-	['CREATED', '创建'],
-	['DISABLED', '卸载'],
+	['CREATED', '启用'],
+	['DISABLED', '已禁用'],
 	['RESOLVED', '就绪'],
 	['FAILED', '失败'],
 ]);
@@ -68,28 +71,24 @@ const getPluginsFromServer = async () => {
 	pluginSearch.value.hasPrevious = data.hasPrevious;
 };
 
-// eslint-disable-next-line no-unused-vars
-const updatePluginState = async (plugin: Plugin) => {
-	console.log('等后端实现，插件是', plugin.name, plugin.state);
-	if (plugin.state === 'STARTED') {
-		startPlugin(plugin.name);
-	} else if (plugin.state === 'STOPPED') {
-		stopPlugin(plugin.name);
-	}
+const delegationPluginStateOperator = async (
+	requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest
+) => {
+	await apiClient.corePlugin.operatePluginStateById(requestParameters);
 };
 
-const startPlugin = (pluginName: string | undefined) => {
-	console.log('启动插件：', pluginName);
+const startPlugin = async (pluginName: string | undefined) => {
 	ElMessageBox.confirm('您确定要启动插件吗?', '警告', {
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
 		type: 'warning',
 	})
 		.then(() => {
-			ElMessage({
-				type: 'success',
-				message: '已请求启动插件，请等待插件就绪。',
+			delegationPluginStateOperator({
+				name: pluginName as string,
+				operate: 'START',
 			});
+			window.location.reload();
 		})
 		.catch(() => {
 			ElMessage({
@@ -100,17 +99,91 @@ const startPlugin = (pluginName: string | undefined) => {
 };
 
 const stopPlugin = (pluginName: string | undefined) => {
-	console.log('停止插件：', pluginName);
+	ElMessageBox.confirm('您确定要停止插件吗?', '警告', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			delegationPluginStateOperator({
+				name: pluginName as string,
+				operate: 'STOP',
+			});
+			window.location.reload();
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '已取消',
+			});
+		});
 };
 
-// eslint-disable-next-line no-unused-vars
-const disablePlugin = (pluginName: string | undefined) => {
-	console.log('禁用插件：', pluginName);
-};
-
-// eslint-disable-next-line no-unused-vars
 const enablePlugin = (pluginName: string | undefined) => {
-	console.log('启用插件：', pluginName);
+	ElMessageBox.confirm('您确定要启用插件吗?', '警告', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			delegationPluginStateOperator({
+				name: pluginName as string,
+				operate: 'ENABLE',
+			});
+			window.location.reload();
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '已取消',
+			});
+		});
+};
+
+const disablePlugin = (pluginName: string | undefined) => {
+	ElMessageBox.confirm(
+		'您确定要禁用插件吗? 禁用后也可直接启动，会进行启用并启动。',
+		'警告',
+		{
+			confirmButtonText: '确定',
+			cancelButtonText: '取消',
+			type: 'warning',
+		}
+	)
+		.then(() => {
+			delegationPluginStateOperator({
+				name: pluginName as string,
+				operate: 'DISABLE',
+			});
+			window.location.reload();
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '已取消',
+			});
+		});
+};
+
+const reloadPlugin = (pluginName: string | undefined) => {
+	ElMessageBox.confirm('您确定要重载插件吗? ', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			delegationPluginStateOperator({
+				name: pluginName as string,
+				operate: 'RELOAD',
+			});
+			window.location.reload();
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '已取消',
+			});
+		});
 };
 
 onMounted(getPluginsFromServer);
@@ -171,49 +244,25 @@ onMounted(getPluginsFromServer);
 						</span>
 						<template #dropdown>
 							<el-dropdown-menu>
-								<el-dropdown-item command="ALL" style="width: 200px" disabled>
+								<el-dropdown-item command="ALL" disabled>
 									全部
 								</el-dropdown-item>
-								<el-dropdown-item
-									command="STARTED"
-									style="width: 200px"
-									disabled
-								>
+								<el-dropdown-item command="STARTED" disabled>
 									启用
 								</el-dropdown-item>
-								<el-dropdown-item
-									command="STOPPED"
-									style="width: 200px"
-									disabled
-								>
+								<el-dropdown-item command="STOPPED" disabled>
 									停用
 								</el-dropdown-item>
-								<el-dropdown-item
-									command="RESOLVED"
-									style="width: 200px"
-									disabled
-								>
+								<el-dropdown-item command="RESOLVED" disabled>
 									就绪
 								</el-dropdown-item>
-								<el-dropdown-item
-									command="DISABLED"
-									style="width: 200px"
-									disabled
-								>
-									卸载
+								<el-dropdown-item command="DISABLED" disabled>
+									禁用
 								</el-dropdown-item>
-								<el-dropdown-item
-									command="CREATED"
-									style="width: 200px"
-									disabled
-								>
+								<el-dropdown-item command="CREATED" disabled>
 									创建
 								</el-dropdown-item>
-								<el-dropdown-item
-									command="FAILED"
-									style="width: 200px"
-									disabled
-								>
+								<el-dropdown-item command="FAILED" disabled>
 									失败
 								</el-dropdown-item>
 							</el-dropdown-menu>
@@ -248,30 +297,52 @@ onMounted(getPluginsFromServer);
 							<el-icon size="30"><More /></el-icon>
 							<template #dropdown>
 								<el-dropdown-menu>
-									<el-dropdown-item style="width: 200px" disabled>
-										详情
-									</el-dropdown-item>
+									<el-dropdown-item disabled> 详情 </el-dropdown-item>
 									<el-dropdown-item
-										style="width: 200px"
+										divided
+										:disabled="scope.row.state === 'STARTED'"
 										@click="startPlugin(scope.row.name)"
 									>
 										启动
 									</el-dropdown-item>
 
-									<el-dropdown-item style="width: 200px" disabled>
+									<el-dropdown-item
+										:disabled="scope.row.state === 'STOPPED'"
+										@click="stopPlugin(scope.row.name)"
+									>
 										停止
 									</el-dropdown-item>
-									<el-dropdown-item style="width: 200px" disabled>
-										升级
-									</el-dropdown-item>
+
 									<el-dropdown-item
-										style="width: 200px; color: red"
+										divided
+										:disabled="scope.row.state !== 'DISABLED'"
+										@click="enablePlugin(scope.row.name)"
+									>
+										启用
+									</el-dropdown-item>
+
+									<el-dropdown-item
+										:disabled="scope.row.state === 'DISABLED'"
+										@click="disablePlugin(scope.row.name)"
+									>
+										禁用
+									</el-dropdown-item>
+
+									<el-dropdown-item
+										divided
+										@click="reloadPlugin(scope.row.name)"
+									>
+										重载
+									</el-dropdown-item>
+									<el-dropdown-item disabled> 升级 </el-dropdown-item>
+									<el-dropdown-item
+										style="width: 170; color: red"
 										divided
 										disabled
 									>
 										卸载
 									</el-dropdown-item>
-									<el-dropdown-item style="width: 200px; color: red" disabled>
+									<el-dropdown-item style="width: 170; color: red" disabled>
 										重置
 									</el-dropdown-item>
 								</el-dropdown-menu>
