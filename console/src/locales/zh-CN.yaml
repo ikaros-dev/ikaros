@@ -107,3 +107,5 @@ core:
       message:
         entry_load_failed: "{name}：加载插件入口文件失败"
         style_load_failed: "{name}：加载插件样式文件失败"
+  settings:
+    title: 设置
