@@ -42,6 +42,7 @@ public class IkarosExtensionFinder extends AbstractExtensionFinder {
             result.addAll(pluginExtensions);
         }
 
+
         if (result.isEmpty()) {
             log.debug("No extensions found for extension point '{}'", type.getName());
         } else {

@@ -116,7 +116,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
                 annotation.version(), annotation.kind(), name))
             .map(CustomEntity::getId)
             .flatMap(customId -> metadataRepository.updateValueByCustomIdAndKeyAndValue(customId,
-                metaName, metaNewVal));
+                metaName, metaNewVal))
+            .then();
     }
 
     @Override

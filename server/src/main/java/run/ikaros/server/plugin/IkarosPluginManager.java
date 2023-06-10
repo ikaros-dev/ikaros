@@ -25,6 +25,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
+import org.springframework.util.Assert;
 import run.ikaros.server.plugin.event.IkarosPluginBeforeStopEvent;
 import run.ikaros.server.plugin.event.IkarosPluginLoadedEvent;
 import run.ikaros.server.plugin.event.IkarosPluginStartedEvent;
@@ -354,6 +355,24 @@ public class IkarosPluginManager extends DefaultPluginManager
         PluginWrapper pluginWrapper = getPlugin(pluginId);
         rootApplicationContext.publishEvent(new IkarosPluginLoadedEvent(this, pluginWrapper));
         return pluginId;
+    }
+
+    /**
+     * Load plugin by id.
+     *
+     * @param pluginId plugin id.
+     * @return {@link PluginState}
+     */
+    public PluginState loadPlugin(String pluginId) {
+        Assert.hasText(pluginId, "'pluginId' must has text.");
+        Path pluginPath = getPlugin(pluginId).getPluginPath();
+        loadPlugin(pluginPath);
+        return getPlugin(pluginId).getPluginState();
+    }
+
+    @Override
+    public void loadPlugins() {
+        super.loadPlugins();
     }
 
     @Override

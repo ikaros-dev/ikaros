@@ -2,7 +2,6 @@ package run.ikaros.server.store.repository;
 
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
-import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
@@ -21,10 +20,8 @@ public interface CustomMetadataRepository
 
     Mono<CustomMetadataEntity> findByCustomIdAndKey(Long customId, String key);
 
-    @Query("update custom_metadata set cm_value=:value "
-        + "where custom_id = :customId and cm_key=:key")
-    Mono<Void> updateValueByCustomIdAndKeyAndValue(@Param("customId") Long customId,
-                                                   @Param("key") String key,
-                                                   @Param("value") byte[] value);
+    @Query("update custom_metadata set cm_value=$3 "
+        + "where custom_id=$1 and cm_key=$2")
+    Mono<Void> updateValueByCustomIdAndKeyAndValue(Long customId, String key, byte[] value);
 
 }

@@ -7,6 +7,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
+import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.plugin.custom.Plugin;
 import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.plugin.event.IkarosPluginStateChangedEvent;
@@ -30,6 +31,10 @@ public class PluginStateChangedListener {
         String pluginId = pluginWrapper.getPluginId();
         byte[] bytes = JsonUtils.obj2Bytes(state);
         return reactiveCustomClient.updateOneMeta(Plugin.class, pluginId, "state", bytes)
+            .doOnError(throwable -> log.warn("Skip first update plugin [{}] state.", pluginId))
+            .onErrorResume(NotFoundException.class, e -> Mono.empty())
             .doOnSuccess(unused -> log.debug("Update plugin [{}] state to [{}]", pluginId, state));
     }
+
+
 }

@@ -1,6 +1,5 @@
 package run.ikaros.server.plugin;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Objects;
 import org.pf4j.CompoundPluginLoader;
@@ -16,6 +15,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
+import run.ikaros.server.infra.properties.IkarosProperties;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(PluginProperties.class)
@@ -27,24 +27,22 @@ public class PluginConfiguration {
      * @return a {@link IkarosPluginManager} instance
      */
     @Bean
-    public IkarosPluginManager ikarosPluginManager(PluginProperties pluginProperties) {
+    public IkarosPluginManager ikarosPluginManager(PluginProperties pluginProperties,
+                                                   IkarosProperties ikarosProperties) {
         // Setup RuntimeMode
         RuntimeMode runtimeMode = RuntimeMode.DEPLOYMENT;
         if (Objects.nonNull(pluginProperties.getRuntimeMode())) {
             runtimeMode = pluginProperties.getRuntimeMode();
         }
         System.setProperty("pf4j.mode", runtimeMode.toString());
+
         // Setup Plugin folder
-        String pluginsRoot =
-            StringUtils.hasText(pluginProperties.getPluginsRoot())
-                ? pluginProperties.getPluginsRoot()
-                : "plugins";
-        System.setProperty("pf4j.pluginsDir", pluginsRoot);
-        String appDir = System.getProperty("user.dir");
-        if (RuntimeMode.DEPLOYMENT == runtimeMode
-            && StringUtils.hasText(appDir)) {
-            System.setProperty("pf4j.pluginsDir", appDir + File.separator + pluginsRoot);
+        String pluginsRoot = pluginProperties.getPluginsRoot();
+        if (!StringUtils.hasText(pluginsRoot)) {
+            pluginsRoot = ikarosProperties.getWorkDir().resolve("plugins").toString();
         }
+        System.setProperty("pf4j.pluginsDir", pluginsRoot);
+
         // New instance
         IkarosPluginManager ikarosPluginManager = new IkarosPluginManager() {
             @Override

@@ -1,8 +1,9 @@
 ikaros:
   plugin:
-    runtime-mode: development
-    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-starter
-    enabled-plugins:
+    disabled-plugins:
+      - PluginStarter
+  #    runtime-mode: development
+#    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-starter
   security:
     initializer:
       master-username: tomoki
