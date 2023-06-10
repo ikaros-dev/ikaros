@@ -7,6 +7,8 @@ import org.pf4j.PluginWrapper;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.plugin.custom.Plugin;
@@ -37,7 +39,7 @@ public class PluginPropertiesEnablesInitListener {
      * init start enable plugin after construct.
      */
     @EventListener(ApplicationReadyEvent.class)
-    public void initialize() {
+    public Mono<Void> initialize() {
         // Load all plugins after application ready.
         ikarosPluginManager.loadPlugins();
 
@@ -78,6 +80,12 @@ public class PluginPropertiesEnablesInitListener {
                 .forEach(
                     pluginWrapper -> ikarosPluginManager.startPlugin(pluginWrapper.getPluginId()));
         }
+
+        // Remove plugin records that manager none.
+        return reactiveCustomClient.findAll(Plugin.class, null)
+            .filter(plugin -> ikarosPluginManager.getPlugin(plugin.getName()) == null)
+            .flatMap(reactiveCustomClient::delete)
+            .then();
     }
 
     private void savePluginDescToDatabase(String pluginId) {
