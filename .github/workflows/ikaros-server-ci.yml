@@ -49,8 +49,9 @@ jobs:
         run: chmod +x ./gradlew
       - name: Check code style
         run: ./gradlew check -x test
-      - name: Upload build dir
+      - name: Upload build dir if step run failed.
         uses: actions/upload-artifact@v3.1.2
+        if: ${{ failure() }}
         with:
           # Artifact name
           name: build
