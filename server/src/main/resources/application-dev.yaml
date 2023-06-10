@@ -1,8 +1,6 @@
 ikaros:
   plugin:
-    disabled-plugins:
-      - PluginStarter
-  #    runtime-mode: development
+#    runtime-mode: development
 #    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-starter
   security:
     initializer:
@@ -33,7 +31,7 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
-  show-actuator: true
+  show-actuator: false
 
 management:
   endpoints:

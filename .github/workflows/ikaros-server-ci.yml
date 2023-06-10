@@ -49,6 +49,18 @@ jobs:
         run: chmod +x ./gradlew
       - name: Check code style
         run: ./gradlew check -x test
+      - name: Upload build dir if current step run failed.
+        uses: actions/upload-artifact@v3.1.2
+        if: ${{ failure() }}
+        with:
+          # Artifact name
+          name: checkBuild
+          # A file, directory or wildcard pattern that describes what to upload
+          path: /home/runner/work/ikaros/ikaros/server/build
+          # The desired behavior if no files are found using the provided path.
+          if-no-files-found: warn
+          # Duration after which artifact will expire in days. 0 means using default retention.Minimum 1 day. Maximum 90 days unless changed from the repository settings page.
+          retention-days: 3
   test:
     runs-on: ubuntu-latest
     steps:
@@ -72,3 +84,16 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./server/build/reports/jacoco/test/jacocoTestReport.xml
+      - name: Upload build dir if current step run failed.
+        uses: actions/upload-artifact@v3.1.2
+        if: ${{ failure() }}
+        with:
+          # Artifact name
+          name: testBuild
+          # A file, directory or wildcard pattern that describes what to upload
+          path: /home/runner/work/ikaros/ikaros/server/build
+          # The desired behavior if no files are found using the provided path.
+          if-no-files-found: warn
+          # Duration after which artifact will expire in days. 0 means using default retention.Minimum 1 day. Maximum 90 days unless changed from the repository settings page.
+          retention-days: 3
+

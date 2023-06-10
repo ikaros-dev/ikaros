@@ -15,6 +15,7 @@ checkstyle {
     toolVersion = "9.3"
     showViolations = false
     ignoreFailures = false
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
 }
 
 repositories {
