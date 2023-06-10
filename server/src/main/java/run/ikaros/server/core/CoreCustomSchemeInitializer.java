@@ -9,6 +9,7 @@ import run.ikaros.api.core.file.FilePolicy;
 import run.ikaros.api.core.file.FileSetting;
 import run.ikaros.api.custom.scheme.CustomSchemeManager;
 import run.ikaros.api.plugin.custom.Plugin;
+import run.ikaros.server.core.setting.ConfigMap;
 import run.ikaros.server.custom.scheme.SchemeInitializedEvent;
 
 @Component
@@ -32,6 +33,9 @@ public class CoreCustomSchemeInitializer implements ApplicationListener<Applicat
         // file.ikaros.run
         schemeManager.register(FilePolicy.class);
         schemeManager.register(FileSetting.class);
+
+        // setting.ikaros.run
+        schemeManager.register(ConfigMap.class);
 
         eventPublisher.publishEvent(new SchemeInitializedEvent(this));
     }
