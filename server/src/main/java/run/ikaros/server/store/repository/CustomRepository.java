@@ -16,6 +16,12 @@ public interface CustomRepository extends R2dbcRepository<CustomEntity, Long> {
     Flux<CustomEntity> findAllByGroupAndVersionAndKind(String group, String version, String kind,
                                                        Pageable pageable);
 
+    Flux<CustomEntity> findAllByGroupAndVersionAndKind(String group, String version, String kind);
+
     Mono<Long> countCustomEntitiesByGroupAndVersionAndKind(String group, String version,
                                                            String kind);
+
+
+    Mono<CustomEntity> findByGroupAndVersionAndKindAndName(String group, String version,
+                                                           String kind, String name);
 }

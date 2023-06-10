@@ -2,6 +2,9 @@ package run.ikaros.server.custom;
 
 import static run.ikaros.server.custom.CustomConverter.getNameFieldValue;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -10,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Predicates;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -98,6 +102,40 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public <C> Mono<Void> updateOneMeta(@Nonnull Class<C> clazz, @NotBlank String name,
+                                        @NotBlank String metaName, @Nullable byte[] metaNewVal) {
+        Assert.notNull(clazz, "'clazz' must not null.");
+        Assert.isTrue(StringUtils.hasText(name), "'name' must has text");
+        Assert.isTrue(StringUtils.hasText(metaName), "'metaName' must has text");
+        Custom annotation = clazz.getAnnotation(Custom.class);
+        return fetchOneMeta(clazz, name, metaName)
+            .filter(oldMetaValBytes -> oldMetaValBytes != metaNewVal)
+            .switchIfEmpty(Mono.empty())
+            .flatMap(oldMetaValBytes -> repository.findByGroupAndVersionAndKindAndName(
+                annotation.group(),
+                annotation.version(), annotation.kind(), name))
+            .map(CustomEntity::getId)
+            .flatMap(customId -> metadataRepository.updateValueByCustomIdAndKeyAndValue(customId,
+                metaName, metaNewVal))
+            .then();
+    }
+
+    @Override
+    public <C> Mono<byte[]> fetchOneMeta(@Nonnull Class<C> clazz, @NotBlank String name,
+                                         @NotBlank String metaName) {
+        Assert.notNull(clazz, "'clazz' must not null.");
+        Assert.isTrue(StringUtils.hasText(name), "'name' must has text");
+        Assert.isTrue(StringUtils.hasText(metaName), "'metaName' must has text");
+        return findCustomEntityOne(clazz, name)
+            .map(CustomEntity::getId)
+            .flatMap(customId -> metadataRepository.findByCustomIdAndKey(customId, metaName))
+            .switchIfEmpty(Mono.error(new NotFoundException("Not found metadata for class: " + clazz
+            + ", name: " + name + ", metaName: " + metaName)))
+            .map(CustomMetadataEntity::getValue);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public <C> Mono<C> delete(C custom) {
         return Mono.justOrEmpty(custom)
             .filter(Objects::nonNull)
@@ -112,6 +150,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public <C> Mono<C> delete(Class<C> clazz, String name) {
         return Mono.justOrEmpty(clazz)
             .filter(Objects::nonNull)
@@ -188,9 +227,9 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
                 .collectList()
                 .flatMap(customList ->
                     repository.countCustomEntitiesByGroupAndVersionAndKind(
-                        type.getAnnotation(Custom.class).group(),
-                        type.getAnnotation(Custom.class).version(),
-                        type.getAnnotation(Custom.class).kind())
+                            type.getAnnotation(Custom.class).group(),
+                            type.getAnnotation(Custom.class).version(),
+                            type.getAnnotation(Custom.class).kind())
                         .map(count -> new PagingWrap<C>(finalPage, finalSize, count, customList))));
     }
 

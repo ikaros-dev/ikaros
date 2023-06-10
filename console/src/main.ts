@@ -110,11 +110,11 @@ function loadStyle(href: string) {
 const pluginErrorMessages: Array<string> = [];
 const pluginModuleStore = usePluginModuleStore();
 async function loadPluginModules() {
-	const { data } = await apiClient.plugin.getpluginsbyPaging({
+	const { data } = await apiClient.plugin.getPluginsByPaging({
 		page: '1',
 		size: '99999',
 	});
-	console.log('Load all-plugins: ', data);
+	// console.log('Load all-plugins: ', data);
 
 	// Get all started plugins
 	const plugins = data.items.filter((plugin) => {

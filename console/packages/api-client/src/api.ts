@@ -17,6 +17,7 @@ export * from './api/file-ikaros-run-v1alpha1-file-policy-api';
 export * from './api/file-ikaros-run-v1alpha1-file-setting-api';
 export * from './api/plugin-ikaros-run-v1alpha1-plugin-api';
 export * from './api/v1alpha1-file-api';
+export * from './api/v1alpha1-plugin-api';
 export * from './api/v1alpha1-subject-api';
 export * from './api/v1alpha1-subject-relation-api';
 export * from './api/v1alpha1-user-api';

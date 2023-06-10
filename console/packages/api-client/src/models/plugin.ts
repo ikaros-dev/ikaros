@@ -15,6 +15,9 @@
 // May contain unused imports in some cases
 // @ts-ignore
 import { Author } from './author';
+// May contain unused imports in some cases
+// @ts-ignore
+import { PluginLoadLocation } from './plugin-load-location';
 
 /**
  *
@@ -94,6 +97,24 @@ export interface Plugin {
 	 * @memberof Plugin
 	 */
 	dependencies?: { [key: string]: string };
+	/**
+	 *
+	 * @type {PluginLoadLocation}
+	 * @memberof Plugin
+	 */
+	loadLocation?: PluginLoadLocation;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof Plugin
+	 */
+	entry?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof Plugin
+	 */
+	stylesheet?: string;
 }
 
 export const PluginStateEnum = {

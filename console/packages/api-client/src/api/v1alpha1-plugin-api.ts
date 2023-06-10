@@ -37,31 +37,43 @@ import {
 	BaseAPI,
 	RequiredError,
 } from '../base';
-// @ts-ignore
-import { Subject } from '../models';
 /**
- * V1alpha1SubjectApi - axios parameter creator
+ * V1alpha1PluginApi - axios parameter creator
  * @export
  */
-export const V1alpha1SubjectApiAxiosParamCreator = function (
+export const V1alpha1PluginApiAxiosParamCreator = function (
 	configuration?: Configuration
 ) {
 	return {
 		/**
-		 * Delete subject by id.
-		 * @param {number} id Subject id
+		 * Operate plugin state by id(name).
+		 * @param {string} name Name of plugin, this is id also.
+		 * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'UNLOAD'} operate Operate of plugin state.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		deleteSubjectById: async (
-			id: number,
+		operatePluginStateById: async (
+			name: string,
+			operate:
+				| 'START'
+				| 'STOP'
+				| 'ENABLE'
+				| 'DISABLE'
+				| 'LOAD'
+				| 'LOAD_ALL'
+				| 'RELOAD'
+				| 'RELOAD_ALL'
+				| 'RELOAD_ALL_STARTED'
+				| 'UNLOAD',
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			// verify required parameter 'id' is not null or undefined
-			assertParamExists('deleteSubjectById', 'id', id);
-			const localVarPath = `/api/v1alpha1/subject/{id}`.replace(
-				`{${'id'}}`,
-				encodeURIComponent(String(id))
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('operatePluginStateById', 'name', name);
+			// verify required parameter 'operate' is not null or undefined
+			assertParamExists('operatePluginStateById', 'operate', operate);
+			const localVarPath = `/api/v1alpha1/plugin/{name}/state`.replace(
+				`{${'name'}}`,
+				encodeURIComponent(String(name))
 			);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -71,7 +83,64 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 			}
 
 			const localVarRequestOptions = {
-				method: 'DELETE',
+				method: 'PUT',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (operate !== undefined) {
+				localVarQueryParameter['operate'] = operate;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Reload plugin by id(name).
+		 * @param {string} name Name of plugin, this is id also.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		reloadPluginById: async (
+			name: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('reloadPluginById', 'name', name);
+			const localVarPath = `/api/v1alpha1/plugin/{name}/state/reload`.replace(
+				`{${'name'}}`,
+				encodeURIComponent(String(name))
+			);
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'PUT',
 				...baseOptions,
 				...options,
 			};
@@ -101,81 +170,21 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 			};
 		},
 		/**
-		 * Create or update single subject.
-		 * @param {Subject} subject
+		 * Start plugin by id(name).
+		 * @param {string} name Name of plugin, this is id also.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		saveSubject: async (
-			subject: Subject,
+		startPluginById: async (
+			name: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			// verify required parameter 'subject' is not null or undefined
-			assertParamExists('saveSubject', 'subject', subject);
-			const localVarPath = `/api/v1alpha1/subject`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			localVarHeaderParameter['Content-Type'] = 'application/json';
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				subject,
-				localVarRequestOptions,
-				configuration
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('startPluginById', 'name', name);
+			const localVarPath = `/api/v1alpha1/plugin/{name}/state/start`.replace(
+				`{${'name'}}`,
+				encodeURIComponent(String(name))
 			);
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @param {number} page Search page
-		 * @param {number} size Search page size
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		searchAllSubjectByPaging: async (
-			page: number,
-			size: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'page' is not null or undefined
-			assertParamExists('searchAllSubjectByPaging', 'page', page);
-			// verify required parameter 'size' is not null or undefined
-			assertParamExists('searchAllSubjectByPaging', 'size', size);
-			const localVarPath = `/api/v1alpha1/subjects/{page}/{size}`
-				.replace(`{${'page'}}`, encodeURIComponent(String(page)))
-				.replace(`{${'size'}}`, encodeURIComponent(String(size)));
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -184,7 +193,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 			}
 
 			const localVarRequestOptions = {
-				method: 'GET',
+				method: 'PUT',
 				...baseOptions,
 				...options,
 			};
@@ -214,20 +223,20 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 			};
 		},
 		/**
-		 * Search single subject by id.
-		 * @param {number} id Subject ID
+		 * Stop plugin by id(name).
+		 * @param {string} name Name of plugin, this is id also.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		searchSubjectById: async (
-			id: number,
+		stopPluginById: async (
+			name: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			// verify required parameter 'id' is not null or undefined
-			assertParamExists('searchSubjectById', 'id', id);
-			const localVarPath = `/api/v1alpha1/subject/{id}`.replace(
-				`{${'id'}}`,
-				encodeURIComponent(String(id))
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('stopPluginById', 'name', name);
+			const localVarPath = `/api/v1alpha1/plugin/{name}/state/stop`.replace(
+				`{${'name'}}`,
+				encodeURIComponent(String(name))
 			);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -237,7 +246,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 			}
 
 			const localVarRequestOptions = {
-				method: 'GET',
+				method: 'PUT',
 				...baseOptions,
 				...options,
 			};
@@ -270,75 +279,41 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 };
 
 /**
- * V1alpha1SubjectApi - functional programming interface
+ * V1alpha1PluginApi - functional programming interface
  * @export
  */
-export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
+export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
 	const localVarAxiosParamCreator =
-		V1alpha1SubjectApiAxiosParamCreator(configuration);
+		V1alpha1PluginApiAxiosParamCreator(configuration);
 	return {
 		/**
-		 * Delete subject by id.
-		 * @param {number} id Subject id
+		 * Operate plugin state by id(name).
+		 * @param {string} name Name of plugin, this is id also.
+		 * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'UNLOAD'} operate Operate of plugin state.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async deleteSubjectById(
-			id: number,
+		async operatePluginStateById(
+			name: string,
+			operate:
+				| 'START'
+				| 'STOP'
+				| 'ENABLE'
+				| 'DISABLE'
+				| 'LOAD'
+				| 'LOAD_ALL'
+				| 'RELOAD'
+				| 'RELOAD_ALL'
+				| 'RELOAD_ALL_STARTED'
+				| 'UNLOAD',
 			options?: AxiosRequestConfig
 		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
 		> {
 			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.deleteSubjectById(id, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Create or update single subject.
-		 * @param {Subject} subject
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async saveSubject(
-			subject: Subject,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.saveSubject(
-				subject,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @param {number} page Search page
-		 * @param {number} size Search page size
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async searchAllSubjectByPaging(
-			page: number,
-			size: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.searchAllSubjectByPaging(
-					page,
-					size,
+				await localVarAxiosParamCreator.operatePluginStateById(
+					name,
+					operate,
 					options
 				);
 			return createRequestFunction(
@@ -349,19 +324,65 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 			);
 		},
 		/**
-		 * Search single subject by id.
-		 * @param {number} id Subject ID
+		 * Reload plugin by id(name).
+		 * @param {string} name Name of plugin, this is id also.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async searchSubjectById(
-			id: number,
+		async reloadPluginById(
+			name: string,
 			options?: AxiosRequestConfig
 		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
 		> {
 			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.searchSubjectById(id, options);
+				await localVarAxiosParamCreator.reloadPluginById(name, options);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Start plugin by id(name).
+		 * @param {string} name Name of plugin, this is id also.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async startPluginById(
+			name: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.startPluginById(
+				name,
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Stop plugin by id(name).
+		 * @param {string} name Name of plugin, this is id also.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async stopPluginById(
+			name: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.stopPluginById(
+				name,
+				options
+			);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -373,214 +394,224 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 };
 
 /**
- * V1alpha1SubjectApi - factory interface
+ * V1alpha1PluginApi - factory interface
  * @export
  */
-export const V1alpha1SubjectApiFactory = function (
+export const V1alpha1PluginApiFactory = function (
 	configuration?: Configuration,
 	basePath?: string,
 	axios?: AxiosInstance
 ) {
-	const localVarFp = V1alpha1SubjectApiFp(configuration);
+	const localVarFp = V1alpha1PluginApiFp(configuration);
 	return {
 		/**
-		 * Delete subject by id.
-		 * @param {V1alpha1SubjectApiDeleteSubjectByIdRequest} requestParameters Request parameters.
+		 * Operate plugin state by id(name).
+		 * @param {V1alpha1PluginApiOperatePluginStateByIdRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		deleteSubjectById(
-			requestParameters: V1alpha1SubjectApiDeleteSubjectByIdRequest,
+		operatePluginStateById(
+			requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest,
 			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
+		): AxiosPromise<string> {
 			return localVarFp
-				.deleteSubjectById(requestParameters.id, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Create or update single subject.
-		 * @param {V1alpha1SubjectApiSaveSubjectRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		saveSubject(
-			requestParameters: V1alpha1SubjectApiSaveSubjectRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.saveSubject(requestParameters.subject, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @param {V1alpha1SubjectApiSearchAllSubjectByPagingRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		searchAllSubjectByPaging(
-			requestParameters: V1alpha1SubjectApiSearchAllSubjectByPagingRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.searchAllSubjectByPaging(
-					requestParameters.page,
-					requestParameters.size,
+				.operatePluginStateById(
+					requestParameters.name,
+					requestParameters.operate,
 					options
 				)
 				.then((request) => request(axios, basePath));
 		},
 		/**
-		 * Search single subject by id.
-		 * @param {V1alpha1SubjectApiSearchSubjectByIdRequest} requestParameters Request parameters.
+		 * Reload plugin by id(name).
+		 * @param {V1alpha1PluginApiReloadPluginByIdRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		searchSubjectById(
-			requestParameters: V1alpha1SubjectApiSearchSubjectByIdRequest,
+		reloadPluginById(
+			requestParameters: V1alpha1PluginApiReloadPluginByIdRequest,
 			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
+		): AxiosPromise<boolean> {
 			return localVarFp
-				.searchSubjectById(requestParameters.id, options)
+				.reloadPluginById(requestParameters.name, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Start plugin by id(name).
+		 * @param {V1alpha1PluginApiStartPluginByIdRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		startPluginById(
+			requestParameters: V1alpha1PluginApiStartPluginByIdRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<boolean> {
+			return localVarFp
+				.startPluginById(requestParameters.name, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Stop plugin by id(name).
+		 * @param {V1alpha1PluginApiStopPluginByIdRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		stopPluginById(
+			requestParameters: V1alpha1PluginApiStopPluginByIdRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<boolean> {
+			return localVarFp
+				.stopPluginById(requestParameters.name, options)
 				.then((request) => request(axios, basePath));
 		},
 	};
 };
 
 /**
- * Request parameters for deleteSubjectById operation in V1alpha1SubjectApi.
+ * Request parameters for operatePluginStateById operation in V1alpha1PluginApi.
  * @export
- * @interface V1alpha1SubjectApiDeleteSubjectByIdRequest
+ * @interface V1alpha1PluginApiOperatePluginStateByIdRequest
  */
-export interface V1alpha1SubjectApiDeleteSubjectByIdRequest {
+export interface V1alpha1PluginApiOperatePluginStateByIdRequest {
 	/**
-	 * Subject id
-	 * @type {number}
-	 * @memberof V1alpha1SubjectApiDeleteSubjectById
+	 * Name of plugin, this is id also.
+	 * @type {string}
+	 * @memberof V1alpha1PluginApiOperatePluginStateById
 	 */
-	readonly id: number;
+	readonly name: string;
+
+	/**
+	 * Operate of plugin state.
+	 * @type {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'UNLOAD'}
+	 * @memberof V1alpha1PluginApiOperatePluginStateById
+	 */
+	readonly operate:
+		| 'START'
+		| 'STOP'
+		| 'ENABLE'
+		| 'DISABLE'
+		| 'LOAD'
+		| 'LOAD_ALL'
+		| 'RELOAD'
+		| 'RELOAD_ALL'
+		| 'RELOAD_ALL_STARTED'
+		| 'UNLOAD';
 }
 
 /**
- * Request parameters for saveSubject operation in V1alpha1SubjectApi.
+ * Request parameters for reloadPluginById operation in V1alpha1PluginApi.
  * @export
- * @interface V1alpha1SubjectApiSaveSubjectRequest
+ * @interface V1alpha1PluginApiReloadPluginByIdRequest
  */
-export interface V1alpha1SubjectApiSaveSubjectRequest {
+export interface V1alpha1PluginApiReloadPluginByIdRequest {
 	/**
-	 *
-	 * @type {Subject}
-	 * @memberof V1alpha1SubjectApiSaveSubject
+	 * Name of plugin, this is id also.
+	 * @type {string}
+	 * @memberof V1alpha1PluginApiReloadPluginById
 	 */
-	readonly subject: Subject;
+	readonly name: string;
 }
 
 /**
- * Request parameters for searchAllSubjectByPaging operation in V1alpha1SubjectApi.
+ * Request parameters for startPluginById operation in V1alpha1PluginApi.
  * @export
- * @interface V1alpha1SubjectApiSearchAllSubjectByPagingRequest
+ * @interface V1alpha1PluginApiStartPluginByIdRequest
  */
-export interface V1alpha1SubjectApiSearchAllSubjectByPagingRequest {
+export interface V1alpha1PluginApiStartPluginByIdRequest {
 	/**
-	 * Search page
-	 * @type {number}
-	 * @memberof V1alpha1SubjectApiSearchAllSubjectByPaging
+	 * Name of plugin, this is id also.
+	 * @type {string}
+	 * @memberof V1alpha1PluginApiStartPluginById
 	 */
-	readonly page: number;
-
-	/**
-	 * Search page size
-	 * @type {number}
-	 * @memberof V1alpha1SubjectApiSearchAllSubjectByPaging
-	 */
-	readonly size: number;
+	readonly name: string;
 }
 
 /**
- * Request parameters for searchSubjectById operation in V1alpha1SubjectApi.
+ * Request parameters for stopPluginById operation in V1alpha1PluginApi.
  * @export
- * @interface V1alpha1SubjectApiSearchSubjectByIdRequest
+ * @interface V1alpha1PluginApiStopPluginByIdRequest
  */
-export interface V1alpha1SubjectApiSearchSubjectByIdRequest {
+export interface V1alpha1PluginApiStopPluginByIdRequest {
 	/**
-	 * Subject ID
-	 * @type {number}
-	 * @memberof V1alpha1SubjectApiSearchSubjectById
+	 * Name of plugin, this is id also.
+	 * @type {string}
+	 * @memberof V1alpha1PluginApiStopPluginById
 	 */
-	readonly id: number;
+	readonly name: string;
 }
 
 /**
- * V1alpha1SubjectApi - object-oriented interface
+ * V1alpha1PluginApi - object-oriented interface
  * @export
- * @class V1alpha1SubjectApi
+ * @class V1alpha1PluginApi
  * @extends {BaseAPI}
  */
-export class V1alpha1SubjectApi extends BaseAPI {
+export class V1alpha1PluginApi extends BaseAPI {
 	/**
-	 * Delete subject by id.
-	 * @param {V1alpha1SubjectApiDeleteSubjectByIdRequest} requestParameters Request parameters.
+	 * Operate plugin state by id(name).
+	 * @param {V1alpha1PluginApiOperatePluginStateByIdRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
-	 * @memberof V1alpha1SubjectApi
+	 * @memberof V1alpha1PluginApi
 	 */
-	public deleteSubjectById(
-		requestParameters: V1alpha1SubjectApiDeleteSubjectByIdRequest,
+	public operatePluginStateById(
+		requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest,
 		options?: AxiosRequestConfig
 	) {
-		return V1alpha1SubjectApiFp(this.configuration)
-			.deleteSubjectById(requestParameters.id, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
-
-	/**
-	 * Create or update single subject.
-	 * @param {V1alpha1SubjectApiSaveSubjectRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1SubjectApi
-	 */
-	public saveSubject(
-		requestParameters: V1alpha1SubjectApiSaveSubjectRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1SubjectApiFp(this.configuration)
-			.saveSubject(requestParameters.subject, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
-
-	/**
-	 *
-	 * @param {V1alpha1SubjectApiSearchAllSubjectByPagingRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1SubjectApi
-	 */
-	public searchAllSubjectByPaging(
-		requestParameters: V1alpha1SubjectApiSearchAllSubjectByPagingRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1SubjectApiFp(this.configuration)
-			.searchAllSubjectByPaging(
-				requestParameters.page,
-				requestParameters.size,
+		return V1alpha1PluginApiFp(this.configuration)
+			.operatePluginStateById(
+				requestParameters.name,
+				requestParameters.operate,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
 	/**
-	 * Search single subject by id.
-	 * @param {V1alpha1SubjectApiSearchSubjectByIdRequest} requestParameters Request parameters.
+	 * Reload plugin by id(name).
+	 * @param {V1alpha1PluginApiReloadPluginByIdRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
-	 * @memberof V1alpha1SubjectApi
+	 * @memberof V1alpha1PluginApi
 	 */
-	public searchSubjectById(
-		requestParameters: V1alpha1SubjectApiSearchSubjectByIdRequest,
+	public reloadPluginById(
+		requestParameters: V1alpha1PluginApiReloadPluginByIdRequest,
 		options?: AxiosRequestConfig
 	) {
-		return V1alpha1SubjectApiFp(this.configuration)
-			.searchSubjectById(requestParameters.id, options)
+		return V1alpha1PluginApiFp(this.configuration)
+			.reloadPluginById(requestParameters.name, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Start plugin by id(name).
+	 * @param {V1alpha1PluginApiStartPluginByIdRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1PluginApi
+	 */
+	public startPluginById(
+		requestParameters: V1alpha1PluginApiStartPluginByIdRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1PluginApiFp(this.configuration)
+			.startPluginById(requestParameters.name, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Stop plugin by id(name).
+	 * @param {V1alpha1PluginApiStopPluginByIdRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1PluginApi
+	 */
+	public stopPluginById(
+		requestParameters: V1alpha1PluginApiStopPluginByIdRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1PluginApiFp(this.configuration)
+			.stopPluginById(requestParameters.name, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }

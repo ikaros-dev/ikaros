@@ -11,7 +11,7 @@ import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomScheme;
 import run.ikaros.api.exception.NotFoundException;
 
-public class CustomDeleteHandler implements CustomRouterFunctionFactory.GetHandler {
+public class CustomDeleteHandler implements CustomRouterFunctionFactory.DeleteHandler {
     private final ReactiveCustomClient customClient;
     private final CustomScheme scheme;
 

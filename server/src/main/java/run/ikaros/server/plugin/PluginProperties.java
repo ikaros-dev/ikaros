@@ -48,11 +48,13 @@ public class PluginProperties {
     /**
      * Extended Plugin Class Directory.
      */
+    @Deprecated
     private List<String> classesDirectories = new ArrayList<>();
 
     /**
      * Extended Plugin Jar Directory.
      */
+    @Deprecated
     private List<String> libDirectories = new ArrayList<>();
 
     /**

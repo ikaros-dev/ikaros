@@ -46,6 +46,23 @@ public class JsonUtils {
     }
 
     /**
+     * 转换对象为字节数组.
+     *
+     * @param obj 待转换的对象
+     * @return JSON
+     */
+    public static byte[] obj2Bytes(Object obj) {
+        Assert.notNull(obj, "'obj' must not be null");
+        try {
+            return objectMapper.writeValueAsBytes(obj);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            logger.error("convert obj to byte[] fail. ", e);
+        }
+        return null;
+    }
+
+    /**
      * 转换JSON为对象.
      *
      * @param json  json字符串

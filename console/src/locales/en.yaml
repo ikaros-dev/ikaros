@@ -104,6 +104,7 @@ core:
   subject:
     title: Subjects
   plugin:
+    title: Plugins
     loader:
       message:
         entry_load_failed: "{name}: Failed to load plugin entry file"
