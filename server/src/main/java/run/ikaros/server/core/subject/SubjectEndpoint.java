@@ -9,6 +9,7 @@ import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -100,18 +101,26 @@ public class SubjectEndpoint implements CoreEndpoint {
             .flatMap(pagingWrap -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(pagingWrap))
-            .switchIfEmpty(ServerResponse.notFound().build());
+            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("[]"));
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {
-        return Mono.just(request.pathVariable("id"))
+        String id = request.pathVariable("id");
+        return Mono.just(id)
             .map(Long::valueOf)
             .flatMap(subjectService::findById)
             .flatMap(subject -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(subject))
-            .onErrorResume(NotFoundException.class, err -> ServerResponse.notFound().build())
-            .switchIfEmpty(ServerResponse.notFound().build());
+            .onErrorResume(NotFoundException.class,
+                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(e.getMessage()))
+            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("Not found for id: " + id));
     }
 
     private Mono<ServerResponse> save(ServerRequest request) {

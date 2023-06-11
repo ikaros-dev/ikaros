@@ -4,6 +4,7 @@ import static run.ikaros.server.custom.CustomConverter.getNameFieldValue;
 import static run.ikaros.server.custom.router.CustomRouterFunctionFactory.PathPatternGenerator.buildCustomPathPatternPrefix;
 
 import java.net.URI;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -34,7 +35,10 @@ public class CustomCreateHandler implements CustomRouterFunctionFactory.CreateHa
                 .created(URI.create(pathPattern() + "/" + getNameFieldValue(custom)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(custom))
-            .onErrorResume(NotFoundException.class, e -> ServerResponse.notFound().build());
+            .onErrorResume(NotFoundException.class,
+                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(e.getMessage()));
     }
 
     @Override

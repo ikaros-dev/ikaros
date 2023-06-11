@@ -8,6 +8,7 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.parameter.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
@@ -155,7 +156,10 @@ public class UserEndpoint implements CoreEndpoint {
             .flatMap(userService::update)
             .flatMap(user -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(user))
-            .onErrorResume(NotFoundException.class, e -> ServerResponse.notFound().build())
+            .onErrorResume(NotFoundException.class,
+                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(e.getMessage()))
             .onErrorResume(IllegalArgumentException.class,
                 e -> ServerResponse.badRequest()
                     .bodyValue("No user id. exception msg:" + e.getMessage()));

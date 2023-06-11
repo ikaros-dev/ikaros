@@ -58,6 +58,7 @@ public class MasterInitializer {
                 .password(getPassword())
                 .roleId(roleId)
                 .nickname(initializer.getMasterNickname())
+                .enable(true)
                 .build()))
             .map(User::new)
             .flatMap(userService::save);
