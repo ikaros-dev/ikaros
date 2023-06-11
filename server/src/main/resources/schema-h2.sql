@@ -265,7 +265,7 @@ create table if not exists ikuser
     enable          bool           null,
     introduce       varchar(50000) null,
     last_login_ip   varchar(255)   null,
-    last_login_time int8           null,
+    last_login_time timestamp(6)   null,
     nickname        varchar(255)   null,
     non_locked      bool           null,
     password        varchar(255)   null,

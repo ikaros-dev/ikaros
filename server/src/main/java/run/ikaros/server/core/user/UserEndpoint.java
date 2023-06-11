@@ -1,7 +1,9 @@
 package run.ikaros.server.core.user;
 
+import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
+import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springdoc.core.fn.builders.apiresponse.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -34,7 +36,16 @@ public class UserEndpoint implements CoreEndpoint {
                 builder -> builder.operationId("GetCurrentUserDetail")
                     .tag(tag)
                     .description("Get current user detail.")
-                    .response(Builder.responseBuilder()
+                    .response(responseBuilder()
+                        .implementation(User.class)))
+            .PUT("/user", this::putUser,
+                builder -> builder.operationId("UpdateUser")
+                    .tag(tag)
+                    .description("Update user information.")
+                    .requestBody(requestBodyBuilder()
+                        .required(true).implementation(User.class)
+                        .description("User json, include entity field."))
+                    .response(responseBuilder()
                         .implementation(User.class)))
             .build();
     }
@@ -51,5 +62,15 @@ public class UserEndpoint implements CoreEndpoint {
             .flatMap(user -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(user));
+    }
+
+    private Mono<ServerResponse> putUser(ServerRequest request) {
+        return request.bodyToMono(User.class)
+            .flatMap(userService::update)
+            .flatMap(user -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(user))
+            .onErrorResume(IllegalArgumentException.class,
+                e -> ServerResponse.badRequest()
+                    .bodyValue("No user id. exception msg:" + e.getMessage()));
     }
 }

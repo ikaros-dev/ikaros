@@ -1,5 +1,6 @@
 package run.ikaros.server.core.user;
 
+import jakarta.annotation.Nonnull;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 
@@ -27,4 +28,5 @@ public interface UserService {
 
     Mono<User> updatePassword(String username, String rawPassword);
 
+    Mono<User> update(@Nonnull User user);
 }

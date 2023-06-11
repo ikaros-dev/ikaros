@@ -2,6 +2,7 @@ package run.ikaros.server.core.user;
 
 import static run.ikaros.server.core.user.UserService.addEncodingIdPrefixIfNotExists;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Example;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -64,5 +65,17 @@ public class UserServiceImpl implements UserService {
             .map(userEntity -> userEntity.setPassword(passwordEncoder.encode(rawPassword)))
             .flatMap(repository::save)
             .map(User::new);
+    }
+
+    @Override
+    public Mono<User> update(@NotNull User user) {
+        Assert.notNull(user, "'user' must not be null.");
+        UserEntity entity = user.entity();
+        Assert.notNull(entity.getId(), "user id must not be null in operate update.");
+        // Set not update fields.
+        entity.setUsername(null);
+        entity.setPassword(null);
+        // Update.
+        return repository.save(entity).map(User::new);
     }
 }
