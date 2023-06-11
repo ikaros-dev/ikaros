@@ -52,5 +52,5 @@ npm publish
 选择当前目录下的更改进行`git add`
 
 ```bash
-git commit -m "build: gen new api-client@x.y.z and publish to npm center repo in @runikaros/api-client"
+git commit -m "build: gen new api-client@0.0.z and publish to npm center repo in @runikaros/api-client"
 ```

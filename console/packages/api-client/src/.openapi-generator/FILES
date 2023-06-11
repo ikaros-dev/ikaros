@@ -31,5 +31,6 @@ models/plugin.ts
 models/subject-image.ts
 models/subject-relation.ts
 models/subject.ts
+models/update-user-request.ts
 models/user-entity.ts
 models/user.ts
