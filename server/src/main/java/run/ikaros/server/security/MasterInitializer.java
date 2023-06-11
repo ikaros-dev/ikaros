@@ -39,6 +39,10 @@ public class MasterInitializer {
      */
     @EventListener(ApplicationReadyEvent.class)
     public Mono<Void> initialize() {
+        if (initializer.isDisabled()) {
+            log.warn("Skip init master user when ikaros.security.initializer.disabled=true");
+            return Mono.empty();
+        }
         return userService.getUserByUsername(initializer.getMasterUsername())
             .onErrorResume(UsernameNotFoundException.class, user -> createMaster())
             .then();
@@ -54,6 +58,7 @@ public class MasterInitializer {
                 .password(getPassword())
                 .roleId(roleId)
                 .nickname(initializer.getMasterNickname())
+                .enable(true)
                 .build()))
             .map(User::new)
             .flatMap(userService::save);

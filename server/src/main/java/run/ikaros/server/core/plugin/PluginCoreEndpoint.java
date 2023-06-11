@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import org.pf4j.PluginState;
 import org.springdoc.core.fn.builders.parameter.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -121,7 +122,10 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .flatMap(pluginState -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(pluginState))
-            .onErrorResume(NotFoundException.class, e -> ServerResponse.notFound().build());
+            .onErrorResume(NotFoundException.class,
+                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(e.getMessage()));
     }
 
 
@@ -131,7 +135,10 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .flatMap(isSuccess -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(isSuccess))
-            .onErrorResume(NotFoundException.class, err -> ServerResponse.notFound().build());
+            .onErrorResume(NotFoundException.class,
+                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(e.getMessage()));
     }
 
     Mono<ServerResponse> stopPluginById(ServerRequest request) {
@@ -140,7 +147,10 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .flatMap(isSuccess -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(isSuccess))
-            .onErrorResume(NotFoundException.class, err -> ServerResponse.notFound().build());
+            .onErrorResume(NotFoundException.class,
+                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(e.getMessage()));
     }
 
     Mono<ServerResponse> reloadPluginById(ServerRequest request) {
@@ -149,6 +159,9 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .flatMap(isSuccess -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(isSuccess))
-            .onErrorResume(NotFoundException.class, err -> ServerResponse.notFound().build());
+            .onErrorResume(NotFoundException.class,
+                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(e.getMessage()));
     }
 }

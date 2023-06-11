@@ -11,6 +11,7 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -98,15 +99,19 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> findAllBySubjectId(ServerRequest request) {
-        return Mono.just(request.pathVariable("subjectId"))
+        String subjectId = request.pathVariable("subjectId");
+        return Mono.just(subjectId)
             .map(Long::valueOf)
-            .flatMap(subjectId -> subjectRelationService.findAllBySubjectId(subjectId)
+            .flatMap(sid -> subjectRelationService.findAllBySubjectId(sid)
                 .collectList())
             .filter(subjectRelations -> !subjectRelations.isEmpty())
             .flatMap(subjectRelations -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(subjectRelations))
-            .switchIfEmpty(ServerResponse.notFound().build());
+            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue("Not found for subject id: " + subjectId));
+
     }
 
     private Mono<ServerResponse> findBySubjectIdAndType(ServerRequest request) {

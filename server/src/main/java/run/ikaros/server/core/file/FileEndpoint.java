@@ -15,6 +15,7 @@ import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
@@ -136,7 +137,8 @@ public class FileEndpoint implements CoreEndpoint {
     }
 
     Mono<ServerResponse> deleteById(ServerRequest request) {
-        return Mono.just(request.pathVariable("id"))
+        String id = request.pathVariable("id");
+        return Mono.just(id)
             .flatMap(fileId -> Mono.just(Long.valueOf(fileId)))
             .flatMap(fileRepository::findById)
             .map(File::new)
@@ -149,7 +151,9 @@ public class FileEndpoint implements CoreEndpoint {
             .flatMap(file -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("Delete success"))
-            .switchIfEmpty(ServerResponse.notFound().build());
+            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("Not found for id: " + id));
     }
 
     public interface UploadRequest {
