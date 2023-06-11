@@ -120,7 +120,7 @@ class UserServiceTest {
             .verifyComplete();
 
         // update user password
-        userService.updatePassword(username, newPassword).block();
+        userService.updatePassword(username, oldPassword, newPassword).block();
 
         StepVerifier.create(
                 encodedPasswordMono
@@ -138,18 +138,15 @@ class UserServiceTest {
             .verifyComplete();
 
         // update by same password
-        userService.updatePassword(username, newPassword).block();
-        StepVerifier.create(
-                encodedPasswordMono
-                    .flatMap(encodedPassword -> Mono.just(
-                        passwordEncoder.matches(newPassword, encodedPassword)
-                    ))
-            ).expectNext(Boolean.TRUE)
-            .verifyComplete();
+        StepVerifier.create(userService.updatePassword(username, oldPassword, newPassword))
+            .expectErrorMatches(throwable -> throwable.getClass() == RuntimeException.class
+                && throwable.getMessage().startsWith("Old password not matching username: "))
+            .verify();
+
 
         // update by not same password
         final String newPassword2 = "newPassword2";
-        userService.updatePassword(username, newPassword2).block();
+        userService.updatePassword(username, newPassword, newPassword2).block();
         StepVerifier.create(
                 encodedPasswordMono
                     .flatMap(encodedPassword -> Mono.just(
