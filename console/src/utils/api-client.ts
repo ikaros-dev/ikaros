@@ -3,6 +3,7 @@ import { i18n } from '../locales';
 import type { AxiosError, AxiosInstance } from 'axios';
 import {
 	PluginIkarosRunV1alpha1PluginApi,
+	SettingIkarosRunV1alpha1ConfigMapApi,
 	V1alpha1PluginApi,
 	V1alpha1UserApi,
 } from '@runikaros/api-client';
@@ -90,6 +91,11 @@ function setupApiClient(axios: AxiosInstance) {
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
+		configmap: new SettingIkarosRunV1alpha1ConfigMapApi(
+			undefined,
+			baseURL,
+			axios
+		),
 	};
 }
 

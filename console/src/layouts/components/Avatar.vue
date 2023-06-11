@@ -4,7 +4,7 @@ import { useLayoutStore } from '@/stores/layout';
 import { useUserStore } from '@/stores/user';
 import axios from 'axios';
 import { AxiosError } from 'axios';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 const layoutStore = useLayoutStore();
@@ -19,6 +19,24 @@ const toUserProfile = () => {
 	const userProfileRoutePath = '/profile';
 	router.push(userProfileRoutePath);
 	layoutStore.updatecurrentActivePathByRoutePath(userProfileRoutePath);
+};
+
+const confirmLogout = async () => {
+	ElMessageBox.confirm('您确定要登出吗? ', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			lougout();
+			window.location.reload();
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '已取消',
+			});
+		});
 };
 
 const lougout = async () => {
@@ -60,7 +78,7 @@ const lougout = async () => {
 		<template #dropdown>
 			<el-dropdown-menu>
 				<el-dropdown-item @click="toUserProfile"> 个人中心 </el-dropdown-item>
-				<el-dropdown-item @click="lougout">退出</el-dropdown-item>
+				<el-dropdown-item @click="confirmLogout">退出</el-dropdown-item>
 			</el-dropdown-menu>
 		</template>
 	</el-dropdown>
