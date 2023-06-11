@@ -10,7 +10,7 @@ import { i18n } from '@/locales';
 
 const t = i18n.global.t;
 const layoutStore = useLayoutStore();
-// const route = useRoute();
+const route = useRoute();
 const router = useRouter();
 
 // Generate menus by routes
@@ -108,10 +108,13 @@ const generateMenus = () => {
 			return acc;
 		}, [] as MenuItemType[])
 		.filter((item) => item.mobile);
+
+	// Set current active path from route
+	switchActivePath(route.path);
 };
 
-const switchActivePath = (index) => {
-	layoutStore.currentActivePath = index;
+const switchActivePath = (path) => {
+	layoutStore.currentActivePath = path;
 };
 
 onMounted(generateMenus);

@@ -1,0 +1,32 @@
+package run.ikaros.server.core.setting;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import lombok.Data;
+import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.custom.Custom;
+import run.ikaros.api.custom.Name;
+
+@Data
+@Custom(group = "setting.ikaros.run", version = OpenApiConst.CORE_VERSION, kind = "ConfigMap",
+    singular = "configmap", plural = "configmaps")
+public class ConfigMap {
+    @Name
+    private String name;
+    private Map<String, String> data;
+
+    /**
+     * Put data map item.
+     *
+     * @param key      item key
+     * @param dataItem item value
+     * @return this
+     */
+    public ConfigMap putDataItem(String key, String dataItem) {
+        if (this.data == null) {
+            this.data = new LinkedHashMap<>();
+        }
+        this.data.put(key, dataItem);
+        return this;
+    }
+}

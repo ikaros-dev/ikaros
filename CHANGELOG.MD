@@ -28,6 +28,7 @@
 - 合并 console 项目到主仓库 ikaros
 - 调整项目为多模块结构
 - 合并 app 和 rfcs 项目到主仓库 ikaros
+- 系统配置信息的更新
 
 ## 依赖
 
