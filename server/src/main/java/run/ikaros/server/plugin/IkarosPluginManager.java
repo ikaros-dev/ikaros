@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import run.ikaros.server.plugin.event.IkarosPluginBeforeStopEvent;
+import run.ikaros.server.plugin.event.IkarosPluginDeleteEvent;
 import run.ikaros.server.plugin.event.IkarosPluginLoadedEvent;
 import run.ikaros.server.plugin.event.IkarosPluginStartedEvent;
 import run.ikaros.server.plugin.event.IkarosPluginStateChangedEvent;
@@ -373,6 +374,16 @@ public class IkarosPluginManager extends DefaultPluginManager
     @Override
     public void loadPlugins() {
         super.loadPlugins();
+        for (PluginWrapper pluginWrapper : getPlugins()) {
+            rootApplicationContext.publishEvent(new IkarosPluginLoadedEvent(this, pluginWrapper));
+        }
+    }
+
+    @Override
+    public boolean deletePlugin(String pluginId) {
+        boolean result = super.deletePlugin(pluginId);
+        rootApplicationContext.publishEvent(new IkarosPluginDeleteEvent(this, pluginId));
+        return result;
     }
 
     @Override

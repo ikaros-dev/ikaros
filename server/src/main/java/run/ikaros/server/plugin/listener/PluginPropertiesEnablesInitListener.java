@@ -1,7 +1,6 @@
 package run.ikaros.server.plugin.listener;
 
 import lombok.extern.slf4j.Slf4j;
-import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -9,11 +8,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.plugin.custom.Plugin;
 import run.ikaros.server.plugin.IkarosPluginManager;
 import run.ikaros.server.plugin.PluginProperties;
-import run.ikaros.server.plugin.resource.BundleResourceUtils;
 
 @Slf4j
 @Component
@@ -41,12 +38,6 @@ public class PluginPropertiesEnablesInitListener {
     public Mono<Void> initialize() {
         // Load all plugins after application ready.
         ikarosPluginManager.loadPlugins();
-
-        // Save all plugin db records after load all plugins.
-        for (PluginWrapper pluginWrapper : ikarosPluginManager.getPlugins()) {
-            String pluginId = pluginWrapper.getPluginId();
-            savePluginDescToDatabase(pluginId);
-        }
 
         // Enable some plugins
         for (String pluginId : pluginProperties.getEnabledPlugins()) {
@@ -80,44 +71,29 @@ public class PluginPropertiesEnablesInitListener {
                     pluginWrapper -> ikarosPluginManager.startPlugin(pluginWrapper.getPluginId()));
         }
 
-        // Remove plugin records that manager none.
+        // Sync plugin records for manager and database.
+        // Save all plugin db records after load all plugins.
+        // return Flux.fromStream(ikarosPluginManager.getPlugins().stream())
+        //     .map(PluginWrapper::getPluginId)
+        //     .flatMap(pluginId ->
+        //         PluginDatabaseUtils.savePluginToDatabase(pluginId, ikarosPluginManager,
+        //             reactiveCustomClient))
+        //     .collectList()
+        //     .checkpoint("SaveAllPluginDatabase.")
+        //     // Remove plugin records that manager none.
+        //     .flatMapMany(plugins -> reactiveCustomClient.findAll(Plugin.class, null))
         return reactiveCustomClient.findAll(Plugin.class, null)
             .filter(plugin -> ikarosPluginManager.getPlugin(plugin.getName()) == null)
             .flatMap(reactiveCustomClient::delete)
+            .doOnEach(pluginSignal -> {
+                Plugin plugin = pluginSignal.get();
+                if (plugin != null) {
+                    log.debug("Remove plugin record that manager none for id: [{}]",
+                        plugin.getName());
+                }
+            })
+            .checkpoint("RemoveDatabasePluginThatManagerNone.")
             .then();
     }
-
-    private void savePluginDescToDatabase(String pluginId) {
-        PluginWrapper pluginWrapper = ikarosPluginManager.getPlugin(pluginId);
-        PluginDescriptor pluginDescriptor = pluginWrapper.getDescriptor();
-        Plugin plugin = new Plugin();
-        plugin.setName(pluginId);
-        plugin.setState(pluginWrapper.getPluginState());
-        plugin.setDescription(pluginDescriptor.getPluginDescription());
-        plugin.setVersion(pluginDescriptor.getVersion());
-        plugin.setRequires(pluginDescriptor.getRequires());
-        Plugin.Author author = new Plugin.Author();
-        author.setName(pluginDescriptor.getProvider());
-        plugin.setAuthor(author);
-        plugin.setLicense(pluginDescriptor.getLicense());
-        plugin.setLoadLocation(pluginWrapper.getPluginPath());
-        setPluginStaticResourceIfExists(pluginId, plugin);
-        reactiveCustomClient.findOne(Plugin.class, pluginId)
-            .onErrorResume(NotFoundException.class, e -> reactiveCustomClient.create(plugin))
-            .flatMap(reactiveCustomClient::update)
-            .block();
-    }
-
-
-    private void setPluginStaticResourceIfExists(String pluginId, Plugin plugin) {
-        // Console bundle entry js.
-        String jsBundlePath = BundleResourceUtils.getJsBundlePath(ikarosPluginManager, pluginId);
-        plugin.setEntry(jsBundlePath);
-        // Console bundle style css.
-        String cssBundlePath =
-            BundleResourceUtils.getCssBundlePath(ikarosPluginManager, plugin.getName());
-        plugin.setStylesheet(cssBundlePath);
-    }
-
 
 }

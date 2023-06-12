@@ -1,15 +1,26 @@
 package run.ikaros.server.core.plugin;
 
+import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
+import static org.springdoc.core.fn.builders.content.Builder.contentBuilder;
+import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
+import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
+import static org.springframework.web.reactive.function.BodyExtractors.toMultipartData;
+import static org.springframework.web.reactive.function.server.RequestPredicates.contentType;
+
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import org.pf4j.PluginState;
 import org.springdoc.core.fn.builders.parameter.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.http.codec.multipart.Part;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.exception.NotFoundException;
@@ -57,7 +68,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                         .name("operate").in(ParameterIn.DEFAULT)
                         .description("Operate of plugin state.")
                         .implementation(PluginStateOperate.class))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
+                    .response(responseBuilder()
                         .responseCode("200")
                         .description("Plugin state after operated.")
                         .implementation(PluginState.class)))
@@ -69,7 +80,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                     .parameter(Builder.parameterBuilder()
                         .name("name").in(ParameterIn.PATH)
                         .description("Name of plugin, this is id also."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
+                    .response(responseBuilder()
                         .responseCode("200")
                         .description(
                             "Response true is start success, false is request or start fail.")
@@ -82,7 +93,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                     .parameter(Builder.parameterBuilder()
                         .name("name").in(ParameterIn.PATH)
                         .description("Name of plugin, this is id also."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
+                    .response(responseBuilder()
                         .responseCode("200")
                         .description("Response true is stop success, "
                             + "false is request or stop fail.")
@@ -95,22 +106,60 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                     .parameter(Builder.parameterBuilder()
                         .name("name").in(ParameterIn.PATH)
                         .description("Name of plugin, this is id also."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
+                    .response(responseBuilder()
                         .responseCode("200")
                         .description("Response true is reload success, "
                             + "false is request or reload fail.")
                         .implementation(Boolean.class)))
 
+            .POST("/plugin/install/file",
+                contentType(MediaType.MULTIPART_FORM_DATA),
+                this::installPlugin,
+                builder -> builder.operationId("InstallPluginByFile")
+                    .tag(tag)
+                    .description("Install plugin by upload jar file.")
+                    .requestBody(requestBodyBuilder()
+                        .required(true)
+                        .content(contentBuilder()
+                            .mediaType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                            .schema(schemaBuilder().required(true)
+                                .name("file").description("Plugin jar file.")
+                                .implementation(UploadRequest.class))
+                        ))
+                    .response(responseBuilder()
+                        .responseCode("200")
+                        .description("Install plugin by jar file success.")))
+
             .build();
 
     }
 
-    Mono<ServerResponse> operatePluginById(ServerRequest request) {
-        String pluginName = request.pathVariable("name");
-        Mono.justOrEmpty(request.queryParam("operate"))
-            .map(PluginOperate::valueOf);
-        // todo impl plugin install uninstall upgrade.
-        return null;
+    public interface UploadRequest {
+        FilePart getFile();
+    }
+
+    public record DefaultUploadRequest(MultiValueMap<String, Part> formData)
+        implements UploadRequest {
+        /**
+         * Get file form data.
+         *
+         * @return file part.
+         */
+        @Override
+        public FilePart getFile() {
+            if (formData.getFirst("file") instanceof FilePart file) {
+                return file;
+            }
+            throw new ServerWebInputException("Invalid part of file");
+        }
+    }
+
+    Mono<ServerResponse> installPlugin(ServerRequest request) {
+        return request.body(toMultipartData())
+            .map(DefaultUploadRequest::new)
+            .map(DefaultUploadRequest::getFile)
+            .flatMap(pluginService::install)
+            .then(ServerResponse.ok().build());
     }
 
     Mono<ServerResponse> operatePluginStateById(ServerRequest request) {

@@ -2,14 +2,18 @@ package run.ikaros.server.core.plugin;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.io.File;
+import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginRuntimeException;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.exception.PluginInstallRuntimeException;
 import run.ikaros.server.plugin.IkarosPluginManager;
 
 @Slf4j
@@ -37,6 +41,7 @@ public class PluginServiceImpl implements PluginService {
             case DISABLE -> pluginManager.disablePlugin(pluginId);
             case START -> pluginManager.startPlugin(pluginId);
             case STOP -> pluginManager.stopPlugin(pluginId);
+            case DELETE -> pluginManager.deletePlugin(pluginId);
             default -> throw new PluginRuntimeException("No support operate for id(name): "
                 + pluginId);
         }
@@ -74,5 +79,34 @@ public class PluginServiceImpl implements PluginService {
         }
         PluginState pluginState = pluginManager.reloadPlugin(pluginId);
         return Mono.just(pluginState);
+    }
+
+    @Override
+    public Mono<Void> install(@NotNull FilePart filePart) {
+        Assert.notNull(filePart, "'filePart' must not null.");
+        String pluginDir = System.getProperty("pf4j.pluginsDir");
+        try {
+            Path destPath = Path.of(new File(pluginDir).toURI()).resolve(filePart.filename());
+
+            filePart.transferTo(destPath.toFile()).subscribe();
+            log.debug("Upload plugin file [{}] to plugin dir [{}].",
+                filePart.filename(), destPath);
+            String pluginId = pluginManager.loadPlugin(destPath);
+            log.debug("Load plugin by path success, pluginId: [{}].", pluginId);
+            return Mono.empty();
+            // return Mono.just(pluginManager.loadPlugin(destPath))
+            //     .subscribeWith(filePart.transferTo(destPath.toFile()))
+            //     .onComplete();
+            // return filePart.transferTo(destPath.toFile())
+            //     .doOnSuccess(unused ->
+            //         log.debug("Upload plugin file [{}] to plugin dir [{}].",
+            //             filePart.filename(), destPath))
+            //     .then(Mono.just(pluginManager.loadPlugin(destPath)))
+            //     .doOnSuccess(pluginId ->
+            //         log.debug("Load plugin by path success, pluginId: [{}].", pluginId))
+            //     .then();
+        } catch (Exception e) {
+            throw new PluginInstallRuntimeException(e);
+        }
     }
 }

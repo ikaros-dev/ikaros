@@ -10,5 +10,6 @@ public enum PluginStateOperate {
     RELOAD,
     RELOAD_ALL,
     RELOAD_ALL_STARTED,
+    DELETE,
     UNLOAD
 }
