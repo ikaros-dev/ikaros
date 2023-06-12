@@ -146,20 +146,14 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 		},
 		/**
 		 *
-		 * @param {File} file
-		 * @param {string} policyName Storage policy name
+		 * @param {File} [file]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		uploadFile: async (
-			file: File,
-			policyName: string,
+			file?: File,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			// verify required parameter 'file' is not null or undefined
-			assertParamExists('uploadFile', 'file', file);
-			// verify required parameter 'policyName' is not null or undefined
-			assertParamExists('uploadFile', 'policyName', policyName);
 			const localVarPath = `/api/v1alpha1/files/upload`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -189,10 +183,6 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 
 			if (file !== undefined) {
 				localVarFormParams.append('file', file as any);
-			}
-
-			if (policyName !== undefined) {
-				localVarFormParams.append('policyName', policyName as any);
 			}
 
 			localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
@@ -268,21 +258,18 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 		},
 		/**
 		 *
-		 * @param {File} file
-		 * @param {string} policyName Storage policy name
+		 * @param {File} [file]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		async uploadFile(
-			file: File,
-			policyName: string,
+			file?: File,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
 		> {
 			const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(
 				file,
-				policyName,
 				options
 			);
 			return createRequestFunction(
@@ -337,15 +324,11 @@ export const V1alpha1FileApiFactory = function (
 		 * @throws {RequiredError}
 		 */
 		uploadFile(
-			requestParameters: V1alpha1FileApiUploadFileRequest,
+			requestParameters: V1alpha1FileApiUploadFileRequest = {},
 			options?: AxiosRequestConfig
 		): AxiosPromise<any> {
 			return localVarFp
-				.uploadFile(
-					requestParameters.file,
-					requestParameters.policyName,
-					options
-				)
+				.uploadFile(requestParameters.file, options)
 				.then((request) => request(axios, basePath));
 		},
 	};
@@ -376,14 +359,7 @@ export interface V1alpha1FileApiUploadFileRequest {
 	 * @type {File}
 	 * @memberof V1alpha1FileApiUploadFile
 	 */
-	readonly file: File;
-
-	/**
-	 * Storage policy name
-	 * @type {string}
-	 * @memberof V1alpha1FileApiUploadFile
-	 */
-	readonly policyName: string;
+	readonly file?: File;
 }
 
 /**
@@ -429,11 +405,11 @@ export class V1alpha1FileApi extends BaseAPI {
 	 * @memberof V1alpha1FileApi
 	 */
 	public uploadFile(
-		requestParameters: V1alpha1FileApiUploadFileRequest,
+		requestParameters: V1alpha1FileApiUploadFileRequest = {},
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1FileApiFp(this.configuration)
-			.uploadFile(requestParameters.file, requestParameters.policyName, options)
+			.uploadFile(requestParameters.file, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }

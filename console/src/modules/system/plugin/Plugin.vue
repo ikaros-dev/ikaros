@@ -8,6 +8,8 @@ import {
 import { More } from '@element-plus/icons-vue';
 // eslint-disable-next-line no-unused-vars
 import { ElMessage, ElMessageBox } from 'element-plus';
+import PluginUploadDrawer from './PluginUploadDrawer.vue';
+import type { AxiosResponse } from 'axios';
 
 interface PluginSearch {
 	page: number;
@@ -73,8 +75,8 @@ const getPluginsFromServer = async () => {
 
 const delegationPluginStateOperator = async (
 	requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest
-) => {
-	await apiClient.corePlugin.operatePluginStateById(requestParameters);
+): Promise<AxiosResponse<string, any>> => {
+	return await apiClient.corePlugin.operatePluginStateById(requestParameters);
 };
 
 const startPlugin = async (pluginName: string | undefined) => {
@@ -87,8 +89,15 @@ const startPlugin = async (pluginName: string | undefined) => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'START',
-			});
-			window.location.reload();
+			})
+				.then(() => {
+					ElMessage.success('启动插件[' + pluginName + ']成功');
+					window.location.reload();
+				})
+				.catch((err) => {
+					ElMessage.error(err.message);
+					console.log(err);
+				});
 		})
 		.catch(() => {
 			ElMessage({
@@ -108,8 +117,15 @@ const stopPlugin = (pluginName: string | undefined) => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'STOP',
-			});
-			window.location.reload();
+			})
+				.then(() => {
+					ElMessage.success('停止插件[' + pluginName + ']成功');
+					window.location.reload();
+				})
+				.catch((err) => {
+					ElMessage.error(err.message);
+					console.log(err);
+				});
 		})
 		.catch(() => {
 			ElMessage({
@@ -129,8 +145,15 @@ const enablePlugin = (pluginName: string | undefined) => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'ENABLE',
-			});
-			window.location.reload();
+			})
+				.then(() => {
+					ElMessage.success('启用插件[' + pluginName + ']成功');
+					window.location.reload();
+				})
+				.catch((err) => {
+					ElMessage.error(err.message);
+					console.log(err);
+				});
 		})
 		.catch(() => {
 			ElMessage({
@@ -154,8 +177,15 @@ const disablePlugin = (pluginName: string | undefined) => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'DISABLE',
-			});
-			window.location.reload();
+			})
+				.then(() => {
+					ElMessage.success('禁用插件[' + pluginName + ']成功');
+					window.location.reload();
+				})
+				.catch((err) => {
+					ElMessage.error(err.message);
+					console.log(err);
+				});
 		})
 		.catch(() => {
 			ElMessage({
@@ -175,8 +205,15 @@ const reloadPlugin = (pluginName: string | undefined) => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'RELOAD',
-			});
-			window.location.reload();
+			})
+				.then(() => {
+					ElMessage.success('重载插件[' + pluginName + ']成功');
+					window.location.reload();
+				})
+				.catch((err) => {
+					ElMessage.error(err.message);
+					console.log(err);
+				});
 		})
 		.catch(() => {
 			ElMessage({
@@ -186,10 +223,77 @@ const reloadPlugin = (pluginName: string | undefined) => {
 		});
 };
 
+const reloadAllPlugin = () => {
+	ElMessageBox.confirm('您确定要重载所有插件吗? 重载后会自动启动。', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			delegationPluginStateOperator({
+				name: 'ALL',
+				operate: 'RELOAD_ALL',
+			})
+				.then(() => {
+					ElMessage.success('重载所有插件成功');
+					window.location.reload();
+				})
+				.catch((err) => {
+					ElMessage.error(err.message);
+					console.log(err);
+				});
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '已取消',
+			});
+		});
+};
+
+const deletePlugin = (pluginName: string | undefined) => {
+	ElMessageBox.confirm('您确定要删除插件吗? ', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			delegationPluginStateOperator({
+				name: pluginName as string,
+				operate: 'DELETE',
+			})
+				.then(() => {
+					ElMessage.success('删除插件[' + pluginName + ']成功');
+					window.location.reload();
+				})
+				.catch((err) => {
+					ElMessage.error(err.message);
+					console.log(err);
+				});
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '已取消',
+			});
+		});
+};
+
+const pluginUploadDrawerVisible = ref(false);
+
+const onPluginUploadDrawerClose = () => {
+	pluginUploadDrawerVisible.value = false;
+	window.location.reload();
+};
+
 onMounted(getPluginsFromServer);
 </script>
 
 <template>
+	<PluginUploadDrawer
+		v-model:visible="pluginUploadDrawerVisible"
+		@close="onPluginUploadDrawerClose"
+	/>
 	<el-card>
 		<template #header>
 			<el-row :gutter="10">
@@ -225,11 +329,19 @@ onMounted(getPluginsFromServer);
 					:xl="8"
 					style="text-align: right"
 				>
+					<el-button plain @click="reloadAllPlugin">重载所有</el-button>
+
+					<el-button plain @click="pluginUploadDrawerVisible = true"
+						>安装插件</el-button
+					>
+
+					&nbsp;&nbsp;
 					<el-dropdown
+						disabled
 						size="large"
 						trigger="click"
 						style="
-							cursor: pointer;
+							cursor: not-allowed;
 							vertical-align: middle;
 							line-height: 40px;
 							display: inline-block;
@@ -338,7 +450,7 @@ onMounted(getPluginsFromServer);
 									<el-dropdown-item
 										style="width: 170; color: red"
 										divided
-										disabled
+										@click="deletePlugin(scope.row.name)"
 									>
 										卸载
 									</el-dropdown-item>

@@ -6,10 +6,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.ExtensionFactory;
 import org.pf4j.ExtensionFinder;
+import org.pf4j.Plugin;
 import org.pf4j.PluginDependency;
 import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginDescriptorFinder;
@@ -27,6 +29,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import run.ikaros.server.plugin.event.IkarosPluginBeforeStopEvent;
+import run.ikaros.server.plugin.event.IkarosPluginDeleteEvent;
 import run.ikaros.server.plugin.event.IkarosPluginLoadedEvent;
 import run.ikaros.server.plugin.event.IkarosPluginStartedEvent;
 import run.ikaros.server.plugin.event.IkarosPluginStateChangedEvent;
@@ -373,6 +376,46 @@ public class IkarosPluginManager extends DefaultPluginManager
     @Override
     public void loadPlugins() {
         super.loadPlugins();
+        for (PluginWrapper pluginWrapper : getPlugins()) {
+            rootApplicationContext.publishEvent(new IkarosPluginLoadedEvent(this, pluginWrapper));
+        }
+    }
+
+    @Override
+    public boolean deletePlugin(String pluginId) {
+        Assert.hasText(pluginId, "'pluginId' must has text.");
+        checkPluginId(pluginId);
+
+        PluginWrapper pluginWrapper = getPlugin(pluginId);
+        // stop the plugin if it's started
+        PluginState pluginState = stopPlugin(pluginId);
+        if (PluginState.STARTED == pluginState) {
+            log.error("Failed to stop plugin '{}' on delete", pluginId);
+            return false;
+        }
+
+        // get an instance of plugin before the plugin is unloaded
+        // for reason see https://github.com/pf4j/pf4j/issues/309
+        Plugin plugin = pluginWrapper.getPlugin();
+
+        if (!unloadPlugin(pluginId)) {
+            log.error("Failed to unload plugin '{}' on delete", pluginId);
+            return false;
+        }
+
+        // notify the plugin as it's deleted
+        if (Objects.nonNull(plugin)) {
+            plugin.delete();
+        }
+
+        // delete plugin path.
+        Path pluginPath = pluginWrapper.getPluginPath();
+        boolean result = pluginRepository.deletePluginPath(pluginPath);
+
+        // publish plugin deleted event.
+        rootApplicationContext.publishEvent(new IkarosPluginDeleteEvent(this, pluginId));
+
+        return result;
     }
 
     @Override

@@ -107,5 +107,9 @@ core:
       message:
         entry_load_failed: "{name}：加载插件入口文件失败"
         style_load_failed: "{name}：加载插件样式文件失败"
+    upload_modal:
+      titles:
+        upgrade: 升级插件
+        install: 安装插件
   settings:
     title: 设置

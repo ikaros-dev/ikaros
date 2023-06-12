@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Predicate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Predicates;
@@ -26,6 +27,7 @@ import run.ikaros.server.store.entity.CustomMetadataEntity;
 import run.ikaros.server.store.repository.CustomMetadataRepository;
 import run.ikaros.server.store.repository.CustomRepository;
 
+@Slf4j
 @Service
 public class ReactiveCustomClientImpl implements ReactiveCustomClient {
 
@@ -58,7 +60,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
                 .flatMap(metadataRepository::save)
                 .collectList()
                 .flatMap(customMetadataEntityList -> Mono.just(customDto)))
-            .map(customDto -> (C) CustomConverter.convertFrom(custom.getClass(), customDto));
+            .map(customDto -> (C) CustomConverter.convertFrom(custom.getClass(), customDto))
+            .doOnSuccess(c -> log.debug("Create new custom record: [{}].", c));
     }
 
     @Override
@@ -97,7 +100,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
                     .then()
                 )
             )
-            .then(Mono.justOrEmpty(custom));
+            .then(Mono.justOrEmpty(custom))
+            .doOnSuccess(c -> log.debug("Update exists custom: [{}].", c));
     }
 
     @Override

@@ -186,6 +186,7 @@ public class PluginApplicationInitializer {
         PluginApplicationContext removed = contextRegistry.remove(pluginId);
         if (removed != null) {
             removed.close();
+            Runtime.getRuntime().gc();
         }
     }
 }
