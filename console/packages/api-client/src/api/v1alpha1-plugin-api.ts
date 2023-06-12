@@ -46,9 +46,67 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
 ) {
 	return {
 		/**
+		 * Install plugin by upload jar file.
+		 * @param {File} [file]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		installPluginByFile: async (
+			file?: File,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/plugin/install/file`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+			const localVarFormParams = new ((configuration &&
+				configuration.formDataCtor) ||
+				FormData)();
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (file !== undefined) {
+				localVarFormParams.append('file', file as any);
+			}
+
+			localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = localVarFormParams;
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
 		 * Operate plugin state by id(name).
 		 * @param {string} name Name of plugin, this is id also.
-		 * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'UNLOAD'} operate Operate of plugin state.
+		 * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'} operate Operate of plugin state.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -64,6 +122,7 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
 				| 'RELOAD'
 				| 'RELOAD_ALL'
 				| 'RELOAD_ALL_STARTED'
+				| 'DELETE'
 				| 'UNLOAD',
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
@@ -287,9 +346,30 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
 		V1alpha1PluginApiAxiosParamCreator(configuration);
 	return {
 		/**
+		 * Install plugin by upload jar file.
+		 * @param {File} [file]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async installPluginByFile(
+			file?: File,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.installPluginByFile(file, options);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
 		 * Operate plugin state by id(name).
 		 * @param {string} name Name of plugin, this is id also.
-		 * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'UNLOAD'} operate Operate of plugin state.
+		 * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'} operate Operate of plugin state.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -305,6 +385,7 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
 				| 'RELOAD'
 				| 'RELOAD_ALL'
 				| 'RELOAD_ALL_STARTED'
+				| 'DELETE'
 				| 'UNLOAD',
 			options?: AxiosRequestConfig
 		): Promise<
@@ -405,6 +486,20 @@ export const V1alpha1PluginApiFactory = function (
 	const localVarFp = V1alpha1PluginApiFp(configuration);
 	return {
 		/**
+		 * Install plugin by upload jar file.
+		 * @param {V1alpha1PluginApiInstallPluginByFileRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		installPluginByFile(
+			requestParameters: V1alpha1PluginApiInstallPluginByFileRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.installPluginByFile(requestParameters.file, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
 		 * Operate plugin state by id(name).
 		 * @param {V1alpha1PluginApiOperatePluginStateByIdRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
@@ -468,6 +563,20 @@ export const V1alpha1PluginApiFactory = function (
 };
 
 /**
+ * Request parameters for installPluginByFile operation in V1alpha1PluginApi.
+ * @export
+ * @interface V1alpha1PluginApiInstallPluginByFileRequest
+ */
+export interface V1alpha1PluginApiInstallPluginByFileRequest {
+	/**
+	 *
+	 * @type {File}
+	 * @memberof V1alpha1PluginApiInstallPluginByFile
+	 */
+	readonly file?: File;
+}
+
+/**
  * Request parameters for operatePluginStateById operation in V1alpha1PluginApi.
  * @export
  * @interface V1alpha1PluginApiOperatePluginStateByIdRequest
@@ -482,7 +591,7 @@ export interface V1alpha1PluginApiOperatePluginStateByIdRequest {
 
 	/**
 	 * Operate of plugin state.
-	 * @type {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'UNLOAD'}
+	 * @type {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'}
 	 * @memberof V1alpha1PluginApiOperatePluginStateById
 	 */
 	readonly operate:
@@ -495,6 +604,7 @@ export interface V1alpha1PluginApiOperatePluginStateByIdRequest {
 		| 'RELOAD'
 		| 'RELOAD_ALL'
 		| 'RELOAD_ALL_STARTED'
+		| 'DELETE'
 		| 'UNLOAD';
 }
 
@@ -547,6 +657,22 @@ export interface V1alpha1PluginApiStopPluginByIdRequest {
  * @extends {BaseAPI}
  */
 export class V1alpha1PluginApi extends BaseAPI {
+	/**
+	 * Install plugin by upload jar file.
+	 * @param {V1alpha1PluginApiInstallPluginByFileRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1PluginApi
+	 */
+	public installPluginByFile(
+		requestParameters: V1alpha1PluginApiInstallPluginByFileRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1PluginApiFp(this.configuration)
+			.installPluginByFile(requestParameters.file, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
 	/**
 	 * Operate plugin state by id(name).
 	 * @param {V1alpha1PluginApiOperatePluginStateByIdRequest} requestParameters Request parameters.
