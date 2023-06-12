@@ -63,7 +63,9 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                     .description("Operate plugin state by id(name).")
                     .parameter(Builder.parameterBuilder().required(true)
                         .name("name").in(ParameterIn.PATH)
-                        .description("Name of plugin, this is id also."))
+                        .description(
+                            "Name of plugin, this is id also. "
+                                + "if operate all plugins, please set value is [ALL]. "))
                     .parameter(Builder.parameterBuilder().required(true)
                         .name("operate").in(ParameterIn.DEFAULT)
                         .description("Operate of plugin state.")

@@ -109,5 +109,9 @@ core:
       message:
         entry_load_failed: "{name}: Failed to load plugin entry file"
         style_load_failed: "{name}: Failed to load plugin stylesheet file"
+    upload_modal:
+      titles:
+        upgrade: Upgade plugin
+        install: Install plugin
   settings:
     title: Settings

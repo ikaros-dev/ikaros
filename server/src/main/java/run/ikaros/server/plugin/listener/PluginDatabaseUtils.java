@@ -40,9 +40,7 @@ public class PluginDatabaseUtils {
         setPluginStaticResourceIfExists(pluginId, plugin, pluginManager);
         return customClient.findOne(Plugin.class, pluginId)
             .onErrorResume(NotFoundException.class, e -> customClient.create(plugin)
-                .doOnSuccess(p -> log.debug("Create new plugin record for name: [{}].", pluginId)))
-            .flatMap(customClient::update)
-            .doOnSuccess(p -> log.debug("Update exists plugin record for name: [{}].", pluginId));
+                .doOnSuccess(p -> log.debug("Create new plugin record for name: [{}].", pluginId)));
     }
 
     private static void setPluginStaticResourceIfExists(String pluginId, Plugin plugin,

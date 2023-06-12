@@ -45,7 +45,17 @@ public class PluginServiceImpl implements PluginService {
             default -> throw new PluginRuntimeException("No support operate for id(name): "
                 + pluginId);
         }
-        return Mono.just(pluginManager.getPlugin(pluginId).getPluginState());
+        if (pluginManager.getPlugins().isEmpty() || pluginId == null
+            || "ALL".equalsIgnoreCase(pluginId)) {
+            log.warn("Skip get plugin state operate. pluginId: [{}], manager plugins: [{}]",
+                pluginId, pluginManager.getPlugins());
+            return Mono.empty();
+        }
+        return Mono.just(pluginManager.getPlugin(pluginId))
+            .switchIfEmpty(Mono.error(
+                new PluginRuntimeException("Not found plugin in manager for id: " + pluginId)))
+            .map(PluginWrapper::getPluginState)
+            .onErrorResume(NullPointerException.class, e -> Mono.empty());
     }
 
     @Override
@@ -94,17 +104,6 @@ public class PluginServiceImpl implements PluginService {
             String pluginId = pluginManager.loadPlugin(destPath);
             log.debug("Load plugin by path success, pluginId: [{}].", pluginId);
             return Mono.empty();
-            // return Mono.just(pluginManager.loadPlugin(destPath))
-            //     .subscribeWith(filePart.transferTo(destPath.toFile()))
-            //     .onComplete();
-            // return filePart.transferTo(destPath.toFile())
-            //     .doOnSuccess(unused ->
-            //         log.debug("Upload plugin file [{}] to plugin dir [{}].",
-            //             filePart.filename(), destPath))
-            //     .then(Mono.just(pluginManager.loadPlugin(destPath)))
-            //     .doOnSuccess(pluginId ->
-            //         log.debug("Load plugin by path success, pluginId: [{}].", pluginId))
-            //     .then();
         } catch (Exception e) {
             throw new PluginInstallRuntimeException(e);
         }
