@@ -34,7 +34,7 @@ coverage
 .stylelintcache
 
 # ts build info, such as version
-tsconfig.tsbuildinfo
+/tsconfig.tsbuildinfo
 
 # others
-vite.config.ts.timestamp-*.mjs
+/vite.config.ts.timestamp-*.mjs
