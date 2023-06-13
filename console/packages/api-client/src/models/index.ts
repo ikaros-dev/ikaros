@@ -5,7 +5,6 @@ export * from './episode-resource';
 export * from './file-entity';
 export * from './file-policy';
 export * from './file-setting';
-export * from './find-file-condition';
 export * from './model-file';
 export * from './paging-wrap';
 export * from './plugin';

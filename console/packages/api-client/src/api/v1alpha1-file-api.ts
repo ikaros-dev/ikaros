@@ -40,8 +40,6 @@ import {
 // @ts-ignore
 import { FileEntity } from '../models';
 // @ts-ignore
-import { FindFileCondition } from '../models';
-// @ts-ignore
 import { PagingWrap } from '../models';
 /**
  * V1alpha1FileApi - axios parameter creator
@@ -198,14 +196,22 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 		},
 		/**
 		 * List files by condition.
-		 * @param {FindFileCondition} [findFileCondition]
+		 * @param {string} page
+		 * @param {string} size
+		 * @param {string} [place]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		listFilesByCondition: async (
-			findFileCondition?: FindFileCondition,
+			page: string,
+			size: string,
+			place?: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
+			// verify required parameter 'page' is not null or undefined
+			assertParamExists('listFilesByCondition', 'page', page);
+			// verify required parameter 'size' is not null or undefined
+			assertParamExists('listFilesByCondition', 'size', size);
 			const localVarPath = `/api/v1alpha1/files/condition`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -230,7 +236,17 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			localVarHeaderParameter['Content-Type'] = 'application/json';
+			if (page !== undefined) {
+				localVarQueryParameter['page'] = page;
+			}
+
+			if (size !== undefined) {
+				localVarQueryParameter['size'] = size;
+			}
+
+			if (place !== undefined) {
+				localVarQueryParameter['place'] = place;
+			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -240,11 +256,6 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 				...headersFromBaseOptions,
 				...options.headers,
 			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				findFileCondition,
-				localVarRequestOptions,
-				configuration
-			);
 
 			return {
 				url: toPathString(localVarUrlObj),
@@ -588,19 +599,25 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 		},
 		/**
 		 * List files by condition.
-		 * @param {FindFileCondition} [findFileCondition]
+		 * @param {string} page
+		 * @param {string} size
+		 * @param {string} [place]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		async listFilesByCondition(
-			findFileCondition?: FindFileCondition,
+			page: string,
+			size: string,
+			place?: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
 		> {
 			const localVarAxiosArgs =
 				await localVarAxiosParamCreator.listFilesByCondition(
-					findFileCondition,
+					page,
+					size,
+					place,
 					options
 				);
 			return createRequestFunction(
@@ -770,11 +787,16 @@ export const V1alpha1FileApiFactory = function (
 		 * @throws {RequiredError}
 		 */
 		listFilesByCondition(
-			requestParameters: V1alpha1FileApiListFilesByConditionRequest = {},
+			requestParameters: V1alpha1FileApiListFilesByConditionRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<PagingWrap> {
 			return localVarFp
-				.listFilesByCondition(requestParameters.findFileCondition, options)
+				.listFilesByCondition(
+					requestParameters.page,
+					requestParameters.size,
+					requestParameters.place,
+					options
+				)
 				.then((request) => request(axios, basePath));
 		},
 		/**
@@ -864,10 +886,24 @@ export interface V1alpha1FileApiDeleteFileRequest {
 export interface V1alpha1FileApiListFilesByConditionRequest {
 	/**
 	 *
-	 * @type {FindFileCondition}
+	 * @type {string}
 	 * @memberof V1alpha1FileApiListFilesByCondition
 	 */
-	readonly findFileCondition?: FindFileCondition;
+	readonly page: string;
+
+	/**
+	 *
+	 * @type {string}
+	 * @memberof V1alpha1FileApiListFilesByCondition
+	 */
+	readonly size: string;
+
+	/**
+	 *
+	 * @type {string}
+	 * @memberof V1alpha1FileApiListFilesByCondition
+	 */
+	readonly place?: string;
 }
 
 /**
@@ -1002,11 +1038,16 @@ export class V1alpha1FileApi extends BaseAPI {
 	 * @memberof V1alpha1FileApi
 	 */
 	public listFilesByCondition(
-		requestParameters: V1alpha1FileApiListFilesByConditionRequest = {},
+		requestParameters: V1alpha1FileApiListFilesByConditionRequest,
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1FileApiFp(this.configuration)
-			.listFilesByCondition(requestParameters.findFileCondition, options)
+			.listFilesByCondition(
+				requestParameters.page,
+				requestParameters.size,
+				requestParameters.place,
+				options
+			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
