@@ -1,19 +1,14 @@
 <script setup lang="ts">
-import { i18n } from '@/locales';
-import type { Plugin } from '@runikaros/api-client';
 import { ErrorResponse } from '@uppy/core';
+import { UppyFile } from '@uppy/utils';
 import { ElMessage } from 'element-plus';
-
-const t = i18n.global.t;
 
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		upgradePlugin?: Plugin;
 	}>(),
 	{
 		visible: false,
-		upgradePlugin: undefined,
 	}
 );
 
@@ -27,16 +22,6 @@ const emit = defineEmits<{
 const uploadVisible = ref(false);
 const drawerVisible = ref(false);
 
-const modalTitle = computed(() => {
-	return props.upgradePlugin
-		? t('core.plugin.upload_modal.titles.upgrade', {
-				display_name: props.upgradePlugin.displayName
-					? props.upgradePlugin.displayName
-					: props.upgradePlugin.name,
-		  })
-		: t('core.plugin.upload_modal.titles.install');
-});
-
 const handleVisibleChange = (visible: boolean) => {
 	emit('update:visible', visible);
 	if (!visible) {
@@ -45,9 +30,6 @@ const handleVisibleChange = (visible: boolean) => {
 };
 
 const endpoint = computed(() => {
-	if (props.upgradePlugin) {
-		return `/api/v1alpha1/plugin/${props.upgradePlugin.name}/upgrade`;
-	}
 	return '/api/v1alpha1/plugin/install/file';
 });
 
@@ -73,16 +55,10 @@ const handleClose = (done: () => void) => {
 };
 
 const onUploaded = async () => {
-	if (props.upgradePlugin) {
-		ElMessage.success('升级成功');
-		window.location.reload();
-		return;
-	}
-
 	handleVisibleChange(false);
 };
 
-const onError = (file, response: ErrorResponse) => {
+const onError = (file: UppyFile<unknown>, response: ErrorResponse) => {
 	const body = response.body;
 	ElMessage.error(body.message);
 	console.error(body);
@@ -92,14 +68,14 @@ const onError = (file, response: ErrorResponse) => {
 <template>
 	<el-drawer
 		v-model="drawerVisible"
-		:title="modalTitle"
+		title="上传文件"
 		direction="ttb"
 		:before-close="handleClose"
 		size="80%"
 	>
 		<template #header>
 			<div align="center">
-				<h4>{{ modalTitle }}</h4>
+				<h4>上传文件</h4>
 			</div>
 		</template>
 		<template #default>
@@ -108,8 +84,7 @@ const onError = (file, response: ErrorResponse) => {
 					v-if="uploadVisible"
 					style="width: 100%"
 					:restrictions="{
-						maxNumberOfFiles: 1,
-						allowedFileTypes: ['.jar'],
+						maxNumberOfFiles: 6,
 					}"
 					:endpoint="endpoint"
 					auto-proceed
