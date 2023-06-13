@@ -105,7 +105,7 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
 		},
 		/**
 		 * Operate plugin state by id(name).
-		 * @param {string} name Name of plugin, this is id also.
+		 * @param {string} name Name of plugin, this is id also. if operate all plugins, please set value is [ALL].
 		 * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'} operate Operate of plugin state.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -368,7 +368,7 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
 		},
 		/**
 		 * Operate plugin state by id(name).
-		 * @param {string} name Name of plugin, this is id also.
+		 * @param {string} name Name of plugin, this is id also. if operate all plugins, please set value is [ALL].
 		 * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'} operate Operate of plugin state.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -583,7 +583,7 @@ export interface V1alpha1PluginApiInstallPluginByFileRequest {
  */
 export interface V1alpha1PluginApiOperatePluginStateByIdRequest {
 	/**
-	 * Name of plugin, this is id also.
+	 * Name of plugin, this is id also. if operate all plugins, please set value is [ALL].
 	 * @type {string}
 	 * @memberof V1alpha1PluginApiOperatePluginStateById
 	 */
