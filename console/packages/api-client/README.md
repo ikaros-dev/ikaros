@@ -54,3 +54,10 @@ npm publish
 ```bash
 git commit -m "build: gen new api-client@0.0.z and publish to npm center repo in @runikaros/api-client"
 ```
+
+合成版(powershell)，升级 package.json 版本，并启动服务端后，在 api-client 路径下：
+
+```
+pnpm gen | pnpm build | npm publish | git add .
+
+```

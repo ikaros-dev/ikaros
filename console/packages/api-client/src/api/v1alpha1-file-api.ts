@@ -39,6 +39,10 @@ import {
 } from '../base';
 // @ts-ignore
 import { FileEntity } from '../models';
+// @ts-ignore
+import { FindFileCondition } from '../models';
+// @ts-ignore
+import { PagingWrap } from '../models';
 /**
  * V1alpha1FileApi - axios parameter creator
  * @export
@@ -140,6 +144,107 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 				...headersFromBaseOptions,
 				...options.headers,
 			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 *
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listFiles: async (
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/files`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * List files by condition.
+		 * @param {FindFileCondition} [findFileCondition]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listFilesByCondition: async (
+			findFileCondition?: FindFileCondition,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/files/condition`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				findFileCondition,
+				localVarRequestOptions,
+				configuration
+			);
 
 			return {
 				url: toPathString(localVarUrlObj),
@@ -284,52 +389,6 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 				localVarRequestOptions,
 				configuration
 			);
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		searchFiles: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/files`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
 
 			return {
 				url: toPathString(localVarUrlObj),
@@ -505,6 +564,53 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 			);
 		},
 		/**
+		 *
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async listFiles(
+			options?: AxiosRequestConfig
+		): Promise<
+			(
+				axios?: AxiosInstance,
+				basePath?: string
+			) => AxiosPromise<Array<FileEntity>>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.listFiles(
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * List files by condition.
+		 * @param {FindFileCondition} [findFileCondition]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async listFilesByCondition(
+			findFileCondition?: FindFileCondition,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.listFilesByCondition(
+					findFileCondition,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
 		 * Receive fragment upload chunk file.
 		 * @param {string} unique Chunk file unique id.
 		 * @param {string} uploadLength Upload chunk file length.
@@ -554,26 +660,6 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 					body,
 					options
 				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async searchFiles(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.searchFiles(
-				options
-			);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -668,6 +754,30 @@ export const V1alpha1FileApiFactory = function (
 				.then((request) => request(axios, basePath));
 		},
 		/**
+		 *
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listFiles(options?: AxiosRequestConfig): AxiosPromise<Array<FileEntity>> {
+			return localVarFp
+				.listFiles(options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * List files by condition.
+		 * @param {V1alpha1FileApiListFilesByConditionRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listFilesByCondition(
+			requestParameters: V1alpha1FileApiListFilesByConditionRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<PagingWrap> {
+			return localVarFp
+				.listFilesByCondition(requestParameters.findFileCondition, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
 		 * Receive fragment upload chunk file.
 		 * @param {V1alpha1FileApiReceiveFragmentUploadChunkFileRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
@@ -699,16 +809,6 @@ export const V1alpha1FileApiFactory = function (
 		): AxiosPromise<void> {
 			return localVarFp
 				.revertFragmentUploadFileByUniqueId(requestParameters.body, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		searchFiles(options?: AxiosRequestConfig): AxiosPromise<void> {
-			return localVarFp
-				.searchFiles(options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
@@ -754,6 +854,20 @@ export interface V1alpha1FileApiDeleteFileRequest {
 	 * @memberof V1alpha1FileApiDeleteFile
 	 */
 	readonly id: number;
+}
+
+/**
+ * Request parameters for listFilesByCondition operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiListFilesByConditionRequest
+ */
+export interface V1alpha1FileApiListFilesByConditionRequest {
+	/**
+	 *
+	 * @type {FindFileCondition}
+	 * @memberof V1alpha1FileApiListFilesByCondition
+	 */
+	readonly findFileCondition?: FindFileCondition;
 }
 
 /**
@@ -869,6 +983,34 @@ export class V1alpha1FileApi extends BaseAPI {
 	}
 
 	/**
+	 *
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public listFiles(options?: AxiosRequestConfig) {
+		return V1alpha1FileApiFp(this.configuration)
+			.listFiles(options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * List files by condition.
+	 * @param {V1alpha1FileApiListFilesByConditionRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public listFilesByCondition(
+		requestParameters: V1alpha1FileApiListFilesByConditionRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.listFilesByCondition(requestParameters.findFileCondition, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
 	 * Receive fragment upload chunk file.
 	 * @param {V1alpha1FileApiReceiveFragmentUploadChunkFileRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
@@ -903,18 +1045,6 @@ export class V1alpha1FileApi extends BaseAPI {
 	) {
 		return V1alpha1FileApiFp(this.configuration)
 			.revertFragmentUploadFileByUniqueId(requestParameters.body, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
-
-	/**
-	 *
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1FileApi
-	 */
-	public searchFiles(options?: AxiosRequestConfig) {
-		return V1alpha1FileApiFp(this.configuration)
-			.searchFiles(options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 

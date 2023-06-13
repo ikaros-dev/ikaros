@@ -22,6 +22,7 @@ models/episode.ts
 models/file-entity.ts
 models/file-policy.ts
 models/file-setting.ts
+models/find-file-condition.ts
 models/index.ts
 models/model-file.ts
 models/paging-wrap.ts
