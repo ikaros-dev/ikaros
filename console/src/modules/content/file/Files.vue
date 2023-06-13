@@ -3,7 +3,6 @@ import { apiClient } from '@/utils/api-client';
 import type { FileEntity } from '@runikaros/api-client';
 import FileFragmentUploadDrawer from './FileFragmentUploadDrawer.vue';
 import FileDeatilDrawer from './FileDeatilDrawer.vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
 
 const fileUploadDrawerVisible = ref(false);
 
@@ -11,23 +10,7 @@ const fileUploadDrawerVisible = ref(false);
 const onFileUploadDrawerClose = (firstFile) => {
 	fileUploadDrawerVisible.value = false;
 	// console.log('receive firstFile:', firstFile);
-	ElMessageBox.confirm(
-		'你需要刷新下页面获取最新的文件列表吗？注意刷新页面后需要重新上传文件，如果有文件正在上传，请选择不刷新。',
-		'温馨提示',
-		{
-			confirmButtonText: '刷新',
-			cancelButtonText: '不刷新',
-			type: 'warning',
-		}
-	)
-		.then(() => {
-			window.location.reload();
-		})
-		.catch(() => {
-			ElMessage.warning(
-				'已取消刷新，您需要在文件上传完毕后手动进行刷新页面获取最新数据。'
-			);
-		});
+	window.location.reload();
 };
 
 const findFilesCondition = ref({

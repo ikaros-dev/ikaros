@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FilePondUpload from '@/components/upload/FilePondUpload.vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
@@ -49,14 +50,28 @@ watch(
 const filePondUploadRef = ref(null);
 
 const handleClose = (done: () => void) => {
-	// @ts-ignore
-	const firstFile = filePondUploadRef.value.getFirstFile();
-	// @ts-ignore
-	filePondUploadRef.value.handleClearFileList();
 	// console.log('firstFile', firstFile);
-	emit('fileUploadDrawerCloes', firstFile);
-	done();
-	handleVisibleChange(false);
+	ElMessageBox.confirm(
+		'退出上传页时，如有文件还未上传完毕，下次需要从零开始上传，您确定要退出当前上传页吗？',
+		'温馨提示',
+		{
+			confirmButtonText: '退出',
+			cancelButtonText: '不退出',
+			type: 'warning',
+		}
+	)
+		.then(() => {
+			// @ts-ignore
+			const firstFile = filePondUploadRef.value.getFirstFile();
+			// @ts-ignore
+			filePondUploadRef.value.handleClearFileList();
+			emit('fileUploadDrawerCloes', firstFile);
+			done();
+			handleVisibleChange(false);
+		})
+		.catch(() => {
+			ElMessage.warning('已取消退出。');
+		});
 };
 
 // eslint-disable-next-line no-unused-vars
