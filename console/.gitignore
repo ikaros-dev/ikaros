@@ -29,7 +29,6 @@ coverage
 *.sw?
 
 # Generated files by unplugin-auto-import
-*.d.ts
 *auto*.json
 .stylelintcache
 
