@@ -34,9 +34,6 @@ importers:
       '@uppy/status-bar':
         specifier: ^3.1.2
         version: 3.1.2(@uppy/core@3.2.0)
-      '@uppy/utils':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@uppy/vue':
         specifier: ^1.0.2
         version: 1.0.2(@uppy/core@3.2.0)(@uppy/dashboard@3.4.0)(@uppy/drag-drop@3.0.2)(@uppy/file-input@3.0.2)(@uppy/progress-bar@3.0.2)(@uppy/status-bar@3.1.2)(vue@3.2.47)
