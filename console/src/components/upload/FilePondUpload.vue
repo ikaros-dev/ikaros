@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import VueFilePond from 'vue-filepond';
+// @ts-ignore
+import VueFilePond, { setOptions } from 'vue-filepond';
 import 'filepond/dist/filepond.min.css';
 
 // Plugins
@@ -8,8 +9,8 @@ import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginFileRename from 'filepond-plugin-file-rename';
-// import Utf8 from 'crypto-js/enc-utf8';
-// import Base64 from 'crypto-js/enc-base64';
+import Utf8 from 'crypto-js/enc-utf8';
+import Base64 from 'crypto-js/enc-base64';
 
 const filePondRef = ref(null);
 
@@ -21,12 +22,12 @@ const filePond = VueFilePond(
 	FilePondPluginFileRename
 );
 
-// filePond.setOptions({
-// 	fileRenameFunction: (file) => {
-// 		const word = Utf8.parse(file.name);
-// 		return Base64.stringify(word);
-// 	},
-// });
+setOptions({
+	fileRenameFunction: (file) => {
+		const word = Utf8.parse(file.name);
+		return Base64.stringify(word);
+	},
+});
 
 const props = withDefaults(
 	defineProps<{
