@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
@@ -43,6 +44,8 @@ import run.ikaros.api.core.file.FileHandler;
 import run.ikaros.api.core.file.FilePolicy;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.store.entity.FileEntity;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.repository.FileRepository;
@@ -90,12 +93,24 @@ public class FileEndpoint implements CoreEndpoint {
                     .response(responseBuilder().implementation(File.class))
                     .build())
             .GET("/files", this::list,
-                builder -> {
+                builder ->
                     builder
-                        .operationId("SearchFiles")
-                        .tag(tag);
-                }
+                        .operationId("ListFiles")
+                        .tag(tag)
+                        .response(responseBuilder().implementationArray(FileEntity.class)))
+
+            .GET("/files/condition", this::listByCondition,
+                builder -> builder.operationId("ListFilesByCondition")
+                    .tag(tag).description("List files by condition.")
+                    .parameter(parameterBuilder()
+                        .name("page").required(true))
+                    .parameter(parameterBuilder()
+                        .name("size").required(true))
+                    .parameter(parameterBuilder()
+                        .name("place").required(false))
+                    .response(responseBuilder().implementation(PagingWrap.class))
             )
+
             .DELETE("/file/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteFile").tag(tag)
                     .parameter(parameterBuilder().name("id")
@@ -103,6 +118,12 @@ public class FileEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .required(true).implementation(
                             Long.class)))
+
+            .PUT("/file/update", this::update,
+                builder -> builder.operationId("UpdateFile")
+                    .tag(tag).description("Update file.")
+                    .requestBody(Builder.requestBodyBuilder().implementation(FileEntity.class))
+            )
 
             // Large multipart file fragment upload support
             .POST("/file/fragment/unique", this::generateFragmentUploadFileUniqueId,
@@ -134,6 +155,30 @@ public class FileEndpoint implements CoreEndpoint {
                         .implementation(String.class)))
 
             .build();
+    }
+
+    private Mono<ServerResponse> listByCondition(ServerRequest request) {
+        Optional<String> pageOp = request.queryParam("page");
+        Assert.isTrue(pageOp.isPresent(), "'page' must has value.");
+        final Integer page = Integer.valueOf(pageOp.get());
+        Optional<String> sizeOp = request.queryParam("size");
+        Assert.isTrue(sizeOp.isPresent(), "'size' must has value.");
+        final Integer size = Integer.valueOf(sizeOp.get());
+        Optional<String> placeOp = request.queryParam("place");
+        final String place = placeOp.orElse("");
+        return Mono.just(FindFileCondition.builder()
+                .page(page).size(size).place(place)
+                .build())
+            .flatMap(fileService::listEntitiesByCondition)
+            .flatMap(fileEntities -> ServerResponse.ok().bodyValue(fileEntities));
+    }
+
+    private Mono<ServerResponse> update(ServerRequest request) {
+        return request.bodyToMono(FileEntity.class)
+            .flatMap(fileService::updateEntity)
+            .then(ServerResponse.ok().bodyValue("SUCCESS"))
+            .onErrorResume(NotFoundException.class, e -> ServerResponse
+                .status(HttpStatus.NOT_FOUND).bodyValue("Not found file record."));
     }
 
     Mono<ServerResponse> generateFragmentUploadFileUniqueId(ServerRequest request) {
@@ -214,7 +259,6 @@ public class FileEndpoint implements CoreEndpoint {
 
     Mono<ServerResponse> list(ServerRequest request) {
         return fileRepository.findAll()
-            .map(File::new)
             .collectList()
             .flatMap(files -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)

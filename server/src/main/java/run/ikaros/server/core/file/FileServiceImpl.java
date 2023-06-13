@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -117,6 +118,21 @@ public class FileServiceImpl implements FileService {
             log.debug("remove uploading file with unique={}", unique);
         }
         return Mono.empty();
+    }
+
+    @Override
+    public Mono<FileEntity> updateEntity(FileEntity fileEntity) {
+        Assert.notNull(fileEntity, "'fileEntity' must not null.");
+        return fileRepository.save(fileEntity);
+    }
+
+    @Override
+    public Mono<List<FileEntity>> listEntitiesByCondition(
+        @NotNull FindFileCondition findFileCondition) {
+        Assert.notNull(findFileCondition, "'findFileCondition' must no null.");
+        return fileRepository.findAllBy(
+                PageRequest.of(findFileCondition.getPage() - 1, findFileCondition.getSize()))
+            .collectList();
     }
 
     private String path2url(@NotBlank String path, @Nullable String workDir) {
