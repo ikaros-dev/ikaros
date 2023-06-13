@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FilePlace;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.infra.properties.IkarosProperties;
 import run.ikaros.server.infra.utils.FileUtils;
 import run.ikaros.server.infra.utils.SystemVarUtils;
@@ -127,12 +128,15 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Mono<List<FileEntity>> listEntitiesByCondition(
+    public Mono<PagingWrap<FileEntity>> listEntitiesByCondition(
         @NotNull FindFileCondition findFileCondition) {
         Assert.notNull(findFileCondition, "'findFileCondition' must no null.");
         return fileRepository.findAllBy(
                 PageRequest.of(findFileCondition.getPage() - 1, findFileCondition.getSize()))
-            .collectList();
+            .collectList()
+            .flatMap(fileEntities -> fileRepository.count()
+                .map(count -> new PagingWrap<>(findFileCondition.getPage(),
+                    findFileCondition.getSize(), count, fileEntities)));
     }
 
     private String path2url(@NotBlank String path, @Nullable String workDir) {

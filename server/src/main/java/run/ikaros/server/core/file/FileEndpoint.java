@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -197,7 +199,9 @@ public class FileEndpoint implements CoreEndpoint {
         final var uploadOffset = Long.valueOf(uploadOffsetList.get(0));
         List<String> uploadNameList = request.headers().header("Upload-Name");
         Assert.notEmpty(uploadNameList, "Request header 'Upload-Name' must has text.");
-        final var uploadName = uploadNameList.get(0);
+        final var uploadName = new String(Base64.getDecoder()
+            .decode(uploadNameList.get(0).getBytes(StandardCharsets.UTF_8)),
+            StandardCharsets.UTF_8);
         final String unique = request.pathVariable("unique");
         Assert.hasText(unique, "Request path var 'unique' must has text.");
         return request.body(BodyExtractors.toDataBuffers())
