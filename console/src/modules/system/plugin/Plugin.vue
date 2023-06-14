@@ -294,177 +294,167 @@ onMounted(getPluginsFromServer);
 		v-model:visible="pluginUploadDrawerVisible"
 		@close="onPluginUploadDrawerClose"
 	/>
-	<el-card>
-		<template #header>
-			<el-row :gutter="10">
-				<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
-					<el-input
-						v-model="pluginSearch.name"
-						style="width: 100%"
-						size="large"
-						placeholder="请输入插件名称"
-						:prefix-icon="Search"
-						disabled
-					/>
-				</el-col>
 
-				<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
-					<el-pagination
-						v-model:page-size="pluginSearch.size"
-						v-model:current-page="pluginSearch.page"
-						background
-						:total="pluginSearch.total"
-						:disabled="pluginSearch.total < pluginSearch.size"
-						layout="prev, pager, nex"
-						style="vertical-align: middle; line-height: 40px; height: 40px"
-						@current-change="onCurrentPageChange"
-					/>
-				</el-col>
+	<el-row :gutter="10">
+		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
+			<el-input
+				v-model="pluginSearch.name"
+				style="width: 100%"
+				size="large"
+				placeholder="请输入插件名称"
+				:prefix-icon="Search"
+				disabled
+			/>
+		</el-col>
 
-				<el-col
-					:xs="24"
-					:sm="24"
-					:md="24"
-					:lg="8"
-					:xl="8"
-					style="text-align: right"
-				>
-					<el-button plain @click="reloadAllPlugin">重载所有</el-button>
+		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
+			<el-pagination
+				v-model:page-size="pluginSearch.size"
+				v-model:current-page="pluginSearch.page"
+				background
+				:total="pluginSearch.total"
+				:disabled="pluginSearch.total < pluginSearch.size"
+				layout="prev, pager, nex"
+				style="vertical-align: middle; line-height: 40px; height: 40px"
+				@current-change="onCurrentPageChange"
+			/>
+		</el-col>
 
-					<el-button plain @click="pluginUploadDrawerVisible = true"
-						>安装插件</el-button
-					>
+		<el-col
+			:xs="24"
+			:sm="24"
+			:md="24"
+			:lg="8"
+			:xl="8"
+			style="text-align: right"
+		>
+			<el-button plain @click="reloadAllPlugin">重载所有</el-button>
 
-					&nbsp;&nbsp;
-					<el-dropdown
-						disabled
-						size="large"
-						trigger="click"
-						style="
-							cursor: not-allowed;
-							vertical-align: middle;
-							line-height: 40px;
-							display: inline-block;
-						"
-						@command="onPluginSearchStateChange"
-					>
-						<span>
-							{{ filterPluginSearchState() }}
-							<el-icon>
-								<arrow-down />
-							</el-icon>
-						</span>
-						<template #dropdown>
-							<el-dropdown-menu>
-								<el-dropdown-item command="ALL" disabled>
-									全部
-								</el-dropdown-item>
-								<el-dropdown-item command="STARTED" disabled>
-									启用
-								</el-dropdown-item>
-								<el-dropdown-item command="STOPPED" disabled>
-									停用
-								</el-dropdown-item>
-								<el-dropdown-item command="RESOLVED" disabled>
-									就绪
-								</el-dropdown-item>
-								<el-dropdown-item command="DISABLED" disabled>
-									禁用
-								</el-dropdown-item>
-								<el-dropdown-item command="CREATED" disabled>
-									创建
-								</el-dropdown-item>
-								<el-dropdown-item command="FAILED" disabled>
-									失败
-								</el-dropdown-item>
-							</el-dropdown-menu>
-						</template>
-					</el-dropdown>
-				</el-col>
-			</el-row>
-		</template>
+			<el-button plain @click="pluginUploadDrawerVisible = true"
+				>安装插件</el-button
+			>
 
-		<div>
-			<el-table :data="plugins" style="width: 100%">
-				<el-table-column prop="logo" label="图标" width="80">
-					<template #default="scope">
-						<el-avatar
-							shape="square"
-							:size="40"
-							:src="scope.row.logo ? scope.row.logo : defaultPluginLogoUrl"
-						/>
+			&nbsp;&nbsp;
+			<el-dropdown
+				disabled
+				size="large"
+				trigger="click"
+				style="
+					cursor: not-allowed;
+					vertical-align: middle;
+					line-height: 40px;
+					display: inline-block;
+				"
+				@command="onPluginSearchStateChange"
+			>
+				<span>
+					{{ filterPluginSearchState() }}
+					<el-icon>
+						<arrow-down />
+					</el-icon>
+				</span>
+				<template #dropdown>
+					<el-dropdown-menu>
+						<el-dropdown-item command="ALL" disabled> 全部 </el-dropdown-item>
+						<el-dropdown-item command="STARTED" disabled>
+							启用
+						</el-dropdown-item>
+						<el-dropdown-item command="STOPPED" disabled>
+							停用
+						</el-dropdown-item>
+						<el-dropdown-item command="RESOLVED" disabled>
+							就绪
+						</el-dropdown-item>
+						<el-dropdown-item command="DISABLED" disabled>
+							禁用
+						</el-dropdown-item>
+						<el-dropdown-item command="CREATED" disabled>
+							创建
+						</el-dropdown-item>
+						<el-dropdown-item command="FAILED" disabled>
+							失败
+						</el-dropdown-item>
+					</el-dropdown-menu>
+				</template>
+			</el-dropdown>
+		</el-col>
+	</el-row>
+
+	<el-table :data="plugins" style="width: 100%">
+		<el-table-column prop="logo" label="图标" width="80">
+			<template #default="scope">
+				<el-avatar
+					shape="square"
+					:size="40"
+					:src="scope.row.logo ? scope.row.logo : defaultPluginLogoUrl"
+				/>
+			</template>
+		</el-table-column>
+		<el-table-column prop="name" label="名称" width="150" />
+		<el-table-column prop="author.name" label="作者" width="200" />
+		<el-table-column prop="description" label="描述" />
+		<el-table-column prop="state" label="状态" align="right" width="100">
+			<template #default="scope">
+				{{ stateStrMap.get(scope.row.state) }}
+			</template>
+		</el-table-column>
+		<el-table-column align="right" label="操作" width="55">
+			<template #default="scope">
+				<el-dropdown style="cursor: pointer" trigger="click">
+					<el-icon size="30"><More /></el-icon>
+					<template #dropdown>
+						<el-dropdown-menu>
+							<el-dropdown-item disabled> 详情 </el-dropdown-item>
+							<el-dropdown-item
+								divided
+								:disabled="scope.row.state === 'STARTED'"
+								@click="startPlugin(scope.row.name)"
+							>
+								启动
+							</el-dropdown-item>
+
+							<el-dropdown-item
+								:disabled="scope.row.state === 'STOPPED'"
+								@click="stopPlugin(scope.row.name)"
+							>
+								停止
+							</el-dropdown-item>
+
+							<el-dropdown-item
+								divided
+								:disabled="scope.row.state !== 'DISABLED'"
+								@click="enablePlugin(scope.row.name)"
+							>
+								启用
+							</el-dropdown-item>
+
+							<el-dropdown-item
+								:disabled="scope.row.state === 'DISABLED'"
+								@click="disablePlugin(scope.row.name)"
+							>
+								禁用
+							</el-dropdown-item>
+
+							<el-dropdown-item divided @click="reloadPlugin(scope.row.name)">
+								重载
+							</el-dropdown-item>
+							<el-dropdown-item disabled> 升级 </el-dropdown-item>
+							<el-dropdown-item
+								style="width: 170; color: red"
+								divided
+								@click="deletePlugin(scope.row.name)"
+							>
+								卸载
+							</el-dropdown-item>
+							<el-dropdown-item style="width: 170; color: red" disabled>
+								重置
+							</el-dropdown-item>
+						</el-dropdown-menu>
 					</template>
-				</el-table-column>
-				<el-table-column prop="name" label="名称" width="150" />
-				<el-table-column prop="author.name" label="作者" width="200" />
-				<el-table-column prop="description" label="描述" />
-				<el-table-column prop="state" label="状态" align="right" width="100">
-					<template #default="scope">
-						{{ stateStrMap.get(scope.row.state) }}
-					</template>
-				</el-table-column>
-				<el-table-column align="right" label="操作" width="55">
-					<template #default="scope">
-						<el-dropdown style="cursor: pointer" trigger="click">
-							<el-icon size="30"><More /></el-icon>
-							<template #dropdown>
-								<el-dropdown-menu>
-									<el-dropdown-item disabled> 详情 </el-dropdown-item>
-									<el-dropdown-item
-										divided
-										:disabled="scope.row.state === 'STARTED'"
-										@click="startPlugin(scope.row.name)"
-									>
-										启动
-									</el-dropdown-item>
-
-									<el-dropdown-item
-										:disabled="scope.row.state === 'STOPPED'"
-										@click="stopPlugin(scope.row.name)"
-									>
-										停止
-									</el-dropdown-item>
-
-									<el-dropdown-item
-										divided
-										:disabled="scope.row.state !== 'DISABLED'"
-										@click="enablePlugin(scope.row.name)"
-									>
-										启用
-									</el-dropdown-item>
-
-									<el-dropdown-item
-										:disabled="scope.row.state === 'DISABLED'"
-										@click="disablePlugin(scope.row.name)"
-									>
-										禁用
-									</el-dropdown-item>
-
-									<el-dropdown-item
-										divided
-										@click="reloadPlugin(scope.row.name)"
-									>
-										重载
-									</el-dropdown-item>
-									<el-dropdown-item disabled> 升级 </el-dropdown-item>
-									<el-dropdown-item
-										style="width: 170; color: red"
-										divided
-										@click="deletePlugin(scope.row.name)"
-									>
-										卸载
-									</el-dropdown-item>
-									<el-dropdown-item style="width: 170; color: red" disabled>
-										重置
-									</el-dropdown-item>
-								</el-dropdown-menu>
-							</template>
-						</el-dropdown>
-					</template>
-				</el-table-column>
-			</el-table>
-		</div>
-	</el-card>
+				</el-dropdown>
+			</template>
+		</el-table-column>
+	</el-table>
 </template>
 
 <style lang="scss" scoped></style>
