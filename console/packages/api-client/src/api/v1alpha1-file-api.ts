@@ -196,22 +196,22 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 		},
 		/**
 		 * List files by condition.
-		 * @param {string} page
-		 * @param {string} size
-		 * @param {string} [place]
+		 * @param {number} [page] 第几页，从1开始, 默认为1.
+		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {string} [fileName] 经过Basic64编码的文件名称，文件名称字段模糊查询。
+		 * @param {'LOCAL'} [place]
+		 * @param {'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN'} [type]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		listFilesByCondition: async (
-			page: string,
-			size: string,
-			place?: string,
+			page?: number,
+			size?: number,
+			fileName?: string,
+			place?: 'LOCAL',
+			type?: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN',
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			// verify required parameter 'page' is not null or undefined
-			assertParamExists('listFilesByCondition', 'page', page);
-			// verify required parameter 'size' is not null or undefined
-			assertParamExists('listFilesByCondition', 'size', size);
 			const localVarPath = `/api/v1alpha1/files/condition`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -244,8 +244,16 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 				localVarQueryParameter['size'] = size;
 			}
 
+			if (fileName !== undefined) {
+				localVarQueryParameter['fileName'] = fileName;
+			}
+
 			if (place !== undefined) {
 				localVarQueryParameter['place'] = place;
+			}
+
+			if (type !== undefined) {
+				localVarQueryParameter['type'] = type;
 			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -463,14 +471,20 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 		},
 		/**
 		 *
-		 * @param {File} [file]
+		 * @param {File} file
+		 * @param {string} policyName Storage policy name
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		uploadFile: async (
-			file?: File,
+			file: File,
+			policyName: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
+			// verify required parameter 'file' is not null or undefined
+			assertParamExists('uploadFile', 'file', file);
+			// verify required parameter 'policyName' is not null or undefined
+			assertParamExists('uploadFile', 'policyName', policyName);
 			const localVarPath = `/api/v1alpha1/files/upload`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -500,6 +514,10 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 
 			if (file !== undefined) {
 				localVarFormParams.append('file', file as any);
+			}
+
+			if (policyName !== undefined) {
+				localVarFormParams.append('policyName', policyName as any);
 			}
 
 			localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
@@ -599,16 +617,20 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 		},
 		/**
 		 * List files by condition.
-		 * @param {string} page
-		 * @param {string} size
-		 * @param {string} [place]
+		 * @param {number} [page] 第几页，从1开始, 默认为1.
+		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {string} [fileName] 经过Basic64编码的文件名称，文件名称字段模糊查询。
+		 * @param {'LOCAL'} [place]
+		 * @param {'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN'} [type]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		async listFilesByCondition(
-			page: string,
-			size: string,
-			place?: string,
+			page?: number,
+			size?: number,
+			fileName?: string,
+			place?: 'LOCAL',
+			type?: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN',
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
@@ -617,7 +639,9 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 				await localVarAxiosParamCreator.listFilesByCondition(
 					page,
 					size,
+					fileName,
 					place,
+					type,
 					options
 				);
 			return createRequestFunction(
@@ -709,18 +733,21 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 		},
 		/**
 		 *
-		 * @param {File} [file]
+		 * @param {File} file
+		 * @param {string} policyName Storage policy name
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		async uploadFile(
-			file?: File,
+			file: File,
+			policyName: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
 		> {
 			const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(
 				file,
+				policyName,
 				options
 			);
 			return createRequestFunction(
@@ -787,14 +814,16 @@ export const V1alpha1FileApiFactory = function (
 		 * @throws {RequiredError}
 		 */
 		listFilesByCondition(
-			requestParameters: V1alpha1FileApiListFilesByConditionRequest,
+			requestParameters: V1alpha1FileApiListFilesByConditionRequest = {},
 			options?: AxiosRequestConfig
 		): AxiosPromise<PagingWrap> {
 			return localVarFp
 				.listFilesByCondition(
 					requestParameters.page,
 					requestParameters.size,
+					requestParameters.fileName,
 					requestParameters.place,
+					requestParameters.type,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -854,11 +883,15 @@ export const V1alpha1FileApiFactory = function (
 		 * @throws {RequiredError}
 		 */
 		uploadFile(
-			requestParameters: V1alpha1FileApiUploadFileRequest = {},
+			requestParameters: V1alpha1FileApiUploadFileRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<any> {
 			return localVarFp
-				.uploadFile(requestParameters.file, options)
+				.uploadFile(
+					requestParameters.file,
+					requestParameters.policyName,
+					options
+				)
 				.then((request) => request(axios, basePath));
 		},
 	};
@@ -885,25 +918,39 @@ export interface V1alpha1FileApiDeleteFileRequest {
  */
 export interface V1alpha1FileApiListFilesByConditionRequest {
 	/**
-	 *
+	 * 第几页，从1开始, 默认为1.
+	 * @type {number}
+	 * @memberof V1alpha1FileApiListFilesByCondition
+	 */
+	readonly page?: number;
+
+	/**
+	 * 每页条数，默认为10.
+	 * @type {number}
+	 * @memberof V1alpha1FileApiListFilesByCondition
+	 */
+	readonly size?: number;
+
+	/**
+	 * 经过Basic64编码的文件名称，文件名称字段模糊查询。
 	 * @type {string}
 	 * @memberof V1alpha1FileApiListFilesByCondition
 	 */
-	readonly page: string;
+	readonly fileName?: string;
 
 	/**
 	 *
-	 * @type {string}
+	 * @type {'LOCAL'}
 	 * @memberof V1alpha1FileApiListFilesByCondition
 	 */
-	readonly size: string;
+	readonly place?: 'LOCAL';
 
 	/**
 	 *
-	 * @type {string}
+	 * @type {'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN'}
 	 * @memberof V1alpha1FileApiListFilesByCondition
 	 */
-	readonly place?: string;
+	readonly type?: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN';
 }
 
 /**
@@ -980,7 +1027,14 @@ export interface V1alpha1FileApiUploadFileRequest {
 	 * @type {File}
 	 * @memberof V1alpha1FileApiUploadFile
 	 */
-	readonly file?: File;
+	readonly file: File;
+
+	/**
+	 * Storage policy name
+	 * @type {string}
+	 * @memberof V1alpha1FileApiUploadFile
+	 */
+	readonly policyName: string;
 }
 
 /**
@@ -1038,14 +1092,16 @@ export class V1alpha1FileApi extends BaseAPI {
 	 * @memberof V1alpha1FileApi
 	 */
 	public listFilesByCondition(
-		requestParameters: V1alpha1FileApiListFilesByConditionRequest,
+		requestParameters: V1alpha1FileApiListFilesByConditionRequest = {},
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1FileApiFp(this.configuration)
 			.listFilesByCondition(
 				requestParameters.page,
 				requestParameters.size,
+				requestParameters.fileName,
 				requestParameters.place,
+				requestParameters.type,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));
@@ -1113,11 +1169,11 @@ export class V1alpha1FileApi extends BaseAPI {
 	 * @memberof V1alpha1FileApi
 	 */
 	public uploadFile(
-		requestParameters: V1alpha1FileApiUploadFileRequest = {},
+		requestParameters: V1alpha1FileApiUploadFileRequest,
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1FileApiFp(this.configuration)
-			.uploadFile(requestParameters.file, options)
+			.uploadFile(requestParameters.file, requestParameters.policyName, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }

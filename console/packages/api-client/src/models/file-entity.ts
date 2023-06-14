@@ -83,12 +83,6 @@ export interface FileEntity {
 	 * @type {string}
 	 * @memberof FileEntity
 	 */
-	type?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
 	md5?: string;
 	/**
 	 *
@@ -96,6 +90,12 @@ export interface FileEntity {
 	 * @memberof FileEntity
 	 */
 	size?: number;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof FileEntity
+	 */
+	type?: FileEntityTypeEnum;
 	/**
 	 *
 	 * @type {string}
@@ -116,6 +116,16 @@ export interface FileEntity {
 	originalName?: string;
 }
 
+export const FileEntityTypeEnum = {
+	Image: 'IMAGE',
+	Video: 'VIDEO',
+	Document: 'DOCUMENT',
+	Voice: 'VOICE',
+	Unknown: 'UNKNOWN',
+} as const;
+
+export type FileEntityTypeEnum =
+	(typeof FileEntityTypeEnum)[keyof typeof FileEntityTypeEnum];
 export const FileEntityPlaceEnum = {
 	Local: 'LOCAL',
 } as const;
