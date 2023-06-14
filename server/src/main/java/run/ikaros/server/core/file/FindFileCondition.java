@@ -5,6 +5,8 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
+import run.ikaros.api.store.enums.FilePlace;
+import run.ikaros.api.store.enums.FileType;
 
 @Data
 @Builder
@@ -13,14 +15,10 @@ public class FindFileCondition {
     private Integer page;
     @Schema(requiredMode = REQUIRED, description = "每页条数，默认为10.")
     private Integer size;
-    @Schema(deprecated = true)
+    @Schema(deprecated = true, description = "经过Basic64编码的文件名称，文件名称字段模糊查询。")
     private String fileName;
-    @Schema(deprecated = true)
-    private String keywords;
-    @Schema(deprecated = true)
-    private String place;
-    @Schema(deprecated = true)
-    private String folderName;
-    @Schema(deprecated = true)
-    private String md5;
+    @Schema(implementation = FilePlace.class)
+    private FilePlace place;
+    @Schema(implementation = FileType.class)
+    private FileType type;
 }

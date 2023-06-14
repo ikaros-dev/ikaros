@@ -25,7 +25,7 @@ public class BaseEntity {
     private Long id;
 
     /**
-     * record status, it is logic delete, has deleted is false, normal is true.
+     * record status, it is logic delete field, has deleted is true, normal is false.
      */
     @Column("delete_status")
     private Boolean deleteStatus = false;

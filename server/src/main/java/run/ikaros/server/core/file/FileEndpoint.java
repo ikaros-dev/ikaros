@@ -31,6 +31,7 @@ import org.springframework.http.codec.multipart.Part;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -47,6 +48,8 @@ import run.ikaros.api.core.file.FilePolicy;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.store.entity.FileEntity;
+import run.ikaros.api.store.enums.FilePlace;
+import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
@@ -90,7 +93,7 @@ public class FileEndpoint implements CoreEndpoint {
                         .required(true)
                         .content(contentBuilder()
                             .mediaType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                            .schema(schemaBuilder().implementation(UploadRequest.class))
+                            .schema(schemaBuilder().implementation(DefaultUploadRequest.class))
                         ))
                     .response(responseBuilder().implementation(File.class))
                     .build())
@@ -105,11 +108,23 @@ public class FileEndpoint implements CoreEndpoint {
                 builder -> builder.operationId("ListFilesByCondition")
                     .tag(tag).description("List files by condition.")
                     .parameter(parameterBuilder()
-                        .name("page").required(true))
+                        .name("page")
+                        .description("第几页，从1开始, 默认为1.")
+                        .implementation(Integer.class))
                     .parameter(parameterBuilder()
-                        .name("size").required(true))
+                        .name("size")
+                        .description("每页条数，默认为10.")
+                        .implementation(Integer.class))
                     .parameter(parameterBuilder()
-                        .name("place").required(false))
+                        .name("fileName")
+                        .description("经过Basic64编码的文件名称，文件名称字段模糊查询。")
+                        .implementation(String.class))
+                    .parameter(parameterBuilder()
+                        .name("place")
+                        .implementation(FilePlace.class))
+                    .parameter(parameterBuilder()
+                        .name("type")
+                        .implementation(FileType.class))
                     .response(responseBuilder().implementation(PagingWrap.class))
             )
 
@@ -161,15 +176,31 @@ public class FileEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> listByCondition(ServerRequest request) {
         Optional<String> pageOp = request.queryParam("page");
-        Assert.isTrue(pageOp.isPresent(), "'page' must has value.");
+        if (pageOp.isEmpty()) {
+            pageOp = Optional.of("1");
+        }
         final Integer page = Integer.valueOf(pageOp.get());
+
         Optional<String> sizeOp = request.queryParam("size");
-        Assert.isTrue(sizeOp.isPresent(), "'size' must has value.");
+        if (sizeOp.isEmpty()) {
+            sizeOp = Optional.of("10");
+        }
         final Integer size = Integer.valueOf(sizeOp.get());
+
+        Optional<String> fileNameOp = request.queryParam("fileName");
+        final String fileName = fileNameOp.isPresent() && StringUtils.hasText(fileNameOp.get())
+            ? new String(Base64.getDecoder().decode(fileNameOp.get()), StandardCharsets.UTF_8)
+            : "";
+
         Optional<String> placeOp = request.queryParam("place");
-        final String place = placeOp.orElse("");
+        final FilePlace place = placeOp.map(FilePlace::valueOf).orElse(null);
+
+        Optional<String> typeOp = request.queryParam("type");
+        final FileType type = typeOp.map(FileType::valueOf).orElse(null);
+
         return Mono.just(FindFileCondition.builder()
-                .page(page).size(size).place(place)
+                .page(page).size(size).fileName(fileName)
+                .place(place).type(type)
                 .build())
             .flatMap(fileService::listEntitiesByCondition)
             .flatMap(fileEntities -> ServerResponse.ok().bodyValue(fileEntities));
@@ -297,7 +328,7 @@ public class FileEndpoint implements CoreEndpoint {
 
     }
 
-    public record DefaultUploadRequest(MultiValueMap<String, Part> formData)
+    public record DefaultUploadRequest(@Schema(hidden = true) MultiValueMap<String, Part> formData)
         implements UploadRequest {
 
         @Override

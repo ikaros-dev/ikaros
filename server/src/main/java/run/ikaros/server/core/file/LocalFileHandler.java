@@ -57,22 +57,21 @@ public class LocalFileHandler implements FileHandler {
             throw Exceptions.propagate(e);
         }
         // upload
-        filepart.transferTo(uploadPath.toFile()).block();
-        log.debug("Upload file {} to dest path: {}", filepart.filename(), uploadPath);
-        // save to db
-        FileEntity fileEntity = FileEntity.builder()
-            .folderId(DEFAULT_FOLDER_ID)
-            .place(FilePlace.valueOf(context.policy()))
-            .type(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(filepart.filename()))
-                .toString())
-            .url(uploadPath.toString().replace(ikarosProp.getWorkDir().toString(), "")
-                .replace(java.io.File.separatorChar, '/'))
-            .name(filepart.filename())
-            .originalPath(uploadPath.toString())
-            .originalName(filepart.filename())
-            .size(filepart.headers().getContentLength())
-            .build();
-        return fileRepository.save(fileEntity)
+        return filepart.transferTo(uploadPath.toFile())
+            .doOnSuccess(unused -> log.debug("Upload file {} to dest path: {}", filepart.filename(),
+                uploadPath))
+            .then(Mono.just(FileEntity.builder()
+                .folderId(DEFAULT_FOLDER_ID)
+                .place(FilePlace.valueOf(context.policy()))
+                .type(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(filepart.filename())))
+                .url(uploadPath.toString().replace(ikarosProp.getWorkDir().toString(), "")
+                    .replace(java.io.File.separatorChar, '/'))
+                .name(filepart.filename())
+                .originalPath(uploadPath.toString())
+                .originalName(filepart.filename())
+                .size(filepart.headers().getContentLength())
+                .build()))
+                .flatMap(fileRepository::save)
             .map(File::new);
     }
 

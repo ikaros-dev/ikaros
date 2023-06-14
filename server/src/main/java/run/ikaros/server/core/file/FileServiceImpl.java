@@ -20,9 +20,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FilePlace;
+import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.infra.properties.IkarosProperties;
 import run.ikaros.server.infra.utils.FileUtils;
@@ -94,7 +96,7 @@ public class FileServiceImpl implements FileService {
                 .url(reactiveUrl)
                 .name(uploadName + "." + postfix)
                 .size(uploadLength)
-                .type(FileUtils.parseTypeByPostfix(postfix).name())
+                .type(FileUtils.parseTypeByPostfix(postfix))
                 .originalPath(filePath)
                 .build();
             fileEntity.setUpdateTime(LocalDateTime.now());
@@ -132,14 +134,55 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public Mono<PagingWrap<FileEntity>> listEntitiesByCondition(
-        @NotNull FindFileCondition findFileCondition) {
-        Assert.notNull(findFileCondition, "'findFileCondition' must no null.");
-        return fileRepository.findAllBy(
-                PageRequest.of(findFileCondition.getPage() - 1, findFileCondition.getSize()))
+        @NotNull FindFileCondition condition) {
+        Assert.notNull(condition, "'condition' must no null.");
+
+        final Integer page = condition.getPage();
+        Assert.isTrue(page > 0, "'page' must gt 0.");
+
+        final Integer size = condition.getSize();
+        Assert.isTrue(size > 0, "'size' must gt 0.");
+
+        final String fileName = StringUtils.hasText(condition.getFileName())
+            ? condition.getFileName() : "";
+        final String fileNameLike = "%" + fileName + "%";
+        final FilePlace place = condition.getPlace();
+        final FileType type = condition.getType();
+
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+
+        Flux<FileEntity> fileEntityFlux;
+        Mono<Long> countMono = fileRepository.count();
+
+        if (place == null) {
+            if (type == null) {
+                fileEntityFlux = fileRepository.findAllByNameLike(fileNameLike, pageRequest);
+                countMono = fileRepository.countAllByNameLike(fileNameLike);
+            } else {
+                fileEntityFlux =
+                    fileRepository.findAllByNameLikeAndType(fileNameLike, type, pageRequest);
+                countMono = fileRepository.countAllByNameLikeAndType(fileNameLike, type);
+            }
+        } else {
+            if (type == null) {
+                fileEntityFlux =
+                    fileRepository.findAllByNameLikeAndPlace(fileNameLike, place, pageRequest);
+                countMono = fileRepository.countAllByNameLikeAndPlace(fileNameLike, place);
+            } else {
+                fileEntityFlux =
+                    fileRepository.findAllByNameLikeAndPlaceAndType(fileNameLike, place, type,
+                        pageRequest);
+                countMono =
+                    fileRepository.countAllByNameLikeAndPlaceAndType(fileNameLike, place, type);
+            }
+        }
+
+        Mono<Long> finalCountMono = countMono;
+        return fileEntityFlux
             .collectList()
-            .flatMap(fileEntities -> fileRepository.count()
-                .map(count -> new PagingWrap<>(findFileCondition.getPage(),
-                    findFileCondition.getSize(), count, fileEntities)));
+            .flatMap(fileEntities -> finalCountMono
+                .map(count -> new PagingWrap<>(page,
+                    size, count, fileEntities)));
     }
 
     private String path2url(@NotBlank String path, @Nullable String workDir) {
