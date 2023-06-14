@@ -96,7 +96,11 @@ public class PluginServiceImpl implements PluginService {
         Assert.notNull(filePart, "'filePart' must not null.");
         String pluginDir = System.getProperty("pf4j.pluginsDir");
         try {
-            Path destPath = Path.of(new File(pluginDir).toURI()).resolve(filePart.filename());
+            File pluginDirFile = new File(pluginDir);
+            if (!pluginDirFile.exists()) {
+                pluginDirFile.mkdirs();
+            }
+            Path destPath = Path.of(pluginDirFile.toURI()).resolve(filePart.filename());
 
             filePart.transferTo(destPath.toFile()).subscribe();
             log.debug("Upload plugin file [{}] to plugin dir [{}].",

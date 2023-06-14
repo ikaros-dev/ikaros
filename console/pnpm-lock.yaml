@@ -55,9 +55,27 @@ importers:
       axios:
         specifier: ^0.27.2
         version: 0.27.2
+      crypto-js:
+        specifier: ^4.1.1
+        version: 4.1.1
       element-plus:
         specifier: ^2.3.5
         version: 2.3.5(vue@3.2.47)
+      filepond:
+        specifier: ^4.30.4
+        version: 4.30.4
+      filepond-plugin-file-rename:
+        specifier: ^1.1.8
+        version: 1.1.8(filepond@4.30.4)
+      filepond-plugin-file-validate-type:
+        specifier: ^1.2.8
+        version: 1.2.8(filepond@4.30.4)
+      filepond-plugin-image-exif-orientation:
+        specifier: ^1.0.11
+        version: 1.0.11(filepond@4.30.4)
+      filepond-plugin-image-preview:
+        specifier: ^4.6.11
+        version: 4.6.11(filepond@4.30.4)
       lodash.clonedeep:
         specifier: ^4.5.0
         version: 4.5.0
@@ -85,6 +103,9 @@ importers:
       vue:
         specifier: ^3.2.45
         version: 3.2.47
+      vue-filepond:
+        specifier: ^7.0.3
+        version: 7.0.3(filepond@4.30.4)(vue@3.2.47)
       vue-i18n:
         specifier: ^9.2.2
         version: 9.2.2(vue@3.2.47)
@@ -3117,6 +3138,10 @@ packages:
       which: 2.0.2
     dev: true
 
+  /crypto-js@4.1.1:
+    resolution: {integrity: sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==}
+    dev: false
+
   /css-select@4.3.0:
     resolution: {integrity: sha512-wPpOYtnsVontu2mODhA19JrqWxNsfdatRKd64kmpRbQgh1KtItko5sTnEpPdpSaJszTOhEMlF/RPz28qj4HqhQ==}
     dependencies:
@@ -4401,6 +4426,42 @@ packages:
     dependencies:
       minimatch: 5.1.6
     dev: true
+
+  /filepond-plugin-file-rename@1.1.8(filepond@4.30.4):
+    resolution: {integrity: sha512-qqZe1JFvl9S/lmIjQiRIzXxRkxobE7hqqjDOFgJkBzcZAjWn/rGpUEWWc5JUDL71JqyACG8gwMFSzGr1a04IQA==}
+    peerDependencies:
+      filepond: '>=1.8.x <5.x'
+    dependencies:
+      filepond: 4.30.4
+    dev: false
+
+  /filepond-plugin-file-validate-type@1.2.8(filepond@4.30.4):
+    resolution: {integrity: sha512-UBTqIWbk5+5R0GBELI8svu01MHWjFSLfc9DfCMvFtHKXLdJMxY1p37ChC4YKQjhfODaTuvLnNVRsukMGMFZBBg==}
+    peerDependencies:
+      filepond: '>=1.x <5.x'
+    dependencies:
+      filepond: 4.30.4
+    dev: false
+
+  /filepond-plugin-image-exif-orientation@1.0.11(filepond@4.30.4):
+    resolution: {integrity: sha512-hLBc12Fk6Zkj3L8mSAn+elugHOqT5rLUbgVXQQIQjMe0FsGjtpoxqeVR6jt4IWHGat2L9sFAgU2TGmd1mqosCg==}
+    peerDependencies:
+      filepond: '>=3.x <5.x'
+    dependencies:
+      filepond: 4.30.4
+    dev: false
+
+  /filepond-plugin-image-preview@4.6.11(filepond@4.30.4):
+    resolution: {integrity: sha512-0EmQ9HnOb/X0xc5rLcNRhhmdUbp7oiicRwQrcr90ZfVmPJOOZoX3ZGUEsEPj7luMI55huguhcVozdESxtqnuRw==}
+    peerDependencies:
+      filepond: '>=4.x <5.x'
+    dependencies:
+      filepond: 4.30.4
+    dev: false
+
+  /filepond@4.30.4:
+    resolution: {integrity: sha512-FCwsMvG9iiEs6uobdDrTaKsCgsqys0NuLgPPD8n37AYVYBiiDkrPkk9MSIU5rT2FahYcL1bScYI9huIPtlzqyA==}
+    dev: false
 
   /fill-range@7.0.1:
     resolution: {integrity: sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==}
@@ -7460,6 +7521,16 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /vue-filepond@7.0.3(filepond@4.30.4)(vue@3.2.47):
+    resolution: {integrity: sha512-pYZ5TxGwFiiiVlRdzlJl0AyHE0/rEZiHm/0sYhIleFjV2VdGWTyxSqErN/AQwrwv32AeiNbui46vVB06Dl07ow==}
+    peerDependencies:
+      filepond: '>=4.7.4 < 5.x'
+      vue: '>=3 < 4'
+    dependencies:
+      filepond: 4.30.4
+      vue: 3.2.47
+    dev: false
 
   /vue-i18n@9.2.2(vue@3.2.47):
     resolution: {integrity: sha512-yswpwtj89rTBhegUAv9Mu37LNznyu3NpyLQmozF3i1hYOhwpG8RjcjIFIIfnu+2MDZJGSZPXaKWvnQA71Yv9TQ==}

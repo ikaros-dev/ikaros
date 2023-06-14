@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import run.ikaros.api.store.enums.FilePlace;
+import run.ikaros.api.store.enums.FileType;
 
 /**
  * file entity.
@@ -32,10 +33,9 @@ public class FileEntity extends BaseEntity {
      */
     private String name;
 
-    private String type;
     private String md5;
     private Long size;
-
+    private FileType type;
     private FilePlace place;
 
     /**

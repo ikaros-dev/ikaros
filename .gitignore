@@ -37,14 +37,14 @@ out/
 .vscode/
 
 ### Local Dev Files
-logs/
-upload/
-media/
-downloads/
-database/
-tripartite/
-original/
-plugins/
+/logs/
+/upload/
+/media/
+/downloads/
+/database/
+/tripartite/
+/original/
+/plugins/
 
 ### Console ###
-server/src/main/resources/console/
+/server/src/main/resources/console/

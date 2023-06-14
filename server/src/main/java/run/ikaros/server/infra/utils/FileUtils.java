@@ -1,5 +1,7 @@
 package run.ikaros.server.infra.utils;
 
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -8,13 +10,16 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import run.ikaros.api.constant.FileConst;
 import run.ikaros.api.store.enums.FileType;
 
@@ -29,6 +34,46 @@ public class FileUtils {
         Arrays.stream(FileConst.Postfix.VIDEOS).collect(Collectors.toSet());
     static final Set<String> VOICES =
         Arrays.stream(FileConst.Postfix.VOICES).collect(Collectors.toSet());
+
+    private static final String BASE_UPLOAD_DIR_NAME = "upload";
+
+    private static final String BASE_UPLOAD_DIR_PATH
+        = SystemVarUtils.getCurrentAppDirPath() + File.separator + BASE_UPLOAD_DIR_NAME;
+
+    /**
+     * 构建基础的上传路径.
+     *
+     * @param uploadedTime 条目数据上传的时间
+     * @return 基础的上传目录路径，格式：[upload/yyyy/MM/dd/HH]
+     */
+    public static String buildAppUploadFileBasePath(String basePath, LocalDateTime uploadedTime) {
+        Assert.notNull(uploadedTime, "'uploadedTime' must not be null");
+        String locationDirPath =
+            (StringUtils.hasText(basePath) ? basePath + File.separator + BASE_UPLOAD_DIR_NAME
+                : BASE_UPLOAD_DIR_PATH)
+                + File.separator + uploadedTime.getYear()
+                + File.separator + uploadedTime.getMonthValue()
+                + File.separator + uploadedTime.getDayOfMonth();
+
+        File locationDir = new File(locationDirPath);
+        if (!locationDir.exists()) {
+            locationDir.mkdirs();
+        }
+        return locationDirPath;
+    }
+
+
+    /**
+     * 条目数据的文件路径，格式：[upload/yyyy/MM/dd/HH/随机生成的UUID.postfix].
+     */
+    public static String buildAppUploadFilePath(@Nullable String basePath,
+                                                @NotBlank String postfix) {
+        Assert.hasText(postfix, "'postfix' must not be blank");
+        return buildAppUploadFileBasePath(basePath, LocalDateTime.now())
+            + File.separator + UUID.randomUUID().toString().replace("-", "")
+            + (('.' == postfix.charAt(0))
+            ? postfix : "." + postfix);
+    }
 
     public enum Hash {
         MD5("MD5"),

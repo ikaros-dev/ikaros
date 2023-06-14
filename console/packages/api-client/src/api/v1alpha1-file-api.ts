@@ -37,6 +37,10 @@ import {
 	BaseAPI,
 	RequiredError,
 } from '../base';
+// @ts-ignore
+import { FileEntity } from '../models';
+// @ts-ignore
+import { PagingWrap } from '../models';
 /**
  * V1alpha1FileApi - axios parameter creator
  * @export
@@ -99,11 +103,57 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 			};
 		},
 		/**
+		 * Generate fragment upload file unique id.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		generateFragmentUploadFileUniqueId: async (
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/file/fragment/unique`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
 		 *
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		searchFiles: async (
+		listFiles: async (
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			const localVarPath = `/api/v1alpha1/files`;
@@ -145,15 +195,296 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 			};
 		},
 		/**
+		 * List files by condition.
+		 * @param {number} [page] 第几页，从1开始, 默认为1.
+		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {string} [fileName] 经过Basic64编码的文件名称，文件名称字段模糊查询。
+		 * @param {'LOCAL'} [place]
+		 * @param {'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN'} [type]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listFilesByCondition: async (
+			page?: number,
+			size?: number,
+			fileName?: string,
+			place?: 'LOCAL',
+			type?: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN',
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/files/condition`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (page !== undefined) {
+				localVarQueryParameter['page'] = page;
+			}
+
+			if (size !== undefined) {
+				localVarQueryParameter['size'] = size;
+			}
+
+			if (fileName !== undefined) {
+				localVarQueryParameter['fileName'] = fileName;
+			}
+
+			if (place !== undefined) {
+				localVarQueryParameter['place'] = place;
+			}
+
+			if (type !== undefined) {
+				localVarQueryParameter['type'] = type;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Receive fragment upload chunk file.
+		 * @param {string} unique Chunk file unique id.
+		 * @param {string} uploadLength Upload chunk file length.
+		 * @param {string} uploadOffset Upload chunk file offset.
+		 * @param {string} uploadName Upload chunk file file name.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		receiveFragmentUploadChunkFile: async (
+			unique: string,
+			uploadLength: string,
+			uploadOffset: string,
+			uploadName: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'unique' is not null or undefined
+			assertParamExists('receiveFragmentUploadChunkFile', 'unique', unique);
+			// verify required parameter 'uploadLength' is not null or undefined
+			assertParamExists(
+				'receiveFragmentUploadChunkFile',
+				'uploadLength',
+				uploadLength
+			);
+			// verify required parameter 'uploadOffset' is not null or undefined
+			assertParamExists(
+				'receiveFragmentUploadChunkFile',
+				'uploadOffset',
+				uploadOffset
+			);
+			// verify required parameter 'uploadName' is not null or undefined
+			assertParamExists(
+				'receiveFragmentUploadChunkFile',
+				'uploadName',
+				uploadName
+			);
+			const localVarPath = `/api/v1alpha1/file/fragment/patch/{unique}`.replace(
+				`{${'unique'}}`,
+				encodeURIComponent(String(unique))
+			);
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'PATCH',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (uploadLength != null) {
+				localVarHeaderParameter['Upload-Length'] = String(uploadLength);
+			}
+
+			if (uploadOffset != null) {
+				localVarHeaderParameter['Upload-Offset'] = String(uploadOffset);
+			}
+
+			if (uploadName != null) {
+				localVarHeaderParameter['Upload-Name'] = String(uploadName);
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Revert fragment upload file by unique id.
+		 * @param {string} [body] Unique id.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		revertFragmentUploadFileByUniqueId: async (
+			body?: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/file/fragment/revert`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'DELETE',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				body,
+				localVarRequestOptions,
+				configuration
+			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Update file.
+		 * @param {FileEntity} [fileEntity]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		updateFile: async (
+			fileEntity?: FileEntity,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/file/update`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'PUT',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				fileEntity,
+				localVarRequestOptions,
+				configuration
+			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
 		 *
-		 * @param {File} [file]
+		 * @param {File} file
+		 * @param {string} policyName Storage policy name
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		uploadFile: async (
-			file?: File,
+			file: File,
+			policyName: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
+			// verify required parameter 'file' is not null or undefined
+			assertParamExists('uploadFile', 'file', file);
+			// verify required parameter 'policyName' is not null or undefined
+			assertParamExists('uploadFile', 'policyName', policyName);
 			const localVarPath = `/api/v1alpha1/files/upload`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -183,6 +514,10 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 
 			if (file !== undefined) {
 				localVarFormParams.append('file', file as any);
+			}
+
+			if (policyName !== undefined) {
+				localVarFormParams.append('policyName', policyName as any);
 			}
 
 			localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
@@ -237,16 +572,156 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 			);
 		},
 		/**
+		 * Generate fragment upload file unique id.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async generateFragmentUploadFileUniqueId(
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.generateFragmentUploadFileUniqueId(
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
 		 *
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async searchFiles(
+		async listFiles(
+			options?: AxiosRequestConfig
+		): Promise<
+			(
+				axios?: AxiosInstance,
+				basePath?: string
+			) => AxiosPromise<Array<FileEntity>>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.listFiles(
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * List files by condition.
+		 * @param {number} [page] 第几页，从1开始, 默认为1.
+		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {string} [fileName] 经过Basic64编码的文件名称，文件名称字段模糊查询。
+		 * @param {'LOCAL'} [place]
+		 * @param {'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN'} [type]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async listFilesByCondition(
+			page?: number,
+			size?: number,
+			fileName?: string,
+			place?: 'LOCAL',
+			type?: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN',
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.listFilesByCondition(
+					page,
+					size,
+					fileName,
+					place,
+					type,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Receive fragment upload chunk file.
+		 * @param {string} unique Chunk file unique id.
+		 * @param {string} uploadLength Upload chunk file length.
+		 * @param {string} uploadOffset Upload chunk file offset.
+		 * @param {string} uploadName Upload chunk file file name.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async receiveFragmentUploadChunkFile(
+			unique: string,
+			uploadLength: string,
+			uploadOffset: string,
+			uploadName: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.searchFiles(
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.receiveFragmentUploadChunkFile(
+					unique,
+					uploadLength,
+					uploadOffset,
+					uploadName,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Revert fragment upload file by unique id.
+		 * @param {string} [body] Unique id.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async revertFragmentUploadFileByUniqueId(
+			body?: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.revertFragmentUploadFileByUniqueId(
+					body,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Update file.
+		 * @param {FileEntity} [fileEntity]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async updateFile(
+			fileEntity?: FileEntity,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.updateFile(
+				fileEntity,
 				options
 			);
 			return createRequestFunction(
@@ -258,18 +733,21 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 		},
 		/**
 		 *
-		 * @param {File} [file]
+		 * @param {File} file
+		 * @param {string} policyName Storage policy name
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		async uploadFile(
-			file?: File,
+			file: File,
+			policyName: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
 		> {
 			const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(
 				file,
+				policyName,
 				options
 			);
 			return createRequestFunction(
@@ -308,13 +786,94 @@ export const V1alpha1FileApiFactory = function (
 				.then((request) => request(axios, basePath));
 		},
 		/**
+		 * Generate fragment upload file unique id.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		generateFragmentUploadFileUniqueId(
+			options?: AxiosRequestConfig
+		): AxiosPromise<string> {
+			return localVarFp
+				.generateFragmentUploadFileUniqueId(options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
 		 *
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		searchFiles(options?: AxiosRequestConfig): AxiosPromise<void> {
+		listFiles(options?: AxiosRequestConfig): AxiosPromise<Array<FileEntity>> {
 			return localVarFp
-				.searchFiles(options)
+				.listFiles(options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * List files by condition.
+		 * @param {V1alpha1FileApiListFilesByConditionRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listFilesByCondition(
+			requestParameters: V1alpha1FileApiListFilesByConditionRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<PagingWrap> {
+			return localVarFp
+				.listFilesByCondition(
+					requestParameters.page,
+					requestParameters.size,
+					requestParameters.fileName,
+					requestParameters.place,
+					requestParameters.type,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Receive fragment upload chunk file.
+		 * @param {V1alpha1FileApiReceiveFragmentUploadChunkFileRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		receiveFragmentUploadChunkFile(
+			requestParameters: V1alpha1FileApiReceiveFragmentUploadChunkFileRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.receiveFragmentUploadChunkFile(
+					requestParameters.unique,
+					requestParameters.uploadLength,
+					requestParameters.uploadOffset,
+					requestParameters.uploadName,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Revert fragment upload file by unique id.
+		 * @param {V1alpha1FileApiRevertFragmentUploadFileByUniqueIdRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		revertFragmentUploadFileByUniqueId(
+			requestParameters: V1alpha1FileApiRevertFragmentUploadFileByUniqueIdRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.revertFragmentUploadFileByUniqueId(requestParameters.body, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Update file.
+		 * @param {V1alpha1FileApiUpdateFileRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		updateFile(
+			requestParameters: V1alpha1FileApiUpdateFileRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.updateFile(requestParameters.fileEntity, options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
@@ -324,11 +883,15 @@ export const V1alpha1FileApiFactory = function (
 		 * @throws {RequiredError}
 		 */
 		uploadFile(
-			requestParameters: V1alpha1FileApiUploadFileRequest = {},
+			requestParameters: V1alpha1FileApiUploadFileRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<any> {
 			return localVarFp
-				.uploadFile(requestParameters.file, options)
+				.uploadFile(
+					requestParameters.file,
+					requestParameters.policyName,
+					options
+				)
 				.then((request) => request(axios, basePath));
 		},
 	};
@@ -349,6 +912,111 @@ export interface V1alpha1FileApiDeleteFileRequest {
 }
 
 /**
+ * Request parameters for listFilesByCondition operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiListFilesByConditionRequest
+ */
+export interface V1alpha1FileApiListFilesByConditionRequest {
+	/**
+	 * 第几页，从1开始, 默认为1.
+	 * @type {number}
+	 * @memberof V1alpha1FileApiListFilesByCondition
+	 */
+	readonly page?: number;
+
+	/**
+	 * 每页条数，默认为10.
+	 * @type {number}
+	 * @memberof V1alpha1FileApiListFilesByCondition
+	 */
+	readonly size?: number;
+
+	/**
+	 * 经过Basic64编码的文件名称，文件名称字段模糊查询。
+	 * @type {string}
+	 * @memberof V1alpha1FileApiListFilesByCondition
+	 */
+	readonly fileName?: string;
+
+	/**
+	 *
+	 * @type {'LOCAL'}
+	 * @memberof V1alpha1FileApiListFilesByCondition
+	 */
+	readonly place?: 'LOCAL';
+
+	/**
+	 *
+	 * @type {'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN'}
+	 * @memberof V1alpha1FileApiListFilesByCondition
+	 */
+	readonly type?: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN';
+}
+
+/**
+ * Request parameters for receiveFragmentUploadChunkFile operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiReceiveFragmentUploadChunkFileRequest
+ */
+export interface V1alpha1FileApiReceiveFragmentUploadChunkFileRequest {
+	/**
+	 * Chunk file unique id.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiReceiveFragmentUploadChunkFile
+	 */
+	readonly unique: string;
+
+	/**
+	 * Upload chunk file length.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiReceiveFragmentUploadChunkFile
+	 */
+	readonly uploadLength: string;
+
+	/**
+	 * Upload chunk file offset.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiReceiveFragmentUploadChunkFile
+	 */
+	readonly uploadOffset: string;
+
+	/**
+	 * Upload chunk file file name.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiReceiveFragmentUploadChunkFile
+	 */
+	readonly uploadName: string;
+}
+
+/**
+ * Request parameters for revertFragmentUploadFileByUniqueId operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiRevertFragmentUploadFileByUniqueIdRequest
+ */
+export interface V1alpha1FileApiRevertFragmentUploadFileByUniqueIdRequest {
+	/**
+	 * Unique id.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiRevertFragmentUploadFileByUniqueId
+	 */
+	readonly body?: string;
+}
+
+/**
+ * Request parameters for updateFile operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiUpdateFileRequest
+ */
+export interface V1alpha1FileApiUpdateFileRequest {
+	/**
+	 *
+	 * @type {FileEntity}
+	 * @memberof V1alpha1FileApiUpdateFile
+	 */
+	readonly fileEntity?: FileEntity;
+}
+
+/**
  * Request parameters for uploadFile operation in V1alpha1FileApi.
  * @export
  * @interface V1alpha1FileApiUploadFileRequest
@@ -359,7 +1027,14 @@ export interface V1alpha1FileApiUploadFileRequest {
 	 * @type {File}
 	 * @memberof V1alpha1FileApiUploadFile
 	 */
-	readonly file?: File;
+	readonly file: File;
+
+	/**
+	 * Storage policy name
+	 * @type {string}
+	 * @memberof V1alpha1FileApiUploadFile
+	 */
+	readonly policyName: string;
 }
 
 /**
@@ -386,14 +1061,103 @@ export class V1alpha1FileApi extends BaseAPI {
 	}
 
 	/**
+	 * Generate fragment upload file unique id.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public generateFragmentUploadFileUniqueId(options?: AxiosRequestConfig) {
+		return V1alpha1FileApiFp(this.configuration)
+			.generateFragmentUploadFileUniqueId(options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
 	 *
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof V1alpha1FileApi
 	 */
-	public searchFiles(options?: AxiosRequestConfig) {
+	public listFiles(options?: AxiosRequestConfig) {
 		return V1alpha1FileApiFp(this.configuration)
-			.searchFiles(options)
+			.listFiles(options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * List files by condition.
+	 * @param {V1alpha1FileApiListFilesByConditionRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public listFilesByCondition(
+		requestParameters: V1alpha1FileApiListFilesByConditionRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.listFilesByCondition(
+				requestParameters.page,
+				requestParameters.size,
+				requestParameters.fileName,
+				requestParameters.place,
+				requestParameters.type,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Receive fragment upload chunk file.
+	 * @param {V1alpha1FileApiReceiveFragmentUploadChunkFileRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public receiveFragmentUploadChunkFile(
+		requestParameters: V1alpha1FileApiReceiveFragmentUploadChunkFileRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.receiveFragmentUploadChunkFile(
+				requestParameters.unique,
+				requestParameters.uploadLength,
+				requestParameters.uploadOffset,
+				requestParameters.uploadName,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Revert fragment upload file by unique id.
+	 * @param {V1alpha1FileApiRevertFragmentUploadFileByUniqueIdRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public revertFragmentUploadFileByUniqueId(
+		requestParameters: V1alpha1FileApiRevertFragmentUploadFileByUniqueIdRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.revertFragmentUploadFileByUniqueId(requestParameters.body, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Update file.
+	 * @param {V1alpha1FileApiUpdateFileRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public updateFile(
+		requestParameters: V1alpha1FileApiUpdateFileRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.updateFile(requestParameters.fileEntity, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
@@ -405,11 +1169,11 @@ export class V1alpha1FileApi extends BaseAPI {
 	 * @memberof V1alpha1FileApi
 	 */
 	public uploadFile(
-		requestParameters: V1alpha1FileApiUploadFileRequest = {},
+		requestParameters: V1alpha1FileApiUploadFileRequest,
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1FileApiFp(this.configuration)
-			.uploadFile(requestParameters.file, options)
+			.uploadFile(requestParameters.file, requestParameters.policyName, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }
