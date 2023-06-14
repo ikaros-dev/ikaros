@@ -111,57 +111,70 @@ onMounted(fetchFiles);
 		@fileUploadDrawerCloes="onFileUploadDrawerClose"
 	/>
 
-	<el-form :inline="true" :model="findFilesCondition" class="demo-form-inline">
-		<el-form-item label="文件名称">
-			<el-input
-				v-model="findFilesCondition.fileName"
-				placeholder="输入文件名称模糊匹配"
-				clearable
-				@change="fetchFiles"
-			/>
-		</el-form-item>
-		<el-form-item label="文件位置">
-			<el-select
-				v-model="findFilesCondition.place"
-				clearable
-				style="width: 90px"
-				@change="onFilePlaceSelectChange"
-			>
-				<el-option label="本地" value="LOCAL" />
-			</el-select>
-		</el-form-item>
-		<el-form-item label="文件类型">
-			<el-select
-				v-model="findFilesCondition.type"
-				clearable
-				style="width: 90px"
-				@change="onFileTypeSelectChange"
-			>
-				<el-option label="图片" value="IMAGE" />
-				<el-option label="视频" value="VIDEO" />
-				<el-option label="文档" value="DOCUMENT" />
-				<el-option label="音声" value="VOICE" />
-				<el-option label="未知" value="UNKNOWN" />
-			</el-select>
-		</el-form-item>
-		<el-form-item>
+	<el-row :gutter="10">
+		<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+			<el-form :inline="true" :model="findFilesCondition">
+				<el-form-item label="文件名称">
+					<el-input
+						v-model="findFilesCondition.fileName"
+						placeholder="输入文件名称模糊匹配"
+						clearable
+						@change="fetchFiles"
+					/>
+				</el-form-item>
+				<el-form-item label="文件位置">
+					<el-select
+						v-model="findFilesCondition.place"
+						clearable
+						style="width: 90px"
+						@change="onFilePlaceSelectChange"
+					>
+						<el-option label="本地" value="LOCAL" />
+					</el-select>
+				</el-form-item>
+				<el-form-item label="文件类型">
+					<el-select
+						v-model="findFilesCondition.type"
+						clearable
+						style="width: 90px"
+						@change="onFileTypeSelectChange"
+					>
+						<el-option label="图片" value="IMAGE" />
+						<el-option label="视频" value="VIDEO" />
+						<el-option label="文档" value="DOCUMENT" />
+						<el-option label="音声" value="VOICE" />
+						<el-option label="未知" value="UNKNOWN" />
+					</el-select>
+				</el-form-item>
+			</el-form>
+		</el-col>
+
+		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
 			<el-pagination
 				v-model:page-size="findFilesCondition.size"
 				v-model:current-page="findFilesCondition.page"
 				background
 				:total="findFilesCondition.total"
 				layout="total, sizes, prev, pager, next, jumper"
-				style="vertical-align: middle; line-height: 40px; height: 40px"
 				@current-change="onCurrentPageChange"
 				@size-change="onSizeChange"
 			/>
-			&nbsp;&nbsp;
+		</el-col>
+
+		<el-col
+			:xs="24"
+			:sm="24"
+			:md="24"
+			:lg="4"
+			:xl="4"
+			style="text-align: right"
+		>
 			<el-button plain @click="fileUploadDrawerVisible = true">
 				<el-icon><Upload /></el-icon>
 				上传文件
 			</el-button>
-		</el-form-item>
-	</el-form>
+		</el-col>
+	</el-row>
 
 	<el-table
 		:data="files"
