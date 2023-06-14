@@ -2,6 +2,7 @@
 import { apiClient } from '@/utils/api-client';
 import { FileEntity } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
+import { filePlaceMap, fileTypeMap } from '@/modules/common/constants';
 
 const props = withDefaults(
 	defineProps<{
@@ -125,6 +126,19 @@ const handleClose = (done: () => void) => {
 	done();
 	drawerVisible.value = false;
 };
+
+const formatFileSize = (value): string => {
+	if (!value) {
+		return '0 Bytes';
+	}
+	const unitArr = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+	const srcsize = parseFloat(value);
+	const index = Math.floor(Math.log(srcsize) / Math.log(1024));
+	let size = srcsize / Math.pow(1024, index);
+	// @ts-ignore
+	size = size.toFixed(2);
+	return size + ' ' + unitArr[index];
+};
 </script>
 
 <template>
@@ -198,13 +212,13 @@ const handleClose = (done: () => void) => {
 						</span>
 					</el-descriptions-item>
 					<el-descriptions-item label="文件类型：">
-						{{ file.type }}
+						{{ fileTypeMap.get(file.type as string) }}
 					</el-descriptions-item>
 					<el-descriptions-item label="存储位置：">
-						{{ file.place }}
+						{{ filePlaceMap.get(file.place as string) }}
 					</el-descriptions-item>
 					<el-descriptions-item label="文件大小：">
-						{{ file.size }}
+						{{ formatFileSize(file.size) }}
 					</el-descriptions-item>
 					<el-descriptions-item label="上传日期：">
 						{{ file.createTime }}
