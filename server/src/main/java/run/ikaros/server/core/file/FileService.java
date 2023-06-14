@@ -17,5 +17,6 @@ public interface FileService {
 
     Mono<FileEntity> updateEntity(FileEntity fileEntity);
 
-    Mono<PagingWrap<FileEntity>> listEntitiesByCondition(@Nonnull FindFileCondition findFileCondition);
+    Mono<PagingWrap<FileEntity>> listEntitiesByCondition(
+        @Nonnull FindFileCondition findFileCondition);
 }
