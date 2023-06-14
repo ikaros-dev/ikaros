@@ -8,6 +8,7 @@ on:
     branches:
       - master
     paths:
+      - "**"
       - '!console/**'
       - "!**.md"
   pull_request:
@@ -15,6 +16,7 @@ on:
       - master
       - release-*
     paths:
+      - "**"
       - '!console/**'
       - "!**.md"
 
