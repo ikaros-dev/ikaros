@@ -8,29 +8,15 @@ on:
     branches:
       - master
     paths:
-      - 'api/**'
-      - 'config/checkstyle/**'
-      - 'gradle/wrapper/**'
-      - 'platform/**'
-      - 'server/**'
-      - 'gradle.properties'
-      - 'lombok.config'
-      - 'settings.gradle'
       - '!console/**'
+      - "!**.md"
   pull_request:
     branches:
       - master
       - release-*
     paths:
-      - 'api/**'
-      - 'config/checkstyle/**'
-      - 'gradle/wrapper/**'
-      - 'platform/**'
-      - 'server/**'
-      - 'gradle.properties'
-      - 'lombok.config'
-      - 'settings.gradle'
       - '!console/**'
+      - "!**.md"
 
 jobs:
   check:
