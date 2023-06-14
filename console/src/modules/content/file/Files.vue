@@ -4,6 +4,9 @@ import type { FileEntity } from '@runikaros/api-client';
 import FileFragmentUploadDrawer from './FileFragmentUploadDrawer.vue';
 import FileDeatilDrawer from './FileDeatilDrawer.vue';
 import { ElMessage } from 'element-plus';
+import { Upload } from '@element-plus/icons-vue';
+import Utf8 from 'crypto-js/enc-utf8';
+import Base64 from 'crypto-js/enc-base64';
 
 const fileUploadDrawerVisible = ref(false);
 
@@ -11,21 +14,35 @@ const fileUploadDrawerVisible = ref(false);
 const onFileUploadDrawerClose = (firstFile) => {
 	fileUploadDrawerVisible.value = false;
 	// console.log('receive firstFile:', firstFile);
-	window.location.reload();
+	fetchFiles();
 };
 
 const findFilesCondition = ref({
 	page: 1,
 	size: 10,
 	total: 10,
+	fileName: undefined,
+	place: undefined,
+	type: undefined,
 });
+
+const base64Encode = (raw: string | undefined): string => {
+	if (raw === undefined) {
+		return '';
+	}
+	const word = Utf8.parse(raw);
+	return Base64.stringify(word);
+};
 
 const files = ref<FileEntity[]>([]);
 
 const fetchFiles = async () => {
 	const { data } = await apiClient.file.listFilesByCondition({
-		page: findFilesCondition.value.page + '',
-		size: findFilesCondition.value.size + '',
+		page: findFilesCondition.value.page,
+		size: findFilesCondition.value.size,
+		fileName: base64Encode(findFilesCondition.value.fileName),
+		place: findFilesCondition.value.place,
+		type: findFilesCondition.value.type,
 	});
 	findFilesCondition.value.page = data.page;
 	findFilesCondition.value.size = data.size;
@@ -41,7 +58,7 @@ const showFileDeatil = (file) => {
 };
 
 const handleFileDetailDrawerDelete = () => {
-	window.location.reload();
+	fetchFiles();
 };
 
 const onCurrentPageChange = (val: number) => {
@@ -69,6 +86,16 @@ const handleDelete = async (file: FileEntity) => {
 		});
 };
 
+const onFilePlaceSelectChange = (val) => {
+	findFilesCondition.value.place = val;
+	fetchFiles();
+};
+
+const onFileTypeSelectChange = (val) => {
+	findFilesCondition.value.type = val;
+	fetchFiles();
+};
+
 onMounted(fetchFiles);
 </script>
 
@@ -84,18 +111,57 @@ onMounted(fetchFiles);
 		@fileUploadDrawerCloes="onFileUploadDrawerClose"
 	/>
 
-	<el-button plain @click="fileUploadDrawerVisible = true">上传文件</el-button>
-
-	<el-pagination
-		v-model:page-size="findFilesCondition.size"
-		v-model:current-page="findFilesCondition.page"
-		background
-		:total="findFilesCondition.total"
-		layout="total, sizes, prev, pager, next, jumper"
-		style="vertical-align: middle; line-height: 40px; height: 40px"
-		@current-change="onCurrentPageChange"
-		@size-change="onSizeChange"
-	/>
+	<el-form :inline="true" :model="findFilesCondition" class="demo-form-inline">
+		<el-form-item label="文件名称">
+			<el-input
+				v-model="findFilesCondition.fileName"
+				placeholder="输入文件名称模糊匹配"
+				clearable
+				@change="fetchFiles"
+			/>
+		</el-form-item>
+		<el-form-item label="文件位置">
+			<el-select
+				v-model="findFilesCondition.place"
+				clearable
+				style="width: 90px"
+				@change="onFilePlaceSelectChange"
+			>
+				<el-option label="本地" value="LOCAL" />
+			</el-select>
+		</el-form-item>
+		<el-form-item label="文件类型">
+			<el-select
+				v-model="findFilesCondition.type"
+				clearable
+				style="width: 90px"
+				@change="onFileTypeSelectChange"
+			>
+				<el-option label="图片" value="IMAGE" />
+				<el-option label="视频" value="VIDEO" />
+				<el-option label="文档" value="DOCUMENT" />
+				<el-option label="音声" value="VOICE" />
+				<el-option label="未知" value="UNKNOWN" />
+			</el-select>
+		</el-form-item>
+		<el-form-item>
+			<el-pagination
+				v-model:page-size="findFilesCondition.size"
+				v-model:current-page="findFilesCondition.page"
+				background
+				:total="findFilesCondition.total"
+				layout="total, sizes, prev, pager, next, jumper"
+				style="vertical-align: middle; line-height: 40px; height: 40px"
+				@current-change="onCurrentPageChange"
+				@size-change="onSizeChange"
+			/>
+			&nbsp;&nbsp;
+			<el-button plain @click="fileUploadDrawerVisible = true">
+				<el-icon><Upload /></el-icon>
+				上传文件
+			</el-button>
+		</el-form-item>
+	</el-form>
 
 	<el-table
 		:data="files"
