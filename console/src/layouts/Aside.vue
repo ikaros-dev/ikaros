@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { useLayoutStore } from '@/stores/layout';
-// import { menus as menuOld } from './menus.config';
-// import { Odometer } from '@element-plus/icons-vue';
-import type { MenuGroupType, MenuItemType } from '@runikaros/shared';
+import type { MenuGroupType } from '@runikaros/shared';
 import { useRouter, type RouteRecordRaw } from 'vue-router';
 import sortBy from 'lodash.sortby';
 import { coreMenuGroups } from '@/router/routes.config';
@@ -15,7 +13,6 @@ const router = useRouter();
 
 // Generate menus by routes
 const menus = ref<MenuGroupType[]>([] as MenuGroupType[]);
-const minimenus = ref<MenuItemType[]>([] as MenuItemType[]);
 
 const generateMenus = () => {
 	// console.log('router.getRoutes(): ', router.getRoutes());
@@ -100,15 +97,6 @@ const generateMenus = () => {
 		(menu: MenuGroupType) => menu.priority || 0,
 	]);
 
-	minimenus.value = menus.value
-		.reduce((acc, group) => {
-			if (group?.items) {
-				acc.push(...group.items);
-			}
-			return acc;
-		}, [] as MenuItemType[])
-		.filter((item) => item.mobile);
-
 	// Set current active path from route
 	switchActivePath(route.path);
 };
@@ -120,7 +108,6 @@ const switchActivePath = (path) => {
 onMounted(generateMenus);
 
 // console.log('menus', menus);
-// console.log('minimenus', minimenus);
 </script>
 
 <template>

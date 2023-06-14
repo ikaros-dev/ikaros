@@ -103,7 +103,7 @@ defineExpose({
 		:allowRevert="false"
 		:files="fileList"
 		:label-idle="props.label"
-		:maxFiles="20"
+		:maxFiles="100"
 		:maxParallelUploads="5"
 		:name="props.name"
 		:server="server"

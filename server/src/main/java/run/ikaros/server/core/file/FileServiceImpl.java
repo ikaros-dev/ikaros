@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -96,6 +97,8 @@ public class FileServiceImpl implements FileService {
                 .type(FileUtils.parseTypeByPostfix(postfix).name())
                 .originalPath(filePath)
                 .build();
+            fileEntity.setUpdateTime(LocalDateTime.now());
+            fileEntity.setCreateTime(LocalDateTime.now());
             return fileRepository.save(fileEntity).then();
         }
         return Mono.empty();
