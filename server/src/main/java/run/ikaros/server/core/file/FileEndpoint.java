@@ -207,7 +207,7 @@ public class FileEndpoint implements CoreEndpoint {
                 .place(place).type(type)
                 .build())
             .flatMap(fileService::listEntitiesByCondition)
-            .flatMap(fileEntities -> ServerResponse.ok().bodyValue(fileEntities));
+            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
     }
 
     private Mono<ServerResponse> update(ServerRequest request) {

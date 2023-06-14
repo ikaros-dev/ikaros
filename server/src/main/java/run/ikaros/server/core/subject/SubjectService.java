@@ -17,4 +17,5 @@ public interface SubjectService {
 
     Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pagingWrap);
 
+    Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition);
 }

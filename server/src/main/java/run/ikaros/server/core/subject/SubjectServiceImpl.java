@@ -92,7 +92,8 @@ public class SubjectServiceImpl implements SubjectService {
                 Mono.error(new IllegalArgumentException("subject type must not be null")))
             // Save subject entity
             .flatMap(subject1 -> copyProperties(subject1, new SubjectEntity())
-                .map(subjectEntity -> subjectEntity.setType(subject1.getType().getCode()))
+                .map(subjectEntity -> subjectEntity
+                    .setType(subject1.getType().getCode()))
                 .flatMap(subjectRepository::save)
                 .flatMap(subjectEntity -> Mono.just(subject1.setId(subjectEntity.getId()))
                     .map(subject2 ->
@@ -144,5 +145,145 @@ public class SubjectServiceImpl implements SubjectService {
                         .flatMap(total -> Mono.just(
                             new PagingWrap<>(pagingWrap1.getPage(), pagingWrap1.getSize(), total,
                                 subjects)))));
+    }
+
+    @Override
+    public Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition) {
+        Assert.notNull(condition, "'condition' must not null.");
+        Integer page = condition.getPage();
+        Integer size = condition.getSize();
+        String name = condition.getName();
+        String nameLike = "%" + name + "%";
+        String nameCn = condition.getNameCn();
+        String nameCnLike = "%" + nameCn + "%";
+        Boolean nsfw = condition.getNsfw();
+        SubjectType type = condition.getType();
+
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+
+        Flux<SubjectEntity> subjectEntityFlux;
+        Mono<Long> countMono;
+        if (name == null) {
+            if (nameCn == null) {
+                if (type == null) {
+                    if (nsfw == null) {
+                        subjectEntityFlux = subjectRepository.findAllBy(pageRequest);
+                        countMono = subjectRepository.count();
+                    } else {
+                        subjectEntityFlux = subjectRepository.findAllByNsfw(nsfw, pageRequest);
+                        countMono = subjectRepository.countAllByNsfw(nsfw);
+                    }
+                } else {
+                    if (nsfw == null) {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByType(type.getCode(), pageRequest);
+                        countMono = subjectRepository.countAllByType(type.getCode());
+                    } else {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNsfwAndType(nsfw, type.getCode(),
+                                pageRequest);
+                        countMono = subjectRepository.countAllByNsfwAndType(nsfw, type.getCode());
+                    }
+                }
+            } else {
+                if (type == null) {
+                    if (nsfw == null) {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNameCnLike(nameCnLike, pageRequest);
+                        countMono = subjectRepository.countAllByNameCnLike(nameCnLike);
+                    } else {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNsfwAndNameCnLike(nsfw, nameCnLike,
+                                pageRequest);
+                        countMono = subjectRepository.countAllByNsfwAndNameCnLike(nsfw, nameCnLike);
+                    }
+                } else {
+                    if (nsfw == null) {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNameCnLikeAndType(nameCnLike, type.getCode(),
+                                pageRequest);
+                        countMono = subjectRepository.countAllByNameCnLikeAndType(nameCnLike,
+                            type.getCode());
+                    } else {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNsfwAndNameCnLikeAndType(nsfw, nameCnLike,
+                                type.getCode(), pageRequest);
+                        countMono =
+                            subjectRepository.countAllByNsfwAndNameCnLikeAndType(nsfw, nameCnLike,
+                                type.getCode());
+                    }
+                }
+            }
+        } else {
+            if (nameCn == null) {
+                if (type == null) {
+                    if (nsfw == null) {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNameLike(nameLike, pageRequest);
+                        countMono =
+                            subjectRepository.countAllByNameLike(nameLike);
+                    } else {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNsfwAndNameLike(nsfw, nameLike, pageRequest);
+                        countMono =
+                            subjectRepository.countAllByNsfwAndNameLike(nsfw, nameLike);
+                    }
+                } else {
+                    if (nsfw == null) {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNameLikeAndType(nameLike, type.getCode(),
+                                pageRequest);
+                        countMono =
+                            subjectRepository.countAllByNameLikeAndType(nameLike, type.getCode());
+                    } else {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNsfwAndNameLikeAndType(nsfw, nameLike,
+                                type.getCode(), pageRequest);
+                        countMono =
+                            subjectRepository.countAllByNsfwAndNameLikeAndType(nsfw, nameLike,
+                                type.getCode());
+                    }
+                }
+            } else {
+                if (type == null) {
+                    if (nsfw == null) {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNameLikeAndNameCnLike(nameLike, nameCnLike,
+                                pageRequest);
+                        countMono =
+                            subjectRepository.countAllByNameLikeAndNameCnLike(nameLike, nameCnLike);
+                    } else {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNsfwAndNameLikeAndNameCnLike(nsfw, nameLike,
+                                nameCnLike, pageRequest);
+                        countMono =
+                            subjectRepository.countAllByNsfwAndNameLikeAndNameCnLike(nsfw, nameLike,
+                                nameCnLike);
+                    }
+                } else {
+                    if (nsfw == null) {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNameLikeAndNameCnLikeAndType(nameLike,
+                                nameCnLike, type.getCode(), pageRequest);
+                        countMono =
+                            subjectRepository.countAllByNameLikeAndNameCnLikeAndType(nameLike,
+                                nameCnLike, type.getCode());
+                    } else {
+                        subjectEntityFlux =
+                            subjectRepository.findAllByNsfwAndNameLikeAndNameCnLikeAndType(nsfw,
+                                nameLike, nameCnLike, type.getCode(), pageRequest);
+                        countMono =
+                            subjectRepository.countAllByNsfwAndNameLikeAndNameCnLikeAndType(nsfw,
+                                nameLike, nameCnLike, type.getCode());
+                    }
+                }
+            }
+        }
+
+        return subjectEntityFlux.map(BaseEntity::getId)
+            .flatMap(this::findById)
+            .collectList()
+            .flatMap(subjects -> countMono
+                .map(count -> new PagingWrap<>(page, size, count, subjects)));
     }
 }

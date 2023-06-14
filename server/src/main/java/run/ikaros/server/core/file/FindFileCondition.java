@@ -15,7 +15,7 @@ public class FindFileCondition {
     private Integer page;
     @Schema(requiredMode = REQUIRED, description = "每页条数，默认为10.")
     private Integer size;
-    @Schema(deprecated = true, description = "经过Basic64编码的文件名称，文件名称字段模糊查询。")
+    @Schema(description = "经过Basic64编码的文件名称，文件名称字段模糊查询。")
     private String fileName;
     @Schema(implementation = FilePlace.class)
     private FilePlace place;

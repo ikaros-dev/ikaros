@@ -152,7 +152,7 @@ public class FileServiceImpl implements FileService {
         PageRequest pageRequest = PageRequest.of(page - 1, size);
 
         Flux<FileEntity> fileEntityFlux;
-        Mono<Long> countMono = fileRepository.count();
+        Mono<Long> countMono;
 
         if (place == null) {
             if (type == null) {

@@ -32,7 +32,7 @@ public class SubjectEntity extends BaseEntity {
     private String platform;
     private String summary;
     /**
-     * Can search by anonymous access.
+     * Not Safe/Suitable For Work.
      */
     private Boolean nsfw;
     @Column("bgmtv_id")
