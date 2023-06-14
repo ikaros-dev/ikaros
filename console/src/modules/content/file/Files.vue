@@ -170,7 +170,7 @@ onMounted(fetchFiles);
 		@row-dblclick="showFileDeatil"
 	>
 		<el-table-column prop="id" label="文件ID" width="80" />
-		<el-table-column prop="name" label="文件名称" width="180" />
+		<el-table-column prop="name" label="文件名称" />
 		<el-table-column prop="url" label="文件URL" />
 		<el-table-column label="操作" width="200">
 			<template #default="scoped">
