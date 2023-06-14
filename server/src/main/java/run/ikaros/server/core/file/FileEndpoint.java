@@ -193,10 +193,14 @@ public class FileEndpoint implements CoreEndpoint {
             : "";
 
         Optional<String> placeOp = request.queryParam("place");
-        final FilePlace place = placeOp.map(FilePlace::valueOf).orElse(null);
+        final FilePlace place = placeOp.isPresent() && StringUtils.hasText(placeOp.get())
+            ? FilePlace.valueOf(placeOp.get())
+            : null;
 
         Optional<String> typeOp = request.queryParam("type");
-        final FileType type = typeOp.map(FileType::valueOf).orElse(null);
+        final FileType type = typeOp.isPresent() && StringUtils.hasText(typeOp.get())
+            ? FileType.valueOf(typeOp.get())
+            : null;
 
         return Mono.just(FindFileCondition.builder()
                 .page(page).size(size).fileName(fileName)
