@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import SubjectCard from './SubjectCard.vue';
 
+const router = useRouter();
+
 const findSubjectsCondition = ref({
 	page: 1,
 	size: 10,
@@ -10,6 +12,10 @@ const findSubjectsCondition = ref({
 	nsfw: undefined,
 	type: undefined,
 });
+
+const toSubjectPost = () => {
+	router.push('/subjects/subject/post');
+};
 </script>
 
 <template>
@@ -68,7 +74,7 @@ const findSubjectsCondition = ref({
 			:xl="4"
 			style="text-align: right"
 		>
-			<el-button plain> 新建条目 </el-button>
+			<el-button plain @click="toSubjectPost"> 新建条目 </el-button>
 		</el-col>
 	</el-row>
 
