@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,4 +36,6 @@ public class SubjectEntity extends BaseEntity {
      * Not Safe/Suitable For Work.
      */
     private Boolean nsfw;
+    @Column("air_time")
+    private LocalDateTime airTime;
 }

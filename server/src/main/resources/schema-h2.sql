@@ -196,6 +196,7 @@ create table if not exists subject
     summary       varchar(50000) null,
     nsfw          bool           not null,
     bgmtv_id      int8           null,
+    air_time      timestamp(6)   null,
     constraint subject_pkey primary key (id)
 );
 
