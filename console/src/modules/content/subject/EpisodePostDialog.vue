@@ -71,10 +71,6 @@ const episodeRuleFormRules = reactive<FormRules>({
 		{ required: true, message: '请输入剧集原始名称', trigger: 'blur' },
 		{ min: 1, max: 100, message: '长度应该在 1 到 100 之间', trigger: 'blur' },
 	],
-	description: [
-		{ required: true, message: '请输入条目介绍', trigger: 'blur' },
-		{ min: 5, message: '长度应该大于5', trigger: 'blur' },
-	],
 });
 
 const episodeElFormRef = ref<FormInstance>();
@@ -107,11 +103,7 @@ const episodeElFormRef = ref<FormInstance>();
 			<el-form-item label="序列" prop="sequence" :label-width="formLabelWidth">
 				<el-input v-model.number="episode.sequence" type="text" />
 			</el-form-item>
-			<el-form-item
-				label="介绍"
-				:label-width="formLabelWidth"
-				prop="description"
-			>
+			<el-form-item label="介绍" :label-width="formLabelWidth">
 				<el-input
 					v-model="episode.description"
 					:autosize="{ minRows: 3 }"
