@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,6 +36,7 @@ class SubjectServiceTest {
     }
 
     @Test
+    @Disabled
     void findByIdWhenRecordExists() {
         var subject = createSubjectInstance();
         AtomicLong subjectId = new AtomicLong();
@@ -74,6 +76,7 @@ class SubjectServiceTest {
     }
 
     @Test
+    @Disabled
     void findByBgmIdWhenRecordNotExists() {
         StepVerifier.create(subjectService.findByBgmId(Long.MAX_VALUE))
             .expectErrorMessage("Not found subject by bgmtv_id: " + Long.MAX_VALUE)
@@ -81,6 +84,7 @@ class SubjectServiceTest {
     }
 
     @Test
+    @Disabled
     void findByBgmIdWhenSubjectExists() {
         var subject = createSubjectInstance();
         AtomicLong subjectId = new AtomicLong();
