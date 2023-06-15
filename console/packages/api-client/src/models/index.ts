@@ -13,6 +13,7 @@ export * from './plugin-load-location-file-system';
 export * from './subject';
 export * from './subject-image';
 export * from './subject-relation';
+export * from './subject-sync';
 export * from './update-user-request';
 export * from './user';
 export * from './user-entity';

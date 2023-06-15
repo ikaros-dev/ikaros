@@ -18,6 +18,9 @@ import { Episode } from './episode';
 // May contain unused imports in some cases
 // @ts-ignore
 import { SubjectImage } from './subject-image';
+// May contain unused imports in some cases
+// @ts-ignore
+import { SubjectSync } from './subject-sync';
 
 /**
  *
@@ -69,6 +72,12 @@ export interface Subject {
 	nsfw: boolean;
 	/**
 	 *
+	 * @type {string}
+	 * @memberof Subject
+	 */
+	airTime?: string;
+	/**
+	 *
 	 * @type {SubjectImage}
 	 * @memberof Subject
 	 */
@@ -81,16 +90,16 @@ export interface Subject {
 	episodes?: Array<Episode>;
 	/**
 	 *
+	 * @type {Array<SubjectSync>}
+	 * @memberof Subject
+	 */
+	syncs?: Array<SubjectSync>;
+	/**
+	 *
 	 * @type {string}
 	 * @memberof Subject
 	 */
 	name_cn?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Subject
-	 */
-	bgmtv_id?: number;
 	/**
 	 *
 	 * @type {number}

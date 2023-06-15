@@ -38,6 +38,8 @@ import {
 	RequiredError,
 } from '../base';
 // @ts-ignore
+import { PagingWrap } from '../models';
+// @ts-ignore
 import { Subject } from '../models';
 /**
  * V1alpha1SubjectApi - axios parameter creator
@@ -85,6 +87,88 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 			// authentication BearerAuth required
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * List subjects by condition.
+		 * @param {number} [page] 第几页，从1开始, 默认为1.
+		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {string} [name] 经过Basic64编码的名称，名称字段模糊查询。
+		 * @param {string} [nameCn] 经过Basic64编码的中文名称，中文名称字段模糊查询。
+		 * @param {boolean} [nsfw] Not Safe/Suitable For Work.
+		 * @param {'OTHER' | 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL'} [type]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listSubjectsByCondition: async (
+			page?: number,
+			size?: number,
+			name?: string,
+			nameCn?: string,
+			nsfw?: boolean,
+			type?: 'OTHER' | 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL',
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/subjects/condition`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (page !== undefined) {
+				localVarQueryParameter['page'] = page;
+			}
+
+			if (size !== undefined) {
+				localVarQueryParameter['size'] = size;
+			}
+
+			if (name !== undefined) {
+				localVarQueryParameter['name'] = name;
+			}
+
+			if (nameCn !== undefined) {
+				localVarQueryParameter['nameCn'] = nameCn;
+			}
+
+			if (nsfw !== undefined) {
+				localVarQueryParameter['nsfw'] = nsfw;
+			}
+
+			if (type !== undefined) {
+				localVarQueryParameter['type'] = type;
+			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -299,6 +383,45 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 			);
 		},
 		/**
+		 * List subjects by condition.
+		 * @param {number} [page] 第几页，从1开始, 默认为1.
+		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {string} [name] 经过Basic64编码的名称，名称字段模糊查询。
+		 * @param {string} [nameCn] 经过Basic64编码的中文名称，中文名称字段模糊查询。
+		 * @param {boolean} [nsfw] Not Safe/Suitable For Work.
+		 * @param {'OTHER' | 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL'} [type]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async listSubjectsByCondition(
+			page?: number,
+			size?: number,
+			name?: string,
+			nameCn?: string,
+			nsfw?: boolean,
+			type?: 'OTHER' | 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL',
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.listSubjectsByCondition(
+					page,
+					size,
+					name,
+					nameCn,
+					nsfw,
+					type,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
 		 * Create or update single subject.
 		 * @param {Subject} subject
 		 * @param {*} [options] Override http request option.
@@ -308,7 +431,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 			subject: Subject,
 			options?: AxiosRequestConfig
 		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Subject>
 		> {
 			const localVarAxiosArgs = await localVarAxiosParamCreator.saveSubject(
 				subject,
@@ -333,7 +456,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 			size: number,
 			options?: AxiosRequestConfig
 		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
 		> {
 			const localVarAxiosArgs =
 				await localVarAxiosParamCreator.searchAllSubjectByPaging(
@@ -358,7 +481,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 			id: number,
 			options?: AxiosRequestConfig
 		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Subject>
 		> {
 			const localVarAxiosArgs =
 				await localVarAxiosParamCreator.searchSubjectById(id, options);
@@ -398,6 +521,28 @@ export const V1alpha1SubjectApiFactory = function (
 				.then((request) => request(axios, basePath));
 		},
 		/**
+		 * List subjects by condition.
+		 * @param {V1alpha1SubjectApiListSubjectsByConditionRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listSubjectsByCondition(
+			requestParameters: V1alpha1SubjectApiListSubjectsByConditionRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<PagingWrap> {
+			return localVarFp
+				.listSubjectsByCondition(
+					requestParameters.page,
+					requestParameters.size,
+					requestParameters.name,
+					requestParameters.nameCn,
+					requestParameters.nsfw,
+					requestParameters.type,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
 		 * Create or update single subject.
 		 * @param {V1alpha1SubjectApiSaveSubjectRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
@@ -406,7 +551,7 @@ export const V1alpha1SubjectApiFactory = function (
 		saveSubject(
 			requestParameters: V1alpha1SubjectApiSaveSubjectRequest,
 			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
+		): AxiosPromise<Subject> {
 			return localVarFp
 				.saveSubject(requestParameters.subject, options)
 				.then((request) => request(axios, basePath));
@@ -420,7 +565,7 @@ export const V1alpha1SubjectApiFactory = function (
 		searchAllSubjectByPaging(
 			requestParameters: V1alpha1SubjectApiSearchAllSubjectByPagingRequest,
 			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
+		): AxiosPromise<PagingWrap> {
 			return localVarFp
 				.searchAllSubjectByPaging(
 					requestParameters.page,
@@ -438,7 +583,7 @@ export const V1alpha1SubjectApiFactory = function (
 		searchSubjectById(
 			requestParameters: V1alpha1SubjectApiSearchSubjectByIdRequest,
 			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
+		): AxiosPromise<Subject> {
 			return localVarFp
 				.searchSubjectById(requestParameters.id, options)
 				.then((request) => request(axios, basePath));
@@ -458,6 +603,62 @@ export interface V1alpha1SubjectApiDeleteSubjectByIdRequest {
 	 * @memberof V1alpha1SubjectApiDeleteSubjectById
 	 */
 	readonly id: number;
+}
+
+/**
+ * Request parameters for listSubjectsByCondition operation in V1alpha1SubjectApi.
+ * @export
+ * @interface V1alpha1SubjectApiListSubjectsByConditionRequest
+ */
+export interface V1alpha1SubjectApiListSubjectsByConditionRequest {
+	/**
+	 * 第几页，从1开始, 默认为1.
+	 * @type {number}
+	 * @memberof V1alpha1SubjectApiListSubjectsByCondition
+	 */
+	readonly page?: number;
+
+	/**
+	 * 每页条数，默认为10.
+	 * @type {number}
+	 * @memberof V1alpha1SubjectApiListSubjectsByCondition
+	 */
+	readonly size?: number;
+
+	/**
+	 * 经过Basic64编码的名称，名称字段模糊查询。
+	 * @type {string}
+	 * @memberof V1alpha1SubjectApiListSubjectsByCondition
+	 */
+	readonly name?: string;
+
+	/**
+	 * 经过Basic64编码的中文名称，中文名称字段模糊查询。
+	 * @type {string}
+	 * @memberof V1alpha1SubjectApiListSubjectsByCondition
+	 */
+	readonly nameCn?: string;
+
+	/**
+	 * Not Safe/Suitable For Work.
+	 * @type {boolean}
+	 * @memberof V1alpha1SubjectApiListSubjectsByCondition
+	 */
+	readonly nsfw?: boolean;
+
+	/**
+	 *
+	 * @type {'OTHER' | 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL'}
+	 * @memberof V1alpha1SubjectApiListSubjectsByCondition
+	 */
+	readonly type?:
+		| 'OTHER'
+		| 'ANIME'
+		| 'COMIC'
+		| 'GAME'
+		| 'MUSIC'
+		| 'NOVEL'
+		| 'REAL';
 }
 
 /**
@@ -529,6 +730,30 @@ export class V1alpha1SubjectApi extends BaseAPI {
 	) {
 		return V1alpha1SubjectApiFp(this.configuration)
 			.deleteSubjectById(requestParameters.id, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * List subjects by condition.
+	 * @param {V1alpha1SubjectApiListSubjectsByConditionRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1SubjectApi
+	 */
+	public listSubjectsByCondition(
+		requestParameters: V1alpha1SubjectApiListSubjectsByConditionRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1SubjectApiFp(this.configuration)
+			.listSubjectsByCondition(
+				requestParameters.page,
+				requestParameters.size,
+				requestParameters.name,
+				requestParameters.nameCn,
+				requestParameters.nsfw,
+				requestParameters.type,
+				options
+			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
