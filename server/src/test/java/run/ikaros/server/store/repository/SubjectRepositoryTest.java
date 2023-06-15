@@ -25,7 +25,7 @@ class SubjectRepositoryTest {
         final String name = "test" + new Random(100).nextInt();
         SubjectEntity subject = SubjectEntity.builder()
             .name(name)
-            .type(SubjectType.ANIME.getCode())
+            .type(SubjectType.ANIME)
             .nsfw(false)
             .build();
         StepVerifier.create(subjectRepository.save(subject))
