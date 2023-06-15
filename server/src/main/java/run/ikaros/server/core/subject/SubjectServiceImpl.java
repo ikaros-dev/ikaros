@@ -79,7 +79,10 @@ public class SubjectServiceImpl implements SubjectService {
                 .collectList()
                 .flatMap(episodes -> Mono.just(subject.setTotalEpisodes((long) episodes.size())
                     .setEpisodes(episodes)))
-                .switchIfEmpty(Mono.just(subject)));
+                .switchIfEmpty(Mono.just(subject)))
+            .flatMap(subject -> subjectSyncRepository.findAllBySubjectId(subject.getId())
+                .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, new SubjectSync()))
+                .collectList().map(subject::setSyncs));
     }
 
     @Override

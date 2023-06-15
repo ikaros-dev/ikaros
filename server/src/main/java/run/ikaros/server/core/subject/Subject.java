@@ -44,4 +44,5 @@ public class Subject {
     private Long totalEpisodes;
     @JsonProperty("collection_status")
     private CollectionStatus collectionStatus;
+    private List<SubjectSync> syncs;
 }
