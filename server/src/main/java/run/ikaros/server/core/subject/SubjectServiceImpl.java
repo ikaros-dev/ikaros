@@ -2,6 +2,8 @@ package run.ikaros.server.core.subject;
 
 import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
+import jakarta.annotation.Nonnull;
+import jakarta.validation.constraints.NotBlank;
 import java.util.Objects;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.store.entity.BaseEntity;
+import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.CollectionEntity;
@@ -17,11 +20,13 @@ import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.entity.SubjectImageEntity;
+import run.ikaros.server.store.entity.SubjectSyncEntity;
 import run.ikaros.server.store.repository.CollectionRepository;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.SubjectImageRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
+import run.ikaros.server.store.repository.SubjectSyncRepository;
 
 @Service
 public class SubjectServiceImpl implements SubjectService {
@@ -30,6 +35,7 @@ public class SubjectServiceImpl implements SubjectService {
     private final SubjectImageRepository subjectImageRepository;
     private final EpisodeRepository episodeRepository;
     private final EpisodeFileRepository episodeFileRepository;
+    private final SubjectSyncRepository subjectSyncRepository;
 
     /**
      * Construct a {@link SubjectService} instance.
@@ -39,17 +45,20 @@ public class SubjectServiceImpl implements SubjectService {
      * @param subjectImageRepository {@link SubjectImageEntity} repository
      * @param episodeRepository      {@link EpisodeEntity} repository
      * @param episodeFileRepository  {@link EpisodeFileEntity} repository
+     * @param subjectSyncRepository  {@link SubjectSyncEntity} repository
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
                               CollectionRepository collectionRepository,
                               SubjectImageRepository subjectImageRepository,
                               EpisodeRepository episodeRepository,
-                              EpisodeFileRepository episodeFileRepository) {
+                              EpisodeFileRepository episodeFileRepository,
+                              SubjectSyncRepository subjectSyncRepository) {
         this.subjectRepository = subjectRepository;
         this.collectionRepository = collectionRepository;
         this.subjectImageRepository = subjectImageRepository;
         this.episodeRepository = episodeRepository;
         this.episodeFileRepository = episodeFileRepository;
+        this.subjectSyncRepository = subjectSyncRepository;
     }
 
     @Override
@@ -77,9 +86,28 @@ public class SubjectServiceImpl implements SubjectService {
     public Mono<Subject> findByBgmId(Long bgmtvId) {
         Assert.isTrue(bgmtvId > 0, "'bgmtvId' must gt 0.");
         return Mono.just(bgmtvId)
-            .flatMap(subjectRepository::findByBgmtvId)
+            .flatMap(platformId -> subjectSyncRepository.findByPlatformAndPlatformId(
+                SubjectSyncPlatform.BGM_TV, platformId.toString()))
+            .map(SubjectSyncEntity::getSubjectId)
+            .flatMap(this::findById)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("Not found subject by bgmtv_id: " + bgmtvId)))
+            .flatMap(subjectEntity -> findById(subjectEntity.getId()));
+    }
+
+    @Override
+    public Mono<Subject> findBySyncPlatform(@Nonnull SubjectSyncPlatform subjectSyncPlatform,
+                                            @NotBlank String platformId) {
+        Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
+        Assert.hasText(platformId, "'platformId' must has text.");
+        return subjectSyncRepository.findByPlatformAndPlatformId(
+                subjectSyncPlatform, platformId)
+            .map(SubjectSyncEntity::getSubjectId)
+            .flatMap(this::findById)
+            .switchIfEmpty(
+                Mono.error(new NotFoundException(
+                    "Not found subject by sync platform and platformId: "
+                        + subjectSyncPlatform + "-" + platformId)))
             .flatMap(subjectEntity -> findById(subjectEntity.getId()));
     }
 

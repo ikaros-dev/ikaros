@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,30 +10,25 @@ import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import run.ikaros.api.store.entity.BaseEntity;
-import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.api.store.enums.SubjectSyncPlatform;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "subject")
+@Table(name = "subject_sync")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class SubjectEntity extends BaseEntity {
-    /**
-     * Subject type.
-     *
-     * @see SubjectType#getCode()
-     */
-    private Integer type;
-    private String name;
-    @Column("name_cn")
-    private String nameCn;
-    private String infobox;
-    private String platform;
-    private String summary;
-    /**
-     * Not Safe/Suitable For Work.
-     */
-    private Boolean nsfw;
+public class SubjectSyncEntity extends BaseEntity {
+    @Column("subject_id")
+    private Long subjectId;
+
+    @Column("platform")
+    private SubjectSyncPlatform platform;
+
+    @Column("platform_id")
+    private String platformId;
+
+    @Column("sync_time")
+    private LocalDateTime syncTime;
 }

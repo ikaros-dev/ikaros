@@ -37,8 +37,6 @@ public class Subject {
      */
     @Schema(requiredMode = REQUIRED)
     private Boolean nsfw;
-    @JsonProperty("bgmtv_id")
-    private Long bgmtvId;
 
     private SubjectImage image;
     private List<Episode> episodes;

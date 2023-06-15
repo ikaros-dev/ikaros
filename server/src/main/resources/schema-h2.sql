@@ -249,6 +249,23 @@ create table if not exists subject_relation
     constraint subject_relation_pkey primary key (id)
 );
 
+-- subject_sync
+create table if not exists subject_sync
+(
+    id            int8         not null auto_increment,
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    subject_id    int8         not null,
+    platform      int8         not null,
+    platform_id   varchar(255) not null,
+    syncTime      timestamp(6) null,
+    constraint subject_sync_pkey primary key (id)
+);
+
 -- ikuser
 create table if not exists ikuser
 (
