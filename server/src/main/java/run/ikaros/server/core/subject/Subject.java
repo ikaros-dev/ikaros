@@ -30,10 +30,6 @@ public class Subject {
     @JsonProperty("name_cn")
     private String nameCn;
     private String infobox;
-    /**
-     * PS: TV, Web, 欧美剧, PS4...
-     */
-    private String platform;
     private String summary;
     /**
      * Can search by anonymous access.

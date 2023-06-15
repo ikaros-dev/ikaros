@@ -68,7 +68,7 @@ public class SubjectServiceImpl implements SubjectService {
             .switchIfEmpty(
                 Mono.error(new NotFoundException("Not found subject record by id: " + id)))
             .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject())
-                .map(subject -> subject.setType(SubjectType.codeOf(subjectEntity.getType()))))
+                .map(subject -> subject.setType(subjectEntity.getType())))
             .flatMap(subject -> subjectImageRepository.findBySubjectId(subject.getId())
                 .flatMap(
                     subjectImageEntity -> copyProperties(subjectImageEntity, new SubjectImage()))
@@ -124,11 +124,11 @@ public class SubjectServiceImpl implements SubjectService {
             // Save subject entity
             .flatMap(subject1 -> copyProperties(subject1, new SubjectEntity())
                 .map(subjectEntity -> subjectEntity
-                    .setType(subject1.getType().getCode()))
+                    .setType(subject1.getType()))
                 .flatMap(subjectRepository::save)
                 .flatMap(subjectEntity -> Mono.just(subject1.setId(subjectEntity.getId()))
                     .map(subject2 ->
-                        subject2.setType(SubjectType.codeOf(subjectEntity.getType())))))
+                        subject2.setType(subjectEntity.getType()))))
             // Save subject image entity
             .flatMap(subject1 -> Mono.just(subject1.getImage())
                 .flatMap(subjectImage -> copyProperties(subjectImage, new SubjectImageEntity())
@@ -207,13 +207,13 @@ public class SubjectServiceImpl implements SubjectService {
                 } else {
                     if (nsfw == null) {
                         subjectEntityFlux =
-                            subjectRepository.findAllByType(type.getCode(), pageRequest);
-                        countMono = subjectRepository.countAllByType(type.getCode());
+                            subjectRepository.findAllByType(type, pageRequest);
+                        countMono = subjectRepository.countAllByType(type);
                     } else {
                         subjectEntityFlux =
-                            subjectRepository.findAllByNsfwAndType(nsfw, type.getCode(),
+                            subjectRepository.findAllByNsfwAndType(nsfw, type,
                                 pageRequest);
-                        countMono = subjectRepository.countAllByNsfwAndType(nsfw, type.getCode());
+                        countMono = subjectRepository.countAllByNsfwAndType(nsfw, type);
                     }
                 }
             } else {
@@ -231,17 +231,17 @@ public class SubjectServiceImpl implements SubjectService {
                 } else {
                     if (nsfw == null) {
                         subjectEntityFlux =
-                            subjectRepository.findAllByNameCnLikeAndType(nameCnLike, type.getCode(),
+                            subjectRepository.findAllByNameCnLikeAndType(nameCnLike, type,
                                 pageRequest);
                         countMono = subjectRepository.countAllByNameCnLikeAndType(nameCnLike,
-                            type.getCode());
+                            type);
                     } else {
                         subjectEntityFlux =
                             subjectRepository.findAllByNsfwAndNameCnLikeAndType(nsfw, nameCnLike,
-                                type.getCode(), pageRequest);
+                                type, pageRequest);
                         countMono =
                             subjectRepository.countAllByNsfwAndNameCnLikeAndType(nsfw, nameCnLike,
-                                type.getCode());
+                                type);
                     }
                 }
             }
@@ -262,17 +262,17 @@ public class SubjectServiceImpl implements SubjectService {
                 } else {
                     if (nsfw == null) {
                         subjectEntityFlux =
-                            subjectRepository.findAllByNameLikeAndType(nameLike, type.getCode(),
+                            subjectRepository.findAllByNameLikeAndType(nameLike, type,
                                 pageRequest);
                         countMono =
-                            subjectRepository.countAllByNameLikeAndType(nameLike, type.getCode());
+                            subjectRepository.countAllByNameLikeAndType(nameLike, type);
                     } else {
                         subjectEntityFlux =
                             subjectRepository.findAllByNsfwAndNameLikeAndType(nsfw, nameLike,
-                                type.getCode(), pageRequest);
+                                type, pageRequest);
                         countMono =
                             subjectRepository.countAllByNsfwAndNameLikeAndType(nsfw, nameLike,
-                                type.getCode());
+                                type);
                     }
                 }
             } else {
@@ -295,17 +295,17 @@ public class SubjectServiceImpl implements SubjectService {
                     if (nsfw == null) {
                         subjectEntityFlux =
                             subjectRepository.findAllByNameLikeAndNameCnLikeAndType(nameLike,
-                                nameCnLike, type.getCode(), pageRequest);
+                                nameCnLike, type, pageRequest);
                         countMono =
                             subjectRepository.countAllByNameLikeAndNameCnLikeAndType(nameLike,
-                                nameCnLike, type.getCode());
+                                nameCnLike, type);
                     } else {
                         subjectEntityFlux =
                             subjectRepository.findAllByNsfwAndNameLikeAndNameCnLikeAndType(nsfw,
-                                nameLike, nameCnLike, type.getCode(), pageRequest);
+                                nameLike, nameCnLike, type, pageRequest);
                         countMono =
                             subjectRepository.countAllByNsfwAndNameLikeAndNameCnLikeAndType(nsfw,
-                                nameLike, nameCnLike, type.getCode());
+                                nameLike, nameCnLike, type);
                     }
                 }
             }

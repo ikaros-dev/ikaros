@@ -275,7 +275,6 @@ create table if not exists subject
     name          varchar(255)   not null,
     name_cn       varchar(255)   null,
     infobox       varchar(50000) null,
-    platform      varchar(255)   null,
     summary       varchar(50000) null,
     nsfw          bool           not null,
     bgmtv_id      int8           null,

@@ -103,8 +103,10 @@ core:
     title: Files
   subject:
     title: Subjects
-    edit:
+    put:
       title: Subject Edit
+    post:
+      title: Subject Post
   plugin:
     title: Plugins
     loader:

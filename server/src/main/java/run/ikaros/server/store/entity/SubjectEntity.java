@@ -20,17 +20,11 @@ import run.ikaros.api.store.enums.SubjectType;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class SubjectEntity extends BaseEntity {
-    /**
-     * Subject type.
-     *
-     * @see SubjectType#getCode()
-     */
-    private Integer type;
+    private SubjectType type;
     private String name;
     @Column("name_cn")
     private String nameCn;
     private String infobox;
-    private String platform;
     private String summary;
     /**
      * Not Safe/Suitable For Work.

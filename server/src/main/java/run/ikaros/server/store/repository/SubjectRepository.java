@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.store.entity.SubjectEntity;
 
 public interface SubjectRepository extends R2dbcRepository<SubjectEntity, Long> {
@@ -17,13 +18,13 @@ public interface SubjectRepository extends R2dbcRepository<SubjectEntity, Long> 
 
     Mono<Long> countAllByNsfw(Boolean nsfw);
 
-    Flux<SubjectEntity> findAllByType(Integer type, Pageable pageable);
+    Flux<SubjectEntity> findAllByType(SubjectType type, Pageable pageable);
 
-    Mono<Long> countAllByType(Integer type);
+    Mono<Long> countAllByType(SubjectType type);
 
-    Flux<SubjectEntity> findAllByNsfwAndType(Boolean nsfw, Integer type, Pageable pageable);
+    Flux<SubjectEntity> findAllByNsfwAndType(Boolean nsfw, SubjectType type, Pageable pageable);
 
-    Mono<Long> countAllByNsfwAndType(Boolean nsfw, Integer type);
+    Mono<Long> countAllByNsfwAndType(Boolean nsfw, SubjectType type);
 
     Flux<SubjectEntity> findAllByNameCnLike(String nameCn, Pageable pageable);
 
@@ -33,16 +34,17 @@ public interface SubjectRepository extends R2dbcRepository<SubjectEntity, Long> 
 
     Mono<Long> countAllByNsfwAndNameCnLike(Boolean nsfw, String nameCn);
 
-    Flux<SubjectEntity> findAllByNameCnLikeAndType(String nameCn, Integer type,
+    Flux<SubjectEntity> findAllByNameCnLikeAndType(String nameCn, SubjectType type,
                                                    Pageable pageable);
 
-    Mono<Long> countAllByNameCnLikeAndType(String nameCn, Integer type);
+    Mono<Long> countAllByNameCnLikeAndType(String nameCn, SubjectType type);
 
 
-    Flux<SubjectEntity> findAllByNsfwAndNameCnLikeAndType(Boolean nsfw, String nameCn, Integer type,
+    Flux<SubjectEntity> findAllByNsfwAndNameCnLikeAndType(Boolean nsfw, String nameCn,
+                                                          SubjectType type,
                                                           Pageable pageable);
 
-    Mono<Long> countAllByNsfwAndNameCnLikeAndType(Boolean nsfw, String nameCn, Integer type);
+    Mono<Long> countAllByNsfwAndNameCnLikeAndType(Boolean nsfw, String nameCn, SubjectType type);
 
     Flux<SubjectEntity> findAllByNameLike(String name, Pageable pageable);
 
@@ -52,16 +54,16 @@ public interface SubjectRepository extends R2dbcRepository<SubjectEntity, Long> 
 
     Mono<Long> countAllByNsfwAndNameLike(Boolean nsfw, String name);
 
-    Flux<SubjectEntity> findAllByNameLikeAndType(String name, Integer type,
+    Flux<SubjectEntity> findAllByNameLikeAndType(String name, SubjectType type,
                                                  Pageable pageable);
 
-    Mono<Long> countAllByNameLikeAndType(String name, Integer type);
+    Mono<Long> countAllByNameLikeAndType(String name, SubjectType type);
 
 
-    Flux<SubjectEntity> findAllByNsfwAndNameLikeAndType(Boolean nsfw, String name, Integer type,
+    Flux<SubjectEntity> findAllByNsfwAndNameLikeAndType(Boolean nsfw, String name, SubjectType type,
                                                         Pageable pageable);
 
-    Mono<Long> countAllByNsfwAndNameLikeAndType(Boolean nsfw, String name, Integer type);
+    Mono<Long> countAllByNsfwAndNameLikeAndType(Boolean nsfw, String name, SubjectType type);
 
     Flux<SubjectEntity> findAllByNameLikeAndNameCnLike(String name,
                                                        String nameCn, Pageable pageable);
@@ -76,16 +78,17 @@ public interface SubjectRepository extends R2dbcRepository<SubjectEntity, Long> 
                                                       String nameCn);
 
     Flux<SubjectEntity> findAllByNameLikeAndNameCnLikeAndType(String name,
-                                                              String nameCn, Integer type,
+                                                              String nameCn, SubjectType type,
                                                               Pageable pageable);
 
     Mono<Long> countAllByNameLikeAndNameCnLikeAndType(String name,
-                                                      String nameCn, Integer type);
+                                                      String nameCn, SubjectType type);
 
     Flux<SubjectEntity> findAllByNsfwAndNameLikeAndNameCnLikeAndType(Boolean nsfw, String name,
-                                                                     String nameCn, Integer type,
+                                                                     String nameCn,
+                                                                     SubjectType type,
                                                                      Pageable pageable);
 
     Mono<Long> countAllByNsfwAndNameLikeAndNameCnLikeAndType(Boolean nsfw, String name,
-                                                             String nameCn, Integer type);
+                                                             String nameCn, SubjectType type);
 }
