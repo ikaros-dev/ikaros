@@ -49,6 +49,7 @@ onMounted(fetchSubjects);
 								v-model="findSubjectsCondition.name"
 								placeholder="原始名称模糊匹配"
 								clearable
+								@change="fetchSubjects"
 							/>
 						</el-form-item>
 					</el-col>
@@ -58,12 +59,17 @@ onMounted(fetchSubjects);
 								v-model="findSubjectsCondition.nameCn"
 								placeholder="中文名称模糊匹配"
 								clearable
+								@change="fetchSubjects"
 							/>
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="5" :xl="5">
 						<el-form-item label="NSFW" style="width: 95%">
-							<el-select v-model="findSubjectsCondition.nsfw" clearable>
+							<el-select
+								v-model="findSubjectsCondition.nsfw"
+								clearable
+								@change="fetchSubjects"
+							>
 								<el-option label="是" value="true" />
 								<el-option label="非" value="false" />
 							</el-select>
@@ -71,7 +77,11 @@ onMounted(fetchSubjects);
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="5" :xl="5">
 						<el-form-item label="所属类型" style="width: 95%">
-							<el-select v-model="findSubjectsCondition.type" clearable>
+							<el-select
+								v-model="findSubjectsCondition.type"
+								clearable
+								@change="fetchSubjects"
+							>
 								<el-option label="动漫" value="ANIME" />
 								<el-option label="漫画" value="COMIC" />
 								<el-option label="游戏" value="GAME" />
@@ -137,6 +147,8 @@ onMounted(fetchSubjects);
 				background
 				:total="findSubjectsCondition.total"
 				layout="total, sizes, prev, pager, next, jumper"
+				@current-change="fetchSubjects"
+				@size-change="fetchSubjects"
 		/></el-col>
 	</el-row>
 </template>
