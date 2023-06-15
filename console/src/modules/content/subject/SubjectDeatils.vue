@@ -3,6 +3,7 @@ import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
 import { Episode, Subject, SubjectTypeEnum } from '@runikaros/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
+import router from '@/router';
 
 const route = useRoute();
 
@@ -22,10 +23,12 @@ const subject = ref<Subject>({
 
 // eslint-disable-next-line no-unused-vars
 const fetchSubjectById = async () => {
-	const { data } = await apiClient.subject.searchSubjectById({
-		id: subject.value.id as number,
-	});
-	subject.value = data;
+	if (subject.value.id) {
+		const { data } = await apiClient.subject.searchSubjectById({
+			id: subject.value.id as number,
+		});
+		subject.value = data;
+	}
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -56,7 +59,7 @@ watch(subject, () => {
 
 // eslint-disable-next-line no-unused-vars
 const airTimeDateFormatter = (row) => {
-	console.log('row', row);
+	// console.log('row', row);
 	return formatDate(new Date(row.air_time), 'yyyy-MM-dd');
 };
 
@@ -68,6 +71,14 @@ const showEpisodeDetails = (ep: Episode) => {
 
 const episodeDetailsDialogVisible = ref(false);
 
+const toSubjectPut = () => {
+	if (subject.value.id) {
+		router.push('/subjects/subject/put/' + subject.value.id);
+	} else {
+		console.error('subject id no value', subject.value.id);
+	}
+};
+
 onMounted(() => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
@@ -78,7 +89,7 @@ onMounted(() => {
 <template>
 	<el-row>
 		<el-col :span="24">
-			<el-button plain> 编辑 </el-button>
+			<el-button plain @click="toSubjectPut"> 编辑 </el-button>
 		</el-col>
 	</el-row>
 	<br />

@@ -181,6 +181,7 @@ const episodeDetailsDialogVisible = ref(false);
 						show-word-limit
 						type="textarea"
 						style="max-width: 700px"
+						placeholder="一行一个 key:value, 例子 中文名: 天降之物"
 					/>
 				</el-form-item>
 

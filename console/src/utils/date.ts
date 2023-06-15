@@ -12,9 +12,15 @@
  * @returns formatted str
  */
 export const formatDate = (
-	date: Date,
+	date: Date | String,
 	format = 'yyyy-MM-dd HH:mm:ss'
 ): string => {
+	// console.log('date', date)
+	// console.log('typeof date', typeof date)
+	// console.log('!(date instanceof Date)', !(date instanceof Date))
+	if (!(date instanceof Date)) {
+		date = new Date(date as string);
+	}
 	const year = date.getFullYear();
 	const month = date.getMonth() + 1;
 	const day = date.getDate();
