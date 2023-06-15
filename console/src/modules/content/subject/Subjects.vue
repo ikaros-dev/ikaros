@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import SubjectCard from './SubjectCard.vue';
+import { Subject } from '@runikaros/api-client';
+import { apiClient } from '@/utils/api-client';
 
 const router = useRouter();
 
@@ -16,6 +17,25 @@ const findSubjectsCondition = ref({
 const toSubjectPost = () => {
 	router.push('/subjects/subject/post');
 };
+
+const subjects = ref<Subject[]>([]);
+
+const fetchSubjects = async () => {
+	const { data } = await apiClient.subject.listSubjectsByCondition({
+		page: findSubjectsCondition.value.page,
+		size: findSubjectsCondition.value.size,
+		name: findSubjectsCondition.value.name,
+		nameCn: findSubjectsCondition.value.nameCn,
+		nsfw: findSubjectsCondition.value.nsfw,
+		type: findSubjectsCondition.value.type,
+	});
+	findSubjectsCondition.value.page = data.page;
+	findSubjectsCondition.value.size = data.size;
+	findSubjectsCondition.value.total = data.total;
+	subjects.value = data.items as Subject[];
+};
+
+onMounted(fetchSubjects);
 </script>
 
 <template>
@@ -79,29 +99,33 @@ const toSubjectPost = () => {
 	</el-row>
 
 	<el-row :gutter="10" justify="start" align="middle">
-		<el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
-			<SubjectCard />
-		</el-col>
-		<el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
-			<SubjectCard />
-		</el-col>
-		<el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
-			<SubjectCard />
-		</el-col>
-		<el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
-			<SubjectCard />
-		</el-col>
-		<el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
-			<SubjectCard />
-		</el-col>
-		<el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
-			<SubjectCard />
-		</el-col>
-		<el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
-			<SubjectCard />
-		</el-col>
-		<el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
-			<SubjectCard />
+		<el-col
+			v-for="subject in subjects"
+			:key="subject.id"
+			:xs="24"
+			:sm="12"
+			:md="8"
+			:lg="4"
+			:xl="4"
+		>
+			<el-card
+				shadow="hover"
+				class="container"
+				:body-style="{ padding: '0px' }"
+			>
+				<template #header>
+					<div class="card-header">
+						<span>{{ subject?.name }} </span>
+						<span class="grey">{{ subject?.name_cn }}</span>
+					</div>
+				</template>
+				<span>
+					<img
+						:src="subject?.image?.common"
+						style="width: 100%; border-radius: 5px"
+					/>
+				</span>
+			</el-card>
 		</el-col>
 	</el-row>
 
@@ -117,4 +141,22 @@ const toSubjectPost = () => {
 	</el-row>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.container {
+	margin: 5px 0;
+	border-radius: 5px;
+	// border: 1px solid rebeccapurple;
+	cursor: pointer;
+}
+
+.card-header {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	height: 15px;
+	.grey {
+		font-size: 10px;
+		color: #999;
+	}
+}
+</style>
