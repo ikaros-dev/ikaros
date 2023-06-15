@@ -11,6 +11,7 @@ import EpisodePostDialog from './EpisodePostDialog.vue';
 import { ElMessage, FormInstance, FormRules } from 'element-plus';
 import { formatDate } from '@/utils/date';
 import { apiClient } from '@/utils/api-client';
+import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 
 const router = useRouter();
 
@@ -75,12 +76,12 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 
 const episodePostDialogVisible = ref(false);
 const onEpisodePostDialogCloseWithEpsiode = (ep: Episode) => {
-	// console.log('receive episode: ', ep);
+	console.log('receive episode: ', ep);
 	subject.value.episodes?.push(ep);
 };
 
-const airTimeDateFormatter = (cellValue) => {
-	return formatDate(new Date(cellValue), 'yyyy-MM-dd');
+const airTimeDateFormatter = (row) => {
+	return formatDate(row.air_time, 'yyyy-MM-dd');
 };
 
 const removeCurrentRowEpisode = (ep: Episode) => {
@@ -88,6 +89,14 @@ const removeCurrentRowEpisode = (ep: Episode) => {
 	if (index && index < 0) return;
 	subject.value.episodes?.splice(index, 1);
 };
+
+const currentEpisode = ref<Episode>();
+const showEpisodeDetails = (ep: Episode) => {
+	currentEpisode.value = ep;
+	episodeDetailsDialogVisible.value = true;
+};
+
+const episodeDetailsDialogVisible = ref(false);
 </script>
 
 <template>
@@ -181,7 +190,11 @@ const removeCurrentRowEpisode = (ep: Episode) => {
 				/>
 
 				<el-form-item label="剧集">
-					<el-table :data="subject.episodes" style="max-width: 700px">
+					<el-table
+						:data="subject.episodes"
+						style="max-width: 700px"
+						@row-dblclick="showEpisodeDetails"
+					>
 						<el-table-column label="原始名称" prop="name" />
 						<el-table-column label="中文名称" prop="name_cn" />
 						<el-table-column
@@ -197,7 +210,9 @@ const removeCurrentRowEpisode = (ep: Episode) => {
 								</el-button>
 							</template>
 							<template #default="scoped">
-								<el-button plain> 详情 </el-button>
+								<el-button plain @click="showEpisodeDetails(scoped.row)">
+									详情
+								</el-button>
 								<el-button
 									plain
 									type="danger"
@@ -218,6 +233,10 @@ const removeCurrentRowEpisode = (ep: Episode) => {
 			</el-form>
 		</el-col>
 	</el-row>
+	<EpisodeDetailsDialog
+		v-model:visible="episodeDetailsDialogVisible"
+		v-model:episode="currentEpisode"
+	/>
 </template>
 
 <style lang="scss" scoped></style>

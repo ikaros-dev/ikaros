@@ -118,24 +118,26 @@ onMounted(fetchSubjects);
 			:lg="4"
 			:xl="4"
 		>
-			<el-card
-				shadow="hover"
-				class="container"
-				:body-style="{ padding: '0px' }"
-			>
-				<template #header>
-					<div class="card-header">
-						<span>{{ subject?.name }} </span>
-						<span class="grey">{{ subject?.name_cn }}</span>
-					</div>
-				</template>
-				<span>
-					<img
-						:src="subject?.image?.common"
-						style="width: 100%; border-radius: 5px"
-					/>
-				</span>
-			</el-card>
+			<router-link :to="'/subjects/subject/details/' + subject.id">
+				<el-card
+					shadow="hover"
+					class="container"
+					:body-style="{ padding: '0px' }"
+				>
+					<template #header>
+						<div class="card-header">
+							<span>{{ subject?.name }} </span>
+							<span class="grey">{{ subject?.name_cn }}</span>
+						</div>
+					</template>
+					<span>
+						<img
+							:src="subject?.image?.common"
+							style="width: 100%; border-radius: 5px"
+						/>
+					</span>
+				</el-card>
+			</router-link>
 		</el-col>
 	</el-row>
 

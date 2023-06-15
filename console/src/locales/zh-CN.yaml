@@ -105,6 +105,8 @@ core:
       title: 条目编辑
     post:
       title: 条目新增
+    details:
+      title: 条目详情
   plugin:
     title: 插件
     loader:

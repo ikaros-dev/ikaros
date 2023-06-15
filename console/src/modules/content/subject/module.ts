@@ -1,8 +1,9 @@
 import { definePlugin } from '@runikaros/shared';
+import { Tickets } from '@element-plus/icons-vue';
 import Subjects from './Subjects.vue';
 import SubjectPut from './SubjectPut.vue';
 import SubjectPost from './SubjectPost.vue';
-import { Tickets } from '@element-plus/icons-vue';
+import SubjectDeatils from './SubjectDeatils.vue';
 
 export default definePlugin({
 	name: 'Subjects',
@@ -33,6 +34,18 @@ export default definePlugin({
 				component: SubjectPut,
 				meta: {
 					title: 'core.subject.put.title',
+					hidden: true,
+				},
+			},
+		},
+		{
+			parentName: 'Root',
+			route: {
+				path: '/subjects/subject/details/:id',
+				name: 'SubjectDeatils',
+				component: SubjectDeatils,
+				meta: {
+					title: 'core.subject.details.title',
 					hidden: true,
 				},
 			},
