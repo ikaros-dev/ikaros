@@ -55,20 +55,22 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .description("Search page size")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class)))
+                        .implementation(Long.class))
+                    .response(responseBuilder()
+                        .implementation(PagingWrap.class))
+            )
             .GET("/subject/{id}", this::getById,
-                builder -> {
-                    builder
-                        .operationId("SearchSubjectById")
-                        .tag(tag)
-                        .parameter(parameterBuilder()
-                            .name("id")
-                            .description("Subject ID")
-                            .in(ParameterIn.PATH)
-                            .required(true)
-                            .implementation(Long.class))
-                        .description("Search single subject by id.");
-                }
+                builder -> builder
+                    .operationId("SearchSubjectById")
+                    .tag(tag)
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .description("Subject ID")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .description("Search single subject by id.")
+                    .response(responseBuilder().implementation(Subject.class))
             )
 
             .GET("/subjects/condition", this::listByCondition,
@@ -109,7 +111,8 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .content(contentBuilder()
                             .mediaType(MediaType.APPLICATION_JSON_VALUE)
                             .schema(schemaBuilder().implementation(Subject.class))
-                        )))
+                        ))
+                    .response(responseBuilder().implementation(Subject.class)))
             .DELETE("/subject/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteSubjectById")
                     .tag(tag)
