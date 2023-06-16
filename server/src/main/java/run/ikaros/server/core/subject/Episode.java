@@ -2,7 +2,7 @@ package run.ikaros.server.core.subject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +24,7 @@ public class Episode {
     private String description;
     @JsonProperty("air_time")
     private LocalDateTime airTime;
+    private Integer sequence;
 
-    private Set<EpisodeResource> resources;
+    private List<EpisodeResource> resources;
 }

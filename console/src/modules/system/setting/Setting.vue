@@ -56,7 +56,7 @@ onMounted(getSettingFromServer);
 		size="default"
 		:rules="settingFormRules"
 	>
-		<el-tabs type="border-card">
+		<el-tabs>
 			<el-tab-pane label="基础设置">
 				<el-form-item label="站点标题" prop="SITE_TITLE">
 					<el-input

@@ -27,9 +27,9 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
         return subjectRelationRepository.findAllBySubjectId(subjectId)
             .collectList()
             .flatMapMany(subjectRelationEntities -> {
-                Map<Integer, SubjectRelation> typeSubjectRelationMap = new HashMap<>();
+                Map<SubjectRelationType, SubjectRelation> typeSubjectRelationMap = new HashMap<>();
                 subjectRelationEntities.forEach(subjectRelationEntity -> {
-                    Integer relationType = subjectRelationEntity.getRelationType();
+                    SubjectRelationType relationType = subjectRelationEntity.getRelationType();
                     if (typeSubjectRelationMap.containsKey(relationType)) {
                         SubjectRelation subjectRelation = typeSubjectRelationMap.get(relationType);
                         subjectRelation.getRelationSubjects()
@@ -39,7 +39,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
                         relationSubjectSet.add(subjectRelationEntity.getRelationSubjectId());
                         SubjectRelation subjectRelation = SubjectRelation.builder()
                             .subject(subjectId)
-                            .relationType(SubjectRelationType.codeOf(relationType))
+                            .relationType(relationType)
                             .relationSubjects(relationSubjectSet)
                             .build();
                         typeSubjectRelationMap.put(relationType, subjectRelation);
@@ -78,7 +78,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
                     .filter(relationSubject -> !existsRelationSubjectSet.contains(relationSubject))
                     .flatMap(relationSubject -> Mono.just(SubjectRelationEntity.builder()
                         .subjectId(subjectRelation.getSubject())
-                        .relationType(subjectRelation.getRelationType().getCode())
+                        .relationType(subjectRelation.getRelationType())
                         .relationSubjectId(relationSubject)
                         .build()))
                     .flatMap(subjectRelationRepository::save)

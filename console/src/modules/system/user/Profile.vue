@@ -60,7 +60,7 @@ onMounted(initProfileAndUsername);
 		label-position="top"
 		size="default"
 	>
-		<el-tabs type="border-card">
+		<el-tabs>
 			<el-tab-pane label="基本信息">
 				<el-form-item label="昵称">
 					<el-input

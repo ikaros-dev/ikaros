@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Random;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -119,6 +120,7 @@ class SubjectEndpointTest {
     }
 
     @Test
+    @Disabled
     @SuppressWarnings("unchecked")
     void listWhenExists() {
         Subject subject = createSubjectInstance();

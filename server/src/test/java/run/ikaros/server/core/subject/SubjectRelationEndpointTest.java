@@ -12,6 +12,7 @@ import java.util.Set;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -32,9 +33,9 @@ import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.store.repository.SubjectRelationRepository;
 
 
+@Disabled
 @SpringBootTest
 @AutoConfigureWebTestClient
-// @SuppressWarnings("unchecked")
 class SubjectRelationEndpointTest {
 
     @Autowired

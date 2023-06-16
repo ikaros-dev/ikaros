@@ -1,23 +1,29 @@
 package run.ikaros.server.core.subject;
 
+import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.content.Builder.contentBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collections;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
@@ -49,31 +55,76 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .description("Search page size")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class)))
-            .GET("/subject/{id}", this::getById,
-                builder -> {
-                    builder
-                        .operationId("SearchSubjectById")
-                        .tag(tag)
-                        .parameter(parameterBuilder()
-                            .name("id")
-                            .description("Subject ID")
-                            .in(ParameterIn.PATH)
-                            .required(true)
-                            .implementation(Long.class))
-                        .description("Search single subject by id.");
-                }
+                        .implementation(Long.class))
+                    .response(responseBuilder()
+                        .implementation(PagingWrap.class))
             )
-            .POST("/subject", this::save,
-                builder -> builder.operationId("SaveSubject")
+            .GET("/subject/{id}", this::getById,
+                builder -> builder
+                    .operationId("SearchSubjectById")
                     .tag(tag)
-                    .description("Create or update single subject.")
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .description("Subject ID")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .description("Search single subject by id.")
+                    .response(responseBuilder().implementation(Subject.class))
+            )
+
+            .GET("/subjects/condition", this::listByCondition,
+                builder -> builder.operationId("ListSubjectsByCondition")
+                    .tag(tag).description("List subjects by condition.")
+                    .parameter(parameterBuilder()
+                        .name("page")
+                        .description("第几页，从1开始, 默认为1.")
+                        .implementation(Integer.class))
+                    .parameter(parameterBuilder()
+                        .name("size")
+                        .description("每页条数，默认为10.")
+                        .implementation(Integer.class))
+                    .parameter(parameterBuilder()
+                        .name("name")
+                        .description("经过Basic64编码的名称，名称字段模糊查询。")
+                        .implementation(String.class))
+                    .parameter(parameterBuilder()
+                        .name("nameCn")
+                        .description("经过Basic64编码的中文名称，中文名称字段模糊查询。")
+                        .implementation(String.class))
+                    .parameter(parameterBuilder()
+                        .name("nsfw")
+                        .description("Not Safe/Suitable For Work.")
+                        .implementation(Boolean.class))
+                    .parameter(parameterBuilder()
+                        .name("type")
+                        .implementation(SubjectType.class))
+                    .response(responseBuilder().implementation(PagingWrap.class))
+            )
+
+            .POST("/subject", this::create,
+                builder -> builder.operationId("CreateSubject")
+                    .tag(tag)
+                    .description("Create single subject.")
+                    .requestBody(Builder.requestBodyBuilder()
+                        .required(true)
+                        .content(contentBuilder()
+                            .mediaType(MediaType.APPLICATION_JSON_VALUE)
+                            .schema(schemaBuilder().implementation(Subject.class))
+                        ))
+                    .response(responseBuilder().implementation(Subject.class)))
+
+            .PUT("/subject", this::update,
+                builder -> builder.operationId("UpdateSubject")
+                    .tag(tag)
+                    .description("Update single subject.")
                     .requestBody(Builder.requestBodyBuilder()
                         .required(true)
                         .content(contentBuilder()
                             .mediaType(MediaType.APPLICATION_JSON_VALUE)
                             .schema(schemaBuilder().implementation(Subject.class))
                         )))
+
             .DELETE("/subject/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteSubjectById")
                     .tag(tag)
@@ -85,6 +136,40 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .description("Subject id")
                         .implementation(Long.class)))
             .build();
+    }
+
+    private Mono<ServerResponse> listByCondition(ServerRequest request) {
+        Optional<String> pageOp = request.queryParam("page");
+        if (pageOp.isEmpty()) {
+            pageOp = Optional.of("1");
+        }
+        final Integer page = Integer.valueOf(pageOp.get());
+        Optional<String> sizeOp = request.queryParam("size");
+        if (sizeOp.isEmpty()) {
+            sizeOp = Optional.of("10");
+        }
+        final Integer size = Integer.valueOf(sizeOp.get());
+        Optional<String> nameOp = request.queryParam("name");
+        final String name = nameOp.isPresent() && StringUtils.hasText(nameOp.get())
+            ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
+            : null;
+        Optional<String> nameCnOp = request.queryParam("nameCn");
+        final String nameCn = nameCnOp.isPresent() && StringUtils.hasText(nameCnOp.get())
+            ? new String(Base64.getDecoder().decode(nameCnOp.get()), StandardCharsets.UTF_8)
+            : null;
+        Optional<String> nsfwOp = request.queryParam("nsfw");
+        final Boolean nsfw = nsfwOp.isPresent() && StringUtils.hasText(nsfwOp.get())
+            ? Boolean.valueOf(nsfwOp.get())
+            : null;
+        Optional<String> typeOp = request.queryParam("type");
+        final SubjectType type = typeOp.isPresent() && StringUtils.hasText(typeOp.get())
+            ? SubjectType.valueOf(typeOp.get())
+            : null;
+        FindSubjectCondition findSubjectCondition = FindSubjectCondition.builder()
+            .page(page).size(size).name(name).nameCn(nameCn)
+            .nsfw(nsfw).type(type).build();
+        return subjectService.listEntitiesByCondition(findSubjectCondition)
+            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
     }
 
     private Mono<ServerResponse> list(ServerRequest request) {
@@ -123,12 +208,18 @@ public class SubjectEndpoint implements CoreEndpoint {
                 .bodyValue("Not found for id: " + id));
     }
 
-    private Mono<ServerResponse> save(ServerRequest request) {
+    private Mono<ServerResponse> create(ServerRequest request) {
         return request.bodyToMono(Subject.class)
-            .flatMap(subjectService::save)
+            .flatMap(subjectService::create)
             .flatMap(subject -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(subject));
+    }
+
+    private Mono<ServerResponse> update(ServerRequest request) {
+        return request.bodyToMono(Subject.class)
+            .flatMap(subjectService::update)
+            .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {

@@ -42,10 +42,16 @@ export interface Episode {
 	description?: string;
 	/**
 	 *
-	 * @type {Set<EpisodeResource>}
+	 * @type {number}
 	 * @memberof Episode
 	 */
-	resources?: Set<EpisodeResource>;
+	sequence?: number;
+	/**
+	 *
+	 * @type {Array<EpisodeResource>}
+	 * @memberof Episode
+	 */
+	resources?: Array<EpisodeResource>;
 	/**
 	 *
 	 * @type {number}

@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,13 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import run.ikaros.api.store.entity.BaseEntity;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.server.core.subject.Subject;
 
+/**
+ * Subject entity.
+ *
+ * @see run.ikaros.server.core.subject.SubjectService#update(Subject)
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,22 +26,16 @@ import run.ikaros.api.store.enums.SubjectType;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class SubjectEntity extends BaseEntity {
-    /**
-     * Subject type.
-     *
-     * @see SubjectType#getCode()
-     */
-    private Integer type;
+    private SubjectType type;
     private String name;
     @Column("name_cn")
     private String nameCn;
     private String infobox;
-    private String platform;
     private String summary;
     /**
-     * Can search by anonymous access.
+     * Not Safe/Suitable For Work.
      */
     private Boolean nsfw;
-    @Column("bgmtv_id")
-    private Long bgmtvId;
+    @Column("air_time")
+    private LocalDateTime airTime;
 }

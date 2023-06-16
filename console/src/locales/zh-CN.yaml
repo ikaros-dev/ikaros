@@ -101,6 +101,12 @@ core:
     title: 文件
   subject:
     title: 条目
+    put:
+      title: 条目编辑
+    post:
+      title: 条目新增
+    details:
+      title: 条目详情
   plugin:
     title: 插件
     loader:

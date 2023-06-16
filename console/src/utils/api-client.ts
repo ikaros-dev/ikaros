@@ -4,10 +4,13 @@ import type { AxiosError, AxiosInstance } from 'axios';
 import {
 	PluginIkarosRunV1alpha1PluginApi,
 	SettingIkarosRunV1alpha1ConfigMapApi,
+	V1alpha1EpisodeFileApi,
 	V1alpha1FileApi,
 	V1alpha1PluginApi,
+	V1alpha1SubjectApi,
 	V1alpha1UserApi,
 } from '@runikaros/api-client';
+import { ElMessage } from 'element-plus';
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -29,8 +32,15 @@ axiosInstance.interceptors.response.use(
 	async (error: AxiosError<ProblemDetail>) => {
 		if (/Network Error/.test(error.message)) {
 			console.error(
-				i18n.global.t('core.common.exception.network_error'),
+				i18n.global.t('core.common.exception.network_error') +
+					': ' +
+					error.message,
 				error
+			);
+			ElMessage.error(
+				i18n.global.t('core.common.exception.network_error') +
+					': ' +
+					error.message
 			);
 			return Promise.reject(error);
 		}
@@ -39,8 +49,15 @@ axiosInstance.interceptors.response.use(
 
 		if (!errorResponse) {
 			console.error(
-				i18n.global.t('core.common.exception.network_error'),
+				i18n.global.t('core.common.exception.network_error') +
+					': ' +
+					error.message,
 				error
+			);
+			ElMessage.error(
+				i18n.global.t('core.common.exception.network_error') +
+					': ' +
+					error.message
 			);
 			return Promise.reject(error);
 		}
@@ -56,23 +73,68 @@ axiosInstance.interceptors.response.use(
 				}),
 				error
 			);
+			ElMessage.error(
+				i18n.global.t('core.common.exception.request_parameter_error') +
+					': ' +
+					error.message
+			);
 		} else if (status === 401) {
-			console.error(i18n.global.t('core.common.exception.unauthorized'), error);
+			console.error(
+				i18n.global.t('core.common.exception.unauthorized') +
+					': ' +
+					error.message,
+				error
+			);
+			ElMessage.error(
+				i18n.global.t('core.common.exception.unauthorized') +
+					': ' +
+					error.message
+			);
 		} else if (status === 403) {
-			console.error(i18n.global.t('core.common.exception.forbidden'), error);
+			console.error(
+				i18n.global.t('core.common.exception.forbidden') + ': ' + error.message,
+				error
+			);
+			ElMessage.error(
+				i18n.global.t('core.common.exception.forbidden') + ': ' + error.message
+			);
 		} else if (status === 404) {
-			console.error(i18n.global.t('core.common.exception.not_found'), error);
+			console.error(
+				i18n.global.t('core.common.exception.not_found') + ': ' + error.message,
+				error
+			);
+			ElMessage.error(
+				i18n.global.t('core.common.exception.not_found') + ': ' + error.message
+			);
 		} else if (status === 500) {
 			console.error(
-				i18n.global.t('core.common.exception.server_internal_error_with_title'),
+				i18n.global.t(
+					'core.common.exception.server_internal_error_with_title'
+				) +
+					': ' +
+					error.message,
 				error
+			);
+			ElMessage.error(
+				i18n.global.t(
+					'core.common.exception.server_internal_error_with_title'
+				) +
+					': ' +
+					error.message
 			);
 		} else {
 			console.error(
 				i18n.global.t('core.common.exception.unknown_error_with_title', {
 					title,
-				}),
+				}) +
+					': ' +
+					error.message,
 				error
+			);
+			ElMessage.error(
+				i18n.global.t('core.common.exception.unknown_error_with_title') +
+					': ' +
+					error.message
 			);
 		}
 
@@ -91,6 +153,8 @@ function setupApiClient(axios: AxiosInstance) {
 		user: new V1alpha1UserApi(undefined, baseURL, axios),
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),
 		file: new V1alpha1FileApi(undefined, baseURL, axios),
+		subject: new V1alpha1SubjectApi(undefined, baseURL, axios),
+		episodefile: new V1alpha1EpisodeFileApi(undefined, baseURL, axios),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
 		configmap: new SettingIkarosRunV1alpha1ConfigMapApi(

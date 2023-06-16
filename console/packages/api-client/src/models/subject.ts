@@ -18,6 +18,9 @@ import { Episode } from './episode';
 // May contain unused imports in some cases
 // @ts-ignore
 import { SubjectImage } from './subject-image';
+// May contain unused imports in some cases
+// @ts-ignore
+import { SubjectSync } from './subject-sync';
 
 /**
  *
@@ -54,12 +57,6 @@ export interface Subject {
 	 * @type {string}
 	 * @memberof Subject
 	 */
-	platform?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Subject
-	 */
 	summary?: string;
 	/**
 	 *
@@ -67,6 +64,12 @@ export interface Subject {
 	 * @memberof Subject
 	 */
 	nsfw: boolean;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof Subject
+	 */
+	airTime?: string;
 	/**
 	 *
 	 * @type {SubjectImage}
@@ -81,16 +84,16 @@ export interface Subject {
 	episodes?: Array<Episode>;
 	/**
 	 *
+	 * @type {Array<SubjectSync>}
+	 * @memberof Subject
+	 */
+	syncs?: Array<SubjectSync>;
+	/**
+	 *
 	 * @type {string}
 	 * @memberof Subject
 	 */
 	name_cn?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Subject
-	 */
-	bgmtv_id?: number;
 	/**
 	 *
 	 * @type {number}
@@ -106,13 +109,13 @@ export interface Subject {
 }
 
 export const SubjectTypeEnum = {
-	Other: 'OTHER',
 	Anime: 'ANIME',
 	Comic: 'COMIC',
 	Game: 'GAME',
 	Music: 'MUSIC',
 	Novel: 'NOVEL',
 	Real: 'REAL',
+	Other: 'OTHER',
 } as const;
 
 export type SubjectTypeEnum =
