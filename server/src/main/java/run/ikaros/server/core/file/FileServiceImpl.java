@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -36,10 +37,16 @@ import run.ikaros.server.store.repository.FileRepository;
 public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final IkarosProperties ikarosProperties;
+    private final R2dbcEntityTemplate template;
 
-    public FileServiceImpl(FileRepository fileRepository, IkarosProperties ikarosProperties) {
+    /**
+     * Construct.
+     */
+    public FileServiceImpl(FileRepository fileRepository, IkarosProperties ikarosProperties,
+                           R2dbcEntityTemplate template) {
         this.fileRepository = fileRepository;
         this.ikarosProperties = ikarosProperties;
+        this.template = template;
     }
 
     @Override
@@ -154,6 +161,7 @@ public class FileServiceImpl implements FileService {
         Flux<FileEntity> fileEntityFlux;
         Mono<Long> countMono;
 
+        // todo 使用 R2dbcEntityTemplate 进行动态拼接
         if (place == null) {
             if (type == null) {
                 fileEntityFlux = fileRepository.findAllByNameLike(fileNameLike, pageRequest);

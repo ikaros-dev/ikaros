@@ -1,11 +1,20 @@
 package run.ikaros.server.core.subject;
 
+import static org.springframework.data.relational.core.query.Criteria.where;
 import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.data.relational.core.query.Query;
+import org.springframework.data.relational.core.query.Update;
+import org.springframework.data.relational.core.sql.SqlIdentifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -28,6 +37,7 @@ import run.ikaros.server.store.repository.SubjectImageRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
 
+@Slf4j
 @Service
 public class SubjectServiceImpl implements SubjectService {
     private final SubjectRepository subjectRepository;
@@ -36,6 +46,7 @@ public class SubjectServiceImpl implements SubjectService {
     private final EpisodeRepository episodeRepository;
     private final EpisodeFileRepository episodeFileRepository;
     private final SubjectSyncRepository subjectSyncRepository;
+    private final R2dbcEntityTemplate template;
 
     /**
      * Construct a {@link SubjectService} instance.
@@ -46,19 +57,22 @@ public class SubjectServiceImpl implements SubjectService {
      * @param episodeRepository      {@link EpisodeEntity} repository
      * @param episodeFileRepository  {@link EpisodeFileEntity} repository
      * @param subjectSyncRepository  {@link SubjectSyncEntity} repository
+     * @param template               {@link R2dbcEntityTemplate}
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
                               CollectionRepository collectionRepository,
                               SubjectImageRepository subjectImageRepository,
                               EpisodeRepository episodeRepository,
                               EpisodeFileRepository episodeFileRepository,
-                              SubjectSyncRepository subjectSyncRepository) {
+                              SubjectSyncRepository subjectSyncRepository,
+                              R2dbcEntityTemplate template) {
         this.subjectRepository = subjectRepository;
         this.collectionRepository = collectionRepository;
         this.subjectImageRepository = subjectImageRepository;
         this.episodeRepository = episodeRepository;
         this.episodeFileRepository = episodeFileRepository;
         this.subjectSyncRepository = subjectSyncRepository;
+        this.template = template;
     }
 
     @Override
@@ -67,22 +81,28 @@ public class SubjectServiceImpl implements SubjectService {
         return subjectRepository.findById(id)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("Not found subject record by id: " + id)))
-            .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject())
-                .map(subject -> subject.setType(subjectEntity.getType())))
+            .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject()))
+            .checkpoint("FindSubjectEntityById")
+
             .flatMap(subject -> subjectImageRepository.findBySubjectId(subject.getId())
-                .flatMap(
-                    subjectImageEntity -> copyProperties(subjectImageEntity, new SubjectImage()))
-                .flatMap(subjectImage -> Mono.just(subject.setImage(subjectImage)))
+                .flatMap(imageEntity -> copyProperties(imageEntity, new SubjectImage()))
+                .map(subject::setImage)
                 .switchIfEmpty(Mono.just(subject)))
+            .checkpoint("FindSubjectImageEntityBySubjectId")
+
             .flatMap(subject -> episodeRepository.findBySubjectId(subject.getId())
                 .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
                 .collectList()
-                .flatMap(episodes -> Mono.just(subject.setTotalEpisodes((long) episodes.size())
-                    .setEpisodes(episodes)))
+                .map(episodes -> subject
+                    .setTotalEpisodes((long) episodes.size())
+                    .setEpisodes(episodes))
                 .switchIfEmpty(Mono.just(subject)))
+            .checkpoint("FindEpisodeEntitiesBySubjectId")
+
             .flatMap(subject -> subjectSyncRepository.findAllBySubjectId(subject.getId())
                 .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, new SubjectSync()))
-                .collectList().map(subject::setSyncs));
+                .collectList().map(subject::setSyncs))
+            .checkpoint("FindSyncEntitiesBySubjectId");
     }
 
     @Override
@@ -90,12 +110,11 @@ public class SubjectServiceImpl implements SubjectService {
         Assert.isTrue(bgmtvId > 0, "'bgmtvId' must gt 0.");
         return Mono.just(bgmtvId)
             .flatMap(platformId -> subjectSyncRepository.findByPlatformAndPlatformId(
-                SubjectSyncPlatform.BGM_TV, platformId.toString()))
+                SubjectSyncPlatform.BGM_TV, String.valueOf(platformId)))
             .map(SubjectSyncEntity::getSubjectId)
             .flatMap(this::findById)
             .switchIfEmpty(
-                Mono.error(new NotFoundException("Not found subject by bgmtv_id: " + bgmtvId)))
-            .flatMap(subjectEntity -> findById(subjectEntity.getId()));
+                Mono.error(new NotFoundException("Not found subject by bgmtv_id: " + bgmtvId)));
     }
 
     @Override
@@ -115,36 +134,143 @@ public class SubjectServiceImpl implements SubjectService {
     }
 
     @Override
-    public Mono<Subject> save(Subject subject) {
+    public Mono<Subject> create(Subject subject) {
         Assert.notNull(subject, "'subject' must not be null.");
+        final AtomicReference<Long> subjectId = new AtomicReference<>(-1L);
         return Mono.just(subject)
-            .filter(subject1 -> Objects.nonNull(subject1.getType()))
+            .filter(sub -> Objects.nonNull(sub.getType()))
             .switchIfEmpty(
                 Mono.error(new IllegalArgumentException("subject type must not be null")))
-            // Save subject entity
-            .flatMap(subject1 -> copyProperties(subject1, new SubjectEntity())
-                .map(subjectEntity -> subjectEntity
-                    .setType(subject1.getType()))
-                .flatMap(subjectRepository::save)
-                .flatMap(subjectEntity -> Mono.just(subject1.setId(subjectEntity.getId()))
-                    .map(subject2 ->
-                        subject2.setType(subjectEntity.getType()))))
-            // Save subject image entity
-            .flatMap(subject1 -> Mono.just(subject1.getImage())
-                .flatMap(subjectImage -> copyProperties(subjectImage, new SubjectImageEntity())
-                    .map(subjectImageEntity -> subjectImageEntity.setSubjectId(subject1.getId()))
-                    .flatMap(subjectImageRepository::save)
-                    .map(subjectImageEntity -> subjectImage.setId(subjectImageEntity.getId()))
-                    .flatMap(subjectImage1 -> Mono.just(subject1.setImage(subjectImage1)))))
-            // Save episode entity
-            .flatMap(subject1 -> Mono.just(subject1.getEpisodes())
-                .flatMapMany(episodes -> Flux.fromStream(episodes.stream()))
-                .flatMap(episode -> copyProperties(episode, new EpisodeEntity())
-                    .map(episodeEntity -> episodeEntity.setSubjectId(subject1.getId()))
-                    .flatMap(episodeRepository::save)
-                    .flatMap(episodeEntity -> Mono.just(episode.setId(episodeEntity.getId()))))
-                .collectList()
-                .flatMap(episodes -> Mono.just(subject1.setEpisodes(episodes))));
+            .checkpoint("AssertParams")
+
+            .flatMap(sub -> copyProperties(sub, new SubjectEntity()))
+            .flatMap(subjectRepository::save)
+            .map(subjectEntity -> {
+                subjectId.set(subjectEntity.getId());
+                return subjectEntity;
+            })
+            .flatMap(subjectEntity -> copyProperties(subjectEntity, subject))
+            .checkpoint("CreateSubjectEntity")
+
+            .map(Subject::getImage)
+            .flatMap(subjectImage -> copyProperties(subjectImage, new SubjectImageEntity()))
+            .map(entity -> entity.setSubjectId(subjectId.get()))
+            .flatMap(subjectImageRepository::save)
+            .flatMap(subjectImageEntity -> copyProperties(subjectImageEntity, new SubjectImage()))
+            .map(subject::setImage)
+            .checkpoint("CreateSubjectImageEntity")
+
+            .map(Subject::getEpisodes)
+            .flatMapMany(episodes -> Flux.fromStream(episodes.stream()))
+            .flatMap(episode -> copyProperties(episode, new EpisodeEntity()))
+            .map(entity -> entity.setSubjectId(subjectId.get()))
+            .flatMap(episodeRepository::save)
+            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
+            .collectList()
+            .map(subject::setEpisodes)
+            .checkpoint("CreateEpisodeEntities")
+
+            .map(Subject::getSyncs)
+            .flatMapMany(subjectSyncs -> Flux.fromStream(subjectSyncs.stream()))
+            .flatMap(subjectSync -> copyProperties(subjectSync, new SubjectSyncEntity()))
+            .map(entity -> entity.setSubjectId(subjectId.get()))
+            .flatMap(subjectSyncRepository::save)
+            .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, new SubjectSync()))
+            .collectList()
+            .map(subject::setSyncs)
+            .checkpoint("CreateSubjectSyncEntities");
+    }
+
+    @Override
+    public Mono<Void> update(Subject subject) {
+        Assert.notNull(subject, "'subject' must not null.");
+        Long id = subject.getId();
+        Assert.isTrue(id > 0, "'subject id' must gt 0.");
+        AtomicReference<Long> subjectId = new AtomicReference<>(-1L);
+        return Mono.just(subject)
+            .flatMap(subject1 -> copyProperties(subject1, new SubjectEntity()))
+            .map(entity -> {
+                if (entity.getId() == null) {
+                    return subjectRepository.save(entity)
+                        .map(subjectEntity -> {
+                            subjectId.set(subjectEntity.getId());
+                            return subjectEntity;
+                        });
+                }
+                Map<SqlIdentifier, Object> map = new HashMap<>();
+                map.put(SqlIdentifier.unquoted("update_time"), entity.getUpdateTime());
+                map.put(SqlIdentifier.unquoted("name"), entity.getName());
+                map.put(SqlIdentifier.unquoted("nameCn"), entity.getNameCn());
+                map.put(SqlIdentifier.unquoted("type"), entity.getType());
+                map.put(SqlIdentifier.unquoted("infobox"), entity.getInfobox());
+                map.put(SqlIdentifier.unquoted("summary"), entity.getSummary());
+                map.put(SqlIdentifier.unquoted("nsfw"), entity.getNsfw());
+                map.put(SqlIdentifier.unquoted("airTime"), entity.getAirTime());
+                return Mono.just(map)
+                    .flatMap(columnsToUpdate -> template.update(Query.query(where("id").is(id)),
+                        Update.from(columnsToUpdate),
+                        SubjectEntity.class))
+                    .filter(count -> count > 0)
+                    .switchIfEmpty(Mono.error(new RuntimeException(
+                        "Update fail for subject id: " + entity.getId())));
+            })
+            .checkpoint("UpdateSubjectEntityIfIdIsNull")
+
+            .then(Mono.just(subject.getImage()))
+            .flatMap(image -> copyProperties(image, new SubjectImageEntity()))
+            .map(imageEntity -> imageEntity.setSubjectId(subjectId.get()))
+            .flatMap(entity -> {
+                final Long entityId = entity.getId();
+                if (entityId == null) {
+                    return subjectImageRepository.save(entity);
+                }
+
+                Map<SqlIdentifier, Object> map = new HashMap<>();
+                map.put(SqlIdentifier.unquoted("update_time"), entity.getUpdateTime());
+                map.put(SqlIdentifier.unquoted("subjectId"), entity.getSubjectId());
+                map.put(SqlIdentifier.unquoted("large"), entity.getLarge());
+                map.put(SqlIdentifier.unquoted("common"), entity.getCommon());
+                map.put(SqlIdentifier.unquoted("medium"), entity.getMedium());
+                map.put(SqlIdentifier.unquoted("small"), entity.getSmall());
+                map.put(SqlIdentifier.unquoted("grid"), entity.getGrid());
+                return Mono.just(map)
+                    .flatMap(columnsToUpdate ->
+                        template.update(Query.query(where("id").is(entity.getId())),
+                            Update.from(columnsToUpdate), SubjectImageEntity.class))
+                    .filter(count -> count > 0)
+                    .switchIfEmpty(Mono.error(new RuntimeException(
+                        "Update fail for subject images id: "
+                        + entity.getId() + ", subject id: " + entity.getSubjectId())));
+            })
+            .checkpoint("UpdateSubjectImageEntityIfIdIsNull")
+
+            .then(Mono.just(subject.getEpisodes()))
+            .flatMapMany(episodes -> Flux.fromStream(episodes.stream()))
+            .flatMap(episode -> copyProperties(episode, new EpisodeEntity()))
+            .map(episodeEntity -> episodeEntity.setSubjectId(subjectId.get()))
+            .flatMap(entity -> {
+                if (entity.getId() == null) {
+                    return episodeRepository.save(entity);
+                }
+                Map<SqlIdentifier, Object> map = new HashMap<>();
+                map.put(SqlIdentifier.unquoted("update_time"), entity.getUpdateTime());
+                map.put(SqlIdentifier.unquoted("subjectId"), entity.getSubjectId());
+                map.put(SqlIdentifier.unquoted("name"), entity.getName());
+                map.put(SqlIdentifier.unquoted("name_cn"), entity.getNameCn());
+                map.put(SqlIdentifier.unquoted("description"), entity.getDescription());
+                map.put(SqlIdentifier.unquoted("air_time"), entity.getAirTime());
+                map.put(SqlIdentifier.unquoted("sequence"), entity.getSequence());
+                return Mono.just(map)
+                    .flatMap(columnsToUpdate ->
+                        template.update(Query.query(where("id").is(entity.getId())),
+                            Update.from(columnsToUpdate), EpisodeEntity.class))
+                    .filter(count -> count > 0)
+                    .switchIfEmpty(Mono.error(new RuntimeException("Update fail for episode id: "
+                        + entity.getId() + ", subject id: " + entity.getSubjectId())));
+            })
+
+            .checkpoint("UpdateEpisodeEntitiesIfIdISNull")
+            .then();
     }
 
     @Override
@@ -194,6 +320,7 @@ public class SubjectServiceImpl implements SubjectService {
 
         Flux<SubjectEntity> subjectEntityFlux;
         Mono<Long> countMono;
+        // todo 使用 R2dbcEntityTemplate 进行动态拼接
         if (name == null) {
             if (nameCn == null) {
                 if (type == null) {
@@ -316,5 +443,14 @@ public class SubjectServiceImpl implements SubjectService {
             .collectList()
             .flatMap(subjects -> countMono
                 .map(count -> new PagingWrap<>(page, size, count, subjects)));
+    }
+
+    @Override
+    public Mono<Void> deleteAll() {
+        return subjectRepository.findAll()
+            .map(BaseEntity::getId)
+            .flatMap(this::deleteById)
+            .checkpoint("DeleteAllSubject")
+            .then();
     }
 }

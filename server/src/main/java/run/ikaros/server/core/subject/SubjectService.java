@@ -16,7 +16,10 @@ public interface SubjectService {
                                      @NotBlank String platformId);
 
     @Transactional
-    Mono<Subject> save(Subject subject);
+    Mono<Subject> create(Subject subject);
+
+    @Transactional
+    Mono<Void> update(Subject subject);
 
     @Transactional
     Mono<Void> deleteById(Long id);
@@ -24,4 +27,6 @@ public interface SubjectService {
     Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pagingWrap);
 
     Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition);
+
+    Mono<Void> deleteAll();
 }

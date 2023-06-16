@@ -102,10 +102,10 @@ public class SubjectEndpoint implements CoreEndpoint {
                     .response(responseBuilder().implementation(PagingWrap.class))
             )
 
-            .POST("/subject", this::save,
-                builder -> builder.operationId("SaveSubject")
+            .POST("/subject", this::create,
+                builder -> builder.operationId("CreateSubject")
                     .tag(tag)
-                    .description("Create or update single subject.")
+                    .description("Create single subject.")
                     .requestBody(Builder.requestBodyBuilder()
                         .required(true)
                         .content(contentBuilder()
@@ -113,6 +113,18 @@ public class SubjectEndpoint implements CoreEndpoint {
                             .schema(schemaBuilder().implementation(Subject.class))
                         ))
                     .response(responseBuilder().implementation(Subject.class)))
+
+            .PUT("/subject", this::update,
+                builder -> builder.operationId("UpdateSubject")
+                    .tag(tag)
+                    .description("Update single subject.")
+                    .requestBody(Builder.requestBodyBuilder()
+                        .required(true)
+                        .content(contentBuilder()
+                            .mediaType(MediaType.APPLICATION_JSON_VALUE)
+                            .schema(schemaBuilder().implementation(Subject.class))
+                        )))
+
             .DELETE("/subject/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteSubjectById")
                     .tag(tag)
@@ -196,12 +208,18 @@ public class SubjectEndpoint implements CoreEndpoint {
                 .bodyValue("Not found for id: " + id));
     }
 
-    private Mono<ServerResponse> save(ServerRequest request) {
+    private Mono<ServerResponse> create(ServerRequest request) {
         return request.bodyToMono(Subject.class)
-            .flatMap(subjectService::save)
+            .flatMap(subjectService::create)
             .flatMap(subject -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(subject));
+    }
+
+    private Mono<ServerResponse> update(ServerRequest request) {
+        return request.bodyToMono(Subject.class)
+            .flatMap(subjectService::update)
+            .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {

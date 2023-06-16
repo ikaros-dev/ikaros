@@ -1,15 +1,19 @@
 package run.ikaros.server.core.subject;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
+import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
+import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 
 @SpringBootTest
@@ -19,12 +23,17 @@ class SubjectServiceTest {
     SubjectService subjectService;
 
 
+    @AfterEach
+    void tearDown() {
+        StepVerifier.create(subjectService.deleteAll()).verifyComplete();
+    }
+
     @Test
     void findByIdWhenIdNotGtZero() {
         try {
             subjectService.findById(Long.MIN_VALUE).block();
         } catch (Exception e) {
-            Assertions.assertThat(e).isInstanceOf(IllegalArgumentException.class);
+            assertThat(e).isInstanceOf(IllegalArgumentException.class);
         }
     }
 
@@ -36,34 +45,28 @@ class SubjectServiceTest {
     }
 
     @Test
-    @Disabled
     void findByIdWhenRecordExists() {
         var subject = createSubjectInstance();
-        AtomicLong subjectId = new AtomicLong();
-        try {
-            StepVerifier.create(subjectService.save(subject))
-                .expectNextMatches(subject1 -> {
-                    boolean flag = Objects.nonNull(subject1.getId());
-                    if (flag) {
-                        subjectId.set(subject1.getId());
-                    }
-                    return flag;
-                })
-                .verifyComplete();
+        AtomicReference<Long> subjectId = new AtomicReference<>();
+        StepVerifier.create(subjectService.create(subject))
+            .expectNextMatches(sub -> {
+                subjectId.set(sub.getId());
+                return Objects.nonNull(sub.getId());
+            })
+            .verifyComplete();
 
-            // Verify findById when subject record exists
-            StepVerifier.create(subjectService.findById(subjectId.get()))
-                .expectNextMatches(subject1 -> subject.canEqual(subject1)
-                    && subjectId.get() == subject1.getId()
-                    && subject.getType().equals(subject1.getType())
-                    && Objects.nonNull(subject1.getImage())
-                    && subject.getImage().getCommon()
-                    .equals(subject1.getImage().getCommon()))
-                .verifyComplete();
-        } finally {
-            StepVerifier.create(subjectService.deleteById(subjectId.get()))
-                .verifyComplete();
-        }
+        assertThat(subjectId.get()).isGreaterThan(0);
+
+        // Verify findById when subject record exists
+        StepVerifier.create(subjectService.findById(subjectId.get()))
+            .expectNextMatches(sub -> subject.canEqual(sub)
+                && Objects.equals(subjectId.get(), sub.getId())
+                && Objects.equals(subject.getName(), sub.getName())
+                && subject.getType().equals(sub.getType())
+                && Objects.nonNull(sub.getImage())
+                && subject.getImage().getCommon()
+                .equals(sub.getImage().getCommon()))
+            .verifyComplete();
     }
 
     @Test
@@ -71,12 +74,11 @@ class SubjectServiceTest {
         try {
             subjectService.findByBgmId(Long.MIN_VALUE).block();
         } catch (Exception e) {
-            Assertions.assertThat(e).isInstanceOf(IllegalArgumentException.class);
+            assertThat(e).isInstanceOf(IllegalArgumentException.class);
         }
     }
 
     @Test
-    @Disabled
     void findByBgmIdWhenRecordNotExists() {
         StepVerifier.create(subjectService.findByBgmId(Long.MAX_VALUE))
             .expectErrorMessage("Not found subject by bgmtv_id: " + Long.MAX_VALUE)
@@ -84,56 +86,47 @@ class SubjectServiceTest {
     }
 
     @Test
-    @Disabled
     void findByBgmIdWhenSubjectExists() {
         var subject = createSubjectInstance();
         AtomicLong subjectId = new AtomicLong();
-        try {
-            StepVerifier.create(subjectService.save(subject))
-                .expectNextMatches(subject1 -> {
-                    boolean flag = Objects.nonNull(subject1.getId());
-                    if (flag) {
-                        subjectId.set(subject1.getId());
-                    }
-                    return flag;
-                })
-                .verifyComplete();
+        StepVerifier.create(subjectService.create(subject))
+            .expectNextMatches(subject1 -> {
+                subjectId.set(subject1.getId());
+                return Objects.nonNull(subject1.getId());
+            })
+            .verifyComplete();
 
-            // Verify findById when subject record exists
-            StepVerifier.create(subjectService.findById(subjectId.get()))
-                .expectNextMatches(subject1 -> subject.canEqual(subject1)
-                    && subjectId.get() == subject1.getId()
-                    && subject.getType().equals(subject1.getType())
-                    && Objects.nonNull(subject1.getImage())
-                    && subject.getImage().getCommon()
-                    .equals(subject1.getImage().getCommon()))
-                .verifyComplete();
-        } finally {
-            StepVerifier.create(subjectService.deleteById(subjectId.get()))
-                .verifyComplete();
-        }
+        assertThat(subjectId.get()).isGreaterThan(0);
+
+        // Verify findById when subject record exists
+        StepVerifier.create(subjectService.findById(subjectId.get()))
+            .expectNextMatches(sub -> subject.canEqual(sub)
+                && Objects.equals(subjectId.get(), sub.getId())
+                && Objects.equals(subject.getName(), sub.getName())
+                && subject.getType().equals(sub.getType())
+                && Objects.nonNull(sub.getImage())
+                && subject.getImage().getCommon()
+                .equals(sub.getImage().getCommon()))
+            .verifyComplete();
+
+        // Verify findByBgmId when subject record exists
+        StepVerifier.create(subjectService.findByBgmId(Long.MAX_VALUE))
+            .expectNextMatches(sub -> subject.canEqual(sub)
+                && Objects.equals(subjectId.get(), sub.getId())
+                && Objects.equals(subject.getName(), sub.getName())
+                && subject.getType().equals(sub.getType())
+                && Objects.nonNull(sub.getImage())
+                && subject.getImage().getCommon()
+                .equals(sub.getImage().getCommon()))
+            .verifyComplete();
     }
 
     @Test
-    void saveAndDeleteById() {
+    void create() {
         Subject subject = createSubjectInstance();
-
-        AtomicLong subjectId = new AtomicLong();
-        try {
-            StepVerifier.create(subjectService.save(subject))
-                .expectNextMatches(subject1 -> {
-                    boolean flag = Objects.nonNull(subject1.getId());
-                    if (flag) {
-                        subjectId.set(subject1.getId());
-                    }
-                    return flag;
-                })
-                .verifyComplete();
-        } finally {
-            StepVerifier.create(subjectService.deleteById(subjectId.get()))
-                .verifyComplete();
-        }
-
+        StepVerifier.create(subjectService.create(subject))
+            .expectNextMatches(sub -> Objects.nonNull(sub.getId()))
+            .verifyComplete();
     }
 
     private static Subject createSubjectInstance() {
@@ -150,23 +143,61 @@ class SubjectServiceTest {
 
         var episodes = new ArrayList<Episode>();
         episodes.add(Episode.builder()
-            .subjectId(Long.MAX_VALUE)
             .airTime(LocalDateTime.now())
             .name("ep-01")
             .nameCn("第一集").build());
         subject.setEpisodes(episodes)
             .setTotalEpisodes((long) episodes.size());
+
+        var syncs = new ArrayList<SubjectSync>();
+        syncs.add(SubjectSync.builder()
+                .platform(SubjectSyncPlatform.BGM_TV)
+                .platformId(String.valueOf(Long.MAX_VALUE))
+                .syncTime(LocalDateTime.now())
+            .build());
+        subject.setSyncs(syncs);
         return subject;
     }
 
     @Test
     void deleteByIdWhenIdNotGtZero() {
-        try {
-            subjectService.deleteById(Long.MIN_VALUE).block();
-        } catch (Exception e) {
-            Assertions.assertThat(e).isInstanceOf(IllegalArgumentException.class);
-            Assertions.assertThat(e.getMessage()).isEqualTo("'id' must gt 0.");
-        }
+        StepVerifier.create(subjectService.deleteById(Long.MIN_VALUE))
+            .expectErrorMatches(throwable -> (throwable instanceof IllegalArgumentException)
+                && "'id' must gt 0.".equals(throwable.getMessage())).verify();
+    }
+
+    @Test
+    void update() {
+        Subject subject = createSubjectInstance();
+
+        StepVerifier.create(subjectService.create(subject))
+            .expectNext(subject)
+            .verifyComplete();
+
+        assertThat(subject.getId()).isNotNull();
+
+        // update
+        final String newName = "subject-name-unit-test";
+        subject.setName(newName);
+        Episode addEpisode = Episode.builder()
+            .airTime(LocalDateTime.now())
+            .name("ep-02")
+            .nameCn("第二集").build();
+        List<Episode> episodes = subject.getEpisodes();
+        int oldSize = episodes.size();
+        episodes.add(addEpisode);
+        assertThat(subject.getEpisodes().size()).isEqualTo(oldSize + 1);
+        StepVerifier.create(subjectService.update(subject))
+            .verifyComplete();
+
+        StepVerifier.create(subjectService.findById(subject.getId()))
+            .expectNextMatches(newSubject -> newName.equals(newSubject.getName())
+            // && (oldSize + 1) == newSubject.getEpisodes().size()
+            )
+            .verifyComplete();
+
+
+
 
     }
 }
