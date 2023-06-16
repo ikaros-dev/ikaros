@@ -61,7 +61,6 @@ public class FileEndpoint implements CoreEndpoint {
 
     private final ExtensionComponentsFinder extensionComponentsFinder;
     private final ReactiveCustomClient reactiveCustomClient;
-    private final FileRepository fileRepository;
     private final FileService fileService;
 
     /**
@@ -69,15 +68,13 @@ public class FileEndpoint implements CoreEndpoint {
      *
      * @param extensionComponentsFinder extension finder
      * @param reactiveCustomClient      custom client
-     * @param fileRepository            file repository
      * @param fileService               file service
      */
     public FileEndpoint(ExtensionComponentsFinder extensionComponentsFinder,
-                        ReactiveCustomClient reactiveCustomClient, FileRepository fileRepository,
+                        ReactiveCustomClient reactiveCustomClient,
                         FileService fileService) {
         this.extensionComponentsFinder = extensionComponentsFinder;
         this.reactiveCustomClient = reactiveCustomClient;
-        this.fileRepository = fileRepository;
         this.fileService = fileService;
     }
 
@@ -297,7 +294,7 @@ public class FileEndpoint implements CoreEndpoint {
     }
 
     Mono<ServerResponse> list(ServerRequest request) {
-        return fileRepository.findAll()
+        return fileService.findAll()
             .collectList()
             .flatMap(files -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -308,7 +305,7 @@ public class FileEndpoint implements CoreEndpoint {
         String id = request.pathVariable("id");
         return Mono.just(id)
             .flatMap(fileId -> Mono.just(Long.valueOf(fileId)))
-            .flatMap(fileRepository::findById)
+            .flatMap(fileService::findById)
             .map(File::new)
             .flatMap(file -> Flux.fromStream(
                     extensionComponentsFinder.getExtensions(FileHandler.class).stream())

@@ -40,6 +40,13 @@ dependencies {
     api "org.springframework.integration:spring-integration-core"
     api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
 
+    // Apache Lucene
+    api "org.apache.lucene:lucene-core"
+    api "org.apache.lucene:lucene-queryparser"
+    api "org.apache.lucene:lucene-highlighter"
+    api "org.apache.lucene:lucene-backward-codecs"
+    api 'cn.shenyanchao.ik-analyzer:ik-analyzer'
+
     runtimeOnly 'io.r2dbc:r2dbc-h2'
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.postgresql:r2dbc-postgresql'

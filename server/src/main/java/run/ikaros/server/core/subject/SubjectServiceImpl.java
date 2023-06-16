@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Query;
@@ -26,6 +29,8 @@ import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.subject.event.SubjectAddEvent;
+import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.store.entity.CollectionEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
@@ -42,7 +47,7 @@ import run.ikaros.server.store.repository.SubjectSyncRepository;
 
 @Slf4j
 @Service
-public class SubjectServiceImpl implements SubjectService {
+public class SubjectServiceImpl implements SubjectService, ApplicationContextAware {
     private final SubjectRepository subjectRepository;
     private final CollectionRepository collectionRepository;
     private final SubjectImageRepository subjectImageRepository;
@@ -51,6 +56,7 @@ public class SubjectServiceImpl implements SubjectService {
     private final SubjectSyncRepository subjectSyncRepository;
     private final FileRepository fileRepository;
     private final R2dbcEntityTemplate template;
+    private ApplicationContext applicationContext;
 
     /**
      * Construct a {@link SubjectService} instance.
@@ -165,6 +171,7 @@ public class SubjectServiceImpl implements SubjectService {
 
             .flatMap(sub -> copyProperties(sub, new SubjectEntity()))
             .flatMap(subjectRepository::save)
+            .doOnNext(entity -> applicationContext.publishEvent(new SubjectAddEvent(this, entity)))
             .map(subjectEntity -> {
                 subjectId.set(subjectEntity.getId());
                 return subjectEntity;
@@ -295,12 +302,16 @@ public class SubjectServiceImpl implements SubjectService {
         Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.existsById(id)
             .filter(flag -> flag)
+            .flatMap(flag -> subjectRepository.findById(id))
+            .doOnNext(entity -> applicationContext.publishEvent(
+                new SubjectRemoveEvent(this, entity)))
             // Delete subject entity
-            .flatMap(subject -> subjectRepository.deleteById(id))
+            .flatMap(entity -> subjectRepository.deleteById(id))
             // Delete subject image entity
             .then(subjectImageRepository.deleteBySubjectId(id))
             // Delete episode entities
-            .then(episodeRepository.deleteAllBySubjectId(id));
+            .then(episodeRepository.deleteAllBySubjectId(id))
+            ;
     }
 
     @Override
@@ -469,5 +480,10 @@ public class SubjectServiceImpl implements SubjectService {
             .flatMap(this::deleteById)
             .checkpoint("DeleteAllSubject")
             .then();
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

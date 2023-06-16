@@ -16,6 +16,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,8 @@ import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.file.event.FileAddEvent;
+import run.ikaros.server.core.file.event.FileRemoveEvent;
 import run.ikaros.server.infra.properties.IkarosProperties;
 import run.ikaros.server.infra.utils.FileUtils;
 import run.ikaros.server.infra.utils.SystemVarUtils;
@@ -34,10 +39,11 @@ import run.ikaros.server.store.repository.FileRepository;
 
 @Slf4j
 @Service
-public class FileServiceImpl implements FileService {
+public class FileServiceImpl implements FileService, ApplicationContextAware {
     private final FileRepository fileRepository;
     private final IkarosProperties ikarosProperties;
     private final R2dbcEntityTemplate template;
+    private ApplicationContext applicationContext;
 
     /**
      * Construct.
@@ -108,7 +114,7 @@ public class FileServiceImpl implements FileService {
                 .build();
             fileEntity.setUpdateTime(LocalDateTime.now());
             fileEntity.setCreateTime(LocalDateTime.now());
-            return fileRepository.save(fileEntity).then();
+            return save(fileEntity).then();
         }
         return Mono.empty();
     }
@@ -136,7 +142,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public Mono<FileEntity> updateEntity(FileEntity fileEntity) {
         Assert.notNull(fileEntity, "'fileEntity' must not null.");
-        return fileRepository.save(fileEntity);
+        return save(fileEntity);
     }
 
     @Override
@@ -191,6 +197,35 @@ public class FileServiceImpl implements FileService {
             .flatMap(fileEntities -> finalCountMono
                 .map(count -> new PagingWrap<>(page,
                     size, count, fileEntities)));
+    }
+
+    @Override
+    public Flux<FileEntity> findAll() {
+        return fileRepository.findAll();
+    }
+
+    @Override
+    public Mono<FileEntity> findById(Long id) {
+        Assert.isTrue(id > 0, "'id' must gt 0.");
+        return fileRepository.findById(id);
+    }
+
+    @Override
+    public Mono<Void> deleteById(Long id) {
+        Assert.isTrue(id > 0, "'id' must gt 0.");
+        return findById(id)
+            .flatMap(fileEntity -> fileRepository.deleteById(id)
+                .doOnSuccess(unused ->
+                    applicationContext.publishEvent(new FileRemoveEvent(this, fileEntity))))
+            .then();
+    }
+
+    @Override
+    public Mono<FileEntity> save(FileEntity entity) {
+        Assert.notNull(entity, "'entity' must not null.");
+        return fileRepository.save(entity)
+            .doOnSuccess(fileEntity ->
+                applicationContext.publishEvent(new FileAddEvent(this, fileEntity)));
     }
 
     private String path2url(@NotBlank String path, @Nullable String workDir) {
@@ -255,5 +290,10 @@ public class FileServiceImpl implements FileService {
 
         log.debug("Merging all chunk files success, absolute path: {}", absolutePath);
         return absolutePath;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }
