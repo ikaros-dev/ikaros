@@ -5,6 +5,7 @@ api/file-ikaros-run-v1alpha1-file-policy-api.ts
 api/file-ikaros-run-v1alpha1-file-setting-api.ts
 api/plugin-ikaros-run-v1alpha1-plugin-api.ts
 api/setting-ikaros-run-v1alpha1-config-map-api.ts
+api/v1alpha1-episode-file-api.ts
 api/v1alpha1-file-api.ts
 api/v1alpha1-plugin-api.ts
 api/v1alpha1-subject-api.ts

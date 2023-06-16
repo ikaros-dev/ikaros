@@ -48,10 +48,10 @@ export interface Episode {
 	sequence?: number;
 	/**
 	 *
-	 * @type {Set<EpisodeResource>}
+	 * @type {Array<EpisodeResource>}
 	 * @memberof Episode
 	 */
-	resources?: Set<EpisodeResource>;
+	resources?: Array<EpisodeResource>;
 	/**
 	 *
 	 * @type {number}
