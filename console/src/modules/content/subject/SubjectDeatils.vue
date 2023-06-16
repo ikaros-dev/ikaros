@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
-import { Episode, Subject, SubjectTypeEnum } from '@runikaros/api-client';
+import {
+	Episode,
+	Subject,
+	SubjectTypeEnum,
+	FileEntity,
+} from '@runikaros/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
+import FileSelectDialog from '../file/FileSelectDialog.vue';
 import router from '@/router';
+import { Check, Close } from '@element-plus/icons-vue';
 
 const route = useRoute();
 
@@ -106,6 +113,37 @@ const toSubjectPut = () => {
 	}
 };
 
+const fileSelectDialogVisible = ref(false);
+const onFileSelectDialogClose = () => {
+	fileSelectDialogVisible.value = false;
+};
+// eslint-disable-next-line no-unused-vars
+const onFileSelectDialogCloseWithFile = (file: FileEntity) => {
+	// console.log('receive file entity: ', file);
+	bindEpisodeAndFile(
+		currentOperateEpisode.value?.id as number,
+		file.id as number
+	);
+	fileSelectDialogVisible.value = false;
+};
+const currentOperateEpisode = ref<Episode>();
+// eslint-disable-next-line no-unused-vars
+const bingResources = (episode: Episode) => {
+	currentOperateEpisode.value = episode;
+	fileSelectDialogVisible.value = true;
+};
+
+const bindEpisodeAndFile = async (episodeId: number, fileId: number) => {
+	await apiClient.episodefile
+		.createEpisodeFile({
+			episodeId: episodeId,
+			fileId: fileId,
+		})
+		.then(() => {
+			fetchSubjectById();
+		});
+};
+
 onMounted(() => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
@@ -175,11 +213,22 @@ onMounted(() => {
 							prop="air_time"
 							:formatter="airTimeDateFormatter"
 						/>
-						<el-table-column label="操作" width="100px">
+						<el-table-column label="操作" width="175px">
 							<template #default="scoped">
-								<el-button plain @click="showEpisodeDetails(scoped.row)"
-									>详情</el-button
+								<el-button plain @click="showEpisodeDetails(scoped.row)">
+									详情
+								</el-button>
+								<el-button
+									plain
+									:icon="
+										scoped.row.resources && scoped.row.resources.length > 0
+											? Check
+											: Close
+									"
+									@click="bingResources(scoped.row)"
 								>
+									绑定
+								</el-button>
 							</template>
 						</el-table-column>
 					</el-table>
@@ -198,6 +247,12 @@ onMounted(() => {
 	<EpisodeDetailsDialog
 		v-model:visible="episodeDetailsDialogVisible"
 		v-model:episode="currentEpisode"
+		@removeEpisodeFileBind="fetchSubjectById"
+	/>
+	<FileSelectDialog
+		v-model:visible="fileSelectDialogVisible"
+		@close="onFileSelectDialogClose"
+		@closeWithFileEntity="onFileSelectDialogCloseWithFile"
 	/>
 </template>
 

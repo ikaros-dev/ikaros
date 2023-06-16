@@ -53,7 +53,7 @@ const onFileSelectDialogClose = () => {
 	fileSelectDialogVisible.value = false;
 };
 const onFileSelectDialogCloseWithUrl = (file: FileEntity) => {
-	console.log('receive file entity: ', file);
+	// console.log('receive file entity: ', file);
 	switch (currentSelectFileField.value) {
 		case 'common':
 			image.value.common = file.url;
@@ -95,7 +95,7 @@ const onConfirm = () => {
 		<FileSelectDialog
 			v-model:visible="fileSelectDialogVisible"
 			@close="onFileSelectDialogClose"
-			@closeWithUrl="onFileSelectDialogCloseWithUrl"
+			@closeWithFileEntity="onFileSelectDialogCloseWithUrl"
 		/>
 
 		<el-row>

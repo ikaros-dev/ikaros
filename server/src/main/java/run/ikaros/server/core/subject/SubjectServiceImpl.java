@@ -22,6 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.store.entity.BaseEntity;
+import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -34,6 +35,7 @@ import run.ikaros.server.store.entity.SubjectSyncEntity;
 import run.ikaros.server.store.repository.CollectionRepository;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
+import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.SubjectImageRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
@@ -47,6 +49,7 @@ public class SubjectServiceImpl implements SubjectService {
     private final EpisodeRepository episodeRepository;
     private final EpisodeFileRepository episodeFileRepository;
     private final SubjectSyncRepository subjectSyncRepository;
+    private final FileRepository fileRepository;
     private final R2dbcEntityTemplate template;
 
     /**
@@ -58,6 +61,7 @@ public class SubjectServiceImpl implements SubjectService {
      * @param episodeRepository      {@link EpisodeEntity} repository
      * @param episodeFileRepository  {@link EpisodeFileEntity} repository
      * @param subjectSyncRepository  {@link SubjectSyncEntity} repository
+     * @param fileRepository         {@link FileEntity} repository
      * @param template               {@link R2dbcEntityTemplate}
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
@@ -66,13 +70,14 @@ public class SubjectServiceImpl implements SubjectService {
                               EpisodeRepository episodeRepository,
                               EpisodeFileRepository episodeFileRepository,
                               SubjectSyncRepository subjectSyncRepository,
-                              R2dbcEntityTemplate template) {
+                              FileRepository fileRepository, R2dbcEntityTemplate template) {
         this.subjectRepository = subjectRepository;
         this.collectionRepository = collectionRepository;
         this.subjectImageRepository = subjectImageRepository;
         this.episodeRepository = episodeRepository;
         this.episodeFileRepository = episodeFileRepository;
         this.subjectSyncRepository = subjectSyncRepository;
+        this.fileRepository = fileRepository;
         this.template = template;
     }
 
@@ -93,6 +98,17 @@ public class SubjectServiceImpl implements SubjectService {
 
             .flatMap(subject -> episodeRepository.findBySubjectId(subject.getId())
                 .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
+                .flatMap(episode -> episodeFileRepository.findAllByEpisodeId(episode.getId())
+                    .flatMap(episodeFileEntity ->
+                        fileRepository.findById(episodeFileEntity.getFileId())
+                            .map(fileEntity -> EpisodeResource.builder()
+                                .episodeId(episode.getId())
+                                .fileId(episodeFileEntity.getFileId())
+                                .name(fileEntity.getName())
+                                .url(fileEntity.getUrl())
+                                .build())
+                    ).collectList()
+                    .map(episode::setResources))
                 .collectList()
                 .map(episodes -> subject
                     .setTotalEpisodes((long) episodes.size())

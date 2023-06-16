@@ -111,7 +111,7 @@ const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 	// eslint-disable-next-line no-unused-vars
-	(event: 'closeWithUrl', file: FileEntity): void;
+	(event: 'closeWithFileEntity', file: FileEntity): void;
 }>();
 
 const dialogVisible = computed({
@@ -137,7 +137,7 @@ const onCurrentSelectChange = (currentRow) => {
 
 const onConfirm = () => {
 	// console.log('currentSelectFile', currentSelectFile.value);
-	emit('closeWithUrl', currentSelectFile.value as FileEntity);
+	emit('closeWithFileEntity', currentSelectFile.value as FileEntity);
 	dialogVisible.value = false;
 };
 

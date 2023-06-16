@@ -4,6 +4,7 @@ import type { AxiosError, AxiosInstance } from 'axios';
 import {
 	PluginIkarosRunV1alpha1PluginApi,
 	SettingIkarosRunV1alpha1ConfigMapApi,
+	V1alpha1EpisodeFileApi,
 	V1alpha1FileApi,
 	V1alpha1PluginApi,
 	V1alpha1SubjectApi,
@@ -153,6 +154,7 @@ function setupApiClient(axios: AxiosInstance) {
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),
 		file: new V1alpha1FileApi(undefined, baseURL, axios),
 		subject: new V1alpha1SubjectApi(undefined, baseURL, axios),
+		episodefile: new V1alpha1EpisodeFileApi(undefined, baseURL, axios),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
 		configmap: new SettingIkarosRunV1alpha1ConfigMapApi(

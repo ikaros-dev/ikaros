@@ -2,13 +2,18 @@ package run.ikaros.server.core.subject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
 public class EpisodeResource {
-    private Long id;
     @JsonProperty("file_id")
     private Long fileId;
     @JsonProperty("episode_id")
