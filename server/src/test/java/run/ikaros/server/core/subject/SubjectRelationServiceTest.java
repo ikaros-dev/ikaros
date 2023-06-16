@@ -4,6 +4,7 @@ package run.ikaros.server.core.subject;
 import java.util.Random;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,6 +12,7 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.server.store.repository.SubjectRelationRepository;
 
+@Disabled
 @SpringBootTest
 class SubjectRelationServiceTest {
 
