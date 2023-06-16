@@ -42,6 +42,12 @@ export interface Episode {
 	description?: string;
 	/**
 	 *
+	 * @type {number}
+	 * @memberof Episode
+	 */
+	sequence?: number;
+	/**
+	 *
 	 * @type {Set<EpisodeResource>}
 	 * @memberof Episode
 	 */

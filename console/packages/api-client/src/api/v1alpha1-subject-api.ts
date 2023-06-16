@@ -50,6 +50,63 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 ) {
 	return {
 		/**
+		 * Create single subject.
+		 * @param {Subject} subject
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		createSubject: async (
+			subject: Subject,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'subject' is not null or undefined
+			assertParamExists('createSubject', 'subject', subject);
+			const localVarPath = `/api/v1alpha1/subject`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				subject,
+				localVarRequestOptions,
+				configuration
+			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
 		 * Delete subject by id.
 		 * @param {number} id Subject id
 		 * @param {*} [options] Override http request option.
@@ -109,7 +166,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 		 * @param {string} [name] 经过Basic64编码的名称，名称字段模糊查询。
 		 * @param {string} [nameCn] 经过Basic64编码的中文名称，中文名称字段模糊查询。
 		 * @param {boolean} [nsfw] Not Safe/Suitable For Work.
-		 * @param {'OTHER' | 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL'} [type]
+		 * @param {'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER'} [type]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -119,7 +176,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 			name?: string,
 			nameCn?: string,
 			nsfw?: boolean,
-			type?: 'OTHER' | 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL',
+			type?: 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER',
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			const localVarPath = `/api/v1alpha1/subjects/condition`;
@@ -178,63 +235,6 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 				...headersFromBaseOptions,
 				...options.headers,
 			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Create or update single subject.
-		 * @param {Subject} subject
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		saveSubject: async (
-			subject: Subject,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'subject' is not null or undefined
-			assertParamExists('saveSubject', 'subject', subject);
-			const localVarPath = `/api/v1alpha1/subject`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			localVarHeaderParameter['Content-Type'] = 'application/json';
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				subject,
-				localVarRequestOptions,
-				configuration
-			);
 
 			return {
 				url: toPathString(localVarUrlObj),
@@ -350,6 +350,63 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 				options: localVarRequestOptions,
 			};
 		},
+		/**
+		 * Update single subject.
+		 * @param {Subject} subject
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		updateSubject: async (
+			subject: Subject,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'subject' is not null or undefined
+			assertParamExists('updateSubject', 'subject', subject);
+			const localVarPath = `/api/v1alpha1/subject`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'PUT',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				subject,
+				localVarRequestOptions,
+				configuration
+			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
 	};
 };
 
@@ -361,6 +418,29 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 	const localVarAxiosParamCreator =
 		V1alpha1SubjectApiAxiosParamCreator(configuration);
 	return {
+		/**
+		 * Create single subject.
+		 * @param {Subject} subject
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async createSubject(
+			subject: Subject,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Subject>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.createSubject(
+				subject,
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
 		/**
 		 * Delete subject by id.
 		 * @param {number} id Subject id
@@ -389,7 +469,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 		 * @param {string} [name] 经过Basic64编码的名称，名称字段模糊查询。
 		 * @param {string} [nameCn] 经过Basic64编码的中文名称，中文名称字段模糊查询。
 		 * @param {boolean} [nsfw] Not Safe/Suitable For Work.
-		 * @param {'OTHER' | 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL'} [type]
+		 * @param {'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER'} [type]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -399,7 +479,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 			name?: string,
 			nameCn?: string,
 			nsfw?: boolean,
-			type?: 'OTHER' | 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL',
+			type?: 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER',
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
@@ -414,29 +494,6 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 					type,
 					options
 				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Create or update single subject.
-		 * @param {Subject} subject
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async saveSubject(
-			subject: Subject,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Subject>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.saveSubject(
-				subject,
-				options
-			);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -492,6 +549,29 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 				configuration
 			);
 		},
+		/**
+		 * Update single subject.
+		 * @param {Subject} subject
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async updateSubject(
+			subject: Subject,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.updateSubject(
+				subject,
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
 	};
 };
 
@@ -506,6 +586,20 @@ export const V1alpha1SubjectApiFactory = function (
 ) {
 	const localVarFp = V1alpha1SubjectApiFp(configuration);
 	return {
+		/**
+		 * Create single subject.
+		 * @param {V1alpha1SubjectApiCreateSubjectRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		createSubject(
+			requestParameters: V1alpha1SubjectApiCreateSubjectRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<Subject> {
+			return localVarFp
+				.createSubject(requestParameters.subject, options)
+				.then((request) => request(axios, basePath));
+		},
 		/**
 		 * Delete subject by id.
 		 * @param {V1alpha1SubjectApiDeleteSubjectByIdRequest} requestParameters Request parameters.
@@ -543,20 +637,6 @@ export const V1alpha1SubjectApiFactory = function (
 				.then((request) => request(axios, basePath));
 		},
 		/**
-		 * Create or update single subject.
-		 * @param {V1alpha1SubjectApiSaveSubjectRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		saveSubject(
-			requestParameters: V1alpha1SubjectApiSaveSubjectRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<Subject> {
-			return localVarFp
-				.saveSubject(requestParameters.subject, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
 		 *
 		 * @param {V1alpha1SubjectApiSearchAllSubjectByPagingRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
@@ -588,8 +668,36 @@ export const V1alpha1SubjectApiFactory = function (
 				.searchSubjectById(requestParameters.id, options)
 				.then((request) => request(axios, basePath));
 		},
+		/**
+		 * Update single subject.
+		 * @param {V1alpha1SubjectApiUpdateSubjectRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		updateSubject(
+			requestParameters: V1alpha1SubjectApiUpdateSubjectRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.updateSubject(requestParameters.subject, options)
+				.then((request) => request(axios, basePath));
+		},
 	};
 };
+
+/**
+ * Request parameters for createSubject operation in V1alpha1SubjectApi.
+ * @export
+ * @interface V1alpha1SubjectApiCreateSubjectRequest
+ */
+export interface V1alpha1SubjectApiCreateSubjectRequest {
+	/**
+	 *
+	 * @type {Subject}
+	 * @memberof V1alpha1SubjectApiCreateSubject
+	 */
+	readonly subject: Subject;
+}
 
 /**
  * Request parameters for deleteSubjectById operation in V1alpha1SubjectApi.
@@ -648,31 +756,17 @@ export interface V1alpha1SubjectApiListSubjectsByConditionRequest {
 
 	/**
 	 *
-	 * @type {'OTHER' | 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL'}
+	 * @type {'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER'}
 	 * @memberof V1alpha1SubjectApiListSubjectsByCondition
 	 */
 	readonly type?:
-		| 'OTHER'
 		| 'ANIME'
 		| 'COMIC'
 		| 'GAME'
 		| 'MUSIC'
 		| 'NOVEL'
-		| 'REAL';
-}
-
-/**
- * Request parameters for saveSubject operation in V1alpha1SubjectApi.
- * @export
- * @interface V1alpha1SubjectApiSaveSubjectRequest
- */
-export interface V1alpha1SubjectApiSaveSubjectRequest {
-	/**
-	 *
-	 * @type {Subject}
-	 * @memberof V1alpha1SubjectApiSaveSubject
-	 */
-	readonly subject: Subject;
+		| 'REAL'
+		| 'OTHER';
 }
 
 /**
@@ -711,12 +805,42 @@ export interface V1alpha1SubjectApiSearchSubjectByIdRequest {
 }
 
 /**
+ * Request parameters for updateSubject operation in V1alpha1SubjectApi.
+ * @export
+ * @interface V1alpha1SubjectApiUpdateSubjectRequest
+ */
+export interface V1alpha1SubjectApiUpdateSubjectRequest {
+	/**
+	 *
+	 * @type {Subject}
+	 * @memberof V1alpha1SubjectApiUpdateSubject
+	 */
+	readonly subject: Subject;
+}
+
+/**
  * V1alpha1SubjectApi - object-oriented interface
  * @export
  * @class V1alpha1SubjectApi
  * @extends {BaseAPI}
  */
 export class V1alpha1SubjectApi extends BaseAPI {
+	/**
+	 * Create single subject.
+	 * @param {V1alpha1SubjectApiCreateSubjectRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1SubjectApi
+	 */
+	public createSubject(
+		requestParameters: V1alpha1SubjectApiCreateSubjectRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1SubjectApiFp(this.configuration)
+			.createSubject(requestParameters.subject, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
 	/**
 	 * Delete subject by id.
 	 * @param {V1alpha1SubjectApiDeleteSubjectByIdRequest} requestParameters Request parameters.
@@ -758,22 +882,6 @@ export class V1alpha1SubjectApi extends BaseAPI {
 	}
 
 	/**
-	 * Create or update single subject.
-	 * @param {V1alpha1SubjectApiSaveSubjectRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1SubjectApi
-	 */
-	public saveSubject(
-		requestParameters: V1alpha1SubjectApiSaveSubjectRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1SubjectApiFp(this.configuration)
-			.saveSubject(requestParameters.subject, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
-
-	/**
 	 *
 	 * @param {V1alpha1SubjectApiSearchAllSubjectByPagingRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
@@ -806,6 +914,22 @@ export class V1alpha1SubjectApi extends BaseAPI {
 	) {
 		return V1alpha1SubjectApiFp(this.configuration)
 			.searchSubjectById(requestParameters.id, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Update single subject.
+	 * @param {V1alpha1SubjectApiUpdateSubjectRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1SubjectApi
+	 */
+	public updateSubject(
+		requestParameters: V1alpha1SubjectApiUpdateSubjectRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1SubjectApiFp(this.configuration)
+			.updateSubject(requestParameters.subject, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }

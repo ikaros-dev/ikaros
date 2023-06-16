@@ -57,12 +57,6 @@ export interface Subject {
 	 * @type {string}
 	 * @memberof Subject
 	 */
-	platform?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Subject
-	 */
 	summary?: string;
 	/**
 	 *
@@ -115,13 +109,13 @@ export interface Subject {
 }
 
 export const SubjectTypeEnum = {
-	Other: 'OTHER',
 	Anime: 'ANIME',
 	Comic: 'COMIC',
 	Game: 'GAME',
 	Music: 'MUSIC',
 	Novel: 'NOVEL',
 	Real: 'REAL',
+	Other: 'OTHER',
 } as const;
 
 export type SubjectTypeEnum =
