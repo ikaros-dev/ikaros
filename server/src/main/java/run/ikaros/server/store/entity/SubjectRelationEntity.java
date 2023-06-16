@@ -21,14 +21,8 @@ import run.ikaros.api.store.enums.SubjectRelationType;
 public class SubjectRelationEntity extends BaseEntity {
     @Column("subject_id")
     private Long subjectId;
-
-    /**
-     * Subject relation type.
-     *
-     * @see SubjectRelationType#getCode()
-     */
     @Column("relation_type")
-    private Integer relationType;
+    private SubjectRelationType relationType;
     @Column("relation_subject_id")
     private Long relationSubjectId;
 }
