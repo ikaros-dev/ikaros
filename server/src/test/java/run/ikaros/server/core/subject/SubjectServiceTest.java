@@ -72,7 +72,7 @@ class SubjectServiceTest {
     @Test
     void findByBgmIdWhenIdNotGtZero() {
         try {
-            subjectService.findByBgmId(Long.MIN_VALUE).block();
+            subjectService.findByBgmId(Long.MIN_VALUE, Long.MIN_VALUE).block();
         } catch (Exception e) {
             assertThat(e).isInstanceOf(IllegalArgumentException.class);
         }
@@ -80,7 +80,7 @@ class SubjectServiceTest {
 
     @Test
     void findByBgmIdWhenRecordNotExists() {
-        StepVerifier.create(subjectService.findByBgmId(Long.MAX_VALUE))
+        StepVerifier.create(subjectService.findByBgmId(Long.MAX_VALUE, Long.MAX_VALUE))
             .expectErrorMessage("Not found subject by bgmtv_id: " + Long.MAX_VALUE)
             .verify();
     }
@@ -110,7 +110,7 @@ class SubjectServiceTest {
             .verifyComplete();
 
         // Verify findByBgmId when subject record exists
-        StepVerifier.create(subjectService.findByBgmId(Long.MAX_VALUE))
+        StepVerifier.create(subjectService.findByBgmId(subjectId.get(), Long.MAX_VALUE))
             .expectNextMatches(sub -> subject.canEqual(sub)
                 && Objects.equals(subjectId.get(), sub.getId())
                 && Objects.equals(subject.getName(), sub.getName())
@@ -151,9 +151,9 @@ class SubjectServiceTest {
 
         var syncs = new ArrayList<SubjectSync>();
         syncs.add(SubjectSync.builder()
-                .platform(SubjectSyncPlatform.BGM_TV)
-                .platformId(String.valueOf(Long.MAX_VALUE))
-                .syncTime(LocalDateTime.now())
+            .platform(SubjectSyncPlatform.BGM_TV)
+            .platformId(String.valueOf(Long.MAX_VALUE))
+            .syncTime(LocalDateTime.now())
             .build());
         subject.setSyncs(syncs);
         return subject;
@@ -184,19 +184,28 @@ class SubjectServiceTest {
             .name("ep-02")
             .nameCn("第二集").build();
         List<Episode> episodes = subject.getEpisodes();
-        int oldSize = episodes.size();
         episodes.add(addEpisode);
-        assertThat(subject.getEpisodes().size()).isEqualTo(oldSize + 1);
+
+
         StepVerifier.create(subjectService.update(subject))
             .verifyComplete();
 
         StepVerifier.create(subjectService.findById(subject.getId()))
-            .expectNextMatches(newSubject -> newName.equals(newSubject.getName())
-            // && (oldSize + 1) == newSubject.getEpisodes().size()
+            .expectNextMatches(newSubject -> {
+                    boolean result = true;
+                    result = newName.equals(newSubject.getName());
+                    result = newSubject.getTotalEpisodes() == 2;
+                    if (!result) {
+                        return false;
+                    }
+
+                    List<Episode> newEps = newSubject.getEpisodes();
+                    Episode ep2 = newEps.get(1);
+                    result = addEpisode.getName().equals(ep2.getName());
+                    return result;
+                }
             )
             .verifyComplete();
-
-
 
 
     }

@@ -10,9 +10,10 @@ import run.ikaros.api.wrap.PagingWrap;
 public interface SubjectService {
     Mono<Subject> findById(Long id);
 
-    Mono<Subject> findByBgmId(Long bgmtvId);
+    Mono<Subject> findByBgmId(@Nonnull Long subjectId, Long bgmtvId);
 
-    Mono<Subject> findBySyncPlatform(@Nonnull SubjectSyncPlatform subjectSyncPlatform,
+    Mono<Subject> findBySyncPlatform(@Nonnull Long subjectId,
+                                     @Nonnull SubjectSyncPlatform subjectSyncPlatform,
                                      @NotBlank String platformId);
 
     @Transactional

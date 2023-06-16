@@ -93,7 +93,8 @@ class SubjectRepositoryTest {
 
         // String finalNewName2 = newName;
         // StepVerifier.create(subjectRepository.updateAllById(subjectEntity))
-        //     .expectNextMatches(newSubjectEntity -> finalNewName2.equals(newSubjectEntity.getName())
+        //     .expectNextMatches(newSubjectEntity
+        //     -> finalNewName2.equals(newSubjectEntity.getName())
         //         && nameCn.equals(newSubjectEntity.getNameCn()))
         //     .verifyComplete();
     }

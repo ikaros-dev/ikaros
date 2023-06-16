@@ -35,8 +35,35 @@ const fetchSubjectById = async () => {
 const infoMap = ref<Map<string, string>>();
 
 watch(subject, () => {
+	// console.log('subject.value.infobox', subject.value.infobox);
 	const infobox: string = subject.value.infobox as string;
+	// console.log("infobox.indexOf('\n') < 0", infobox.indexOf('\n') < 0);
+	// console.log("infobox.indexOf(':') >= 0", infobox.indexOf(':') >= 0);
 	let map = new Map<string, string>();
+	if (infobox.indexOf('\n') < 0) {
+		if (infobox.indexOf(':') >= 0) {
+			const strArr = infobox.split(':');
+			if (strArr.length == 2) {
+				map.set(strArr[0], strArr[1]);
+			}
+			if (strArr.length > 2) {
+				const firstStr = strArr[0];
+				let index = infobox.indexOf(firstStr);
+				const value = infobox.substring(
+					index + firstStr.length + 1,
+					infobox.length
+				);
+				// console.log('str', str);
+				// console.log('firstStr', firstStr);
+				// console.log('index + firstStr.length + 1', index + firstStr.length + 1);
+				// console.log('value', value);
+				map.set(firstStr, value);
+			}
+		} else {
+			return;
+		}
+	}
+
 	for (const str of infobox.split('\n')) {
 		const strArr = str.split(':');
 		if (strArr.length == 2) {
@@ -135,7 +162,12 @@ onMounted(() => {
 			<el-row>
 				<el-col :span="24">
 					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
-						<el-table-column label="第几集" prop="sequence" width="80px" />
+						<el-table-column
+							label="序号"
+							sortable
+							prop="sequence"
+							width="80px"
+						/>
 						<el-table-column label="原始名称" prop="name" />
 						<el-table-column label="中文名称" prop="name_cn" />
 						<el-table-column

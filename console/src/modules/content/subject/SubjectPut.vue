@@ -93,7 +93,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 
 const episodePostDialogVisible = ref(false);
 const onEpisodePostDialogCloseWithEpsiode = (ep: Episode) => {
-	console.log('receive episode: ', ep);
+	// console.log('receive episode: ', ep);
 	subject.value.episodes?.push(ep);
 };
 
@@ -114,6 +114,8 @@ const showEpisodeDetails = (ep: Episode) => {
 };
 
 const episodeDetailsDialogVisible = ref(false);
+
+const subjectFormItemMaxWidth = '800px';
 
 onMounted(() => {
 	//@ts-ignore
@@ -138,7 +140,7 @@ onMounted(() => {
 	</el-row>
 	<br />
 	<el-row>
-		<el-col :span="24">
+		<el-col :xs="24" :sm="24" :md="24" :lg="16" :xl="16">
 			<el-form
 				ref="subjectElFormRef"
 				:rules="subjectRuleFormRules"
@@ -165,14 +167,24 @@ onMounted(() => {
 				</el-form-item>
 
 				<el-form-item label="条目名称" prop="name">
-					<el-input v-model="subject.name" style="max-width: 700px" />
+					<el-input
+						v-model="subject.name"
+						:style="'max-width:' + subjectFormItemMaxWidth"
+					/>
 				</el-form-item>
 
 				<el-form-item label="条目中文名">
-					<el-input v-model="subject.name_cn" style="max-width: 700px" />
+					<el-input
+						v-model="subject.name_cn"
+						:style="'max-width:' + subjectFormItemMaxWidth"
+					/>
 				</el-form-item>
 
-				<el-form-item label="条目类型" prop="type">
+				<el-form-item
+					label="条目类型"
+					prop="type"
+					:style="'max-width:' + subjectFormItemMaxWidth"
+				>
 					<el-radio-group v-model="subject.type">
 						<el-radio label="ANIME" border>动漫</el-radio>
 						<el-radio label="COMIC" border>漫画</el-radio>
@@ -190,7 +202,7 @@ onMounted(() => {
 						rows="5"
 						show-word-limit
 						type="textarea"
-						style="max-width: 700px"
+						:style="'max-width:' + subjectFormItemMaxWidth"
 					/>
 				</el-form-item>
 
@@ -201,7 +213,7 @@ onMounted(() => {
 						rows="15"
 						show-word-limit
 						type="textarea"
-						style="max-width: 700px"
+						:style="'max-width:' + subjectFormItemMaxWidth"
 					/>
 				</el-form-item>
 
@@ -213,9 +225,15 @@ onMounted(() => {
 				<el-form-item label="剧集">
 					<el-table
 						:data="subject.episodes"
-						style="max-width: 700px"
+						:style="'max-width:' + subjectFormItemMaxWidth"
 						@row-dblclick="showEpisodeDetails"
 					>
+						<el-table-column
+							label="序列号"
+							sortable
+							prop="sequence"
+							width="80px"
+						/>
 						<el-table-column label="原始名称" prop="name" />
 						<el-table-column label="中文名称" prop="name_cn" />
 						<el-table-column
@@ -252,6 +270,16 @@ onMounted(() => {
 					</el-button>
 				</el-form-item>
 			</el-form>
+		</el-col>
+		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
+			<el-image
+				style="width: 100%"
+				:src="subject.image?.common"
+				:zoom-rate="1.2"
+				:preview-src-list="new Array(subject.image?.common)"
+				:initial-index="4"
+				fit="cover"
+			/>
 		</el-col>
 	</el-row>
 	<EpisodeDetailsDialog

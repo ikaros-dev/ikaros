@@ -61,7 +61,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 	await formEl.validate(async (valid, fields) => {
 		if (valid) {
 			await apiClient.subject
-				.saveSubject({
+				.createSubject({
 					subject: subject.value,
 				})
 				.then(() => {
