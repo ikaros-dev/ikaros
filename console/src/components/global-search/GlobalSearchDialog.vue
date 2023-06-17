@@ -3,7 +3,7 @@ import { ref, nextTick, computed } from 'vue';
 // eslint-disable-next-line no-unused-vars
 import { Search } from '@element-plus/icons-vue';
 import { apiClient } from '@/utils/api-client';
-import { SubjectHint } from 'packages/api-client/dist.ts';
+import { FileHint, SubjectHint } from 'packages/api-client/dist.ts';
 import { ElMessage } from 'element-plus';
 
 const props = withDefaults(
@@ -39,6 +39,7 @@ const search = ref({
 });
 
 const subjectHits = ref<SubjectHint[]>();
+const fileHits = ref<FileHint[]>();
 
 const searchByKeyword = async () => {
 	if (!search.value.keyword) {
@@ -46,19 +47,26 @@ const searchByKeyword = async () => {
 		return;
 	}
 	const type = search.value.type;
-	// eslint-disable-next-line no-empty
 	if ('SUBJECT' === type) {
 		const { data } = await apiClient.indices.searchSubject({
 			keyword: search.value.keyword,
 			limit: 10,
 		});
 		if (!data.hits || data.hits.length === 0) {
-			ElMessage.warning('未查询到数据');
+			ElMessage.warning('未查询到条目数据');
 		}
 		subjectHits.value = data.hits;
 	}
-	// eslint-disable-next-line no-empty
+
 	if ('FILE' === type) {
+		const { data } = await apiClient.indices.searchFile({
+			keyword: search.value.keyword,
+			limit: 10,
+		});
+		if (!data.hits || data.hits.length === 0) {
+			ElMessage.warning('未查询到文件数据');
+		}
+		fileHits.value = data.hits;
 	}
 };
 
@@ -73,9 +81,14 @@ const searchInputRef = ref();
 
 const onOpened = () => {
 	nextTick(() => {
-		console.log('进入');
 		searchInputRef.value.focus();
 	});
+};
+
+const activeTab = ref('SUBJECT');
+
+const onselectionchange = (val: string) => {
+	activeTab.value = val;
 };
 
 onMounted(() => {});
@@ -101,7 +114,12 @@ onMounted(() => {});
 				@keydown.enter="searchByKeyword"
 			>
 				<template #prepend>
-					<el-select v-model="search.type" style="width: 80px" size="large">
+					<el-select
+						v-model="search.type"
+						style="width: 80px"
+						size="large"
+						@change="onselectionchange"
+					>
 						<el-option label="条目" value="SUBJECT" />
 						<el-option label="文件" value="FILE" />
 					</el-select>
@@ -111,25 +129,51 @@ onMounted(() => {});
 				</template> -->
 			</el-input>
 		</template>
-		<ul v-if="subjectHits && subjectHits.length > 0" class="ik-content-ul">
-			<li
-				v-for="subjectHit in subjectHits"
-				:key="subjectHit.id"
-				class="ik-content-ul-li"
-				tabindex="0"
-				@keydown.enter="
-					toDetailPage('/subjects/subject/details/' + subjectHit.id)
-				"
-				@click="toDetailPage('/subjects/subject/details/' + subjectHit.id)"
-			>
-				<span class="ik-subject-name">
-					<span>{{ subjectHit.name }} </span>
-					<span class="grey">{{ subjectHit.nameCn }}</span>
-				</span>
-			</li>
-		</ul>
 
-		<span v-else> 暂无数据 </span>
+		<el-tabs v-model="activeTab">
+			<el-tab-pane label="条目" name="SUBJECT">
+				<ul v-if="subjectHits && subjectHits.length > 0" class="ik-content-ul">
+					<li
+						v-for="subjectHit in subjectHits"
+						:key="subjectHit.id"
+						class="ik-content-ul-li"
+						tabindex="0"
+						@keydown.enter="
+							toDetailPage('/subjects/subject/details/' + subjectHit.id)
+						"
+						@click="toDetailPage('/subjects/subject/details/' + subjectHit.id)"
+					>
+						<span class="ik-subject-name">
+							<span>{{ subjectHit.name }} </span>
+							<span class="grey">{{ subjectHit.nameCn }}</span>
+						</span>
+					</li>
+				</ul>
+
+				<span v-else> 暂无数据 </span>
+			</el-tab-pane>
+			<el-tab-pane label="文件" name="FILE">
+				<ul v-if="fileHits && fileHits.length > 0" class="ik-content-ul">
+					<li
+						v-for="fileHit in fileHits"
+						:key="fileHit.id"
+						class="ik-content-ul-li"
+						tabindex="0"
+						@keydown.enter="
+							toDetailPage('/files?searchFileName=' + fileHit.name)
+						"
+						@click="toDetailPage('/files?searchFileName=' + fileHit.name)"
+					>
+						<span class="ik-subject-name">
+							<span>{{ fileHit.name }} </span>
+							<span class="grey">{{ fileHit.originalName }}</span>
+						</span>
+					</li>
+				</ul>
+
+				<span v-else> 暂无数据 </span>
+			</el-tab-pane>
+		</el-tabs>
 
 		<template #footer>
 			<span> [Tab]-下一个 &nbsp; [Shift+Tab]-上一个 &nbsp; [Enter]-确认</span>

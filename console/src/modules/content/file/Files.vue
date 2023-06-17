@@ -21,7 +21,7 @@ const findFilesCondition = ref({
 	page: 1,
 	size: 10,
 	total: 10,
-	fileName: undefined,
+	fileName: '',
 	place: undefined,
 	type: undefined,
 });
@@ -106,6 +106,18 @@ const updateFile = async (file: FileEntity) => {
 			fetchFiles();
 		});
 };
+
+const route = useRoute();
+watch(
+	() => route.query,
+	(newValue) => {
+		// console.log(newValue);
+		if (newValue) {
+			findFilesCondition.value.fileName = newValue.searchFileName as string;
+		}
+	},
+	{ immediate: true }
+);
 
 onMounted(fetchFiles);
 </script>
