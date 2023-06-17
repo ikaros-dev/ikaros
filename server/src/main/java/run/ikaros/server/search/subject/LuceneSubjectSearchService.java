@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 import static org.apache.lucene.document.Field.Store.NO;
 import static org.apache.lucene.document.Field.Store.YES;
 import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE_OR_APPEND;
+import static run.ikaros.api.constant.StringConst.SPACE;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -158,8 +159,8 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                     }
                 })
                 .toArray(Query[]::new);
-
             long seqNum = writer.deleteDocuments(queries);
+            writer.commit();
             log.debug("Deleted documents size [{}] with sequence number {}",
                 queries.length, seqNum);
         }
@@ -182,15 +183,15 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
         doc.add(new StringField("type", String.valueOf(subjectDoc.getType()), YES));
         doc.add(new StringField("airTime", String.valueOf(subjectDoc.getAirTime()), YES));
         var content = Jsoup.clean(
-            stripToEmpty(String.valueOf(subjectDoc.getId()))
-                + stripToEmpty(subjectDoc.getName())
-                + stripToEmpty(subjectDoc.getNameCn())
-                + stripToEmpty(subjectDoc.getInfobox())
-                + stripToEmpty(subjectDoc.getSummary())
-                + subjectDoc.getNsfw()
-                + subjectDoc.getNsfw()
-                + subjectDoc.getType()
-                + subjectDoc.getAirTime(),
+            stripToEmpty(String.valueOf(subjectDoc.getId())) + SPACE
+                + stripToEmpty(subjectDoc.getName())  + SPACE
+                + stripToEmpty(subjectDoc.getNameCn())  + SPACE
+                + stripToEmpty(subjectDoc.getInfobox())  + SPACE
+                + stripToEmpty(subjectDoc.getSummary())  + SPACE
+                + subjectDoc.getNsfw()  + SPACE
+                + subjectDoc.getNsfw()  + SPACE
+                + subjectDoc.getType()  + SPACE
+                + subjectDoc.getAirTime()  + SPACE,
             Safelist.none());
         doc.add(new StoredField("content", content));
         doc.add(new TextField("searchable", subjectDoc.getName() + content, NO));

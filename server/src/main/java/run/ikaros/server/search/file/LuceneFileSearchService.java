@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 import static org.apache.lucene.document.Field.Store.NO;
 import static org.apache.lucene.document.Field.Store.YES;
 import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE_OR_APPEND;
+import static run.ikaros.api.constant.StringConst.SPACE;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,8 +87,8 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
                     }
                 })
                 .toArray(Query[]::new);
-
             long seqNum = writer.deleteDocuments(queries);
+            writer.commit();
             log.debug("Deleted documents size [{}] with sequence number {}",
                 queries.length, seqNum);
         }
@@ -180,13 +181,13 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
                 String.valueOf(fileDoc.getOriginalName()), YES));
         }
         var content = Jsoup.clean(
-            stripToEmpty(String.valueOf(fileDoc.getId()))
-                + stripToEmpty(fileDoc.getName())
-                + stripToEmpty(fileDoc.getOriginalPath())
-                + stripToEmpty(fileDoc.getUrl())
-                + stripToEmpty(String.valueOf(fileDoc.getType()))
-                + stripToEmpty(String.valueOf(fileDoc.getPlace()))
-                + stripToEmpty(fileDoc.getOriginalName()),
+            stripToEmpty(String.valueOf(fileDoc.getId())) + SPACE
+                + stripToEmpty(fileDoc.getName()) + SPACE
+                + stripToEmpty(fileDoc.getOriginalPath()) + SPACE
+                + stripToEmpty(fileDoc.getUrl()) + SPACE
+                + stripToEmpty(String.valueOf(fileDoc.getType())) + SPACE
+                + stripToEmpty(String.valueOf(fileDoc.getPlace())) + SPACE
+                + stripToEmpty(fileDoc.getOriginalName()) + SPACE,
             Safelist.none());
         doc.add(new StoredField("content", content));
         doc.add(new TextField("searchable", content, NO));
@@ -208,12 +209,16 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
     }
 
     private Query buildQuery(String keyword) throws ParseException {
+        // if (keyword.indexOf(":") > 0) {
+        //     String[] split = keyword.split(":");
+        //     return buildQuery(split[0], split[1]);
+        // }
         return buildQuery("searchable", keyword);
     }
 
     private Query buildQuery(String field, String keyword) throws ParseException {
         if (log.isDebugEnabled()) {
-            log.debug("Trying to search for field:keyword: [{}:{}]", field, keyword);
+            log.debug("Trying to search for field:keyword=[{}:{}]", field, keyword);
         }
         return new QueryParser(field, analyzer).parse(keyword);
     }
