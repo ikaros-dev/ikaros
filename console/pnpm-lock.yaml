@@ -8,10 +8,10 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0(vue@3.2.47)
       '@runikaros/api-client':
-        specifier: workspace:*
+        specifier: 0.0.22
         version: link:packages/api-client
       '@runikaros/shared':
-        specifier: workspace:*
+        specifier: 0.0.2
         version: link:packages/shared
       '@uppy/core':
         specifier: ^3.2.0

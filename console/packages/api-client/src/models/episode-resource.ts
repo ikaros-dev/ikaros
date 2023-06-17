@@ -20,12 +20,6 @@
 export interface EpisodeResource {
 	/**
 	 *
-	 * @type {number}
-	 * @memberof EpisodeResource
-	 */
-	id?: number;
-	/**
-	 *
 	 * @type {string}
 	 * @memberof EpisodeResource
 	 */

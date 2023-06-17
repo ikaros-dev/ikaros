@@ -11,4 +11,7 @@ public interface EpisodeFileRepository extends R2dbcRepository<EpisodeFileEntity
     Mono<Boolean> deleteByEpisodeIdAndFileId(Long episodeId, Long fileId);
 
     Flux<EpisodeFileEntity> findAllByEpisodeId(Long episodeId);
+
+    Mono<Long> deleteAllByFileId(Long fileId);
+
 }

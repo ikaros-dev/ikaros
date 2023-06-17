@@ -21,7 +21,7 @@ const findFilesCondition = ref({
 	page: 1,
 	size: 10,
 	total: 10,
-	fileName: undefined,
+	fileName: '',
 	place: undefined,
 	type: undefined,
 });
@@ -95,6 +95,29 @@ const onFileTypeSelectChange = (val) => {
 	findFilesCondition.value.type = val;
 	fetchFiles();
 };
+
+const updateFile = async (file: FileEntity) => {
+	await apiClient.file
+		.updateFile({
+			fileEntity: file,
+		})
+		.then(() => {
+			ElMessage.success('更新文件成功，文件名称：' + file.name);
+			fetchFiles();
+		});
+};
+
+const route = useRoute();
+watch(
+	() => route.query,
+	(newValue) => {
+		// console.log(newValue);
+		if (newValue) {
+			findFilesCondition.value.fileName = newValue.searchFileName as string;
+		}
+	},
+	{ immediate: true }
+);
 
 onMounted(fetchFiles);
 </script>
@@ -182,8 +205,17 @@ onMounted(fetchFiles);
 		style="width: 100%"
 		@row-dblclick="showFileDeatil"
 	>
-		<el-table-column prop="id" label="文件ID" width="80" />
-		<el-table-column prop="name" label="文件名称" />
+		<el-table-column prop="id" label="文件ID" width="80" sortable />
+		<el-table-column prop="name" label="文件名称">
+			<template #default="scope">
+				<el-input
+					v-model="scope.row.name"
+					@keydown.enter="updateFile(scope.row)"
+				>
+				</el-input>
+			</template>
+		</el-table-column>
+		<el-table-column prop="originalName" label="原始名称"> </el-table-column>
 		<el-table-column prop="url" label="文件URL" />
 		<el-table-column label="操作" width="200">
 			<template #default="scoped">

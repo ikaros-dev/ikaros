@@ -6,6 +6,7 @@ import {
 	SettingIkarosRunV1alpha1ConfigMapApi,
 	V1alpha1EpisodeFileApi,
 	V1alpha1FileApi,
+	V1alpha1IndicesApi,
 	V1alpha1PluginApi,
 	V1alpha1SubjectApi,
 	V1alpha1UserApi,
@@ -155,6 +156,7 @@ function setupApiClient(axios: AxiosInstance) {
 		file: new V1alpha1FileApi(undefined, baseURL, axios),
 		subject: new V1alpha1SubjectApi(undefined, baseURL, axios),
 		episodefile: new V1alpha1EpisodeFileApi(undefined, baseURL, axios),
+		indices: new V1alpha1IndicesApi(undefined, baseURL, axios),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
 		configmap: new SettingIkarosRunV1alpha1ConfigMapApi(

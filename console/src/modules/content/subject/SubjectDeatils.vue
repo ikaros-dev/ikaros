@@ -166,7 +166,7 @@ onMounted(() => {
 						style="width: 100%"
 						:src="subject.image?.common"
 						:zoom-rate="1.2"
-						:preview-src-list="new Array(subject.image?.common)"
+						:preview-src-list="new Array(subject.image?.common)  as string[]"
 						:initial-index="4"
 						fit="cover"
 					/>
@@ -175,10 +175,13 @@ onMounted(() => {
 					<el-descriptions
 						style="margin: 0 5px"
 						direction="vertical"
-						:column="4"
+						:column="5"
 						size="large"
 						border
 					>
+						<el-descriptions-item label="ID">
+							{{ subject.id }}
+						</el-descriptions-item>
 						<el-descriptions-item label="名称">
 							{{ subject.name }}
 						</el-descriptions-item>
@@ -191,7 +194,7 @@ onMounted(() => {
 						<el-descriptions-item label="NSFW">
 							{{ subject.nsfw }}
 						</el-descriptions-item>
-						<el-descriptions-item label="介绍" :span="4">
+						<el-descriptions-item label="介绍" :span="5">
 							{{ subject.summary }}
 						</el-descriptions-item>
 					</el-descriptions>

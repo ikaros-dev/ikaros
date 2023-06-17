@@ -14,6 +14,7 @@ ext {
     pf4j = '3.8.0'
     jsoup = '1.15.3'
     springDocOpenAPI = "2.0.0"
+    lucene = "9.5.0"
 }
 
 javaPlatform {
@@ -32,6 +33,13 @@ dependencies {
         api "org.jsoup:jsoup:$jsoup"
         api "org.springframework.integration:spring-integration-core"
         api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
+
+        // Apache Lucene
+        api "org.apache.lucene:lucene-core:$lucene"
+        api "org.apache.lucene:lucene-queryparser:$lucene"
+        api "org.apache.lucene:lucene-highlighter:$lucene"
+        api "org.apache.lucene:lucene-backward-codecs:$lucene"
+        api 'cn.shenyanchao.ik-analyzer:ik-analyzer:9.0.0'
 
         runtime 'io.r2dbc:r2dbc-h2'
         runtime 'org.postgresql:postgresql'

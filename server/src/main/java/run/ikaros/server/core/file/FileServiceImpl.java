@@ -16,6 +16,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
@@ -23,30 +26,43 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.file.FileHandler;
 import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.file.event.FileAddEvent;
+import run.ikaros.server.core.file.event.FileRemoveEvent;
 import run.ikaros.server.infra.properties.IkarosProperties;
 import run.ikaros.server.infra.utils.FileUtils;
 import run.ikaros.server.infra.utils.SystemVarUtils;
+import run.ikaros.server.plugin.ExtensionComponentsFinder;
+import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.FileRepository;
 
 @Slf4j
 @Service
-public class FileServiceImpl implements FileService {
+public class FileServiceImpl implements FileService, ApplicationContextAware {
     private final FileRepository fileRepository;
+    private final EpisodeFileRepository episodeFileRepository;
     private final IkarosProperties ikarosProperties;
     private final R2dbcEntityTemplate template;
+    private ApplicationContext applicationContext;
+    private final ExtensionComponentsFinder extensionComponentsFinder;
 
     /**
      * Construct.
      */
-    public FileServiceImpl(FileRepository fileRepository, IkarosProperties ikarosProperties,
-                           R2dbcEntityTemplate template) {
+    public FileServiceImpl(FileRepository fileRepository,
+                           EpisodeFileRepository episodeFileRepository,
+                           IkarosProperties ikarosProperties,
+                           R2dbcEntityTemplate template,
+                           ExtensionComponentsFinder extensionComponentsFinder) {
         this.fileRepository = fileRepository;
+        this.episodeFileRepository = episodeFileRepository;
         this.ikarosProperties = ikarosProperties;
         this.template = template;
+        this.extensionComponentsFinder = extensionComponentsFinder;
     }
 
     @Override
@@ -101,14 +117,15 @@ public class FileServiceImpl implements FileService {
                 .md5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5))
                 .place(FilePlace.LOCAL)
                 .url(reactiveUrl)
-                .name(uploadName + "." + postfix)
+                .name(uploadName)
+                .originalName(uploadName + "." + postfix)
                 .size(uploadLength)
                 .type(FileUtils.parseTypeByPostfix(postfix))
                 .originalPath(filePath)
                 .build();
             fileEntity.setUpdateTime(LocalDateTime.now());
             fileEntity.setCreateTime(LocalDateTime.now());
-            return fileRepository.save(fileEntity).then();
+            return save(fileEntity).then();
         }
         return Mono.empty();
     }
@@ -136,7 +153,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public Mono<FileEntity> updateEntity(FileEntity fileEntity) {
         Assert.notNull(fileEntity, "'fileEntity' must not null.");
-        return fileRepository.save(fileEntity);
+        return save(fileEntity);
     }
 
     @Override
@@ -191,6 +208,52 @@ public class FileServiceImpl implements FileService {
             .flatMap(fileEntities -> finalCountMono
                 .map(count -> new PagingWrap<>(page,
                     size, count, fileEntities)));
+    }
+
+    @Override
+    public Flux<FileEntity> findAll() {
+        return fileRepository.findAll();
+    }
+
+    @Override
+    public Mono<FileEntity> findById(Long id) {
+        Assert.isTrue(id > 0, "'id' must gt 0.");
+        return fileRepository.findById(id);
+    }
+
+    @Override
+    public Mono<Void> deleteById(Long id) {
+        Assert.isTrue(id > 0, "'id' must gt 0.");
+        return Mono.just(id)
+            .flatMap(this::findById)
+            .map(run.ikaros.api.core.file.File::new)
+            .flatMap(file -> Flux.fromStream(
+                    extensionComponentsFinder.getExtensions(FileHandler.class).stream())
+                .filter(fileHandler -> fileHandler.policy()
+                    .equalsIgnoreCase(file.entity().getPlace().toString()))
+                .collectList().flatMap(fileHandlers -> Mono.just(fileHandlers.get(0)))
+                .flatMap(fileHandler -> fileHandler.delete(file)))
+            .flatMap(file -> fileRepository.deleteById(id)
+                .doOnSuccess(unused -> applicationContext.publishEvent(
+                    new FileRemoveEvent(this, file.entity()))))
+            .checkpoint("DeleteFileEntityByFileId")
+            .then(episodeFileRepository.deleteAllByFileId(id))
+            .doOnNext(lines -> {
+                if (lines > 0) {
+                    log.debug("Delete all episode file records, counts: [{}], "
+                        + "when delete file entity for id [{}].", lines, id);
+                }
+            })
+            .checkpoint("DeleteAllEpisodeFileByFileIdAfterDeleteFileEntity")
+            .then();
+    }
+
+    @Override
+    public Mono<FileEntity> save(FileEntity entity) {
+        Assert.notNull(entity, "'entity' must not null.");
+        return fileRepository.save(entity)
+            .doOnSuccess(fileEntity ->
+                applicationContext.publishEvent(new FileAddEvent(this, fileEntity)));
     }
 
     private String path2url(@NotBlank String path, @Nullable String workDir) {
@@ -255,5 +318,10 @@ public class FileServiceImpl implements FileService {
 
         log.debug("Merging all chunk files success, absolute path: {}", absolutePath);
         return absolutePath;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

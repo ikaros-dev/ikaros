@@ -44,11 +44,11 @@ jobs:
           # Artifact name
           name: checkBuild
           # A file, directory or wildcard pattern that describes what to upload
-          path: /home/runner/work/ikaros/ikaros/server/build/reports
+          path: /home/runner/work/ikaros/ikaros/server/build
           # The desired behavior if no files are found using the provided path.
           if-no-files-found: warn
           # Duration after which artifact will expire in days. 0 means using default retention.Minimum 1 day. Maximum 90 days unless changed from the repository settings page.
-          retention-days: 3
+          retention-days: 7
   test:
     runs-on: ubuntu-latest
     steps:
@@ -79,9 +79,9 @@ jobs:
           # Artifact name
           name: testBuild
           # A file, directory or wildcard pattern that describes what to upload
-          path: /home/runner/work/ikaros/ikaros/server/build/reports
+          path: /home/runner/work/ikaros/ikaros/server/build
           # The desired behavior if no files are found using the provided path.
           if-no-files-found: warn
           # Duration after which artifact will expire in days. 0 means using default retention.Minimum 1 day. Maximum 90 days unless changed from the repository settings page.
-          retention-days: 3
+          retention-days: 7
 

@@ -29,9 +29,7 @@ body:
       options:
         - "服务端 (server)"
         - "控制台 (console)"
-        - "客户端 (app)"
         - "插件 (plugin)"
-        - "RFC (rfcs)"
     validations:
       required: true
 

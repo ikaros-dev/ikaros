@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus';
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		episode: Episode;
+		episode: Episode | undefined;
 	}>(),
 	{
 		visible: false,
@@ -54,24 +54,24 @@ const remvoeEpisodeFileBind = async () => {
 	<el-dialog v-model="dialogVisible" title="剧集详情" width="70%">
 		<el-descriptions border :column="1">
 			<el-descriptions-item label="原始名称">
-				{{ episode.name }}
+				{{ episode?.name }}
 			</el-descriptions-item>
 			<el-descriptions-item label="中文名称">
-				{{ episode.name_cn }}
+				{{ episode?.name_cn }}
 			</el-descriptions-item>
 			<el-descriptions-item label="放送时间">
-				{{ episode.air_time }}
+				{{ episode?.air_time }}
 			</el-descriptions-item>
 			<el-descriptions-item label="序列号">
-				{{ episode.sequence }}
+				{{ episode?.sequence }}
 			</el-descriptions-item>
 			<el-descriptions-item label="描述">
-				{{ episode.description }}
+				{{ episode?.description }}
 			</el-descriptions-item>
 			<el-descriptions-item label="资源">
 				<!-- {{ episode.resources }} -->
 				<video
-					v-if="episode.resources && episode.resources.length > 0"
+					v-if="episode?.resources && episode?.resources.length > 0"
 					style="width: 100%"
 					:src="episode.resources[0].url"
 					controls

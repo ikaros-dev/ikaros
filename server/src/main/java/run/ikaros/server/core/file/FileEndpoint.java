@@ -53,7 +53,6 @@ import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
-import run.ikaros.server.store.repository.FileRepository;
 
 @Slf4j
 @Component
@@ -61,7 +60,6 @@ public class FileEndpoint implements CoreEndpoint {
 
     private final ExtensionComponentsFinder extensionComponentsFinder;
     private final ReactiveCustomClient reactiveCustomClient;
-    private final FileRepository fileRepository;
     private final FileService fileService;
 
     /**
@@ -69,15 +67,13 @@ public class FileEndpoint implements CoreEndpoint {
      *
      * @param extensionComponentsFinder extension finder
      * @param reactiveCustomClient      custom client
-     * @param fileRepository            file repository
      * @param fileService               file service
      */
     public FileEndpoint(ExtensionComponentsFinder extensionComponentsFinder,
-                        ReactiveCustomClient reactiveCustomClient, FileRepository fileRepository,
+                        ReactiveCustomClient reactiveCustomClient,
                         FileService fileService) {
         this.extensionComponentsFinder = extensionComponentsFinder;
         this.reactiveCustomClient = reactiveCustomClient;
-        this.fileRepository = fileRepository;
         this.fileService = fileService;
     }
 
@@ -297,7 +293,7 @@ public class FileEndpoint implements CoreEndpoint {
     }
 
     Mono<ServerResponse> list(ServerRequest request) {
-        return fileRepository.findAll()
+        return fileService.findAll()
             .collectList()
             .flatMap(files -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -306,17 +302,8 @@ public class FileEndpoint implements CoreEndpoint {
 
     Mono<ServerResponse> deleteById(ServerRequest request) {
         String id = request.pathVariable("id");
-        return Mono.just(id)
-            .flatMap(fileId -> Mono.just(Long.valueOf(fileId)))
-            .flatMap(fileRepository::findById)
-            .map(File::new)
-            .flatMap(file -> Flux.fromStream(
-                    extensionComponentsFinder.getExtensions(FileHandler.class).stream())
-                .filter(fileHandler -> fileHandler.policy()
-                    .equalsIgnoreCase(file.entity().getPlace().toString()))
-                .collectList().flatMap(fileHandlers -> Mono.just(fileHandlers.get(0)))
-                .flatMap(fileHandler -> fileHandler.delete(file)))
-            .flatMap(file -> ServerResponse.ok()
+        return fileService.deleteById(Long.parseLong(id))
+            .then(ServerResponse.ok()
                 .bodyValue("Delete success"))
             .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
                 .bodyValue("Not found for id: " + id));
