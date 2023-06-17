@@ -209,10 +209,6 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
     }
 
     private Query buildQuery(String keyword) throws ParseException {
-        // if (keyword.indexOf(":") > 0) {
-        //     String[] split = keyword.split(":");
-        //     return buildQuery(split[0], split[1]);
-        // }
         return buildQuery("searchable", keyword);
     }
 

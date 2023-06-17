@@ -3,12 +3,33 @@ import Aside from './Aside.vue';
 import Header from './Header.vue';
 import variables from '@/styles/variables.module.scss';
 import { useLayoutStore } from '@/stores/layout';
+import GlobalSearchDialog from '@/components/global-search/GlobalSearchDialog.vue';
 const layoutStore = useLayoutStore();
 
 const asideWidth = computed(() => {
 	return layoutStore.asideIsExtend
 		? variables.sideBarWidth
 		: variables.hideSideBarWidth;
+});
+
+const globalSearchDialogVisible = ref(false);
+
+const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
+
+const handleGlobalSearchKeybinding = (e: KeyboardEvent) => {
+	const { key, ctrlKey, metaKey } = e;
+	if (key === 'k' && ((ctrlKey && !isMac) || metaKey)) {
+		globalSearchDialogVisible.value = true;
+		e.preventDefault();
+	}
+};
+
+onMounted(() => {
+	document.addEventListener('keydown', handleGlobalSearchKeybinding);
+});
+
+onUnmounted(() => {
+	document.removeEventListener('keydown', handleGlobalSearchKeybinding);
 });
 </script>
 
@@ -29,6 +50,7 @@ const asideWidth = computed(() => {
 			</el-main>
 		</el-container>
 	</el-container>
+	<GlobalSearchDialog v-model:visible="globalSearchDialogVisible" />
 </template>
 
 <style lang="scss" scoped>

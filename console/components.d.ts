@@ -48,6 +48,7 @@ declare module '@vue/runtime-core' {
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
     FilePondUpload: typeof import('./src/components/upload/FilePondUpload.vue')['default']
+    GlobalSearchDialog: typeof import('./src/components/global-search/GlobalSearchDialog.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

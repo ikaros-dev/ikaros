@@ -33,7 +33,7 @@ public class FileSearchEndpoint implements CoreEndpoint {
         return SpringdocRouteBuilder.route()
             .GET("indices/file", this::search,
                 builder -> {
-                    builder.operationId("SearchPost")
+                    builder.operationId("SearchFile")
                         .tag(tag)
                         .description("Search files with fuzzy query")
                         .response(Builder.responseBuilder().implementation(
