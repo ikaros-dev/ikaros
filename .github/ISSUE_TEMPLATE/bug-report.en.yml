@@ -30,9 +30,7 @@ body:
       options:
         - "server"
         - "console"
-        - "app"
         - "plugin"
-        - "rfc"
     validations:
       required: true
 
