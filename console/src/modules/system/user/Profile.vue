@@ -95,16 +95,16 @@ onMounted(initProfileAndUsername);
 					<el-input
 						v-model="passwordReq.oldPassword"
 						style="max-width: 600px"
-						clearable
 						type="password"
+						show-password
 					/>
 				</el-form-item>
 				<el-form-item label="新密码">
 					<el-input
 						v-model="passwordReq.newPassword"
 						style="max-width: 600px"
-						clearable
 						type="password"
+						show-password
 					/>
 				</el-form-item>
 				<el-form-item>
