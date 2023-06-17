@@ -272,14 +272,16 @@ onMounted(() => {
 			</el-form>
 		</el-col>
 		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
-			<el-image
-				style="width: 100%"
-				:src="subject.image?.common"
-				:zoom-rate="1.2"
-				:preview-src-list="new Array(subject.image?.common)"
-				:initial-index="4"
-				fit="cover"
-			/>
+			<span v-if="subject.image?.common">
+				<el-image
+					style="width: 100%"
+					:src="subject.image?.common"
+					:zoom-rate="1.2"
+					:preview-src-list="new Array(subject.image?.common)"
+					:initial-index="4"
+					fit="cover"
+				/>
+			</span>
 		</el-col>
 	</el-row>
 	<EpisodeDetailsDialog

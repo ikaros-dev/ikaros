@@ -88,8 +88,11 @@ const handleLogin = async () => {
 	}
 };
 
+const usernameRef = ref();
+
 onMounted(() => {
 	handleGenerateToken();
+	usernameRef.value.focus();
 });
 </script>
 
@@ -101,6 +104,7 @@ onMounted(() => {
 			</div>
 			<el-form-item prop="username">
 				<el-input
+					ref="usernameRef"
 					v-model="form.username"
 					:placeholder="i18n.global.t('core.login.fields.username.placeholder')"
 				>

@@ -26,7 +26,7 @@ public class SubjectEventListener {
         return ReactiveSubjectDocConverter.fromEntity(event.getEntity())
             .doOnNext(subjectDoc -> {
                 try {
-                    subjectSearchService.addDocuments(List.of(subjectDoc));
+                    subjectSearchService.updateDocument(List.of(subjectDoc));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -42,7 +42,8 @@ public class SubjectEventListener {
         return ReactiveSubjectDocConverter.fromEntity(event.getEntity())
             .doOnNext(subjectDoc -> {
                 try {
-                    subjectSearchService.removeDocuments(Set.of(subjectDoc.getName()));
+                    subjectSearchService.removeDocuments(
+                        Set.of(String.valueOf(subjectDoc.getId())));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

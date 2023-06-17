@@ -3,7 +3,6 @@ package run.ikaros.server.search.file;
 import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 import static org.apache.lucene.document.Field.Store.NO;
 import static org.apache.lucene.document.Field.Store.YES;
-import static org.apache.lucene.index.IndexWriterConfig.OpenMode.APPEND;
 import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE_OR_APPEND;
 
 import java.io.IOException;
@@ -26,7 +25,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleFragmenter;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
@@ -37,6 +35,7 @@ import org.jsoup.safety.Safelist;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
+import org.springframework.util.StringUtils;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 import reactor.core.Exceptions;
 import run.ikaros.api.search.SearchParam;
@@ -44,6 +43,8 @@ import run.ikaros.api.search.SearchResult;
 import run.ikaros.api.search.file.FileDoc;
 import run.ikaros.api.search.file.FileHint;
 import run.ikaros.api.search.file.FileSearchService;
+import run.ikaros.api.store.enums.FilePlace;
+import run.ikaros.api.store.enums.FileType;
 import run.ikaros.server.infra.properties.IkarosProperties;
 
 @Slf4j
@@ -72,15 +73,23 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
     }
 
     @Override
-    public void removeDocuments(Set<String> names) throws Exception {
+    public void removeDocuments(Set<String> termTexts) throws Exception {
         var writeConfig = new IndexWriterConfig(analyzer);
-        writeConfig.setOpenMode(APPEND);
+        writeConfig.setOpenMode(CREATE_OR_APPEND);
         try (var writer = new IndexWriter(fileIndexDir, writeConfig)) {
-            var terms = names.stream()
-                .map(name -> new Term(FileHint.ID_FIELD, name))
-                .toArray(Term[]::new);
-            long seqNum = writer.deleteDocuments(terms);
-            log.debug("Deleted documents({}) with sequence number {}", terms.length, seqNum);
+            var queries = termTexts.stream()
+                .map(text -> {
+                    try {
+                        return buildQuery(text);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toArray(Query[]::new);
+
+            long seqNum = writer.deleteDocuments(queries);
+            log.debug("Deleted documents size [{}] with sequence number {}",
+                queries.length, seqNum);
         }
     }
 
@@ -114,7 +123,7 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
     }
 
     @Override
-    public void addDocuments(List<FileDoc> fileDocs) throws Exception {
+    public void updateDocument(List<FileDoc> fileDocs) throws Exception {
         var writeConfig = new IndexWriterConfig(analyzer);
         writeConfig.setOpenMode(CREATE_OR_APPEND);
         try (var writer = new IndexWriter(fileIndexDir, writeConfig)) {
@@ -122,10 +131,34 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
                 var doc = this.convert(fileDoc);
                 try {
                     var seqNum =
-                        writer.updateDocument(new Term(FileHint.ID_FIELD, fileDoc.getName()), doc);
+                        writer.updateDocument(new Term(FileHint.ID_FIELD,
+                            String.valueOf(fileDoc.getId())), doc);
                     if (log.isDebugEnabled()) {
-                        log.debug("Updated document({}) with sequence number {} returned",
-                            fileDoc.getName(), seqNum);
+                        log.debug("Updated document({}-{}) with sequence number {} returned",
+                            fileDoc.getId(), fileDoc.getName(), seqNum);
+                    }
+                } catch (IOException e) {
+                    throw Exceptions.propagate(e);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void rebuild(List<FileDoc> fileDocs) throws IOException {
+        var writeConfig = new IndexWriterConfig(analyzer);
+        writeConfig.setOpenMode(CREATE_OR_APPEND);
+        try (var writer = new IndexWriter(fileIndexDir, writeConfig)) {
+            writer.deleteAll();
+            fileDocs.forEach(fileDoc -> {
+                var doc = this.convert(fileDoc);
+                try {
+                    var seqNum =
+                        writer.updateDocument(new Term(FileHint.ID_FIELD,
+                            String.valueOf(fileDoc.getId())), doc);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Updated document({}-{}) with sequence number {} returned",
+                            fileDoc.getId(), fileDoc.getName(), seqNum);
                     }
                 } catch (IOException e) {
                     throw Exceptions.propagate(e);
@@ -136,38 +169,53 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
 
     private Document convert(FileDoc fileDoc) {
         var doc = new Document();
+        doc.add(new StringField("id", String.valueOf(fileDoc.getId()), YES));
         doc.add(new StringField("name", fileDoc.getName(), YES));
+        doc.add(new StringField("originalPath", fileDoc.getOriginalPath(), YES));
         doc.add(new StringField("url", fileDoc.getUrl(), YES));
         doc.add(new StringField("type", String.valueOf(fileDoc.getType()), YES));
         doc.add(new StringField("place", String.valueOf(fileDoc.getPlace()), YES));
-        var content = Jsoup.clean(stripToEmpty(fileDoc.getName())
+        if (StringUtils.hasText(fileDoc.getOriginalName())) {
+            doc.add(new StringField("originalName",
+                String.valueOf(fileDoc.getOriginalName()), YES));
+        }
+        var content = Jsoup.clean(
+            stripToEmpty(String.valueOf(fileDoc.getId()))
+                + stripToEmpty(fileDoc.getName())
+                + stripToEmpty(fileDoc.getOriginalPath())
                 + stripToEmpty(fileDoc.getUrl())
-                + fileDoc.getType()
-                + fileDoc.getPlace(),
+                + stripToEmpty(String.valueOf(fileDoc.getType()))
+                + stripToEmpty(String.valueOf(fileDoc.getPlace()))
+                + stripToEmpty(fileDoc.getOriginalName()),
             Safelist.none());
         doc.add(new StoredField("content", content));
-        doc.add(new TextField("searchable", fileDoc.getName() + content, NO));
+        doc.add(new TextField("searchable", content, NO));
         return doc;
     }
 
 
-    private FileHint convert(Document doc, Highlighter highlighter)
-        throws IOException, InvalidTokenOffsetsException {
+    private FileHint convert(Document doc, Highlighter highlighter) {
         var post = new FileHint(
+            Long.parseLong(doc.get("id")),
             doc.get("name"),
             doc.get("originalPath"),
             doc.get("url"),
-            null,
-            null
+            FileType.valueOf(doc.get("type")),
+            FilePlace.valueOf(doc.get("place")),
+            StringUtils.hasText(doc.get("originalName")) ? doc.get("originalName") : null
         );
         return post;
     }
 
     private Query buildQuery(String keyword) throws ParseException {
+        return buildQuery("searchable", keyword);
+    }
+
+    private Query buildQuery(String field, String keyword) throws ParseException {
         if (log.isDebugEnabled()) {
-            log.debug("Trying to search for keyword: {}", keyword);
+            log.debug("Trying to search for field:keyword: [{}:{}]", field, keyword);
         }
-        return new QueryParser("searchable", analyzer).parse(keyword);
+        return new QueryParser(field, analyzer).parse(keyword);
     }
 
 }

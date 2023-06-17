@@ -3,7 +3,6 @@ package run.ikaros.server.search.subject;
 import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 import static org.apache.lucene.document.Field.Store.NO;
 import static org.apache.lucene.document.Field.Store.YES;
-import static org.apache.lucene.index.IndexWriterConfig.OpenMode.APPEND;
 import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE_OR_APPEND;
 
 import java.io.IOException;
@@ -41,7 +40,6 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
 import reactor.core.Exceptions;
 import run.ikaros.api.search.SearchParam;
 import run.ikaros.api.search.SearchResult;
-import run.ikaros.api.search.file.FileHint;
 import run.ikaros.api.search.subject.SubjectDoc;
 import run.ikaros.api.search.subject.SubjectHint;
 import run.ikaros.api.search.subject.SubjectSearchService;
@@ -102,21 +100,21 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
     }
 
     @Override
-    public void addDocuments(List<SubjectDoc> subjectDocs) throws Exception {
+    public void updateDocument(List<SubjectDoc> subjectDocs) throws Exception {
         var writeConfig = new IndexWriterConfig(analyzer);
         writeConfig.setOpenMode(CREATE_OR_APPEND);
         try (var writer = new IndexWriter(subjectIndexDir, writeConfig)) {
             subjectDocs.forEach(subjectDoc -> {
                 var doc = this.convert(subjectDoc);
                 try {
-                    var seqNum =
-                        writer.updateDocument(new Term(SubjectHint.ID_FIELD, subjectDoc.getName()),
-                            doc);
+                    var seqNum = writer.updateDocument(new Term(SubjectHint.ID_FIELD,
+                            String.valueOf(subjectDoc.getId())),
+                        doc);
                     if (log.isDebugEnabled()) {
                         log.debug("Updated document({}) with sequence number {} returned",
                             subjectDoc.getName(), seqNum);
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     throw Exceptions.propagate(e);
                 }
             });
@@ -124,34 +122,68 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
     }
 
     @Override
-    public void removeDocuments(Set<String> names) throws Exception {
+    public void rebuild(List<SubjectDoc> subjectDocs) throws IOException {
         var writeConfig = new IndexWriterConfig(analyzer);
-        writeConfig.setOpenMode(APPEND);
+        writeConfig.setOpenMode(CREATE_OR_APPEND);
         try (var writer = new IndexWriter(subjectIndexDir, writeConfig)) {
-            var terms = names.stream()
-                .map(name -> new Term(FileHint.ID_FIELD, name))
-                .toArray(Term[]::new);
-            long seqNum = writer.deleteDocuments(terms);
-            log.debug("Deleted documents({}) with sequence number {}", terms.length, seqNum);
+            writer.deleteAll();
+            subjectDocs.forEach(subjectDoc -> {
+                var doc = this.convert(subjectDoc);
+                try {
+                    var seqNum = writer.updateDocument(new Term(SubjectHint.ID_FIELD,
+                            String.valueOf(subjectDoc.getId())),
+                        doc);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Updated document({}) with sequence number {} returned",
+                            subjectDoc.getName(), seqNum);
+                    }
+                } catch (Exception e) {
+                    throw Exceptions.propagate(e);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void removeDocuments(Set<String> termTexts) throws Exception {
+        var writeConfig = new IndexWriterConfig(analyzer);
+        writeConfig.setOpenMode(CREATE_OR_APPEND);
+        try (var writer = new IndexWriter(subjectIndexDir, writeConfig)) {
+            var queries = termTexts.stream()
+                .map(text -> {
+                    try {
+                        return buildQuery(text);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toArray(Query[]::new);
+
+            long seqNum = writer.deleteDocuments(queries);
+            log.debug("Deleted documents size [{}] with sequence number {}",
+                queries.length, seqNum);
         }
     }
 
     private Document convert(SubjectDoc subjectDoc) {
         var doc = new Document();
+        doc.add(new StringField("id", String.valueOf(subjectDoc.getId()), YES));
         doc.add(new StringField("name", subjectDoc.getName(), YES));
         if (StringUtils.hasText(subjectDoc.getNameCn())) {
             doc.add(new StringField("nameCn", subjectDoc.getNameCn(), YES));
         }
         if (StringUtils.hasText(subjectDoc.getInfobox())) {
-            doc.add(new StringField("infobox", subjectDoc.getInfobox(), YES));
+            doc.add(new TextField("infobox", subjectDoc.getInfobox(), YES));
         }
         if (StringUtils.hasText(subjectDoc.getSummary())) {
-            doc.add(new StringField("summary", subjectDoc.getSummary(), YES));
+            doc.add(new TextField("summary", subjectDoc.getSummary(), YES));
         }
-        doc.add(new StoredField("nsfw", String.valueOf(subjectDoc.getNsfw())));
-        doc.add(new StoredField("type", String.valueOf(subjectDoc.getType())));
-        doc.add(new StoredField("airTime", subjectDoc.getAirTime()));
-        var content = Jsoup.clean(stripToEmpty(subjectDoc.getName())
+        doc.add(new StringField("nsfw", String.valueOf(subjectDoc.getNsfw()), YES));
+        doc.add(new StringField("type", String.valueOf(subjectDoc.getType()), YES));
+        doc.add(new StringField("airTime", String.valueOf(subjectDoc.getAirTime()), YES));
+        var content = Jsoup.clean(
+            stripToEmpty(String.valueOf(subjectDoc.getId()))
+                + stripToEmpty(subjectDoc.getName())
                 + stripToEmpty(subjectDoc.getNameCn())
                 + stripToEmpty(subjectDoc.getInfobox())
                 + stripToEmpty(subjectDoc.getSummary())
@@ -168,6 +200,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
 
     private SubjectHint convert(Document doc, Highlighter highlighter) {
         return new SubjectHint(
+            Long.parseLong(doc.get("id")),
             doc.get("name"), doc.get("nameCn"),
             doc.get("infobox"), doc.get("summary"),
             Boolean.valueOf(doc.get("nsfw")),
@@ -177,9 +210,13 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
     }
 
     private Query buildQuery(String keyword) throws ParseException {
+        return buildQuery("searchable", keyword);
+    }
+
+    private Query buildQuery(String field, String keyword) throws ParseException {
         if (log.isDebugEnabled()) {
-            log.debug("Trying to search for keyword: {}", keyword);
+            log.debug("Trying to search for field:keyword: [{}:{}]", field, keyword);
         }
-        return new QueryParser("searchable", analyzer).parse(keyword);
+        return new QueryParser(field, analyzer).parse(keyword);
     }
 }

@@ -3,9 +3,9 @@ package run.ikaros.server.search;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.search.file.FileDoc;
 import run.ikaros.api.search.file.FileSearchService;
 import run.ikaros.api.search.subject.SubjectSearchService;
+import run.ikaros.server.search.file.FileDocConverter;
 import run.ikaros.server.search.subject.ReactiveSubjectDocConverter;
 import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
@@ -34,18 +34,12 @@ public class IndicesServiceImpl implements IndicesService {
     @Override
     public Mono<Void> rebuildFileIndices() {
         return fileRepository.findAll()
-            .map(fileEntity -> {
-                FileDoc fileDoc = new FileDoc();
-                fileDoc.setName(fileEntity.getName());
-                fileDoc.setType(fileEntity.getType());
-                fileDoc.setUrl(fileEntity.getUrl());
-                return fileDoc;
-            })
+            .map(FileDocConverter::fromEntity)
             .limitRate(100)
             .buffer(100)
             .doOnNext(fileDocs -> {
                 try {
-                    fileSearchService.addDocuments(fileDocs);
+                    fileSearchService.rebuild(fileDocs);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -61,7 +55,7 @@ public class IndicesServiceImpl implements IndicesService {
             .buffer(100)
             .doOnNext(subjectDocs -> {
                 try {
-                    subjectSearchService.addDocuments(subjectDocs);
+                    subjectSearchService.rebuild(subjectDocs);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

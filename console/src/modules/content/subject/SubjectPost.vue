@@ -115,7 +115,7 @@ const episodeDetailsDialogVisible = ref(false);
 	</el-row>
 	<br />
 	<el-row>
-		<el-col :span="24">
+		<el-col :xs="24" :sm="24" :md="24" :lg="16" :xl="16">
 			<el-form
 				ref="subjectElFormRef"
 				:rules="subjectRuleFormRules"
@@ -232,6 +232,18 @@ const episodeDetailsDialogVisible = ref(false);
 					</el-button>
 				</el-form-item>
 			</el-form>
+		</el-col>
+		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
+			<span v-if="subject.image?.common">
+				<el-image
+					style="width: 100%"
+					:src="subject.image?.common"
+					:zoom-rate="1.2"
+					:preview-src-list="new Array(subject.image?.common)"
+					:initial-index="4"
+					fit="cover"
+				/>
+			</span>
 		</el-col>
 	</el-row>
 	<EpisodeDetailsDialog

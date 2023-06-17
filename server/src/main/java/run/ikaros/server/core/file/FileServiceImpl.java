@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.file.FileHandler;
 import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
@@ -35,24 +36,33 @@ import run.ikaros.server.core.file.event.FileRemoveEvent;
 import run.ikaros.server.infra.properties.IkarosProperties;
 import run.ikaros.server.infra.utils.FileUtils;
 import run.ikaros.server.infra.utils.SystemVarUtils;
+import run.ikaros.server.plugin.ExtensionComponentsFinder;
+import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.FileRepository;
 
 @Slf4j
 @Service
 public class FileServiceImpl implements FileService, ApplicationContextAware {
     private final FileRepository fileRepository;
+    private final EpisodeFileRepository episodeFileRepository;
     private final IkarosProperties ikarosProperties;
     private final R2dbcEntityTemplate template;
     private ApplicationContext applicationContext;
+    private final ExtensionComponentsFinder extensionComponentsFinder;
 
     /**
      * Construct.
      */
-    public FileServiceImpl(FileRepository fileRepository, IkarosProperties ikarosProperties,
-                           R2dbcEntityTemplate template) {
+    public FileServiceImpl(FileRepository fileRepository,
+                           EpisodeFileRepository episodeFileRepository,
+                           IkarosProperties ikarosProperties,
+                           R2dbcEntityTemplate template,
+                           ExtensionComponentsFinder extensionComponentsFinder) {
         this.fileRepository = fileRepository;
+        this.episodeFileRepository = episodeFileRepository;
         this.ikarosProperties = ikarosProperties;
         this.template = template;
+        this.extensionComponentsFinder = extensionComponentsFinder;
     }
 
     @Override
@@ -107,7 +117,8 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .md5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5))
                 .place(FilePlace.LOCAL)
                 .url(reactiveUrl)
-                .name(uploadName + "." + postfix)
+                .name(uploadName)
+                .originalName(uploadName + "." + postfix)
                 .size(uploadLength)
                 .type(FileUtils.parseTypeByPostfix(postfix))
                 .originalPath(filePath)
@@ -213,10 +224,27 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
     @Override
     public Mono<Void> deleteById(Long id) {
         Assert.isTrue(id > 0, "'id' must gt 0.");
-        return findById(id)
-            .flatMap(fileEntity -> fileRepository.deleteById(id)
-                .doOnSuccess(unused ->
-                    applicationContext.publishEvent(new FileRemoveEvent(this, fileEntity))))
+        return Mono.just(id)
+            .flatMap(this::findById)
+            .map(run.ikaros.api.core.file.File::new)
+            .flatMap(file -> Flux.fromStream(
+                    extensionComponentsFinder.getExtensions(FileHandler.class).stream())
+                .filter(fileHandler -> fileHandler.policy()
+                    .equalsIgnoreCase(file.entity().getPlace().toString()))
+                .collectList().flatMap(fileHandlers -> Mono.just(fileHandlers.get(0)))
+                .flatMap(fileHandler -> fileHandler.delete(file)))
+            .flatMap(file -> fileRepository.deleteById(id)
+                .doOnSuccess(unused -> applicationContext.publishEvent(
+                    new FileRemoveEvent(this, file.entity()))))
+            .checkpoint("DeleteFileEntityByFileId")
+            .then(episodeFileRepository.deleteAllByFileId(id))
+            .doOnNext(lines -> {
+                if (lines > 0) {
+                    log.debug("Delete all episode file records, counts: [{}], "
+                        + "when delete file entity for id [{}].", lines, id);
+                }
+            })
+            .checkpoint("DeleteAllEpisodeFileByFileIdAfterDeleteFileEntity")
             .then();
     }
 

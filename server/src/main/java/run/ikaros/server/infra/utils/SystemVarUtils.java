@@ -14,12 +14,12 @@ public class SystemVarUtils {
     public static final String MEDIA_DIR_NAME = "media";
     public static final String ORIGINAL_DIR_NAME = "original";
 
-    static {
-        log.debug("current app dir path: {}", getCurrentAppDirPath());
-        log.debug("current app user name: {}", getCurrentUserName());
-        log.debug("current app user home: {}", getCurrentUserDirPath());
-        log.debug("current ipv4 address: {}", getIpAddress());
-    }
+    // static {
+    //     log.debug("current app dir path: {}", getCurrentAppDirPath());
+    //     log.debug("current app user name: {}", getCurrentUserName());
+    //     log.debug("current app user home: {}", getCurrentUserDirPath());
+    //     log.debug("current ipv4 address: {}", getIpAddress());
+    // }
 
     /**
      * 当前应用的目录路径.

@@ -12,6 +12,7 @@ public class ReactiveSubjectDocConverter {
      */
     public static Mono<SubjectDoc> fromEntity(SubjectEntity entity) {
         SubjectDoc subjectDoc = new SubjectDoc();
+        subjectDoc.setId(entity.getId());
         subjectDoc.setName(entity.getName());
         subjectDoc.setNsfw(entity.getNsfw());
         subjectDoc.setSummary(entity.getSummary());

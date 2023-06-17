@@ -5,5 +5,5 @@ import org.pf4j.ExtensionPoint;
 
 public interface IndicesSearchService extends ExtensionPoint {
 
-    void removeDocuments(Set<String> names) throws Exception;
+    void removeDocuments(Set<String> termTexts) throws Exception;
 }

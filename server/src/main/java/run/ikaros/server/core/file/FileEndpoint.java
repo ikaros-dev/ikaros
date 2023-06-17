@@ -53,7 +53,6 @@ import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
-import run.ikaros.server.store.repository.FileRepository;
 
 @Slf4j
 @Component
@@ -303,17 +302,8 @@ public class FileEndpoint implements CoreEndpoint {
 
     Mono<ServerResponse> deleteById(ServerRequest request) {
         String id = request.pathVariable("id");
-        return Mono.just(id)
-            .flatMap(fileId -> Mono.just(Long.valueOf(fileId)))
-            .flatMap(fileService::findById)
-            .map(File::new)
-            .flatMap(file -> Flux.fromStream(
-                    extensionComponentsFinder.getExtensions(FileHandler.class).stream())
-                .filter(fileHandler -> fileHandler.policy()
-                    .equalsIgnoreCase(file.entity().getPlace().toString()))
-                .collectList().flatMap(fileHandlers -> Mono.just(fileHandlers.get(0)))
-                .flatMap(fileHandler -> fileHandler.delete(file)))
-            .flatMap(file -> ServerResponse.ok()
+        return fileService.deleteById(Long.parseLong(id))
+            .then(ServerResponse.ok()
                 .bodyValue("Delete success"))
             .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
                 .bodyValue("Not found for id: " + id));

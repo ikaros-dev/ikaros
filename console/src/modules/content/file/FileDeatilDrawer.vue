@@ -75,10 +75,15 @@ const isVoice = computed(() => {
 const handleDelete = async () => {
 	try {
 		deleting.value = true;
-		await apiClient.file.deleteFile({
-			id: file.value.id as number,
-		});
-		emit('delete', file.value);
+		await apiClient.file
+			.deleteFile({
+				id: file.value.id as number,
+			})
+			.then(() => {
+				ElMessage.success('删除文件成功：' + file.value.name);
+				emit('delete', file.value);
+				drawerVisible.value = false;
+			});
 	} catch (err) {
 		console.error(err);
 	} finally {

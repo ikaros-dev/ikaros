@@ -6,7 +6,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.search.file.FileDoc;
-import run.ikaros.api.search.file.FileHint;
 import run.ikaros.api.search.file.FileSearchService;
 import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.server.core.file.event.FileAddEvent;
@@ -27,12 +26,8 @@ public class FileEventListener {
     @EventListener(FileAddEvent.class)
     public Mono<Void> handleFileAddEvent(FileAddEvent event) throws Exception {
         FileEntity entity = event.getFileEntity();
-        FileDoc fileDoc = new FileDoc();
-        fileDoc.setName(entity.getName());
-        fileDoc.setType(entity.getType());
-        fileDoc.setPlace(entity.getPlace());
-        fileDoc.setUrl(entity.getUrl());
-        fileSearchService.addDocuments(List.of(fileDoc));
+        FileDoc fileDoc = FileDocConverter.fromEntity(entity);
+        fileSearchService.updateDocument(List.of(fileDoc));
         return Mono.empty();
     }
 
@@ -42,9 +37,7 @@ public class FileEventListener {
     @EventListener(FileRemoveEvent.class)
     public Mono<Void> handleFileRemoveEvent(FileRemoveEvent event) throws Exception {
         FileEntity entity = event.getFileEntity();
-        FileHint fileDoc = new FileHint(entity.getName(), entity.getOriginalPath(), entity.getUrl(),
-            entity.getType(), entity.getPlace());
-        fileSearchService.removeDocuments(Set.of(fileDoc.name()));
+        fileSearchService.removeDocuments(Set.of(String.valueOf(entity.getId())));
         return Mono.empty();
     }
 
