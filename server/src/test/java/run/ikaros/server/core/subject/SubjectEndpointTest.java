@@ -92,6 +92,7 @@ class SubjectEndpointTest {
         subject.setNsfw(Boolean.FALSE);
         subject.setInfobox("infobox-unit-test" + new Random(100).nextInt());
         subject.setNameCn("单元测试条目名");
+        subject.setAirTime(LocalDateTime.now());
 
         var image = new SubjectImage();
         image.setCommon("https://ikaros.run/static/test.jpg");

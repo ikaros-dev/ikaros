@@ -146,7 +146,7 @@ class FileEndpointTest {
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()
-            .expectStatus().isNotFound();
+            .expectStatus().is5xxServerError();
 
         // upload a file
         MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();

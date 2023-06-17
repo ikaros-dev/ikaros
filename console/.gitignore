@@ -30,6 +30,7 @@ coverage
 
 # Generated files by unplugin-auto-import
 .stylelintcache
+auto-imports.d.ts
 
 # ts build info, such as version
 #/tsconfig.tsbuildinfo
