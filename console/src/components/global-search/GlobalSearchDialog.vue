@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref, nextTick, computed } from 'vue';
-// eslint-disable-next-line no-unused-vars
-import { Search } from '@element-plus/icons-vue';
 import { apiClient } from '@/utils/api-client';
-import { FileHint, SubjectHint } from 'packages/api-client/dist.ts';
+import { FileHint, SubjectHint } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
 
 const props = withDefaults(
