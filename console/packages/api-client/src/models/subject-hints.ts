@@ -12,40 +12,44 @@
  * Do not edit the class manually.
  */
 
+// May contain unused imports in some cases
+// @ts-ignore
+import { SubjectHint } from './subject-hint';
+
 /**
  *
  * @export
- * @interface EpisodeResource
+ * @interface SubjectHints
  */
-export interface EpisodeResource {
+export interface SubjectHints {
+	/**
+	 *
+	 * @type {Array<SubjectHint>}
+	 * @memberof SubjectHints
+	 */
+	hits?: Array<SubjectHint>;
 	/**
 	 *
 	 * @type {string}
-	 * @memberof EpisodeResource
+	 * @memberof SubjectHints
 	 */
-	url?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof EpisodeResource
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {Set<string>}
-	 * @memberof EpisodeResource
-	 */
-	tags?: Set<string>;
+	keyword?: string;
 	/**
 	 *
 	 * @type {number}
-	 * @memberof EpisodeResource
+	 * @memberof SubjectHints
 	 */
-	file_id?: number;
+	total?: number;
 	/**
 	 *
 	 * @type {number}
-	 * @memberof EpisodeResource
+	 * @memberof SubjectHints
 	 */
-	episode_id?: number;
+	limit?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof SubjectHints
+	 */
+	processingTimeMillis?: number;
 }

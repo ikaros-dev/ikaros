@@ -12,40 +12,44 @@
  * Do not edit the class manually.
  */
 
+// May contain unused imports in some cases
+// @ts-ignore
+import { FileHint } from './file-hint';
+
 /**
  *
  * @export
- * @interface EpisodeResource
+ * @interface FileHints
  */
-export interface EpisodeResource {
+export interface FileHints {
+	/**
+	 *
+	 * @type {Array<FileHint>}
+	 * @memberof FileHints
+	 */
+	hits?: Array<FileHint>;
 	/**
 	 *
 	 * @type {string}
-	 * @memberof EpisodeResource
+	 * @memberof FileHints
 	 */
-	url?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof EpisodeResource
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {Set<string>}
-	 * @memberof EpisodeResource
-	 */
-	tags?: Set<string>;
+	keyword?: string;
 	/**
 	 *
 	 * @type {number}
-	 * @memberof EpisodeResource
+	 * @memberof FileHints
 	 */
-	file_id?: number;
+	total?: number;
 	/**
 	 *
 	 * @type {number}
-	 * @memberof EpisodeResource
+	 * @memberof FileHints
 	 */
-	episode_id?: number;
+	limit?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof FileHints
+	 */
+	processingTimeMillis?: number;
 }

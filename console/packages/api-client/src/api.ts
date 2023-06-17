@@ -18,6 +18,7 @@ export * from './api/plugin-ikaros-run-v1alpha1-plugin-api';
 export * from './api/setting-ikaros-run-v1alpha1-config-map-api';
 export * from './api/v1alpha1-episode-file-api';
 export * from './api/v1alpha1-file-api';
+export * from './api/v1alpha1-indices-api';
 export * from './api/v1alpha1-plugin-api';
 export * from './api/v1alpha1-subject-api';
 export * from './api/v1alpha1-subject-relation-api';
