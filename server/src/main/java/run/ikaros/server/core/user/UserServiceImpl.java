@@ -13,6 +13,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.exception.PasswordNotMatchingException;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.RoleRepository;
 import run.ikaros.server.store.repository.UserRepository;
@@ -74,7 +75,8 @@ public class UserServiceImpl implements UserService {
             .filter(userEntity -> passwordEncoder.matches(oldRawPassword,
                 addEncodingIdPrefixIfNotExists(userEntity.getPassword())))
             .switchIfEmpty(Mono.error(
-                new RuntimeException("Old password not matching username: " + username)))
+                new PasswordNotMatchingException(
+                    "Old password not matching username: " + username)))
             .filter(userEntity -> !StringUtils.hasText(userEntity.getPassword())
                 || !passwordEncoder.matches(rawPassword,
                 addEncodingIdPrefixIfNotExists(userEntity.getPassword())))

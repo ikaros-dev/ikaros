@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import run.ikaros.api.exception.PasswordNotMatchingException;
 import run.ikaros.server.security.SecurityProperties;
 import run.ikaros.server.store.entity.UserEntity;
 
@@ -139,7 +140,8 @@ class UserServiceTest {
 
         // update by same password
         StepVerifier.create(userService.updatePassword(username, oldPassword, newPassword))
-            .expectErrorMatches(throwable -> throwable.getClass() == RuntimeException.class
+            .expectErrorMatches(throwable ->
+                throwable.getClass() == PasswordNotMatchingException.class
                 && throwable.getMessage().startsWith("Old password not matching username: "))
             .verify();
 

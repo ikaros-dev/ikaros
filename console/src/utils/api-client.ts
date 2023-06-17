@@ -31,17 +31,19 @@ export interface ProblemDetail {
 axiosInstance.interceptors.response.use(
 	(response) => response,
 	async (error: AxiosError<ProblemDetail>) => {
-		if (/Network Error/.test(error.message)) {
+		// @ts-ignore
+		let msg = error?.response?.data?.message;
+		if (!msg) {
+			msg = error.message;
+		}
+
+		if (/Network Error/.test(msg)) {
 			console.error(
-				i18n.global.t('core.common.exception.network_error') +
-					': ' +
-					error.message,
+				i18n.global.t('core.common.exception.network_error') + ': ' + msg,
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.network_error') +
-					': ' +
-					error.message
+				i18n.global.t('core.common.exception.network_error') + ': ' + msg
 			);
 			return Promise.reject(error);
 		}
@@ -50,15 +52,11 @@ axiosInstance.interceptors.response.use(
 
 		if (!errorResponse) {
 			console.error(
-				i18n.global.t('core.common.exception.network_error') +
-					': ' +
-					error.message,
+				i18n.global.t('core.common.exception.network_error') + ': ' + msg,
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.network_error') +
-					': ' +
-					error.message
+				i18n.global.t('core.common.exception.network_error') + ': ' + msg
 			);
 			return Promise.reject(error);
 		}
@@ -77,35 +75,31 @@ axiosInstance.interceptors.response.use(
 			ElMessage.error(
 				i18n.global.t('core.common.exception.request_parameter_error') +
 					': ' +
-					error.message
+					msg
 			);
 		} else if (status === 401) {
 			console.error(
-				i18n.global.t('core.common.exception.unauthorized') +
-					': ' +
-					error.message,
+				i18n.global.t('core.common.exception.unauthorized') + ': ' + msg,
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.unauthorized') +
-					': ' +
-					error.message
+				i18n.global.t('core.common.exception.unauthorized') + ': ' + msg
 			);
 		} else if (status === 403) {
 			console.error(
-				i18n.global.t('core.common.exception.forbidden') + ': ' + error.message,
+				i18n.global.t('core.common.exception.forbidden') + ': ' + msg,
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.forbidden') + ': ' + error.message
+				i18n.global.t('core.common.exception.forbidden') + ': ' + msg
 			);
 		} else if (status === 404) {
 			console.error(
-				i18n.global.t('core.common.exception.not_found') + ': ' + error.message,
+				i18n.global.t('core.common.exception.not_found') + ': ' + msg,
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.not_found') + ': ' + error.message
+				i18n.global.t('core.common.exception.not_found') + ': ' + msg
 			);
 		} else if (status === 500) {
 			console.error(
@@ -113,7 +107,7 @@ axiosInstance.interceptors.response.use(
 					'core.common.exception.server_internal_error_with_title'
 				) +
 					': ' +
-					error.message,
+					msg,
 				error
 			);
 			ElMessage.error(
@@ -121,7 +115,7 @@ axiosInstance.interceptors.response.use(
 					'core.common.exception.server_internal_error_with_title'
 				) +
 					': ' +
-					error.message
+					msg
 			);
 		} else {
 			console.error(
@@ -129,13 +123,13 @@ axiosInstance.interceptors.response.use(
 					title,
 				}) +
 					': ' +
-					error.message,
+					msg,
 				error
 			);
 			ElMessage.error(
 				i18n.global.t('core.common.exception.unknown_error_with_title') +
 					': ' +
-					error.message
+					msg
 			);
 		}
 
