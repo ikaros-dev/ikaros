@@ -29,9 +29,9 @@ coverage
 *.sw?
 
 # Generated files by unplugin-auto-import
-.stylelintcache
-auto-imports.d.ts
-components.d.ts
+/.stylelintcache
+/auto-imports.d.ts
+/components.d.ts
 
 # ts build info, such as version
 #/tsconfig.tsbuildinfo

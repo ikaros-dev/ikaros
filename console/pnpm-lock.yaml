@@ -8,11 +8,11 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0(vue@3.2.47)
       '@runikaros/api-client':
-        specifier: 0.0.22
-        version: link:packages/api-client
+        specifier: ^0.0.22
+        version: 0.0.22
       '@runikaros/shared':
-        specifier: 0.0.2
-        version: link:packages/shared
+        specifier: ^0.0.2
+        version: 0.0.2(vue-router@4.2.1)(vue@3.2.47)
       '@uppy/core':
         specifier: ^3.2.0
         version: 3.2.0
@@ -1724,6 +1724,20 @@ packages:
       estree-walker: 2.0.2
       picomatch: 2.3.1
     dev: true
+
+  /@runikaros/api-client@0.0.22:
+    resolution: {integrity: sha512-2tCwlQPt+2rr16t7d8gcLpuvwyr+9pUJmcpfTTJwk7u/jGGfCA4lHhck09tKu+m+o85iUZJyn18VSvepmZ0EoQ==}
+    dev: false
+
+  /@runikaros/shared@0.0.2(vue-router@4.2.1)(vue@3.2.47):
+    resolution: {integrity: sha512-qBy30zH4EQehAv5wekuMOwWUgagh+LGNojdjv8uVBeDELMjMyLpYXBK9XM1/HFdKh8Li3kP6lChWcM5YNezJxw==}
+    peerDependencies:
+      vue: ^3.2.37
+      vue-router: ^4.1.6
+    dependencies:
+      vue: 3.2.47
+      vue-router: 4.2.1(vue@3.2.47)
+    dev: false
 
   /@rushstack/node-core-library@3.59.2(@types/node@18.11.19):
     resolution: {integrity: sha512-Od8i9ZXiRPHrnkuNOZ9IjEYRQ9JsBLNHlkWJr1wSQZrD2TVIc8APpIB/FnzEcjfpbJMT4XhtcCZaa0pVx+hTXw==}
