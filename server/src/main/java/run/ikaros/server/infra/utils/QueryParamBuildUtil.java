@@ -33,6 +33,9 @@ public final class QueryParamBuildUtil {
         return obj == null ? null : obj.toString();
     }
 
+    /**
+     * Build parameters from type.
+     */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static void buildParametersFromType(Builder operationBuilder, Type queryParamType) {
         var resolvedSchema =
