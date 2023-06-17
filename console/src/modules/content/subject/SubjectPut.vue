@@ -115,8 +115,6 @@ const showEpisodeDetails = (ep: Episode) => {
 
 const episodeDetailsDialogVisible = ref(false);
 
-const subjectFormItemMaxWidth = '800px';
-
 onMounted(() => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
@@ -167,24 +165,14 @@ onMounted(() => {
 				</el-form-item>
 
 				<el-form-item label="条目名称" prop="name">
-					<el-input
-						v-model="subject.name"
-						:style="'max-width:' + subjectFormItemMaxWidth"
-					/>
+					<el-input v-model="subject.name" class="ik-form-item" />
 				</el-form-item>
 
 				<el-form-item label="条目中文名">
-					<el-input
-						v-model="subject.name_cn"
-						:style="'max-width:' + subjectFormItemMaxWidth"
-					/>
+					<el-input v-model="subject.name_cn" class="ik-form-item" />
 				</el-form-item>
 
-				<el-form-item
-					label="条目类型"
-					prop="type"
-					:style="'max-width:' + subjectFormItemMaxWidth"
-				>
+				<el-form-item label="条目类型" prop="type" class="ik-form-item">
 					<el-radio-group v-model="subject.type">
 						<el-radio label="ANIME" border>动漫</el-radio>
 						<el-radio label="COMIC" border>漫画</el-radio>
@@ -202,7 +190,7 @@ onMounted(() => {
 						rows="5"
 						show-word-limit
 						type="textarea"
-						:style="'max-width:' + subjectFormItemMaxWidth"
+						class="ik-form-item"
 					/>
 				</el-form-item>
 
@@ -213,7 +201,7 @@ onMounted(() => {
 						rows="15"
 						show-word-limit
 						type="textarea"
-						:style="'max-width:' + subjectFormItemMaxWidth"
+						class="ik-form-item"
 					/>
 				</el-form-item>
 
@@ -225,7 +213,7 @@ onMounted(() => {
 				<el-form-item label="剧集">
 					<el-table
 						:data="subject.episodes"
-						:style="'max-width:' + subjectFormItemMaxWidth"
+						class="ik-form-item"
 						@row-dblclick="showEpisodeDetails"
 					>
 						<el-table-column
@@ -290,4 +278,8 @@ onMounted(() => {
 	/>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.ik-form-item {
+	max-width: 800px;
+}
+</style>

@@ -166,7 +166,7 @@ onMounted(() => {
 						style="width: 100%"
 						:src="subject.image?.common"
 						:zoom-rate="1.2"
-						:preview-src-list="new Array(subject.image?.common)"
+						:preview-src-list="new Array(subject.image?.common)  as string[]"
 						:initial-index="4"
 						fit="cover"
 					/>
