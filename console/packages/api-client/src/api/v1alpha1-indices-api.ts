@@ -145,20 +145,20 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 		 * Search files with fuzzy query
 		 * @param {string} keyword
 		 * @param {number} [limit]
-		 * @param {string} [highlightPreTag]
 		 * @param {string} [highlightPostTag]
+		 * @param {string} [highlightPreTag]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		searchPost: async (
+		searchFile: async (
 			keyword: string,
 			limit?: number,
-			highlightPreTag?: string,
 			highlightPostTag?: string,
+			highlightPreTag?: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'keyword' is not null or undefined
-			assertParamExists('searchPost', 'keyword', keyword);
+			assertParamExists('searchFile', 'keyword', keyword);
 			const localVarPath = `/api/v1alpha1/indices/file`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -187,16 +187,16 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 				localVarQueryParameter['limit'] = limit;
 			}
 
+			if (highlightPostTag !== undefined) {
+				localVarQueryParameter['highlightPostTag'] = highlightPostTag;
+			}
+
 			if (highlightPreTag !== undefined) {
 				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
 			}
 
 			if (keyword !== undefined) {
 				localVarQueryParameter['keyword'] = keyword;
-			}
-
-			if (highlightPostTag !== undefined) {
-				localVarQueryParameter['highlightPostTag'] = highlightPostTag;
 			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -217,16 +217,16 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 		 * Search subjects with fuzzy query
 		 * @param {string} keyword
 		 * @param {number} [limit]
-		 * @param {string} [highlightPreTag]
 		 * @param {string} [highlightPostTag]
+		 * @param {string} [highlightPreTag]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		searchSubject: async (
 			keyword: string,
 			limit?: number,
-			highlightPreTag?: string,
 			highlightPostTag?: string,
+			highlightPreTag?: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'keyword' is not null or undefined
@@ -259,16 +259,16 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 				localVarQueryParameter['limit'] = limit;
 			}
 
+			if (highlightPostTag !== undefined) {
+				localVarQueryParameter['highlightPostTag'] = highlightPostTag;
+			}
+
 			if (highlightPreTag !== undefined) {
 				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
 			}
 
 			if (keyword !== undefined) {
 				localVarQueryParameter['keyword'] = keyword;
-			}
-
-			if (highlightPostTag !== undefined) {
-				localVarQueryParameter['highlightPostTag'] = highlightPostTag;
 			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -338,25 +338,25 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
 		 * Search files with fuzzy query
 		 * @param {string} keyword
 		 * @param {number} [limit]
-		 * @param {string} [highlightPreTag]
 		 * @param {string} [highlightPostTag]
+		 * @param {string} [highlightPreTag]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async searchPost(
+		async searchFile(
 			keyword: string,
 			limit?: number,
-			highlightPreTag?: string,
 			highlightPostTag?: string,
+			highlightPreTag?: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FileHints>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.searchPost(
+			const localVarAxiosArgs = await localVarAxiosParamCreator.searchFile(
 				keyword,
 				limit,
-				highlightPreTag,
 				highlightPostTag,
+				highlightPreTag,
 				options
 			);
 			return createRequestFunction(
@@ -370,16 +370,16 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
 		 * Search subjects with fuzzy query
 		 * @param {string} keyword
 		 * @param {number} [limit]
-		 * @param {string} [highlightPreTag]
 		 * @param {string} [highlightPostTag]
+		 * @param {string} [highlightPreTag]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		async searchSubject(
 			keyword: string,
 			limit?: number,
-			highlightPreTag?: string,
 			highlightPostTag?: string,
+			highlightPreTag?: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubjectHints>
@@ -387,8 +387,8 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
 			const localVarAxiosArgs = await localVarAxiosParamCreator.searchSubject(
 				keyword,
 				limit,
-				highlightPreTag,
 				highlightPostTag,
+				highlightPreTag,
 				options
 			);
 			return createRequestFunction(
@@ -434,20 +434,20 @@ export const V1alpha1IndicesApiFactory = function (
 		},
 		/**
 		 * Search files with fuzzy query
-		 * @param {V1alpha1IndicesApiSearchPostRequest} requestParameters Request parameters.
+		 * @param {V1alpha1IndicesApiSearchFileRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		searchPost(
-			requestParameters: V1alpha1IndicesApiSearchPostRequest,
+		searchFile(
+			requestParameters: V1alpha1IndicesApiSearchFileRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<FileHints> {
 			return localVarFp
-				.searchPost(
+				.searchFile(
 					requestParameters.keyword,
 					requestParameters.limit,
-					requestParameters.highlightPreTag,
 					requestParameters.highlightPostTag,
+					requestParameters.highlightPreTag,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -466,8 +466,8 @@ export const V1alpha1IndicesApiFactory = function (
 				.searchSubject(
 					requestParameters.keyword,
 					requestParameters.limit,
-					requestParameters.highlightPreTag,
 					requestParameters.highlightPostTag,
+					requestParameters.highlightPreTag,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -476,38 +476,38 @@ export const V1alpha1IndicesApiFactory = function (
 };
 
 /**
- * Request parameters for searchPost operation in V1alpha1IndicesApi.
+ * Request parameters for searchFile operation in V1alpha1IndicesApi.
  * @export
- * @interface V1alpha1IndicesApiSearchPostRequest
+ * @interface V1alpha1IndicesApiSearchFileRequest
  */
-export interface V1alpha1IndicesApiSearchPostRequest {
+export interface V1alpha1IndicesApiSearchFileRequest {
 	/**
 	 *
 	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchPost
+	 * @memberof V1alpha1IndicesApiSearchFile
 	 */
 	readonly keyword: string;
 
 	/**
 	 *
 	 * @type {number}
-	 * @memberof V1alpha1IndicesApiSearchPost
+	 * @memberof V1alpha1IndicesApiSearchFile
 	 */
 	readonly limit?: number;
 
 	/**
 	 *
 	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchPost
+	 * @memberof V1alpha1IndicesApiSearchFile
 	 */
-	readonly highlightPreTag?: string;
+	readonly highlightPostTag?: string;
 
 	/**
 	 *
 	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchPost
+	 * @memberof V1alpha1IndicesApiSearchFile
 	 */
-	readonly highlightPostTag?: string;
+	readonly highlightPreTag?: string;
 }
 
 /**
@@ -535,14 +535,14 @@ export interface V1alpha1IndicesApiSearchSubjectRequest {
 	 * @type {string}
 	 * @memberof V1alpha1IndicesApiSearchSubject
 	 */
-	readonly highlightPreTag?: string;
+	readonly highlightPostTag?: string;
 
 	/**
 	 *
 	 * @type {string}
 	 * @memberof V1alpha1IndicesApiSearchSubject
 	 */
-	readonly highlightPostTag?: string;
+	readonly highlightPreTag?: string;
 }
 
 /**
@@ -578,21 +578,21 @@ export class V1alpha1IndicesApi extends BaseAPI {
 
 	/**
 	 * Search files with fuzzy query
-	 * @param {V1alpha1IndicesApiSearchPostRequest} requestParameters Request parameters.
+	 * @param {V1alpha1IndicesApiSearchFileRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof V1alpha1IndicesApi
 	 */
-	public searchPost(
-		requestParameters: V1alpha1IndicesApiSearchPostRequest,
+	public searchFile(
+		requestParameters: V1alpha1IndicesApiSearchFileRequest,
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1IndicesApiFp(this.configuration)
-			.searchPost(
+			.searchFile(
 				requestParameters.keyword,
 				requestParameters.limit,
-				requestParameters.highlightPreTag,
 				requestParameters.highlightPostTag,
+				requestParameters.highlightPreTag,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));
@@ -613,8 +613,8 @@ export class V1alpha1IndicesApi extends BaseAPI {
 			.searchSubject(
 				requestParameters.keyword,
 				requestParameters.limit,
-				requestParameters.highlightPreTag,
 				requestParameters.highlightPostTag,
+				requestParameters.highlightPreTag,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));
