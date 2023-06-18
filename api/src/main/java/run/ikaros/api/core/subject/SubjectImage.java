@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.api.core.subject;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

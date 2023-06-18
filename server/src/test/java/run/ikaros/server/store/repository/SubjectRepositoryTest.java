@@ -13,7 +13,7 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Query;
 import reactor.test.StepVerifier;
 import run.ikaros.api.store.enums.SubjectType;
-import run.ikaros.server.core.subject.Subject;
+import run.ikaros.api.core.subject.Subject;
 import run.ikaros.server.store.entity.SubjectEntity;
 
 @SpringBootTest

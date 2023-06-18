@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.api.core.subject;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;

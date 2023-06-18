@@ -16,7 +16,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -38,12 +37,10 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebInputException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.file.File;
-import run.ikaros.api.core.file.FileHandler;
 import run.ikaros.api.core.file.FilePolicy;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
@@ -258,31 +255,17 @@ public class FileEndpoint implements CoreEndpoint {
 
     Mono<ServerResponse> revertFragmentUploadFileByUnique(ServerRequest request) {
         return request.bodyToMono(String.class)
-            .flatMap(unique -> fileService.revertFragmentUploadFile(unique))
+            .flatMap(fileService::revertFragmentUploadFile)
             .then(ServerResponse.ok().bodyValue("SUCCESS"));
     }
 
     Mono<ServerResponse> upload(ServerRequest request) {
         return request.body(toMultipartData())
             .map(DefaultUploadRequest::new)
-            // Check request file policy exists.
-            .flatMap(uploadRequest -> reactiveCustomClient.findOne(FilePolicy.class,
-                    Objects.requireNonNull(uploadRequest.getPolicyName()).toUpperCase())
-                .onErrorResume(NotFoundException.class, error -> Mono.error(new NotFoundException(
-                    "Not found file policy: " + uploadRequest.getPolicyName())))
-                .flatMap(filePolicy -> Mono.just(new FileHandler.DefaultUploadContext(
-                    uploadRequest.getFile(), filePolicy.getName(), null))))
-            .flatMap(uploadContext -> Flux.fromStream(
-                    extensionComponentsFinder.getExtensions(FileHandler.class).stream())
-                // Select file handler
-                .filter(
-                    fileHandler -> uploadContext.policy().equalsIgnoreCase(fileHandler.policy()))
-                .switchIfEmpty(Mono.error(new NotFoundException(
-                    "Not found file handler for policy: " + uploadContext.policy())))
-                .collectList()
-                .flatMap(fileHandlers -> Mono.just(fileHandlers.get(0)))
-                // Do upload file
-                .flatMap(fileHandler -> fileHandler.upload(uploadContext)))
+            // Upload file by service.
+            .flatMap(uploadRequest -> fileService.upload(
+                FilePolicy.builder().name(uploadRequest.getPolicyName().toUpperCase()).build(),
+                uploadRequest.getFile()))
             // Response upload file data
             .flatMap(file -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)

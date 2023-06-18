@@ -13,6 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
+import run.ikaros.api.core.subject.Episode;
+import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.SubjectImage;
+import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 

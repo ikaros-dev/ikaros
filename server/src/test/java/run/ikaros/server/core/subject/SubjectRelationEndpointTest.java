@@ -28,6 +28,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.constant.SecurityConst;
+import run.ikaros.api.core.subject.SubjectRelation;
 import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.store.repository.SubjectRelationRepository;

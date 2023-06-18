@@ -11,7 +11,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import run.ikaros.api.store.entity.BaseEntity;
 import run.ikaros.api.store.enums.SubjectType;
-import run.ikaros.server.core.subject.Subject;
+import run.ikaros.api.core.subject.Subject;
 
 /**
  * Subject entity.

@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.api.core.subject;
 
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
