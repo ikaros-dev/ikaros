@@ -7,7 +7,8 @@ export interface RouteRecordAppend {
 }
 
 export interface ExtensionPoint {
-	// todo add some extension points
+	// 根据第三方元数据平台ID快速填充条目数据，这个值是插件指定的三方平台枚举名称，插件需要自己实现服务端对应的转化拓展点。
+	'subject:sync:platform'?: () => string | Promise<string>;
 }
 
 export interface PluginModule {
