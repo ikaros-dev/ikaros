@@ -1,6 +1,7 @@
 package run.ikaros.server.core.file;
 
 import static run.ikaros.api.core.file.FileConst.DEFAULT_FOLDER_ID;
+import static run.ikaros.server.infra.utils.DataBufferUtils.uploadDataBuffers;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,9 +9,10 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.stereotype.Component;
 import reactor.core.Exceptions;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.FileConst;
@@ -37,9 +39,10 @@ public class LocalFileHandler implements FileHandler {
         return FileConst.POLICY_LOCAL;
     }
 
+
     @Override
     public Mono<File> upload(UploadContext context) {
-        FilePart filepart = context.filepart();
+        Flux<DataBuffer> dataBufferFlux = context.dataBuffer();
         LocalDateTime uploadTime = LocalDateTime.now();
         // format: [/upload/yyyy/MM/dd/HH/UUID.postfix].
         Path uploadPath = ikarosProp.getWorkDir()
@@ -49,29 +52,29 @@ public class LocalFileHandler implements FileHandler {
             .resolve(String.valueOf(uploadTime.getDayOfMonth()))
             .resolve(String.valueOf(uploadTime.getHour()))
             .resolve(UUID.randomUUID().toString().replace("-", "")
-                + "." + FileUtils.parseFilePostfix(filepart.filename()));
+                + "." + FileUtils.parseFilePostfix(context.fileName()));
         try {
             // init parent folders
             Files.createDirectories(uploadPath.getParent());
         } catch (IOException e) {
             throw Exceptions.propagate(e);
         }
+
         // upload
-        return filepart.transferTo(uploadPath.toFile())
-            .doOnSuccess(unused -> log.debug("Upload file {} to dest path: {}", filepart.filename(),
-                uploadPath))
-            .then(Mono.just(FileEntity.builder()
+        return Mono.just(dataBufferFlux)
+            .flatMap(dataBufferFlux1 -> uploadDataBuffers(dataBufferFlux1, uploadPath))
+            .flatMap(size -> Mono.just(FileEntity.builder()
                 .folderId(DEFAULT_FOLDER_ID)
                 .place(FilePlace.valueOf(context.policy()))
-                .type(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(filepart.filename())))
+                .type(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(context.fileName())))
                 .url(uploadPath.toString().replace(ikarosProp.getWorkDir().toString(), "")
                     .replace(java.io.File.separatorChar, '/'))
-                .name(filepart.filename())
+                .name(context.fileName())
                 .originalPath(uploadPath.toString())
-                .originalName(filepart.filename())
-                .size(filepart.headers().getContentLength())
+                .originalName(context.fileName())
+                .size(size)
                 .build()))
-                .flatMap(fileRepository::save)
+            .flatMap(fileRepository::save)
             .map(File::new);
     }
 

@@ -26,7 +26,6 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
-import run.ikaros.api.core.subject.SubjectImage;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.store.entity.BaseEntity;
@@ -40,13 +39,11 @@ import run.ikaros.server.store.entity.CollectionEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
-import run.ikaros.server.store.entity.SubjectImageEntity;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
 import run.ikaros.server.store.repository.CollectionRepository;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.FileRepository;
-import run.ikaros.server.store.repository.SubjectImageRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
 
@@ -55,7 +52,6 @@ import run.ikaros.server.store.repository.SubjectSyncRepository;
 public class SubjectServiceImpl implements SubjectService, ApplicationContextAware {
     private final SubjectRepository subjectRepository;
     private final CollectionRepository collectionRepository;
-    private final SubjectImageRepository subjectImageRepository;
     private final EpisodeRepository episodeRepository;
     private final EpisodeFileRepository episodeFileRepository;
     private final SubjectSyncRepository subjectSyncRepository;
@@ -68,7 +64,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
      *
      * @param subjectRepository      {@link SubjectEntity} repository
      * @param collectionRepository   {@link CollectionEntity} repository
-     * @param subjectImageRepository {@link SubjectImageEntity} repository
      * @param episodeRepository      {@link EpisodeEntity} repository
      * @param episodeFileRepository  {@link EpisodeFileEntity} repository
      * @param subjectSyncRepository  {@link SubjectSyncEntity} repository
@@ -77,14 +72,12 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
                               CollectionRepository collectionRepository,
-                              SubjectImageRepository subjectImageRepository,
                               EpisodeRepository episodeRepository,
                               EpisodeFileRepository episodeFileRepository,
                               SubjectSyncRepository subjectSyncRepository,
                               FileRepository fileRepository, R2dbcEntityTemplate template) {
         this.subjectRepository = subjectRepository;
         this.collectionRepository = collectionRepository;
-        this.subjectImageRepository = subjectImageRepository;
         this.episodeRepository = episodeRepository;
         this.episodeFileRepository = episodeFileRepository;
         this.subjectSyncRepository = subjectSyncRepository;
@@ -100,12 +93,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 Mono.error(new NotFoundException("Not found subject record by id: " + id)))
             .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject()))
             .checkpoint("FindSubjectEntityById")
-
-            .flatMap(subject -> subjectImageRepository.findBySubjectId(subject.getId())
-                .flatMap(imageEntity -> copyProperties(imageEntity, new SubjectImage()))
-                .map(subject::setImage)
-                .switchIfEmpty(Mono.just(subject)))
-            .checkpoint("FindSubjectImageEntityBySubjectId")
 
             .flatMap(subject -> episodeRepository.findBySubjectId(subject.getId())
                 .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
@@ -184,15 +171,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMap(subjectEntity -> copyProperties(subjectEntity, subject))
             .checkpoint("CreateSubjectEntity")
 
-            .map(sub -> Objects.isNull(subject.getImage())
-                ? new SubjectImage() : subject.getImage())
-            .flatMap(subjectImage -> copyProperties(subjectImage, new SubjectImageEntity()))
-            .map(entity -> entity.setSubjectId(subjectId.get()))
-            .flatMap(subjectImageRepository::save)
-            .flatMap(subjectImageEntity -> copyProperties(subjectImageEntity, new SubjectImage()))
-            .map(subject::setImage)
-            .checkpoint("CreateSubjectImageEntity")
-
             .map(sub -> Objects.isNull(subject.getEpisodes())
                 ? new ArrayList<Episode>() : subject.getEpisodes())
             .filter(Objects::nonNull)
@@ -233,6 +211,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 map.put(SqlIdentifier.unquoted("update_time"), entity.getUpdateTime());
                 map.put(SqlIdentifier.unquoted("name"), entity.getName());
                 map.put(SqlIdentifier.unquoted("nameCn"), entity.getNameCn());
+                map.put(SqlIdentifier.unquoted("cover"), entity.getCover());
                 map.put(SqlIdentifier.unquoted("type"), entity.getType());
                 map.put(SqlIdentifier.unquoted("infobox"), entity.getInfobox());
                 map.put(SqlIdentifier.unquoted("summary"), entity.getSummary());
@@ -250,37 +229,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .doOnSuccess(count
                 -> log.debug("Update subject entity success for id=[{}]", subjectId.get()))
             .checkpoint("UpdateSubjectEntity")
-
-            // 条目图片的更新逻辑是: 存在则更新原有记录, 不存在则新增记录
-            .then(Mono.justOrEmpty(subject.getImage()))
-            .flatMap(image -> copyProperties(image, new SubjectImageEntity()))
-            .map(imageEntity -> imageEntity.setSubjectId(subjectId.get()))
-            .flatMap(entity -> {
-                final Long entityId = entity.getId();
-                if (entityId == null) {
-                    return subjectImageRepository.save(entity);
-                }
-
-                Map<SqlIdentifier, Object> map = new HashMap<>();
-                map.put(SqlIdentifier.unquoted("update_time"), entity.getUpdateTime());
-                map.put(SqlIdentifier.unquoted("subject_id"), entity.getSubjectId());
-                map.put(SqlIdentifier.unquoted("large"), entity.getLarge());
-                map.put(SqlIdentifier.unquoted("common"), entity.getCommon());
-                map.put(SqlIdentifier.unquoted("medium"), entity.getMedium());
-                map.put(SqlIdentifier.unquoted("small"), entity.getSmall());
-                map.put(SqlIdentifier.unquoted("grid"), entity.getGrid());
-                return Mono.just(map)
-                    .flatMap(columnsToUpdate ->
-                        template.update(Query.query(where("id").is(entity.getId())),
-                            Update.from(columnsToUpdate), SubjectImageEntity.class))
-                    .filter(count -> count > 0)
-                    .switchIfEmpty(Mono.error(new RuntimeException(
-                        "Update fail for subject images id: "
-                            + entity.getId() + ", subject id: " + entity.getSubjectId())));
-            })
-            .doOnSuccess(count
-                -> log.debug("Update subject image entity success for id=[{}]", subjectId.get()))
-            .checkpoint("UpdateSubjectImageEntity")
 
             // 剧集的更新逻辑是: 移除原有的所有剧集记录,再创建新的剧集记录.
             .then(episodeRepository.deleteAllBySubjectId(subjectId.get()))
@@ -312,8 +260,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 new SubjectRemoveEvent(this, entity)))
             // Delete subject entity
             .flatMap(entity -> subjectRepository.deleteById(id))
-            // Delete subject image entity
-            .then(subjectImageRepository.deleteBySubjectId(id))
             // Delete episode entities
             .then(episodeRepository.deleteAllBySubjectId(id))
             ;

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Subject } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
+import SubjectSyncDialog from './SubjectSyncDialog.vue';
+import { base64Encode } from '@/utils/string-util';
 
 const router = useRouter();
 
@@ -24,8 +26,8 @@ const fetchSubjects = async () => {
 	const { data } = await apiClient.subject.listSubjectsByCondition({
 		page: findSubjectsCondition.value.page,
 		size: findSubjectsCondition.value.size,
-		name: findSubjectsCondition.value.name,
-		nameCn: findSubjectsCondition.value.nameCn,
+		name: base64Encode(findSubjectsCondition.value.name),
+		nameCn: base64Encode(findSubjectsCondition.value.nameCn),
 		nsfw: findSubjectsCondition.value.nsfw,
 		type: findSubjectsCondition.value.type,
 	});
@@ -35,10 +37,20 @@ const fetchSubjects = async () => {
 	subjects.value = data.items as Subject[];
 };
 
+const subjectSyncDialogVisible = ref(false);
+const onSubjectSyncDialogCloseWithSubjectName = (subjectName: string) => {
+	findSubjectsCondition.value.name = subjectName;
+	fetchSubjects();
+};
+
 onMounted(fetchSubjects);
 </script>
 
 <template>
+	<SubjectSyncDialog
+		v-model:visible="subjectSyncDialogVisible"
+		@closeWithSubjectName="onSubjectSyncDialogCloseWithSubjectName"
+	/>
 	<el-row :gutter="10">
 		<el-col :xs="24" :sm="24" :md="24" :lg="20" :xl="20">
 			<el-form :inline="true" :model="findSubjectsCondition">
@@ -104,6 +116,9 @@ onMounted(fetchSubjects);
 			:xl="4"
 			style="text-align: right"
 		>
+			<el-button plain @click="subjectSyncDialogVisible = true">
+				快速新增
+			</el-button>
 			<el-button plain @click="toSubjectPost"> 新建条目 </el-button>
 		</el-col>
 	</el-row>
@@ -132,7 +147,7 @@ onMounted(fetchSubjects);
 					</template>
 					<span>
 						<img
-							:src="subject?.image?.common"
+							:src="subject?.cover"
 							style="width: 100%; border-radius: 5px"
 						/>
 					</span>

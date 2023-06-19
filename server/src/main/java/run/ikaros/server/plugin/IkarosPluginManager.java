@@ -28,12 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
-import run.ikaros.server.plugin.event.IkarosPluginBeforeStopEvent;
 import run.ikaros.server.plugin.event.IkarosPluginDeleteEvent;
-import run.ikaros.server.plugin.event.IkarosPluginLoadedEvent;
-import run.ikaros.server.plugin.event.IkarosPluginStartedEvent;
-import run.ikaros.server.plugin.event.IkarosPluginStateChangedEvent;
-import run.ikaros.server.plugin.event.IkarosPluginStoppedEvent;
 
 /**
  * Ikaros plugin manager.
@@ -103,14 +98,6 @@ public class IkarosPluginManager extends DefaultPluginManager
     }
 
     @Override
-    protected void firePluginStateEvent(PluginStateEvent event) {
-        rootApplicationContext.publishEvent(
-            new IkarosPluginStateChangedEvent(this, event.getPlugin(), event.getOldState()));
-        super.firePluginStateEvent(event);
-    }
-
-
-    @Override
     protected PluginState stopPlugin(String pluginId, boolean stopDependents) {
         checkPluginId(pluginId);
         PluginWrapper pluginWrapper = getPlugin(pluginId);
@@ -126,8 +113,6 @@ public class IkarosPluginManager extends DefaultPluginManager
             // do nothing
             return pluginState;
         }
-
-        rootApplicationContext.publishEvent(new IkarosPluginBeforeStopEvent(this, pluginWrapper));
 
         if (stopDependents) {
             List<String> dependents = dependencyResolver.getDependents(pluginId);
@@ -146,7 +131,6 @@ public class IkarosPluginManager extends DefaultPluginManager
 
             startedPlugins.remove(pluginWrapper);
 
-            rootApplicationContext.publishEvent(new IkarosPluginStoppedEvent(this, pluginWrapper));
             firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -181,8 +165,7 @@ public class IkarosPluginManager extends DefaultPluginManager
                     pluginWrapper.setFailedException(null);
                     startedPlugins.add(pluginWrapper);
 
-                    rootApplicationContext.publishEvent(
-                        new IkarosPluginStartedEvent(this, pluginWrapper));
+                    firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
                 } catch (Exception | LinkageError e) {
                     pluginWrapper.setPluginState(PluginState.FAILED);
                     pluginWrapper.setFailedException(e);
@@ -191,8 +174,6 @@ public class IkarosPluginManager extends DefaultPluginManager
                     releaseAdditionalResources(pluginWrapper.getPluginId());
                     log.error("Unable to start plugin '{}'",
                         getPluginLabel(pluginWrapper.getDescriptor()), e);
-                } finally {
-                    firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
                 }
             }
         }
@@ -256,7 +237,8 @@ public class IkarosPluginManager extends DefaultPluginManager
             pluginWrapper.setPluginState(PluginState.STARTED);
             startedPlugins.add(pluginWrapper);
 
-            rootApplicationContext.publishEvent(new IkarosPluginStartedEvent(this, pluginWrapper));
+            firePluginStateEvent(
+                new PluginStateEvent(this, pluginWrapper, pluginWrapper.getPluginState()));
         } catch (Exception e) {
             log.error("Unable to start plugin '{}'",
                 getPluginLabel(pluginWrapper.getDescriptor()), e);
@@ -264,8 +246,6 @@ public class IkarosPluginManager extends DefaultPluginManager
             startingErrors.put(pluginWrapper.getPluginId(), PluginStartingError.of(
                 pluginWrapper.getPluginId(), e.getMessage(), e.toString()));
             releaseAdditionalResources(pluginId);
-        } finally {
-            firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
         }
         return pluginWrapper.getPluginState();
     }
@@ -281,21 +261,19 @@ public class IkarosPluginManager extends DefaultPluginManager
             PluginState pluginState = pluginWrapper.getPluginState();
             if (PluginState.STARTED == pluginState) {
                 try {
-                    rootApplicationContext.publishEvent(
-                        new IkarosPluginBeforeStopEvent(this, pluginWrapper));
                     log.info("Stop plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
                     pluginWrapper.getPlugin().stop();
                     pluginWrapper.setPluginState(PluginState.STOPPED);
                     itr.remove();
                     releaseAdditionalResources(pluginWrapper.getPluginId());
 
-                    rootApplicationContext.publishEvent(
-                        new IkarosPluginStoppedEvent(this, pluginWrapper));
-                    firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
                 } catch (PluginRuntimeException e) {
                     log.error(e.getMessage(), e);
                     startingErrors.put(pluginWrapper.getPluginId(), PluginStartingError.of(
                         pluginWrapper.getPluginId(), e.getMessage(), e.toString()));
+                } finally {
+                    firePluginStateEvent(
+                        new PluginStateEvent(this, pluginWrapper, pluginWrapper.getPluginState()));
                 }
             }
         }
@@ -347,19 +325,6 @@ public class IkarosPluginManager extends DefaultPluginManager
         }
     }
 
-    @Override
-    protected PluginWrapper loadPluginFromPath(Path pluginPath) {
-        return super.loadPluginFromPath(pluginPath);
-    }
-
-    @Override
-    public String loadPlugin(Path pluginPath) {
-        String pluginId = super.loadPlugin(pluginPath);
-        PluginWrapper pluginWrapper = getPlugin(pluginId);
-        rootApplicationContext.publishEvent(new IkarosPluginLoadedEvent(this, pluginWrapper));
-        return pluginId;
-    }
-
     /**
      * Load plugin by id.
      *
@@ -374,11 +339,8 @@ public class IkarosPluginManager extends DefaultPluginManager
     }
 
     @Override
-    public void loadPlugins() {
-        super.loadPlugins();
-        for (PluginWrapper pluginWrapper : getPlugins()) {
-            rootApplicationContext.publishEvent(new IkarosPluginLoadedEvent(this, pluginWrapper));
-        }
+    protected PluginWrapper loadPluginFromPath(Path pluginPath) {
+        return super.loadPluginFromPath(pluginPath);
     }
 
     @Override
@@ -412,6 +374,7 @@ public class IkarosPluginManager extends DefaultPluginManager
         Path pluginPath = pluginWrapper.getPluginPath();
         boolean result = pluginRepository.deletePluginPath(pluginPath);
 
+        firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, null));
         // publish plugin deleted event.
         rootApplicationContext.publishEvent(new IkarosPluginDeleteEvent(this, pluginId));
 

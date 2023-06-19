@@ -390,8 +390,21 @@ onMounted(getPluginsFromServer);
 				/>
 			</template>
 		</el-table-column>
-		<el-table-column prop="name" label="名称" width="150" />
-		<el-table-column prop="author.name" label="作者" width="200" />
+
+		<el-table-column prop="name" label="ID" width="150" />
+		<el-table-column prop="displayName" label="名称" width="150" />
+		<el-table-column prop="author.name" label="作者" width="200">
+			<template #default="scope">
+				<a
+					v-if="scope?.row?.author?.website"
+					:href="scope.row.author.website"
+					target="_blank"
+				>
+					{{ scope.row.author.name }}
+				</a>
+				<span v-else>{{ scope.row.author.name }}</span>
+			</template>
+		</el-table-column>
 		<el-table-column prop="description" label="描述" />
 		<el-table-column prop="state" label="状态" align="right" width="100">
 			<template #default="scope">

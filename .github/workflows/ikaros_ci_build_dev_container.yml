@@ -24,9 +24,15 @@ jobs:
           java-version: 17
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-      - name: Build with Gradle
+      - name: Clean with gradle
         run: |
-          ./gradlew clean build -x test
+          ./gradlew clean
+      - name: Build console with npm
+        run: |
+          ./gradlew buildFrontend -x test
+      - name: Build server with gradle
+        run: |
+          ./gradlew build -x test
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1

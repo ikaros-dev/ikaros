@@ -1,8 +1,9 @@
 ikaros:
   plugin:
-    runtime-mode: development
-    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-bgmtv
-    enabled-plugins: PluginBgmTv
+#    runtime-mode: development
+#    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-bgmtv
+#    enabled-plugins: PluginBgmTv
+#    disabled-plugins: PluginBgmTv
   security:
     initializer:
       master-username: tomoki

@@ -41,7 +41,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.file.File;
-import run.ikaros.api.core.file.FilePolicy;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.store.entity.FileEntity;
@@ -49,6 +48,7 @@ import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
+import run.ikaros.server.infra.utils.DataBufferUtils;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 
 @Slf4j
@@ -264,8 +264,9 @@ public class FileEndpoint implements CoreEndpoint {
             .map(DefaultUploadRequest::new)
             // Upload file by service.
             .flatMap(uploadRequest -> fileService.upload(
-                FilePolicy.builder().name(uploadRequest.getPolicyName().toUpperCase()).build(),
-                uploadRequest.getFile()))
+                uploadRequest.getFile().filename(),
+                DataBufferUtils.formFilePart(uploadRequest.getFile()),
+                uploadRequest.getPolicyName()))
             // Response upload file data
             .flatMap(file -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)

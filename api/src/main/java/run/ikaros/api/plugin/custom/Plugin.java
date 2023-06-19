@@ -59,6 +59,9 @@ public class Plugin {
     private String description;
     private String license;
     private PluginState state;
+    /**
+     * format: pluginId:pluginVersion.
+     */
     private Map<String, String> dependencies = new HashMap<>(4);
     private Path loadLocation;
     /**

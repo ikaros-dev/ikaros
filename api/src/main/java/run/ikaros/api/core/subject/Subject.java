@@ -37,7 +37,7 @@ public class Subject {
     @Schema(requiredMode = REQUIRED)
     private Boolean nsfw;
     private LocalDateTime airTime;
-    private SubjectImage image;
+    private String cover;
     private List<Episode> episodes;
     @JsonProperty("total_episodes")
     private Long totalEpisodes;

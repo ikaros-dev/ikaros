@@ -15,11 +15,19 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
+import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.server.infra.properties.IkarosProperties;
+import run.ikaros.server.plugin.listener.PluginStateChangedListener;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(PluginProperties.class)
 public class PluginConfiguration {
+
+    @Bean
+    public PluginStateChangedListener pluginStateChangedListener(
+        ReactiveCustomClient reactiveCustomClient) {
+        return new PluginStateChangedListener(reactiveCustomClient);
+    }
 
     /**
      * New a {@link IkarosPluginManager} instance to manager plugin.
@@ -28,7 +36,9 @@ public class PluginConfiguration {
      */
     @Bean
     public IkarosPluginManager ikarosPluginManager(PluginProperties pluginProperties,
-                                                   IkarosProperties ikarosProperties) {
+                                                   IkarosProperties ikarosProperties,
+                                                   PluginStateChangedListener
+                                                       pluginStateChangedListener) {
         // Setup RuntimeMode
         RuntimeMode runtimeMode = RuntimeMode.DEPLOYMENT;
         if (Objects.nonNull(pluginProperties.getRuntimeMode())) {
@@ -84,9 +94,15 @@ public class PluginConfiguration {
                         this::isNotDevelopment);
             }
         };
+
         // Setup others properties
         ikarosPluginManager.setExactVersionAllowed(pluginProperties.isExactVersionAllowed());
         ikarosPluginManager.setSystemVersion(pluginProperties.getSystemVersion());
+
+        // Add listener
+        ikarosPluginManager.addPluginStateListener(pluginStateChangedListener);
+        // Config plugin state change listener manager ref.
+        pluginStateChangedListener.setIkarosPluginManager(ikarosPluginManager);
         return ikarosPluginManager;
     }
 }

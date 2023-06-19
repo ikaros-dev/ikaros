@@ -19,16 +19,20 @@ public class PluginPropertiesEnablesInitListener {
     private final IkarosPluginManager ikarosPluginManager;
     private final PluginProperties pluginProperties;
     private final ReactiveCustomClient reactiveCustomClient;
+    private final PluginStateChangedListener pluginStateChangedListener;
 
     /**
      * Construct.
      */
     public PluginPropertiesEnablesInitListener(IkarosPluginManager ikarosPluginManager,
                                                PluginProperties pluginProperties,
-                                               ReactiveCustomClient reactiveCustomClient) {
+                                               ReactiveCustomClient reactiveCustomClient,
+                                               PluginStateChangedListener
+                                                   pluginStateChangedListener) {
         this.ikarosPluginManager = ikarosPluginManager;
         this.pluginProperties = pluginProperties;
         this.reactiveCustomClient = reactiveCustomClient;
+        this.pluginStateChangedListener = pluginStateChangedListener;
     }
 
     /**

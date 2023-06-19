@@ -19,9 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
-import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -264,15 +264,17 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
     }
 
     @Override
-    public Mono<run.ikaros.api.core.file.File> upload(FilePolicy policy, FilePart filePart) {
-        Assert.notNull(policy, "'policy' must not null.");
-        Assert.notNull(filePart, "'filePart' must not null.");
-        // Check request file policy exists.
-        return reactiveCustomClient.findOne(FilePolicy.class, policy.getName())
+    public Mono<run.ikaros.api.core.file.File> upload(String fileName,
+                                                      Flux<DataBuffer> dataBufferFlux,
+                                                      String policy) {
+        Assert.notNull(dataBufferFlux, "'dataBufferFlux' must not null.");
+        Assert.hasText(fileName, "'fileName' must has text.");
+        Assert.hasText(policy, "'policy' must has text.");
+        return reactiveCustomClient.findOne(FilePolicy.class, policy)
             .onErrorResume(NotFoundException.class, error ->
-                Mono.error(new NotFoundException("Not found file policy: " + policy.getName())))
-            .flatMap(filePolicy -> Mono.just(new FileHandler.DefaultUploadContext(
-                filePart, filePolicy.getName(), null)))
+                Mono.error(new NotFoundException("Not found file policy: " + policy)))
+            .flatMap(filePolicy -> Mono.just(new FileHandler.DateBufferUploadContext(
+                fileName, dataBufferFlux, policy, null)))
             .flatMap(uploadContext -> Flux.fromStream(
                     extensionComponentsFinder.getExtensions(FileHandler.class).stream())
                 // Select file handler
