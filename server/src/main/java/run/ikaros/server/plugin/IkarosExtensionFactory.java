@@ -67,7 +67,7 @@ public class IkarosExtensionFactory implements ExtensionFactory {
 
         if (plugin instanceof BasePlugin) {
             log.debug(
-                "  Extension class ' " + extensionClass.getName() + "' belongs to ikaros-plugin '"
+                "Extension class [" + extensionClass.getName() + "] belongs to ikaros-plugin '"
                     + nameOf(plugin)
                     + "' and will be autowired by using its application context.");
             applicationContext = PluginApplicationContextRegistry.getInstance()

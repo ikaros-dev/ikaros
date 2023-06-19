@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -67,6 +68,8 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
             .map(subjectSynchronizer -> subjectSynchronizer.pull(platformId))
             .flatMap(subject -> Objects.isNull(subjectId)
                 ? subjectService.create(subject)
+                .onErrorResume(DuplicateKeyException.class, e -> Mono.just(subject)
+                    .map(sub -> sub.setId(null)).flatMap(subjectService::create))
                 : subjectService.update(subject)
                 .then(Mono.defer(() -> subjectService.findById(subjectId))))
             .doOnSuccess(subject -> applicationContext.publishEvent(

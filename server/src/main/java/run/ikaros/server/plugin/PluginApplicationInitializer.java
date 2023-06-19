@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginWrapper;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -77,12 +76,7 @@ public class PluginApplicationInitializer {
         for (Class<?> component : candidateComponents) {
             log.debug("register a plugin component class [{}] to context for [{}]",
                 component, pluginId);
-            try {
-                pluginApplicationContext.getBean(component);
-            } catch (NoSuchBeanDefinitionException noSuchBeanDefinitionException) {
-                pluginApplicationContext.registerBean(component);
-            }
-
+            pluginApplicationContext.registerBean(component);
         }
         stopWatch.stop();
 
@@ -191,8 +185,16 @@ public class PluginApplicationInitializer {
         Assert.notNull(pluginId, "'pluginId' must not be null");
         PluginApplicationContext removed = contextRegistry.remove(pluginId);
         if (removed != null) {
+            StopWatch stopWatch =
+                new StopWatch(String.format("[%s]PluginAppContextDestroyed", pluginId));
+            stopWatch.start("PluginAppContextClose");
             removed.close();
+            stopWatch.stop();
+            stopWatch.start("PluginAppContextGc");
             Runtime.getRuntime().gc();
+            stopWatch.stop();
+            log.debug("[{}] Total millis: {} ms -> {}", pluginId, stopWatch.getTotalTimeMillis(),
+                stopWatch.prettyPrint());
         }
     }
 }
