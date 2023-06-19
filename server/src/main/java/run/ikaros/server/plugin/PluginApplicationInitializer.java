@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginWrapper;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -76,7 +77,12 @@ public class PluginApplicationInitializer {
         for (Class<?> component : candidateComponents) {
             log.debug("register a plugin component class [{}] to context for [{}]",
                 component, pluginId);
-            pluginApplicationContext.registerBean(component);
+            try {
+                pluginApplicationContext.getBean(component);
+            } catch (NoSuchBeanDefinitionException noSuchBeanDefinitionException) {
+                pluginApplicationContext.registerBean(component);
+            }
+
         }
         stopWatch.stop();
 

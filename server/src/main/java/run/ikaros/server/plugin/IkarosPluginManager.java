@@ -131,6 +131,11 @@ public class IkarosPluginManager extends DefaultPluginManager
 
             startedPlugins.remove(pluginWrapper);
 
+            // stop plugin app context by id.
+            PluginApplicationContextRegistry.getInstance()
+                .getByPluginId(pluginId)
+                .close();
+
             firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -266,6 +271,12 @@ public class IkarosPluginManager extends DefaultPluginManager
                     pluginWrapper.setPluginState(PluginState.STOPPED);
                     itr.remove();
                     releaseAdditionalResources(pluginWrapper.getPluginId());
+
+                    // stop plugin app context by id.
+                    PluginApplicationContextRegistry
+                        .getInstance()
+                        .getByPluginId(pluginWrapper.getPluginId())
+                        .close();
 
                 } catch (PluginRuntimeException e) {
                     log.error(e.getMessage(), e);
