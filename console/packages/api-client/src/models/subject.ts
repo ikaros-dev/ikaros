@@ -17,9 +17,6 @@
 import { Episode } from './episode';
 // May contain unused imports in some cases
 // @ts-ignore
-import { SubjectImage } from './subject-image';
-// May contain unused imports in some cases
-// @ts-ignore
 import { SubjectSync } from './subject-sync';
 
 /**
@@ -72,10 +69,10 @@ export interface Subject {
 	airTime?: string;
 	/**
 	 *
-	 * @type {SubjectImage}
+	 * @type {string}
 	 * @memberof Subject
 	 */
-	image?: SubjectImage;
+	cover?: string;
 	/**
 	 *
 	 * @type {Array<Episode>}
