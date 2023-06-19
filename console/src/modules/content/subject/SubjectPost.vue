@@ -3,15 +3,16 @@ import { reactive, ref } from 'vue';
 import {
 	Episode,
 	Subject,
-	SubjectImage,
 	SubjectTypeEnum,
+	FileEntity,
 } from '@runikaros/api-client';
-import SubjectImageDrawer from './SubjectImageDrawer.vue';
 import EpisodePostDialog from './EpisodePostDialog.vue';
 import { ElMessage, FormInstance, FormRules } from 'element-plus';
+import { Picture } from '@element-plus/icons-vue';
 import { formatDate } from '@/utils/date';
 import { apiClient } from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
+import FileSelectDialog from '../file/FileSelectDialog.vue';
 
 const router = useRouter();
 
@@ -22,12 +23,6 @@ const subject = ref<Subject>({
 	name_cn: '',
 	episodes: [],
 });
-
-const subjectImageDrawerVisible = ref(false);
-const onSubjectImageDrawerClose = (image: SubjectImage) => {
-	subject.value.image = image;
-	subjectImageDrawerVisible.value = false;
-};
 
 const subjectRuleFormRules = reactive<FormRules>({
 	name: [
@@ -97,23 +92,21 @@ const showEpisodeDetails = (ep: Episode) => {
 };
 
 const episodeDetailsDialogVisible = ref(false);
+
+const fileSelectDialogVisible = ref(false);
+const onFileSelectDialogCloseWithUrl = (file: FileEntity) => {
+	// console.log('receive file entity: ', file);
+	subject.value.cover = file.url as string;
+	fileSelectDialogVisible.value = false;
+};
 </script>
 
 <template>
-	<SubjectImageDrawer
-		v-model:visible="subjectImageDrawerVisible"
-		v-model:subjectImage="subject.image"
-		@close="onSubjectImageDrawerClose"
+	<FileSelectDialog
+		v-model:visible="fileSelectDialogVisible"
+		@closeWithFileEntity="onFileSelectDialogCloseWithUrl"
 	/>
 
-	<el-row>
-		<el-col :span="24">
-			<el-button plain @click="subjectImageDrawerVisible = true"
-				>条目图片</el-button
-			>
-		</el-col>
-	</el-row>
-	<br />
 	<el-row>
 		<el-col :xs="24" :sm="24" :md="24" :lg="16" :xl="16">
 			<el-form
@@ -139,6 +132,18 @@ const episodeDetailsDialogVisible = ref(false);
 							</el-form-item>
 						</el-col>
 					</el-row>
+				</el-form-item>
+
+				<el-form-item label="条目封面">
+					<el-input v-model="subject.cover" clearable>
+						<template #prepend>
+							<el-button
+								:icon="Picture"
+								plain
+								@click="fileSelectDialogVisible = true"
+							/>
+						</template>
+					</el-input>
 				</el-form-item>
 
 				<el-form-item label="条目名称" prop="name">
@@ -234,12 +239,12 @@ const episodeDetailsDialogVisible = ref(false);
 			</el-form>
 		</el-col>
 		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
-			<span v-if="subject.image?.common">
+			<span v-if="subject.cover">
 				<el-image
 					style="width: 100%"
-					:src="subject.image?.common"
+					:src="subject.cover"
 					:zoom-rate="1.2"
-					:preview-src-list="new Array(subject.image?.common)"
+					:preview-src-list="new Array(subject.cover)"
 					:initial-index="4"
 					fit="cover"
 				/>

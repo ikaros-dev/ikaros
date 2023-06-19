@@ -13,6 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
+import run.ikaros.api.core.subject.Episode;
+import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 
@@ -59,13 +62,9 @@ class SubjectServiceTest {
 
         // Verify findById when subject record exists
         StepVerifier.create(subjectService.findById(subjectId.get()))
-            .expectNextMatches(sub -> subject.canEqual(sub)
-                && Objects.equals(subjectId.get(), sub.getId())
+            .expectNextMatches(sub -> Objects.equals(subjectId.get(), sub.getId())
                 && Objects.equals(subject.getName(), sub.getName())
-                && subject.getType().equals(sub.getType())
-                && Objects.nonNull(sub.getImage())
-                && subject.getImage().getCommon()
-                .equals(sub.getImage().getCommon()))
+                && subject.getType().equals(sub.getType()))
             .verifyComplete();
     }
 
@@ -100,24 +99,18 @@ class SubjectServiceTest {
 
         // Verify findById when subject record exists
         StepVerifier.create(subjectService.findById(subjectId.get()))
-            .expectNextMatches(sub -> subject.canEqual(sub)
-                && Objects.equals(subjectId.get(), sub.getId())
+            .expectNextMatches(sub -> Objects.equals(subjectId.get(), sub.getId())
                 && Objects.equals(subject.getName(), sub.getName())
                 && subject.getType().equals(sub.getType())
-                && Objects.nonNull(sub.getImage())
-                && subject.getImage().getCommon()
-                .equals(sub.getImage().getCommon()))
+            )
             .verifyComplete();
 
         // Verify findByBgmId when subject record exists
         StepVerifier.create(subjectService.findByBgmId(subjectId.get(), Long.MAX_VALUE))
-            .expectNextMatches(sub -> subject.canEqual(sub)
-                && Objects.equals(subjectId.get(), sub.getId())
+            .expectNextMatches(sub -> Objects.equals(subjectId.get(), sub.getId())
                 && Objects.equals(subject.getName(), sub.getName())
                 && subject.getType().equals(sub.getType())
-                && Objects.nonNull(sub.getImage())
-                && subject.getImage().getCommon()
-                .equals(sub.getImage().getCommon()))
+             )
             .verifyComplete();
     }
 
@@ -137,10 +130,7 @@ class SubjectServiceTest {
         subject.setInfobox("infobox-unit-test");
         subject.setNameCn("单元测试条目名");
         subject.setAirTime(LocalDateTime.now());
-
-        var image = new SubjectImage();
-        image.setCommon("https://ikaros.run/static/test.jpg");
-        subject.setImage(image);
+        subject.setCover("https://ikaros.run/static/test.jpg");
 
         var episodes = new ArrayList<Episode>();
         episodes.add(Episode.builder()

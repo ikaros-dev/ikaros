@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.store.entity.BaseEntity;
 import run.ikaros.api.store.enums.SubjectType;
-import run.ikaros.server.core.subject.Subject;
 
 /**
  * Subject entity.
@@ -36,6 +36,7 @@ public class SubjectEntity extends BaseEntity {
      * Not Safe/Suitable For Work.
      */
     private Boolean nsfw;
+    private String cover;
     @Column("air_time")
     private LocalDateTime airTime;
 }

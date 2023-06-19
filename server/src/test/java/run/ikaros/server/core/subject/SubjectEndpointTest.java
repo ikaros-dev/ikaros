@@ -26,6 +26,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.core.subject.Episode;
+import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.security.SecurityProperties;
@@ -93,10 +95,6 @@ class SubjectEndpointTest {
         subject.setInfobox("infobox-unit-test" + new Random(100).nextInt());
         subject.setNameCn("单元测试条目名");
         subject.setAirTime(LocalDateTime.now());
-
-        var image = new SubjectImage();
-        image.setCommon("https://ikaros.run/static/test.jpg");
-        subject.setImage(image);
 
         var episodes = new ArrayList<Episode>();
         episodes.add(Episode.builder()

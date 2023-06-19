@@ -86,7 +86,7 @@ task pnpmInstall(type: NpxTask) {
 
 build {
     // build frontend before build
-    tasks.getByName('compileJava').dependsOn('buildFrontend')
+    // tasks.getByName('compileJava').dependsOn('buildFrontend')
     tasks.getByName("buildFrontend").dependsOn("pnpmInstall")
 }
 

@@ -3,7 +3,6 @@ package run.ikaros.server.plugin;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
-import org.pf4j.DefaultPluginDescriptor;
 import org.pf4j.PluginDependency;
 import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginDescriptorFinder;
@@ -34,23 +33,28 @@ public class YamlPluginDescriptorFinder implements PluginDescriptorFinder {
         return convert(plugin);
     }
 
-    private DefaultPluginDescriptor convert(Plugin plugin) {
-        DefaultPluginDescriptor defaultPluginDescriptor =
-            new DefaultPluginDescriptor(plugin.getName(),
+    private IkarosPluginDescriptor convert(Plugin plugin) {
+        IkarosPluginDescriptor pluginDescriptor =
+            new IkarosPluginDescriptor(plugin.getName(),
                 plugin.getDescription(),
                 plugin.getClazz(),
                 plugin.getVersion(),
                 plugin.getRequires(),
                 plugin.getAuthor().getName(),
                 plugin.getLicense());
+        pluginDescriptor.setAuthor(plugin.getAuthor());
+        pluginDescriptor.setLogo(plugin.getLogo());
+        pluginDescriptor.setHomepage(plugin.getHomepage());
+        pluginDescriptor.setDisplayName(plugin.getDisplayName());
+        pluginDescriptor.setLoadLocation(plugin.getLoadLocation());
 
         // add dependencies
         plugin.getDependencies().forEach((pluginDepName, versionRequire) -> {
             PluginDependency dependency =
                 new PluginDependency(String.format("%s@%s", pluginDepName, versionRequire));
-            defaultPluginDescriptor.addDependency(dependency);
+            pluginDescriptor.addDependency(dependency);
         });
-        return defaultPluginDescriptor;
+        return pluginDescriptor;
     }
 
 

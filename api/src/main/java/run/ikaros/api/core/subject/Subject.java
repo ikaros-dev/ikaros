@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.api.core.subject;
 
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
@@ -37,7 +37,7 @@ public class Subject {
     @Schema(requiredMode = REQUIRED)
     private Boolean nsfw;
     private LocalDateTime airTime;
-    private SubjectImage image;
+    private String cover;
     private List<Episode> episodes;
     @JsonProperty("total_episodes")
     private Long totalEpisodes;

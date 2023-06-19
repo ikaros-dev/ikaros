@@ -33,6 +33,9 @@ public class SearchParam {
         return keyword;
     }
 
+    /**
+     * .
+     */
     @Schema(name = "limit", defaultValue = "100", maximum = "1000")
     public int getLimit() {
         var limitString = query.getFirst("limit");
@@ -50,6 +53,9 @@ public class SearchParam {
         return limit;
     }
 
+    /**
+     * .
+     */
     @Schema(name = "highlightPreTag", defaultValue = DEFAULT_HIGHLIGHT_PRE_TAG)
     public String getHighlightPreTag() {
         var highlightPreTag = query.getFirst("highlightPreTag");
@@ -59,6 +65,9 @@ public class SearchParam {
         return highlightPreTag;
     }
 
+    /**
+     * .
+     */
     @Schema(name = "highlightPostTag", defaultValue = DEFAULT_HIGHLIGHT_POST_TAG)
     public String getHighlightPostTag() {
         var highlightPostTag = query.getFirst("highlightPostTag");

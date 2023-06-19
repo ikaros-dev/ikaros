@@ -5,8 +5,7 @@ import FileFragmentUploadDrawer from './FileFragmentUploadDrawer.vue';
 import FileDeatilDrawer from './FileDeatilDrawer.vue';
 import { ElMessage } from 'element-plus';
 import { Upload } from '@element-plus/icons-vue';
-import Utf8 from 'crypto-js/enc-utf8';
-import Base64 from 'crypto-js/enc-base64';
+import { base64Encode } from '@/utils/string-util';
 
 const fileUploadDrawerVisible = ref(false);
 
@@ -25,14 +24,6 @@ const findFilesCondition = ref({
 	place: undefined,
 	type: undefined,
 });
-
-const base64Encode = (raw: string | undefined): string => {
-	if (raw === undefined) {
-		return '';
-	}
-	const word = Utf8.parse(raw);
-	return Base64.stringify(word);
-};
 
 const files = ref<FileEntity[]>([]);
 

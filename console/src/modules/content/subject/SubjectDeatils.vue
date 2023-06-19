@@ -164,9 +164,9 @@ onMounted(() => {
 				<el-col :xs="24" :sm="24" :md="12" :lg="6" :xl="6">
 					<el-image
 						style="width: 100%"
-						:src="subject.image?.common"
+						:src="subject.cover"
 						:zoom-rate="1.2"
-						:preview-src-list="new Array(subject.image?.common)  as string[]"
+						:preview-src-list="new Array(subject.cover)  as string[]"
 						:initial-index="4"
 						fit="cover"
 					/>

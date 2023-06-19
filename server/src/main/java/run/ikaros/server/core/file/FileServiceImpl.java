@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,9 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.FileHandler;
+import run.ikaros.api.core.file.FilePolicy;
+import run.ikaros.api.custom.ReactiveCustomClient;
+import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
@@ -49,6 +53,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
     private final R2dbcEntityTemplate template;
     private ApplicationContext applicationContext;
     private final ExtensionComponentsFinder extensionComponentsFinder;
+    private final ReactiveCustomClient reactiveCustomClient;
 
     /**
      * Construct.
@@ -57,12 +62,14 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                            EpisodeFileRepository episodeFileRepository,
                            IkarosProperties ikarosProperties,
                            R2dbcEntityTemplate template,
-                           ExtensionComponentsFinder extensionComponentsFinder) {
+                           ExtensionComponentsFinder extensionComponentsFinder,
+                           ReactiveCustomClient reactiveCustomClient) {
         this.fileRepository = fileRepository;
         this.episodeFileRepository = episodeFileRepository;
         this.ikarosProperties = ikarosProperties;
         this.template = template;
         this.extensionComponentsFinder = extensionComponentsFinder;
+        this.reactiveCustomClient = reactiveCustomClient;
     }
 
     @Override
@@ -254,6 +261,31 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         return fileRepository.save(entity)
             .doOnSuccess(fileEntity ->
                 applicationContext.publishEvent(new FileAddEvent(this, fileEntity)));
+    }
+
+    @Override
+    public Mono<run.ikaros.api.core.file.File> upload(String fileName,
+                                                      Flux<DataBuffer> dataBufferFlux,
+                                                      String policy) {
+        Assert.notNull(dataBufferFlux, "'dataBufferFlux' must not null.");
+        Assert.hasText(fileName, "'fileName' must has text.");
+        Assert.hasText(policy, "'policy' must has text.");
+        return reactiveCustomClient.findOne(FilePolicy.class, policy)
+            .onErrorResume(NotFoundException.class, error ->
+                Mono.error(new NotFoundException("Not found file policy: " + policy)))
+            .flatMap(filePolicy -> Mono.just(new FileHandler.DateBufferUploadContext(
+                fileName, dataBufferFlux, policy, null)))
+            .flatMap(uploadContext -> Flux.fromStream(
+                    extensionComponentsFinder.getExtensions(FileHandler.class).stream())
+                // Select file handler
+                .filter(
+                    fileHandler -> uploadContext.policy().equalsIgnoreCase(fileHandler.policy()))
+                .switchIfEmpty(Mono.error(new NotFoundException(
+                    "Not found file handler for policy: " + uploadContext.policy())))
+                .collectList()
+                .flatMap(fileHandlers -> Mono.just(fileHandlers.get(0)))
+                // Do upload file
+                .flatMap(fileHandler -> fileHandler.upload(uploadContext)));
     }
 
     private String path2url(@NotBlank String path, @Nullable String workDir) {
