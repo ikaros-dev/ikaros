@@ -46,7 +46,7 @@ import run.ikaros.api.search.file.FileHint;
 import run.ikaros.api.search.file.FileSearchService;
 import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
-import run.ikaros.server.infra.properties.IkarosProperties;
+import run.ikaros.api.infra.properties.IkarosProperties;
 
 @Slf4j
 @Service

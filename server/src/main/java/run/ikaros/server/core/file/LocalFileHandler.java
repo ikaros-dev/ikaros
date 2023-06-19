@@ -19,8 +19,8 @@ import run.ikaros.api.core.file.FileConst;
 import run.ikaros.api.core.file.FileHandler;
 import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FilePlace;
-import run.ikaros.server.infra.properties.IkarosProperties;
-import run.ikaros.server.infra.utils.FileUtils;
+import run.ikaros.api.infra.properties.IkarosProperties;
+import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.server.store.repository.FileRepository;
 
 @Slf4j

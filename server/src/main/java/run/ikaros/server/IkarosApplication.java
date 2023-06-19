@@ -3,7 +3,7 @@ package run.ikaros.server;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import run.ikaros.server.infra.properties.IkarosProperties;
+import run.ikaros.api.infra.properties.IkarosProperties;
 
 /**
  * Ikaros entry class.

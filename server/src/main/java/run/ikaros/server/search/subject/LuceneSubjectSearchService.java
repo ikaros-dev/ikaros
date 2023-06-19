@@ -45,7 +45,7 @@ import run.ikaros.api.search.subject.SubjectDoc;
 import run.ikaros.api.search.subject.SubjectHint;
 import run.ikaros.api.search.subject.SubjectSearchService;
 import run.ikaros.api.store.enums.SubjectType;
-import run.ikaros.server.infra.properties.IkarosProperties;
+import run.ikaros.api.infra.properties.IkarosProperties;
 
 @Slf4j
 @Component

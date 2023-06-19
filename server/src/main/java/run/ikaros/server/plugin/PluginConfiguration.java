@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.server.infra.properties.IkarosProperties;
+import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.server.plugin.listener.PluginStateChangedListener;
 
 @Configuration(proxyBeanMethods = false)

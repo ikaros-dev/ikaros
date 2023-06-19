@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import run.ikaros.api.infra.properties.IkarosProperties;
 
 /**
  * IkarosProperties unit test.

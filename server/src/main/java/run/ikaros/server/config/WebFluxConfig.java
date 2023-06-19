@@ -29,7 +29,7 @@ import run.ikaros.api.constant.FileConst;
 import run.ikaros.server.console.ConsoleProperties;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.endpoint.CoreEndpointsBuilder;
-import run.ikaros.server.infra.properties.IkarosProperties;
+import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.server.plugin.PluginApplicationContextRegistry;
 
 @Configuration(proxyBeanMethods = false)

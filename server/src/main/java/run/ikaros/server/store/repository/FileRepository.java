@@ -34,4 +34,8 @@ public interface FileRepository extends R2dbcRepository<FileEntity, Long> {
                                                       Pageable pageable);
 
     Mono<Long> countAllByNameLikeAndPlaceAndType(String name, FilePlace place, FileType type);
+
+    Mono<Boolean> existsByOriginalPath(String originalPath);
+
+    Mono<FileEntity> findByOriginalPath(String originalPath);
 }
