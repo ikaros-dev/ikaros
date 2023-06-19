@@ -39,7 +39,7 @@ public class SubjectImageDownloadListener {
                 .map(entity -> entity.setCover(url)))
             .flatMap(subjectRepository::save)
             .doOnSuccess(entity ->
-                log.debug("Update subject cover image entity for subject id={}, cover={}.",
+                log.info("Update subject cover image entity for subject id={}, cover={}.",
                     subjectId, entity.getCover()))
             .then();
     }

@@ -185,8 +185,16 @@ public class PluginApplicationInitializer {
         Assert.notNull(pluginId, "'pluginId' must not be null");
         PluginApplicationContext removed = contextRegistry.remove(pluginId);
         if (removed != null) {
+            StopWatch stopWatch =
+                new StopWatch(String.format("[%s]PluginAppContextDestroyed", pluginId));
+            stopWatch.start("PluginAppContextClose");
             removed.close();
+            stopWatch.stop();
+            stopWatch.start("PluginAppContextGc");
             Runtime.getRuntime().gc();
+            stopWatch.stop();
+            log.debug("[{}] Total millis: {} ms -> {}", pluginId, stopWatch.getTotalTimeMillis(),
+                stopWatch.prettyPrint());
         }
     }
 }
