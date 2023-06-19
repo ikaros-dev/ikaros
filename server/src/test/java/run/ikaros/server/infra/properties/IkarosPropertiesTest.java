@@ -39,8 +39,8 @@ class IkarosPropertiesTest {
     @Test
     void canEqual() {
         IkarosProperties other = new IkarosProperties();
-        assertThat(ikarosProperties.canEqual(other)).isTrue();
-        assertThat(ikarosProperties.canEqual(new Object())).isFalse();
+        assertThat(ikarosProperties.equals(other)).isTrue();
+        assertThat(ikarosProperties.equals(new Object())).isFalse();
     }
 
 }
