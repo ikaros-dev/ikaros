@@ -2,6 +2,8 @@
 <script setup lang="ts">
 import { Fold, Expand } from '@element-plus/icons-vue';
 import { useLayoutStore } from '@/stores/layout';
+import { ElIcon } from 'element-plus';
+
 const layoutStore = useLayoutStore();
 
 const toggleClick = () => {

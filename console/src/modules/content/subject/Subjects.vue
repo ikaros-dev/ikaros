@@ -5,6 +5,18 @@ import { apiClient } from '@/utils/api-client';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import { base64Encode } from '@/utils/string-util';
 import { useRouter } from 'vue-router';
+import {
+	ElRow,
+	ElCol,
+	ElForm,
+	ElFormItem,
+	ElInput,
+	ElSelect,
+	ElOption,
+	ElButton,
+	ElCard,
+	ElPagination,
+} from 'element-plus';
 
 const router = useRouter();
 

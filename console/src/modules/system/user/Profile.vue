@@ -1,10 +1,17 @@
 <script setup lang="ts">
+import type { UpdateUserRequest } from '@runikaros/api-client';
 import { useUserStore } from '@/stores/user';
 import { apiClient } from '@/utils/api-client';
-import { ElMessage } from 'element-plus';
-
-import type { UpdateUserRequest } from '@runikaros/api-client';
 import { onMounted, ref } from 'vue';
+import {
+	ElMessage,
+	ElForm,
+	ElFormItem,
+	ElTabs,
+	ElTabPane,
+	ElInput,
+	ElButton,
+} from 'element-plus';
 
 const userStore = useUserStore();
 

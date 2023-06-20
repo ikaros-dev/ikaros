@@ -1,6 +1,6 @@
 import { definePlugin } from '@runikaros/shared';
 import Plugin from './Plugin.vue';
-import IconParkOutlinePlug from '@/components/icon/IconParkOutlinePlug.vue';
+import { Connection } from '@element-plus/icons-vue';
 import { markRaw } from 'vue';
 
 export default definePlugin({
@@ -18,7 +18,7 @@ export default definePlugin({
 					menu: {
 						name: 'core.sidebar.menu.items.plugins',
 						group: 'system',
-						icon: markRaw(IconParkOutlinePlug),
+						icon: markRaw(Connection),
 						priority: 0,
 					},
 				},

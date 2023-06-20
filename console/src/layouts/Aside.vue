@@ -6,6 +6,7 @@ import sortBy from 'lodash.sortby';
 import { coreMenuGroups } from '@/router/routes.config';
 import { i18n } from '@/locales';
 import { onMounted, ref } from 'vue';
+import { ElMenu, ElMenuItem, ElIcon, ElMenuItemGroup } from 'element-plus';
 
 const t = i18n.global.t;
 const layoutStore = useLayoutStore();

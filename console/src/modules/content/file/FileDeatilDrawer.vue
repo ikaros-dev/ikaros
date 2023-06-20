@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { apiClient } from '@/utils/api-client';
 import { FileEntity } from '@runikaros/api-client';
-import { ElMessage } from 'element-plus';
 import { filePlaceMap, fileTypeMap } from '@/modules/common/constants';
 import { computed, nextTick, ref } from 'vue';
+import {
+	ElMessage,
+	ElDrawer,
+	ElRow,
+	ElCol,
+	ElDescriptions,
+	ElDescriptionsItem,
+	ElInput,
+	ElPopconfirm,
+	ElButton,
+} from 'element-plus';
 
 const props = withDefaults(
 	defineProps<{

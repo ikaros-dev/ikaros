@@ -7,10 +7,24 @@ import {
 } from '@runikaros/api-client';
 import { More } from '@element-plus/icons-vue';
 // eslint-disable-next-line no-unused-vars
-import { ElMessage, ElMessageBox } from 'element-plus';
 import PluginUploadDrawer from './PluginUploadDrawer.vue';
 import type { AxiosResponse } from 'axios';
 import { onMounted, ref } from 'vue';
+import {
+	ElMessage,
+	ElMessageBox,
+	ElRow,
+	ElCol,
+	ElInput,
+	ElPagination,
+	ElButton,
+	ElDropdown,
+	ElIcon,
+	ElDropdownItem,
+	ElTable,
+	ElTableColumn,
+	ElAvatar,
+} from 'element-plus';
 
 interface PluginSearch {
 	page: number;

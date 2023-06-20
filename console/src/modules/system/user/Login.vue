@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { i18n } from '@/locales';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElInput, ElForm, ElFormItem, ElButton } from 'element-plus';
 import axios from 'axios';
 import { AxiosError } from 'axios';
 import { useI18n } from 'vue-i18n';

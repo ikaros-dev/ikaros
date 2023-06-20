@@ -7,13 +7,30 @@ import {
 	FileEntity,
 } from '@runikaros/api-client';
 import EpisodePostDialog from './EpisodePostDialog.vue';
-import { ElMessage, FormInstance, FormRules } from 'element-plus';
 import { Picture } from '@element-plus/icons-vue';
 import { formatDate } from '@/utils/date';
 import { apiClient } from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import FileSelectDialog from '../file/FileSelectDialog.vue';
 import { useRoute, useRouter } from 'vue-router';
+import {
+	ElMessage,
+	FormInstance,
+	FormRules,
+	ElRow,
+	ElCol,
+	ElForm,
+	ElFormItem,
+	ElSwitch,
+	ElDatePicker,
+	ElInput,
+	ElButton,
+	ElRadioGroup,
+	ElRadio,
+	ElTable,
+	ElTableColumn,
+	ElImage,
+} from 'element-plus';
 
 const router = useRouter();
 const route = useRoute();

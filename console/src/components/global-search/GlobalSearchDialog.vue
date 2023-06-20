@@ -2,8 +2,16 @@
 import { ref, nextTick, computed } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { FileHint, SubjectHint } from '@runikaros/api-client';
-import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
+import {
+	ElMessage,
+	ElDialog,
+	ElInput,
+	ElSelect,
+	ElOption,
+	ElTabs,
+	ElTabPane,
+} from 'element-plus';
 
 const props = withDefaults(
 	defineProps<{

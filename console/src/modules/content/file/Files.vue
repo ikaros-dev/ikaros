@@ -8,6 +8,21 @@ import { Upload } from '@element-plus/icons-vue';
 import { base64Encode } from '@/utils/string-util';
 import { useRoute } from 'vue-router';
 import { onMounted, ref, watch } from 'vue';
+import {
+	ElFormItem,
+	ElForm,
+	ElRow,
+	ElCol,
+	ElInput,
+	ElSelect,
+	ElOption,
+	ElPagination,
+	ElButton,
+	ElIcon,
+	ElTable,
+	ElTableColumn,
+	ElPopconfirm,
+} from 'element-plus';
 
 const fileUploadDrawerVisible = ref(false);
 

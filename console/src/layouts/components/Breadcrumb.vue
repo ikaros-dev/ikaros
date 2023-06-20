@@ -3,6 +3,7 @@ import { useLayoutStore } from '@/stores/layout';
 import { i18n } from '@/locales';
 import { useRoute, useRouter } from 'vue-router';
 import { Ref, ref, watch } from 'vue';
+import { ElBreadcrumb, ElBreadcrumbItem } from 'element-plus';
 
 const t = i18n.global.t;
 const route = useRoute();
