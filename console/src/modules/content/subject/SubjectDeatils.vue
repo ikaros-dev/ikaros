@@ -13,6 +13,7 @@ import router from '@/router';
 import { Check, Close } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import FileMultiSelectDialog from '../file/FileMultiSelectDialog.vue';
+import SubjectSyncDialog from './SubjectSyncDialog.vue';
 
 const route = useRoute();
 
@@ -183,6 +184,12 @@ const onCloseWithFileIdArr = async (fileIds) => {
 		});
 };
 
+const subjectSyncDialogVisible = ref(false);
+const onSubjectSyncDialogCloseWithSubjectName = () => {
+	ElMessage.success('请求同步条目信息成功');
+	fetchSubjectById();
+};
+
 onMounted(() => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
@@ -196,6 +203,10 @@ onMounted(() => {
 		searchFileType="VIDEO"
 		@closeWithFileIdArr="onCloseWithFileIdArr"
 	/>
+	<SubjectSyncDialog
+		v-model:visible="subjectSyncDialogVisible"
+		@closeWithSubjectName="onSubjectSyncDialogCloseWithSubjectName"
+	/>
 	<el-row>
 		<el-col :span="24">
 			<el-button plain @click="toSubjectPut"> 编辑 </el-button>
@@ -204,7 +215,9 @@ onMounted(() => {
 					<el-button plain type="danger"> 删除 </el-button>
 				</template>
 			</el-popconfirm>
-			<el-button plain disabled> 信息拉取 </el-button>
+			<el-button disabled plain @click="subjectSyncDialogVisible = true">
+				信息拉取
+			</el-button>
 		</el-col>
 	</el-row>
 	<br />
@@ -246,6 +259,17 @@ onMounted(() => {
 						</el-descriptions-item>
 						<el-descriptions-item label="介绍" :span="5">
 							{{ subject.summary }}
+						</el-descriptions-item>
+					</el-descriptions>
+					<el-descriptions
+						v-if="subject.syncs && subject.syncs.length > 0"
+						size="large"
+						border
+					>
+						<el-descriptions-item label="同步平台">
+							<span v-for="(sync, index) in subject.syncs" :key="index">
+								{{ sync.platform }} : {{ sync.platformId }}
+							</span>
 						</el-descriptions-item>
 					</el-descriptions>
 				</el-col>

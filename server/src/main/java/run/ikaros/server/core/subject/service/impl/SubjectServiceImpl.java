@@ -264,6 +264,9 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMap(entity -> subjectRepository.deleteById(id))
             // Delete episode entities
             .then(episodeRepository.deleteAllBySubjectId(id))
+            // Delete subject sync entities
+            .then(subjectSyncRepository.deleteAllBySubjectId(id))
+            .then()
             ;
     }
 
