@@ -69,16 +69,22 @@ const remvoeEpisodeFileBind = async () => {
 				{{ episode?.description }}
 			</el-descriptions-item>
 			<el-descriptions-item label="资源">
-				<!-- {{ episode.resources }} -->
-				<video
+				<div
 					v-if="episode?.resources && episode?.resources.length > 0"
-					style="width: 100%"
-					:src="episode.resources[0].url"
-					controls
-					preload="metadata"
+					align="center"
 				>
-					您的浏览器不支持这个格式的视频
-				</video>
+					<div>{{ episode?.resources[0].name }}</div>
+					<video
+						v-if="episode?.resources && episode?.resources.length > 0"
+						style="width: 100%"
+						:src="episode.resources[0].url"
+						controls
+						preload="metadata"
+					>
+						您的浏览器不支持这个格式的视频
+					</video>
+				</div>
+				<span v-else> 当前剧集暂未绑定资源文件 </span>
 			</el-descriptions-item>
 		</el-descriptions>
 

@@ -19,6 +19,7 @@ configuration.ts
 git_push.sh
 index.ts
 models/author.ts
+models/batch-matching-episode-file.ts
 models/config-map.ts
 models/episode-resource.ts
 models/episode.ts

@@ -18,6 +18,7 @@ import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.server.core.subject.service.SubjectService;
 
 @SpringBootTest
 class SubjectServiceTest {
@@ -135,6 +136,7 @@ class SubjectServiceTest {
         var episodes = new ArrayList<Episode>();
         episodes.add(Episode.builder()
             .airTime(LocalDateTime.now())
+                .sequence(1)
             .name("ep-01")
             .nameCn("第一集").build());
         subject.setEpisodes(episodes)
@@ -172,6 +174,7 @@ class SubjectServiceTest {
         subject.setName(newName);
         Episode addEpisode = Episode.builder()
             .airTime(LocalDateTime.now())
+            .sequence(10)
             .name("ep-02")
             .nameCn("第二集").build();
         List<Episode> episodes = subject.getEpisodes();

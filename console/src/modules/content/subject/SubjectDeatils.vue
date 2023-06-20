@@ -11,6 +11,9 @@ import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import FileSelectDialog from '../file/FileSelectDialog.vue';
 import router from '@/router';
 import { Check, Close } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
+import FileMultiSelectDialog from '../file/FileMultiSelectDialog.vue';
+import SubjectSyncDialog from './SubjectSyncDialog.vue';
 
 const route = useRoute();
 
@@ -144,6 +147,49 @@ const bindEpisodeAndFile = async (episodeId: number, fileId: number) => {
 		});
 };
 
+const deleteSubject = async () => {
+	if (!subject.value.id) {
+		return;
+	}
+	await apiClient.subject
+		.deleteSubjectById({
+			id: subject.value.id,
+		})
+		.then(() => {
+			ElMessage.success('删除条目' + subject.value.name + '成功');
+			router.push('/subjects');
+		});
+};
+
+const batchMatchingButtonLoading = ref(false);
+const fileMultiSelectDialogVisible = ref(false);
+const onCloseWithFileIdArr = async (fileIds) => {
+	console.log('receive fileIdArr', fileIds);
+	// eslint-disable-next-line no-unused-vars
+	const subjectId = subject.value.id;
+	batchMatchingButtonLoading.value = true;
+	await apiClient.episodefile
+		.batchMatchingEpisodeFile({
+			batchMatchingEpisodeFile: {
+				subjectId: subjectId as number,
+				fileIds: fileIds,
+			},
+		})
+		.then(() => {
+			ElMessage.success('批量匹配剧集和资源成功');
+			window.location.reload();
+		})
+		.finally(() => {
+			batchMatchingButtonLoading.value = false;
+		});
+};
+
+const subjectSyncDialogVisible = ref(false);
+const onSubjectSyncDialogCloseWithSubjectName = () => {
+	ElMessage.success('请求同步条目信息成功');
+	fetchSubjectById();
+};
+
 onMounted(() => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
@@ -152,9 +198,26 @@ onMounted(() => {
 </script>
 
 <template>
+	<FileMultiSelectDialog
+		v-model:visible="fileMultiSelectDialogVisible"
+		searchFileType="VIDEO"
+		@closeWithFileIdArr="onCloseWithFileIdArr"
+	/>
+	<SubjectSyncDialog
+		v-model:visible="subjectSyncDialogVisible"
+		@closeWithSubjectName="onSubjectSyncDialogCloseWithSubjectName"
+	/>
 	<el-row>
 		<el-col :span="24">
 			<el-button plain @click="toSubjectPut"> 编辑 </el-button>
+			<el-popconfirm title="您确定要删除该条目吗？" @confirm="deleteSubject">
+				<template #reference>
+					<el-button plain type="danger"> 删除 </el-button>
+				</template>
+			</el-popconfirm>
+			<el-button disabled plain @click="subjectSyncDialogVisible = true">
+				信息拉取
+			</el-button>
 		</el-col>
 	</el-row>
 	<br />
@@ -198,6 +261,17 @@ onMounted(() => {
 							{{ subject.summary }}
 						</el-descriptions-item>
 					</el-descriptions>
+					<el-descriptions
+						v-if="subject.syncs && subject.syncs.length > 0"
+						size="large"
+						border
+					>
+						<el-descriptions-item label="同步平台">
+							<span v-for="(sync, index) in subject.syncs" :key="index">
+								{{ sync.platform }} : {{ sync.platformId }}
+							</span>
+						</el-descriptions-item>
+					</el-descriptions>
 				</el-col>
 			</el-row>
 			<el-row>
@@ -217,6 +291,15 @@ onMounted(() => {
 							:formatter="airTimeDateFormatter"
 						/>
 						<el-table-column label="操作" width="175px">
+							<template #header>
+								<el-button
+									plain
+									:loading="batchMatchingButtonLoading"
+									@click="fileMultiSelectDialogVisible = true"
+								>
+									批量绑定资源
+								</el-button>
+							</template>
 							<template #default="scoped">
 								<el-button plain @click="showEpisodeDetails(scoped.row)">
 									详情

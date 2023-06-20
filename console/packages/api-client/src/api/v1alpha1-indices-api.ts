@@ -187,12 +187,12 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 				localVarQueryParameter['limit'] = limit;
 			}
 
-			if (highlightPreTag !== undefined) {
-				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
-			}
-
 			if (keyword !== undefined) {
 				localVarQueryParameter['keyword'] = keyword;
+			}
+
+			if (highlightPreTag !== undefined) {
+				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
 			}
 
 			if (highlightPostTag !== undefined) {
@@ -259,12 +259,12 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 				localVarQueryParameter['limit'] = limit;
 			}
 
-			if (highlightPreTag !== undefined) {
-				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
-			}
-
 			if (keyword !== undefined) {
 				localVarQueryParameter['keyword'] = keyword;
+			}
+
+			if (highlightPreTag !== undefined) {
+				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
 			}
 
 			if (highlightPostTag !== undefined) {

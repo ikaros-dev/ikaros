@@ -1,4 +1,5 @@
 export * from './author';
+export * from './batch-matching-episode-file';
 export * from './config-map';
 export * from './episode';
 export * from './episode-resource';

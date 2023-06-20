@@ -8,8 +8,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0(vue@3.2.47)
       '@runikaros/api-client':
-        specifier: ^0.0.23
-        version: 0.0.23
+        specifier: ^0.0.24
+        version: 0.0.24
       '@runikaros/shared':
         specifier: ^0.0.3
         version: 0.0.3(vue-router@4.2.1)(vue@3.2.47)
@@ -1725,8 +1725,8 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /@runikaros/api-client@0.0.23:
-    resolution: {integrity: sha512-2aCbyBDgU+VJ5VEuUlD0Jdncr0qpGQwhGhRlZ/ojQVZEpwrXXjnHVubPZ6VlObSxTEzjhjWJdA1mgQmMpigqJw==}
+  /@runikaros/api-client@0.0.24:
+    resolution: {integrity: sha512-nxayxfhZbXE/CX1WeOvE5noCawaEObja5PZxg4z/MgFcwqtIL5myDARvXHC11mtMbiwGPYWL9K4ICLX8lorwqw==}
     dev: false
 
   /@runikaros/shared@0.0.3(vue-router@4.2.1)(vue@3.2.47):

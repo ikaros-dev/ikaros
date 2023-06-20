@@ -168,8 +168,9 @@ onMounted(fetchFiles);
 					<el-form-item label="文件名称">
 						<el-input
 							v-model="findFilesCondition.fileName"
-							placeholder="输入文件名称模糊匹配"
+							placeholder="模糊匹配回车搜索"
 							clearable
+							style="max-width: 162px"
 							@change="fetchFiles"
 						/>
 					</el-form-item>
