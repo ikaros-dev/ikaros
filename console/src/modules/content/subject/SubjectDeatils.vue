@@ -11,11 +11,22 @@ import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import FileSelectDialog from '../file/FileSelectDialog.vue';
 import router from '@/router';
 import { Check, Close } from '@element-plus/icons-vue';
-import { ElMessage } from 'element-plus';
 import FileMultiSelectDialog from '../file/FileMultiSelectDialog.vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import { useRoute } from 'vue-router';
 import { onMounted, ref, watch } from 'vue';
+import {
+	ElMessage,
+	ElRow,
+	ElCol,
+	ElButton,
+	ElPopconfirm,
+	ElImage,
+	ElDescriptions,
+	ElDescriptionsItem,
+	ElTable,
+	ElTableColumn,
+} from 'element-plus';
 
 const route = useRoute();
 
@@ -217,7 +228,12 @@ onMounted(() => {
 					<el-button plain type="danger"> 删除 </el-button>
 				</template>
 			</el-popconfirm>
-			<el-button disabled plain @click="subjectSyncDialogVisible = true">
+			<el-button
+				v-if="false"
+				disabled
+				plain
+				@click="subjectSyncDialogVisible = true"
+			>
 				信息拉取
 			</el-button>
 		</el-col>

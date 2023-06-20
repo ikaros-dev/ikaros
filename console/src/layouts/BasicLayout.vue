@@ -5,6 +5,9 @@ import variables from '@/styles/variables.module.scss';
 import { useLayoutStore } from '@/stores/layout';
 import GlobalSearchDialog from '@/components/global-search/GlobalSearchDialog.vue';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { ElContainer, ElAside, ElHeader, ElMain, ElCard } from 'element-plus';
+import { RouterView } from 'vue-router';
+
 const layoutStore = useLayoutStore();
 
 const asideWidth = computed(() => {

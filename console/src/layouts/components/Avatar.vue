@@ -7,6 +7,12 @@ import { AxiosError } from 'axios';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+import {
+	ElDropdown,
+	ElDropdownItem,
+	ElDropdownMenu,
+	ElAvatar,
+} from 'element-plus';
 
 const layoutStore = useLayoutStore();
 const { t } = useI18n();

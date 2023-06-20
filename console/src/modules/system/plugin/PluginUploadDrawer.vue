@@ -2,8 +2,8 @@
 import { i18n } from '@/locales';
 import type { Plugin } from '@runikaros/api-client';
 import { ErrorResponse } from '@uppy/core';
-import { ElMessage } from 'element-plus';
 import { computed, ref, watch } from 'vue';
+import { ElMessage, ElDrawer } from 'element-plus';
 
 const t = i18n.global.t;
 

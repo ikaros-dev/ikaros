@@ -51,8 +51,6 @@
   "devDependencies": {
     "@commitlint/cli": "^17.6.3",
     "@commitlint/config-conventional": "^17.6.3",
-    "@iconify-json/icon-park-outline": "^1.1.11",
-    "@intlify/unplugin-vue-i18n": "^0.11.0",
     "@types/eslint": "^8.40.0",
     "@types/lodash.clonedeep": "4.5.7",
     "@types/lodash.debounce": "^4.0.7",

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ErrorResponse } from '@uppy/core';
 import { UppyFile } from '@uppy/utils';
-import { ElMessage } from 'element-plus';
 import { computed, ref, watch } from 'vue';
+import { ElMessage, ElDrawer } from 'element-plus';
 
 const props = withDefaults(
 	defineProps<{

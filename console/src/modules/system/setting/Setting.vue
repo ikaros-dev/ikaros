@@ -1,8 +1,19 @@
 <script setup lang="ts">
-import { ElMessage, FormRules } from 'element-plus';
 import { FolderOpened } from '@element-plus/icons-vue';
 import { apiClient } from '@/utils/api-client';
 import { onMounted, reactive, ref } from 'vue';
+import {
+	ElMessage,
+	FormRules,
+	ElForm,
+	ElTabs,
+	ElTabPane,
+	ElFormItem,
+	ElInput,
+	ElIcon,
+	ElButton,
+	ElSwitch,
+} from 'element-plus';
 
 const setting = ref({
 	SITE_TITLE: '',

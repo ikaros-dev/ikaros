@@ -1,8 +1,15 @@
 <script setup lang="ts">
 import { apiClient } from '@/utils/api-client';
 import { Episode } from '@runikaros/api-client';
-import { ElMessage } from 'element-plus';
 import { computed } from 'vue';
+import {
+	ElMessage,
+	ElDialog,
+	ElDescriptions,
+	ElDescriptionsItem,
+	ElPopconfirm,
+	ElButton,
+} from 'element-plus';
 
 const props = withDefaults(
 	defineProps<{

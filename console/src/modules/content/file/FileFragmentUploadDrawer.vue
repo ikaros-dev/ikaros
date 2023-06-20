@@ -2,6 +2,8 @@
 import FilePondUpload from '@/components/upload/FilePondUpload.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { ref, watch } from 'vue';
+import { ElDrawer } from 'element-plus';
+
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
