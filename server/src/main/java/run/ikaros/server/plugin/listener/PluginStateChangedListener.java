@@ -7,8 +7,10 @@ import org.pf4j.PluginState;
 import org.pf4j.PluginStateEvent;
 import org.pf4j.PluginStateListener;
 import org.pf4j.PluginWrapper;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.custom.ReactiveCustomClient;
+import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.plugin.custom.Plugin;
 import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.plugin.IkarosPluginManager;
@@ -43,11 +45,13 @@ public class PluginStateChangedListener implements PluginStateListener {
         reactiveCustomClient
             .updateOneMeta(Plugin.class, pluginId, "state",
                 JsonUtils.obj2Bytes(state))
-            .subscribeOn(Schedulers.boundedElastic())
-            .doOnError(throwable ->
-                log.warn("Skip first update plugin [{}] state.", pluginId))
+            .onErrorResume(NotFoundException.class, e -> {
+                log.warn("Skip first update plugin [{}] state.", pluginId);
+                return Mono.empty();
+            })
             .doOnSuccess(unused ->
                 log.debug("Update plugin [{}] state to [{}]", pluginId, state))
+            .subscribeOn(Schedulers.boundedElastic())
             .subscribe();
     }
 }

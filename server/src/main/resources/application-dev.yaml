@@ -1,8 +1,8 @@
 ikaros:
   plugin:
-    runtime-mode: development
-    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-local-files-import
-    auto-start-plugin: false
+#    runtime-mode: development
+#    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-local-files-import
+#    auto-start-plugin: false
 #    enabled-plugins: PluginBgmTv
 #    disabled-plugins: PluginBgmTv
   security:
