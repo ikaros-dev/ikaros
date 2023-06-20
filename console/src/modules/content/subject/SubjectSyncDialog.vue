@@ -3,6 +3,7 @@ import { usePluginModuleStore } from '@/stores/plugin';
 import { apiClient } from '@/utils/api-client';
 import { PluginModule } from '@runikaros/shared';
 import { ElMessage, FormInstance, FormRules } from 'element-plus';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 const props = withDefaults(
 	defineProps<{

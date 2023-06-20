@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useLayoutStore } from '@/stores/layout';
 import type { MenuGroupType } from '@runikaros/shared';
-import { useRouter, type RouteRecordRaw } from 'vue-router';
+import { useRouter, type RouteRecordRaw, useRoute } from 'vue-router';
 import sortBy from 'lodash.sortby';
 import { coreMenuGroups } from '@/router/routes.config';
 import { i18n } from '@/locales';
+import { onMounted, ref } from 'vue';
 
 const t = i18n.global.t;
 const layoutStore = useLayoutStore();

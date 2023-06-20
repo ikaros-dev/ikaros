@@ -6,13 +6,13 @@ import axios from 'axios';
 import { AxiosError } from 'axios';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
 const layoutStore = useLayoutStore();
 const { t } = useI18n();
 const userStore = useUserStore();
 
-const avatarSrcUrl =
-	'https://gss0.baidu.com/7Po3dSag_xI4khGko9WTAnF6hhy/zhidao/pic/item/e7cd7b899e510fb3f001a7d2db33c895d1430c5f.jpg';
+const avatarSrcUrl = 'https://ikaros.run/logo.png';
 
 const router = useRouter();
 const toUserProfile = () => {

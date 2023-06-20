@@ -4,6 +4,7 @@ import Subjects from './Subjects.vue';
 import SubjectPut from './SubjectPut.vue';
 import SubjectPost from './SubjectPost.vue';
 import SubjectDeatils from './SubjectDeatils.vue';
+import { markRaw } from 'vue';
 
 export default definePlugin({
 	name: 'Subjects',

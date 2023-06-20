@@ -1,7 +1,7 @@
 import { definePlugin } from '@runikaros/shared';
 import Plugin from './Plugin.vue';
-// @ts-ignore
-import IconParkOutlinePlug from '~icons/icon-park-outline/plug';
+import IconParkOutlinePlug from '@/components/icon/IconParkOutlinePlug.vue';
+import { markRaw } from 'vue';
 
 export default definePlugin({
 	name: 'User',

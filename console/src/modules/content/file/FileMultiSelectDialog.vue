@@ -7,6 +7,7 @@ import { ElMessage } from 'element-plus';
 import { Upload } from '@element-plus/icons-vue';
 import Utf8 from 'crypto-js/enc-utf8';
 import Base64 from 'crypto-js/enc-base64';
+import { computed, onMounted, ref } from 'vue';
 
 const props = withDefaults(
 	defineProps<{

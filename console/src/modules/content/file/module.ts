@@ -1,6 +1,7 @@
 import { definePlugin } from '@runikaros/shared';
 import Files from './Files.vue';
 import { Files as FilesIcon } from '@element-plus/icons-vue';
+import { markRaw } from 'vue';
 
 export default definePlugin({
 	name: 'FileList',

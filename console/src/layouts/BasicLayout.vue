@@ -4,6 +4,7 @@ import Header from './Header.vue';
 import variables from '@/styles/variables.module.scss';
 import { useLayoutStore } from '@/stores/layout';
 import GlobalSearchDialog from '@/components/global-search/GlobalSearchDialog.vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 const layoutStore = useLayoutStore();
 
 const asideWidth = computed(() => {

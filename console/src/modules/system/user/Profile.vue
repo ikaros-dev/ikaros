@@ -4,6 +4,7 @@ import { apiClient } from '@/utils/api-client';
 import { ElMessage } from 'element-plus';
 
 import type { UpdateUserRequest } from '@runikaros/api-client';
+import { onMounted, ref } from 'vue';
 
 const userStore = useUserStore();
 

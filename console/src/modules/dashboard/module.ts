@@ -2,6 +2,7 @@ import { definePlugin } from '@runikaros/shared';
 import BasicLayout from '@/layouts/BasicLayout.vue';
 import Dashboard from './Dashboard.vue';
 import { Odometer } from '@element-plus/icons-vue';
+import { markRaw } from 'vue';
 
 export default definePlugin({
 	name: 'Dashboard',

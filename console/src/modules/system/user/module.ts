@@ -2,6 +2,7 @@ import { definePlugin } from '@runikaros/shared';
 import Login from './Login.vue';
 import Profile from './Profile.vue';
 import { UserFilled } from '@element-plus/icons-vue';
+import { markRaw } from 'vue';
 
 export default definePlugin({
 	name: 'User',

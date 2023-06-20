@@ -6,6 +6,8 @@ import FileDeatilDrawer from './FileDeatilDrawer.vue';
 import { ElMessage } from 'element-plus';
 import { Upload } from '@element-plus/icons-vue';
 import { base64Encode } from '@/utils/string-util';
+import { useRoute } from 'vue-router';
+import { onMounted, ref, watch } from 'vue';
 
 const fileUploadDrawerVisible = ref(false);
 

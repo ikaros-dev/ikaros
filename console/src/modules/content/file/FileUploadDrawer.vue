@@ -2,6 +2,7 @@
 import { ErrorResponse } from '@uppy/core';
 import { UppyFile } from '@uppy/utils';
 import { ElMessage } from 'element-plus';
+import { computed, ref, watch } from 'vue';
 
 const props = withDefaults(
 	defineProps<{

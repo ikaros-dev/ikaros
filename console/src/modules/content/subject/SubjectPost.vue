@@ -13,6 +13,7 @@ import { formatDate } from '@/utils/date';
 import { apiClient } from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import FileSelectDialog from '../file/FileSelectDialog.vue';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 

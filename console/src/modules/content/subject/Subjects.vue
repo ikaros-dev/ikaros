@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import { Subject } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import { base64Encode } from '@/utils/string-util';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 

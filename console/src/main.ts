@@ -13,6 +13,7 @@ import { usePluginModuleStore } from '@/stores/plugin';
 import { apiClient } from '@/utils/api-client';
 import { useUserStore } from '@/stores/user';
 import { ElMessage } from 'element-plus';
+import { useScriptTag } from '@vueuse/core';
 
 const app = createApp(App);
 setupI18n(app);
