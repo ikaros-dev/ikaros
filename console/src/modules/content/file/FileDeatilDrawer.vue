@@ -3,6 +3,7 @@ import { apiClient } from '@/utils/api-client';
 import { FileEntity } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
 import { filePlaceMap, fileTypeMap } from '@/modules/common/constants';
+import { computed, nextTick, ref } from 'vue';
 
 const props = withDefaults(
 	defineProps<{

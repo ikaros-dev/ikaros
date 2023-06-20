@@ -11,6 +11,7 @@ import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginFileRename from 'filepond-plugin-file-rename';
 import Utf8 from 'crypto-js/enc-utf8';
 import Base64 from 'crypto-js/enc-base64';
+import { ref } from 'vue';
 
 const filePondRef = ref(null);
 

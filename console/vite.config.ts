@@ -6,11 +6,6 @@ import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
 import { fileURLToPath, URL } from 'url';
 import Compression from 'vite-plugin-compression2';
 import eslintPlugin from 'vite-plugin-eslint';
-import AutoImport from 'unplugin-auto-import/vite';
-import Components from 'unplugin-vue-components/vite';
-import Icons from 'unplugin-icons/vite';
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
-import IconsResolver from 'unplugin-icons/resolver';
 
 export default ({ mode }: { mode: string }) => {
 	const env = loadEnv(mode, process.cwd(), '');
@@ -22,20 +17,6 @@ export default ({ mode }: { mode: string }) => {
 			VueJsx(),
 			eslintPlugin(),
 			Compression(),
-			Icons({
-				autoInstall: true,
-			}),
-			AutoImport({
-				dts: true,
-				eslintrc: {
-					enabled: true,
-				},
-				imports: ['vue', 'vue-router', '@vueuse/core'],
-				resolvers: [ElementPlusResolver()],
-			}),
-			Components({
-				resolvers: [ElementPlusResolver(), IconsResolver()],
-			}),
 			VueI18nPlugin({
 				include: [path.resolve(__dirname, './src/locales/*.yaml')],
 			}),

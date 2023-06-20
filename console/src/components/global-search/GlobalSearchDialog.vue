@@ -3,6 +3,7 @@ import { ref, nextTick, computed } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { FileHint, SubjectHint } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router';
 
 const props = withDefaults(
 	defineProps<{
@@ -88,8 +89,6 @@ const activeTab = ref('SUBJECT');
 const onselectionchange = (val: string) => {
 	activeTab.value = val;
 };
-
-onMounted(() => {});
 </script>
 
 <template>

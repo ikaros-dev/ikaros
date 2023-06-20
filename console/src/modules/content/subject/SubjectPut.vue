@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import {
 	Episode,
 	Subject,
@@ -13,6 +13,7 @@ import { formatDate } from '@/utils/date';
 import { apiClient } from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import FileSelectDialog from '../file/FileSelectDialog.vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();

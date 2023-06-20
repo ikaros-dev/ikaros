@@ -2,6 +2,7 @@
 import { apiClient } from '@/utils/api-client';
 import { Episode } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
+import { computed } from 'vue';
 
 const props = withDefaults(
 	defineProps<{

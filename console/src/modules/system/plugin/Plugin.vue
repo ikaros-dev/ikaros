@@ -10,6 +10,7 @@ import { More } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import PluginUploadDrawer from './PluginUploadDrawer.vue';
 import type { AxiosResponse } from 'axios';
+import { onMounted, ref } from 'vue';
 
 interface PluginSearch {
 	page: number;

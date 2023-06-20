@@ -14,6 +14,8 @@ import { Check, Close } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import FileMultiSelectDialog from '../file/FileMultiSelectDialog.vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
+import { useRoute } from 'vue-router';
+import { onMounted, ref, watch } from 'vue';
 
 const route = useRoute();
 

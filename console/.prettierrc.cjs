@@ -15,5 +15,5 @@ module.exports = {
 	insertPragma: false,
 	proseWrap: 'always',
 	htmlWhitespaceSensitivity: 'css',
-	endOfLine: 'lf',
+	endOfLine: 'auto',
 };

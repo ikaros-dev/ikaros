@@ -2,6 +2,7 @@
 import { ElMessage, FormRules } from 'element-plus';
 import { FolderOpened } from '@element-plus/icons-vue';
 import { apiClient } from '@/utils/api-client';
+import { onMounted, reactive, ref } from 'vue';
 
 const setting = ref({
 	SITE_TITLE: '',
