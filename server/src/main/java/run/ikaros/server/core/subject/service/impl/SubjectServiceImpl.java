@@ -6,6 +6,7 @@ import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -109,6 +110,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                                 .build())
                     ).collectList()
                     .map(episode::setResources))
+                .sort(Comparator.comparingInt(Episode::getSequence))
                 .collectList()
                 .map(episodes -> subject
                     .setTotalEpisodes((long) episodes.size())

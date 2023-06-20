@@ -128,6 +128,9 @@ public class WebFluxConfig implements WebFluxConfigurer {
             .addResolver(new EncodedResourceResolver())
             .addResolver(new PathResourceResolver());
 
+        // Add thymeleaf static resource
+        registry.addResourceHandler("/static/**")
+            .addResourceLocations("classpath:/templates/static/");
 
     }
 }
