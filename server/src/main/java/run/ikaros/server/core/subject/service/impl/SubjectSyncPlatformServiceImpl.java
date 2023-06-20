@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.server.core.subject.service.impl;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +17,8 @@ import run.ikaros.api.core.subject.SubjectSynchronizer;
 import run.ikaros.api.exception.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.subject.event.SubjectCoverImageDownloadAndUpdateEvent;
+import run.ikaros.server.core.subject.service.SubjectService;
+import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
 import run.ikaros.server.store.repository.SubjectSyncRepository;

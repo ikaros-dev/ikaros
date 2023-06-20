@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.server.core.subject.endpoint;
 
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.server.core.subject.service.EpisodeFileService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j

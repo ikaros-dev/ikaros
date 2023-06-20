@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.server.core.subject.service.impl;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +10,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.SubjectRelation;
 import run.ikaros.api.store.enums.SubjectRelationType;
+import run.ikaros.server.core.subject.service.SubjectRelationService;
 import run.ikaros.server.store.entity.SubjectRelationEntity;
 import run.ikaros.server.store.repository.SubjectRelationRepository;
 

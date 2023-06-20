@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.server.core.subject.service;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

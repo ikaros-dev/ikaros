@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.server.core.subject.service;
 
 import jakarta.annotation.Nonnull;
 import reactor.core.publisher.Mono;

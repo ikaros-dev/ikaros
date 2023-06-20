@@ -12,11 +12,12 @@ import org.springframework.data.relational.core.mapping.Table;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.store.entity.BaseEntity;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.server.core.subject.service.SubjectService;
 
 /**
  * Subject entity.
  *
- * @see run.ikaros.server.core.subject.SubjectService#update(Subject)
+ * @see SubjectService#update(Subject)
  */
 @Data
 @Builder

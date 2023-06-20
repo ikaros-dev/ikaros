@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.server.core.subject.endpoint;
 
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
@@ -18,6 +18,7 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.exception.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
+import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j

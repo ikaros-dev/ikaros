@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject;
+package run.ikaros.server.core.subject.service;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.subject.vo.FindSubjectCondition;
 
 public interface SubjectService {
     Mono<Subject> findById(Long id);

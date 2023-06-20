@@ -29,6 +29,7 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.security.SecurityProperties;
 

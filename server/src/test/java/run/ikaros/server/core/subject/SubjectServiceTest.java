@@ -18,6 +18,7 @@ import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.server.core.subject.service.SubjectService;
 
 @SpringBootTest
 class SubjectServiceTest {

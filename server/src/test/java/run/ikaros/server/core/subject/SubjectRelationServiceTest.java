@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.subject.SubjectRelation;
 import run.ikaros.api.store.enums.SubjectRelationType;
+import run.ikaros.server.core.subject.service.SubjectRelationService;
 import run.ikaros.server.store.repository.SubjectRelationRepository;
 
 @Disabled
