@@ -96,7 +96,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject()))
             .checkpoint("FindSubjectEntityById")
 
-            .flatMap(subject -> episodeRepository.findBySubjectId(subject.getId())
+            .flatMap(subject -> episodeRepository.findAllBySubjectId(subject.getId())
                 .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
                 .flatMap(episode -> episodeFileRepository.findAllByEpisodeId(episode.getId())
                     .flatMap(episodeFileEntity ->

@@ -8,6 +8,39 @@ import { Upload } from '@element-plus/icons-vue';
 import Utf8 from 'crypto-js/enc-utf8';
 import Base64 from 'crypto-js/enc-base64';
 
+const props = withDefaults(
+	defineProps<{
+		visible: boolean;
+		searchFileType?: string;
+	}>(),
+	{
+		visible: false,
+		searchFileType: undefined,
+	}
+);
+
+const emit = defineEmits<{
+	// eslint-disable-next-line no-unused-vars
+	(event: 'update:visible', visible: boolean): void;
+	// eslint-disable-next-line no-unused-vars
+	(event: 'close'): void;
+	// eslint-disable-next-line no-unused-vars
+	(event: 'closeWithFileIdArr', fileIds: number[]): void;
+}>();
+
+const dialogVisible = computed({
+	get() {
+		return props.visible;
+	},
+	set(value) {
+		emit('update:visible', value);
+	},
+});
+
+const onClose = () => {
+	emit('close');
+};
+
 const fileUploadDrawerVisible = ref(false);
 
 // eslint-disable-next-line no-unused-vars
@@ -23,7 +56,7 @@ const findFilesCondition = ref({
 	total: 10,
 	fileName: undefined,
 	place: undefined,
-	type: undefined,
+	type: props.searchFileType,
 });
 
 const base64Encode = (raw: string | undefined): string => {
@@ -42,6 +75,7 @@ const fetchFiles = async () => {
 		size: findFilesCondition.value.size,
 		fileName: base64Encode(findFilesCondition.value.fileName),
 		place: findFilesCondition.value.place,
+		// @ts-ignore
 		type: findFilesCondition.value.type,
 	});
 	findFilesCondition.value.page = data.page;
@@ -96,48 +130,18 @@ const onFileTypeSelectChange = (val) => {
 	fetchFiles();
 };
 
-const props = withDefaults(
-	defineProps<{
-		visible: boolean;
-	}>(),
-	{
-		visible: false,
-	}
-);
-
-const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
-	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
-	(event: 'close'): void;
-	// eslint-disable-next-line no-unused-vars
-	(event: 'closeWithFileEntity', file: FileEntity): void;
-}>();
-
-const dialogVisible = computed({
-	get() {
-		return props.visible;
-	},
-	set(value) {
-		emit('update:visible', value);
-	},
-});
-
-const onClose = () => {
-	emit('close');
-};
-
 // eslint-disable-next-line no-unused-vars
-const currentSelectFile = ref<FileEntity>({});
-const onCurrentSelectChange = (currentRow) => {
-	// console.log('currentRow', currentRow);
-	// console.log('oldCurrentRow', oldCurrentRow);
-	currentSelectFile.value = currentRow;
+const selectionFileIds = ref<number[]>([]);
+
+const onSelection = (selections) => {
+	// console.log('selections', selections);
+	selectionFileIds.value = [];
+	selections.forEach((select) => selectionFileIds.value.push(select.id));
+	// console.log('selectionFileIds.value', selectionFileIds.value);
 };
 
 const onConfirm = () => {
-	// console.log('currentSelectFile', currentSelectFile.value);
-	emit('closeWithFileEntity', currentSelectFile.value as FileEntity);
+	emit('closeWithFileIdArr', selectionFileIds.value);
 	dialogVisible.value = false;
 };
 
@@ -233,10 +237,11 @@ onMounted(fetchFiles);
 				<el-table
 					:data="files"
 					style="width: 100%"
-					highlight-current-row
-					@current-change="onCurrentSelectChange"
 					@row-dblclick="showFileDeatil"
+					@selection-change="onSelection"
+					@select-all="onSelection"
 				>
+					<el-table-column type="selection" />
 					<el-table-column prop="id" label="文件ID" width="80" />
 					<el-table-column prop="name" label="文件名称" />
 					<el-table-column prop="url" label="文件URL" />

@@ -6,7 +6,9 @@ import reactor.core.publisher.Mono;
 import run.ikaros.server.store.entity.EpisodeEntity;
 
 public interface EpisodeRepository extends R2dbcRepository<EpisodeEntity, Long> {
-    Flux<EpisodeEntity> findBySubjectId(Long subjectId);
+    Flux<EpisodeEntity> findAllBySubjectId(Long subjectId);
 
     Mono<Void> deleteAllBySubjectId(Long subjectId);
+
+    Mono<EpisodeEntity> findBySubjectIdAndSequence(Long subjectId, Integer sequence);
 }

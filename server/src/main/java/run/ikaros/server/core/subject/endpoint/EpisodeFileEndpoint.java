@@ -4,6 +4,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -13,6 +14,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.server.core.subject.service.EpisodeFileService;
+import run.ikaros.server.core.subject.vo.BatchMatchingEpisodeFile;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -60,7 +62,22 @@ public class EpisodeFileEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
             )
+            .POST("/episodefile/batch", this::batchMatchingEpisodeFile,
+                builder -> builder.operationId("BatchMatchingEpisodeFile")
+                    .tag(tag).description("Batch matching episode file.")
+                    .requestBody(Builder.requestBodyBuilder()
+                        .required(true)
+                        .description("batch matching episode file request value object.")
+                        .implementation(BatchMatchingEpisodeFile.class))
+            )
             .build();
+    }
+
+    private Mono<ServerResponse> batchMatchingEpisodeFile(ServerRequest request) {
+        return request.bodyToMono(BatchMatchingEpisodeFile.class)
+            .flatMap(batchMatchingEpisodeFile -> episodeFileService.batchMatching(
+                batchMatchingEpisodeFile.getSubjectId(), batchMatchingEpisodeFile.getFileIds()))
+            .then(ServerResponse.ok().build());
     }
 
     private Long assertAndGetPathLongVar(ServerRequest request, String pathVarName) {
