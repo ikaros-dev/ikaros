@@ -1,7 +1,8 @@
 ikaros:
   plugin:
 #    runtime-mode: development
-#    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-bgmtv
+#    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-local-files-import
+#    auto-start-plugin: false
 #    enabled-plugins: PluginBgmTv
 #    disabled-plugins: PluginBgmTv
   security:
@@ -22,6 +23,7 @@ spring:
 logging:
   level:
     run.ikaros.server: DEBUG
+    run.ikaros.plugin: DEBUG
     org.pf4j: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: DEBUG

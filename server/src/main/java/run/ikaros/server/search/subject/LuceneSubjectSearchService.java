@@ -39,13 +39,13 @@ import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 import reactor.core.Exceptions;
+import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.search.SearchParam;
 import run.ikaros.api.search.SearchResult;
 import run.ikaros.api.search.subject.SubjectDoc;
 import run.ikaros.api.search.subject.SubjectHint;
 import run.ikaros.api.search.subject.SubjectSearchService;
 import run.ikaros.api.store.enums.SubjectType;
-import run.ikaros.server.infra.properties.IkarosProperties;
 
 @Slf4j
 @Component
@@ -184,14 +184,14 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
         doc.add(new StringField("airTime", String.valueOf(subjectDoc.getAirTime()), YES));
         var content = Jsoup.clean(
             stripToEmpty(String.valueOf(subjectDoc.getId())) + SPACE
-                + stripToEmpty(subjectDoc.getName())  + SPACE
-                + stripToEmpty(subjectDoc.getNameCn())  + SPACE
-                + stripToEmpty(subjectDoc.getInfobox())  + SPACE
-                + stripToEmpty(subjectDoc.getSummary())  + SPACE
-                + subjectDoc.getNsfw()  + SPACE
-                + subjectDoc.getNsfw()  + SPACE
-                + subjectDoc.getType()  + SPACE
-                + subjectDoc.getAirTime()  + SPACE,
+                + stripToEmpty(subjectDoc.getName()) + SPACE
+                + stripToEmpty(subjectDoc.getNameCn()) + SPACE
+                + stripToEmpty(subjectDoc.getInfobox()) + SPACE
+                + stripToEmpty(subjectDoc.getSummary()) + SPACE
+                + subjectDoc.getNsfw() + SPACE
+                + subjectDoc.getNsfw() + SPACE
+                + subjectDoc.getType() + SPACE
+                + subjectDoc.getAirTime() + SPACE,
             Safelist.none());
         doc.add(new StoredField("content", content));
         doc.add(new TextField("searchable", subjectDoc.getName() + content, NO));

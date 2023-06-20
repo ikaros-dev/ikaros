@@ -3,8 +3,10 @@ package run.ikaros.server.plugin;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import run.ikaros.api.core.file.FileOperate;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomSchemeManager;
+import run.ikaros.api.infra.properties.IkarosProperties;
 
 /**
  * A holder for {@link SharedApplicationContext},
@@ -58,6 +60,14 @@ public class SharedApplicationContextHolder {
         CustomSchemeManager customSchemeManager =
             rootApplicationContext.getBean(CustomSchemeManager.class);
         beanFactory.registerSingleton("schemeManager", customSchemeManager);
+
+        // Register ikaros properties
+        IkarosProperties ikarosProperties = rootApplicationContext.getBean(IkarosProperties.class);
+        beanFactory.registerSingleton("ikarosProperties", ikarosProperties);
+
+        // Register plugin file operate
+        FileOperate fileOperate = rootApplicationContext.getBean(FileOperate.class);
+        beanFactory.registerSingleton("pluginFileOperate", fileOperate);
 
         // TODO add more shared instance here
 

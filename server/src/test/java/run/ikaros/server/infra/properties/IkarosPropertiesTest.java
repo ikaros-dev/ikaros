@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import run.ikaros.api.infra.properties.IkarosProperties;
 
 /**
  * IkarosProperties unit test.
@@ -38,8 +39,8 @@ class IkarosPropertiesTest {
     @Test
     void canEqual() {
         IkarosProperties other = new IkarosProperties();
-        assertThat(ikarosProperties.canEqual(other)).isTrue();
-        assertThat(ikarosProperties.canEqual(new Object())).isFalse();
+        assertThat(ikarosProperties.equals(other)).isTrue();
+        assertThat(ikarosProperties.equals(new Object())).isFalse();
     }
 
 }

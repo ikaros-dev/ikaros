@@ -21,6 +21,8 @@ module.exports = {
 				'chore',
 				// 不影响代码运行的变动
 				'style',
+				// 代码优化
+				'optimize',
 				// 撤销commit
 				'revert',
 				// 性能优化

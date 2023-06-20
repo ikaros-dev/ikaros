@@ -39,6 +39,7 @@ import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 import reactor.core.Exceptions;
+import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.search.SearchParam;
 import run.ikaros.api.search.SearchResult;
 import run.ikaros.api.search.file.FileDoc;
@@ -46,7 +47,6 @@ import run.ikaros.api.search.file.FileHint;
 import run.ikaros.api.search.file.FileSearchService;
 import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
-import run.ikaros.server.infra.properties.IkarosProperties;
 
 @Slf4j
 @Service

@@ -1,4 +1,4 @@
-package run.ikaros.server.infra.properties;
+package run.ikaros.api.infra.properties;
 
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
