@@ -47,6 +47,7 @@ public class YamlPluginDescriptorFinder implements PluginDescriptorFinder {
         pluginDescriptor.setHomepage(plugin.getHomepage());
         pluginDescriptor.setDisplayName(plugin.getDisplayName());
         pluginDescriptor.setLoadLocation(plugin.getLoadLocation());
+        pluginDescriptor.setConfigMapSchemas(plugin.getConfigMapSchemas());
 
         // add dependencies
         plugin.getDependencies().forEach((pluginDepName, versionRequire) -> {

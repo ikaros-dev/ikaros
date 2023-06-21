@@ -14,9 +14,7 @@ public class IkarosPluginDescriptor extends DefaultPluginDescriptor {
     private String homepage;
     private String displayName;
     private Path loadLocation;
-
-    public IkarosPluginDescriptor() {
-    }
+    private String configMapSchemas;
 
     public IkarosPluginDescriptor(String pluginId, String pluginDescription, String pluginClass,
                                   String version, String requires, String provider,

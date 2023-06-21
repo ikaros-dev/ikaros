@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { Plugin } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
@@ -7,24 +7,57 @@ import {
 	ElDescriptions,
 	ElDescriptionsItem,
 	ElImage,
+	ElMessage,
 	ElTabPane,
 	ElTabs,
 } from 'element-plus';
 
 const route = useRoute();
 
-const updatePluginName = (pluginNewName: string) => {
+const onPluginNameUpdate = (pluginNewName: string) => {
 	//@ts-ignore
 	plugin.value.name = pluginNewName;
 	fetchPlugin();
+	fetchConfigMap();
 };
 
 watch(route, () => {
-	updatePluginName(route.params.name as string);
+	onPluginNameUpdate(route.params.name as string);
+});
+
+// eslint-disable-next-line no-unused-vars
+const configMapSchemas = computed(() => {
+	let str = plugin.value.configMapSchemas.replace(/(\n|\r|\r\n|↵)/g, '');
+	// str = str.replace(/\$/g, '\\$');
+	str = str.replace(' ', '');
+	// console.log('str', str);
+	str = JSON.parse(str);
+	str = Object.values(str);
+	// console.log('str', str);
+	// 变量Schemas，如果找到包含字段名为 name的对象，
+	// 则从configMap中拿出对应的字段名的值，
+	// 赋值给 schema的对应value上，目的是完成初始化。
+	for (const obj of str) {
+		// console.log(obj, typeof obj.name);
+		if (obj && 'string' === typeof obj.name) {
+			const field = obj.name;
+			// console.log(field);
+			console.log(configMap.value);
+			if (
+				configMap.value &&
+				configMap.value.data &&
+				'undefined' !== typeof configMap.value?.data[field]
+			) {
+				obj.value = configMap.value?.data[field];
+			}
+		}
+	}
+	// console.log(str);
+	return str;
 });
 
 onMounted(() => {
-	updatePluginName(route.params.name as string);
+	onPluginNameUpdate(route.params.name as string);
 });
 
 // eslint-disable-next-line no-unused-vars
@@ -37,6 +70,30 @@ const fetchPlugin = async () => {
 		name: plugin.value.name as string,
 	});
 	plugin.value = data;
+};
+
+const configMap = ref({});
+// eslint-disable-next-line no-unused-vars
+const fetchConfigMap = async () => {
+	const { data } = await apiClient.configmap.getConfigmap({
+		name: plugin.value.name as string,
+	});
+	configMap.value = data;
+};
+
+const onSubmit = (form) => {
+	console.log('form', form);
+	configMap.value.data = form;
+	updateConfigMap();
+};
+
+const updateConfigMap = async () => {
+	await apiClient.configmap.updateConfigmap({
+		name: configMap.value.name,
+		configMap: configMap.value,
+	});
+	ElMessage.success('更新配置成功');
+	window.location.reload();
 };
 </script>
 
@@ -97,7 +154,17 @@ const fetchPlugin = async () => {
 				</el-descriptions-item>
 			</el-descriptions>
 		</el-tab-pane>
-		<el-tab-pane label="基本设置">Config</el-tab-pane>
+		<el-tab-pane v-if="plugin.configMapSchemas" label="基本设置">
+			<!--			{{ plugin.configMapSchemas }}-->
+			<!--			<hr />-->
+			<!--			{{ configMap }}-->
+			<!--			<hr />-->
+			<div style="padding: 5px">
+				<FormKit type="form" submit-label="保存" @submit="onSubmit">
+					<FormKitSchema :schema="configMapSchemas" />
+				</FormKit>
+			</div>
+		</el-tab-pane>
 	</el-tabs>
 </template>
 

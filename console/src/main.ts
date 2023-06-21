@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import { setupI18n, i18n } from './locales';
+import { i18n, setupI18n } from './locales';
 import { setupPinia } from './stores';
 import './styles/index.scss';
 
@@ -14,10 +14,13 @@ import { apiClient } from '@/utils/api-client';
 import { useUserStore } from '@/stores/user';
 import { ElMessage } from 'element-plus';
 import { useScriptTag } from '@vueuse/core';
+import { defaultConfig, plugin } from '@formkit/vue';
+import formkitConfig from './fromkit/formkit.config';
 
 const app = createApp(App);
 setupI18n(app);
 setupPinia(app);
+app.use(plugin, defaultConfig(formkitConfig));
 
 function registerModule(module: PluginModule, core: boolean) {
 	// Register module all components.
@@ -110,6 +113,7 @@ function loadStyle(href: string) {
 
 const pluginErrorMessages: Array<string> = [];
 const pluginModuleStore = usePluginModuleStore();
+
 async function loadPluginModules() {
 	const { data } = await apiClient.plugin.getPluginsByPaging({
 		page: '1',

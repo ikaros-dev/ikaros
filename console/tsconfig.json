@@ -9,23 +9,41 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["vite/client", "element-plus/global"],
-		"baseUrl": ".",
+    "types": [
+      "vite/client",
+      "element-plus/global"
+    ],
+    "baseUrl": ".",
     "composite": true,
     "noImplicitAny": false,
     "paths": {
-			"@/*": ["./src/*"],
-			"*.ts": ["*"]
-		}
+      "@/*": [
+        "./src/*"
+      ],
+      "*.ts": [
+        "*"
+      ],
+      "@formkit/themes/*": [
+        "node_modules/@formkit/themes/*"
+      ]
+    }
   },
   "include": [
-    "src/**/*.ts", 
-    "src/**/*.d.ts", 
-    "src/**/*.tsx", 
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
     "src/**/*.vue"
   ],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

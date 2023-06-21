@@ -21,6 +21,7 @@ import run.ikaros.api.plugin.custom.Plugin;
 public class YamlPluginFinder {
     static final DevelopmentPluginClasspath PLUGIN_CLASSPATH = new DevelopmentPluginClasspath();
     public static final String DEFAULT_PROPERTIES_FILE_NAME = "plugin.yaml";
+    public static final String DEFAULT_PLUG_CONFIG_MAG_SCHEMAS_FILE_NAME = "configMapSchemas";
     private final String propertiesFileName;
     private final IkarosPluginManager pluginManager;
 
@@ -60,8 +61,24 @@ public class YamlPluginFinder {
         }
         Resource propertyResource = new FileSystemResource(propertiesPath);
         YamlPluginLoader yamlPluginLoader = new YamlPluginLoader(propertyResource);
-        return yamlPluginLoader.load();
+        Plugin plugin = yamlPluginLoader.load();
 
+        // load configMapSchemas
+        Path configMapSchemasPath =
+            getManifestPath(pluginPath, DEFAULT_PLUG_CONFIG_MAG_SCHEMAS_FILE_NAME);
+        if (Files.notExists(configMapSchemasPath)) {
+            log.warn("Cannot find '{}' in resource path for plugin: '{}'",
+                configMapSchemasPath, pluginPath);
+            return plugin;
+        }
+        try {
+            plugin.setConfigMapSchemas(Files.readString(configMapSchemasPath));
+        } catch (IOException e) {
+            throw new PluginRuntimeException("Cannot read '{}' in resource path for plugin: '{}'",
+                configMapSchemasPath, pluginPath);
+        }
+
+        return plugin;
     }
 
     protected Path getManifestPath(Path pluginPath, String propertiesFileName) {
