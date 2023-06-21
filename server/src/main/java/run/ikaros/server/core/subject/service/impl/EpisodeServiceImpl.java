@@ -24,6 +24,9 @@ public class EpisodeServiceImpl implements EpisodeFileService {
     private final EpisodeRepository episodeRepository;
     private final FileRepository fileRepository;
 
+    /**
+     * Construct.
+     */
     public EpisodeServiceImpl(EpisodeFileRepository episodeFileRepository,
                               EpisodeRepository episodeRepository, FileRepository fileRepository) {
         this.episodeFileRepository = episodeFileRepository;

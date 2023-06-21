@@ -66,7 +66,7 @@ public class YamlPluginFinder {
         // load configMapSchemas
         Path configMapSchemasPath =
             getManifestPath(pluginPath, DEFAULT_PLUG_CONFIG_MAG_SCHEMAS_FILE_NAME);
-        if (Files.notExists(configMapSchemasPath)) {
+        if (configMapSchemasPath == null || Files.notExists(configMapSchemasPath)) {
             log.warn("Cannot find '{}' in resource path for plugin: '{}'",
                 configMapSchemasPath, pluginPath);
             return plugin;
@@ -90,8 +90,12 @@ public class YamlPluginFinder {
                     return path;
                 }
             }
-            throw new PluginRuntimeException(
-                "Unable to find plugin descriptor file: " + DEFAULT_PROPERTIES_FILE_NAME);
+            if (DEFAULT_PROPERTIES_FILE_NAME.equalsIgnoreCase(propertiesFileName)) {
+                throw new PluginRuntimeException(
+                    "Unable to find plugin descriptor file: " + propertiesFileName);
+            } else {
+                return null;
+            }
         } else {
             // it's a jar file
             try {

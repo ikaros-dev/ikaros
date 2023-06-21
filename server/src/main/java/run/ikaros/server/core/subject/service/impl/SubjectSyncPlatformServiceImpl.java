@@ -67,12 +67,16 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
                 "No found available subject platform synchronizer for platform-id: "
                     + platform.name() + "-" + platformId)))
             .map(subjectSynchronizes -> subjectSynchronizes.get(0))
-            .map(subjectSynchronizer -> subjectSynchronizer.pull(platformId))
-            .onErrorResume(Exception.class, e ->
-                Mono.error(new NoAvailableSubjectPlatformSynchronizerException(
-                    "Operate not available, platform api domain can not access for platform-id: "
+            .flatMap(subjectSynchronizer -> Mono.justOrEmpty(subjectSynchronizer.pull(platformId)))
+            .onErrorResume(Exception.class, e -> {
+                String msg =
+                    "Operate not available, platform api domain can not access "
+                        + "for platform-id: "
                         + platform.name() + "-" + platformId
-                        + ", plugin exception msg: " + e.getMessage())))
+                        + ", plugin exception msg: " + e.getMessage();
+                log.error(msg, e);
+                return Mono.error(new NoAvailableSubjectPlatformSynchronizerException(msg));
+            })
             .flatMap(subject -> Objects.isNull(subjectId)
                 ? subjectService.create(subject)
                 .onErrorResume(DuplicateKeyException.class, e -> Mono.just(subject)

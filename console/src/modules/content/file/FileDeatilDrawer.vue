@@ -4,15 +4,15 @@ import { FileEntity } from '@runikaros/api-client';
 import { filePlaceMap, fileTypeMap } from '@/modules/common/constants';
 import { computed, nextTick, ref } from 'vue';
 import {
-	ElMessage,
-	ElDrawer,
-	ElRow,
+	ElButton,
 	ElCol,
 	ElDescriptions,
 	ElDescriptionsItem,
+	ElDrawer,
 	ElInput,
+	ElMessage,
 	ElPopconfirm,
-	ElButton,
+	ElRow,
 } from 'element-plus';
 
 const props = withDefaults(
@@ -238,6 +238,9 @@ const formatFileSize = (value): string => {
 					</el-descriptions-item>
 					<el-descriptions-item label="上传日期：">
 						{{ file.createTime }}
+					</el-descriptions-item>
+					<el-descriptions-item v-if="file.originalPath" label="原始路径：">
+						{{ file.originalPath }}
 					</el-descriptions-item>
 				</el-descriptions>
 			</el-col>

@@ -126,6 +126,16 @@ public class IkarosPluginManager extends DefaultPluginManager
             log.info("Stop plugin '{}'", getPluginLabel(pluginDescriptor));
             pluginWrapper.getPlugin().stop();
             pluginWrapper.setPluginState(PluginState.STOPPED);
+
+            // get an instance of plugin before the plugin is unloaded
+            // for reason see https://github.com/pf4j/pf4j/issues/309
+            Plugin plugin = pluginWrapper.getPlugin();
+
+            // notify the plugin as it's deleted
+            if (Objects.nonNull(plugin)) {
+                plugin.delete();
+            }
+
             // release plugin resources
             releaseAdditionalResources(pluginId);
 
@@ -356,18 +366,9 @@ public class IkarosPluginManager extends DefaultPluginManager
             return false;
         }
 
-        // get an instance of plugin before the plugin is unloaded
-        // for reason see https://github.com/pf4j/pf4j/issues/309
-        Plugin plugin = pluginWrapper.getPlugin();
-
         if (!unloadPlugin(pluginId)) {
             log.error("Failed to unload plugin '{}' on delete", pluginId);
             return false;
-        }
-
-        // notify the plugin as it's deleted
-        if (Objects.nonNull(plugin)) {
-            plugin.delete();
         }
 
         // delete plugin path.

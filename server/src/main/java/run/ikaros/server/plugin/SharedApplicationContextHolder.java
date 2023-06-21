@@ -3,6 +3,7 @@ package run.ikaros.server.plugin;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 import run.ikaros.api.core.file.FileOperate;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomSchemeManager;
@@ -68,6 +69,10 @@ public class SharedApplicationContextHolder {
         // Register plugin file operate
         FileOperate fileOperate = rootApplicationContext.getBean(FileOperate.class);
         beanFactory.registerSingleton("pluginFileOperate", fileOperate);
+
+        // Register web client
+        WebClient webClient = rootApplicationContext.getBean(WebClient.class);
+        beanFactory.registerSingleton("webClient", webClient);
 
         // TODO add more shared instance here
 
