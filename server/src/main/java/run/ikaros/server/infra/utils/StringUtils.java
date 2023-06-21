@@ -12,6 +12,8 @@ public class StringUtils {
     }
 
     /**
+     * Construct.
+     *
      * @param s 待校验的字符串
      * @return 是否为空或者空串
      */
@@ -37,7 +39,7 @@ public class StringUtils {
     }
 
     /**
-     * @return % + you str + %
+     * return % + you str + % .
      */
     public static String addLikeChar(String str) {
         return "%" + str + "%";

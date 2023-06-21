@@ -61,13 +61,15 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor "org.springframework:spring-context-indexer"
 
+    // 针对插件RestTemplate的支持
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'io.projectreactor:reactor-test'
 }
-
 
 
 node {

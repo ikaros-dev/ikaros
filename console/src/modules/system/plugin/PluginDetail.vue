@@ -81,6 +81,9 @@ const fetchPlugin = async () => {
 const configMap = ref<ConfigMap>({});
 // eslint-disable-next-line no-unused-vars
 const fetchConfigMap = async () => {
+	if (!plugin.value.configMapSchemas) {
+		return;
+	}
 	const { data } = await apiClient.configmap.getConfigmap({
 		name: plugin.value.name as string,
 	});
