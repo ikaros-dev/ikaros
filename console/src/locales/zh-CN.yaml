@@ -109,6 +109,8 @@ core:
       title: 条目详情
   plugin:
     title: 插件
+    details:
+      title: 插件详情
     loader:
       message:
         entry_load_failed: "{name}：加载插件入口文件失败"

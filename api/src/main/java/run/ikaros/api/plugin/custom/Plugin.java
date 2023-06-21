@@ -78,4 +78,14 @@ public class Plugin {
         private String name;
         private String website;
     }
+
+    /**
+     * 用于生成插件配置表单，核心会读取插件目录下的[configMapSchemas]文本文件，将内容保存，
+     * 同时会根据插件名称和表单里面的[name]字段值组合一个属于插件的
+     * {@link run.ikaros.api.core.setting.ConfigMap}.
+     *
+     * @see run.ikaros.api.core.setting.ConfigMap
+     * @see <a href="https://formkit.com/essentials/schema">FormKit Schema</a>
+     */
+    private String configMapSchemas;
 }

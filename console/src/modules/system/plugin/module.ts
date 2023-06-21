@@ -2,6 +2,7 @@ import { definePlugin } from '@runikaros/shared';
 import Plugin from './Plugin.vue';
 import { Connection } from '@element-plus/icons-vue';
 import { markRaw } from 'vue';
+import PluginDetail from '@/modules/system/plugin/PluginDetail.vue';
 
 export default definePlugin({
 	name: 'User',
@@ -21,6 +22,18 @@ export default definePlugin({
 						icon: markRaw(Connection),
 						priority: 0,
 					},
+				},
+			},
+		},
+		{
+			parentName: 'Root',
+			route: {
+				path: '/plugin/:name/details',
+				name: 'PluginDetails',
+				component: PluginDetail,
+				meta: {
+					title: 'core.plugin.details.title',
+					hidden: true,
 				},
 			},
 		},

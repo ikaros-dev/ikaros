@@ -1,4 +1,4 @@
-package run.ikaros.server.core.setting;
+package run.ikaros.api.core.setting;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -11,6 +11,9 @@ import run.ikaros.api.custom.Name;
 @Custom(group = "setting.ikaros.run", version = OpenApiConst.CORE_VERSION, kind = "ConfigMap",
     singular = "configmap", plural = "configmaps")
 public class ConfigMap {
+    /**
+     * 如是插件的配置，会与插件名称(name)保持一致.
+     */
     @Name
     private String name;
     private Map<String, String> data;

@@ -7,9 +7,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import run.ikaros.api.core.file.FilePolicy;
 import run.ikaros.api.core.file.FileSetting;
+import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.scheme.CustomSchemeManager;
 import run.ikaros.api.plugin.custom.Plugin;
-import run.ikaros.server.core.setting.ConfigMap;
 import run.ikaros.server.custom.scheme.SchemeInitializedEvent;
 
 @Component

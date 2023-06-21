@@ -38,26 +38,32 @@ import {
 	RequiredError,
 } from '../base';
 // @ts-ignore
-import { FileHints } from '../models';
-// @ts-ignore
-import { SubjectHints } from '../models';
+import { StarterCustom } from '../models';
 /**
- * V1alpha1IndicesApi - axios parameter creator
+ * PluginIkarosRunV1alpha1StaterApi - axios parameter creator
  * @export
  */
-export const V1alpha1IndicesApiAxiosParamCreator = function (
+export const PluginIkarosRunV1alpha1StaterApiAxiosParamCreator = function (
 	configuration?: Configuration
 ) {
 	return {
 		/**
-		 * Build or rebuild file indices for full text search
+		 * Delete one starter by path name.
+		 * @param {string} name Starter unit name.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		buildFileIndices: async (
+		deleteByName: async (
+			name: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/indices/file`;
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('deleteByName', 'name', name);
+			const localVarPath =
+				`/apis/plugin.ikaros.run/v1alpha1/Stater/{name}`.replace(
+					`{${'name'}}`,
+					encodeURIComponent(String(name))
+				);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -66,7 +72,7 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 			}
 
 			const localVarRequestOptions = {
-				method: 'POST',
+				method: 'DELETE',
 				...baseOptions,
 				...options,
 			};
@@ -96,70 +102,14 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 			};
 		},
 		/**
-		 * Build or rebuild subject indices for full text search
+		 *
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		buildSubjectIndices: async (
+		findAllStarter: async (
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/indices/subject`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Search files with fuzzy query
-		 * @param {string} keyword
-		 * @param {number} [limit]
-		 * @param {string} [highlightPostTag]
-		 * @param {string} [highlightPreTag]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		searchFile: async (
-			keyword: string,
-			limit?: number,
-			highlightPostTag?: string,
-			highlightPreTag?: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'keyword' is not null or undefined
-			assertParamExists('searchFile', 'keyword', keyword);
-			const localVarPath = `/api/v1alpha1/indices/file`;
+			const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/Stater/findAll`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -183,22 +133,6 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (limit !== undefined) {
-				localVarQueryParameter['limit'] = limit;
-			}
-
-			if (highlightPostTag !== undefined) {
-				localVarQueryParameter['highlightPostTag'] = highlightPostTag;
-			}
-
-			if (keyword !== undefined) {
-				localVarQueryParameter['keyword'] = keyword;
-			}
-
-			if (highlightPreTag !== undefined) {
-				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
-			}
-
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -214,24 +148,22 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 			};
 		},
 		/**
-		 * Search subjects with fuzzy query
-		 * @param {string} keyword
-		 * @param {number} [limit]
-		 * @param {string} [highlightPostTag]
-		 * @param {string} [highlightPreTag]
+		 * Find one starter by path name.
+		 * @param {string} name Starter unit name.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		searchSubject: async (
-			keyword: string,
-			limit?: number,
-			highlightPostTag?: string,
-			highlightPreTag?: string,
+		findOneStarter: async (
+			name: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			// verify required parameter 'keyword' is not null or undefined
-			assertParamExists('searchSubject', 'keyword', keyword);
-			const localVarPath = `/api/v1alpha1/indices/subject`;
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('findOneStarter', 'name', name);
+			const localVarPath =
+				`/apis/plugin.ikaros.run/v1alpha1/Stater/findOne/{name}`.replace(
+					`{${'name'}}`,
+					encodeURIComponent(String(name))
+				);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -255,21 +187,55 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (limit !== undefined) {
-				localVarQueryParameter['limit'] = limit;
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Save a starter obj.
+		 * @param {StarterCustom} [starterCustom] StarterCustom
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		save: async (
+			starterCustom?: StarterCustom,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/Stater`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
 			}
 
-			if (highlightPostTag !== undefined) {
-				localVarQueryParameter['highlightPostTag'] = highlightPostTag;
-			}
+			const localVarRequestOptions = {
+				method: 'PUT',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
 
-			if (keyword !== undefined) {
-				localVarQueryParameter['keyword'] = keyword;
-			}
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			if (highlightPreTag !== undefined) {
-				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
-			}
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -279,6 +245,11 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 				...headersFromBaseOptions,
 				...options.headers,
 			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				starterCustom,
+				localVarRequestOptions,
+				configuration
+			);
 
 			return {
 				url: toPathString(localVarUrlObj),
@@ -289,74 +260,29 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 };
 
 /**
- * V1alpha1IndicesApi - functional programming interface
+ * PluginIkarosRunV1alpha1StaterApi - functional programming interface
  * @export
  */
-export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
+export const PluginIkarosRunV1alpha1StaterApiFp = function (
+	configuration?: Configuration
+) {
 	const localVarAxiosParamCreator =
-		V1alpha1IndicesApiAxiosParamCreator(configuration);
+		PluginIkarosRunV1alpha1StaterApiAxiosParamCreator(configuration);
 	return {
 		/**
-		 * Build or rebuild file indices for full text search
+		 * Delete one starter by path name.
+		 * @param {string} name Starter unit name.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async buildFileIndices(
+		async deleteByName(
+			name: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
 		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.buildFileIndices(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Build or rebuild subject indices for full text search
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async buildSubjectIndices(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.buildSubjectIndices(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Search files with fuzzy query
-		 * @param {string} keyword
-		 * @param {number} [limit]
-		 * @param {string} [highlightPostTag]
-		 * @param {string} [highlightPreTag]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async searchFile(
-			keyword: string,
-			limit?: number,
-			highlightPostTag?: string,
-			highlightPreTag?: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FileHints>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.searchFile(
-				keyword,
-				limit,
-				highlightPostTag,
-				highlightPreTag,
+			const localVarAxiosArgs = await localVarAxiosParamCreator.deleteByName(
+				name,
 				options
 			);
 			return createRequestFunction(
@@ -367,28 +293,65 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
 			);
 		},
 		/**
-		 * Search subjects with fuzzy query
-		 * @param {string} keyword
-		 * @param {number} [limit]
-		 * @param {string} [highlightPostTag]
-		 * @param {string} [highlightPreTag]
+		 *
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async searchSubject(
-			keyword: string,
-			limit?: number,
-			highlightPostTag?: string,
-			highlightPreTag?: string,
+		async findAllStarter(
 			options?: AxiosRequestConfig
 		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubjectHints>
+			(
+				axios?: AxiosInstance,
+				basePath?: string
+			) => AxiosPromise<Array<StarterCustom>>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.searchSubject(
-				keyword,
-				limit,
-				highlightPostTag,
-				highlightPreTag,
+			const localVarAxiosArgs = await localVarAxiosParamCreator.findAllStarter(
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Find one starter by path name.
+		 * @param {string} name Starter unit name.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async findOneStarter(
+			name: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StarterCustom>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.findOneStarter(
+				name,
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Save a starter obj.
+		 * @param {StarterCustom} [starterCustom] StarterCustom
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async save(
+			starterCustom?: StarterCustom,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.save(
+				starterCustom,
 				options
 			);
 			return createRequestFunction(
@@ -402,221 +365,179 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
 };
 
 /**
- * V1alpha1IndicesApi - factory interface
+ * PluginIkarosRunV1alpha1StaterApi - factory interface
  * @export
  */
-export const V1alpha1IndicesApiFactory = function (
+export const PluginIkarosRunV1alpha1StaterApiFactory = function (
 	configuration?: Configuration,
 	basePath?: string,
 	axios?: AxiosInstance
 ) {
-	const localVarFp = V1alpha1IndicesApiFp(configuration);
+	const localVarFp = PluginIkarosRunV1alpha1StaterApiFp(configuration);
 	return {
 		/**
-		 * Build or rebuild file indices for full text search
+		 * Delete one starter by path name.
+		 * @param {PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		buildFileIndices(options?: AxiosRequestConfig): AxiosPromise<void> {
-			return localVarFp
-				.buildFileIndices(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Build or rebuild subject indices for full text search
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		buildSubjectIndices(options?: AxiosRequestConfig): AxiosPromise<void> {
-			return localVarFp
-				.buildSubjectIndices(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Search files with fuzzy query
-		 * @param {V1alpha1IndicesApiSearchFileRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		searchFile(
-			requestParameters: V1alpha1IndicesApiSearchFileRequest,
+		deleteByName(
+			requestParameters: PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest,
 			options?: AxiosRequestConfig
-		): AxiosPromise<FileHints> {
+		): AxiosPromise<void> {
 			return localVarFp
-				.searchFile(
-					requestParameters.keyword,
-					requestParameters.limit,
-					requestParameters.highlightPostTag,
-					requestParameters.highlightPreTag,
-					options
-				)
+				.deleteByName(requestParameters.name, options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
-		 * Search subjects with fuzzy query
-		 * @param {V1alpha1IndicesApiSearchSubjectRequest} requestParameters Request parameters.
+		 *
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		searchSubject(
-			requestParameters: V1alpha1IndicesApiSearchSubjectRequest,
+		findAllStarter(
 			options?: AxiosRequestConfig
-		): AxiosPromise<SubjectHints> {
+		): AxiosPromise<Array<StarterCustom>> {
 			return localVarFp
-				.searchSubject(
-					requestParameters.keyword,
-					requestParameters.limit,
-					requestParameters.highlightPostTag,
-					requestParameters.highlightPreTag,
-					options
-				)
+				.findAllStarter(options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Find one starter by path name.
+		 * @param {PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		findOneStarter(
+			requestParameters: PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<StarterCustom> {
+			return localVarFp
+				.findOneStarter(requestParameters.name, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Save a starter obj.
+		 * @param {PluginIkarosRunV1alpha1StaterApiSaveRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		save(
+			requestParameters: PluginIkarosRunV1alpha1StaterApiSaveRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.save(requestParameters.starterCustom, options)
 				.then((request) => request(axios, basePath));
 		},
 	};
 };
 
 /**
- * Request parameters for searchFile operation in V1alpha1IndicesApi.
+ * Request parameters for deleteByName operation in PluginIkarosRunV1alpha1StaterApi.
  * @export
- * @interface V1alpha1IndicesApiSearchFileRequest
+ * @interface PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest
  */
-export interface V1alpha1IndicesApiSearchFileRequest {
+export interface PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest {
 	/**
-	 *
+	 * Starter unit name.
 	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchFile
+	 * @memberof PluginIkarosRunV1alpha1StaterApiDeleteByName
 	 */
-	readonly keyword: string;
-
-	/**
-	 *
-	 * @type {number}
-	 * @memberof V1alpha1IndicesApiSearchFile
-	 */
-	readonly limit?: number;
-
-	/**
-	 *
-	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchFile
-	 */
-	readonly highlightPostTag?: string;
-
-	/**
-	 *
-	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchFile
-	 */
-	readonly highlightPreTag?: string;
+	readonly name: string;
 }
 
 /**
- * Request parameters for searchSubject operation in V1alpha1IndicesApi.
+ * Request parameters for findOneStarter operation in PluginIkarosRunV1alpha1StaterApi.
  * @export
- * @interface V1alpha1IndicesApiSearchSubjectRequest
+ * @interface PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest
  */
-export interface V1alpha1IndicesApiSearchSubjectRequest {
+export interface PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest {
 	/**
-	 *
+	 * Starter unit name.
 	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchSubject
+	 * @memberof PluginIkarosRunV1alpha1StaterApiFindOneStarter
 	 */
-	readonly keyword: string;
-
-	/**
-	 *
-	 * @type {number}
-	 * @memberof V1alpha1IndicesApiSearchSubject
-	 */
-	readonly limit?: number;
-
-	/**
-	 *
-	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchSubject
-	 */
-	readonly highlightPostTag?: string;
-
-	/**
-	 *
-	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchSubject
-	 */
-	readonly highlightPreTag?: string;
+	readonly name: string;
 }
 
 /**
- * V1alpha1IndicesApi - object-oriented interface
+ * Request parameters for save operation in PluginIkarosRunV1alpha1StaterApi.
  * @export
- * @class V1alpha1IndicesApi
+ * @interface PluginIkarosRunV1alpha1StaterApiSaveRequest
+ */
+export interface PluginIkarosRunV1alpha1StaterApiSaveRequest {
+	/**
+	 * StarterCustom
+	 * @type {StarterCustom}
+	 * @memberof PluginIkarosRunV1alpha1StaterApiSave
+	 */
+	readonly starterCustom?: StarterCustom;
+}
+
+/**
+ * PluginIkarosRunV1alpha1StaterApi - object-oriented interface
+ * @export
+ * @class PluginIkarosRunV1alpha1StaterApi
  * @extends {BaseAPI}
  */
-export class V1alpha1IndicesApi extends BaseAPI {
+export class PluginIkarosRunV1alpha1StaterApi extends BaseAPI {
 	/**
-	 * Build or rebuild file indices for full text search
+	 * Delete one starter by path name.
+	 * @param {PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
-	 * @memberof V1alpha1IndicesApi
+	 * @memberof PluginIkarosRunV1alpha1StaterApi
 	 */
-	public buildFileIndices(options?: AxiosRequestConfig) {
-		return V1alpha1IndicesApiFp(this.configuration)
-			.buildFileIndices(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
-
-	/**
-	 * Build or rebuild subject indices for full text search
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1IndicesApi
-	 */
-	public buildSubjectIndices(options?: AxiosRequestConfig) {
-		return V1alpha1IndicesApiFp(this.configuration)
-			.buildSubjectIndices(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
-
-	/**
-	 * Search files with fuzzy query
-	 * @param {V1alpha1IndicesApiSearchFileRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1IndicesApi
-	 */
-	public searchFile(
-		requestParameters: V1alpha1IndicesApiSearchFileRequest,
+	public deleteByName(
+		requestParameters: PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest,
 		options?: AxiosRequestConfig
 	) {
-		return V1alpha1IndicesApiFp(this.configuration)
-			.searchFile(
-				requestParameters.keyword,
-				requestParameters.limit,
-				requestParameters.highlightPostTag,
-				requestParameters.highlightPreTag,
-				options
-			)
+		return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
+			.deleteByName(requestParameters.name, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
 	/**
-	 * Search subjects with fuzzy query
-	 * @param {V1alpha1IndicesApiSearchSubjectRequest} requestParameters Request parameters.
+	 *
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
-	 * @memberof V1alpha1IndicesApi
+	 * @memberof PluginIkarosRunV1alpha1StaterApi
 	 */
-	public searchSubject(
-		requestParameters: V1alpha1IndicesApiSearchSubjectRequest,
+	public findAllStarter(options?: AxiosRequestConfig) {
+		return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
+			.findAllStarter(options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Find one starter by path name.
+	 * @param {PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof PluginIkarosRunV1alpha1StaterApi
+	 */
+	public findOneStarter(
+		requestParameters: PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest,
 		options?: AxiosRequestConfig
 	) {
-		return V1alpha1IndicesApiFp(this.configuration)
-			.searchSubject(
-				requestParameters.keyword,
-				requestParameters.limit,
-				requestParameters.highlightPostTag,
-				requestParameters.highlightPreTag,
-				options
-			)
+		return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
+			.findOneStarter(requestParameters.name, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Save a starter obj.
+	 * @param {PluginIkarosRunV1alpha1StaterApiSaveRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof PluginIkarosRunV1alpha1StaterApi
+	 */
+	public save(
+		requestParameters: PluginIkarosRunV1alpha1StaterApiSaveRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
+			.save(requestParameters.starterCustom, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }
