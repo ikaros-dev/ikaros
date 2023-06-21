@@ -45,8 +45,7 @@ public class FileOperator implements FileOperate {
     @Override
     public Mono<FileEntity> findById(Long id) {
         Assert.notNull(id, "'id' must not null.");
-        return repository.findById(id)
-            .doOnSuccess(unused -> log.debug("find file entity by id:[{}].", id));
+        return repository.findById(id);
     }
 
     @Override

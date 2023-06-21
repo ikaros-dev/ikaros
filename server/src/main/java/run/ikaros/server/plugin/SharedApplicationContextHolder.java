@@ -1,13 +1,14 @@
 package run.ikaros.server.plugin;
 
+import java.util.Map;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import run.ikaros.api.core.file.FileOperate;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomSchemeManager;
 import run.ikaros.api.infra.properties.IkarosProperties;
+import run.ikaros.api.plugin.AllowPluginOperate;
 
 /**
  * A holder for {@link SharedApplicationContext},
@@ -67,8 +68,13 @@ public class SharedApplicationContextHolder {
         beanFactory.registerSingleton("ikarosProperties", ikarosProperties);
 
         // Register plugin file operate
-        FileOperate fileOperate = rootApplicationContext.getBean(FileOperate.class);
-        beanFactory.registerSingleton("pluginFileOperate", fileOperate);
+        // FileOperate fileOperate = rootApplicationContext.getBean(FileOperate.class);
+        // beanFactory.registerSingleton("pluginFileOperate", fileOperate);
+        Map<String, AllowPluginOperate> allowPluginOperateMap =
+            rootApplicationContext.getBeansOfType(AllowPluginOperate.class);
+        for (String key : allowPluginOperateMap.keySet()) {
+            beanFactory.registerSingleton(key, allowPluginOperateMap.get(key));
+        }
 
         // Register web client
         WebClient webClient = rootApplicationContext.getBean(WebClient.class);

@@ -1,7 +1,8 @@
 ikaros:
   plugin:
-    runtime-mode: development
-    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-bgmtv
+  #    runtime-mode: development
+  #    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-jellyfin
+  #      auto-start-plugin: false
   security:
     initializer:
       master-username: tomoki
