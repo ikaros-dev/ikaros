@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSynchronizer;
 import run.ikaros.api.exception.NoAvailableSubjectPlatformSynchronizerException;
@@ -67,7 +68,8 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
                 "No found available subject platform synchronizer for platform-id: "
                     + platform.name() + "-" + platformId)))
             .map(subjectSynchronizes -> subjectSynchronizes.get(0))
-            .flatMap(subjectSynchronizer -> Mono.justOrEmpty(subjectSynchronizer.pull(platformId)))
+            .flatMap(subjectSynchronizer -> Mono.fromCallable(() ->
+                subjectSynchronizer.pull(platformId)))
             .onErrorResume(Exception.class, e -> {
                 String msg =
                     "Operate not available, platform api domain can not access "
@@ -85,7 +87,8 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
                 .then(Mono.defer(() -> subjectService.findById(subjectId))))
             .doOnSuccess(subject -> applicationContext.publishEvent(
                 new SubjectCoverImageDownloadAndUpdateEvent(this,
-                    subject.getId(), subject.getCover())));
+                    subject.getId(), subject.getCover())))
+            .subscribeOn(Schedulers.boundedElastic());
     }
 
 
