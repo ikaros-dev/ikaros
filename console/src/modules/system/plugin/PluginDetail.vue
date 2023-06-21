@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { Plugin } from '@runikaros/api-client';
+import { ConfigMap, Plugin } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import {
 	ElDescriptions,
@@ -25,21 +25,26 @@ watch(route, () => {
 	onPluginNameUpdate(route.params.name as string);
 });
 
-// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line no-unused-vars, no-undef
 const configMapSchemas = computed(() => {
-	let str = plugin.value.configMapSchemas.replace(/(\n|\r|\r\n|↵)/g, '');
+	let str = plugin.value?.configMapSchemas?.replace(/(\n|\r|\r\n|↵)/g, '');
 	// str = str.replace(/\$/g, '\\$');
+	// @ts-ignore
 	str = str.replace(' ', '');
 	// console.log('str', str);
 	str = JSON.parse(str);
+	// @ts-ignore
 	str = Object.values(str);
 	// console.log('str', str);
 	// 变量Schemas，如果找到包含字段名为 name的对象，
 	// 则从configMap中拿出对应的字段名的值，
 	// 赋值给 schema的对应value上，目的是完成初始化。
+	// @ts-ignore
 	for (const obj of str) {
 		// console.log(obj, typeof obj.name);
+		// @ts-ignore
 		if (obj && 'string' === typeof obj.name) {
+			// @ts-ignore
 			const field = obj.name;
 			// console.log(field);
 			console.log(configMap.value);
@@ -48,6 +53,7 @@ const configMapSchemas = computed(() => {
 				configMap.value.data &&
 				'undefined' !== typeof configMap.value?.data[field]
 			) {
+				// @ts-ignore
 				obj.value = configMap.value?.data[field];
 			}
 		}
@@ -72,7 +78,7 @@ const fetchPlugin = async () => {
 	plugin.value = data;
 };
 
-const configMap = ref({});
+const configMap = ref<ConfigMap>({});
 // eslint-disable-next-line no-unused-vars
 const fetchConfigMap = async () => {
 	const { data } = await apiClient.configmap.getConfigmap({
@@ -89,7 +95,7 @@ const onSubmit = (form) => {
 
 const updateConfigMap = async () => {
 	await apiClient.configmap.updateConfigmap({
-		name: configMap.value.name,
+		name: configMap.value.name as string,
 		configMap: configMap.value,
 	});
 	ElMessage.success('更新配置成功');
@@ -161,7 +167,7 @@ const updateConfigMap = async () => {
 			<!--			<hr />-->
 			<div style="padding: 5px">
 				<FormKit type="form" submit-label="保存" @submit="onSubmit">
-					<FormKitSchema :schema="configMapSchemas" />
+					<FormKitSchema :schema="configMapSchemas as any" />
 				</FormKit>
 			</div>
 		</el-tab-pane>
