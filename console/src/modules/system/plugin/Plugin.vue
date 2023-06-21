@@ -1,30 +1,31 @@
 <script setup lang="ts">
 import { apiClient } from '@/utils/api-client';
-import { Search, ArrowDown } from '@element-plus/icons-vue';
+import { ArrowDown, More, Search } from '@element-plus/icons-vue';
 import {
 	Plugin,
 	V1alpha1PluginApiOperatePluginStateByIdRequest,
 } from '@runikaros/api-client';
-import { More } from '@element-plus/icons-vue';
 // eslint-disable-next-line no-unused-vars
 import PluginUploadDrawer from './PluginUploadDrawer.vue';
 import type { AxiosResponse } from 'axios';
 import { onMounted, ref } from 'vue';
 import {
+	ElAvatar,
+	ElButton,
+	ElCol,
+	ElDropdown,
+	ElDropdownItem,
+	ElDropdownMenu,
+	ElIcon,
+	ElInput,
 	ElMessage,
 	ElMessageBox,
-	ElRow,
-	ElCol,
-	ElInput,
 	ElPagination,
-	ElButton,
-	ElDropdown,
-	ElIcon,
-	ElDropdownItem,
+	ElRow,
 	ElTable,
 	ElTableColumn,
-	ElAvatar,
 } from 'element-plus';
+import router from '@/router';
 
 interface PluginSearch {
 	page: number;
@@ -301,6 +302,10 @@ const onPluginUploadDrawerClose = () => {
 	window.location.reload();
 };
 
+const toPluginDetails = (pluginName: string) => {
+	router.push('/plugin/' + pluginName + '/details');
+};
+
 onMounted(getPluginsFromServer);
 </script>
 
@@ -346,8 +351,8 @@ onMounted(getPluginsFromServer);
 			<el-button plain @click="reloadAllPlugin">重载所有</el-button>
 
 			<el-button plain @click="pluginUploadDrawerVisible = true"
-				>安装插件</el-button
-			>
+				>安装插件
+			</el-button>
 
 			&nbsp;&nbsp;
 			<el-dropdown
@@ -370,7 +375,7 @@ onMounted(getPluginsFromServer);
 				</span>
 				<template #dropdown>
 					<el-dropdown-menu>
-						<el-dropdown-item command="ALL" disabled> 全部 </el-dropdown-item>
+						<el-dropdown-item command="ALL" disabled> 全部</el-dropdown-item>
 						<el-dropdown-item command="STARTED" disabled>
 							启用
 						</el-dropdown-item>
@@ -429,10 +434,14 @@ onMounted(getPluginsFromServer);
 		<el-table-column align="right" label="操作" width="55">
 			<template #default="scope">
 				<el-dropdown style="cursor: pointer" trigger="click">
-					<el-icon size="30"><More /></el-icon>
+					<el-icon size="30">
+						<More />
+					</el-icon>
 					<template #dropdown>
 						<el-dropdown-menu>
-							<el-dropdown-item disabled> 详情 </el-dropdown-item>
+							<el-dropdown-item @click="toPluginDetails(scope.row.name)">
+								详情</el-dropdown-item
+							>
 							<el-dropdown-item
 								divided
 								:disabled="scope.row.state === 'STARTED'"
@@ -466,7 +475,7 @@ onMounted(getPluginsFromServer);
 							<el-dropdown-item divided @click="reloadPlugin(scope.row.name)">
 								重载
 							</el-dropdown-item>
-							<el-dropdown-item disabled> 升级 </el-dropdown-item>
+							<el-dropdown-item disabled> 升级</el-dropdown-item>
 							<el-dropdown-item
 								style="width: 170; color: red"
 								divided

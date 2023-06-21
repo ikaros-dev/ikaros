@@ -111,6 +111,8 @@ core:
       title: Subject Details
   plugin:
     title: Plugins
+    details:
+      title: Plugin Details
     loader:
       message:
         entry_load_failed: "{name}: Failed to load plugin entry file"

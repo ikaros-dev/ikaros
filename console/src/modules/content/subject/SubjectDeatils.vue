@@ -3,9 +3,9 @@ import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
 import {
 	Episode,
+	FileEntity,
 	Subject,
 	SubjectTypeEnum,
-	FileEntity,
 } from '@runikaros/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import FileSelectDialog from '../file/FileSelectDialog.vue';
@@ -16,14 +16,14 @@ import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import { useRoute } from 'vue-router';
 import { onMounted, ref, watch } from 'vue';
 import {
-	ElMessage,
-	ElRow,
-	ElCol,
 	ElButton,
-	ElPopconfirm,
-	ElImage,
+	ElCol,
 	ElDescriptions,
 	ElDescriptionsItem,
+	ElImage,
+	ElMessage,
+	ElPopconfirm,
+	ElRow,
 	ElTable,
 	ElTableColumn,
 } from 'element-plus';
@@ -31,6 +31,7 @@ import {
 const route = useRoute();
 
 watch(route, () => {
+	console.log(route.params.id);
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
 	fetchSubjectById();
@@ -222,10 +223,10 @@ onMounted(() => {
 	/>
 	<el-row>
 		<el-col :span="24">
-			<el-button plain @click="toSubjectPut"> 编辑 </el-button>
+			<el-button plain @click="toSubjectPut"> 编辑</el-button>
 			<el-popconfirm title="您确定要删除该条目吗？" @confirm="deleteSubject">
 				<template #reference>
-					<el-button plain type="danger"> 删除 </el-button>
+					<el-button plain type="danger"> 删除</el-button>
 				</template>
 			</el-popconfirm>
 			<el-button
@@ -245,7 +246,7 @@ onMounted(() => {
 				<el-col :xs="24" :sm="24" :md="12" :lg="6" :xl="6">
 					<el-image
 						style="width: 100%"
-						:src="subject.cover"
+						:src="subject.cover as string"
 						:zoom-rate="1.2"
 						:preview-src-list="new Array(subject.cover)  as string[]"
 						:initial-index="4"
@@ -364,6 +365,7 @@ onMounted(() => {
 .infoMapLabel {
 	min-width: 100px;
 }
+
 .infinite-list {
 	// overflow: auto;
 	padding: 0;

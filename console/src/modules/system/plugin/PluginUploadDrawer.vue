@@ -4,6 +4,7 @@ import type { Plugin } from '@runikaros/api-client';
 import { ErrorResponse } from '@uppy/core';
 import { computed, ref, watch } from 'vue';
 import { ElMessage, ElDrawer } from 'element-plus';
+import UppyUpload from '@/components/upload/UppyUpload.vue';
 
 const t = i18n.global.t;
 
