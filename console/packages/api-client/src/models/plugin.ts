@@ -115,6 +115,12 @@ export interface Plugin {
 	 * @memberof Plugin
 	 */
 	stylesheet?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof Plugin
+	 */
+	configMapSchemas?: string;
 }
 
 export const PluginStateEnum = {

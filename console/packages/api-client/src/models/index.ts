@@ -13,6 +13,7 @@ export * from './paging-wrap';
 export * from './plugin';
 export * from './plugin-load-location';
 export * from './plugin-load-location-file-system';
+export * from './starter-custom';
 export * from './subject';
 export * from './subject-hint';
 export * from './subject-hints';
