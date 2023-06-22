@@ -9,6 +9,9 @@ public class CustomUpdateEvent extends ApplicationEvent {
     private final CustomScheme scheme;
     private final String name;
 
+    /**
+     * Construct.
+     */
     public CustomUpdateEvent(Object source, CustomScheme scheme, String name) {
         super(source);
         this.scheme = scheme;

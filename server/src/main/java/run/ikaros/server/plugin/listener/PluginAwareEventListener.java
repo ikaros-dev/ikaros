@@ -19,8 +19,9 @@ public class PluginAwareEventListener {
         if ("ALL".equals(pluginId)) {
             log.debug("publish event [{}] to plugin [{}].",
                 event.getClass().getName(), pluginId);
-            for (PluginApplicationContext pluginApplicationContext : PluginApplicationContextRegistry.getInstance()
-                .getPluginApplicationContexts()) {
+            for (PluginApplicationContext pluginApplicationContext :
+                PluginApplicationContextRegistry.getInstance()
+                    .getPluginApplicationContexts()) {
                 pluginApplicationContext.publishEvent(event);
             }
         } else {

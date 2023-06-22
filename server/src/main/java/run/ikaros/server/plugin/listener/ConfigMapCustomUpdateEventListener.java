@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomScheme;
-import run.ikaros.server.custom.event.CustomUpdateEvent;
 import run.ikaros.api.plugin.event.PluginConfigMapUpdateEvent;
+import run.ikaros.server.custom.event.CustomUpdateEvent;
 
 @Slf4j
 @Component
