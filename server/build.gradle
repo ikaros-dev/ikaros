@@ -63,6 +63,7 @@ dependencies {
 
     // 针对插件RestTemplate的支持
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+    implementation 'org.json:json:20230227'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
