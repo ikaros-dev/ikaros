@@ -4,6 +4,7 @@ import static run.ikaros.server.custom.CustomConverter.getNameFieldValue;
 import static run.ikaros.server.custom.router.CustomRouterFunctionFactory.PathPatternGenerator.buildCustomPathPatternPrefix;
 
 import java.net.URI;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
@@ -14,15 +15,23 @@ import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.exception.CustomException;
 import run.ikaros.api.custom.scheme.CustomScheme;
 import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.server.custom.CustomConverter;
+import run.ikaros.server.custom.event.CustomCreateEvent;
 
 public class CustomCreateHandler implements CustomRouterFunctionFactory.CreateHandler {
     private final ReactiveCustomClient customClient;
     private final CustomScheme scheme;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
+    /**
+     * Construct.
+     */
     public CustomCreateHandler(ReactiveCustomClient customClient,
-                               CustomScheme scheme) {
+                               CustomScheme scheme,
+                               ApplicationEventPublisher applicationEventPublisher) {
         this.customClient = customClient;
         this.scheme = scheme;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Override
@@ -31,6 +40,9 @@ public class CustomCreateHandler implements CustomRouterFunctionFactory.CreateHa
             .switchIfEmpty(
                 Mono.error(() -> new CustomException("Cannot read body to: " + scheme.type())))
             .flatMap(customClient::create)
+            .doOnSuccess(
+                custom -> applicationEventPublisher.publishEvent(
+                    new CustomCreateEvent(this, scheme, CustomConverter.getNameFieldValue(custom))))
             .flatMap(custom -> ServerResponse
                 .created(URI.create(pathPattern() + "/" + getNameFieldValue(custom)))
                 .contentType(MediaType.APPLICATION_JSON)

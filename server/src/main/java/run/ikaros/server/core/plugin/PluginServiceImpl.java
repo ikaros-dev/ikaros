@@ -102,12 +102,13 @@ public class PluginServiceImpl implements PluginService {
             }
             Path destPath = Path.of(pluginDirFile.toURI()).resolve(filePart.filename());
 
-            filePart.transferTo(destPath.toFile()).subscribe();
-            log.debug("Upload plugin file [{}] to plugin dir [{}].",
-                filePart.filename(), destPath);
-            String pluginId = pluginManager.loadPlugin(destPath);
-            log.debug("Load plugin by path success, pluginId: [{}].", pluginId);
-            return Mono.empty();
+            return filePart.transferTo(destPath.toFile())
+                .doOnSuccess(unused -> log.debug("Upload plugin file [{}] to plugin dir [{}].",
+                    filePart.filename(), destPath))
+                .then(Mono.fromCallable(() -> pluginManager.loadPlugin(destPath)))
+                .doOnSuccess(pluginId ->
+                    log.debug("Load plugin by path success, pluginId: [{}].", pluginId))
+                .then();
         } catch (Exception e) {
             throw new PluginInstallRuntimeException(e);
         }

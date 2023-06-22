@@ -1,9 +1,12 @@
 package run.ikaros.server.core.file;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.FileOperate;
 import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.server.infra.utils.ReactiveBeanUtils;
@@ -13,9 +16,11 @@ import run.ikaros.server.store.repository.FileRepository;
 @Component
 public class FileOperator implements FileOperate {
     private final FileRepository repository;
+    private final FileService fileService;
 
-    public FileOperator(FileRepository repository) {
+    public FileOperator(FileRepository repository, FileService fileService) {
         this.repository = repository;
+        this.fileService = fileService;
     }
 
     @Override
@@ -71,5 +76,10 @@ public class FileOperator implements FileOperate {
         Assert.notNull(id, "'id' must not null.");
         return repository.deleteById(id)
             .doOnSuccess(unused -> log.debug("delete file entity by id:[{}].", id));
+    }
+
+    @Override
+    public Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux, String policy) {
+        return fileService.upload(fileName, dataBufferFlux, policy);
     }
 }

@@ -3,7 +3,6 @@ import App from './App.vue';
 import router from './router';
 import { i18n, setupI18n } from './locales';
 import { setupPinia } from './stores';
-import './styles/index.scss';
 
 import type { PluginModule, RouteRecordAppend } from '@runikaros/shared';
 import type { RouteRecordRaw } from 'vue-router';
@@ -16,6 +15,8 @@ import { ElMessage } from 'element-plus';
 import { useScriptTag } from '@vueuse/core';
 import { defaultConfig, plugin } from '@formkit/vue';
 import formkitConfig from './fromkit/formkit.config';
+
+import './styles/index.scss';
 
 const app = createApp(App);
 setupI18n(app);

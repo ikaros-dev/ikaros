@@ -124,12 +124,16 @@ public class IkarosPluginManager extends DefaultPluginManager
         }
         try {
             log.info("Stop plugin '{}'", getPluginLabel(pluginDescriptor));
-            pluginWrapper.getPlugin().stop();
-            pluginWrapper.setPluginState(PluginState.STOPPED);
 
             // get an instance of plugin before the plugin is unloaded
             // for reason see https://github.com/pf4j/pf4j/issues/309
             Plugin plugin = pluginWrapper.getPlugin();
+
+            // notify the plugin as it's stop
+            if (Objects.nonNull(plugin)) {
+                plugin.stop();
+                pluginWrapper.setPluginState(PluginState.STOPPED);
+            }
 
             // notify the plugin as it's deleted
             if (Objects.nonNull(plugin)) {

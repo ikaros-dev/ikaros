@@ -3,12 +3,14 @@ package run.ikaros.server.plugin.listener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginDependency;
 import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginWrapper;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -36,6 +38,9 @@ public class PluginDatabaseUtils {
                                                     IkarosPluginManager pluginManager,
                                                     ReactiveCustomClient customClient) {
         PluginWrapper pluginWrapper = pluginManager.getPlugin(pluginId);
+        if (Objects.isNull(pluginWrapper)) {
+            return Mono.empty();
+        }
         IkarosPluginDescriptor pluginDescriptor =
             (IkarosPluginDescriptor) pluginWrapper.getDescriptor();
         Plugin plugin = new Plugin();
@@ -80,16 +85,27 @@ public class PluginDatabaseUtils {
         ConfigMap configMap = new ConfigMap();
         configMap.setName(pluginId);
 
-        // 创建一个正则表达式模式，匹配"name: 'value'"的形式
-        Pattern pattern = Pattern.compile("\"name\"\\s*:\\s*\"(.*?)\"");
+        try {
+            JSONArray jsonArray = new JSONArray(configMapSchemas);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String nameVal = "";
+                if (jsonObject.has("name")) {
+                    nameVal = jsonObject.getString("name");
 
-        // 创建一个Matcher对象，用于在输入字符串中进行匹配
-        Matcher matcher = pattern.matcher(configMapSchemas);
-
-        // 循环查找匹配项并提取name值
-        while (matcher.find()) {
-            String name = matcher.group(1); // 获取第一个捕获组的值
-            configMap.putDataItem(name, "");
+                }
+                if (StringUtils.isBlank(nameVal) && jsonObject.has("props")) {
+                    JSONObject propsJsonObj = jsonObject.getJSONObject("props");
+                    if (!propsJsonObj.has("name")) {
+                        throw new JSONException("can not get name filed value, please set it.");
+                    }
+                    nameVal = propsJsonObj.getString("name");
+                }
+                configMap.putDataItem(nameVal, "");
+            }
+        } catch (JSONException jsonException) {
+            log.warn("convert configMapSchemas to config map data fail, ", jsonException);
+            return Mono.empty();
         }
 
         return customClient.findOne(ConfigMap.class, pluginId)

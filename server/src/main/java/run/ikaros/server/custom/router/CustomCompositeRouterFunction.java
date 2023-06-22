@@ -3,6 +3,7 @@ package run.ikaros.server.custom.router;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -23,13 +24,16 @@ public class CustomCompositeRouterFunction implements
     private final Map<CustomScheme, RouterFunction<ServerResponse>> customRouterFuncMapper;
 
     private final ReactiveCustomClient client;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Construct.
      */
     public CustomCompositeRouterFunction(ReactiveCustomClient client,
-                                         CustomSchemeWatcherManager watcherManager) {
+                                         CustomSchemeWatcherManager watcherManager,
+                                         ApplicationEventPublisher applicationEventPublisher) {
         this.client = client;
+        this.applicationEventPublisher = applicationEventPublisher;
         customRouterFuncMapper = new ConcurrentHashMap<>();
         if (watcherManager != null) {
             watcherManager.register(this);
@@ -57,7 +61,8 @@ public class CustomCompositeRouterFunction implements
     public void onChange(CustomSchemeWatcherManager.ChangeEvent event) {
         if (event instanceof SchemeRegistered registeredEvent) {
             var scheme = registeredEvent.getNewScheme();
-            var factory = new CustomRouterFunctionFactory(scheme, client);
+            var factory =
+                new CustomRouterFunctionFactory(scheme, client, applicationEventPublisher);
             this.customRouterFuncMapper.put(scheme, factory.create());
         } else if (event instanceof SchemeUnregistered unregisteredEvent) {
             this.customRouterFuncMapper.remove(unregisteredEvent.getDeletedScheme());

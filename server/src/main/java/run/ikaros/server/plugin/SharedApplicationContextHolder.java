@@ -67,9 +67,7 @@ public class SharedApplicationContextHolder {
         IkarosProperties ikarosProperties = rootApplicationContext.getBean(IkarosProperties.class);
         beanFactory.registerSingleton("ikarosProperties", ikarosProperties);
 
-        // Register plugin file operate
-        // FileOperate fileOperate = rootApplicationContext.getBean(FileOperate.class);
-        // beanFactory.registerSingleton("pluginFileOperate", fileOperate);
+        // Register all allow plugin operate api.
         Map<String, AllowPluginOperate> allowPluginOperateMap =
             rootApplicationContext.getBeansOfType(AllowPluginOperate.class);
         for (String key : allowPluginOperateMap.keySet()) {
