@@ -3,6 +3,7 @@ package run.ikaros.server.plugin.listener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginDependency;
 import org.pf4j.PluginDescriptor;
@@ -37,6 +38,9 @@ public class PluginDatabaseUtils {
                                                     IkarosPluginManager pluginManager,
                                                     ReactiveCustomClient customClient) {
         PluginWrapper pluginWrapper = pluginManager.getPlugin(pluginId);
+        if (Objects.isNull(pluginWrapper)) {
+            return Mono.empty();
+        }
         IkarosPluginDescriptor pluginDescriptor =
             (IkarosPluginDescriptor) pluginWrapper.getDescriptor();
         Plugin plugin = new Plugin();

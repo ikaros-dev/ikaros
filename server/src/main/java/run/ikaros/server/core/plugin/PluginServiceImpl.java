@@ -105,7 +105,7 @@ public class PluginServiceImpl implements PluginService {
             return filePart.transferTo(destPath.toFile())
                 .doOnSuccess(unused -> log.debug("Upload plugin file [{}] to plugin dir [{}].",
                     filePart.filename(), destPath))
-                .then(Mono.just(pluginManager.loadPlugin(destPath)))
+                .then(Mono.fromCallable(() -> pluginManager.loadPlugin(destPath)))
                 .doOnSuccess(pluginId ->
                     log.debug("Load plugin by path success, pluginId: [{}].", pluginId))
                 .then();
