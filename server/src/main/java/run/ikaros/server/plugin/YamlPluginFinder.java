@@ -76,10 +76,10 @@ public class YamlPluginFinder {
         }
 
         try {
+            String configMapSchemasStr = Files.readString(configMapSchemasPath);
             // 使用ObjectMapper将YAML文件加载为Java对象
             Object yamlObject =
-                new ObjectMapper(new YAMLFactory()).readValue(configMapSchemasPath.toFile(),
-                    Object.class);
+                new ObjectMapper(new YAMLFactory()).readValue(configMapSchemasStr, Object.class);
             // 将Java对象转换为JSON字符串
             plugin.setConfigMapSchemas(JsonUtils.obj2Json(yamlObject));
         } catch (IOException e) {

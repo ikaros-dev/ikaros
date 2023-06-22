@@ -56,6 +56,10 @@ const configMapSchemas = computed(() => {
 			) {
 				// @ts-ignore
 				obj.value = configMap.value?.data[field];
+				// console.log(
+				// 	'configMap.value?.data[field]',
+				// 	configMap.value?.data[field]
+				// );
 			}
 		}
 		// // @ts-ignore
@@ -87,7 +91,7 @@ const configMapSchemas = computed(() => {
 		// 	// 	}
 		// 	// }
 	}
-	// console.log(str);
+	console.log(str);
 	return str;
 });
 
@@ -287,13 +291,16 @@ const testData = {
 			</el-descriptions>
 		</el-tab-pane>
 		<el-tab-pane v-if="plugin.configMapSchemas" label="基本设置">
-			{{ plugin.configMapSchemas }}
+			<!-- {{ plugin.configMapSchemas }}
 			<hr />
 			{{ configMap.data }}
-			<hr />
+			<hr /> -->
 			<div style="padding: 5px">
 				<FormKit type="form" submit-label="保存" @submit="onSubmit">
-					<FormKitSchema :schema="configMapSchemas as any" />
+					<FormKitSchema
+						:data="configMap.data"
+						:schema="Object.values(JSON.parse(plugin?.configMapSchemas)) as any"
+					/>
 				</FormKit>
 			</div>
 		</el-tab-pane>

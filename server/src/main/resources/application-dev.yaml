@@ -1,7 +1,7 @@
 ikaros:
   plugin:
   #    runtime-mode: development
-  #    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-bgmtv
+  #    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-starter
   #    auto-start-plugin: false
   security:
     initializer:
