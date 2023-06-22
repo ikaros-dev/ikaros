@@ -4,20 +4,29 @@ import static run.ikaros.server.custom.router.CustomRouterFunctionFactory.PathPa
 
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomScheme;
+import run.ikaros.server.custom.CustomConverter;
+import run.ikaros.server.custom.event.CustomUpdateEvent;
 
 @Slf4j
 public class CustomUpdateMetaHandler implements CustomRouterFunctionFactory.UpdateMetaHandler {
     private final ReactiveCustomClient customClient;
     private final CustomScheme scheme;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public CustomUpdateMetaHandler(ReactiveCustomClient customClient, CustomScheme scheme) {
+    /**
+     * Construct.
+     */
+    public CustomUpdateMetaHandler(ReactiveCustomClient customClient, CustomScheme scheme,
+                                   ApplicationEventPublisher applicationEventPublisher) {
         this.customClient = customClient;
         this.scheme = scheme;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Override
@@ -26,6 +35,8 @@ public class CustomUpdateMetaHandler implements CustomRouterFunctionFactory.Upda
         var metaName = request.pathVariable("metaName");
         return request.bodyToMono(byte[].class)
             .flatMap(bytes -> customClient.updateOneMeta(scheme.type(), customName, metaName, bytes)
+                .doOnSuccess(custom -> applicationEventPublisher.publishEvent(
+                    new CustomUpdateEvent(this, scheme, CustomConverter.getNameFieldValue(custom))))
                 .then(ServerResponse.ok().build()));
     }
 

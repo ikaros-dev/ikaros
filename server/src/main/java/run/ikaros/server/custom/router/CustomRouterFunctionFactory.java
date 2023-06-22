@@ -7,6 +7,7 @@ import static run.ikaros.server.infra.utils.StringUtils.upperCaseFirst;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -20,10 +21,16 @@ public class CustomRouterFunctionFactory {
 
     private final ReactiveCustomClient client;
     private final CustomScheme scheme;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public CustomRouterFunctionFactory(CustomScheme scheme, ReactiveCustomClient client) {
+    /**
+     * Construct.
+     */
+    public CustomRouterFunctionFactory(CustomScheme scheme, ReactiveCustomClient client,
+                                       ApplicationEventPublisher applicationEventPublisher) {
         this.client = client;
         this.scheme = scheme;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     /**
@@ -33,14 +40,15 @@ public class CustomRouterFunctionFactory {
      */
     @NonNull
     public RouterFunction<ServerResponse> create() {
-        var createHandler = new CustomCreateHandler(client, scheme);
-        var deleteHandler = new CustomDeleteHandler(client, scheme);
+        var createHandler = new CustomCreateHandler(client, scheme, applicationEventPublisher);
+        var deleteHandler = new CustomDeleteHandler(client, scheme, applicationEventPublisher);
         var getHandler = new CustomGetHandler(client, scheme);
         var listHandler = new CustomListHandler(client, scheme);
-        var updateHandler = new CustomUpdateHandler(client, scheme);
+        var updateHandler = new CustomUpdateHandler(client, scheme, applicationEventPublisher);
         var listPagingHandler = new CustomListPagingHandler(client, scheme);
         var getMetaHandler = new CustomGetMetaHandler(client, scheme);
-        var updateMetaHandler = new CustomUpdateMetaHandler(client, scheme);
+        var updateMetaHandler = new CustomUpdateMetaHandler(client, scheme,
+            applicationEventPublisher);
         GroupVersionKind gvk = scheme.groupVersionKind();
         String tag = gvk.group() + '/' + gvk.version() + '/' + gvk.kind();
         return SpringdocRouteBuilder.route()

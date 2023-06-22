@@ -17,7 +17,6 @@ import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSynchronizer;
 import run.ikaros.api.exception.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
-import run.ikaros.server.core.subject.event.SubjectCoverImageDownloadAndUpdateEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
@@ -72,7 +71,7 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
                 subjectSynchronizer.pull(platformId)))
             .onErrorResume(Exception.class, e -> {
                 String msg =
-                    "Operate not available, platform api domain can not access "
+                    "Operate has exception "
                         + "for platform-id: "
                         + platform.name() + "-" + platformId
                         + ", plugin exception msg: " + e.getMessage();
@@ -85,9 +84,6 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
                     .map(sub -> sub.setId(null)).flatMap(subjectService::create))
                 : subjectService.update(subject)
                 .then(Mono.defer(() -> subjectService.findById(subjectId))))
-            .doOnSuccess(subject -> applicationContext.publishEvent(
-                new SubjectCoverImageDownloadAndUpdateEvent(this,
-                    subject.getId(), subject.getCover())))
             .subscribeOn(Schedulers.boundedElastic());
     }
 

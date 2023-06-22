@@ -2,6 +2,7 @@ package run.ikaros.server.custom.router;
 
 import static run.ikaros.server.custom.router.CustomRouterFunctionFactory.PathPatternGenerator.buildCustomPathPatternPrefix;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
@@ -12,16 +13,24 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomScheme;
 import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.server.custom.CustomConverter;
+import run.ikaros.server.custom.event.CustomUpdateEvent;
 
 
 public class CustomUpdateHandler implements CustomRouterFunctionFactory.UpdateHandler {
     private final ReactiveCustomClient customClient;
     private final CustomScheme scheme;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
+    /**
+     * Construct.
+     */
     public CustomUpdateHandler(ReactiveCustomClient customClient,
-                               CustomScheme scheme) {
+                               CustomScheme scheme,
+                               ApplicationEventPublisher applicationEventPublisher) {
         this.customClient = customClient;
         this.scheme = scheme;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Override
@@ -30,6 +39,8 @@ public class CustomUpdateHandler implements CustomRouterFunctionFactory.UpdateHa
             .switchIfEmpty(Mono.error(() -> new ServerWebInputException(
                 "Can not read body to:" + scheme.type())))
             .flatMap(customClient::update)
+            .doOnSuccess(custom -> applicationEventPublisher.publishEvent(
+                new CustomUpdateEvent(this, scheme, CustomConverter.getNameFieldValue(custom))))
             .flatMap(updated -> ServerResponse
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)

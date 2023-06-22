@@ -1,5 +1,6 @@
 package run.ikaros.server.custom;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import run.ikaros.api.custom.ReactiveCustomClient;
@@ -20,8 +21,10 @@ public class CustomAutoConfiguration {
     @Bean
     CustomCompositeRouterFunction extensionsRouterFunction(
         ReactiveCustomClient client,
-        CustomSchemeWatcherManager schemeWatcherManager) {
-        return new CustomCompositeRouterFunction(client, schemeWatcherManager);
+        CustomSchemeWatcherManager schemeWatcherManager,
+        ApplicationEventPublisher applicationEventPublisher) {
+        return new CustomCompositeRouterFunction(client, schemeWatcherManager,
+            applicationEventPublisher);
     }
 
     @Bean

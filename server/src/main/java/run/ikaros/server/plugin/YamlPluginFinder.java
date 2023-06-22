@@ -1,5 +1,7 @@
 package run.ikaros.server.plugin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +13,7 @@ import org.pf4j.util.FileUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import run.ikaros.api.plugin.custom.Plugin;
+import run.ikaros.server.infra.utils.JsonUtils;
 
 /**
  * Reading plugin descriptor data from plugin.yaml.
@@ -21,7 +24,7 @@ import run.ikaros.api.plugin.custom.Plugin;
 public class YamlPluginFinder {
     static final DevelopmentPluginClasspath PLUGIN_CLASSPATH = new DevelopmentPluginClasspath();
     public static final String DEFAULT_PROPERTIES_FILE_NAME = "plugin.yaml";
-    public static final String DEFAULT_PLUG_CONFIG_MAG_SCHEMAS_FILE_NAME = "configMapSchemas";
+    public static final String DEFAULT_PLUG_CONFIG_MAG_SCHEMAS_FILE_NAME = "configMapSchemas.yaml";
     private final String propertiesFileName;
     private final IkarosPluginManager pluginManager;
 
@@ -71,8 +74,14 @@ public class YamlPluginFinder {
                 configMapSchemasPath, pluginPath);
             return plugin;
         }
+
         try {
-            plugin.setConfigMapSchemas(Files.readString(configMapSchemasPath));
+            // 使用ObjectMapper将YAML文件加载为Java对象
+            Object yamlObject =
+                new ObjectMapper(new YAMLFactory()).readValue(configMapSchemasPath.toFile(),
+                    Object.class);
+            // 将Java对象转换为JSON字符串
+            plugin.setConfigMapSchemas(JsonUtils.obj2Json(yamlObject));
         } catch (IOException e) {
             throw new PluginRuntimeException("Cannot read '{}' in resource path for plugin: '{}'",
                 configMapSchemasPath, pluginPath);
