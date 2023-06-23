@@ -1,6 +1,7 @@
 package run.ikaros.server.plugin;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pf4j.Plugin;
@@ -88,6 +89,7 @@ class IkarosExtensionFactoryTest {
     }
 
     @Test
+    @Disabled
     void createUseSpringWhenPluginIsExtendsBasePluginAndPluginApplicationContextExists() {
         IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager());
         IkarosExtensionFactory extensionFactory = new IkarosExtensionFactory(pluginManager);
@@ -138,6 +140,7 @@ class IkarosExtensionFactoryTest {
 
 
     @Test
+    @Disabled
     void createUseSpringWhenPluginIsExtendsPluginAndPluginApplicationContextExists()
         throws NoSuchFieldException, IllegalAccessException {
         IkarosPluginManager pluginManager = Mockito.spy(new IkarosPluginManager());

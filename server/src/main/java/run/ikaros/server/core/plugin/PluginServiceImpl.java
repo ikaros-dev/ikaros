@@ -14,6 +14,7 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.exception.PluginInstallRuntimeException;
+import run.ikaros.server.infra.utils.StringUtils;
 import run.ikaros.server.plugin.IkarosPluginManager;
 
 @Slf4j
@@ -45,17 +46,14 @@ public class PluginServiceImpl implements PluginService {
             default -> throw new PluginRuntimeException("No support operate for id(name): "
                 + pluginId);
         }
-        if (pluginManager.getPlugins().isEmpty() || pluginId == null
+        if (pluginManager.getPlugins().isEmpty() || StringUtils.isBlank(pluginId)
             || "ALL".equalsIgnoreCase(pluginId)) {
             log.warn("Skip get plugin state operate. pluginId: [{}], manager plugins: [{}]",
                 pluginId, pluginManager.getPlugins());
             return Mono.empty();
         }
-        return Mono.just(pluginManager.getPlugin(pluginId))
-            .switchIfEmpty(Mono.error(
-                new PluginRuntimeException("Not found plugin in manager for id: " + pluginId)))
-            .map(PluginWrapper::getPluginState)
-            .onErrorResume(NullPointerException.class, e -> Mono.empty());
+        return Mono.justOrEmpty(pluginManager.getPlugin(pluginId))
+            .map(PluginWrapper::getPluginState);
     }
 
     @Override
