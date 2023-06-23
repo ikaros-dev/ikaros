@@ -1,8 +1,10 @@
 package run.ikaros.server.plugin;
 
 import jakarta.annotation.Nullable;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.ExtensionFactory;
 import org.pf4j.Plugin;
@@ -11,6 +13,7 @@ import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.util.Assert;
+import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.plugin.BasePlugin;
 
 /**
@@ -52,7 +55,13 @@ public class IkarosExtensionFactory implements ExtensionFactory {
             // context,
             // so you only need to get it directly
             PluginApplicationContext pluginApplicationContext = contextOptional.get();
-            return pluginApplicationContext.getBean(extensionClass);
+            // fix issue https://github.com/ikaros-dev/ikaros/issues/332
+            Map<String, T> beansOfType = pluginApplicationContext.getBeansOfType(extensionClass);
+            return beansOfType.values().stream().findFirst().orElseThrow(
+                (Supplier<RuntimeException>) () -> new NotFoundException(
+                    "Not found Bean in plugin application "
+                        + "context for type: " + extensionClass)
+            );
         }
         return createWithoutSpring(extensionClass);
     }
