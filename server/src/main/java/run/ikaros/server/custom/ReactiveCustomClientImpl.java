@@ -133,7 +133,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .map(CustomEntity::getId)
             .flatMap(customId -> metadataRepository.findByCustomIdAndKey(customId, metaName))
             .switchIfEmpty(Mono.error(new NotFoundException("Not found metadata for class: " + clazz
-            + ", name: " + name + ", metaName: " + metaName)))
+                + ", name: " + name + ", metaName: " + metaName)))
             .map(CustomMetadataEntity::getValue);
     }
 
@@ -162,6 +162,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .filter(StringUtils::hasText)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'name' must has text")))
             .flatMap(n -> findOne(clazz, n))
+            .onErrorResume(NotFoundException.class, e -> Mono.empty())
             .flatMap(this::delete);
     }
 
