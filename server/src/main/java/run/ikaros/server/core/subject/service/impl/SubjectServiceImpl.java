@@ -65,13 +65,13 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     /**
      * Construct a {@link SubjectService} instance.
      *
-     * @param subjectRepository      {@link SubjectEntity} repository
-     * @param collectionRepository   {@link CollectionEntity} repository
-     * @param episodeRepository      {@link EpisodeEntity} repository
-     * @param episodeFileRepository  {@link EpisodeFileEntity} repository
-     * @param subjectSyncRepository  {@link SubjectSyncEntity} repository
-     * @param fileRepository         {@link FileEntity} repository
-     * @param template               {@link R2dbcEntityTemplate}
+     * @param subjectRepository     {@link SubjectEntity} repository
+     * @param collectionRepository  {@link CollectionEntity} repository
+     * @param episodeRepository     {@link EpisodeEntity} repository
+     * @param episodeFileRepository {@link EpisodeFileEntity} repository
+     * @param subjectSyncRepository {@link SubjectSyncEntity} repository
+     * @param fileRepository        {@link FileEntity} repository
+     * @param template              {@link R2dbcEntityTemplate}
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
                               CollectionRepository collectionRepository,
@@ -110,7 +110,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                                 .build())
                     ).collectList()
                     .map(episode::setResources))
-                .sort(Comparator.comparingInt(Episode::getSequence))
+                .sort(Comparator.comparingDouble(Episode::getSequence))
                 .collectList()
                 .map(episodes -> subject
                     .setTotalEpisodes((long) episodes.size())

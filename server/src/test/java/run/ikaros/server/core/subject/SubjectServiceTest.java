@@ -111,7 +111,7 @@ class SubjectServiceTest {
             .expectNextMatches(sub -> Objects.equals(subjectId.get(), sub.getId())
                 && Objects.equals(subject.getName(), sub.getName())
                 && subject.getType().equals(sub.getType())
-             )
+            )
             .verifyComplete();
     }
 
@@ -136,7 +136,7 @@ class SubjectServiceTest {
         var episodes = new ArrayList<Episode>();
         episodes.add(Episode.builder()
             .airTime(LocalDateTime.now())
-                .sequence(1)
+            .sequence(1.0)
             .name("ep-01")
             .nameCn("第一集").build());
         subject.setEpisodes(episodes)
@@ -174,7 +174,7 @@ class SubjectServiceTest {
         subject.setName(newName);
         Episode addEpisode = Episode.builder()
             .airTime(LocalDateTime.now())
-            .sequence(10)
+            .sequence(10.0)
             .name("ep-02")
             .nameCn("第二集").build();
         List<Episode> episodes = subject.getEpisodes();
