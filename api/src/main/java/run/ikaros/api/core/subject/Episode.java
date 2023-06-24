@@ -24,7 +24,7 @@ public class Episode {
     private String description;
     @JsonProperty("air_time")
     private LocalDateTime airTime;
-    private Integer sequence;
+    private Float sequence;
 
     private List<EpisodeResource> resources;
 }
