@@ -13,7 +13,7 @@ server:
     enabled: true
   error:
     whitelabel:
-        enabled: false
+      enabled: false
 spring:
   codec:
     max-in-memory-size: 10MB
@@ -40,3 +40,6 @@ logging:
       max-history: 2
   level:
     run.ikaros.server: INFO
+  charset:
+    console: UTF-8
+    file: UTF-8
