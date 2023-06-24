@@ -2,6 +2,7 @@ package run.ikaros.server.core.file;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -9,6 +10,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.FileOperate;
 import run.ikaros.api.store.entity.FileEntity;
+import run.ikaros.api.store.enums.FileType;
 import run.ikaros.server.infra.utils.ReactiveBeanUtils;
 import run.ikaros.server.store.repository.FileRepository;
 
@@ -51,6 +53,15 @@ public class FileOperator implements FileOperate {
     public Mono<FileEntity> findById(Long id) {
         Assert.notNull(id, "'id' must not null.");
         return repository.findById(id);
+    }
+
+    @Override
+    public Flux<FileEntity> findAllByOriginalNameLikeAndType(String originalName, FileType type) {
+        Assert.hasText(originalName, "'originalName' must has text.");
+        Assert.notNull(type, "'type' must not null.");
+        String originalNameLike = "%" + originalName + "%";
+        PageRequest pageRequest = PageRequest.of(0, 99999);
+        return repository.findAllByOriginalNameLikeAndType(originalNameLike, type, pageRequest);
     }
 
     @Override
