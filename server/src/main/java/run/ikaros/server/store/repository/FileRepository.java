@@ -18,6 +18,9 @@ import run.ikaros.api.store.enums.FileType;
 public interface FileRepository extends R2dbcRepository<FileEntity, Long> {
     Flux<FileEntity> findAllBy(Pageable pageable);
 
+    Flux<FileEntity> findAllByOriginalNameLikeAndType(String originalName, FileType type,
+                                                      Pageable pageable);
+
     Flux<FileEntity> findAllByNameLike(String name, Pageable pageable);
 
     Mono<Long> countAllByNameLike(String name);
