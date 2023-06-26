@@ -45,7 +45,6 @@ import run.ikaros.api.search.SearchResult;
 import run.ikaros.api.search.file.FileDoc;
 import run.ikaros.api.search.file.FileHint;
 import run.ikaros.api.search.file.FileSearchService;
-import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
 
 @Slf4j
@@ -175,7 +174,6 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
         doc.add(new StringField("originalPath", fileDoc.getOriginalPath(), YES));
         doc.add(new StringField("url", fileDoc.getUrl(), YES));
         doc.add(new StringField("type", String.valueOf(fileDoc.getType()), YES));
-        doc.add(new StringField("place", String.valueOf(fileDoc.getPlace()), YES));
         if (StringUtils.hasText(fileDoc.getOriginalName())) {
             doc.add(new StringField("originalName",
                 String.valueOf(fileDoc.getOriginalName()), YES));
@@ -186,7 +184,6 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
                 + stripToEmpty(fileDoc.getOriginalPath()) + SPACE
                 + stripToEmpty(fileDoc.getUrl()) + SPACE
                 + stripToEmpty(String.valueOf(fileDoc.getType())) + SPACE
-                + stripToEmpty(String.valueOf(fileDoc.getPlace())) + SPACE
                 + stripToEmpty(fileDoc.getOriginalName()) + SPACE,
             Safelist.none());
         doc.add(new StoredField("content", content));
@@ -202,7 +199,6 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
             doc.get("originalPath"),
             doc.get("url"),
             FileType.valueOf(doc.get("type")),
-            FilePlace.valueOf(doc.get("place")),
             StringUtils.hasText(doc.get("originalName")) ? doc.get("originalName") : null
         );
         return post;

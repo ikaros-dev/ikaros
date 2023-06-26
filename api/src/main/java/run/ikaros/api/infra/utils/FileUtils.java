@@ -7,19 +7,28 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
 import run.ikaros.api.constant.FileConst;
 import run.ikaros.api.store.enums.FileType;
 
@@ -218,4 +227,118 @@ public class FileUtils {
     }
 
 
+    /**
+     * Split file to target dir multi chunk.
+     *
+     * @param filePath      original file path
+     * @param targetDirPath target dir path
+     * @param size          unit is KB
+     * @return multi chunk paths
+     */
+    public static List<Path> split(Path filePath, Path targetDirPath, Integer size) {
+        List<Path> paths = new ArrayList<>();
+        size = size * 1024;
+        try (RandomAccessFile accessFile = new RandomAccessFile(filePath.toFile(), "r")) {
+            Long total = 0L;
+            byte[] bytes = new byte[size];
+            while (accessFile.read(bytes, 0, size) > 0) {
+                total += size;
+                Path targetFilePath = targetDirPath.resolve(String.valueOf(total));
+                Files.write(targetFilePath, bytes);
+                paths.add(targetFilePath);
+                log.debug("current split file: {}/{}", total, filePath.toFile().length());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return paths;
+    }
+
+    /**
+     * Synthesize all chunks files.
+     *
+     * @param chunkFilePaths chunk file paths
+     */
+    public static void synthesize(List<Path> chunkFilePaths, Path targetFilePath) {
+        File targetFile = targetFilePath.toFile();
+        if (targetFile.exists()) {
+            throw new RuntimeException(
+                "target file has exists: " + targetFile.getAbsolutePath());
+        }
+
+        try {
+            if (!targetFile.createNewFile()) {
+                throw new RuntimeException(
+                    "create target file fail, path: " + targetFile.getAbsolutePath());
+            }
+            try (RandomAccessFile accessFile = new RandomAccessFile(targetFile,
+                "rw")) {
+                long total = 0L;
+                List<Path> pathSortedList = chunkFilePaths.stream()
+                    .sorted((o1, o2) -> (int) (Long.parseLong(o1.toFile().getName())
+                        - Long.parseLong(o2.toFile().getName()))).toList();
+                for (Path path : pathSortedList) {
+                    File file = path.toFile();
+                    byte[] bytes = Files.readAllBytes(file.toPath());
+                    accessFile.write(bytes);
+                    total += bytes.length;
+                    log.debug("current write total: {} for target file: {}",
+                        total, targetFile.getAbsolutePath());
+                }
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Convert file to data buffer flux.
+     */
+    public static Flux<DataBuffer> convertToDataBufferFlux(File file) throws IOException {
+        DefaultDataBufferFactory bufferFactory = new DefaultDataBufferFactory();
+        return DataBufferUtils.readInputStream(() ->
+            Files.newInputStream(file.toPath()), bufferFactory, 1024);
+    }
+
+    /**
+     * Calculate file size.
+     */
+    public static Long calculateFileSize(Flux<DataBuffer> dataBufferFlux) {
+        AtomicLong size = new AtomicLong();
+        dataBufferFlux.map(DataBuffer::readableByteCount)
+            .reduce(0L, Long::sum)
+            .subscribe(size::set);
+        return size.get();
+    }
+
+    /**
+     * Calculate file hash.
+     */
+    public static String calculateFileHash(Flux<DataBuffer> dataBufferFlux)
+        throws NoSuchAlgorithmException {
+        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+
+        dataBufferFlux.subscribe(dataBuffer -> {
+            byte[] bytes = new byte[dataBuffer.readableByteCount()];
+            dataBuffer.read(bytes);
+            DataBufferUtils.release(dataBuffer);
+            messageDigest.update(bytes);
+        });
+
+        byte[] hashBytes = messageDigest.digest();
+        return bytesToHex(hashBytes);
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder(2 * bytes.length);
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
 }

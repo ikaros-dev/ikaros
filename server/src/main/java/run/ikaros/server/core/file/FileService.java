@@ -1,6 +1,7 @@
 package run.ikaros.server.core.file;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
@@ -31,5 +32,5 @@ public interface FileService {
 
     Mono<FileEntity> save(FileEntity entity);
 
-    Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux, String policy);
+    Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux, @Nullable String remote);
 }

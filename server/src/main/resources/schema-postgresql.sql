@@ -135,14 +135,42 @@ create table if not exists file
     ol_version    int8          null,
     folder_id     int8          null,
     md5           varchar(255)  null,
+    aes_key       varchar(255)  null,
     name          varchar(1000) not null,
     original_name varchar(1000) null,
     original_path varchar(3000) null,
-    place         varchar(255)  null,
     "size"        int8          null,
     "type"        varchar(255)  null,
     url           varchar(3000) not null,
+    can_read      bool          null,
     constraint file_pkey primary key (id)
+);
+
+-- file_remote
+create sequence if not exists file_remote_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
+create table if not exists file_remote
+(
+    id            int8         not null default nextval('file_remote_seq'),
+    create_time   timestamp(6) null,
+    create_uid    int8         null,
+    delete_status bool         null,
+    update_time   timestamp(6) null,
+    update_uid    int8         null,
+    ol_version    int8         null,
+    file_id       int8         not null,
+    remote_id     varchar(100) not null,
+    remote        varchar(100) not null,
+    md5           varchar(300) null,
+    file_name     varchar(300) null,
+    path          varchar(600) null,
+    file_size     int8         null,
+    constraint file_remote_seq primary key (id)
 );
 
 -- folder

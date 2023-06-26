@@ -5,7 +5,6 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
 
 @Data
@@ -17,8 +16,6 @@ public class FindFileCondition {
     private Integer size;
     @Schema(description = "经过Basic64编码的文件名称，文件名称字段模糊查询。")
     private String fileName;
-    @Schema(implementation = FilePlace.class)
-    private FilePlace place;
     @Schema(implementation = FileType.class)
     private FileType type;
 }

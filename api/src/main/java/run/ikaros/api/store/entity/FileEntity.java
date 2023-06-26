@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
 
 /**
@@ -34,9 +33,10 @@ public class FileEntity extends BaseEntity {
     private String name;
 
     private String md5;
+    @Column("aes_key")
+    private String aesKey;
     private Long size;
     private FileType type;
-    private FilePlace place;
 
     /**
      * original path in file system.
@@ -50,4 +50,6 @@ public class FileEntity extends BaseEntity {
     @Column("original_name")
     private String originalName;
 
+    @Column("can_read")
+    private Boolean canRead = true;
 }

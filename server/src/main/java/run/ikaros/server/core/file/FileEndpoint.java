@@ -1,5 +1,6 @@
 package run.ikaros.server.core.file;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED;
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.content.Builder.contentBuilder;
@@ -44,7 +45,6 @@ import run.ikaros.api.core.file.File;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.store.entity.FileEntity;
-import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -112,9 +112,6 @@ public class FileEndpoint implements CoreEndpoint {
                         .name("fileName")
                         .description("经过Basic64编码的文件名称，文件名称字段模糊查询。")
                         .implementation(String.class))
-                    .parameter(parameterBuilder()
-                        .name("place")
-                        .implementation(FilePlace.class))
                     .parameter(parameterBuilder()
                         .name("type")
                         .implementation(FileType.class))
@@ -185,11 +182,6 @@ public class FileEndpoint implements CoreEndpoint {
             ? new String(Base64.getDecoder().decode(fileNameOp.get()), StandardCharsets.UTF_8)
             : "";
 
-        Optional<String> placeOp = request.queryParam("place");
-        final FilePlace place = placeOp.isPresent() && StringUtils.hasText(placeOp.get())
-            ? FilePlace.valueOf(placeOp.get())
-            : null;
-
         Optional<String> typeOp = request.queryParam("type");
         final FileType type = typeOp.isPresent() && StringUtils.hasText(typeOp.get())
             ? FileType.valueOf(typeOp.get())
@@ -197,7 +189,7 @@ public class FileEndpoint implements CoreEndpoint {
 
         return Mono.just(FindFileCondition.builder()
                 .page(page).size(size).fileName(fileName)
-                .place(place).type(type)
+                .type(type)
                 .build())
             .flatMap(fileService::listEntitiesByCondition)
             .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
@@ -298,7 +290,10 @@ public class FileEndpoint implements CoreEndpoint {
         @Schema(requiredMode = REQUIRED, description = "File")
         FilePart getFile();
 
-        @Schema(requiredMode = REQUIRED, description = "Storage policy name")
+        @Schema(requiredMode = NOT_REQUIRED,
+            description = "远端库，非必须，如果有值并且值不为 LOCAL , "
+                + "则应用会自动将文件上传到指定的远端库，本地文件在操作完成后会被移除。"
+                + "远端文件暂时不可正常读取，需要读取则需要先发起个拉取请求。")
         String getPolicyName();
 
     }
