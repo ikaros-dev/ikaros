@@ -31,4 +31,9 @@ public interface RemoteFileHandler extends ExtensionPoint {
      * Delete remote chunk file.
      */
     void delete(Path chunkFilePath);
+
+    /**
+     * Verify remote file handler is ready.
+     */
+    boolean ready();
 }

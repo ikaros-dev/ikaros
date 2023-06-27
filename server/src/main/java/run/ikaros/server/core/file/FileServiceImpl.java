@@ -5,12 +5,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -271,8 +272,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
 
     @Override
     public Mono<run.ikaros.api.core.file.File> upload(String fileName,
-                                                      Flux<DataBuffer> dataBufferFlux,
-                                                      @Nullable String remote) {
+                                                      Flux<DataBuffer> dataBufferFlux) {
         Assert.notNull(dataBufferFlux, "'dataBufferFlux' must not null.");
         Assert.hasText(fileName, "'fileName' must has text.");
 
@@ -284,45 +284,26 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .resolve(String.valueOf(importTime.getDayOfMonth()))
                 .resolve(String.valueOf(importTime.getHour()))
                 .resolve(UUID.randomUUID().toString().replace("-", "")
-                    + "." + fileName))
-            .publishOn(Schedulers.boundedElastic())
-            .<Path>handle((importPath, sink) -> {
-                try {
-                    Files.createDirectories(importPath.getParent());
-                } catch (IOException e) {
-                    sink.error(new RuntimeException(e));
-                    return;
-                }
-                sink.next(importPath);
-            })
+                    + "-" + fileName))
             .flatMap(importPath -> writeToImportPath(dataBufferFlux, importPath))
-            .<FileEntity>handle((path, sink) -> {
-                try {
-                    sink.next(FileEntity.builder()
-                        .folderId(FileConst.DEFAULT_FOLDER_ID)
-                        .type(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(fileName)))
-                        .url(path2url(path.toString(), ikarosProperties.getWorkDir().toString()))
-                        .name(fileName)
-                        .originalPath(path.toString())
-                        .originalName(fileName)
-                        .size(FileUtils.calculateFileSize(dataBufferFlux))
-                        .md5(FileUtils.calculateFileHash(dataBufferFlux))
-                        .build());
-                } catch (NoSuchAlgorithmException e) {
-                    sink.error(new RuntimeException(e));
-                }
-            })
+            .map(path -> FileEntity.builder()
+                .folderId(FileConst.DEFAULT_FOLDER_ID)
+                .type(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(fileName)))
+                .url(path2url(path.toString(), ikarosProperties.getWorkDir().toString()))
+                .name(fileName)
+                .originalPath(path.toString())
+                .originalName(fileName)
+                .size(FileUtils.calculateFileSize(dataBufferFlux))
+                .md5(FileUtils.calculateFileHash(dataBufferFlux))
+                .canRead(true)
+                .build())
             .flatMap(fileRepository::save)
-            .mapNotNull(fileEntity -> pushRemote(fileEntity, remote))
-            .map(run.ikaros.api.core.file.File::new)
-            .then(Mono.empty());
-
+            .map(run.ikaros.api.core.file.File::new);
     }
 
-    private FileEntity pushRemote(FileEntity fileEntity, String remote) {
-        if (!StringUtils.hasText(remote)) {
-            return fileEntity;
-        }
+    private Mono<FileEntity> pushRemote(FileEntity fileEntity, String remote) {
+        Assert.notNull(fileEntity, "'fileEntity' must not null.");
+        Assert.hasText(remote, "'remote' must has text.");
 
         Optional<RemoteFileHandler> remoteFileHandlerOptional =
             extensionComponentsFinder.getExtensions(RemoteFileHandler.class)
@@ -330,17 +311,26 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .filter(remoteFileHandler -> remote.equals(remoteFileHandler.remote()))
                 .findFirst();
         if (remoteFileHandlerOptional.isEmpty()) {
-            log.warn("skip operate, no remote file handler for remote: [{}].", remote);
-            return fileEntity;
+            throw new RuntimeException("no remote file handler for remote: " + remote);
         }
         final RemoteFileHandler remoteFileHandler = remoteFileHandlerOptional.get();
 
+        if (!remoteFileHandler.ready()) {
+            throw new RuntimeException("please config remote plugin for remote:" + remote);
+        }
+
         File file = new File(fileEntity.getOriginalPath());
         Path importPath = file.toPath();
-        Path pushChunksPath = ikarosProperties.getWorkDir().resolve("remote")
+        Path pushChunksPath = ikarosProperties.getWorkDir()
+            .resolve("caches")
+            .resolve("remote")
+            .resolve(UUID.randomUUID().toString().replace("-", ""))
             .resolve(FileUtils.parseFileName(file.getName()));
-        // 默认分割单片 40MB
-        List<Path> pathList = FileUtils.split(importPath, pushChunksPath, 1024 * 40);
+        if (!pushChunksPath.toFile().exists()) {
+            pushChunksPath.toFile().mkdirs();
+        }
+        // 默认分割单片 30MB
+        List<Path> pathList = FileUtils.split(importPath, pushChunksPath, 1024 * 30);
         byte[] keyByteArray = AesEncryptUtils.generateKeyByteArray();
         String key = new String(keyByteArray);
 
@@ -384,20 +374,165 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .subscribe();
         }
 
-        return fileEntity;
+        // 删除本地加密分片
+        try {
+            FileUtils.deleteDirByRecursion(pushChunksPath.toFile().getAbsolutePath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 更新文件状态
+        fileEntity.setCanRead(false);
+        fileRepository.save(fileEntity)
+            .subscribeOn(Schedulers.boundedElastic())
+            .subscribe();
+
+        return Mono.just(fileEntity);
+    }
+
+    @Override
+    public Mono<FileEntity> pushRemote(Long fileId, String remote) {
+        Assert.isTrue(fileId > 0, "'fileId' must gt 0.");
+        Assert.hasText(remote, "'remote' must has text.");
+        return fileRepository.findById(fileId)
+            .flatMap(fileEntity -> pushRemote(fileEntity, remote));
+    }
+
+    @Override
+    public Mono<FileEntity> pullRemote(Long fileId, String remote) {
+        Assert.isTrue(fileId > 0, "'fileId' must gt 0.");
+        Assert.hasText(remote, "'remote' must has text.");
+        return fileRepository.findById(fileId)
+            .flatMap(fileEntity -> pullRemote(fileEntity, remote));
+    }
+
+    private Mono<FileEntity> pullRemote(FileEntity fileEntity, String remote) {
+        Assert.notNull(fileEntity, "'fileEntity' must not null.");
+        Assert.hasText(remote, "'remote' must has text.");
+
+        Optional<RemoteFileHandler> remoteFileHandlerOptional =
+            extensionComponentsFinder.getExtensions(RemoteFileHandler.class)
+                .stream()
+                .filter(remoteFileHandler -> remote.equals(remoteFileHandler.remote()))
+                .findFirst();
+        if (remoteFileHandlerOptional.isEmpty()) {
+            throw new RuntimeException("no remote file handler for remote: " + remote);
+        }
+        final RemoteFileHandler remoteFileHandler = remoteFileHandlerOptional.get();
+
+        if (!remoteFileHandler.ready()) {
+            throw new RuntimeException("please config remote plugin for remote:" + remote);
+        }
+
+        // 查询当前文件所有的远端ID
+        List<String> remoteIdList = fileRemoteRepository.findAllByFileId(fileEntity.getId())
+            .filter(fileRemoteEntity -> remote.equals(fileRemoteEntity.getRemote()))
+            .map(FileRemoteEntity::getRemoteId)
+            .collectList().block();
+
+        Path encryptChunkFilesPath = ikarosProperties.getWorkDir()
+            .resolve("caches")
+            .resolve("file")
+            .resolve("encrypt")
+            .resolve(UUID.randomUUID().toString().replace("-", ""));
+
+        // 拉取远端文件
+        remoteFileHandler.pull(encryptChunkFilesPath, remoteIdList);
+
+        // 解密文件片
+        String aesKey = fileEntity.getAesKey();
+        byte[] aesKeyBytes = aesKey.getBytes(StandardCharsets.UTF_8);
+        Path decryptChunkFilesPath = ikarosProperties.getWorkDir()
+            .resolve("caches")
+            .resolve("file")
+            .resolve("decrypt")
+            .resolve(UUID.randomUUID().toString().replace("-", ""));
+        File[] encryptChunkFiles = encryptChunkFilesPath.toFile().listFiles();
+        if (encryptChunkFiles == null) {
+            throw new RuntimeException(
+                "encrypt file dir is null for path: " + encryptChunkFilesPath);
+        }
+        int index = 0;
+        final int total = encryptChunkFiles.length;
+        for (File encryptChunkFile : encryptChunkFiles) {
+            String name = encryptChunkFile.getName();
+            name = name.substring(name.lastIndexOf("-") + 1);
+            Path decryptChunkFilePath = decryptChunkFilesPath.resolve(name);
+            try {
+                byte[] bytes = AesEncryptUtils.decryptFile(aesKeyBytes, encryptChunkFile);
+                Files.write(decryptChunkFilePath, bytes);
+                index++;
+                log.debug("current encrypt chunk file: {}/{}.", index, total);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // 合并文件片
+        LocalDateTime now = LocalDateTime.now();
+        Path importFilePath = ikarosProperties.getWorkDir()
+            .resolve(FileConst.IMPORT_DIR_NAME)
+            .resolve(String.valueOf(now.getYear()))
+            .resolve(String.valueOf(now.getMonthValue()))
+            .resolve(String.valueOf(now.getDayOfMonth()))
+            .resolve(String.valueOf(now.getHour()))
+            .resolve(UUID.randomUUID().toString().replace("-", "")
+                + "-" + fileEntity.getName());
+
+        List<Path> chunkFilePaths =
+            Arrays.stream(Objects.requireNonNull(decryptChunkFilesPath.toFile().listFiles()))
+                .map(File::toPath)
+                .toList();
+        FileUtils.synthesize(chunkFilePaths, importFilePath);
+
+        // 清理缓存临时文件
+        try {
+            FileUtils.deleteDirByRecursion(decryptChunkFilesPath.toString());
+            FileUtils.deleteDirByRecursion(encryptChunkFilesPath.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 删除原有的远端ID
+        fileRemoteRepository.deleteAllByFileId(fileEntity.getId())
+            .subscribeOn(Schedulers.boundedElastic())
+            .subscribe();
+
+        // 更新文件URL
+        fileEntity.setCanRead(true)
+            .setUrl(path2url(importFilePath.toString(),
+                ikarosProperties.getWorkDir().toString()));
+        return fileRepository.save(fileEntity);
     }
 
     private static Mono<Path> writeToImportPath(Flux<DataBuffer> dataBufferFlux,
                                                 Path importPath) {
-        return Mono.just(dataBufferFlux)
+        File file = importPath.toFile();
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        FileOutputStream fileOutputStream = null;
+        try {
+            fileOutputStream = new FileOutputStream(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        FileOutputStream finalFileOutputStream = fileOutputStream;
+        return DataBufferUtils.write(dataBufferFlux, fileOutputStream)
             .publishOn(Schedulers.boundedElastic())
-            .<Flux<DataBuffer>>handle((dbf, sink) -> {
+            .doFinally(signalType -> {
                 try {
-                    sink.next(DataBufferUtils
-                        .write(dbf,
-                            Files.newOutputStream(importPath, StandardOpenOption.APPEND)));
+                    finalFileOutputStream.close();
                 } catch (IOException e) {
-                    sink.error(new RuntimeException(e));
+                    e.printStackTrace();
                 }
             })
             .then(Mono.just(importPath));

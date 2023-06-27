@@ -170,7 +170,7 @@ create table if not exists file_remote
     file_name     varchar(300) null,
     path          varchar(600) null,
     file_size     int8         null,
-    constraint file_remote_seq primary key (id)
+    constraint file_remote_pkey primary key (id)
 );
 
 -- folder
@@ -449,5 +449,27 @@ create table if not exists custom_metadata
     cm_value  bytea,
     constraint custom_metadata_custom_id_em_key unique (custom_id, cm_key),
     constraint custom_metadata_pkey primary key (id)
+);
+
+-- task
+create sequence if not exists task_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
+create table if not exists task
+(
+    id           int8          not null default nextval('task_seq'),
+    name         varchar(255)  not null unique,
+    status       varchar(255)  not null,
+    create_time  timestamp(6)  null,
+    start_time   timestamp(6)  null,
+    end_time     timestamp(6)  null,
+    total        int8          not null,
+    index        int8          not null,
+    fail_message varchar(2000) not null,
+    constraint task_pkey primary key (id)
 );
 

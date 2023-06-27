@@ -1,6 +1,5 @@
 package run.ikaros.server.core.file;
 
-import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED;
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.content.Builder.contentBuilder;
@@ -26,7 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.http.codec.multipart.FormFieldPart;
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -161,7 +159,27 @@ public class FileEndpoint implements CoreEndpoint {
                         .description("Unique id.")
                         .implementation(String.class)))
 
+            .POST("/file/remote/push", this::pushFile,
+                builder -> builder.operationId("PushFile2Remote")
+                    .tag(tag)
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .required(true)
+                        .description("File id."))
+                    .parameter(parameterBuilder()
+                        .name("remote")
+                        .required(true)
+                        .description("Remote")))
             .build();
+    }
+
+    private Mono<ServerResponse> pushFile(ServerRequest request) {
+        Optional<String> idOp = request.queryParam("id");
+        Optional<String> remoteOp = request.queryParam("remote");
+        return fileService.pushRemote(Long.valueOf(idOp.orElse("-1")), remoteOp.orElse(null))
+            .flatMap(fileEntity -> ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(fileEntity));
     }
 
     private Mono<ServerResponse> listByCondition(ServerRequest request) {
@@ -257,8 +275,7 @@ public class FileEndpoint implements CoreEndpoint {
             // Upload file by service.
             .flatMap(uploadRequest -> fileService.upload(
                 uploadRequest.getFile().filename(),
-                DataBufferUtils.formFilePart(uploadRequest.getFile()),
-                uploadRequest.getPolicyName()))
+                DataBufferUtils.formFilePart(uploadRequest.getFile())))
             // Response upload file data
             .flatMap(file -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -290,12 +307,6 @@ public class FileEndpoint implements CoreEndpoint {
         @Schema(requiredMode = REQUIRED, description = "File")
         FilePart getFile();
 
-        @Schema(requiredMode = NOT_REQUIRED,
-            description = "远端库，非必须，如果有值并且值不为 LOCAL , "
-                + "则应用会自动将文件上传到指定的远端库，本地文件在操作完成后会被移除。"
-                + "远端文件暂时不可正常读取，需要读取则需要先发起个拉取请求。")
-        String getPolicyName();
-
     }
 
     public record DefaultUploadRequest(@Schema(hidden = true) MultiValueMap<String, Part> formData)
@@ -307,14 +318,6 @@ public class FileEndpoint implements CoreEndpoint {
                 return file;
             }
             throw new ServerWebInputException("Invalid part of file");
-        }
-
-        @Override
-        public String getPolicyName() {
-            if (formData.getFirst("policyName") instanceof FormFieldPart form) {
-                return form.value();
-            }
-            throw new ServerWebInputException("Invalid part of policyName");
         }
 
     }

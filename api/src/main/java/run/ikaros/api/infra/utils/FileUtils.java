@@ -315,15 +315,20 @@ public class FileUtils {
     /**
      * Calculate file hash.
      */
-    public static String calculateFileHash(Flux<DataBuffer> dataBufferFlux)
-        throws NoSuchAlgorithmException {
-        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+    public static String calculateFileHash(Flux<DataBuffer> dataBufferFlux) {
+        MessageDigest messageDigest = null;
+        try {
+            messageDigest = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
 
+        MessageDigest finalMessageDigest = messageDigest;
         dataBufferFlux.subscribe(dataBuffer -> {
             byte[] bytes = new byte[dataBuffer.readableByteCount()];
             dataBuffer.read(bytes);
             DataBufferUtils.release(dataBuffer);
-            messageDigest.update(bytes);
+            finalMessageDigest.update(bytes);
         });
 
         byte[] hashBytes = messageDigest.digest();

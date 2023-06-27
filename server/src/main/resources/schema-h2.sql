@@ -318,3 +318,18 @@ create table if not exists `custom_metadata`
     constraint custom_metadata_e_id_em_key unique (custom_id, cm_key),
     constraint custom_metadata_pkey primary key (id)
 );
+
+-- task
+create table if not exists `task`
+(
+    id           int8          not null auto_increment,
+    name         varchar(255)  not null unique,
+    status       varchar(255)  not null,
+    create_time  timestamp(6)  null,
+    start_time   timestamp(6)  null,
+    end_time     timestamp(6)  null,
+    total        int8          not null,
+    index        int8          not null,
+    fail_message varchar(2000) not null,
+    constraint task_pkey primary key (id)
+);

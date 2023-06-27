@@ -51,5 +51,5 @@ public class FileEntity extends BaseEntity {
     private String originalName;
 
     @Column("can_read")
-    private Boolean canRead = true;
+    private Boolean canRead;
 }
