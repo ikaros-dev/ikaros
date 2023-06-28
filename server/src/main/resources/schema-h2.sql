@@ -95,6 +95,7 @@ create table if not exists file
     type          varchar(255)  null,
     url           varchar(3000) not null,
     can_read      bool          null,
+    create_time   timestamp(6)  null,
     constraint file_pkey primary key (id)
 );
 

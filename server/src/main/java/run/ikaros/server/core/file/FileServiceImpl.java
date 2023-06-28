@@ -304,6 +304,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .originalName(fileName)
                 .md5(FileUtils.calculateFileHash(dataBufferFlux))
                 .canRead(true)
+                .createTime(LocalDateTime.now())
                 .build())
             .flatMap(fileEntity -> FileUtils.calculateFileSize(dataBufferFlux)
                 .map(fileEntity::setSize))
