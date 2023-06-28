@@ -3,9 +3,9 @@ package run.ikaros.api.store.entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import run.ikaros.api.store.enums.FileType;
@@ -21,8 +21,10 @@ import run.ikaros.api.store.enums.FileType;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-public class FileEntity extends BaseEntity {
+public class FileEntity {
+    @Id
+    private Long id;
+
     @Column("folder_id")
     private Long folderId;
     private String url;

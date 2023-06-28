@@ -32,7 +32,7 @@ public class TaskServiceImpl implements TaskService {
     @Async
     @Scheduled(cron = "0/30 * *  * * ? ")
     public void updateTaskStatus() {
-        log.debug("exec updateTaskStatus");
+        // log.debug("exec updateTaskStatus");
         for (Map.Entry<String, Future<?>> entry : futureMap.entrySet()) {
             String name = entry.getKey();
             Future<?> future = entry.getValue();

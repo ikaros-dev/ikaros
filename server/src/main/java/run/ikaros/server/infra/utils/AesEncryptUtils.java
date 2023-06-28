@@ -114,7 +114,7 @@ public class AesEncryptUtils {
      * @param dataBytes 待加密的字节数组
      * @return 经过Base64编码的 加密后的 字节数组
      */
-    public static byte[] encrptByteArray(byte[] keyBytes, byte[] dataBytes) {
+    public static byte[] encryptByteArray(byte[] keyBytes, byte[] dataBytes) {
         // 获取密钥对象
         Key key = new SecretKeySpec(keyBytes, KEY_ALGORITHM);
 
@@ -140,14 +140,14 @@ public class AesEncryptUtils {
      * @param keyStrBase64 密钥字符串 经过Base64加密
      * @param dataBytes    待加密的字节数组
      * @return 经过Base64编码的 加密后的 字节数组
-     * @see #encrptByteArray(byte[], byte[])
+     * @see #encryptByteArray(byte[], byte[])
      */
-    public static byte[] encrptByteArray(String keyStrBase64, byte[] dataBytes) {
+    public static byte[] encryptByteArray(String keyStrBase64, byte[] dataBytes) {
         // 对key字符串 进行Base64解密
         byte[] keyBytes = Base64.getDecoder().decode(keyStrBase64);
 
         // 加密并返回
-        return encrptByteArray(keyBytes, dataBytes);
+        return encryptByteArray(keyBytes, dataBytes);
     }
 
     /**
@@ -157,9 +157,9 @@ public class AesEncryptUtils {
      * @param dataBytes 待加密数据字节数组
      * @return 经过Base64编码的 加密后的 字节数组
      * @throws IOException 文件IO操作异常
-     * @see #encrptByteArray(byte[], byte[])
+     * @see #encryptByteArray(byte[], byte[])
      */
-    public static byte[] encrptByteArray(File keyFile, byte[] dataBytes) throws IOException {
+    public static byte[] encryptByteArray(File keyFile, byte[] dataBytes) throws IOException {
 
         // 获取key字节数组-Base64编码格式
         byte[] keyBytesBase64 = Files.readAllBytes(keyFile.toPath());
@@ -168,7 +168,7 @@ public class AesEncryptUtils {
         byte[] keyBytes = Base64.getDecoder().decode(keyBytesBase64);
 
         // 加密并返回
-        return encrptByteArray(keyBytes, dataBytes);
+        return encryptByteArray(keyBytes, dataBytes);
     }
 
     /**
@@ -178,14 +178,14 @@ public class AesEncryptUtils {
      * @param dataFile 待加密文件
      * @return 经过Base64编码的 加密后的 字节数组
      * @throws IOException 文件IO操作异常
-     * @see #encrptByteArray(byte[], byte[])
+     * @see #encryptByteArray(byte[], byte[])
      */
     public static byte[] encryptFile(byte[] keyBytes, File dataFile) throws IOException {
         // 获取待加密文件字节数组
         byte[] dataFileBytes = Files.readAllBytes(dataFile.toPath());
 
         // 加密并返回
-        return encrptByteArray(keyBytes, dataFileBytes);
+        return encryptByteArray(keyBytes, dataFileBytes);
     }
 
     /**

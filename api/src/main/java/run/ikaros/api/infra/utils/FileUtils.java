@@ -3,8 +3,12 @@ package run.ikaros.api.infra.utils;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.xml.bind.DatatypeConverter;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -20,7 +24,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -29,6 +32,7 @@ import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
 import run.ikaros.api.store.enums.FileType;
 
@@ -82,6 +86,18 @@ public class FileUtils {
             + File.separator + UUID.randomUUID().toString().replace("-", "")
             + (('.' == postfix.charAt(0))
             ? postfix : "." + postfix);
+    }
+
+    /**
+     * Create dir if not exists.
+     */
+    public static boolean mkdirsIfNotExists(Path dirPath) {
+        Assert.notNull(dirPath, "'dirPath' must not null.");
+        File file = dirPath.toFile();
+        if (!file.exists()) {
+            return file.mkdirs();
+        }
+        return false;
     }
 
     public enum Hash {
@@ -238,19 +254,24 @@ public class FileUtils {
     public static List<Path> split(Path filePath, Path targetDirPath, Integer size) {
         List<Path> paths = new ArrayList<>();
         size = size * 1024;
-        try (RandomAccessFile accessFile = new RandomAccessFile(filePath.toFile(), "r")) {
-            Long total = 0L;
-            byte[] bytes = new byte[size];
-            while (accessFile.read(bytes, 0, size) > 0) {
-                total += size;
-                Path targetFilePath = targetDirPath.resolve(String.valueOf(total));
-                Files.write(targetFilePath, bytes);
-                paths.add(targetFilePath);
-                log.debug("current split file: {}/{}", total, filePath.toFile().length());
+        try (FileInputStream fis = new FileInputStream(filePath.toFile());
+             BufferedInputStream bis = new BufferedInputStream(fis)) {
+            byte[] buffer = new byte[size];
+            int bytesRead;
+            int chunkIndex = 0;
+            while ((bytesRead = bis.read(buffer)) != -1) {
+                Path targetPath = targetDirPath.resolve(String.valueOf(chunkIndex));
+                FileOutputStream fos = new FileOutputStream(targetPath.toFile());
+                BufferedOutputStream bos = new BufferedOutputStream(fos);
+                bos.write(buffer, 0, bytesRead);
+                bos.close();
+                chunkIndex++;
+                paths.add(targetPath);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         return paths;
     }
 
@@ -304,12 +325,9 @@ public class FileUtils {
     /**
      * Calculate file size.
      */
-    public static Long calculateFileSize(Flux<DataBuffer> dataBufferFlux) {
-        AtomicLong size = new AtomicLong();
-        dataBufferFlux.map(DataBuffer::readableByteCount)
-            .reduce(0L, Long::sum)
-            .subscribe(size::set);
-        return size.get();
+    public static Mono<Long> calculateFileSize(Flux<DataBuffer> dataBufferFlux) {
+        return dataBufferFlux.map(DataBuffer::readableByteCount)
+            .reduce(0L, Long::sum);
     }
 
     /**

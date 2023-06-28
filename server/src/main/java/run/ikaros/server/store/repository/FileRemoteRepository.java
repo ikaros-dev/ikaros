@@ -8,5 +8,7 @@ import run.ikaros.server.store.entity.FileRemoteEntity;
 public interface FileRemoteRepository extends R2dbcRepository<FileRemoteEntity, Long> {
     Flux<FileRemoteEntity> findAllByFileId(Long fileId);
 
+    Flux<FileRemoteEntity> findAllByFileIdAndRemote(Long fileId, String remote);
+
     Mono<Void> deleteAllByFileId(Long fileId);
 }

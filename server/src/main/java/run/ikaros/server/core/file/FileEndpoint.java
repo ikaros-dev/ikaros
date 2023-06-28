@@ -170,6 +170,18 @@ public class FileEndpoint implements CoreEndpoint {
                         .name("remote")
                         .required(true)
                         .description("Remote")))
+
+            .POST("/file/remote/pull", this::pullFile,
+                builder -> builder.operationId("PullFile4Remote")
+                    .tag(tag)
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .required(true)
+                        .description("File id."))
+                    .parameter(parameterBuilder()
+                        .name("remote")
+                        .required(true)
+                        .description("Remote")))
             .build();
     }
 
@@ -177,6 +189,15 @@ public class FileEndpoint implements CoreEndpoint {
         Optional<String> idOp = request.queryParam("id");
         Optional<String> remoteOp = request.queryParam("remote");
         return fileService.pushRemote(Long.valueOf(idOp.orElse("-1")), remoteOp.orElse(null))
+            .flatMap(fileEntity -> ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(fileEntity));
+    }
+
+    private Mono<ServerResponse> pullFile(ServerRequest request) {
+        Optional<String> idOp = request.queryParam("id");
+        Optional<String> remoteOp = request.queryParam("remote");
+        return fileService.pullRemote(Long.valueOf(idOp.orElse("-1")), remoteOp.orElse(null))
             .flatMap(fileEntity -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(fileEntity));
