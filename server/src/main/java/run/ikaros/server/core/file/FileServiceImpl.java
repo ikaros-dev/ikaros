@@ -265,6 +265,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                     });
                 return fileRemoteEntity;
             })
+            .then(fileRemoteRepository.deleteAllByFileId(id))
             .then();
     }
 
@@ -398,8 +399,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             .then(fileRepository.findById(fileEntity.getId()))
             .checkpoint("UpdateFileEntity")
             .map(fe -> fe.setAesKey(new String(keyByteArray, StandardCharsets.UTF_8)))
-            .map(fileEntity1 -> fileEntity1.setUrl(""))
-            .map(fileEntity1 -> fileEntity1.setCanRead(false))
+            .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setOriginalPath(""))
             .flatMap(fileRepository::save);
     }
 
@@ -547,8 +547,10 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 sink.next(list);
             })
             // 更新文件URL
-            .then(fileRepository.save(fileEntity.setCanRead(true).setUrl(
-                path2url(importFilePath.toString(), ikarosProperties.getWorkDir().toString()))))
+            .then(fileRepository.save(fileEntity.setCanRead(true)
+                .setOriginalPath(importFilePath.toString())
+                .setUrl(path2url(importFilePath.toString(),
+                    ikarosProperties.getWorkDir().toString()))))
             ;
     }
 
