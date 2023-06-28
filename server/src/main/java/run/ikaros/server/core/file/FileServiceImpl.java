@@ -259,7 +259,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
 
                 remoteFileHandlerOptional
                     .ifPresent(remoteFileHandler -> {
-                        remoteFileHandler.delete(Path.of(fileRemoteEntity.getPath()));
+                        remoteFileHandler.delete(fileRemoteEntity.getPath());
                         log.debug("delete remote file: remote:[{}], path:[{}].",
                             fileRemoteEntity.getRemote(), fileRemoteEntity.getPath());
                     });
@@ -303,8 +303,17 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .canRead(true)
                 .createTime(LocalDateTime.now())
                 .build())
-            .flatMap(fileEntity -> FileUtils.calculateFileSize(dataBufferFlux)
-                .map(fileEntity::setSize))
+            .publishOn(Schedulers.boundedElastic())
+            .<FileEntity>handle((fileEntity, sink) -> {
+                try {
+                    long size = Files.size(Path.of(fileEntity.getOriginalPath()));
+                    fileEntity.setSize(size);
+                } catch (IOException e) {
+                    sink.error(new RuntimeException(e));
+                    return;
+                }
+                sink.next(fileEntity);
+            })
             .flatMap(fileRepository::save)
             .map(run.ikaros.api.core.file.File::new);
     }
@@ -421,6 +430,11 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         return fileRepository.findById(fileId)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("not found file entity for id is " + fileId)))
+            .filter(fileEntity -> fileEntity.getSize() != null
+                && fileEntity.getSize() >= 1024 * 1024 * 30)
+            .switchIfEmpty(
+                Mono.error(new RuntimeException("push operate only support file "
+                    + "that size > 30MB.")))
             .flatMap(fileEntity -> pushRemote(fileEntity, remote));
     }
 

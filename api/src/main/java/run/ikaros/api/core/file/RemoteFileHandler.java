@@ -28,9 +28,9 @@ public interface RemoteFileHandler extends ExtensionPoint {
     void pull(Path chunkFilePullDirPath, List<String> remoteFileId);
 
     /**
-     * Delete remote chunk file.
+     * Delete remote chunk file path.
      */
-    void delete(Path chunkFilePath);
+    void delete(String chunkFilePath);
 
     /**
      * Verify remote file handler is ready.
