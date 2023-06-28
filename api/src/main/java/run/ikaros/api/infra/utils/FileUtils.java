@@ -287,6 +287,10 @@ public class FileUtils {
                 "target file has exists: " + targetFile.getAbsolutePath());
         }
 
+        if (!targetFile.getParentFile().exists()) {
+            targetFile.getParentFile().mkdirs();
+        }
+
         try {
             if (!targetFile.createNewFile()) {
                 throw new RuntimeException(

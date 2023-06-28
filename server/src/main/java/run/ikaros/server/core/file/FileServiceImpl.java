@@ -250,7 +250,11 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             })
             .checkpoint("DeleteAllEpisodeFileByFileIdAfterDeleteFileEntity")
             .flatMapMany(unused -> fileRemoteRepository.findAllByFileId(id))
-            .map(fileRemoteEntity -> {
+            .doOnEach(fileRemoteEntitySignal -> {
+                FileRemoteEntity fileRemoteEntity = fileRemoteEntitySignal.get();
+                if (fileRemoteEntity == null) {
+                    return;
+                }
                 Optional<RemoteFileHandler> remoteFileHandlerOptional =
                     extensionComponentsFinder.getExtensions(RemoteFileHandler.class)
                         .stream().filter(remoteFileHandler ->
@@ -263,10 +267,8 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                         log.debug("delete remote file: remote:[{}], path:[{}].",
                             fileRemoteEntity.getRemote(), fileRemoteEntity.getPath());
                     });
-                return fileRemoteEntity;
             })
-            .then(fileRemoteRepository.deleteAllByFileId(id))
-            .then();
+            .then(fileRemoteRepository.deleteAllByFileId(id));
     }
 
     @Override
