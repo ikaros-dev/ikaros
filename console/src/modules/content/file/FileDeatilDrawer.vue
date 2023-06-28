@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { apiClient } from '@/utils/api-client';
 import { FileEntity } from '@runikaros/api-client';
-import { filePlaceMap, fileTypeMap } from '@/modules/common/constants';
+import { fileTypeMap } from '@/modules/common/constants';
 import { computed, nextTick, ref } from 'vue';
 import {
 	ElButton,
@@ -155,6 +155,11 @@ const formatFileSize = (value): string => {
 	size = size.toFixed(2);
 	return size + ' ' + unitArr[index];
 };
+
+const remoteButton = ref({
+	isPush: true,
+	loading: false,
+});
 </script>
 
 <template>
@@ -167,7 +172,7 @@ const formatFileSize = (value): string => {
 	>
 		<el-row>
 			<el-col :lg="24" :md="24" :sm="24" :xl="24" :xs="24">
-				<div class="attach-detail-img pb-3">
+				<div v-if="file.canRead" class="attach-detail-img pb-3">
 					<a
 						v-if="isImage"
 						:href="getCompleteFileUrl(file.url)"
@@ -197,6 +202,7 @@ const formatFileSize = (value): string => {
 					</audio>
 					<div v-else>此文件不支持预览</div>
 				</div>
+				<div v-else>文件不可读取，需要从远端拉取下来。</div>
 			</el-col>
 		</el-row>
 
@@ -230,13 +236,10 @@ const formatFileSize = (value): string => {
 					<el-descriptions-item label="文件类型：">
 						{{ fileTypeMap.get(file.type as string) }}
 					</el-descriptions-item>
-					<el-descriptions-item label="存储位置：">
-						{{ filePlaceMap.get(file.place as string) }}
-					</el-descriptions-item>
 					<el-descriptions-item label="文件大小：">
 						{{ formatFileSize(file.size) }}
 					</el-descriptions-item>
-					<el-descriptions-item label="上传日期：">
+					<el-descriptions-item label="创建时间：">
 						{{ file.createTime }}
 					</el-descriptions-item>
 					<el-descriptions-item v-if="file.originalPath" label="原始路径：">
@@ -247,6 +250,20 @@ const formatFileSize = (value): string => {
 		</el-row>
 
 		<template #footer>
+			<el-popconfirm
+				title="你确定要推送该文件？"
+				confirm-button-text="确定"
+				cancel-button-text="取消"
+				confirm-button-type="danger"
+				@confirm="handleDelete"
+			>
+				<template #reference>
+					<el-button plain :loading="remoteButton.loading">
+						<span v-if="remoteButton.isPush"> 推送 </span>
+						<span v-else> 拉取 </span>
+					</el-button>
+				</template>
+			</el-popconfirm>
 			<el-popconfirm
 				title="你确定要删除该文件？"
 				confirm-button-text="确定"

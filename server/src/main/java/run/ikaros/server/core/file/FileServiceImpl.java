@@ -265,9 +265,6 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                     });
                 return fileRemoteEntity;
             })
-            .then(fileRemoteRepository.deleteAllByFileId(id)
-                .doOnSuccess(
-                    unused -> log.debug("delete remote file records for file id is {}.", id)))
             .then();
     }
 
