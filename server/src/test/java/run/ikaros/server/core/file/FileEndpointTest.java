@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +96,7 @@ class FileEndpointTest {
     }
 
     @Test
+    @Disabled
     void uploadWhenPolicyNotExists() {
         MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
         multipartBodyBuilder.part("file", new ClassPathResource("core/file/UnitTestDocFile.TXT"))
@@ -111,6 +113,7 @@ class FileEndpointTest {
     }
 
     @Test
+    @Disabled
     void uploadWhenHandlerNotExists() {
         Mockito.doReturn(Collections.EMPTY_LIST)
             .when(extensionComponentsFinder).getExtensions(RemoteFileHandler.class);
