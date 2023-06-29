@@ -50,13 +50,11 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
 		/**
 		 *
 		 * @param {string} name
-		 * @param {TaskEntity} [taskEntity]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		findTaskByName: async (
 			name: string,
-			taskEntity?: TaskEntity,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'name' is not null or undefined
@@ -88,8 +86,6 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			localVarHeaderParameter['Content-Type'] = 'application/json';
-
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -98,11 +94,6 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
 				...headersFromBaseOptions,
 				...options.headers,
 			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				taskEntity,
-				localVarRequestOptions,
-				configuration
-			);
 
 			return {
 				url: toPathString(localVarUrlObj),
@@ -123,20 +114,17 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
 		/**
 		 *
 		 * @param {string} name
-		 * @param {TaskEntity} [taskEntity]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		async findTaskByName(
 			name: string,
-			taskEntity?: TaskEntity,
 			options?: AxiosRequestConfig
 		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TaskEntity>
 		> {
 			const localVarAxiosArgs = await localVarAxiosParamCreator.findTaskByName(
 				name,
-				taskEntity,
 				options
 			);
 			return createRequestFunction(
@@ -169,13 +157,9 @@ export const V1alpha1TaskApiFactory = function (
 		findTaskByName(
 			requestParameters: V1alpha1TaskApiFindTaskByNameRequest,
 			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
+		): AxiosPromise<TaskEntity> {
 			return localVarFp
-				.findTaskByName(
-					requestParameters.name,
-					requestParameters.taskEntity,
-					options
-				)
+				.findTaskByName(requestParameters.name, options)
 				.then((request) => request(axios, basePath));
 		},
 	};
@@ -193,13 +177,6 @@ export interface V1alpha1TaskApiFindTaskByNameRequest {
 	 * @memberof V1alpha1TaskApiFindTaskByName
 	 */
 	readonly name: string;
-
-	/**
-	 *
-	 * @type {TaskEntity}
-	 * @memberof V1alpha1TaskApiFindTaskByName
-	 */
-	readonly taskEntity?: TaskEntity;
 }
 
 /**
@@ -221,11 +198,7 @@ export class V1alpha1TaskApi extends BaseAPI {
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1TaskApiFp(this.configuration)
-			.findTaskByName(
-				requestParameters.name,
-				requestParameters.taskEntity,
-				options
-			)
+			.findTaskByName(requestParameters.name, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }
