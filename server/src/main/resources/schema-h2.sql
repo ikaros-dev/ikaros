@@ -318,7 +318,7 @@ create table if not exists `custom_metadata`
 create table if not exists `task`
 (
     id           int8          not null auto_increment,
-    name         varchar(255)  not null unique,
+    name         varchar(255)  not null,
     status       varchar(255)  not null,
     create_time  timestamp(6)  null,
     start_time   timestamp(6)  null,

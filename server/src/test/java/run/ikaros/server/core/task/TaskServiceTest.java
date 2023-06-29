@@ -11,22 +11,25 @@ import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.enums.TaskStatus;
+import run.ikaros.server.store.repository.TaskRepository;
 
 @SpringBootTest
 class TaskServiceTest {
 
     @Autowired
     TaskService taskService;
+    @Autowired
+    TaskRepository repository;
 
     class TestTask extends Task {
         Logger log = LoggerFactory.getLogger(TestTask.class);
 
-        public TestTask(TaskEntity entity) {
-            super(entity);
+        public TestTask(TaskEntity entity, TaskRepository repository) {
+            super(entity, repository);
         }
 
         @Override
-        public void run() {
+        protected void doRun() throws Exception {
             //System.out.println(getEntity().getName() + "-" + getEntity().getStatus());
             log.info(getEntity().getName() + "-" + getEntity().getStatus());
         }
@@ -43,7 +46,7 @@ class TaskServiceTest {
             .status(TaskStatus.CREATE)
             .total(1L)
             .index(0L)
-            .build());
+            .build(), repository);
 
         StepVerifier.create(taskService.submit(task)).verifyComplete();
 

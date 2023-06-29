@@ -33,7 +33,7 @@ public interface FileService {
 
     Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux);
 
-    Mono<FileEntity> pushRemote(Long fileId, String remote);
+    Mono<Void> pushRemote(Long fileId, String remote);
 
-    Mono<FileEntity> pullRemote(Long fileId, String remote);
+    Mono<Void> pullRemote(Long fileId, String remote);
 }

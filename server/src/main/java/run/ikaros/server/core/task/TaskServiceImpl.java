@@ -1,12 +1,11 @@
 package run.ikaros.server.core.task;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
@@ -29,8 +28,8 @@ public class TaskServiceImpl implements TaskService {
     /**
      * Update task status.
      */
-    @Async
-    @Scheduled(cron = "0/30 * *  * * ? ")
+    //@Async
+    //@Scheduled(cron = "0/30 * *  * * ? ")
     public void updateTaskStatus() {
         // log.debug("exec updateTaskStatus");
         for (Map.Entry<String, Future<?>> entry : futureMap.entrySet()) {
@@ -76,11 +75,36 @@ public class TaskServiceImpl implements TaskService {
         Assert.notNull(task, "'task' must not null.");
         TaskEntity entity = task.getEntity();
         Assert.notNull(entity, "'task entity' must not null.");
+        setDefaultFieldValue(entity);
         Assert.hasText(entity.getName(), "'task entity name' must has text.");
-        if (entity.getCreateTime().equals(entity.getStartTime())) {
-            futureMap.put(entity.getName(), executorService.submit(task));
+
+        // 重复提交校验
+        if (futureMap.containsKey(entity.getName()) && !futureMap.get(entity.getName()).isDone()) {
+            throw new RuntimeException("Do not submit tasks twice for task: " + entity.getName());
         }
-        return taskRepository.save(entity).then();
+
+        return taskRepository.save(entity)
+            // 目前直接后台执行，不进行延迟支持
+            // .filter(te -> te.getCreateTime().equals(te.getStartTime()))
+            .flatMap(taskEntity -> {
+                futureMap.put(taskEntity.getName(), executorService.submit(task));
+                return Mono.empty();
+            });
+    }
+
+    private static void setDefaultFieldValue(TaskEntity entity) {
+        if (entity.getStatus() == null) {
+            entity.setStatus(TaskStatus.CREATE);
+        }
+        if (entity.getTotal() == null) {
+            entity.setTotal(0L);
+        }
+        if (entity.getIndex() == null) {
+            entity.setIndex(0L);
+        }
+        if (entity.getCreateTime() == null) {
+            entity.setCreateTime(LocalDateTime.now());
+        }
     }
 
     @Override

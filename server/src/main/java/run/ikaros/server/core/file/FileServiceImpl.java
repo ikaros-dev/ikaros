@@ -9,7 +9,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -19,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -35,7 +34,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.constant.FileConst;
-import run.ikaros.api.core.file.RemoteFileChunk;
 import run.ikaros.api.core.file.RemoteFileHandler;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
@@ -47,12 +45,16 @@ import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.file.event.FileAddEvent;
 import run.ikaros.server.core.file.event.FileRemoveEvent;
-import run.ikaros.server.infra.utils.AesEncryptUtils;
+import run.ikaros.server.core.file.task.FilePull4RemoteTask;
+import run.ikaros.server.core.file.task.FilePush2RemoteTask;
+import run.ikaros.server.core.task.TaskService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.FileRemoteEntity;
+import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.FileRemoteRepository;
 import run.ikaros.server.store.repository.FileRepository;
+import run.ikaros.server.store.repository.TaskRepository;
 
 @Slf4j
 @Service
@@ -65,6 +67,8 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
     private ApplicationContext applicationContext;
     private final ExtensionComponentsFinder extensionComponentsFinder;
     private final ReactiveCustomClient reactiveCustomClient;
+    private final TaskService taskService;
+    private final TaskRepository taskRepository;
 
     /**
      * Construct.
@@ -75,7 +79,8 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                            IkarosProperties ikarosProperties,
                            R2dbcEntityTemplate template,
                            ExtensionComponentsFinder extensionComponentsFinder,
-                           ReactiveCustomClient reactiveCustomClient) {
+                           ReactiveCustomClient reactiveCustomClient, TaskService taskService,
+                           TaskRepository taskRepository) {
         this.fileRepository = fileRepository;
         this.episodeFileRepository = episodeFileRepository;
         this.fileRemoteRepository = fileRemoteRepository;
@@ -83,6 +88,8 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         this.template = template;
         this.extensionComponentsFinder = extensionComponentsFinder;
         this.reactiveCustomClient = reactiveCustomClient;
+        this.taskService = taskService;
+        this.taskRepository = taskRepository;
     }
 
     @Override
@@ -316,112 +323,36 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             .map(run.ikaros.api.core.file.File::new);
     }
 
-
-    private Mono<FileEntity> doPushRemote(FileEntity fileEntity, String remote) {
-        Optional<RemoteFileHandler> remoteFileHandlerOptional =
-            extensionComponentsFinder.getExtensions(RemoteFileHandler.class)
-                .stream()
-                .filter(remoteFileHandler -> remote.equals(remoteFileHandler.remote()))
-                .findFirst();
-        if (remoteFileHandlerOptional.isEmpty()) {
-            throw new RuntimeException("no remote file handler for remote: " + remote);
-        }
-        final RemoteFileHandler remoteFileHandler = remoteFileHandlerOptional.get();
-
-        if (!remoteFileHandler.ready()) {
-            throw new RuntimeException("please config remote plugin for remote:" + remote);
-        }
-
-        File file = new File(fileEntity.getOriginalPath());
-        Path importPath = file.toPath();
-        Path splitChunksPath = ikarosProperties.getWorkDir()
-            .resolve("caches")
-            .resolve("file")
-            .resolve("split")
-            .resolve(UUID.randomUUID().toString().replace("-", ""));
-        FileUtils.mkdirsIfNotExists(splitChunksPath);
-        Path encryptChunksPath = ikarosProperties.getWorkDir()
-            .resolve("caches")
-            .resolve("file")
-            .resolve("encrypt")
-            .resolve(UUID.randomUUID().toString().replace("-", ""));
-        FileUtils.mkdirsIfNotExists(encryptChunksPath);
-
-        // 默认分割单片 30MB
-        List<Path> pathList = FileUtils.split(importPath, splitChunksPath, 1024 * 30);
-        byte[] keyByteArray = AesEncryptUtils.generateKeyByteArray();
-
-
-        // 加密
-        for (Path path : pathList) {
-            File file1 = path.toFile();
-            String file1Name = file1.getName();
-            try {
-                byte[] bytes = AesEncryptUtils.encryptFile(keyByteArray, file1);
-                Path targetFilePath = encryptChunksPath.resolve(file1Name);
-                Files.write(targetFilePath, bytes);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        // 上传
-        List<RemoteFileChunk> remoteFileIdList =
-            remoteFileHandler.push(encryptChunksPath);
-
-        // 清理本地文件
-        try {
-            // 分片文件
-            FileUtils.deleteDirByRecursion(splitChunksPath.toString());
-            // 分片加密文件
-            FileUtils.deleteDirByRecursion(encryptChunksPath.toString());
-            // 源文件
-            importPath.toFile().delete();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        // 保存云端分片信息
-        return Flux.fromStream(remoteFileIdList.stream())
-            .flatMap(remoteFileChunk -> fileRemoteRepository.save(FileRemoteEntity.builder()
-                .fileId(fileEntity.getId())
-                .fileName(remoteFileChunk.getFileName())
-                .remoteId(remoteFileChunk.getFileId())
-                .remote(remote)
-                .size(remoteFileChunk.getSize())
-                .path(remoteFileChunk.getPath())
-                .md5(remoteFileChunk.getMd5())
-                .build()))
-            // 更新文件状态
-            .then(fileRepository.findById(fileEntity.getId()))
-            .checkpoint("UpdateFileEntity")
-            .map(fe -> fe.setAesKey(new String(keyByteArray, StandardCharsets.UTF_8)))
-            .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setOriginalPath(""))
-            .flatMap(fileRepository::save);
-    }
-
-    private Mono<FileEntity> pushRemote(FileEntity fileEntity, String remote) {
+    private Mono<Void> pushRemote(FileEntity fileEntity, String remote) {
         Assert.notNull(fileEntity, "'fileEntity' must not null.");
         Assert.hasText(remote, "'remote' must has text.");
 
         if (!fileEntity.getCanRead() && !StringUtils.hasText(fileEntity.getUrl())) {
             log.warn("skip push operate, current file entity exists in remote for file: {}",
                 fileEntity);
-            return Mono.just(fileEntity);
+            return Mono.empty();
         }
 
         // 远端表存在对应的记录，代表已经 push 过
         return fileRemoteRepository.findAllByFileIdAndRemote(fileEntity.getId(), remote)
             .collectList()
+            .doOnSuccess(list -> {
+                if (list != null && !list.isEmpty()) {
+                    log.debug("current remote record exists, skip doPushRemote.");
+                }
+            })
             .filter(list -> Objects.isNull(list) || list.isEmpty())
-            .flatMap(list -> doPushRemote(fileEntity, remote))
-            .switchIfEmpty(Mono.just(fileEntity)
-                .doOnSuccess(fe -> log.debug("current remote record exists, skip doPushRemote.")));
+            .flatMap(list -> Mono.defer((Supplier<Mono<Void>>) () -> {
+                FilePush2RemoteTask filePush2RemoteTask =
+                    new FilePush2RemoteTask(TaskEntity.builder().build(), taskRepository,
+                        applicationContext, fileEntity.getId(), remote);
+                return taskService.submit(filePush2RemoteTask);
+            }).then());
     }
 
 
     @Override
-    public Mono<FileEntity> pushRemote(Long fileId, String remote) {
+    public Mono<Void> pushRemote(Long fileId, String remote) {
         Assert.isTrue(fileId > 0, "'fileId' must gt 0.");
         Assert.hasText(remote, "'remote' must has text.");
         return fileRepository.findById(fileId)
@@ -435,122 +366,20 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             .flatMap(fileEntity -> pushRemote(fileEntity, remote));
     }
 
-    private Mono<FileEntity> pullRemote(FileEntity fileEntity, String remote) {
-        Assert.notNull(fileEntity, "'fileEntity' must not null.");
-        Assert.hasText(remote, "'remote' must has text.");
-
-        if (fileEntity.getCanRead() && StringUtils.hasText(fileEntity.getUrl())) {
-            throw new RuntimeException("please push remote before pull.");
-        }
-
-        Optional<RemoteFileHandler> remoteFileHandlerOptional =
-            extensionComponentsFinder.getExtensions(RemoteFileHandler.class)
-                .stream()
-                .filter(remoteFileHandler -> remote.equals(remoteFileHandler.remote()))
-                .findFirst();
-        if (remoteFileHandlerOptional.isEmpty()) {
-            throw new RuntimeException("no remote file handler for remote: " + remote);
-        }
-        final RemoteFileHandler remoteFileHandler = remoteFileHandlerOptional.get();
-
-        if (!remoteFileHandler.ready()) {
-            throw new RuntimeException("please config remote plugin for remote:" + remote);
-        }
-
-        Path encryptChunkFilesPath = ikarosProperties.getWorkDir()
-            .resolve("caches")
-            .resolve("file")
-            .resolve("encrypt")
-            .resolve(UUID.randomUUID().toString().replace("-", ""));
-        FileUtils.mkdirsIfNotExists(encryptChunkFilesPath);
-
-
-        String aesKey = fileEntity.getAesKey();
-        byte[] aesKeyBytes = aesKey.getBytes(StandardCharsets.UTF_8);
-        Path decryptChunkFilesPath = ikarosProperties.getWorkDir()
-            .resolve("caches")
-            .resolve("file")
-            .resolve("decrypt")
-            .resolve(UUID.randomUUID().toString().replace("-", ""));
-        FileUtils.mkdirsIfNotExists(decryptChunkFilesPath);
-
-        Path filePath = Path.of(FileUtils.buildAppUploadFilePath(
-            ikarosProperties.getWorkDir().toString(),
-            FileUtils.parseFilePostfix(fileEntity.getOriginalName())
-        ));
-
-        // 查询当前文件所有的远端ID
-        return fileRemoteRepository.findAllByFileId(fileEntity.getId())
-            .filter(fileRemoteEntity -> remote.equals(fileRemoteEntity.getRemote()))
-            .map(FileRemoteEntity::getRemoteId)
-            .collectList()
-            // 拉取远端文件
-            .map(list -> {
-                remoteFileHandler.pull(encryptChunkFilesPath, list);
-                return list;
-            })
-            .<List<String>>handle((list, sink) -> {
-                File[] encryptChunkFiles = encryptChunkFilesPath.toFile().listFiles();
-                if (encryptChunkFiles == null) {
-                    sink.error(new RuntimeException(
-                        "encrypt file dir is null for path: " + encryptChunkFilesPath));
-                    return;
-                }
-                int index = 0;
-                final int total = encryptChunkFiles.length;
-                for (File encryptChunkFile : encryptChunkFiles) {
-                    String name = encryptChunkFile.getName();
-                    if (name.indexOf('-') > 0) {
-                        name = name.substring(name.lastIndexOf("-") + 1);
-                    }
-                    Path decryptChunkFilePath = decryptChunkFilesPath.resolve(name);
-                    try {
-                        byte[] bytes = AesEncryptUtils.decryptFile(aesKeyBytes, encryptChunkFile);
-                        Files.write(decryptChunkFilePath, bytes);
-                        index++;
-                        log.debug("current encrypt chunk file: {}/{}.", index, total);
-                    } catch (IOException e) {
-                        sink.error(new RuntimeException(e));
-                        return;
-                    }
-                }
-                sink.next(list);
-            })
-            // 合并文件片
-            .map(list -> {
-                List<Path> chunkFilePaths =
-                    Arrays.stream(
-                            Objects.requireNonNull(decryptChunkFilesPath.toFile().listFiles()))
-                        .map(File::toPath)
-                        .toList();
-                FileUtils.synthesize(chunkFilePaths, filePath);
-                return list;
-            })
-            // 清理临时文件
-            .<List<String>>handle((list, sink) -> {
-                try {
-                    FileUtils.deleteDirByRecursion(decryptChunkFilesPath.toString());
-                    FileUtils.deleteDirByRecursion(encryptChunkFilesPath.toString());
-                } catch (IOException e) {
-                    sink.error(new RuntimeException(e));
-                    return;
-                }
-                sink.next(list);
-            })
-            // 更新文件URL
-            .then(fileRepository.save(fileEntity.setCanRead(true)
-                .setOriginalPath(filePath.toString())
-                .setUrl(path2url(filePath.toString(),
-                    ikarosProperties.getWorkDir().toString()))))
-            ;
-    }
-
     @Override
-    public Mono<FileEntity> pullRemote(Long fileId, String remote) {
+    public Mono<Void> pullRemote(Long fileId, String remote) {
         Assert.isTrue(fileId > 0, "'fileId' must gt 0.");
         Assert.hasText(remote, "'remote' must has text.");
         return fileRepository.findById(fileId)
-            .flatMap(fileEntity -> pullRemote(fileEntity, remote));
+            .filter(fileEntity -> !fileEntity.getCanRead()
+                && !StringUtils.hasText(fileEntity.getUrl()))
+            .switchIfEmpty(Mono.error(new RuntimeException("please push remote before pull.")))
+            .flatMap(fileEntity -> Mono.defer((Supplier<Mono<Void>>) () -> {
+                FilePull4RemoteTask filePull4RemoteTask =
+                    new FilePull4RemoteTask(TaskEntity.builder().build(), taskRepository,
+                        applicationContext, fileEntity.getId(), remote);
+                return taskService.submit(filePull4RemoteTask);
+            }));
     }
 
 

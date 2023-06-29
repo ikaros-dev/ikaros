@@ -1,6 +1,6 @@
 package run.ikaros.server.core.task;
 
-import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
+import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,8 @@ public class TaskEndpoint implements CoreEndpoint {
                     .parameter(Builder.parameterBuilder()
                         .name("name").required(true)
                         .in(ParameterIn.PATH))
-                    .requestBody(requestBodyBuilder()
+                    .response(responseBuilder()
+                        .description("Task entity.")
                         .implementation(TaskEntity.class)))
             .build();
     }
@@ -46,6 +47,7 @@ public class TaskEndpoint implements CoreEndpoint {
             .flatMap(taskService::findByName)
             .flatMap(taskEntity -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(taskEntity));
+                .bodyValue(taskEntity))
+            .switchIfEmpty(ServerResponse.notFound().build());
     }
 }

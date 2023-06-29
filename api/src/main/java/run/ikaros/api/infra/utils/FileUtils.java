@@ -368,4 +368,21 @@ public class FileUtils {
         }
         return hexString.toString();
     }
+
+    /**
+     * Convert path to url.
+     */
+    public static String path2url(@NotBlank String path, @Nullable String workDir) {
+        Assert.hasText(path, "'path' must has text.");
+        String url = "";
+        String currentAppDirPath =
+            StringUtils.hasText(workDir) ? workDir : SystemVarUtils.getCurrentAppDirPath();
+        url = path.replace(currentAppDirPath, "");
+        // 如果是ntfs目录，则需要替换下 \ 为 /
+        if (SystemVarUtils.platformIsWindows()) {
+            url = url.replace("\\", "/");
+        }
+        log.debug("current url={}", url);
+        return url;
+    }
 }

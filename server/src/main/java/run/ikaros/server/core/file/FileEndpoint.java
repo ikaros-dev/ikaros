@@ -189,18 +189,14 @@ public class FileEndpoint implements CoreEndpoint {
         Optional<String> idOp = request.queryParam("id");
         Optional<String> remoteOp = request.queryParam("remote");
         return fileService.pushRemote(Long.valueOf(idOp.orElse("-1")), remoteOp.orElse(null))
-            .flatMap(fileEntity -> ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(fileEntity));
+            .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> pullFile(ServerRequest request) {
         Optional<String> idOp = request.queryParam("id");
         Optional<String> remoteOp = request.queryParam("remote");
         return fileService.pullRemote(Long.valueOf(idOp.orElse("-1")), remoteOp.orElse(null))
-            .flatMap(fileEntity -> ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(fileEntity));
+            .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> listByCondition(ServerRequest request) {
