@@ -3,5 +3,6 @@
 Project ikaros web console shared package
 
 ```
-pnpm i @runikaros/shared
+npm run i @runikaros/shared
+npm run build
 ```
