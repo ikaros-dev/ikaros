@@ -53,12 +53,6 @@ export interface FileHint {
 	 * @type {string}
 	 * @memberof FileHint
 	 */
-	place?: FileHintPlaceEnum;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileHint
-	 */
 	originalName?: string;
 }
 
@@ -72,9 +66,3 @@ export const FileHintTypeEnum = {
 
 export type FileHintTypeEnum =
 	(typeof FileHintTypeEnum)[keyof typeof FileHintTypeEnum];
-export const FileHintPlaceEnum = {
-	Local: 'LOCAL',
-} as const;
-
-export type FileHintPlaceEnum =
-	(typeof FileHintPlaceEnum)[keyof typeof FileHintPlaceEnum];

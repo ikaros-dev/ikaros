@@ -199,7 +199,6 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 		 * @param {number} [page] 第几页，从1开始, 默认为1.
 		 * @param {number} [size] 每页条数，默认为10.
 		 * @param {string} [fileName] 经过Basic64编码的文件名称，文件名称字段模糊查询。
-		 * @param {'LOCAL'} [place]
 		 * @param {'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN'} [type]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -208,7 +207,6 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 			page?: number,
 			size?: number,
 			fileName?: string,
-			place?: 'LOCAL',
 			type?: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN',
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
@@ -248,12 +246,132 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 				localVarQueryParameter['fileName'] = fileName;
 			}
 
-			if (place !== undefined) {
-				localVarQueryParameter['place'] = place;
-			}
-
 			if (type !== undefined) {
 				localVarQueryParameter['type'] = type;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 *
+		 * @param {string} id File id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pullFile4Remote: async (
+			id: string,
+			remote: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'id' is not null or undefined
+			assertParamExists('pullFile4Remote', 'id', id);
+			// verify required parameter 'remote' is not null or undefined
+			assertParamExists('pullFile4Remote', 'remote', remote);
+			const localVarPath = `/api/v1alpha1/file/remote/pull`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (id !== undefined) {
+				localVarQueryParameter['id'] = id;
+			}
+
+			if (remote !== undefined) {
+				localVarQueryParameter['remote'] = remote;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 *
+		 * @param {string} id File id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pushFile2Remote: async (
+			id: string,
+			remote: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'id' is not null or undefined
+			assertParamExists('pushFile2Remote', 'id', id);
+			// verify required parameter 'remote' is not null or undefined
+			assertParamExists('pushFile2Remote', 'remote', remote);
+			const localVarPath = `/api/v1alpha1/file/remote/push`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (id !== undefined) {
+				localVarQueryParameter['id'] = id;
+			}
+
+			if (remote !== undefined) {
+				localVarQueryParameter['remote'] = remote;
 			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -472,19 +590,15 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 		/**
 		 *
 		 * @param {File} file
-		 * @param {string} policyName Storage policy name
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		uploadFile: async (
 			file: File,
-			policyName: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'file' is not null or undefined
 			assertParamExists('uploadFile', 'file', file);
-			// verify required parameter 'policyName' is not null or undefined
-			assertParamExists('uploadFile', 'policyName', policyName);
 			const localVarPath = `/api/v1alpha1/files/upload`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -514,10 +628,6 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 
 			if (file !== undefined) {
 				localVarFormParams.append('file', file as any);
-			}
-
-			if (policyName !== undefined) {
-				localVarFormParams.append('policyName', policyName as any);
 			}
 
 			localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
@@ -620,7 +730,6 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 		 * @param {number} [page] 第几页，从1开始, 默认为1.
 		 * @param {number} [size] 每页条数，默认为10.
 		 * @param {string} [fileName] 经过Basic64编码的文件名称，文件名称字段模糊查询。
-		 * @param {'LOCAL'} [place]
 		 * @param {'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN'} [type]
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -629,7 +738,6 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 			page?: number,
 			size?: number,
 			fileName?: string,
-			place?: 'LOCAL',
 			type?: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN',
 			options?: AxiosRequestConfig
 		): Promise<
@@ -640,10 +748,61 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 					page,
 					size,
 					fileName,
-					place,
 					type,
 					options
 				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 *
+		 * @param {string} id File id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async pullFile4Remote(
+			id: string,
+			remote: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.pullFile4Remote(
+				id,
+				remote,
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 *
+		 * @param {string} id File id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async pushFile2Remote(
+			id: string,
+			remote: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.pushFile2Remote(
+				id,
+				remote,
+				options
+			);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -734,20 +893,17 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 		/**
 		 *
 		 * @param {File} file
-		 * @param {string} policyName Storage policy name
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		async uploadFile(
 			file: File,
-			policyName: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
 		> {
 			const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(
 				file,
-				policyName,
 				options
 			);
 			return createRequestFunction(
@@ -822,8 +978,43 @@ export const V1alpha1FileApiFactory = function (
 					requestParameters.page,
 					requestParameters.size,
 					requestParameters.fileName,
-					requestParameters.place,
 					requestParameters.type,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 *
+		 * @param {V1alpha1FileApiPullFile4RemoteRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pullFile4Remote(
+			requestParameters: V1alpha1FileApiPullFile4RemoteRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.pullFile4Remote(
+					requestParameters.id,
+					requestParameters.remote,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 *
+		 * @param {V1alpha1FileApiPushFile2RemoteRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pushFile2Remote(
+			requestParameters: V1alpha1FileApiPushFile2RemoteRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.pushFile2Remote(
+					requestParameters.id,
+					requestParameters.remote,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -887,11 +1078,7 @@ export const V1alpha1FileApiFactory = function (
 			options?: AxiosRequestConfig
 		): AxiosPromise<any> {
 			return localVarFp
-				.uploadFile(
-					requestParameters.file,
-					requestParameters.policyName,
-					options
-				)
+				.uploadFile(requestParameters.file, options)
 				.then((request) => request(axios, basePath));
 		},
 	};
@@ -940,17 +1127,52 @@ export interface V1alpha1FileApiListFilesByConditionRequest {
 
 	/**
 	 *
-	 * @type {'LOCAL'}
-	 * @memberof V1alpha1FileApiListFilesByCondition
-	 */
-	readonly place?: 'LOCAL';
-
-	/**
-	 *
 	 * @type {'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN'}
 	 * @memberof V1alpha1FileApiListFilesByCondition
 	 */
 	readonly type?: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN';
+}
+
+/**
+ * Request parameters for pullFile4Remote operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiPullFile4RemoteRequest
+ */
+export interface V1alpha1FileApiPullFile4RemoteRequest {
+	/**
+	 * File id.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiPullFile4Remote
+	 */
+	readonly id: string;
+
+	/**
+	 * Remote
+	 * @type {string}
+	 * @memberof V1alpha1FileApiPullFile4Remote
+	 */
+	readonly remote: string;
+}
+
+/**
+ * Request parameters for pushFile2Remote operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiPushFile2RemoteRequest
+ */
+export interface V1alpha1FileApiPushFile2RemoteRequest {
+	/**
+	 * File id.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiPushFile2Remote
+	 */
+	readonly id: string;
+
+	/**
+	 * Remote
+	 * @type {string}
+	 * @memberof V1alpha1FileApiPushFile2Remote
+	 */
+	readonly remote: string;
 }
 
 /**
@@ -1028,13 +1250,6 @@ export interface V1alpha1FileApiUploadFileRequest {
 	 * @memberof V1alpha1FileApiUploadFile
 	 */
 	readonly file: File;
-
-	/**
-	 * Storage policy name
-	 * @type {string}
-	 * @memberof V1alpha1FileApiUploadFile
-	 */
-	readonly policyName: string;
 }
 
 /**
@@ -1100,10 +1315,41 @@ export class V1alpha1FileApi extends BaseAPI {
 				requestParameters.page,
 				requestParameters.size,
 				requestParameters.fileName,
-				requestParameters.place,
 				requestParameters.type,
 				options
 			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 *
+	 * @param {V1alpha1FileApiPullFile4RemoteRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public pullFile4Remote(
+		requestParameters: V1alpha1FileApiPullFile4RemoteRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.pullFile4Remote(requestParameters.id, requestParameters.remote, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 *
+	 * @param {V1alpha1FileApiPushFile2RemoteRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public pushFile2Remote(
+		requestParameters: V1alpha1FileApiPushFile2RemoteRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.pushFile2Remote(requestParameters.id, requestParameters.remote, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
@@ -1173,7 +1419,7 @@ export class V1alpha1FileApi extends BaseAPI {
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1FileApiFp(this.configuration)
-			.uploadFile(requestParameters.file, requestParameters.policyName, options)
+			.uploadFile(requestParameters.file, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }

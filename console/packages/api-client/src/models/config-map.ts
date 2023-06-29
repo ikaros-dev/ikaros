@@ -26,8 +26,8 @@ export interface ConfigMap {
 	name?: string;
 	/**
 	 *
-	 * @type {{ [key: string]: string; }}
+	 * @type {{ [key: string]: object; }}
 	 * @memberof ConfigMap
 	 */
-	data?: { [key: string]: string };
+	data?: { [key: string]: object };
 }

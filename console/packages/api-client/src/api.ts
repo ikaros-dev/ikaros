@@ -12,12 +12,8 @@
  * Do not edit the class manually.
  */
 
-export * from './api/file-ikaros-run-v1alpha1-file-policy-api';
-export * from './api/file-ikaros-run-v1alpha1-file-setting-api';
 export * from './api/plugin-ikaros-run-v1alpha1-plugin-api';
-export * from './api/plugin-ikaros-run-v1alpha1-stater-api';
 export * from './api/setting-ikaros-run-v1alpha1-config-map-api';
-export * from './api/starter-ikaros-run-v1alpha1-starter-custom-api';
 export * from './api/v1alpha1-episode-file-api';
 export * from './api/v1alpha1-file-api';
 export * from './api/v1alpha1-indices-api';
@@ -25,4 +21,5 @@ export * from './api/v1alpha1-plugin-api';
 export * from './api/v1alpha1-subject-api';
 export * from './api/v1alpha1-subject-relation-api';
 export * from './api/v1alpha1-subject-sync-platform-api';
+export * from './api/v1alpha1-task-api';
 export * from './api/v1alpha1-user-api';

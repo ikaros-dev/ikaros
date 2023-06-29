@@ -26,42 +26,6 @@ export interface FileEntity {
 	id?: number;
 	/**
 	 *
-	 * @type {boolean}
-	 * @memberof FileEntity
-	 */
-	deleteStatus?: boolean;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileEntity
-	 */
-	createUid?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	createTime?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileEntity
-	 */
-	updateUid?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	updateTime?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileEntity
-	 */
-	optimisticLockVersion?: number;
-	/**
-	 *
 	 * @type {number}
 	 * @memberof FileEntity
 	 */
@@ -86,6 +50,12 @@ export interface FileEntity {
 	md5?: string;
 	/**
 	 *
+	 * @type {string}
+	 * @memberof FileEntity
+	 */
+	aesKey?: string;
+	/**
+	 *
 	 * @type {number}
 	 * @memberof FileEntity
 	 */
@@ -101,12 +71,6 @@ export interface FileEntity {
 	 * @type {string}
 	 * @memberof FileEntity
 	 */
-	place?: FileEntityPlaceEnum;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
 	originalPath?: string;
 	/**
 	 *
@@ -114,6 +78,18 @@ export interface FileEntity {
 	 * @memberof FileEntity
 	 */
 	originalName?: string;
+	/**
+	 *
+	 * @type {boolean}
+	 * @memberof FileEntity
+	 */
+	canRead?: boolean;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof FileEntity
+	 */
+	createTime?: string;
 }
 
 export const FileEntityTypeEnum = {
@@ -126,9 +102,3 @@ export const FileEntityTypeEnum = {
 
 export type FileEntityTypeEnum =
 	(typeof FileEntityTypeEnum)[keyof typeof FileEntityTypeEnum];
-export const FileEntityPlaceEnum = {
-	Local: 'LOCAL',
-} as const;
-
-export type FileEntityPlaceEnum =
-	(typeof FileEntityPlaceEnum)[keyof typeof FileEntityPlaceEnum];
