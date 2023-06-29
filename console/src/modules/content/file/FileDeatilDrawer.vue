@@ -104,8 +104,6 @@ const handleDelete = async () => {
 	}
 };
 
-const handleRemoteAction = async () => {};
-
 const nameInput = ref(null);
 // eslint-disable-next-line no-unused-vars
 const handleEditName = () => {
@@ -157,11 +155,6 @@ const formatFileSize = (value): string => {
 	size = size.toFixed(2);
 	return size + ' ' + unitArr[index];
 };
-
-const remoteButton = ref({
-	isPush: true,
-	loading: false,
-});
 </script>
 
 <template>
@@ -251,7 +244,7 @@ const remoteButton = ref({
 					<el-descriptions-item v-if="file.aesKey" label="AesKey">
 						{{ file.aesKey }}
 					</el-descriptions-item>
-					<el-descriptions-item label="URL">
+					<el-descriptions-item v-if="file.url" label="URL">
 						<a :href="file.url" target="_blank">{{ file.url }}</a>
 					</el-descriptions-item>
 					<el-descriptions-item label="原始名称">
@@ -265,22 +258,6 @@ const remoteButton = ref({
 		</el-row>
 
 		<template #footer>
-			<el-popconfirm
-				:title="
-					'你确定要' + (remoteButton.isPush ? '推送' : '拉取') + '该文件？'
-				"
-				confirm-button-text="确定"
-				cancel-button-text="取消"
-				confirm-button-type="danger"
-				@confirm="handleRemoteAction"
-			>
-				<template #reference>
-					<el-button plain :loading="remoteButton.loading">
-						<span v-if="remoteButton.isPush"> 推送 </span>
-						<span v-else> 拉取 </span>
-					</el-button>
-				</template>
-			</el-popconfirm>
 			<el-popconfirm
 				title="你确定要删除该文件？"
 				confirm-button-text="确定"
