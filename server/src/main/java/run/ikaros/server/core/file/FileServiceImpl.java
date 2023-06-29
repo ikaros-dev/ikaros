@@ -141,6 +141,8 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .size(uploadLength)
                 .type(FileUtils.parseTypeByPostfix(postfix))
                 .originalPath(filePath)
+                .canRead(true)
+                .createTime(LocalDateTime.now())
                 .build();
             return save(fileEntity).then();
         }
