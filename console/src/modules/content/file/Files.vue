@@ -2,6 +2,7 @@
 import { apiClient } from '@/utils/api-client';
 import type { FileEntity } from '@runikaros/api-client';
 import FileFragmentUploadDrawer from './FileFragmentUploadDrawer.vue';
+import FileRemoteActionDialog from './FileRemoteActionDialog.vue';
 import FileDeatilDrawer from './FileDeatilDrawer.vue';
 import { ElMessage } from 'element-plus';
 import { Upload } from '@element-plus/icons-vue';
@@ -77,7 +78,9 @@ const onSizeChange = (val: number) => {
 	fetchFiles();
 };
 
+const deleteButtonLoading = ref(false);
 const handleDelete = async (file: FileEntity) => {
+	deleteButtonLoading.value = true;
 	await apiClient.file
 		.deleteFile({
 			id: file.id as number,
@@ -89,6 +92,9 @@ const handleDelete = async (file: FileEntity) => {
 		.catch((err) => {
 			console.error(err);
 			ElMessage.error('删除文件失败，异常：' + err.message);
+		})
+		.finally(() => {
+			deleteButtonLoading.value = false;
 		});
 };
 
@@ -120,6 +126,18 @@ watch(
 	{ immediate: true }
 );
 
+const fileRemoteActionDialogVisible = ref(false);
+const fileRemoteFileId = ref(-1);
+const fileRemoteIsPush = ref(true);
+const openFileRemoteActionDialog = (file: FileEntity) => {
+	fileRemoteFileId.value = file.id as number;
+	fileRemoteIsPush.value = file.canRead as boolean;
+	fileRemoteActionDialogVisible.value = true;
+};
+const onFileRemoteActionDialogClose = () => {
+	window.location.reload();
+};
+
 onMounted(fetchFiles);
 </script>
 
@@ -133,6 +151,13 @@ onMounted(fetchFiles);
 	<FileFragmentUploadDrawer
 		v-model:visible="fileUploadDrawerVisible"
 		@fileUploadDrawerCloes="onFileUploadDrawerClose"
+	/>
+
+	<FileRemoteActionDialog
+		v-model:visible="fileRemoteActionDialogVisible"
+		v-model:file-id="fileRemoteFileId"
+		v-model:is-push="fileRemoteIsPush"
+		@close="onFileRemoteActionDialogClose"
 	/>
 
 	<el-row :gutter="10">
@@ -209,10 +234,14 @@ onMounted(fetchFiles);
 		</el-table-column>
 		<el-table-column prop="originalName" label="原始名称"> </el-table-column>
 		<el-table-column prop="url" label="文件URL" />
-		<el-table-column label="操作" width="200">
+		<el-table-column label="操作" width="230">
 			<template #default="scoped">
 				<el-button plain @click="showFileDeatil(scoped.row)">详情</el-button>
 
+				<el-button plain @click="openFileRemoteActionDialog(scoped.row)">
+					<span v-if="scoped.row.canRead"> 推送 </span>
+					<span v-else> 拉取 </span>
+				</el-button>
 				<el-popconfirm
 					title="你确定要删除该文件？"
 					confirm-button-text="确定"
@@ -221,7 +250,9 @@ onMounted(fetchFiles);
 					@confirm="handleDelete(scoped.row)"
 				>
 					<template #reference>
-						<el-button type="danger">删除</el-button>
+						<el-button :loading="deleteButtonLoading" type="danger">
+							删除
+						</el-button>
 					</template>
 				</el-popconfirm>
 			</template>

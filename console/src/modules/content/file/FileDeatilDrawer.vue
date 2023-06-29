@@ -155,11 +155,6 @@ const formatFileSize = (value): string => {
 	size = size.toFixed(2);
 	return size + ' ' + unitArr[index];
 };
-
-const remoteButton = ref({
-	isPush: true,
-	loading: false,
-});
 </script>
 
 <template>
@@ -215,12 +210,13 @@ const remoteButton = ref({
 					title="文件详情"
 					:column="1"
 					size="large"
+					border
 					direction="vertical"
 				>
-					<el-descriptions-item label="文件ID：">
+					<el-descriptions-item label="ID">
 						{{ file.id }}
 					</el-descriptions-item>
-					<el-descriptions-item label="文件名：">
+					<el-descriptions-item label="名称">
 						<span v-if="editable">
 							<el-input
 								ref="nameInput"
@@ -233,16 +229,28 @@ const remoteButton = ref({
 							{{ file.name }}
 						</span>
 					</el-descriptions-item>
-					<el-descriptions-item label="文件类型：">
+					<el-descriptions-item label="类型">
 						{{ fileTypeMap.get(file.type as string) }}
 					</el-descriptions-item>
-					<el-descriptions-item label="文件大小：">
+					<el-descriptions-item label="大小">
 						{{ formatFileSize(file.size) }}
 					</el-descriptions-item>
 					<el-descriptions-item label="创建时间：">
 						{{ file.createTime }}
 					</el-descriptions-item>
-					<el-descriptions-item v-if="file.originalPath" label="原始路径：">
+					<el-descriptions-item label="MD5">
+						{{ file.md5 }}
+					</el-descriptions-item>
+					<el-descriptions-item v-if="file.aesKey" label="AesKey">
+						{{ file.aesKey }}
+					</el-descriptions-item>
+					<el-descriptions-item v-if="file.url" label="URL">
+						<a :href="file.url" target="_blank">{{ file.url }}</a>
+					</el-descriptions-item>
+					<el-descriptions-item label="原始名称">
+						{{ file.originalName }}
+					</el-descriptions-item>
+					<el-descriptions-item v-if="file.originalPath" label="原始路径">
 						{{ file.originalPath }}
 					</el-descriptions-item>
 				</el-descriptions>
@@ -250,20 +258,6 @@ const remoteButton = ref({
 		</el-row>
 
 		<template #footer>
-			<el-popconfirm
-				title="你确定要推送该文件？"
-				confirm-button-text="确定"
-				cancel-button-text="取消"
-				confirm-button-type="danger"
-				@confirm="handleDelete"
-			>
-				<template #reference>
-					<el-button plain :loading="remoteButton.loading">
-						<span v-if="remoteButton.isPush"> 推送 </span>
-						<span v-else> 拉取 </span>
-					</el-button>
-				</template>
-			</el-popconfirm>
 			<el-popconfirm
 				title="你确定要删除该文件？"
 				confirm-button-text="确定"

@@ -1,6 +1,6 @@
 {
   "name": "@runikaros/shared",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Project ikaros console shared package",
   "files": [
     "dist"
