@@ -65,7 +65,7 @@ class FileEndpointTest {
     @AfterEach
     void tearDown() throws IOException {
         fileRepository.deleteAll().block(AppConst.BLOCK_TIMEOUT);
-        Path uploadDirPath = ikarosProperties.getWorkDir().resolve(FileConst.IMPORT_DIR_NAME);
+        Path uploadDirPath = ikarosProperties.getWorkDir().resolve(FileConst.DEFAULT_DIR_NAME);
         FileUtils.deletePathAndContentIfExists(uploadDirPath);
     }
 
