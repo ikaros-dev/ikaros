@@ -48,7 +48,6 @@ const fetchFiles = async () => {
 		page: findFilesCondition.value.page,
 		size: findFilesCondition.value.size,
 		fileName: base64Encode(findFilesCondition.value.fileName),
-		place: findFilesCondition.value.place,
 		type: findFilesCondition.value.type,
 	});
 	findFilesCondition.value.page = data.page;
