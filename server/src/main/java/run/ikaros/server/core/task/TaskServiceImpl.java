@@ -49,6 +49,9 @@ public class TaskServiceImpl implements TaskService {
                     TaskStatus status = taskEntity.getStatus();
                     if (!status.equals(taskStatus)) {
                         taskEntity.setStatus(taskStatus);
+                        log.debug("update task[{}] status from [{}] to [{}].",
+                            taskEntity.getId() + "-" + taskEntity.getName(),
+                            status, taskStatus);
                     }
                     return taskRepository.save(taskEntity);
                 })
