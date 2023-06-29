@@ -104,6 +104,8 @@ const handleDelete = async () => {
 	}
 };
 
+const handleRemoteAction = async () => {};
+
 const nameInput = ref(null);
 // eslint-disable-next-line no-unused-vars
 const handleEditName = () => {
@@ -215,12 +217,13 @@ const remoteButton = ref({
 					title="文件详情"
 					:column="1"
 					size="large"
+					border
 					direction="vertical"
 				>
-					<el-descriptions-item label="文件ID：">
+					<el-descriptions-item label="ID">
 						{{ file.id }}
 					</el-descriptions-item>
-					<el-descriptions-item label="文件名：">
+					<el-descriptions-item label="名称">
 						<span v-if="editable">
 							<el-input
 								ref="nameInput"
@@ -233,16 +236,28 @@ const remoteButton = ref({
 							{{ file.name }}
 						</span>
 					</el-descriptions-item>
-					<el-descriptions-item label="文件类型：">
+					<el-descriptions-item label="类型">
 						{{ fileTypeMap.get(file.type as string) }}
 					</el-descriptions-item>
-					<el-descriptions-item label="文件大小：">
+					<el-descriptions-item label="大小">
 						{{ formatFileSize(file.size) }}
 					</el-descriptions-item>
 					<el-descriptions-item label="创建时间：">
 						{{ file.createTime }}
 					</el-descriptions-item>
-					<el-descriptions-item v-if="file.originalPath" label="原始路径：">
+					<el-descriptions-item label="MD5">
+						{{ file.md5 }}
+					</el-descriptions-item>
+					<el-descriptions-item v-if="file.aesKey" label="AesKey">
+						{{ file.aesKey }}
+					</el-descriptions-item>
+					<el-descriptions-item label="URL">
+						<a :href="file.url" target="_blank">{{ file.url }}</a>
+					</el-descriptions-item>
+					<el-descriptions-item label="原始名称">
+						{{ file.originalName }}
+					</el-descriptions-item>
+					<el-descriptions-item v-if="file.originalPath" label="原始路径">
 						{{ file.originalPath }}
 					</el-descriptions-item>
 				</el-descriptions>
@@ -251,11 +266,13 @@ const remoteButton = ref({
 
 		<template #footer>
 			<el-popconfirm
-				title="你确定要推送该文件？"
+				:title="
+					'你确定要' + (remoteButton.isPush ? '推送' : '拉取') + '该文件？'
+				"
 				confirm-button-text="确定"
 				cancel-button-text="取消"
 				confirm-button-type="danger"
-				@confirm="handleDelete"
+				@confirm="handleRemoteAction"
 			>
 				<template #reference>
 					<el-button plain :loading="remoteButton.loading">
