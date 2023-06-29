@@ -2,7 +2,6 @@ package run.ikaros.api.search.file;
 
 import jakarta.annotation.Nullable;
 import org.springframework.util.Assert;
-import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
 
 public record FileHint(
@@ -11,7 +10,6 @@ public record FileHint(
     String originalPath,
     String url,
     FileType type,
-    FilePlace place,
     @Nullable String originalName
 ) {
     public static final String ID_FIELD = "file";
@@ -25,6 +23,5 @@ public record FileHint(
         Assert.hasText(originalPath, "'originalPath' must not be blank.");
         Assert.hasText(url, "'url' must not be blank.");
         Assert.notNull(type, "'type' must not be null.");
-        Assert.notNull(place, "'place' must not be null.");
     }
 }

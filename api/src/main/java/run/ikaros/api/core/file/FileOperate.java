@@ -26,5 +26,5 @@ public interface FileOperate extends AllowPluginOperate {
 
     Mono<Void> deleteById(Long id);
 
-    Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux, String policy);
+    Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux);
 }

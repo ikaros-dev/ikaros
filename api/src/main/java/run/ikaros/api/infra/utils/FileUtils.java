@@ -3,23 +3,36 @@ package run.ikaros.api.infra.utils;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.xml.bind.DatatypeConverter;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
 import run.ikaros.api.store.enums.FileType;
 
@@ -73,6 +86,18 @@ public class FileUtils {
             + File.separator + UUID.randomUUID().toString().replace("-", "")
             + (('.' == postfix.charAt(0))
             ? postfix : "." + postfix);
+    }
+
+    /**
+     * Create dir if not exists.
+     */
+    public static boolean mkdirsIfNotExists(Path dirPath) {
+        Assert.notNull(dirPath, "'dirPath' must not null.");
+        File file = dirPath.toFile();
+        if (!file.exists()) {
+            return file.mkdirs();
+        }
+        return false;
     }
 
     public enum Hash {
@@ -218,4 +243,129 @@ public class FileUtils {
     }
 
 
+    /**
+     * Split file to target dir multi chunk.
+     *
+     * @param filePath      original file path
+     * @param targetDirPath target dir path
+     * @param size          unit is KB
+     * @return multi chunk paths
+     */
+    public static List<Path> split(Path filePath, Path targetDirPath, Integer size) {
+        List<Path> paths = new ArrayList<>();
+        size = size * 1024;
+        try (FileInputStream fis = new FileInputStream(filePath.toFile());
+             BufferedInputStream bis = new BufferedInputStream(fis)) {
+            byte[] buffer = new byte[size];
+            int bytesRead;
+            int chunkIndex = 0;
+            while ((bytesRead = bis.read(buffer)) != -1) {
+                Path targetPath = targetDirPath.resolve(String.valueOf(chunkIndex));
+                FileOutputStream fos = new FileOutputStream(targetPath.toFile());
+                BufferedOutputStream bos = new BufferedOutputStream(fos);
+                bos.write(buffer, 0, bytesRead);
+                bos.close();
+                chunkIndex++;
+                paths.add(targetPath);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return paths;
+    }
+
+    /**
+     * Synthesize all chunks files.
+     *
+     * @param chunkFilePaths chunk file paths
+     */
+    public static void synthesize(List<Path> chunkFilePaths, Path targetFilePath) {
+        File targetFile = targetFilePath.toFile();
+        if (targetFile.exists()) {
+            throw new RuntimeException(
+                "target file has exists: " + targetFile.getAbsolutePath());
+        }
+
+        if (!targetFile.getParentFile().exists()) {
+            targetFile.getParentFile().mkdirs();
+        }
+
+        try {
+            if (!targetFile.createNewFile()) {
+                throw new RuntimeException(
+                    "create target file fail, path: " + targetFile.getAbsolutePath());
+            }
+            try (RandomAccessFile accessFile = new RandomAccessFile(targetFile,
+                "rw")) {
+                long total = 0L;
+                List<Path> pathSortedList = chunkFilePaths.stream()
+                    .sorted((o1, o2) -> (int) (Long.parseLong(o1.toFile().getName())
+                        - Long.parseLong(o2.toFile().getName()))).toList();
+                for (Path path : pathSortedList) {
+                    File file = path.toFile();
+                    byte[] bytes = Files.readAllBytes(file.toPath());
+                    accessFile.write(bytes);
+                    total += bytes.length;
+                    log.debug("current write total: {} for target file: {}",
+                        total, targetFile.getAbsolutePath());
+                }
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Convert file to data buffer flux.
+     */
+    public static Flux<DataBuffer> convertToDataBufferFlux(File file) throws IOException {
+        DefaultDataBufferFactory bufferFactory = new DefaultDataBufferFactory();
+        return DataBufferUtils.readInputStream(() ->
+            Files.newInputStream(file.toPath()), bufferFactory, 1024);
+    }
+
+    /**
+     * Calculate file size.
+     */
+    public static Mono<Long> calculateFileSize(Flux<DataBuffer> dataBufferFlux) {
+        return dataBufferFlux.map(DataBuffer::readableByteCount)
+            .reduce(0L, Long::sum);
+    }
+
+    /**
+     * Calculate file hash.
+     */
+    public static String calculateFileHash(Flux<DataBuffer> dataBufferFlux) {
+        MessageDigest messageDigest = null;
+        try {
+            messageDigest = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
+        MessageDigest finalMessageDigest = messageDigest;
+        dataBufferFlux.subscribe(dataBuffer -> {
+            byte[] bytes = new byte[dataBuffer.readableByteCount()];
+            dataBuffer.read(bytes);
+            DataBufferUtils.release(dataBuffer);
+            finalMessageDigest.update(bytes);
+        });
+
+        byte[] hashBytes = messageDigest.digest();
+        return bytesToHex(hashBytes);
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder(2 * bytes.length);
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
 }

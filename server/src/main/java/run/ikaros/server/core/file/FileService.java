@@ -31,5 +31,9 @@ public interface FileService {
 
     Mono<FileEntity> save(FileEntity entity);
 
-    Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux, String policy);
+    Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux);
+
+    Mono<FileEntity> pushRemote(Long fileId, String remote);
+
+    Mono<FileEntity> pullRemote(Long fileId, String remote);
 }

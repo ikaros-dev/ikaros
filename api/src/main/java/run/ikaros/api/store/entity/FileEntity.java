@@ -1,14 +1,14 @@
 package run.ikaros.api.store.entity;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import run.ikaros.api.store.enums.FilePlace;
 import run.ikaros.api.store.enums.FileType;
 
 /**
@@ -22,8 +22,10 @@ import run.ikaros.api.store.enums.FileType;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-public class FileEntity extends BaseEntity {
+public class FileEntity {
+    @Id
+    private Long id;
+
     @Column("folder_id")
     private Long folderId;
     private String url;
@@ -34,9 +36,10 @@ public class FileEntity extends BaseEntity {
     private String name;
 
     private String md5;
+    @Column("aes_key")
+    private String aesKey;
     private Long size;
     private FileType type;
-    private FilePlace place;
 
     /**
      * original path in file system.
@@ -50,4 +53,9 @@ public class FileEntity extends BaseEntity {
     @Column("original_name")
     private String originalName;
 
+    @Column("can_read")
+    private Boolean canRead;
+
+    @Column("create_time")
+    private LocalDateTime createTime;
 }

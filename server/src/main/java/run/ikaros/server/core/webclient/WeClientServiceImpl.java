@@ -37,7 +37,7 @@ public class WeClientServiceImpl implements WeClientService {
             .exchangeToMono(clientResponse -> clientResponse.bodyToMono(byte[].class))
             .map(dataBufferFactory::wrap)
             .flatMap(dataBuffer -> Mono.just(Mono.just(dataBuffer).flux()))
-            .flatMap(dataBuffer -> fileService.upload(fileName, dataBuffer, policy)
+            .flatMap(dataBuffer -> fileService.upload(fileName, dataBuffer)
                 .map(File::entity));
     }
 }

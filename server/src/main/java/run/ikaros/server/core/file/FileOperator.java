@@ -90,7 +90,7 @@ public class FileOperator implements FileOperate {
     }
 
     @Override
-    public Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux, String policy) {
-        return fileService.upload(fileName, dataBufferFlux, policy);
+    public Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux) {
+        return fileService.upload(fileName, dataBufferFlux);
     }
 }
