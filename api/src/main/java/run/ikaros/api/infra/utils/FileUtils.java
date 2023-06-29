@@ -48,7 +48,7 @@ public class FileUtils {
     static final Set<String> VOICES =
         Arrays.stream(FileConst.Postfix.VOICES).collect(Collectors.toSet());
 
-    private static final String BASE_UPLOAD_DIR_NAME = "upload";
+    private static final String BASE_UPLOAD_DIR_NAME = FileConst.DEFAULT_DIR_NAME;
 
     private static final String BASE_UPLOAD_DIR_PATH
         = SystemVarUtils.getCurrentAppDirPath() + File.separator + BASE_UPLOAD_DIR_NAME;
@@ -57,7 +57,7 @@ public class FileUtils {
      * 构建基础的上传路径.
      *
      * @param uploadedTime 条目数据上传的时间
-     * @return 基础的上传目录路径，格式：[upload/yyyy/MM/dd/HH]
+     * @return 基础的上传目录路径，格式：[files/yyyy/MM/dd/HH]
      */
     public static String buildAppUploadFileBasePath(String basePath, LocalDateTime uploadedTime) {
         Assert.notNull(uploadedTime, "'uploadedTime' must not be null");

@@ -287,16 +287,9 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         Assert.notNull(dataBufferFlux, "'dataBufferFlux' must not null.");
         Assert.hasText(fileName, "'fileName' must has text.");
 
-        return Mono.just(LocalDateTime.now())
-            .map(importTime -> ikarosProperties.getWorkDir()
-                .resolve(FileConst.IMPORT_DIR_NAME)
-                .resolve(String.valueOf(importTime.getYear()))
-                .resolve(String.valueOf(importTime.getMonthValue()))
-                .resolve(String.valueOf(importTime.getDayOfMonth()))
-                .resolve(String.valueOf(importTime.getHour()))
-                .resolve(UUID.randomUUID().toString().replace("-", "")
-                    + "-" + fileName))
-            .flatMap(importPath -> writeToImportPath(dataBufferFlux, importPath))
+        return Mono.just(FileUtils.buildAppUploadFilePath(ikarosProperties.getWorkDir().toString(),
+                FileUtils.parseFilePostfix(fileName)))
+            .flatMap(path -> writeToImportPath(dataBufferFlux, Path.of(path)))
             .map(path -> FileEntity.builder()
                 .folderId(FileConst.DEFAULT_FOLDER_ID)
                 .type(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(fileName)))
@@ -481,16 +474,10 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             .resolve(UUID.randomUUID().toString().replace("-", ""));
         FileUtils.mkdirsIfNotExists(decryptChunkFilesPath);
 
-
-        LocalDateTime now = LocalDateTime.now();
-        Path importFilePath = ikarosProperties.getWorkDir()
-            .resolve(FileConst.IMPORT_DIR_NAME)
-            .resolve(String.valueOf(now.getYear()))
-            .resolve(String.valueOf(now.getMonthValue()))
-            .resolve(String.valueOf(now.getDayOfMonth()))
-            .resolve(String.valueOf(now.getHour()))
-            .resolve(UUID.randomUUID().toString().replace("-", "")
-                + "-" + fileEntity.getName());
+        Path filePath = Path.of(FileUtils.buildAppUploadFilePath(
+            ikarosProperties.getWorkDir().toString(),
+            FileUtils.parseFilePostfix(fileEntity.getOriginalName())
+        ));
 
         // 查询当前文件所有的远端ID
         return fileRemoteRepository.findAllByFileId(fileEntity.getId())
@@ -536,7 +523,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                             Objects.requireNonNull(decryptChunkFilesPath.toFile().listFiles()))
                         .map(File::toPath)
                         .toList();
-                FileUtils.synthesize(chunkFilePaths, importFilePath);
+                FileUtils.synthesize(chunkFilePaths, filePath);
                 return list;
             })
             // 清理临时文件
@@ -552,8 +539,8 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             })
             // 更新文件URL
             .then(fileRepository.save(fileEntity.setCanRead(true)
-                .setOriginalPath(importFilePath.toString())
-                .setUrl(path2url(importFilePath.toString(),
+                .setOriginalPath(filePath.toString())
+                .setUrl(path2url(filePath.toString(),
                     ikarosProperties.getWorkDir().toString()))))
             ;
     }
