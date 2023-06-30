@@ -51,19 +51,19 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
 	return {
 		/**
 		 *
-		 * @param {string} name
+		 * @param {string} id
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		findTaskByName: async (
-			name: string,
+		findTaskById: async (
+			id: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('findTaskByName', 'name', name);
-			const localVarPath = `/api/v1alpha1/task/name/{name}`.replace(
-				`{${'name'}}`,
-				encodeURIComponent(String(name))
+			// verify required parameter 'id' is not null or undefined
+			assertParamExists('findTaskById', 'id', id);
+			const localVarPath = `/api/v1alpha1/task/id/{id}`.replace(
+				`{${'id'}}`,
+				encodeURIComponent(String(id))
 			);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -104,19 +104,19 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
 		},
 		/**
 		 *
-		 * @param {string} name
+		 * @param {string} id
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		findTaskProcess: async (
-			name: string,
+		findTaskProcessById: async (
+			id: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('findTaskProcess', 'name', name);
-			const localVarPath = `/api/v1alpha1/task/process/{name}`.replace(
-				`{${'name'}}`,
-				encodeURIComponent(String(name))
+			// verify required parameter 'id' is not null or undefined
+			assertParamExists('findTaskProcessById', 'id', id);
+			const localVarPath = `/api/v1alpha1/task/process/{id}`.replace(
+				`{${'id'}}`,
+				encodeURIComponent(String(id))
 			);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -238,18 +238,18 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
 	return {
 		/**
 		 *
-		 * @param {string} name
+		 * @param {string} id
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async findTaskByName(
-			name: string,
+		async findTaskById(
+			id: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TaskEntity>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.findTaskByName(
-				name,
+			const localVarAxiosArgs = await localVarAxiosParamCreator.findTaskById(
+				id,
 				options
 			);
 			return createRequestFunction(
@@ -261,20 +261,18 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
 		},
 		/**
 		 *
-		 * @param {string} name
+		 * @param {string} id
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async findTaskProcess(
-			name: string,
+		async findTaskProcessById(
+			id: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.findTaskProcess(
-				name,
-				options
-			);
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.findTaskProcessById(id, options);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -331,30 +329,30 @@ export const V1alpha1TaskApiFactory = function (
 	return {
 		/**
 		 *
-		 * @param {V1alpha1TaskApiFindTaskByNameRequest} requestParameters Request parameters.
+		 * @param {V1alpha1TaskApiFindTaskByIdRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		findTaskByName(
-			requestParameters: V1alpha1TaskApiFindTaskByNameRequest,
+		findTaskById(
+			requestParameters: V1alpha1TaskApiFindTaskByIdRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<TaskEntity> {
 			return localVarFp
-				.findTaskByName(requestParameters.name, options)
+				.findTaskById(requestParameters.id, options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
 		 *
-		 * @param {V1alpha1TaskApiFindTaskProcessRequest} requestParameters Request parameters.
+		 * @param {V1alpha1TaskApiFindTaskProcessByIdRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		findTaskProcess(
-			requestParameters: V1alpha1TaskApiFindTaskProcessRequest,
+		findTaskProcessById(
+			requestParameters: V1alpha1TaskApiFindTaskProcessByIdRequest,
 			options?: AxiosRequestConfig
 		): AxiosPromise<number> {
 			return localVarFp
-				.findTaskProcess(requestParameters.name, options)
+				.findTaskProcessById(requestParameters.id, options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
@@ -381,31 +379,31 @@ export const V1alpha1TaskApiFactory = function (
 };
 
 /**
- * Request parameters for findTaskByName operation in V1alpha1TaskApi.
+ * Request parameters for findTaskById operation in V1alpha1TaskApi.
  * @export
- * @interface V1alpha1TaskApiFindTaskByNameRequest
+ * @interface V1alpha1TaskApiFindTaskByIdRequest
  */
-export interface V1alpha1TaskApiFindTaskByNameRequest {
+export interface V1alpha1TaskApiFindTaskByIdRequest {
 	/**
 	 *
 	 * @type {string}
-	 * @memberof V1alpha1TaskApiFindTaskByName
+	 * @memberof V1alpha1TaskApiFindTaskById
 	 */
-	readonly name: string;
+	readonly id: string;
 }
 
 /**
- * Request parameters for findTaskProcess operation in V1alpha1TaskApi.
+ * Request parameters for findTaskProcessById operation in V1alpha1TaskApi.
  * @export
- * @interface V1alpha1TaskApiFindTaskProcessRequest
+ * @interface V1alpha1TaskApiFindTaskProcessByIdRequest
  */
-export interface V1alpha1TaskApiFindTaskProcessRequest {
+export interface V1alpha1TaskApiFindTaskProcessByIdRequest {
 	/**
 	 *
 	 * @type {string}
-	 * @memberof V1alpha1TaskApiFindTaskProcess
+	 * @memberof V1alpha1TaskApiFindTaskProcessById
 	 */
-	readonly name: string;
+	readonly id: string;
 }
 
 /**
@@ -452,33 +450,33 @@ export interface V1alpha1TaskApiListTasksByConditionRequest {
 export class V1alpha1TaskApi extends BaseAPI {
 	/**
 	 *
-	 * @param {V1alpha1TaskApiFindTaskByNameRequest} requestParameters Request parameters.
+	 * @param {V1alpha1TaskApiFindTaskByIdRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof V1alpha1TaskApi
 	 */
-	public findTaskByName(
-		requestParameters: V1alpha1TaskApiFindTaskByNameRequest,
+	public findTaskById(
+		requestParameters: V1alpha1TaskApiFindTaskByIdRequest,
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1TaskApiFp(this.configuration)
-			.findTaskByName(requestParameters.name, options)
+			.findTaskById(requestParameters.id, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 
 	/**
 	 *
-	 * @param {V1alpha1TaskApiFindTaskProcessRequest} requestParameters Request parameters.
+	 * @param {V1alpha1TaskApiFindTaskProcessByIdRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof V1alpha1TaskApi
 	 */
-	public findTaskProcess(
-		requestParameters: V1alpha1TaskApiFindTaskProcessRequest,
+	public findTaskProcessById(
+		requestParameters: V1alpha1TaskApiFindTaskProcessByIdRequest,
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1TaskApiFp(this.configuration)
-			.findTaskProcess(requestParameters.name, options)
+			.findTaskProcessById(requestParameters.id, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 

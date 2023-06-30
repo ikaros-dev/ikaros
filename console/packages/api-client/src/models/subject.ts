@@ -87,6 +87,12 @@ export interface Subject {
 	syncs?: Array<SubjectSync>;
 	/**
 	 *
+	 * @type {boolean}
+	 * @memberof Subject
+	 */
+	canRead?: boolean;
+	/**
+	 *
 	 * @type {string}
 	 * @memberof Subject
 	 */
