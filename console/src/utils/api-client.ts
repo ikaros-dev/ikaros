@@ -10,6 +10,7 @@ import {
 	V1alpha1PluginApi,
 	V1alpha1SubjectApi,
 	V1alpha1SubjectSyncPlatformApi,
+	V1alpha1TaskApi,
 	V1alpha1UserApi,
 } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
@@ -157,6 +158,7 @@ function setupApiClient(axios: AxiosInstance) {
 		),
 		episodefile: new V1alpha1EpisodeFileApi(undefined, baseURL, axios),
 		indices: new V1alpha1IndicesApi(undefined, baseURL, axios),
+		task: new V1alpha1TaskApi(undefined, baseURL, axios),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
 		configmap: new SettingIkarosRunV1alpha1ConfigMapApi(
