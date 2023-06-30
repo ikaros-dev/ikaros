@@ -16,6 +16,7 @@ const config: DefaultConfigOptions = {
 	config: {
 		classes: generateClasses(genesis),
 	},
+	inputs: {},
 };
 
 export default config;

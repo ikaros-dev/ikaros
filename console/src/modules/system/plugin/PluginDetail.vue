@@ -95,10 +95,6 @@ const configMapSchemas = computed(() => {
 	return str;
 });
 
-onMounted(() => {
-	onPluginNameUpdate(route.params.name as string);
-});
-
 // eslint-disable-next-line no-unused-vars
 const plugin = ref<Plugin>({
 	version: '',
@@ -111,7 +107,7 @@ const fetchPlugin = async () => {
 	plugin.value = data;
 };
 
-const configMap = ref<ConfigMap>({});
+const configMap = ref<ConfigMap>();
 // eslint-disable-next-line no-unused-vars
 const fetchConfigMap = async () => {
 	// console.log('plugin.value.configMapSchemas', plugin.value.configMapSchemas);
@@ -122,23 +118,15 @@ const fetchConfigMap = async () => {
 		name: plugin.value.name as string,
 	});
 	configMap.value = data;
-	// if (!configMap.value.data?.enableProxy) {
-	// 	configMap.value.data.enableProxy = Boolean(
-	// 		configMap.value.data.enableProxy
-	// 	);
-	// }
 };
 
 const onSubmit = (form) => {
 	console.log('form', form);
-	// convertKeyToStr(form);
-	// console.log('form', form);
-	// convertValToStr(form);
-	// delete form.target.slots;
-	delete form?.slots?.__vInternal;
-	delete form?.slots;
-	console.log('form', form);
-	configMap.value.data = form;
+	// @ts-ignore
+	for (let key in configMap.value.data) {
+		// @ts-ignore
+		configMap.value.data[key] = form[key];
+	}
 	updateConfigMap();
 };
 
@@ -156,7 +144,7 @@ const convertKeyToStr = (obj) => {
 // eslint-disable-next-line no-unused-vars
 const convertValToStr = (obj) => {
 	for (var key in obj) {
-		console.log(key);
+		// console.log(key);
 		if (typeof obj[key] === 'object' && obj[key] !== null) {
 			convertValToStr(obj[key]); // 递归处理嵌套对象的值
 		} else {
@@ -169,6 +157,7 @@ const convertValToStr = (obj) => {
 const updateConfigMap = async () => {
 	// console.log('plugin.value.name', plugin.value.name);
 	console.log('configMap.value', configMap.value);
+	// @ts-ignore
 	configMap.value.name = plugin.value.name;
 	await apiClient.configmap.updateConfigmap({
 		name: plugin.value.name as string,
@@ -178,59 +167,9 @@ const updateConfigMap = async () => {
 	window.location.reload();
 };
 
-// eslint-disable-next-line no-unused-vars
-const testSchemas = [
-	{
-		$cmp: 'FormKit',
-		props: {
-			name: 'enableProxy',
-			value: '$enableProxy',
-			type: 'checkbox',
-			id: 'enableProxy',
-			label: '是否开启代理?',
-		},
-		help: '是否开启网络代理，使得访问番组计划走代理。',
-	},
-	{
-		$formkit: 'select',
-		if: '$get(enableProxy).value',
-		name: 'proxyType',
-		value: '$proxyType',
-		label: '选择代理类型',
-		options: {
-			http: 'http',
-			socks: 'socks',
-		},
-		help: '网络代理的类型，即代理的协议。',
-	},
-	{
-		$formkit: 'text',
-		if: '$get(enableProxy).value',
-		name: 'host',
-		value: '$host',
-		label: 'IP地址',
-		placeholder: 'xxx.xxx.xxx.xxx',
-		validation: 'required',
-		help: '代理的服务IP地址',
-	},
-	{
-		$formkit: 'text',
-		if: '$get(enableProxy).value',
-		name: 'port',
-		value: '$port',
-		label: '端口',
-		help: '代理的服务端口',
-		validation: 'required|number|between:1,65535',
-	},
-];
-
-// eslint-disable-next-line no-unused-vars
-const testData = {
-	enableProxy: 'true',
-	proxyType: 'http',
-	host: '127.0.0.1',
-	port: '7890',
-};
+onMounted(() => {
+	onPluginNameUpdate(route.params.name as string);
+});
 </script>
 
 <template>
@@ -293,13 +232,14 @@ const testData = {
 		<el-tab-pane v-if="plugin.configMapSchemas" label="基本设置">
 			<!-- {{ plugin.configMapSchemas }}
 			<hr />
-			{{ configMap.data }}
+			{{ configMap?.data }}
 			<hr /> -->
 			<div style="padding: 5px">
 				<FormKit type="form" submit-label="保存" @submit="onSubmit">
 					<FormKitSchema
-						:data="configMap.data"
-						:schema="Object.values(JSON.parse(plugin?.configMapSchemas)) as any"
+						v-if="configMap?.data"
+						:data="configMap?.data"
+						:schema="(Object.values(JSON.parse(plugin?.configMapSchemas)) as any)"
 					/>
 				</FormKit>
 			</div>
