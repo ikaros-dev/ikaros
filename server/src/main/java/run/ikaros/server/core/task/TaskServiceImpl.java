@@ -47,7 +47,7 @@ public class TaskServiceImpl implements TaskService {
             } else {
                 taskStatus = TaskStatus.RUNNING;
             }
-            taskRepository.findByName(name)
+            taskRepository.findAllByName(name)
                 .flatMap(taskEntity -> {
                     TaskStatus status = taskEntity.getStatus();
                     if (!status.equals(taskStatus)) {
@@ -68,11 +68,6 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findById(id);
     }
 
-    @Override
-    public Mono<TaskEntity> findByName(String name) {
-        Assert.hasText(name, "'name' must has text.");
-        return taskRepository.findByName(name);
-    }
 
     @Override
     public Mono<Void> submit(Task task) {
@@ -150,6 +145,8 @@ public class TaskServiceImpl implements TaskService {
         }
         Mono<Long> finalCountMono = countMono;
         return taskEntityFlux
+            // 时间从近到远排序
+            .sort((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()))
             .collectList()
             .flatMap(taskEntities -> finalCountMono
                 .map(count -> new PagingWrap<>(page,
@@ -157,8 +154,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Mono<Long> getProcess(String name) {
-        return findByName(name)
+    public Mono<Long> getProcess(Long id) {
+        return findById(id)
             .filter(taskEntity -> taskEntity.getTotal() != 0)
             .map(taskEntity -> 100 * taskEntity.getIndex() / taskEntity.getTotal())
             .switchIfEmpty(Mono.just(0L));

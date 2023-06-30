@@ -27,11 +27,17 @@ import {
 	ElTable,
 	ElTableColumn,
 } from 'element-plus';
+import FileRemoteActionDialog from '@/modules/content/file/FileRemoteActionDialog.vue';
+import { base64Encode } from '@/utils/string-util';
+import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 
 const route = useRoute();
 
 watch(route, () => {
-	console.log(route.params.id);
+	if (!route.params?.id && route.params?.id === undefined) {
+		return;
+	}
+	// console.log(route.params.id);
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
 	fetchSubjectById();
@@ -204,6 +210,45 @@ const onSubjectSyncDialogCloseWithSubjectName = () => {
 	fetchSubjectById();
 };
 
+const fileRemoteActionDialogVisible = ref(false);
+const fileRemoteFileId = ref(-1);
+const fileRemoteIsPush = ref(true);
+const openFileRemoteActionDialog = (fileId, fileCanRead) => {
+	fileRemoteFileId.value = fileId as number;
+	fileRemoteIsPush.value = fileCanRead as boolean;
+	fileRemoteActionDialogVisible.value = true;
+};
+const onFileRemoteActionDialogCloseWithTaskName = async (taskName) => {
+	// 先获取任务ID，任务名称 + 状态是运行中
+	console.log(taskName);
+	const { data } = await apiClient.task.listTasksByCondition({
+		page: 1,
+		size: 5,
+		name: base64Encode(taskName),
+	});
+	if (!data || !data.items || data.items.length === 0) {
+		ElMessage.error('未获取到任务信息，任务名称：' + taskName);
+		console.log('taskName', taskName);
+		console.log('data', data);
+	}
+	const taskId = data.items[0]?.id;
+	// 再进行路由跳转
+	router.push('/tasks/task/details/' + taskId);
+};
+
+const subjectRemoteActionDialogVisible = ref(false);
+const subjectRemoteIsPush = ref(true);
+const subjectRemoteFileId = ref(subject.value.id);
+const onSubjectRemoteActionDialogClose = () => {
+	subjectRemoteActionDialogVisible.value = false;
+	router.push('/tasks');
+};
+const onSubjectRemoteButtonClick = (isPush: boolean) => {
+	subjectRemoteIsPush.value = isPush;
+	subjectRemoteFileId.value = subject.value.id;
+	subjectRemoteActionDialogVisible.value = true;
+};
+
 onMounted(() => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
@@ -221,6 +266,21 @@ onMounted(() => {
 		v-model:visible="subjectSyncDialogVisible"
 		@closeWithSubjectName="onSubjectSyncDialogCloseWithSubjectName"
 	/>
+
+	<FileRemoteActionDialog
+		v-model:visible="fileRemoteActionDialogVisible"
+		v-model:file-id="fileRemoteFileId"
+		v-model:is-push="fileRemoteIsPush"
+		@closeWithTaskName="onFileRemoteActionDialogCloseWithTaskName"
+	/>
+
+	<SubjectRemoteActionDialog
+		v-model:visible="subjectRemoteActionDialogVisible"
+		v-model:is-push="subjectRemoteIsPush"
+		v-model:subjectId="subjectRemoteFileId"
+		@close="onSubjectRemoteActionDialogClose"
+	/>
+
 	<el-row>
 		<el-col :span="24">
 			<el-button plain @click="toSubjectPut"> 编辑</el-button>
@@ -236,6 +296,13 @@ onMounted(() => {
 				@click="subjectSyncDialogVisible = true"
 			>
 				信息拉取
+			</el-button>
+
+			<el-button plain @click="onSubjectRemoteButtonClick(true)">
+				全部推送
+			</el-button>
+			<el-button plain @click="onSubjectRemoteButtonClick(false)">
+				全部拉取
 			</el-button>
 		</el-col>
 	</el-row>
@@ -309,7 +376,7 @@ onMounted(() => {
 							prop="air_time"
 							:formatter="airTimeDateFormatter"
 						/>
-						<el-table-column label="操作" width="175px">
+						<el-table-column label="操作" width="250">
 							<template #header>
 								<el-button
 									plain
@@ -333,6 +400,19 @@ onMounted(() => {
 									@click="bingResources(scoped.row)"
 								>
 									绑定
+								</el-button>
+								<el-button
+									v-if="scoped.row.resources && scoped.row.resources.length > 0"
+									plain
+									@click="
+										openFileRemoteActionDialog(
+											scoped.row.resources[0].file_id,
+											scoped.row.resources[0].canRead
+										)
+									"
+								>
+									<span v-if="scoped.row.resources[0].canRead"> 推送 </span>
+									<span v-else> 拉取 </span>
 								</el-button>
 							</template>
 						</el-table-column>

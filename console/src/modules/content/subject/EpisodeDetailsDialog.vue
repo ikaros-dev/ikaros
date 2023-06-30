@@ -3,12 +3,12 @@ import { apiClient } from '@/utils/api-client';
 import { Episode } from '@runikaros/api-client';
 import { computed } from 'vue';
 import {
-	ElMessage,
-	ElDialog,
+	ElButton,
 	ElDescriptions,
 	ElDescriptionsItem,
+	ElDialog,
+	ElMessage,
 	ElPopconfirm,
-	ElButton,
 } from 'element-plus';
 
 const props = withDefaults(
@@ -83,7 +83,12 @@ const remvoeEpisodeFileBind = async () => {
 				>
 					<div>{{ episode?.resources[0].name }}</div>
 					<video
-						v-if="episode?.resources && episode?.resources.length > 0"
+						v-if="
+							episode?.resources &&
+							episode?.resources.length > 0 &&
+							episode?.resources &&
+							episode?.resources[0]?.canRead
+						"
 						style="width: 100%"
 						:src="episode.resources[0].url"
 						controls
@@ -91,6 +96,7 @@ const remvoeEpisodeFileBind = async () => {
 					>
 						您的浏览器不支持这个格式的视频
 					</video>
+					<span v-else>当前资源文件不可读取，如需读取，请请求从远端拉取。</span>
 				</div>
 				<span v-else> 当前剧集暂未绑定资源文件 </span>
 			</el-descriptions-item>
@@ -103,7 +109,7 @@ const remvoeEpisodeFileBind = async () => {
 				@confirm="remvoeEpisodeFileBind"
 			>
 				<template #reference>
-					<el-button plain type="danger"> 移除资源绑定 </el-button>
+					<el-button plain type="danger"> 移除资源绑定</el-button>
 				</template>
 			</el-popconfirm>
 		</template>

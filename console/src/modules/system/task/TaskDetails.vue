@@ -8,21 +8,21 @@ import { ElDescriptions, ElDescriptionsItem, ElProgress } from 'element-plus';
 const route = useRoute();
 
 watch(route, () => {
-	onTaskNameUpdate();
+	onTaskIdUpdate();
 });
 
 const task = ref<TaskEntity>({});
-const fetchTaskByName = async () => {
-	const { data } = await apiClient.task.findTaskByName({
-		name: task.value.name,
+const fetchTask = async () => {
+	const { data } = await apiClient.task.findTaskById({
+		id: task.value.id,
 	});
 	task.value = data;
 };
 
 const taskProcessPercentage = ref(0);
 const fetchTaskProcess = async () => {
-	const { data } = await apiClient.task.findTaskProcess({
-		name: task.value.name,
+	const { data } = await apiClient.task.findTaskProcessById({
+		id: task.value.id,
 	});
 	taskProcessPercentage.value = data;
 };
@@ -36,7 +36,7 @@ watch(task, (newVal) => {
 			timer = setInterval(() => {
 				fetchTaskProcess();
 				if (taskProcessPercentage.value === 100) {
-					fetchTaskByName();
+					fetchTask();
 				}
 			}, 1000);
 		}
@@ -50,17 +50,17 @@ onUnmounted(() => {
 	if (timer !== undefined) clearInterval(timer);
 });
 
-const onTaskNameUpdate = () => {
-	if (route.params.name == undefined) {
+const onTaskIdUpdate = () => {
+	if (route.params.id == undefined) {
 		return;
 	}
-	task.value.name = route.params.name as string;
-	fetchTaskByName();
+	task.value.id = route.params.id as number;
+	fetchTask();
 	fetchTaskProcess();
 };
 
 onMounted(() => {
-	onTaskNameUpdate();
+	onTaskIdUpdate();
 });
 </script>
 

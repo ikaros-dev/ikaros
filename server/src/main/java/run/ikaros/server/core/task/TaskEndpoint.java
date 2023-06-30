@@ -35,23 +35,23 @@ public class TaskEndpoint implements CoreEndpoint {
     public RouterFunction<ServerResponse> endpoint() {
         var tag = OpenApiConst.CORE_VERSION + "/Task";
         return SpringdocRouteBuilder.route()
-            .GET("/task/name/{name}", this::getByName,
+            .GET("/task/id/{id}", this::findById,
                 builder -> builder
-                    .operationId("FindTaskByName")
+                    .operationId("FindTaskById")
                     .tag(tag)
                     .parameter(parameterBuilder()
-                        .name("name").required(true)
+                        .name("id").required(true)
                         .in(ParameterIn.PATH))
                     .response(responseBuilder()
                         .description("Task entity.")
                         .implementation(TaskEntity.class)))
 
-            .GET("/task/process/{name}", this::getProcess,
+            .GET("/task/process/{id}", this::getProcess,
                 builder -> builder
-                    .operationId("FindTaskProcess")
+                    .operationId("FindTaskProcessById")
                     .tag(tag)
                     .parameter(parameterBuilder()
-                        .name("name").required(true)
+                        .name("id").required(true)
                         .in(ParameterIn.PATH))
                     .response(responseBuilder()
                         .description("Process percentage. from 0 to 100.")
@@ -115,18 +115,21 @@ public class TaskEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getProcess(ServerRequest request) {
-        return Mono.justOrEmpty(request.pathVariable("name"))
+        return Mono.justOrEmpty(request.pathVariable("id"))
+            .map(Long::parseLong)
             .flatMap(taskService::getProcess)
             .flatMap(process -> ServerResponse.ok().bodyValue(process))
             .switchIfEmpty(ServerResponse.notFound().build());
     }
 
-    private Mono<ServerResponse> getByName(ServerRequest request) {
-        return Mono.justOrEmpty(request.pathVariable("name"))
-            .flatMap(taskService::findByName)
+    private Mono<ServerResponse> findById(ServerRequest request) {
+        return Mono.justOrEmpty(request.pathVariable("id"))
+            .map(Long::parseLong)
+            .flatMap(taskService::findById)
             .flatMap(taskEntity -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(taskEntity))
             .switchIfEmpty(ServerResponse.notFound().build());
     }
+
 }

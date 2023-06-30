@@ -16,6 +16,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +41,16 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.file.File;
+import run.ikaros.api.core.subject.Episode;
+import run.ikaros.api.core.subject.EpisodeResource;
+import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.file.request.FileBatchRequest;
+import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.utils.DataBufferUtils;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
@@ -56,6 +62,7 @@ public class FileEndpoint implements CoreEndpoint {
     private final ExtensionComponentsFinder extensionComponentsFinder;
     private final ReactiveCustomClient reactiveCustomClient;
     private final FileService fileService;
+    private final SubjectService subjectService;
 
     /**
      * File {@link CoreEndpoint} for file request.
@@ -63,13 +70,15 @@ public class FileEndpoint implements CoreEndpoint {
      * @param extensionComponentsFinder extension finder
      * @param reactiveCustomClient      custom client
      * @param fileService               file service
+     * @param subjectService            subject service
      */
     public FileEndpoint(ExtensionComponentsFinder extensionComponentsFinder,
                         ReactiveCustomClient reactiveCustomClient,
-                        FileService fileService) {
+                        FileService fileService, SubjectService subjectService) {
         this.extensionComponentsFinder = extensionComponentsFinder;
         this.reactiveCustomClient = reactiveCustomClient;
         this.fileService = fileService;
+        this.subjectService = subjectService;
     }
 
     @Override
@@ -171,17 +180,55 @@ public class FileEndpoint implements CoreEndpoint {
                         .required(true)
                         .description("Remote")))
 
-            .POST("/file/remote/pull", this::pullFile,
-                builder -> builder.operationId("PullFile4Remote")
+            .POST("/file/remote/push/batch", this::pushFileBatch,
+                builder -> builder.operationId("PushFile2RemoteBatch")
+                    .tag(tag)
+                    .requestBody(Builder.requestBodyBuilder()
+                        .implementation(FileBatchRequest.class)))
+
+            .POST("/file/remote/push/batch/subject/{subjectId}", this::pushSubject,
+                builder -> builder.operationId("PushSubject2Remote")
                     .tag(tag)
                     .parameter(parameterBuilder()
-                        .name("id")
-                        .required(true)
-                        .description("File id."))
+                        .name("subjectId")
+                        .description("Subject id.")
+                        .in(ParameterIn.PATH))
                     .parameter(parameterBuilder()
                         .name("remote")
                         .required(true)
                         .description("Remote")))
+
+            .POST("/file/remote/pull", this::pullFile,
+                builder -> builder.operationId("PullFile4Remote")
+                    .tag(tag)
+                    .requestBody(Builder.requestBodyBuilder()
+                        .implementation(FileBatchRequest.class)))
+
+            .POST("/file/remote/pull/batch", this::pullFileBatch,
+                builder -> builder.operationId("PullFile4Remote")
+                    .tag(tag)
+                    .parameter(parameterBuilder()
+                        .name("fileIds")
+                        .required(true)
+                        .description("File id array.")
+                        .implementationArray(Long.class))
+                    .parameter(parameterBuilder()
+                        .name("remote")
+                        .required(true)
+                        .description("Remote")))
+
+            .POST("/file/remote/pull/batch/subject/{subjectId}", this::pullSubject,
+                builder -> builder.operationId("PullSubject4Remote")
+                    .tag(tag)
+                    .parameter(parameterBuilder()
+                        .name("subjectId")
+                        .description("Subject id.")
+                        .in(ParameterIn.PATH))
+                    .parameter(parameterBuilder()
+                        .name("remote")
+                        .required(true)
+                        .description("Remote")))
+
             .build();
     }
 
@@ -192,10 +239,56 @@ public class FileEndpoint implements CoreEndpoint {
             .then(ServerResponse.ok().build());
     }
 
+    private Mono<ServerResponse> pushFileBatch(ServerRequest request) {
+        return request.bodyToMono(FileBatchRequest.class)
+            .flatMap(fileBatchRequest -> fileService.pushRemoteBatch(
+                fileBatchRequest.getFileIds(), fileBatchRequest.getRemote()
+            )).then(ServerResponse.ok().build());
+    }
+
+    private Mono<ServerResponse> pushSubject(ServerRequest request) {
+        String remote = request.queryParam("remote").orElse("");
+        String subjectId = request.pathVariable("subjectId");
+        return subjectService.findById(Long.valueOf(subjectId))
+            .map(Subject::getEpisodes)
+            .map(episodes -> episodes.stream()
+                .map(Episode::getResources)
+                .filter(Objects::nonNull)
+                .filter(resources -> !resources.isEmpty())
+                .map(episodeResources -> episodeResources.get(0))
+                .map(EpisodeResource::getFileId)
+                .toList())
+            .flatMap(fileIds -> fileService.pushRemoteBatch(fileIds, remote))
+            .then(ServerResponse.ok().build());
+    }
+
     private Mono<ServerResponse> pullFile(ServerRequest request) {
         Optional<String> idOp = request.queryParam("id");
         Optional<String> remoteOp = request.queryParam("remote");
         return fileService.pullRemote(Long.valueOf(idOp.orElse("-1")), remoteOp.orElse(null))
+            .then(ServerResponse.ok().build());
+    }
+
+    private Mono<ServerResponse> pullFileBatch(ServerRequest request) {
+        return request.bodyToMono(FileBatchRequest.class)
+            .flatMap(fileBatchRequest -> fileService.pullRemoteBatch(
+                fileBatchRequest.getFileIds(), fileBatchRequest.getRemote()
+            )).then(ServerResponse.ok().build());
+    }
+
+    private Mono<ServerResponse> pullSubject(ServerRequest request) {
+        String remote = request.queryParam("remote").orElse("");
+        String subjectId = request.pathVariable("subjectId");
+        return subjectService.findById(Long.valueOf(subjectId))
+            .map(Subject::getEpisodes)
+            .map(episodes -> episodes.stream()
+                .map(Episode::getResources)
+                .filter(Objects::nonNull)
+                .filter(resources -> !resources.isEmpty())
+                .map(episodeResources -> episodeResources.get(0))
+                .map(EpisodeResource::getFileId)
+                .toList())
+            .flatMap(fileIds -> fileService.pullRemoteBatch(fileIds, remote))
             .then(ServerResponse.ok().build());
     }
 

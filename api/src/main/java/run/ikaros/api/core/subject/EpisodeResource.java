@@ -19,6 +19,7 @@ public class EpisodeResource {
     @JsonProperty("episode_id")
     private Long episodeId;
     private String url;
+    private boolean canRead;
     private String name;
     /**
      * Such as 1080p 720p.

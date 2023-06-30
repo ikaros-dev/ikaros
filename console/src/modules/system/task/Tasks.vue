@@ -57,7 +57,7 @@ const onSizeChange = (val: number) => {
 
 const showTaskDetails = (task) => {
 	// console.log(task);
-	router.push('/tasks/task/details/' + task.name);
+	router.push('/tasks/task/details/' + task.id);
 };
 
 onMounted(fetchTasks);
@@ -116,7 +116,11 @@ onMounted(fetchTasks);
 				<el-table-column prop="id" label="ID" width="80" sortable />
 				<el-table-column prop="name" label="名称" width="200"></el-table-column>
 				<el-table-column prop="status" label="状态"></el-table-column>
-				<el-table-column prop="createTime" label="创建时间"></el-table-column>
+				<el-table-column
+					prop="createTime"
+					label="创建时间"
+					sortable
+				></el-table-column>
 				<el-table-column prop="endTime" label="结束时间"></el-table-column>
 				<el-table-column prop="index" label="完成量"></el-table-column>
 				<el-table-column prop="total" label="总量"></el-table-column>

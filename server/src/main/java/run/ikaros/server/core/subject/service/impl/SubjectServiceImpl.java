@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -107,6 +108,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                                 .fileId(episodeFileEntity.getFileId())
                                 .name(fileEntity.getName())
                                 .url(fileEntity.getUrl())
+                                .canRead(fileEntity.getCanRead())
                                 .build())
                     ).collectList()
                     .map(episode::setResources))
@@ -114,7 +116,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 .collectList()
                 .map(episodes -> subject
                     .setTotalEpisodes((long) episodes.size())
-                    .setEpisodes(episodes))
+                    .setEpisodes(episodes)
+                    .setCanRead(getSubjectCanReadByEpisodes(episodes)))
                 .switchIfEmpty(Mono.just(subject)))
             .checkpoint("FindEpisodeEntitiesBySubjectId")
 
@@ -122,6 +125,26 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, new SubjectSync()))
                 .collectList().map(subject::setSyncs))
             .checkpoint("FindSyncEntitiesBySubjectId");
+    }
+
+    private boolean getSubjectCanReadByEpisodes(List<Episode> episodes) {
+        if (episodes == null || episodes.isEmpty()) {
+            return false;
+        }
+
+        for (Episode episode : episodes) {
+            List<EpisodeResource> resources = episode.getResources();
+            if (resources == null || resources.isEmpty()) {
+                return false;
+            }
+            EpisodeResource episodeResource = resources.get(0);
+            if (!episodeResource.isCanRead()) {
+                return false;
+            }
+            
+        }
+
+        return true;
     }
 
     @Override

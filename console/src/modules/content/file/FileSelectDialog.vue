@@ -3,27 +3,27 @@ import { apiClient } from '@/utils/api-client';
 import type { FileEntity } from '@runikaros/api-client';
 import FileFragmentUploadDrawer from './FileFragmentUploadDrawer.vue';
 import FileDeatilDrawer from './FileDeatilDrawer.vue';
-import { ElMessage } from 'element-plus';
+import {
+	ElButton,
+	ElCol,
+	ElDialog,
+	ElForm,
+	ElFormItem,
+	ElIcon,
+	ElInput,
+	ElMessage,
+	ElOption,
+	ElPagination,
+	ElPopconfirm,
+	ElRow,
+	ElSelect,
+	ElTable,
+	ElTableColumn,
+} from 'element-plus';
 import { Upload } from '@element-plus/icons-vue';
 import Utf8 from 'crypto-js/enc-utf8';
 import Base64 from 'crypto-js/enc-base64';
 import { computed, onMounted, ref } from 'vue';
-import {
-	ElDialog,
-	ElRow,
-	ElCol,
-	ElForm,
-	ElFormItem,
-	ElInput,
-	ElSelect,
-	ElOption,
-	ElPagination,
-	ElButton,
-	ElTable,
-	ElTableColumn,
-	ElIcon,
-	ElPopconfirm,
-} from 'element-plus';
 
 const fileUploadDrawerVisible = ref(false);
 
@@ -39,7 +39,6 @@ const findFilesCondition = ref({
 	size: 10,
 	total: 10,
 	fileName: undefined,
-	place: undefined,
 	type: undefined,
 });
 
@@ -100,11 +99,6 @@ const handleDelete = async (file: FileEntity) => {
 			console.error(err);
 			ElMessage.error('删除文件失败，异常：' + err.message);
 		});
-};
-
-const onFilePlaceSelectChange = (val) => {
-	findFilesCondition.value.place = val;
-	fetchFiles();
 };
 
 const onFileTypeSelectChange = (val) => {
@@ -179,7 +173,7 @@ onMounted(fetchFiles);
 		/>
 
 		<el-row :gutter="10">
-			<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+			<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
 				<el-form :inline="true" :model="findFilesCondition">
 					<el-form-item label="文件名称">
 						<el-input
@@ -189,16 +183,6 @@ onMounted(fetchFiles);
 							style="max-width: 162px"
 							@change="fetchFiles"
 						/>
-					</el-form-item>
-					<el-form-item label="文件位置">
-						<el-select
-							v-model="findFilesCondition.place"
-							clearable
-							style="width: 90px"
-							@change="onFilePlaceSelectChange"
-						>
-							<el-option label="本地" value="LOCAL" />
-						</el-select>
 					</el-form-item>
 					<el-form-item label="文件类型">
 						<el-select
@@ -217,7 +201,7 @@ onMounted(fetchFiles);
 				</el-form>
 			</el-col>
 
-			<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
+			<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
 				<el-pagination
 					v-model:page-size="findFilesCondition.size"
 					v-model:current-page="findFilesCondition.page"
@@ -238,7 +222,9 @@ onMounted(fetchFiles);
 				style="text-align: right"
 			>
 				<el-button plain @click="fileUploadDrawerVisible = true">
-					<el-icon><Upload /></el-icon>
+					<el-icon>
+						<Upload />
+					</el-icon>
 					上传文件
 				</el-button>
 			</el-col>
@@ -259,8 +245,8 @@ onMounted(fetchFiles);
 					<el-table-column label="操作" width="200">
 						<template #default="scoped">
 							<el-button plain @click="showFileDeatil(scoped.row)"
-								>详情</el-button
-							>
+								>详情
+							</el-button>
 
 							<el-popconfirm
 								title="你确定要删除该文件？"

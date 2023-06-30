@@ -44,4 +44,5 @@ public class Subject {
     @JsonProperty("collection_status")
     private CollectionStatus collectionStatus;
     private List<SubjectSync> syncs;
+    private boolean canRead;
 }

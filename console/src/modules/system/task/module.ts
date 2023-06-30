@@ -28,7 +28,7 @@ export default definePlugin({
 		{
 			parentName: 'Root',
 			route: {
-				path: '/tasks/task/details/:name',
+				path: '/tasks/task/details/:id',
 				name: 'TaskDetails',
 				component: TaskDetails,
 				meta: {

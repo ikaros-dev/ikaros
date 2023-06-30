@@ -9,13 +9,11 @@ public interface TaskService {
 
     Mono<TaskEntity> findById(Long id);
 
-    Mono<TaskEntity> findByName(String name);
-
     Mono<Void> submit(Task task);
 
     Mono<Void> cancel(String name);
 
     Mono<PagingWrap<TaskEntity>> listEntitiesByCondition(FindTaskCondition findTaskCondition);
 
-    Mono<Long> getProcess(String name);
+    Mono<Long> getProcess(Long id);
 }

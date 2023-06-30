@@ -16,24 +16,23 @@ import {
 } from 'element-plus';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { apiClient } from '@/utils/api-client';
-import { taskNamePrefix } from '@/modules/common/constants';
 
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
 		isPush: boolean;
-		fileId: number;
+		subjectId: number;
 	}>(),
 	{
 		visible: false,
 		isPush: true,
-		fileId: undefined,
+		subjectId: undefined,
 	}
 );
 
 // 监听父组件传递子组件的文件ID数据变化
 watch(props, (newVal) => {
-	fileRemoteAction.value.fileId = newVal.fileId;
+	fileRemoteAction.value.subjectId = newVal.subjectId;
 	fileRemoteAction.value.isPush = newVal.isPush;
 });
 
@@ -42,8 +41,6 @@ const emit = defineEmits<{
 	(event: 'update:visible', visible: boolean): void;
 	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
-	// eslint-disable-next-line no-unused-vars
-	(event: 'closeWithTaskName', taskName: string): void;
 }>();
 
 const dialogVisible = computed({
@@ -56,18 +53,18 @@ const dialogVisible = computed({
 });
 
 const fileRemoteAction = ref({
-	fileId: props.fileId,
+	subjectId: props.subjectId,
 	remote: 'BaiDuPan',
 	isPush: false,
 });
 
-const fileRemoteArr = ref<string[]>([]);
+const subjectRemoteArr = ref<string[]>([]);
 
 const { pluginModules } = usePluginModuleStore();
 
 const actionButtonLoading = ref(false);
 const onConfirm = async (formEl: FormInstance | undefined) => {
-	if (fileRemoteArr.value.length === 0) {
+	if (subjectRemoteArr.value.length === 0) {
 		emit('close');
 		dialogVisible.value = false;
 	} else {
@@ -76,17 +73,12 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 			if (valid) {
 				// console.log(fileRemoteAction.value);
 				actionButtonLoading.value = true;
-				let taskName;
 				if (fileRemoteAction.value.isPush) {
 					// file push to remote
 					await apiClient.file
-						.pushFile2Remote({
-							id: fileRemoteAction.value.fileId + '',
+						.pushSubject2Remote({
+							subjectId: fileRemoteAction.value.subjectId + '',
 							remote: fileRemoteAction.value.remote,
-						})
-						.then(() => {
-							taskName =
-								taskNamePrefix.fileRemote.push + fileRemoteAction.value.fileId;
 						})
 						.finally(() => {
 							actionButtonLoading.value = false;
@@ -94,20 +86,17 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 				} else {
 					// file pull from remote
 					await apiClient.file
-						.pullFile4Remote({
-							id: fileRemoteAction.value.fileId + '',
+						.pullSubject4Remote({
+							subjectId: fileRemoteAction.value.subjectId + '',
 							remote: fileRemoteAction.value.remote,
-						})
-						.then(() => {
-							taskName =
-								taskNamePrefix.fileRemote.pull + fileRemoteAction.value.fileId;
 						})
 						.finally(() => {
 							actionButtonLoading.value = false;
 						});
 				}
+				ElMessage.success('提交成功');
 				dialogVisible.value = false;
-				emit('closeWithTaskName', taskName);
+				emit('close');
 			} else {
 				console.log('error submit!', fields);
 				ElMessage.error('请检查所填内容是否有必要项缺失。');
@@ -134,15 +123,15 @@ onMounted(() => {
 			return;
 		}
 		const subjectPlatform = extensionPoints['file:remote'] as unknown as string;
-		fileRemoteArr.value.push(subjectPlatform);
+		subjectRemoteArr.value.push(subjectPlatform);
 	});
 });
 </script>
 
 <template>
-	<el-dialog v-model="dialogVisible" title="文件远端操作">
+	<el-dialog v-model="dialogVisible" title="条目远端操作">
 		<el-alert
-			title="文件越大，操作时间越长，请耐心等待操作完成。"
+			title="条目剧集越多，剧集文件越大，操作时间越长，请耐心等待操作完成。"
 			type="warning"
 			show-icon
 			:closable="false"
@@ -151,7 +140,7 @@ onMounted(() => {
 		<br />
 
 		<el-form
-			v-if="fileRemoteArr.length > 0"
+			v-if="subjectRemoteArr.length > 0"
 			ref="fileActionFormRef"
 			:rules="fileActionFormRules"
 			:model="fileRemoteAction"
@@ -160,15 +149,15 @@ onMounted(() => {
 			<el-form-item label="远端" prop="remote">
 				<el-select v-model="fileRemoteAction.remote">
 					<el-option
-						v-for="remote in fileRemoteArr"
+						v-for="remote in subjectRemoteArr"
 						:key="remote"
 						:label="remote"
 						:value="remote"
 					/>
 				</el-select>
 			</el-form-item>
-			<el-form-item label="文件ID">
-				<el-input v-model="fileRemoteAction.fileId" disabled />
+			<el-form-item label="条目ID">
+				<el-input v-model="fileRemoteAction.subjectId" disabled />
 			</el-form-item>
 		</el-form>
 		<span v-else>
@@ -182,7 +171,11 @@ onMounted(() => {
 					@click="onConfirm(fileActionFormRef)"
 				>
 					{{
-						fileRemoteArr.length === 0 ? '返回' : props.isPush ? '推送' : '拉取'
+						subjectRemoteArr.length === 0
+							? '返回'
+							: props.isPush
+							? '推送'
+							: '拉取'
 					}}
 				</el-button>
 			</span>

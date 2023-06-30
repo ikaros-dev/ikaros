@@ -321,15 +321,30 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             return Mono.empty();
         }
 
-        // 远端表存在对应的记录，代表已经 push 过
+        // 远端表存在对应的记录，代表已经 push 过，则只需要更新文件记录并删除文件即可
         return fileRemoteRepository.findAllByFileIdAndRemote(fileEntity.getId(), remote)
             .collectList()
-            .doOnSuccess(list -> {
-                if (list != null && !list.isEmpty()) {
-                    log.debug("current remote record exists, skip doPushRemote.");
-                }
-            })
-            .filter(list -> Objects.isNull(list) || list.isEmpty())
+            .filter(list -> list != null && !list.isEmpty())
+            .flatMap(list -> fileRepository.findById(fileEntity.getId())
+                .<FileEntity>handle((fileEntity1, sink) -> {
+                    log.debug("current file remote records has exists, skip push operate.");
+                    String originalPath = fileEntity1.getOriginalPath();
+                    try {
+                        Files.delete(Path.of(originalPath));
+                        log.debug("delete file in path: {}", originalPath);
+                    } catch (IOException e) {
+                        sink.error(new RuntimeException(e));
+                        return;
+                    }
+                    sink.next(fileEntity1);
+                })
+                .map(fileEntity1 -> fileEntity1.setCanRead(false)
+                    .setUrl("").setOriginalPath(""))
+                .flatMap(fileRepository::save).then()
+            )
+            .then(fileRemoteRepository.findAllByFileIdAndRemote(fileEntity.getId(), remote)
+                .collectList())
+            .filter(list -> list == null || list.isEmpty())
             .flatMap(list -> Mono.defer((Supplier<Mono<Void>>) () -> {
                 FilePush2RemoteTask filePush2RemoteTask =
                     new FilePush2RemoteTask(TaskEntity.builder().build(), taskRepository,
@@ -368,6 +383,24 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                         applicationContext, fileEntity.getId(), remote);
                 return taskService.submit(filePull4RemoteTask);
             }));
+    }
+
+    @Override
+    public Mono<Void> pushRemoteBatch(List<Long> fileIds, String remote) {
+        Assert.notNull(fileIds, "'fileIds' must not null.");
+        Assert.hasText(remote, "'remote' must has text.");
+        return Flux.fromStream(fileIds.stream())
+            .flatMap(fileId -> pushRemote(fileId, remote))
+            .then();
+    }
+
+    @Override
+    public Mono<Void> pullRemoteBatch(List<Long> fileIds, String remote) {
+        Assert.notNull(fileIds, "'fileIds' must not null.");
+        Assert.hasText(remote, "'remote' must has text.");
+        return Flux.fromStream(fileIds.stream())
+            .flatMap(fileId -> pullRemote(fileId, remote))
+            .then();
     }
 
 
