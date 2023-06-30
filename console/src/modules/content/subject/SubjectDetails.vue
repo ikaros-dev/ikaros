@@ -231,6 +231,7 @@ const onFileRemoteActionDialogCloseWithTaskName = async (taskName) => {
 		console.log('taskName', taskName);
 		console.log('data', data);
 	}
+	// @ts-ignore
 	const taskId = data.items[0]?.id;
 	// 再进行路由跳转
 	router.push('/tasks/task/details/' + taskId);

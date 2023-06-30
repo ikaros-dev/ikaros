@@ -95,6 +95,7 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 					// file pull from remote
 					await apiClient.file
 						.pullFile4Remote({
+							// @ts-ignore
 							id: fileRemoteAction.value.fileId + '',
 							remote: fileRemoteAction.value.remote,
 						})

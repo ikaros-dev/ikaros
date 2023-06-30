@@ -14,7 +14,7 @@ watch(route, () => {
 const task = ref<TaskEntity>({});
 const fetchTask = async () => {
 	const { data } = await apiClient.task.findTaskById({
-		id: task.value.id,
+		id: task.value.id + '',
 	});
 	task.value = data;
 };
@@ -22,7 +22,7 @@ const fetchTask = async () => {
 const taskProcessPercentage = ref(0);
 const fetchTaskProcess = async () => {
 	const { data } = await apiClient.task.findTaskProcessById({
-		id: task.value.id,
+		id: task.value.id + '',
 	});
 	taskProcessPercentage.value = data;
 };
@@ -54,7 +54,7 @@ const onTaskIdUpdate = () => {
 	if (route.params.id == undefined) {
 		return;
 	}
-	task.value.id = route.params.id as number;
+	task.value.id = route.params.id as any;
 	fetchTask();
 	fetchTaskProcess();
 };
