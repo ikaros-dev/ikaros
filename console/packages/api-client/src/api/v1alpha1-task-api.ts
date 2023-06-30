@@ -38,6 +38,8 @@ import {
 	RequiredError,
 } from '../base';
 // @ts-ignore
+import { PagingWrap } from '../models';
+// @ts-ignore
 import { TaskEntity } from '../models';
 /**
  * V1alpha1TaskApi - axios parameter creator
@@ -100,6 +102,129 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
 				options: localVarRequestOptions,
 			};
 		},
+		/**
+		 *
+		 * @param {string} name
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		findTaskProcess: async (
+			name: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('findTaskProcess', 'name', name);
+			const localVarPath = `/api/v1alpha1/task/process/{name}`.replace(
+				`{${'name'}}`,
+				encodeURIComponent(String(name))
+			);
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * List tasks by condition.
+		 * @param {number} [page] 第几页，从1开始, 默认为1.
+		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {string} [name] 经过Basic64编码的任务名称，模糊匹配.
+		 * @param {'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL'} [status] 任务状态，精准匹配.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listTasksByCondition: async (
+			page?: number,
+			size?: number,
+			name?: string,
+			status?: 'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL',
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/tasks/condition`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (page !== undefined) {
+				localVarQueryParameter['page'] = page;
+			}
+
+			if (size !== undefined) {
+				localVarQueryParameter['size'] = size;
+			}
+
+			if (name !== undefined) {
+				localVarQueryParameter['name'] = name;
+			}
+
+			if (status !== undefined) {
+				localVarQueryParameter['status'] = status;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
 	};
 };
 
@@ -127,6 +252,62 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
 				name,
 				options
 			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 *
+		 * @param {string} name
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async findTaskProcess(
+			name: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.findTaskProcess(
+				name,
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * List tasks by condition.
+		 * @param {number} [page] 第几页，从1开始, 默认为1.
+		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {string} [name] 经过Basic64编码的任务名称，模糊匹配.
+		 * @param {'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL'} [status] 任务状态，精准匹配.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async listTasksByCondition(
+			page?: number,
+			size?: number,
+			name?: string,
+			status?: 'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL',
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.listTasksByCondition(
+					page,
+					size,
+					name,
+					status,
+					options
+				);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -162,6 +343,40 @@ export const V1alpha1TaskApiFactory = function (
 				.findTaskByName(requestParameters.name, options)
 				.then((request) => request(axios, basePath));
 		},
+		/**
+		 *
+		 * @param {V1alpha1TaskApiFindTaskProcessRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		findTaskProcess(
+			requestParameters: V1alpha1TaskApiFindTaskProcessRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<number> {
+			return localVarFp
+				.findTaskProcess(requestParameters.name, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * List tasks by condition.
+		 * @param {V1alpha1TaskApiListTasksByConditionRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listTasksByCondition(
+			requestParameters: V1alpha1TaskApiListTasksByConditionRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<PagingWrap> {
+			return localVarFp
+				.listTasksByCondition(
+					requestParameters.page,
+					requestParameters.size,
+					requestParameters.name,
+					requestParameters.status,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
 	};
 };
 
@@ -177,6 +392,55 @@ export interface V1alpha1TaskApiFindTaskByNameRequest {
 	 * @memberof V1alpha1TaskApiFindTaskByName
 	 */
 	readonly name: string;
+}
+
+/**
+ * Request parameters for findTaskProcess operation in V1alpha1TaskApi.
+ * @export
+ * @interface V1alpha1TaskApiFindTaskProcessRequest
+ */
+export interface V1alpha1TaskApiFindTaskProcessRequest {
+	/**
+	 *
+	 * @type {string}
+	 * @memberof V1alpha1TaskApiFindTaskProcess
+	 */
+	readonly name: string;
+}
+
+/**
+ * Request parameters for listTasksByCondition operation in V1alpha1TaskApi.
+ * @export
+ * @interface V1alpha1TaskApiListTasksByConditionRequest
+ */
+export interface V1alpha1TaskApiListTasksByConditionRequest {
+	/**
+	 * 第几页，从1开始, 默认为1.
+	 * @type {number}
+	 * @memberof V1alpha1TaskApiListTasksByCondition
+	 */
+	readonly page?: number;
+
+	/**
+	 * 每页条数，默认为10.
+	 * @type {number}
+	 * @memberof V1alpha1TaskApiListTasksByCondition
+	 */
+	readonly size?: number;
+
+	/**
+	 * 经过Basic64编码的任务名称，模糊匹配.
+	 * @type {string}
+	 * @memberof V1alpha1TaskApiListTasksByCondition
+	 */
+	readonly name?: string;
+
+	/**
+	 * 任务状态，精准匹配.
+	 * @type {'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL'}
+	 * @memberof V1alpha1TaskApiListTasksByCondition
+	 */
+	readonly status?: 'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL';
 }
 
 /**
@@ -199,6 +463,44 @@ export class V1alpha1TaskApi extends BaseAPI {
 	) {
 		return V1alpha1TaskApiFp(this.configuration)
 			.findTaskByName(requestParameters.name, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 *
+	 * @param {V1alpha1TaskApiFindTaskProcessRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1TaskApi
+	 */
+	public findTaskProcess(
+		requestParameters: V1alpha1TaskApiFindTaskProcessRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1TaskApiFp(this.configuration)
+			.findTaskProcess(requestParameters.name, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * List tasks by condition.
+	 * @param {V1alpha1TaskApiListTasksByConditionRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1TaskApi
+	 */
+	public listTasksByCondition(
+		requestParameters: V1alpha1TaskApiListTasksByConditionRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1TaskApiFp(this.configuration)
+			.listTasksByCondition(
+				requestParameters.page,
+				requestParameters.size,
+				requestParameters.name,
+				requestParameters.status,
+				options
+			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }
