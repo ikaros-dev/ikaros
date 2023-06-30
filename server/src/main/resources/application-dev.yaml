@@ -1,7 +1,7 @@
 ikaros:
   plugin:
-  #    runtime-mode: development
-  #    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-local-files-import
+    runtime-mode: development
+    fixed-plugin-path: C:\Develop\GitRepos\ikaros-dev\plugins\plugin-baidupan
   #      auto-start-plugin: false
   security:
     initializer:

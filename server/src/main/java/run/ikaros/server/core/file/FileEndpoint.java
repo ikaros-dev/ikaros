@@ -201,21 +201,20 @@ public class FileEndpoint implements CoreEndpoint {
             .POST("/file/remote/pull", this::pullFile,
                 builder -> builder.operationId("PullFile4Remote")
                     .tag(tag)
-                    .requestBody(Builder.requestBodyBuilder()
-                        .implementation(FileBatchRequest.class)))
-
-            .POST("/file/remote/pull/batch", this::pullFileBatch,
-                builder -> builder.operationId("PullFile4RemoteBatch")
-                    .tag(tag)
                     .parameter(parameterBuilder()
-                        .name("fileIds")
+                        .name("id")
                         .required(true)
-                        .description("File id array.")
-                        .implementationArray(Long.class))
+                        .description("File id."))
                     .parameter(parameterBuilder()
                         .name("remote")
                         .required(true)
                         .description("Remote")))
+
+            .POST("/file/remote/pull/batch", this::pullFileBatch,
+                builder -> builder.operationId("PullFile4RemoteBatch")
+                    .tag(tag)
+                    .requestBody(Builder.requestBodyBuilder()
+                        .implementation(FileBatchRequest.class)))
 
             .POST("/file/remote/pull/batch/subject/{subjectId}", this::pullSubject,
                 builder -> builder.operationId("PullSubject4Remote")
