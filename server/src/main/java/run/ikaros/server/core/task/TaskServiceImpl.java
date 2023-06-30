@@ -6,9 +6,13 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.enums.TaskStatus;
 import run.ikaros.server.store.repository.TaskRepository;
@@ -113,5 +117,48 @@ public class TaskServiceImpl implements TaskService {
         Future<?> future = futureMap.get(name);
         future.cancel(true);
         return Mono.empty();
+    }
+
+    @Override
+    public Mono<PagingWrap<TaskEntity>> listEntitiesByCondition(
+        FindTaskCondition condition) {
+        Assert.notNull(condition, "'condition' must no null.");
+
+        final Integer page = condition.getPage();
+        Assert.isTrue(page > 0, "'page' must gt 0.");
+
+        final Integer size = condition.getSize();
+        Assert.isTrue(size > 0, "'size' must gt 0.");
+
+        final String name = StringUtils.hasText(condition.getName())
+            ? condition.getName() : "";
+        final String nameLike = "%" + name + "%";
+        final TaskStatus taskStatus = condition.getStatus();
+
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+
+        Flux<TaskEntity> taskEntityFlux;
+        Mono<Long> countMono;
+
+        if (taskStatus == null) {
+            taskEntityFlux = taskRepository.findAllByNameLike(nameLike, pageRequest);
+            countMono = taskRepository.countAllByNameLike(nameLike);
+        } else {
+            taskEntityFlux =
+                taskRepository.findAllByNameLikeAndStatus(nameLike, taskStatus, pageRequest);
+            countMono = taskRepository.countAllByNameLikeAndStatus(nameLike, taskStatus);
+        }
+        Mono<Long> finalCountMono = countMono;
+        return taskEntityFlux
+            .collectList()
+            .flatMap(taskEntities -> finalCountMono
+                .map(count -> new PagingWrap<>(page,
+                    size, count, taskEntities)));
+    }
+
+    @Override
+    public Mono<Long> getProcess(String name) {
+        return findByName(name)
+            .map(taskEntity -> 100 * taskEntity.getIndex() / taskEntity.getTotal());
     }
 }
