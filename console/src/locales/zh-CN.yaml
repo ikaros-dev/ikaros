@@ -124,3 +124,5 @@ core:
     title: 设置
   tasks:
     title: 任务
+    details:
+      title: 任务详情

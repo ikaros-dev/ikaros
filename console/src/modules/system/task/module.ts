@@ -2,6 +2,7 @@ import { definePlugin } from '@runikaros/shared';
 import Tasks from './Tasks.vue';
 import { Ship } from '@element-plus/icons-vue';
 import { markRaw } from 'vue';
+import TaskDetails from './TaskDetails.vue';
 
 export default definePlugin({
 	name: 'SystemSetting',
@@ -21,6 +22,18 @@ export default definePlugin({
 						icon: markRaw(Ship),
 						priority: 0,
 					},
+				},
+			},
+		},
+		{
+			parentName: 'Root',
+			route: {
+				path: '/tasks/task/details/:name',
+				name: 'TaskDetails',
+				component: TaskDetails,
+				meta: {
+					title: 'core.tasks.details.title',
+					hidden: true,
 				},
 			},
 		},

@@ -126,3 +126,5 @@ core:
     title: Settings
   tasks:
     title: Tasks
+    details:
+      title: Task Details

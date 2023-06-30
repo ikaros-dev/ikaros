@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -34,7 +33,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.constant.FileConst;
-import run.ikaros.api.core.file.RemoteFileHandler;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.infra.properties.IkarosProperties;
@@ -45,11 +43,11 @@ import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.file.event.FileAddEvent;
 import run.ikaros.server.core.file.event.FileRemoveEvent;
+import run.ikaros.server.core.file.task.FileDeleteRemoteTask;
 import run.ikaros.server.core.file.task.FilePull4RemoteTask;
 import run.ikaros.server.core.file.task.FilePush2RemoteTask;
 import run.ikaros.server.core.task.TaskService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
-import run.ikaros.server.store.entity.FileRemoteEntity;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.FileRemoteRepository;
@@ -258,26 +256,16 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 }
             })
             .checkpoint("DeleteAllEpisodeFileByFileIdAfterDeleteFileEntity")
-            .flatMapMany(unused -> fileRemoteRepository.findAllByFileId(id))
-            .doOnEach(fileRemoteEntitySignal -> {
-                FileRemoteEntity fileRemoteEntity = fileRemoteEntitySignal.get();
-                if (fileRemoteEntity == null) {
-                    return;
-                }
-                Optional<RemoteFileHandler> remoteFileHandlerOptional =
-                    extensionComponentsFinder.getExtensions(RemoteFileHandler.class)
-                        .stream().filter(remoteFileHandler ->
-                            fileRemoteEntity.getRemote().equals(remoteFileHandler.remote()))
-                        .findFirst();
-
-                remoteFileHandlerOptional
-                    .ifPresent(remoteFileHandler -> {
-                        remoteFileHandler.delete(fileRemoteEntity.getPath());
-                        log.debug("delete remote file: remote:[{}], path:[{}].",
-                            fileRemoteEntity.getRemote(), fileRemoteEntity.getPath());
-                    });
-            })
-            .then(fileRemoteRepository.deleteAllByFileId(id));
+            .then(fileRemoteRepository.existsAllByFileId(id))
+            .filter(exists -> exists)
+            // 如果存在，则提交删除远端文件任务
+            .flatMap(exists -> Mono.defer((Supplier<Mono<Void>>) () -> {
+                FileDeleteRemoteTask fileDeleteRemoteTask =
+                    new FileDeleteRemoteTask(TaskEntity.builder().build(),
+                        taskRepository, applicationContext, id);
+                return taskService.submit(fileDeleteRemoteTask);
+            }))
+            .then();
     }
 
     @Override

@@ -159,6 +159,8 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Mono<Long> getProcess(String name) {
         return findByName(name)
-            .map(taskEntity -> 100 * taskEntity.getIndex() / taskEntity.getTotal());
+            .filter(taskEntity -> taskEntity.getTotal() != 0)
+            .map(taskEntity -> 100 * taskEntity.getIndex() / taskEntity.getTotal())
+            .switchIfEmpty(Mono.just(0L));
     }
 }

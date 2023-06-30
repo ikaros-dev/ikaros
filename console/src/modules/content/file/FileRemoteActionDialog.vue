@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { usePluginModuleStore } from '@/stores/plugin';
 import { PluginModule } from '@runikaros/shared';
-import { ElMessage, FormInstance, FormRules } from 'element-plus';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
 import {
+	ElAlert,
+	ElButton,
 	ElDialog,
 	ElForm,
 	ElFormItem,
-	ElSelect,
-	ElOption,
 	ElInput,
-	ElButton,
-	ElAlert,
+	ElMessage,
+	ElOption,
+	ElSelect,
+	FormInstance,
+	FormRules,
 } from 'element-plus';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { apiClient } from '@/utils/api-client';
+import { taskNamePrefix } from '@/modules/common/constants';
 
 const props = withDefaults(
 	defineProps<{
@@ -39,6 +42,8 @@ const emit = defineEmits<{
 	(event: 'update:visible', visible: boolean): void;
 	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
+	// eslint-disable-next-line no-unused-vars
+	(event: 'closeWithTaskName', taskName: string): void;
 }>();
 
 const dialogVisible = computed({
@@ -71,12 +76,17 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 			if (valid) {
 				// console.log(fileRemoteAction.value);
 				actionButtonLoading.value = true;
+				let taskName;
 				if (fileRemoteAction.value.isPush) {
 					// file push to remote
 					await apiClient.file
 						.pushFile2Remote({
 							id: fileRemoteAction.value.fileId + '',
 							remote: fileRemoteAction.value.remote,
+						})
+						.then(() => {
+							taskName =
+								taskNamePrefix.fileRemote.push + fileRemoteAction.value.fileId;
 						})
 						.finally(() => {
 							actionButtonLoading.value = false;
@@ -88,6 +98,10 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 							id: fileRemoteAction.value.fileId + '',
 							remote: fileRemoteAction.value.remote,
 						})
+						.then(() => {
+							taskName =
+								taskNamePrefix.fileRemote.pull + fileRemoteAction.value.fileId;
+						})
 						.finally(() => {
 							actionButtonLoading.value = false;
 						});
@@ -96,7 +110,7 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 					'请求' + fileRemoteAction.value.isPush ? '推送' : '拉取' + '成功'
 				);
 				dialogVisible.value = false;
-				emit('close');
+				emit('closeWithTaskName', taskName);
 			} else {
 				console.log('error submit!', fields);
 				ElMessage.error('请检查所填内容是否有必要项缺失。');
