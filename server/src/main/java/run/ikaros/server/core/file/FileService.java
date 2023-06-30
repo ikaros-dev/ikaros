@@ -2,6 +2,7 @@ package run.ikaros.server.core.file;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -33,7 +34,12 @@ public interface FileService {
 
     Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux);
 
-    Mono<FileEntity> pushRemote(Long fileId, String remote);
+    Mono<Void> pushRemote(Long fileId, String remote);
 
-    Mono<FileEntity> pullRemote(Long fileId, String remote);
+    Mono<Void> pullRemote(Long fileId, String remote);
+
+    Mono<Void> pushRemoteBatch(List<Long> fileIds, String remote);
+
+    Mono<Void> pullRemoteBatch(List<Long> fileIds, String remote);
+
 }

@@ -88,6 +88,7 @@ core:
         game: 游戏
         music: 音声
         novel: 书籍
+        tasks: 任务
     operations:
       profile:
         button: 个人资料
@@ -121,3 +122,7 @@ core:
         install: 安装插件
   settings:
     title: 设置
+  tasks:
+    title: 任务
+    details:
+      title: 任务详情

@@ -3,7 +3,7 @@ import { Tickets } from '@element-plus/icons-vue';
 import Subjects from './Subjects.vue';
 import SubjectPut from './SubjectPut.vue';
 import SubjectPost from './SubjectPost.vue';
-import SubjectDeatils from './SubjectDeatils.vue';
+import SubjectDetails from './SubjectDetails.vue';
 import { markRaw } from 'vue';
 
 export default definePlugin({
@@ -43,8 +43,8 @@ export default definePlugin({
 			parentName: 'Root',
 			route: {
 				path: '/subjects/subject/details/:id',
-				name: 'SubjectDeatils',
-				component: SubjectDeatils,
+				name: 'SubjectDetails',
+				component: SubjectDetails,
 				meta: {
 					title: 'core.subject.details.title',
 					hidden: true,

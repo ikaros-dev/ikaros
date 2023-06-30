@@ -38,6 +38,8 @@ import {
 	RequiredError,
 } from '../base';
 // @ts-ignore
+import { PagingWrap } from '../models';
+// @ts-ignore
 import { TaskEntity } from '../models';
 /**
  * V1alpha1TaskApi - axios parameter creator
@@ -49,21 +51,19 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
 	return {
 		/**
 		 *
-		 * @param {string} name
-		 * @param {TaskEntity} [taskEntity]
+		 * @param {string} id
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		findTaskByName: async (
-			name: string,
-			taskEntity?: TaskEntity,
+		findTaskById: async (
+			id: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('findTaskByName', 'name', name);
-			const localVarPath = `/api/v1alpha1/task/name/{name}`.replace(
-				`{${'name'}}`,
-				encodeURIComponent(String(name))
+			// verify required parameter 'id' is not null or undefined
+			assertParamExists('findTaskById', 'id', id);
+			const localVarPath = `/api/v1alpha1/task/id/{id}`.replace(
+				`{${'id'}}`,
+				encodeURIComponent(String(id))
 			);
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -88,7 +88,58 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			localVarHeaderParameter['Content-Type'] = 'application/json';
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 *
+		 * @param {string} id
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		findTaskProcessById: async (
+			id: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'id' is not null or undefined
+			assertParamExists('findTaskProcessById', 'id', id);
+			const localVarPath = `/api/v1alpha1/task/process/{id}`.replace(
+				`{${'id'}}`,
+				encodeURIComponent(String(id))
+			);
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -98,11 +149,76 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
 				...headersFromBaseOptions,
 				...options.headers,
 			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				taskEntity,
-				localVarRequestOptions,
-				configuration
-			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * List tasks by condition.
+		 * @param {number} [page] 第几页，从1开始, 默认为1.
+		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {string} [name] 经过Basic64编码的任务名称，模糊匹配.
+		 * @param {'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL'} [status] 任务状态，精准匹配.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listTasksByCondition: async (
+			page?: number,
+			size?: number,
+			name?: string,
+			status?: 'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL',
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/tasks/condition`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (page !== undefined) {
+				localVarQueryParameter['page'] = page;
+			}
+
+			if (size !== undefined) {
+				localVarQueryParameter['size'] = size;
+			}
+
+			if (name !== undefined) {
+				localVarQueryParameter['name'] = name;
+			}
+
+			if (status !== undefined) {
+				localVarQueryParameter['status'] = status;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
 
 			return {
 				url: toPathString(localVarUrlObj),
@@ -122,23 +238,74 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
 	return {
 		/**
 		 *
-		 * @param {string} name
-		 * @param {TaskEntity} [taskEntity]
+		 * @param {string} id
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		async findTaskByName(
-			name: string,
-			taskEntity?: TaskEntity,
+		async findTaskById(
+			id: string,
 			options?: AxiosRequestConfig
 		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TaskEntity>
 		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.findTaskByName(
-				name,
-				taskEntity,
+			const localVarAxiosArgs = await localVarAxiosParamCreator.findTaskById(
+				id,
 				options
 			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 *
+		 * @param {string} id
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async findTaskProcessById(
+			id: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.findTaskProcessById(id, options);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * List tasks by condition.
+		 * @param {number} [page] 第几页，从1开始, 默认为1.
+		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {string} [name] 经过Basic64编码的任务名称，模糊匹配.
+		 * @param {'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL'} [status] 任务状态，精准匹配.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async listTasksByCondition(
+			page?: number,
+			size?: number,
+			name?: string,
+			status?: 'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL',
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.listTasksByCondition(
+					page,
+					size,
+					name,
+					status,
+					options
+				);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -162,18 +329,48 @@ export const V1alpha1TaskApiFactory = function (
 	return {
 		/**
 		 *
-		 * @param {V1alpha1TaskApiFindTaskByNameRequest} requestParameters Request parameters.
+		 * @param {V1alpha1TaskApiFindTaskByIdRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
-		findTaskByName(
-			requestParameters: V1alpha1TaskApiFindTaskByNameRequest,
+		findTaskById(
+			requestParameters: V1alpha1TaskApiFindTaskByIdRequest,
 			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
+		): AxiosPromise<TaskEntity> {
 			return localVarFp
-				.findTaskByName(
+				.findTaskById(requestParameters.id, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 *
+		 * @param {V1alpha1TaskApiFindTaskProcessByIdRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		findTaskProcessById(
+			requestParameters: V1alpha1TaskApiFindTaskProcessByIdRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<number> {
+			return localVarFp
+				.findTaskProcessById(requestParameters.id, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * List tasks by condition.
+		 * @param {V1alpha1TaskApiListTasksByConditionRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		listTasksByCondition(
+			requestParameters: V1alpha1TaskApiListTasksByConditionRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<PagingWrap> {
+			return localVarFp
+				.listTasksByCondition(
+					requestParameters.page,
+					requestParameters.size,
 					requestParameters.name,
-					requestParameters.taskEntity,
+					requestParameters.status,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -182,24 +379,66 @@ export const V1alpha1TaskApiFactory = function (
 };
 
 /**
- * Request parameters for findTaskByName operation in V1alpha1TaskApi.
+ * Request parameters for findTaskById operation in V1alpha1TaskApi.
  * @export
- * @interface V1alpha1TaskApiFindTaskByNameRequest
+ * @interface V1alpha1TaskApiFindTaskByIdRequest
  */
-export interface V1alpha1TaskApiFindTaskByNameRequest {
+export interface V1alpha1TaskApiFindTaskByIdRequest {
 	/**
 	 *
 	 * @type {string}
-	 * @memberof V1alpha1TaskApiFindTaskByName
+	 * @memberof V1alpha1TaskApiFindTaskById
 	 */
-	readonly name: string;
+	readonly id: string;
+}
 
+/**
+ * Request parameters for findTaskProcessById operation in V1alpha1TaskApi.
+ * @export
+ * @interface V1alpha1TaskApiFindTaskProcessByIdRequest
+ */
+export interface V1alpha1TaskApiFindTaskProcessByIdRequest {
 	/**
 	 *
-	 * @type {TaskEntity}
-	 * @memberof V1alpha1TaskApiFindTaskByName
+	 * @type {string}
+	 * @memberof V1alpha1TaskApiFindTaskProcessById
 	 */
-	readonly taskEntity?: TaskEntity;
+	readonly id: string;
+}
+
+/**
+ * Request parameters for listTasksByCondition operation in V1alpha1TaskApi.
+ * @export
+ * @interface V1alpha1TaskApiListTasksByConditionRequest
+ */
+export interface V1alpha1TaskApiListTasksByConditionRequest {
+	/**
+	 * 第几页，从1开始, 默认为1.
+	 * @type {number}
+	 * @memberof V1alpha1TaskApiListTasksByCondition
+	 */
+	readonly page?: number;
+
+	/**
+	 * 每页条数，默认为10.
+	 * @type {number}
+	 * @memberof V1alpha1TaskApiListTasksByCondition
+	 */
+	readonly size?: number;
+
+	/**
+	 * 经过Basic64编码的任务名称，模糊匹配.
+	 * @type {string}
+	 * @memberof V1alpha1TaskApiListTasksByCondition
+	 */
+	readonly name?: string;
+
+	/**
+	 * 任务状态，精准匹配.
+	 * @type {'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL'}
+	 * @memberof V1alpha1TaskApiListTasksByCondition
+	 */
+	readonly status?: 'CREATE' | 'RUNNING' | 'FINISH' | 'CANCEL' | 'FAIL';
 }
 
 /**
@@ -211,19 +450,53 @@ export interface V1alpha1TaskApiFindTaskByNameRequest {
 export class V1alpha1TaskApi extends BaseAPI {
 	/**
 	 *
-	 * @param {V1alpha1TaskApiFindTaskByNameRequest} requestParameters Request parameters.
+	 * @param {V1alpha1TaskApiFindTaskByIdRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
 	 * @memberof V1alpha1TaskApi
 	 */
-	public findTaskByName(
-		requestParameters: V1alpha1TaskApiFindTaskByNameRequest,
+	public findTaskById(
+		requestParameters: V1alpha1TaskApiFindTaskByIdRequest,
 		options?: AxiosRequestConfig
 	) {
 		return V1alpha1TaskApiFp(this.configuration)
-			.findTaskByName(
+			.findTaskById(requestParameters.id, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 *
+	 * @param {V1alpha1TaskApiFindTaskProcessByIdRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1TaskApi
+	 */
+	public findTaskProcessById(
+		requestParameters: V1alpha1TaskApiFindTaskProcessByIdRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1TaskApiFp(this.configuration)
+			.findTaskProcessById(requestParameters.id, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * List tasks by condition.
+	 * @param {V1alpha1TaskApiListTasksByConditionRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1TaskApi
+	 */
+	public listTasksByCondition(
+		requestParameters: V1alpha1TaskApiListTasksByConditionRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1TaskApiFp(this.configuration)
+			.listTasksByCondition(
+				requestParameters.page,
+				requestParameters.size,
 				requestParameters.name,
-				requestParameters.taskEntity,
+				requestParameters.status,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));

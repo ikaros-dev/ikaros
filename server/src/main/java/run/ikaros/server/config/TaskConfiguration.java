@@ -17,7 +17,7 @@ public class TaskConfiguration {
      */
     @Bean(destroyMethod = "shutdown")
     public ExecutorService threadPoolExecutor() {
-        ThreadFactory namedThreadFactory = new CustomizableThreadFactory("task-pool-%d");
+        ThreadFactory namedThreadFactory = new CustomizableThreadFactory("task-thread-");
 
         return new ThreadPoolExecutor(
             4,

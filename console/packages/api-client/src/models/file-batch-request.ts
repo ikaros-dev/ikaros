@@ -15,19 +15,19 @@
 /**
  *
  * @export
- * @interface ConfigMap
+ * @interface FileBatchRequest
  */
-export interface ConfigMap {
+export interface FileBatchRequest {
 	/**
-	 *
+	 * 文件ID数组
+	 * @type {Array<number>}
+	 * @memberof FileBatchRequest
+	 */
+	fileIds: Array<number>;
+	/**
+	 * 远端
 	 * @type {string}
-	 * @memberof ConfigMap
+	 * @memberof FileBatchRequest
 	 */
-	name?: string;
-	/**
-	 *
-	 * @type {{ [key: string]: string; }}
-	 * @memberof ConfigMap
-	 */
-	data?: { [key: string]: string };
+	remote: string;
 }

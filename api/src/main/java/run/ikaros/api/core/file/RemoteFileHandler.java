@@ -1,7 +1,6 @@
 package run.ikaros.api.core.file;
 
 import java.nio.file.Path;
-import java.util.List;
 import org.pf4j.ExtensionPoint;
 
 public interface RemoteFileHandler extends ExtensionPoint {
@@ -14,10 +13,10 @@ public interface RemoteFileHandler extends ExtensionPoint {
     /**
      * Push all chunk encrypted file to remote.
      *
-     * @param chunkFilePushDirPath all chunk encrypted file push dir path
+     * @param path file that need push to remote
      * @return remote file id list
      */
-    List<RemoteFileChunk> push(Path chunkFilePushDirPath);
+    RemoteFileChunk push(Path path);
 
     /**
      * Pull all chunk encrypted file from remote.
@@ -25,7 +24,7 @@ public interface RemoteFileHandler extends ExtensionPoint {
      * @param chunkFilePullDirPath all chunk encrypted file pull dir path
      * @param remoteFileId         remote file id
      */
-    void pull(Path chunkFilePullDirPath, List<String> remoteFileId);
+    void pull(Path chunkFilePullDirPath, String remoteFileId);
 
     /**
      * Delete remote chunk file path.

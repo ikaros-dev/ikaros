@@ -26,6 +26,12 @@ export interface EpisodeResource {
 	url?: string;
 	/**
 	 *
+	 * @type {boolean}
+	 * @memberof EpisodeResource
+	 */
+	canRead?: boolean;
+	/**
+	 *
 	 * @type {string}
 	 * @memberof EpisodeResource
 	 */

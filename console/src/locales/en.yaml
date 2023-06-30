@@ -90,6 +90,7 @@ core:
         game: Games
         music: Musics
         novel: Novels
+        tasks: Tasks
     operations:
       profile:
         button: Profile
@@ -123,3 +124,7 @@ core:
         install: Install plugin
   settings:
     title: Settings
+  tasks:
+    title: Tasks
+    details:
+      title: Task Details

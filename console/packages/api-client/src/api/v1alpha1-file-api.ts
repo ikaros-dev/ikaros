@@ -38,6 +38,8 @@ import {
 	RequiredError,
 } from '../base';
 // @ts-ignore
+import { FileBatchRequest } from '../models';
+// @ts-ignore
 import { FileEntity } from '../models';
 // @ts-ignore
 import { PagingWrap } from '../models';
@@ -328,6 +330,123 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 		},
 		/**
 		 *
+		 * @param {FileBatchRequest} [fileBatchRequest]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pullFile4RemoteBatch: async (
+			fileBatchRequest?: FileBatchRequest,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/file/remote/pull/batch`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				fileBatchRequest,
+				localVarRequestOptions,
+				configuration
+			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 *
+		 * @param {string} subjectId Subject id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pullSubject4Remote: async (
+			subjectId: string,
+			remote: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'subjectId' is not null or undefined
+			assertParamExists('pullSubject4Remote', 'subjectId', subjectId);
+			// verify required parameter 'remote' is not null or undefined
+			assertParamExists('pullSubject4Remote', 'remote', remote);
+			const localVarPath =
+				`/api/v1alpha1/file/remote/pull/batch/subject/{subjectId}`.replace(
+					`{${'subjectId'}}`,
+					encodeURIComponent(String(subjectId))
+				);
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (remote !== undefined) {
+				localVarQueryParameter['remote'] = remote;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 *
 		 * @param {string} id File id.
 		 * @param {string} remote Remote
 		 * @param {*} [options] Override http request option.
@@ -369,6 +488,123 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 			if (id !== undefined) {
 				localVarQueryParameter['id'] = id;
 			}
+
+			if (remote !== undefined) {
+				localVarQueryParameter['remote'] = remote;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 *
+		 * @param {FileBatchRequest} [fileBatchRequest]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pushFile2RemoteBatch: async (
+			fileBatchRequest?: FileBatchRequest,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/file/remote/push/batch`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				fileBatchRequest,
+				localVarRequestOptions,
+				configuration
+			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 *
+		 * @param {string} subjectId Subject id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pushSubject2Remote: async (
+			subjectId: string,
+			remote: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'subjectId' is not null or undefined
+			assertParamExists('pushSubject2Remote', 'subjectId', subjectId);
+			// verify required parameter 'remote' is not null or undefined
+			assertParamExists('pushSubject2Remote', 'remote', remote);
+			const localVarPath =
+				`/api/v1alpha1/file/remote/push/batch/subject/{subjectId}`.replace(
+					`{${'subjectId'}}`,
+					encodeURIComponent(String(subjectId))
+				);
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
 			if (remote !== undefined) {
 				localVarQueryParameter['remote'] = remote;
@@ -786,6 +1022,57 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 		},
 		/**
 		 *
+		 * @param {FileBatchRequest} [fileBatchRequest]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async pullFile4RemoteBatch(
+			fileBatchRequest?: FileBatchRequest,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.pullFile4RemoteBatch(
+					fileBatchRequest,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 *
+		 * @param {string} subjectId Subject id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async pullSubject4Remote(
+			subjectId: string,
+			remote: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.pullSubject4Remote(
+					subjectId,
+					remote,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 *
 		 * @param {string} id File id.
 		 * @param {string} remote Remote
 		 * @param {*} [options] Override http request option.
@@ -803,6 +1090,57 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 				remote,
 				options
 			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 *
+		 * @param {FileBatchRequest} [fileBatchRequest]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async pushFile2RemoteBatch(
+			fileBatchRequest?: FileBatchRequest,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.pushFile2RemoteBatch(
+					fileBatchRequest,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 *
+		 * @param {string} subjectId Subject id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async pushSubject2Remote(
+			subjectId: string,
+			remote: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.pushSubject2Remote(
+					subjectId,
+					remote,
+					options
+				);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -1003,6 +1341,38 @@ export const V1alpha1FileApiFactory = function (
 		},
 		/**
 		 *
+		 * @param {V1alpha1FileApiPullFile4RemoteBatchRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pullFile4RemoteBatch(
+			requestParameters: V1alpha1FileApiPullFile4RemoteBatchRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.pullFile4RemoteBatch(requestParameters.fileBatchRequest, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 *
+		 * @param {V1alpha1FileApiPullSubject4RemoteRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pullSubject4Remote(
+			requestParameters: V1alpha1FileApiPullSubject4RemoteRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.pullSubject4Remote(
+					requestParameters.subjectId,
+					requestParameters.remote,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 *
 		 * @param {V1alpha1FileApiPushFile2RemoteRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -1014,6 +1384,38 @@ export const V1alpha1FileApiFactory = function (
 			return localVarFp
 				.pushFile2Remote(
 					requestParameters.id,
+					requestParameters.remote,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 *
+		 * @param {V1alpha1FileApiPushFile2RemoteBatchRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pushFile2RemoteBatch(
+			requestParameters: V1alpha1FileApiPushFile2RemoteBatchRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.pushFile2RemoteBatch(requestParameters.fileBatchRequest, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 *
+		 * @param {V1alpha1FileApiPushSubject2RemoteRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pushSubject2Remote(
+			requestParameters: V1alpha1FileApiPushSubject2RemoteRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.pushSubject2Remote(
+					requestParameters.subjectId,
 					requestParameters.remote,
 					options
 				)
@@ -1155,6 +1557,41 @@ export interface V1alpha1FileApiPullFile4RemoteRequest {
 }
 
 /**
+ * Request parameters for pullFile4RemoteBatch operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiPullFile4RemoteBatchRequest
+ */
+export interface V1alpha1FileApiPullFile4RemoteBatchRequest {
+	/**
+	 *
+	 * @type {FileBatchRequest}
+	 * @memberof V1alpha1FileApiPullFile4RemoteBatch
+	 */
+	readonly fileBatchRequest?: FileBatchRequest;
+}
+
+/**
+ * Request parameters for pullSubject4Remote operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiPullSubject4RemoteRequest
+ */
+export interface V1alpha1FileApiPullSubject4RemoteRequest {
+	/**
+	 * Subject id.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiPullSubject4Remote
+	 */
+	readonly subjectId: string;
+
+	/**
+	 * Remote
+	 * @type {string}
+	 * @memberof V1alpha1FileApiPullSubject4Remote
+	 */
+	readonly remote: string;
+}
+
+/**
  * Request parameters for pushFile2Remote operation in V1alpha1FileApi.
  * @export
  * @interface V1alpha1FileApiPushFile2RemoteRequest
@@ -1171,6 +1608,41 @@ export interface V1alpha1FileApiPushFile2RemoteRequest {
 	 * Remote
 	 * @type {string}
 	 * @memberof V1alpha1FileApiPushFile2Remote
+	 */
+	readonly remote: string;
+}
+
+/**
+ * Request parameters for pushFile2RemoteBatch operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiPushFile2RemoteBatchRequest
+ */
+export interface V1alpha1FileApiPushFile2RemoteBatchRequest {
+	/**
+	 *
+	 * @type {FileBatchRequest}
+	 * @memberof V1alpha1FileApiPushFile2RemoteBatch
+	 */
+	readonly fileBatchRequest?: FileBatchRequest;
+}
+
+/**
+ * Request parameters for pushSubject2Remote operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiPushSubject2RemoteRequest
+ */
+export interface V1alpha1FileApiPushSubject2RemoteRequest {
+	/**
+	 * Subject id.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiPushSubject2Remote
+	 */
+	readonly subjectId: string;
+
+	/**
+	 * Remote
+	 * @type {string}
+	 * @memberof V1alpha1FileApiPushSubject2Remote
 	 */
 	readonly remote: string;
 }
@@ -1339,6 +1811,42 @@ export class V1alpha1FileApi extends BaseAPI {
 
 	/**
 	 *
+	 * @param {V1alpha1FileApiPullFile4RemoteBatchRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public pullFile4RemoteBatch(
+		requestParameters: V1alpha1FileApiPullFile4RemoteBatchRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.pullFile4RemoteBatch(requestParameters.fileBatchRequest, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 *
+	 * @param {V1alpha1FileApiPullSubject4RemoteRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public pullSubject4Remote(
+		requestParameters: V1alpha1FileApiPullSubject4RemoteRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.pullSubject4Remote(
+				requestParameters.subjectId,
+				requestParameters.remote,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 *
 	 * @param {V1alpha1FileApiPushFile2RemoteRequest} requestParameters Request parameters.
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
@@ -1350,6 +1858,42 @@ export class V1alpha1FileApi extends BaseAPI {
 	) {
 		return V1alpha1FileApiFp(this.configuration)
 			.pushFile2Remote(requestParameters.id, requestParameters.remote, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 *
+	 * @param {V1alpha1FileApiPushFile2RemoteBatchRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public pushFile2RemoteBatch(
+		requestParameters: V1alpha1FileApiPushFile2RemoteBatchRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.pushFile2RemoteBatch(requestParameters.fileBatchRequest, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 *
+	 * @param {V1alpha1FileApiPushSubject2RemoteRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public pushSubject2Remote(
+		requestParameters: V1alpha1FileApiPushSubject2RemoteRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.pushSubject2Remote(
+				requestParameters.subjectId,
+				requestParameters.remote,
+				options
+			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 

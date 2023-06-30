@@ -238,7 +238,7 @@ const formatFileSize = (value): string => {
 					<el-descriptions-item label="创建时间：">
 						{{ file.createTime }}
 					</el-descriptions-item>
-					<el-descriptions-item label="MD5">
+					<el-descriptions-item v-if="file.md5" label="MD5">
 						{{ file.md5 }}
 					</el-descriptions-item>
 					<el-descriptions-item v-if="file.aesKey" label="AesKey">

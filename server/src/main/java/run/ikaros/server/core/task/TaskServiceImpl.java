@@ -1,15 +1,18 @@
 package run.ikaros.server.core.task;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.enums.TaskStatus;
 import run.ikaros.server.store.repository.TaskRepository;
@@ -29,8 +32,8 @@ public class TaskServiceImpl implements TaskService {
     /**
      * Update task status.
      */
-    @Async
-    @Scheduled(cron = "0/30 * *  * * ? ")
+    //@Async
+    //@Scheduled(cron = "0/30 * *  * * ? ")
     public void updateTaskStatus() {
         // log.debug("exec updateTaskStatus");
         for (Map.Entry<String, Future<?>> entry : futureMap.entrySet()) {
@@ -44,7 +47,7 @@ public class TaskServiceImpl implements TaskService {
             } else {
                 taskStatus = TaskStatus.RUNNING;
             }
-            taskRepository.findByName(name)
+            taskRepository.findAllByName(name)
                 .flatMap(taskEntity -> {
                     TaskStatus status = taskEntity.getStatus();
                     if (!status.equals(taskStatus)) {
@@ -65,22 +68,42 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findById(id);
     }
 
-    @Override
-    public Mono<TaskEntity> findByName(String name) {
-        Assert.hasText(name, "'name' must has text.");
-        return taskRepository.findByName(name);
-    }
 
     @Override
     public Mono<Void> submit(Task task) {
         Assert.notNull(task, "'task' must not null.");
         TaskEntity entity = task.getEntity();
         Assert.notNull(entity, "'task entity' must not null.");
+        setDefaultFieldValue(entity);
         Assert.hasText(entity.getName(), "'task entity name' must has text.");
-        if (entity.getCreateTime().equals(entity.getStartTime())) {
-            futureMap.put(entity.getName(), executorService.submit(task));
+
+        // 重复提交校验
+        if (futureMap.containsKey(entity.getName()) && !futureMap.get(entity.getName()).isDone()) {
+            throw new RuntimeException("Do not submit tasks twice for task: " + entity.getName());
         }
-        return taskRepository.save(entity).then();
+
+        return taskRepository.save(entity)
+            // 目前直接后台执行，不进行延迟支持
+            // .filter(te -> te.getCreateTime().equals(te.getStartTime()))
+            .flatMap(taskEntity -> {
+                futureMap.put(taskEntity.getName(), executorService.submit(task));
+                return Mono.empty();
+            });
+    }
+
+    private static void setDefaultFieldValue(TaskEntity entity) {
+        if (entity.getStatus() == null) {
+            entity.setStatus(TaskStatus.CREATE);
+        }
+        if (entity.getTotal() == null) {
+            entity.setTotal(0L);
+        }
+        if (entity.getIndex() == null) {
+            entity.setIndex(0L);
+        }
+        if (entity.getCreateTime() == null) {
+            entity.setCreateTime(LocalDateTime.now());
+        }
     }
 
     @Override
@@ -89,5 +112,52 @@ public class TaskServiceImpl implements TaskService {
         Future<?> future = futureMap.get(name);
         future.cancel(true);
         return Mono.empty();
+    }
+
+    @Override
+    public Mono<PagingWrap<TaskEntity>> listEntitiesByCondition(
+        FindTaskCondition condition) {
+        Assert.notNull(condition, "'condition' must no null.");
+
+        final Integer page = condition.getPage();
+        Assert.isTrue(page > 0, "'page' must gt 0.");
+
+        final Integer size = condition.getSize();
+        Assert.isTrue(size > 0, "'size' must gt 0.");
+
+        final String name = StringUtils.hasText(condition.getName())
+            ? condition.getName() : "";
+        final String nameLike = "%" + name + "%";
+        final TaskStatus taskStatus = condition.getStatus();
+
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+
+        Flux<TaskEntity> taskEntityFlux;
+        Mono<Long> countMono;
+
+        if (taskStatus == null) {
+            taskEntityFlux = taskRepository.findAllByNameLike(nameLike, pageRequest);
+            countMono = taskRepository.countAllByNameLike(nameLike);
+        } else {
+            taskEntityFlux =
+                taskRepository.findAllByNameLikeAndStatus(nameLike, taskStatus, pageRequest);
+            countMono = taskRepository.countAllByNameLikeAndStatus(nameLike, taskStatus);
+        }
+        Mono<Long> finalCountMono = countMono;
+        return taskEntityFlux
+            // 时间从近到远排序
+            .sort((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()))
+            .collectList()
+            .flatMap(taskEntities -> finalCountMono
+                .map(count -> new PagingWrap<>(page,
+                    size, count, taskEntities)));
+    }
+
+    @Override
+    public Mono<Long> getProcess(Long id) {
+        return findById(id)
+            .filter(taskEntity -> taskEntity.getTotal() != 0)
+            .map(taskEntity -> 100 * taskEntity.getIndex() / taskEntity.getTotal())
+            .switchIfEmpty(Mono.just(0L));
     }
 }

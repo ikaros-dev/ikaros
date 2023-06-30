@@ -16,7 +16,7 @@ public class ConfigMap {
      */
     @Name
     private String name;
-    private Map<String, Object> data;
+    private Map<String, String> data;
 
     /**
      * Put data map item.
@@ -25,7 +25,7 @@ public class ConfigMap {
      * @param dataItem item value
      * @return this
      */
-    public ConfigMap putDataItem(String key, Object dataItem) {
+    public ConfigMap putDataItem(String key, String dataItem) {
         if (this.data == null) {
             this.data = new LinkedHashMap<>();
         }

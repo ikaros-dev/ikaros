@@ -7,3 +7,11 @@ export const fileTypeMap = new Map([
 	['VOICE', '音声'],
 	['UNKNOWN', '未知'],
 ]);
+
+export const taskNamePrefix = {
+	fileRemote: {
+		push: 'FilePush2RemoteTask-',
+		pull: 'FilePull4RemoteTask-',
+		delete: 'FileDeleteRemoteTask-',
+	},
+};

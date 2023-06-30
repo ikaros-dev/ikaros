@@ -4,26 +4,27 @@ import type { FileEntity } from '@runikaros/api-client';
 import FileFragmentUploadDrawer from './FileFragmentUploadDrawer.vue';
 import FileRemoteActionDialog from './FileRemoteActionDialog.vue';
 import FileDeatilDrawer from './FileDeatilDrawer.vue';
-import { ElMessage } from 'element-plus';
+import {
+	ElButton,
+	ElCol,
+	ElForm,
+	ElFormItem,
+	ElIcon,
+	ElInput,
+	ElMessage,
+	ElOption,
+	ElPagination,
+	ElPopconfirm,
+	ElRow,
+	ElSelect,
+	ElTable,
+	ElTableColumn,
+} from 'element-plus';
 import { Upload } from '@element-plus/icons-vue';
 import { base64Encode } from '@/utils/string-util';
 import { useRoute } from 'vue-router';
 import { onMounted, ref, watch } from 'vue';
-import {
-	ElFormItem,
-	ElForm,
-	ElRow,
-	ElCol,
-	ElInput,
-	ElSelect,
-	ElOption,
-	ElPagination,
-	ElButton,
-	ElIcon,
-	ElTable,
-	ElTableColumn,
-	ElPopconfirm,
-} from 'element-plus';
+import router from '@/router';
 
 const fileUploadDrawerVisible = ref(false);
 
@@ -59,7 +60,7 @@ const fetchFiles = async () => {
 
 const currentShowDetailFile = ref<FileEntity>({});
 const fileDetailDrawerVisible = ref(false);
-const showFileDeatil = (file) => {
+const showFileDetails = (file) => {
 	currentShowDetailFile.value = file;
 	fileDetailDrawerVisible.value = true;
 };
@@ -78,9 +79,7 @@ const onSizeChange = (val: number) => {
 	fetchFiles();
 };
 
-const deleteButtonLoading = ref(false);
 const handleDelete = async (file: FileEntity) => {
-	deleteButtonLoading.value = true;
 	await apiClient.file
 		.deleteFile({
 			id: file.id as number,
@@ -92,9 +91,6 @@ const handleDelete = async (file: FileEntity) => {
 		.catch((err) => {
 			console.error(err);
 			ElMessage.error('删除文件失败，异常：' + err.message);
-		})
-		.finally(() => {
-			deleteButtonLoading.value = false;
 		});
 };
 
@@ -125,7 +121,6 @@ watch(
 	},
 	{ immediate: true }
 );
-
 const fileRemoteActionDialogVisible = ref(false);
 const fileRemoteFileId = ref(-1);
 const fileRemoteIsPush = ref(true);
@@ -134,8 +129,23 @@ const openFileRemoteActionDialog = (file: FileEntity) => {
 	fileRemoteIsPush.value = file.canRead as boolean;
 	fileRemoteActionDialogVisible.value = true;
 };
-const onFileRemoteActionDialogClose = () => {
-	window.location.reload();
+const onFileRemoteActionDialogCloseWithTaskName = async (taskName) => {
+	// 先获取任务ID，任务名称 + 状态是运行中
+	// console.log(taskName);
+	const { data } = await apiClient.task.listTasksByCondition({
+		page: 1,
+		size: 5,
+		name: base64Encode(taskName),
+	});
+	if (!data || !data.items || data.items.length === 0) {
+		ElMessage.error('未获取到任务信息，任务名称：' + taskName);
+		console.log('taskName', taskName);
+		console.log('data', data);
+	}
+	// @ts-ignore
+	const taskId = data.items[0]?.id;
+	// 再进行路由跳转
+	router.push('/tasks/task/details/' + taskId);
 };
 
 onMounted(fetchFiles);
@@ -157,7 +167,7 @@ onMounted(fetchFiles);
 		v-model:visible="fileRemoteActionDialogVisible"
 		v-model:file-id="fileRemoteFileId"
 		v-model:is-push="fileRemoteIsPush"
-		@close="onFileRemoteActionDialogClose"
+		@closeWithTaskName="onFileRemoteActionDialogCloseWithTaskName"
 	/>
 
 	<el-row :gutter="10">
@@ -210,7 +220,9 @@ onMounted(fetchFiles);
 			style="text-align: right"
 		>
 			<el-button plain @click="fileUploadDrawerVisible = true">
-				<el-icon><Upload /></el-icon>
+				<el-icon>
+					<Upload />
+				</el-icon>
 				上传文件
 			</el-button>
 		</el-col>
@@ -220,7 +232,7 @@ onMounted(fetchFiles);
 		:data="files"
 		stripe
 		style="width: 100%"
-		@row-dblclick="showFileDeatil"
+		@row-dblclick="showFileDetails"
 	>
 		<el-table-column prop="id" label="文件ID" width="80" sortable />
 		<el-table-column prop="name" label="文件名称">
@@ -232,11 +244,11 @@ onMounted(fetchFiles);
 				</el-input>
 			</template>
 		</el-table-column>
-		<el-table-column prop="originalName" label="原始名称"> </el-table-column>
+		<el-table-column prop="originalName" label="原始名称"></el-table-column>
 		<el-table-column prop="url" label="文件URL" />
-		<el-table-column label="操作" width="230">
+		<el-table-column label="操作" width="300">
 			<template #default="scoped">
-				<el-button plain @click="showFileDeatil(scoped.row)">详情</el-button>
+				<el-button plain @click="showFileDetails(scoped.row)">详情</el-button>
 
 				<el-button plain @click="openFileRemoteActionDialog(scoped.row)">
 					<span v-if="scoped.row.canRead"> 推送 </span>
@@ -250,9 +262,7 @@ onMounted(fetchFiles);
 					@confirm="handleDelete(scoped.row)"
 				>
 					<template #reference>
-						<el-button :loading="deleteButtonLoading" type="danger">
-							删除
-						</el-button>
+						<el-button type="danger"> 删除</el-button>
 					</template>
 				</el-popconfirm>
 			</template>
