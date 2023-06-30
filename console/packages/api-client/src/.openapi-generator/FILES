@@ -22,6 +22,7 @@ models/batch-matching-episode-file.ts
 models/config-map.ts
 models/episode-resource.ts
 models/episode.ts
+models/file-batch-request.ts
 models/file-entity.ts
 models/file-hint.ts
 models/file-hints.ts

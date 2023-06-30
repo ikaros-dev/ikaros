@@ -3,6 +3,7 @@ export * from './batch-matching-episode-file';
 export * from './config-map';
 export * from './episode';
 export * from './episode-resource';
+export * from './file-batch-request';
 export * from './file-entity';
 export * from './file-hint';
 export * from './file-hints';
