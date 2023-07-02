@@ -4,8 +4,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.store.enums.TaskStatus;
 import run.ikaros.server.store.entity.TaskEntity;
-import run.ikaros.server.store.enums.TaskStatus;
 
 public interface TaskRepository extends R2dbcRepository<TaskEntity, Long> {
     Flux<TaskEntity> findAllByName(String name);

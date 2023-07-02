@@ -30,8 +30,6 @@ import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.exception.NotFoundException;
-import run.ikaros.api.store.entity.BaseEntity;
-import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -39,9 +37,11 @@ import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.vo.FindSubjectCondition;
+import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.CollectionEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
+import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
 import run.ikaros.server.store.repository.CollectionRepository;
@@ -141,7 +141,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             if (!episodeResource.isCanRead()) {
                 return false;
             }
-            
+
         }
 
         return true;

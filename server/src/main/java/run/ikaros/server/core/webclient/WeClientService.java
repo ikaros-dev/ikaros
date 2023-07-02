@@ -4,7 +4,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.retry.annotation.Retryable;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.store.entity.FileEntity;
+import run.ikaros.server.store.entity.FileEntity;
 
 public interface WeClientService {
     /**

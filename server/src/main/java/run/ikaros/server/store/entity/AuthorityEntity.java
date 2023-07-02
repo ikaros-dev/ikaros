@@ -9,7 +9,6 @@ import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.http.HttpMethod;
-import run.ikaros.api.store.entity.BaseEntity;
 
 @Data
 @Builder

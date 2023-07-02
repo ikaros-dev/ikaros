@@ -11,8 +11,8 @@ import org.springframework.util.Assert;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.File;
-import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.server.core.file.FileService;
+import run.ikaros.server.store.entity.FileEntity;
 
 @Slf4j
 @Service

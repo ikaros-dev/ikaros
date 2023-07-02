@@ -38,7 +38,6 @@ import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.SystemVarUtils;
-import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.file.event.FileAddEvent;
@@ -47,17 +46,21 @@ import run.ikaros.server.core.file.task.FileDeleteRemoteTask;
 import run.ikaros.server.core.file.task.FilePull4RemoteTask;
 import run.ikaros.server.core.file.task.FilePush2RemoteTask;
 import run.ikaros.server.core.task.TaskService;
+import run.ikaros.server.infra.utils.ReactiveBeanUtils;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
+import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.FileRemoteRepository;
 import run.ikaros.server.store.repository.FileRepository;
+import run.ikaros.server.store.repository.FolderRepository;
 import run.ikaros.server.store.repository.TaskRepository;
 
 @Slf4j
 @Service
 public class FileServiceImpl implements FileService, ApplicationContextAware {
     private final FileRepository fileRepository;
+    private final FolderRepository folderRepository;
     private final EpisodeFileRepository episodeFileRepository;
     private final FileRemoteRepository fileRemoteRepository;
     private final IkarosProperties ikarosProperties;
@@ -72,6 +75,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
      * Construct.
      */
     public FileServiceImpl(FileRepository fileRepository,
+                           FolderRepository folderRepository,
                            EpisodeFileRepository episodeFileRepository,
                            FileRemoteRepository fileRemoteRepository,
                            IkarosProperties ikarosProperties,
@@ -80,6 +84,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                            ReactiveCustomClient reactiveCustomClient, TaskService taskService,
                            TaskRepository taskRepository) {
         this.fileRepository = fileRepository;
+        this.folderRepository = folderRepository;
         this.episodeFileRepository = episodeFileRepository;
         this.fileRemoteRepository = fileRemoteRepository;
         this.ikarosProperties = ikarosProperties;
@@ -243,10 +248,9 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 }
                 return entity;
             })
-            .map(run.ikaros.api.core.file.File::new)
-            .flatMap(file -> fileRepository.deleteById(id)
+            .flatMap(fileEntity -> fileRepository.deleteById(id)
                 .doOnSuccess(unused -> applicationContext.publishEvent(
-                    new FileRemoveEvent(this, file.entity()))))
+                    new FileRemoveEvent(this, fileEntity))))
             .checkpoint("DeleteFileEntityByFileId")
             .then(episodeFileRepository.deleteAllByFileId(id))
             .doOnNext(lines -> {
@@ -308,7 +312,8 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 sink.next(fileEntity);
             })
             .flatMap(fileRepository::save)
-            .map(run.ikaros.api.core.file.File::new);
+            .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity,
+                new run.ikaros.api.core.file.File()));
     }
 
     private Mono<Void> pushRemote(FileEntity fileEntity, String remote) {

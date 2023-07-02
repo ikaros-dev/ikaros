@@ -1,0 +1,49 @@
+package run.ikaros.server.core.file;
+
+import reactor.core.publisher.Mono;
+import run.ikaros.api.core.file.Folder;
+import run.ikaros.server.infra.exception.file.FolderExistsException;
+import run.ikaros.server.infra.exception.file.FolderHasChildException;
+
+public interface FolderService {
+    /**
+     * Create a folder in parent folder that id is parentId.
+     *
+     * @param parentId parent folder id
+     * @param name     new folder name
+     * @return folder
+     * @throws FolderExistsException when folder exists
+     */
+    Mono<Folder> create(Long parentId, String name) throws FolderExistsException;
+
+    /**
+     * Delete folder by id.
+     * delete all children(files and folder) when allowDeleteWhenChildExists is true.
+     * throw {@link FolderHasChildException} when allowDeleteWhenChildExists is false
+     * and folder has children.
+     *
+     * @param id                         folder id
+     * @param allowDeleteWhenChildExists allow to delete when child exists
+     * @throws FolderHasChildException folder has child, such as files or folders
+     */
+    Mono<Void> delete(Long id, boolean allowDeleteWhenChildExists)
+        throws FolderHasChildException;
+
+    /**
+     * Update folder name. skip when same with old.
+     *
+     * @param id      folder id
+     * @param newName new folder name
+     * @return folder
+     */
+    Mono<Folder> updateName(Long id, String newName);
+
+    /**
+     * Move folder to new location.
+     *
+     * @param id          folder id
+     * @param newParentId new parent folder id
+     * @return folder
+     */
+    Mono<Folder> move(Long id, Long newParentId);
+}

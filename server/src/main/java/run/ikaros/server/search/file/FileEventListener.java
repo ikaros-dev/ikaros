@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.search.file.FileDoc;
 import run.ikaros.api.search.file.FileSearchService;
-import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.server.core.file.event.FileAddEvent;
 import run.ikaros.server.core.file.event.FileRemoveEvent;
+import run.ikaros.server.store.entity.FileEntity;
 
 @Component
 public class FileEventListener {

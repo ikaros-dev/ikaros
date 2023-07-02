@@ -9,9 +9,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.FileOperate;
-import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.server.infra.utils.ReactiveBeanUtils;
+import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.repository.FileRepository;
 
 @Slf4j
@@ -42,44 +42,50 @@ public class FileOperator implements FileOperate {
     }
 
     @Override
-    public Mono<FileEntity> findByOriginalPath(String originalPath) {
+    public Mono<File> findByOriginalPath(String originalPath) {
         Assert.hasText(originalPath, "'originalPath' must has text.");
         return repository.findByOriginalPath(originalPath)
+            .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity, new File()))
             .doOnSuccess(unused ->
                 log.debug("find file entity  by original path:[{}].", originalPath));
     }
 
     @Override
-    public Mono<FileEntity> findById(Long id) {
+    public Mono<File> findById(Long id) {
         Assert.notNull(id, "'id' must not null.");
-        return repository.findById(id);
+        return repository.findById(id)
+            .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity, new File()));
     }
 
     @Override
-    public Flux<FileEntity> findAllByOriginalNameLikeAndType(String originalName, FileType type) {
+    public Flux<File> findAllByOriginalNameLikeAndType(String originalName, FileType type) {
         Assert.hasText(originalName, "'originalName' must has text.");
         Assert.notNull(type, "'type' must not null.");
         String originalNameLike = "%" + originalName + "%";
         PageRequest pageRequest = PageRequest.of(0, 99999);
-        return repository.findAllByOriginalNameLikeAndType(originalNameLike, type, pageRequest);
+        return repository.findAllByOriginalNameLikeAndType(originalNameLike, type, pageRequest)
+            .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity, new File()));
     }
 
     @Override
-    public Mono<FileEntity> create(FileEntity entity) {
-        Assert.notNull(entity, "'entity' must not null.");
-        Assert.isNull(entity.getId(), "'entity id' must null when create.");
-        return repository.save(entity)
-            .doOnSuccess(unused -> log.debug("update file entity by newEntity:[{}].", entity));
-    }
-
-    @Override
-    public Mono<FileEntity> update(FileEntity entity) {
-        Assert.notNull(entity, "'entity' must not null.");
-        Assert.notNull(entity.getId(), "'entity id' must not null when update.");
-        return findById(entity.getId())
-            .flatMap(ent -> ReactiveBeanUtils.copyProperties(entity, ent))
+    public Mono<File> create(File file) {
+        Assert.notNull(file, "'file' must not null.");
+        Assert.isNull(file.getId(), "'file id' must null when create.");
+        return ReactiveBeanUtils.copyProperties(file, new FileEntity())
             .flatMap(repository::save)
-            .doOnSuccess(unused -> log.debug("update file entity by newEntity:[{}].", entity));
+            .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity, new File()))
+            .doOnSuccess(file1 -> log.debug("update file entity by newEntity:[{}].", file1));
+    }
+
+    @Override
+    public Mono<File> update(File file) {
+        Assert.notNull(file, "'file' must not null.");
+        Assert.notNull(file.getId(), "'file id' must not null when update.");
+        return findById(file.getId())
+            .flatMap(ent -> ReactiveBeanUtils.copyProperties(ent, new FileEntity()))
+            .flatMap(repository::save)
+            .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity, new File()))
+            .doOnSuccess(file1 -> log.debug("update file entity by newEntity:[{}].", file1));
     }
 
     @Override

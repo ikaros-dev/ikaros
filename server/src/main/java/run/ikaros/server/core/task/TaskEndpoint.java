@@ -17,10 +17,10 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.store.enums.TaskStatus;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.store.entity.TaskEntity;
-import run.ikaros.server.store.enums.TaskStatus;
 
 @Slf4j
 @Component

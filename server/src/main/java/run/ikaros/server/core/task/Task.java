@@ -3,8 +3,8 @@ package run.ikaros.server.core.task;
 import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import run.ikaros.api.store.enums.TaskStatus;
 import run.ikaros.server.store.entity.TaskEntity;
-import run.ikaros.server.store.enums.TaskStatus;
 import run.ikaros.server.store.repository.TaskRepository;
 
 @Data

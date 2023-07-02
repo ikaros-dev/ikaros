@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
+import run.ikaros.api.store.enums.TaskStatus;
 import run.ikaros.server.store.entity.TaskEntity;
-import run.ikaros.server.store.enums.TaskStatus;
 import run.ikaros.server.store.repository.TaskRepository;
 
 @Disabled

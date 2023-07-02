@@ -30,9 +30,9 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.file.RemoteFileHandler;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
-import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.security.SecurityProperties;
+import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.repository.FileRepository;
 
 @SpringBootTest
