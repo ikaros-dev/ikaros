@@ -1,5 +1,6 @@
 package run.ikaros.server.core.file;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.Folder;
 import run.ikaros.server.infra.exception.file.FolderExistsException;
@@ -46,4 +47,10 @@ public interface FolderService {
      * @return folder
      */
     Mono<Folder> move(Long id, Long newParentId);
+
+    Mono<Folder> findById(Long id);
+
+    Mono<Folder> findByParentIdAndName(Long parentId, String name);
+
+    Flux<Folder> findByParentIdAndNameLike(Long parentId, String nameKeyWord);
 }

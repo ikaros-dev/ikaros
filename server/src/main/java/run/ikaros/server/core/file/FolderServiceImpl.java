@@ -1,27 +1,33 @@
 package run.ikaros.server.core.file;
 
+import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
 import run.ikaros.api.core.file.Folder;
 import run.ikaros.server.infra.exception.file.FolderExistsException;
 import run.ikaros.server.infra.exception.file.FolderHasChildException;
 import run.ikaros.server.infra.exception.file.ParentFolderNotExistsException;
-import run.ikaros.server.infra.utils.ReactiveBeanUtils;
 import run.ikaros.server.store.entity.FolderEntity;
+import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.FolderRepository;
 
 @Slf4j
 @Service
 public class FolderServiceImpl implements FolderService {
     private final FolderRepository folderRepository;
+    private final FileRepository fileRepository;
 
-    public FolderServiceImpl(FolderRepository folderRepository) {
+    public FolderServiceImpl(FolderRepository folderRepository,
+                             FileRepository fileRepository) {
         this.folderRepository = folderRepository;
+        this.fileRepository = fileRepository;
     }
 
 
@@ -64,7 +70,7 @@ public class FolderServiceImpl implements FolderService {
             .filter(folderEntity -> !newName.equals(folderEntity.getName()))
             .map(folderEntity -> folderEntity.setName(newName))
             .flatMap(folderRepository::save)
-            .flatMap(folderEntity -> ReactiveBeanUtils.copyProperties(folderEntity, new Folder()));
+            .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()));
     }
 
     @Override
@@ -80,7 +86,27 @@ public class FolderServiceImpl implements FolderService {
                         + "please create parent folder before move.")))
                 .flatMap(exists ->
                     folderRepository.save(folderEntity.setParentId(newParentId))))
-            .flatMap(folderEntity -> ReactiveBeanUtils.copyProperties(folderEntity, new Folder()));
+            .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()));
+    }
+
+    @Override
+    public Mono<Folder> findById(Long id) {
+        return folderRepository.findById(id)
+            .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()))
+            .map(folder -> {
+                //folderRepository.findAllByParentId(folder.getId())
+                return folder;
+            });
+    }
+
+    @Override
+    public Mono<Folder> findByParentIdAndName(Long parentId, String name) {
+        return null;
+    }
+
+    @Override
+    public Flux<Folder> findByParentIdAndNameLike(Long parentId, String nameKeyWord) {
+        return null;
     }
 
 }

@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.core.file.File;
 import run.ikaros.server.core.file.FileService;
+import run.ikaros.server.infra.utils.ReactiveBeanUtils;
 import run.ikaros.server.store.entity.FileEntity;
 
 @Slf4j
@@ -38,6 +38,6 @@ public class WeClientServiceImpl implements WeClientService {
             .map(dataBufferFactory::wrap)
             .flatMap(dataBuffer -> Mono.just(Mono.just(dataBuffer).flux()))
             .flatMap(dataBuffer -> fileService.upload(fileName, dataBuffer)
-                .map(File::entity));
+                .flatMap(file -> ReactiveBeanUtils.copyProperties(file, new FileEntity())));
     }
 }
