@@ -3,8 +3,10 @@ import { ref, onMounted } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { Folder } from '@runikaros/api-client';
 import { base64Encode } from '@/utils/string-util';
+import { fileTypeMap } from '@/modules/common/constants';
 import FileFragmentUploadDrawer from './FileFragmentUploadDrawer.vue';
 import FileDeatilDrawer from './FileDeatilDrawer.vue';
+import { formatFileSize } from '@/utils/string-util';
 import {
 	DocumentAdd,
 	FolderAdd,
@@ -318,8 +320,16 @@ onMounted(fetchFolders);
 				<el-table-column prop="id" label="ID" width="60" />
 				<el-table-column prop="name" label="文件名" width="180" />
 				<el-table-column prop="originalName" label="原始名" width="250" />
-				<el-table-column prop="type" label="类型" width="180" />
-				<el-table-column prop="size" label="大小" width="180" />
+				<el-table-column prop="type" label="类型" width="180">
+					<template #default="scoped">
+						{{ fileTypeMap.get(scoped.row.type as string) }}
+					</template>
+				</el-table-column>
+				<el-table-column prop="size" label="大小" width="180">
+					<template #default="scoped">
+						{{ formatFileSize(scoped.row.size) }}
+					</template>
+				</el-table-column>
 				<el-table-column prop="url" label="URL">
 					<template #default="scoped">
 						<a :href="scoped.row.url" target="_blank">

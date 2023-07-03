@@ -8,3 +8,16 @@ export const base64Encode = (raw: string | undefined): string => {
 	const word = Utf8.parse(raw);
 	return Base64.stringify(word);
 };
+
+export const formatFileSize = (value): string => {
+	if (!value) {
+		return '0 Bytes';
+	}
+	const unitArr = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+	const srcsize = parseFloat(value);
+	const index = Math.floor(Math.log(srcsize) / Math.log(1024));
+	let size = srcsize / Math.pow(1024, index);
+	// @ts-ignore
+	size = size.toFixed(2);
+	return size + ' ' + unitArr[index];
+};
