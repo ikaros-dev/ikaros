@@ -154,6 +154,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .originalPath(filePath)
                 .canRead(true)
                 .createTime(LocalDateTime.now())
+                .folderId(FileConst.DEFAULT_FOLDER_ID)
                 .build();
             return save(fileEntity).then();
         }

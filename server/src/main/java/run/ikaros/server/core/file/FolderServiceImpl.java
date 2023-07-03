@@ -15,6 +15,7 @@ import run.ikaros.api.core.file.Folder;
 import run.ikaros.server.infra.exception.file.FolderExistsException;
 import run.ikaros.server.infra.exception.file.FolderHasChildException;
 import run.ikaros.server.infra.exception.file.ParentFolderNotExistsException;
+import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.entity.FolderEntity;
 import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.FolderRepository;
@@ -53,8 +54,25 @@ public class FolderServiceImpl implements FolderService {
             .flatMap(folderEntity -> allowDeleteWhenChildExists
                 ? delete(folderEntity.getId(), true)
                 :
-                Mono.error(new FolderHasChildException("current folder has children when delete.")))
+                Mono.error(new FolderHasChildException(
+                    "current folder has children folders when delete.")))
+            .thenMany(fileRepository.findAllByFolderId(id))
+            .flatMap(fileEntity -> allowDeleteWhenChildExists
+                ? deleteFile(fileEntity)
+                :
+                Mono.error(new FolderHasChildException(
+                    "current folder has children files when delete.")))
             .then(folderRepository.deleteById(id));
+    }
+
+    private Mono<FileEntity> deleteFile(FileEntity fileEntity) {
+        java.io.File file = new java.io.File(fileEntity.getOriginalPath());
+        if (file.exists()) {
+            file.delete();
+            log.debug("delete file in path: {}", fileEntity.getOriginalPath());
+        }
+        return folderRepository.deleteById(fileEntity.getId())
+            .then(Mono.just(fileEntity));
     }
 
     @Override
