@@ -5,6 +5,7 @@ api/plugin-ikaros-run-v1alpha1-plugin-api.ts
 api/setting-ikaros-run-v1alpha1-config-map-api.ts
 api/v1alpha1-episode-file-api.ts
 api/v1alpha1-file-api.ts
+api/v1alpha1-folder-api.ts
 api/v1alpha1-indices-api.ts
 api/v1alpha1-plugin-api.ts
 api/v1alpha1-subject-api.ts
@@ -26,6 +27,7 @@ models/file-batch-request.ts
 models/file-entity.ts
 models/file-hint.ts
 models/file-hints.ts
+models/folder.ts
 models/index.ts
 models/model-file.ts
 models/paging-wrap.ts

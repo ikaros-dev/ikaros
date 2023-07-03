@@ -267,6 +267,68 @@ export const V1alpha1FileApiAxiosParamCreator = function (
 			};
 		},
 		/**
+		 * Move file to appoint folder.
+		 * @param {string} id File id.
+		 * @param {string} folderId Folder id.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		moveFileToAppointFolder: async (
+			id: string,
+			folderId: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'id' is not null or undefined
+			assertParamExists('moveFileToAppointFolder', 'id', id);
+			// verify required parameter 'folderId' is not null or undefined
+			assertParamExists('moveFileToAppointFolder', 'folderId', folderId);
+			const localVarPath = `/api/v1alpha1/file/folder`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'PUT',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (id !== undefined) {
+				localVarQueryParameter['id'] = id;
+			}
+
+			if (folderId !== undefined) {
+				localVarQueryParameter['folderId'] = folderId;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
 		 *
 		 * @param {string} id File id.
 		 * @param {string} remote Remote
@@ -995,6 +1057,33 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 			);
 		},
 		/**
+		 * Move file to appoint folder.
+		 * @param {string} id File id.
+		 * @param {string} folderId Folder id.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async moveFileToAppointFolder(
+			id: string,
+			folderId: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.moveFileToAppointFolder(
+					id,
+					folderId,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
 		 *
 		 * @param {string} id File id.
 		 * @param {string} remote Remote
@@ -1322,6 +1411,24 @@ export const V1alpha1FileApiFactory = function (
 				.then((request) => request(axios, basePath));
 		},
 		/**
+		 * Move file to appoint folder.
+		 * @param {V1alpha1FileApiMoveFileToAppointFolderRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		moveFileToAppointFolder(
+			requestParameters: V1alpha1FileApiMoveFileToAppointFolderRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<any> {
+			return localVarFp
+				.moveFileToAppointFolder(
+					requestParameters.id,
+					requestParameters.folderId,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
 		 *
 		 * @param {V1alpha1FileApiPullFile4RemoteRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
@@ -1533,6 +1640,27 @@ export interface V1alpha1FileApiListFilesByConditionRequest {
 	 * @memberof V1alpha1FileApiListFilesByCondition
 	 */
 	readonly type?: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'VOICE' | 'UNKNOWN';
+}
+
+/**
+ * Request parameters for moveFileToAppointFolder operation in V1alpha1FileApi.
+ * @export
+ * @interface V1alpha1FileApiMoveFileToAppointFolderRequest
+ */
+export interface V1alpha1FileApiMoveFileToAppointFolderRequest {
+	/**
+	 * File id.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiMoveFileToAppointFolder
+	 */
+	readonly id: string;
+
+	/**
+	 * Folder id.
+	 * @type {string}
+	 * @memberof V1alpha1FileApiMoveFileToAppointFolder
+	 */
+	readonly folderId: string;
 }
 
 /**
@@ -1788,6 +1916,26 @@ export class V1alpha1FileApi extends BaseAPI {
 				requestParameters.size,
 				requestParameters.fileName,
 				requestParameters.type,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Move file to appoint folder.
+	 * @param {V1alpha1FileApiMoveFileToAppointFolderRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FileApi
+	 */
+	public moveFileToAppointFolder(
+		requestParameters: V1alpha1FileApiMoveFileToAppointFolderRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FileApiFp(this.configuration)
+			.moveFileToAppointFolder(
+				requestParameters.id,
+				requestParameters.folderId,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));
