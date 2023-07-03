@@ -17,14 +17,16 @@ import lombok.experimental.Accessors;
 public class Folder {
     private Long id;
     private String name;
+    @JsonProperty("parent_id")
+    private Long parentId;
     @JsonProperty("parent_name")
     private String parentName;
     @JsonProperty("create_time")
     private LocalDateTime createTime;
     @JsonProperty("update_time")
     private LocalDateTime updateTime;
-    private List<File> files = List.of();
-    private List<Folder> folders = List.of();
+    private List<File> files;
+    private List<Folder> folders;
 
     public boolean hasFile() {
         return !files.isEmpty();

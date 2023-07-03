@@ -5,6 +5,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.Folder;
 import run.ikaros.server.infra.exception.file.FolderExistsException;
 import run.ikaros.server.infra.exception.file.FolderHasChildException;
+import run.ikaros.server.store.entity.FolderEntity;
 
 public interface FolderService {
     /**
@@ -15,7 +16,7 @@ public interface FolderService {
      * @return folder
      * @throws FolderExistsException when folder exists
      */
-    Mono<Folder> create(Long parentId, String name) throws FolderExistsException;
+    Mono<FolderEntity> create(Long parentId, String name) throws FolderExistsException;
 
     /**
      * Delete folder by id.

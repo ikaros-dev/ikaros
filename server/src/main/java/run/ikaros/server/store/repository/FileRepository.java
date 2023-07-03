@@ -17,6 +17,8 @@ import run.ikaros.server.store.entity.FileEntity;
 public interface FileRepository extends R2dbcRepository<FileEntity, Long> {
     Flux<FileEntity> findAllBy(Pageable pageable);
 
+    Flux<FileEntity> findAllByFolderId(Long folderId);
+
     Flux<FileEntity> findAllByOriginalNameLikeAndType(String originalName, FileType type,
                                                       Pageable pageable);
 

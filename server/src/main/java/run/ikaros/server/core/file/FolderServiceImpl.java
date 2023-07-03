@@ -10,6 +10,7 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
+import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.Folder;
 import run.ikaros.server.infra.exception.file.FolderExistsException;
 import run.ikaros.server.infra.exception.file.FolderHasChildException;
@@ -32,22 +33,20 @@ public class FolderServiceImpl implements FolderService {
 
 
     @Override
-    public Mono<Folder> create(Long parentId, String name)
+    public Mono<FolderEntity> create(Long parentId, String name)
         throws FolderExistsException {
         Assert.hasText(name, "folder name must has text.");
         if (Objects.isNull(parentId) || parentId < 0) {
             parentId = FileConst.DEFAULT_FOLDER_ROOT_ID;
         }
-        Long finalParentFolderId = parentId;
+        Long finalParentId = parentId;
         return folderRepository.findByNameAndParentId(name, parentId)
+            .map(folderEntity -> folderEntity.setParentId(finalParentId).setName(name))
+            .flatMap(folderRepository::save)
             .switchIfEmpty(folderRepository.save(FolderEntity.builder()
                 .parentId(parentId).name(name)
                 .createTime(LocalDateTime.now()).updateTime(LocalDateTime.now()).build()))
-            .flatMap(folderEntity -> Mono.error(
-                new FolderExistsException(
-                    "folder exists "
-                        + "for parent id:[" + finalParentFolderId + "] "
-                        + "and name:[" + name + "]")));
+            ;
     }
 
     @Override
@@ -86,27 +85,41 @@ public class FolderServiceImpl implements FolderService {
                         + "please create parent folder before move.")))
                 .flatMap(exists ->
                     folderRepository.save(folderEntity.setParentId(newParentId))))
-            .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()));
+            .flatMap(folderEntity -> findById(folderEntity.getId()));
     }
 
     @Override
     public Mono<Folder> findById(Long id) {
+        Assert.isTrue(id > 0, "folder id must gt 0.");
         return folderRepository.findById(id)
             .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()))
-            .map(folder -> {
-                //folderRepository.findAllByParentId(folder.getId())
-                return folder;
-            });
+            .flatMap(folder -> folderRepository.findAllByParentId(folder.getId())
+                .flatMap(folderEntity -> findById(folderEntity.getId()))
+                .map(folder1 -> folder1.setParentId(folder.getParentId())
+                    .setParentName(folder.getName()))
+                .collectList()
+                .map(folder::setFolders))
+            .flatMap(folder -> fileRepository.findAllByFolderId(id)
+                .flatMap(fileEntity -> copyProperties(fileEntity, new File()))
+                .collectList()
+                .map(folder::setFiles));
     }
 
     @Override
     public Mono<Folder> findByParentIdAndName(Long parentId, String name) {
-        return null;
+        Assert.isTrue(parentId > -1, "parent folder id must gt 0.");
+        Assert.hasText(name, "name must hast text.");
+        return folderRepository.findByNameAndParentId(name, parentId)
+            .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()));
     }
 
     @Override
     public Flux<Folder> findByParentIdAndNameLike(Long parentId, String nameKeyWord) {
-        return null;
+        Assert.isTrue(parentId > -1, "parent folder id must gt 0.");
+        Assert.hasText(nameKeyWord, "nameKeyWord must hast text.");
+        String nameLike = '%' + nameKeyWord + '%';
+        return folderRepository.findAllByNameLikeAndParentId(nameLike, parentId)
+            .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()));
     }
 
 }

@@ -8,5 +8,7 @@ import run.ikaros.server.store.entity.FolderEntity;
 public interface FolderRepository extends R2dbcRepository<FolderEntity, Long> {
     Mono<FolderEntity> findByNameAndParentId(String name, Long parentId);
 
+    Flux<FolderEntity> findAllByNameLikeAndParentId(String name, Long parentId);
+
     Flux<FolderEntity> findAllByParentId(Long parentId);
 }
