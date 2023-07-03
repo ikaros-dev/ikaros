@@ -91,6 +91,7 @@ core:
         music: Musics
         novel: Novels
         tasks: Tasks
+        folders: Folders
     operations:
       profile:
         button: Profile
@@ -102,6 +103,8 @@ core:
     title: Profile
   file:
     title: Files
+  folder:
+    title: Folders
   subject:
     title: Subjects
     put:

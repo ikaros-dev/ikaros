@@ -70,8 +70,8 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public Mono<Folder> move(Long id, Long newParentId) {
-        Assert.isTrue(id > 0, "folder id must gt 0.");
-        Assert.isTrue(newParentId > 0, "newParentFolderId id must gt 0.");
+        Assert.isTrue(id >= 0, "folder id must >= 0.");
+        Assert.isTrue(newParentId >= 0, "newParentFolderId id must >= 0.");
         return folderRepository.findById(id)
             .filter(folderEntity -> !newParentId.equals(folderEntity.getParentId()))
             .flatMap(folderEntity -> folderRepository.existsById(newParentId)
@@ -103,10 +103,10 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public Mono<Folder> findByParentIdAndName(Long parentId, String name) {
-        Assert.isTrue(parentId > -1, "parent folder id must gt 0.");
+        Assert.isTrue(parentId > -2, "parent folder id must gt -2.");
         Assert.hasText(name, "name must hast text.");
         return folderRepository.findByNameAndParentId(name, parentId)
-            .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()));
+            .flatMap(folderEntity -> findById(folderEntity.getId()));
     }
 
     @Override

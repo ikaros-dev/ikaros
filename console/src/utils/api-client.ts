@@ -6,6 +6,7 @@ import {
 	SettingIkarosRunV1alpha1ConfigMapApi,
 	V1alpha1EpisodeFileApi,
 	V1alpha1FileApi,
+	V1alpha1FolderApi,
 	V1alpha1IndicesApi,
 	V1alpha1PluginApi,
 	V1alpha1SubjectApi,
@@ -150,6 +151,7 @@ function setupApiClient(axios: AxiosInstance) {
 		user: new V1alpha1UserApi(undefined, baseURL, axios),
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),
 		file: new V1alpha1FileApi(undefined, baseURL, axios),
+		folder: new V1alpha1FolderApi(undefined, baseURL, axios),
 		subject: new V1alpha1SubjectApi(undefined, baseURL, axios),
 		subjectSyncPlatform: new V1alpha1SubjectSyncPlatformApi(
 			undefined,

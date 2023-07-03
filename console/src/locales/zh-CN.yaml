@@ -89,6 +89,7 @@ core:
         music: 音声
         novel: 书籍
         tasks: 任务
+        folders: 目录
     operations:
       profile:
         button: 个人资料
@@ -100,6 +101,8 @@ core:
     title: 个人中心
   file:
     title: 文件
+  folder:
+    title: 目录
   subject:
     title: 条目
     put:

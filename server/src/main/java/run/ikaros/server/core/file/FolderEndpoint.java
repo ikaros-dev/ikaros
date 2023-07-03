@@ -147,7 +147,8 @@ public class FolderEndpoint implements CoreEndpoint {
         Long id = Long.valueOf(request.queryParam("id").orElse("-1"));
         Long newParentId = Long.valueOf(request.queryParam("newParentId").orElse("-1"));
         return folderService.move(id, newParentId)
-            .flatMap(folder -> ServerResponse.ok().bodyValue(folder));
+            .flatMap(folder -> ServerResponse.ok().bodyValue(folder))
+            .switchIfEmpty(ServerResponse.notFound().build());
     }
 
 
