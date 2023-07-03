@@ -46,7 +46,6 @@ import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.exception.NotFoundException;
-import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.file.request.FileBatchRequest;
@@ -54,6 +53,7 @@ import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.utils.DataBufferUtils;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
+import run.ikaros.server.store.entity.FileEntity;
 
 @Slf4j
 @Component
@@ -228,7 +228,26 @@ public class FileEndpoint implements CoreEndpoint {
                         .required(true)
                         .description("Remote")))
 
+            .PUT("/file/folder", this::moveFileFolder,
+                builder -> builder.operationId("MoveFileToAppointFolder")
+                    .tag(tag).description("Move file to appoint folder.")
+                    .parameter(parameterBuilder()
+                        .name("id").required(true)
+                        .description("File id."))
+                    .parameter(parameterBuilder()
+                        .name("folderId").required(true)
+                        .description("Folder id."))
+                    .response(responseBuilder().implementation(File.class)))
+
             .build();
+    }
+
+    Mono<ServerResponse> moveFileFolder(ServerRequest request) {
+        Long id = Long.valueOf(request.queryParam("id").orElse("-1"));
+        Long folderId = Long.valueOf(request.queryParam("folderId").orElse("-1"));
+        return fileService.updateFolder(id, folderId)
+            .flatMap(file -> ServerResponse.ok().bodyValue(file))
+            .switchIfEmpty(ServerResponse.notFound().build());
     }
 
     private Mono<ServerResponse> pushFile(ServerRequest request) {

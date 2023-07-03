@@ -1,7 +1,7 @@
 package run.ikaros.server.search.file;
 
 import run.ikaros.api.search.file.FileDoc;
-import run.ikaros.api.store.entity.FileEntity;
+import run.ikaros.server.store.entity.FileEntity;
 
 public class FileDocConverter {
     /**

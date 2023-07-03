@@ -55,7 +55,7 @@ public class SystemVarUtils {
         } else {
             String tmpDirPath = basePath.toAbsolutePath().toString();
             ikarosCacheFileDir = tmpDirPath
-                + (tmpDirPath.endsWith(File.separator) ? "" : File.separator) + "cache";
+                + (tmpDirPath.endsWith(File.separator) ? "" : File.separator) + "caches";
         }
 
         File file = new File(ikarosCacheFileDir);

@@ -7,8 +7,8 @@ import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.File;
-import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.store.entity.FileEntity;
 
 public interface FileService {
     Mono<Void> receiveAndHandleFragmentUploadChunkFile(@NotBlank String unique,
@@ -42,4 +42,5 @@ public interface FileService {
 
     Mono<Void> pullRemoteBatch(List<Long> fileIds, String remote);
 
+    Mono<File> updateFolder(Long id, Long folderId);
 }

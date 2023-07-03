@@ -1,4 +1,4 @@
-package run.ikaros.api.store.entity;
+package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;

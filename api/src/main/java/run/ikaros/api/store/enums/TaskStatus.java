@@ -1,4 +1,4 @@
-package run.ikaros.server.store.enums;
+package run.ikaros.api.store.enums;
 
 public enum TaskStatus {
     CREATE,

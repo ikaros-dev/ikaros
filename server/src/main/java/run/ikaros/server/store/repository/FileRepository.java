@@ -5,8 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.store.entity.FileEntity;
 import run.ikaros.api.store.enums.FileType;
+import run.ikaros.server.store.entity.FileEntity;
 
 /**
  * FileEntity repository.
@@ -16,6 +16,8 @@ import run.ikaros.api.store.enums.FileType;
  */
 public interface FileRepository extends R2dbcRepository<FileEntity, Long> {
     Flux<FileEntity> findAllBy(Pageable pageable);
+
+    Flux<FileEntity> findAllByFolderId(Long folderId);
 
     Flux<FileEntity> findAllByOriginalNameLikeAndType(String originalName, FileType type,
                                                       Pageable pageable);

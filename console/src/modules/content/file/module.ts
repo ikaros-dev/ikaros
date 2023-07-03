@@ -1,6 +1,11 @@
 import { definePlugin } from '@runikaros/shared';
+// eslint-disable-next-line no-unused-vars
 import Files from './Files.vue';
-import { Files as FilesIcon } from '@element-plus/icons-vue';
+import Folders from './Folders.vue';
+import {
+	Files as FilesIcon,
+	Folder as FolderIcon,
+} from '@element-plus/icons-vue';
 import { markRaw } from 'vue';
 
 export default definePlugin({
@@ -19,6 +24,23 @@ export default definePlugin({
 						name: 'core.sidebar.menu.items.files',
 						group: 'content',
 						icon: markRaw(FilesIcon),
+						priority: 0,
+					},
+				},
+			},
+		},
+		{
+			parentName: 'Root',
+			route: {
+				path: '/folders',
+				name: 'Folders',
+				component: Folders,
+				meta: {
+					title: 'core.folder.title',
+					menu: {
+						name: 'core.sidebar.menu.items.folders',
+						group: 'content',
+						icon: markRaw(FolderIcon),
 						priority: 0,
 					},
 				},

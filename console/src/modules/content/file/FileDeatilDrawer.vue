@@ -2,6 +2,7 @@
 import { apiClient } from '@/utils/api-client';
 import { FileEntity } from '@runikaros/api-client';
 import { fileTypeMap } from '@/modules/common/constants';
+import { formatFileSize } from '@/utils/string-util';
 import { computed, nextTick, ref } from 'vue';
 import {
 	ElButton,
@@ -141,19 +142,6 @@ const getCompleteFileUrl = (reactiveUrl: string | undefined): string => {
 const handleClose = (done: () => void) => {
 	done();
 	drawerVisible.value = false;
-};
-
-const formatFileSize = (value): string => {
-	if (!value) {
-		return '0 Bytes';
-	}
-	const unitArr = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-	const srcsize = parseFloat(value);
-	const index = Math.floor(Math.log(srcsize) / Math.log(1024));
-	let size = srcsize / Math.pow(1024, index);
-	// @ts-ignore
-	size = size.toFixed(2);
-	return size + ' ' + unitArr[index];
 };
 </script>
 

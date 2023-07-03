@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import run.ikaros.api.store.entity.BaseEntity;
 import run.ikaros.api.store.enums.CollectionStatus;
 
 @Data

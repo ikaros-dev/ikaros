@@ -7,6 +7,7 @@ export * from './file-batch-request';
 export * from './file-entity';
 export * from './file-hint';
 export * from './file-hints';
+export * from './folder';
 export * from './model-file';
 export * from './paging-wrap';
 export * from './plugin';

@@ -5,7 +5,10 @@ public interface FileConst {
      * File import(upload) dir name in work dir.
      */
     String DEFAULT_DIR_NAME = "files";
-    Long DEFAULT_FOLDER_ID = 0L;
+    Long DEFAULT_FOLDER_ROOT_ID = 0L;
+    String DEFAULT_FOLDER_ROOT_NAME = "root";
+    Long DEFAULT_FOLDER_ID = DEFAULT_FOLDER_ROOT_ID;
+    String DEFAULT_FOLDER_NAME = DEFAULT_FOLDER_ROOT_NAME;
 
     interface Postfix {
         String[] IMAGES = {
