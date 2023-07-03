@@ -131,6 +131,14 @@ create table if not exists folder
     constraint folder_pkey primary key (id)
 );
 
+INSERT INTO folder (parent_id, name, create_time, update_time)
+SELECT -1, 'root', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1
+                  FROM folder
+                  WHERE name = 'root'
+                    AND parent_id = -1);
+
+
 -- person_character
 create table if not exists person_character
 (

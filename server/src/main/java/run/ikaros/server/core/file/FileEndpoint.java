@@ -228,7 +228,26 @@ public class FileEndpoint implements CoreEndpoint {
                         .required(true)
                         .description("Remote")))
 
+            .PUT("/file/folder", this::moveFileFolder,
+                builder -> builder.operationId("MoveFileToAppointFolder")
+                    .tag(tag).description("Move file to appoint folder.")
+                    .parameter(parameterBuilder()
+                        .name("id").required(true)
+                        .description("File id."))
+                    .parameter(parameterBuilder()
+                        .name("folderId").required(true)
+                        .description("Folder id."))
+                    .response(responseBuilder().implementation(File.class)))
+
             .build();
+    }
+
+    Mono<ServerResponse> moveFileFolder(ServerRequest request) {
+        Long id = Long.valueOf(request.queryParam("id").orElse("-1"));
+        Long folderId = Long.valueOf(request.queryParam("folderId").orElse("-1"));
+        return fileService.updateFolder(id, folderId)
+            .flatMap(file -> ServerResponse.ok().bodyValue(file))
+            .switchIfEmpty(ServerResponse.notFound().build());
     }
 
     private Mono<ServerResponse> pushFile(ServerRequest request) {

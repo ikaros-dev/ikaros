@@ -39,14 +39,10 @@ public class FolderServiceImpl implements FolderService {
         if (Objects.isNull(parentId) || parentId < 0) {
             parentId = FileConst.DEFAULT_FOLDER_ROOT_ID;
         }
-        Long finalParentId = parentId;
         return folderRepository.findByNameAndParentId(name, parentId)
-            .map(folderEntity -> folderEntity.setParentId(finalParentId).setName(name))
-            .flatMap(folderRepository::save)
             .switchIfEmpty(folderRepository.save(FolderEntity.builder()
                 .parentId(parentId).name(name)
-                .createTime(LocalDateTime.now()).updateTime(LocalDateTime.now()).build()))
-            ;
+                .createTime(LocalDateTime.now()).updateTime(LocalDateTime.now()).build()));
     }
 
     @Override
@@ -90,12 +86,12 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public Mono<Folder> findById(Long id) {
-        Assert.isTrue(id > 0, "folder id must gt 0.");
+        Assert.isTrue(id > -1, "folder id must gt -1.");
         return folderRepository.findById(id)
             .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()))
             .flatMap(folder -> folderRepository.findAllByParentId(folder.getId())
                 .flatMap(folderEntity -> findById(folderEntity.getId()))
-                .map(folder1 -> folder1.setParentId(folder.getParentId())
+                .map(folder1 -> folder1.setParentId(folder.getId())
                     .setParentName(folder.getName()))
                 .collectList()
                 .map(folder::setFolders))

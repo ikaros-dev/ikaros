@@ -1,5 +1,7 @@
 package run.ikaros.server.core.file;
 
+import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
+
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -46,7 +48,6 @@ import run.ikaros.server.core.file.task.FileDeleteRemoteTask;
 import run.ikaros.server.core.file.task.FilePull4RemoteTask;
 import run.ikaros.server.core.file.task.FilePush2RemoteTask;
 import run.ikaros.server.core.task.TaskService;
-import run.ikaros.server.infra.utils.ReactiveBeanUtils;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.entity.TaskEntity;
@@ -312,7 +313,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 sink.next(fileEntity);
             })
             .flatMap(fileRepository::save)
-            .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity,
+            .flatMap(fileEntity -> copyProperties(fileEntity,
                 new run.ikaros.api.core.file.File()));
     }
 
@@ -406,6 +407,17 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         return Flux.fromStream(fileIds.stream())
             .flatMap(fileId -> pullRemote(fileId, remote))
             .then();
+    }
+
+    @Override
+    public Mono<run.ikaros.api.core.file.File> updateFolder(Long id, Long folderId) {
+        Assert.isTrue(id > -1, "id must gt -1.");
+        Assert.isTrue(folderId > -1, "folderId must gt -1.");
+        return findById(id)
+            .map(fileEntity -> fileEntity.setFolderId(folderId))
+            .flatMap(fileRepository::save)
+            .flatMap(fileEntity -> copyProperties(fileEntity,
+                new run.ikaros.api.core.file.File()));
     }
 
 

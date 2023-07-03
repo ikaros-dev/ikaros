@@ -187,6 +187,17 @@ create table if not exists folder
     constraint folder_pkey primary key (id)
 );
 
+INSERT INTO folder (id, parent_id, name, create_time, update_time)
+SELECT 0,
+       -1,
+       'root',
+       CURRENT_TIMESTAMP,
+       CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1
+                  FROM folder
+                  WHERE id = 0);
+
+
 -- person_character
 create sequence if not exists person_character_seq
     increment 1

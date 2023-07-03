@@ -4,6 +4,7 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.util.Base64;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -66,7 +67,7 @@ public class FolderEndpoint implements CoreEndpoint {
                         .name("id").description("Folder id")
                         .implementation(Long.class))
                     .parameter(parameterBuilder()
-                        .name("newName").description("Folder new name.")
+                        .name("newName").description("Folder new name. encode by base 64.")
                         .implementation(String.class))
                     .response(responseBuilder()
                         .implementation(Folder.class)))
@@ -83,7 +84,7 @@ public class FolderEndpoint implements CoreEndpoint {
                     .response(responseBuilder()
                         .implementation(Folder.class)))
 
-            .GET("/folder/{id}", this::findById,
+            .GET("/folder/id/{id}", this::findById,
                 builder -> builder.operationId("FindById")
                     .tag(tag).description("Find folder by id.")
                     .parameter(parameterBuilder()
@@ -121,7 +122,8 @@ public class FolderEndpoint implements CoreEndpoint {
     Mono<ServerResponse> findByParentIdAndNameLike(ServerRequest request) {
         Long parentId = Long.valueOf(request.queryParam("parentId").orElse("-1"));
         String name = request.queryParam("name").orElse("");
-        return folderService.findByParentIdAndNameLike(parentId, name)
+        String finalName = new String(Base64.getDecoder().decode(name));
+        return folderService.findByParentIdAndNameLike(parentId, finalName)
             .collectList()
             .flatMap(folders -> ServerResponse.ok().bodyValue(folders));
     }
@@ -129,7 +131,8 @@ public class FolderEndpoint implements CoreEndpoint {
     Mono<ServerResponse> findByParentIdAndName(ServerRequest request) {
         Long parentId = Long.valueOf(request.queryParam("parentId").orElse("-1"));
         String name = request.queryParam("name").orElse("");
-        return folderService.findByParentIdAndName(parentId, name)
+        String finalName = new String(Base64.getDecoder().decode(name));
+        return folderService.findByParentIdAndName(parentId, finalName)
             .flatMap(folder -> ServerResponse.ok().bodyValue(folder));
     }
 
@@ -151,7 +154,8 @@ public class FolderEndpoint implements CoreEndpoint {
     Mono<ServerResponse> updateFolderName(ServerRequest request) {
         Long id = Long.valueOf(request.queryParam("id").orElse("-1"));
         String newName = request.queryParam("newName").orElse("");
-        return folderService.updateName(id, newName)
+        String finalNewName = new String(Base64.getDecoder().decode(newName));
+        return folderService.updateName(id, finalNewName)
             .flatMap(folder -> ServerResponse.ok().bodyValue(folder));
     }
 
@@ -167,15 +171,14 @@ public class FolderEndpoint implements CoreEndpoint {
     Mono<ServerResponse> createFolder(ServerRequest request) {
         Optional<String> parentIdOp = request.queryParam("parentId");
         Optional<String> nameOp = request.queryParam("name");
-        Assert.isTrue(nameOp.isEmpty() || StringUtils.isBlank(nameOp.get()),
+        Assert.isTrue(!(nameOp.isEmpty() || StringUtils.isBlank(nameOp.get())),
             "'name' must has text");
 
         final Long parentId =
             Long.valueOf(parentIdOp.orElse(String.valueOf(FileConst.DEFAULT_FOLDER_ID)));
-        final String name = nameOp.orElse("");
+        final String name = new String(Base64.getDecoder().decode(nameOp.get()));
 
-        return request.bodyToMono(Folder.class)
-            .flatMap(folder -> folderService.create(parentId, name))
+        return folderService.create(parentId, name)
             .flatMap(folder -> ServerResponse.ok().bodyValue(folder));
     }
 }
