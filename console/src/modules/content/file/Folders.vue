@@ -36,6 +36,7 @@ import {
 } from 'element-plus';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import moment from 'moment';
 
 const findFolder = ref({
 	name: 'root',
@@ -262,6 +263,16 @@ const onCloseWithTaskName = (taskName) => {
 	router.push('/tasks?name=' + taskName.substring(0, taskName.indexOf('-')));
 };
 
+const dateFormat = (row, column) => {
+	var date = row[column.property];
+
+	if (date == undefined) {
+		return '';
+	}
+
+	return moment(date).format('YYYY-MM-DD HH:mm:ss');
+};
+
 onMounted(fetchFolders);
 </script>
 
@@ -377,9 +388,19 @@ onMounted(fetchFolders);
 				@row-dblclick="enrtyFolder"
 			>
 				<el-table-column prop="id" label="ID" width="60" />
-				<el-table-column prop="name" label="目录名" width="180" />
-				<el-table-column prop="create_time" label="创建时间" />
-				<el-table-column prop="update_time" label="更新时间" />
+				<el-table-column prop="name" label="目录名" />
+				<el-table-column
+					prop="create_time"
+					label="创建时间"
+					width="160"
+					:formatter="dateFormat"
+				/>
+				<el-table-column
+					prop="update_time"
+					label="更新时间"
+					width="160"
+					:formatter="dateFormat"
+				/>
 			</el-table>
 			<el-table
 				:data="folder?.files"
