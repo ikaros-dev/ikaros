@@ -169,7 +169,7 @@ public class FolderServiceImpl implements FolderService, ApplicationContextAware
         Assert.isTrue(parentId > -2, "parent folder id must gt -2.");
         Assert.hasText(name, "name must hast text.");
         return folderRepository.findByNameAndParentId(name, parentId)
-            .flatMap(folderEntity -> findById(folderEntity.getId()));
+            .flatMap(folderEntity -> findByIdShallow(folderEntity.getId()));
     }
 
     @Override

@@ -39,6 +39,7 @@ import { useRouter } from 'vue-router';
 
 const findFolder = ref({
 	name: 'root',
+	id: 0,
 	parentId: -1,
 });
 const folder = ref<Folder>();
@@ -147,12 +148,14 @@ const showFileDetails = (file) => {
 interface Path {
 	name: string;
 	parentId: number;
+	id: number;
 }
 
 const paths = ref<Path[]>([
 	{
 		name: 'root',
 		parentId: -1,
+		id: 0,
 	},
 ]);
 
@@ -160,9 +163,11 @@ const enrtyFolder = (folder) => {
 	// console.log(folder);
 	findFolder.value.name = folder.name;
 	findFolder.value.parentId = folder.parent_id;
+	findFolder.value.id = folder.id;
 	paths.value.push({
 		name: folder.name,
 		parentId: folder.parent_id,
+		id: folder.id,
 	});
 	fetchFolders();
 };
@@ -174,6 +179,7 @@ const onBreadcrumbClick = (path) => {
 	}
 	findFolder.value.name = path.name;
 	findFolder.value.parentId = path.parentId;
+	findFolder.value.id = path.id;
 	fetchFolders();
 };
 
@@ -197,6 +203,7 @@ const onDeleteButtonClick = async () => {
 			{
 				name: 'root',
 				parentId: -1,
+				id: 0,
 			},
 		];
 	}
@@ -373,14 +380,6 @@ onMounted(fetchFolders);
 				<el-table-column prop="name" label="目录名" width="180" />
 				<el-table-column prop="create_time" label="创建时间" />
 				<el-table-column prop="update_time" label="更新时间" />
-				<!-- <el-table-column label="操作" width="300">
-					<template #default="scoped">
-						<el-button plain @click="openFolderRemoteActionDialog(scoped.row)">
-							<span v-if="scoped.row.canRead"> 推送 </span>
-							<span v-else> 拉取 </span>
-						</el-button>
-					</template>
-				</el-table-column> -->
 			</el-table>
 			<el-table
 				:data="folder?.files"
