@@ -215,6 +215,8 @@ public class IkarosPluginManager extends DefaultPluginManager
         PluginState pluginState = pluginWrapper.getPluginState();
         if (PluginState.STARTED == pluginState) {
             log.debug("Already started plugin '{}'", getPluginLabel(pluginDescriptor));
+            firePluginStateEvent(
+                new PluginStateEvent(this, pluginWrapper, pluginWrapper.getPluginState()));
             return PluginState.STARTED;
         }
 

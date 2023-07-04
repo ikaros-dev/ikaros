@@ -85,11 +85,32 @@ const onCurrentFileChange = (val) => {
 const dialogFormVisible = ref(false);
 const createFolder = ref({
 	name: '',
+	parentId: 0,
+	parentName: 'root',
 });
+const onAddFolderButtonClick = () => {
+	// console.log(currentSelectFolder.value);
+	if (currentSelectFolder.value) {
+		createFolder.value.parentId = currentSelectFolder.value.id as number;
+		createFolder.value.parentName = currentSelectFolder.value.name + '';
+	} else {
+		createFolder.value.parentId = folder.value?.id as number;
+		createFolder.value.parentName = folder.value?.name + '';
+	}
+	dialogFormVisible.value = true;
+};
 const onCreateFolderButtonClick = async () => {
+	// console.log(currentSelectFolder.value);
+	if (currentSelectFolder.value) {
+		createFolder.value.parentId = currentSelectFolder.value.id as number;
+		createFolder.value.parentName = currentSelectFolder.value.name + '';
+	} else {
+		createFolder.value.parentId = folder.value?.id as number;
+		createFolder.value.parentName = folder.value?.name + '';
+	}
 	await apiClient.folder.createFolder({
 		name: base64Encode(createFolder.value.name),
-		parentId: currentSelectFolder.value.id,
+		parentId: createFolder.value.parentId,
 	});
 	ElMessage.success('创建目录成功：' + createFolder.value);
 	dialogFormVisible.value = false;
@@ -156,8 +177,9 @@ const onBreadcrumbClick = (path) => {
 
 const onDeleteButtonClick = async () => {
 	let needDeteFolderId = -1;
-	if (currentSelectFile.value) {
-		needDeteFolderId = currentSelectFile.value.id as number;
+	// console.log(currentSelectFolder.value);
+	if (currentSelectFolder.value) {
+		needDeteFolderId = currentSelectFolder.value.id as number;
 	} else {
 		needDeteFolderId = folder.value?.id as number;
 	}
@@ -190,8 +212,8 @@ const onSelectionChange = (files: any) => {
 
 const pasteFiles = async () => {
 	let needPasteFolderId = -1;
-	if (currentSelectFile.value) {
-		needPasteFolderId = currentSelectFile.value.id as number;
+	if (currentSelectFolder.value) {
+		needPasteFolderId = currentSelectFolder.value.id as number;
 	} else {
 		needPasteFolderId = folder.value?.id as number;
 	}
@@ -204,6 +226,10 @@ const pasteFiles = async () => {
 	ElMessage.success('粘贴成功');
 	selectFiles.value = [];
 	fetchFolders();
+};
+
+const openFolderRemoteActionDialog = (fold) => {
+	console.log(fold);
 };
 
 onMounted(fetchFolders);
@@ -225,7 +251,7 @@ onMounted(fetchFolders);
 		<el-form :model="createFolder">
 			<el-form-item label="父文件夹ID" :label-width="100">
 				<el-input
-					v-model="currentSelectFolder.id"
+					v-model="createFolder.parentId"
 					disabled
 					style="max-width: 600px"
 					size="large"
@@ -233,7 +259,7 @@ onMounted(fetchFolders);
 			</el-form-item>
 			<el-form-item label="父文件夹名称" :label-width="100">
 				<el-input
-					v-model="currentSelectFolder.name"
+					v-model="createFolder.parentName"
 					disabled
 					style="max-width: 600px"
 					size="large"
@@ -263,7 +289,7 @@ onMounted(fetchFolders);
 			<el-button :icon="DocumentAdd" @click="fileUploadDrawerVisible = true">
 				添加文件
 			</el-button>
-			<el-button :icon="FolderAdd" @click="dialogFormVisible = true">
+			<el-button :icon="FolderAdd" @click="onAddFolderButtonClick">
 				新建目录
 			</el-button>
 			<!-- <el-button :icon="KnifeFork" @click="handleSelect">剪切</el-button> -->
@@ -307,6 +333,14 @@ onMounted(fetchFolders);
 				<el-table-column prop="name" label="目录名" width="180" />
 				<el-table-column prop="create_time" label="创建时间" />
 				<el-table-column prop="update_time" label="更新时间" />
+				<el-table-column label="操作" width="300">
+					<template #default="scoped">
+						<el-button plain @click="openFolderRemoteActionDialog(scoped.row)">
+							<span v-if="scoped.row.canRead"> 推送 </span>
+							<span v-else> 拉取 </span>
+						</el-button>
+					</template>
+				</el-table-column>
 			</el-table>
 			<el-table
 				:data="folder?.files"

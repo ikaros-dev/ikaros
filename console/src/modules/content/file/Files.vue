@@ -205,6 +205,7 @@ onMounted(fetchFiles);
 				v-model:current-page="findFilesCondition.page"
 				background
 				:total="findFilesCondition.total"
+				:pager-count="5"
 				layout="total, sizes, prev, pager, next, jumper"
 				@current-change="onCurrentPageChange"
 				@size-change="onSizeChange"

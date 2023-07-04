@@ -49,7 +49,7 @@ public class FolderServiceImpl implements FolderService {
     @Override
     public Mono<Void> delete(Long id, boolean allowDeleteWhenChildExists)
         throws FolderHasChildException {
-        Assert.isTrue(id > 0, "folder id must gt 0.");
+        Assert.isTrue(id >= 0, "folder id must >= 0.");
         return folderRepository.findAllByParentId(id)
             .flatMap(folderEntity -> allowDeleteWhenChildExists
                 ? delete(folderEntity.getId(), true)
@@ -112,11 +112,11 @@ public class FolderServiceImpl implements FolderService {
                 .map(folder1 -> folder1.setParentId(folder.getId())
                     .setParentName(folder.getName()))
                 .collectList()
-                .map(folder::setFolders))
+                .map(folders -> folder.setFolders(folders).updateCanRead()))
             .flatMap(folder -> fileRepository.findAllByFolderId(id)
                 .flatMap(fileEntity -> copyProperties(fileEntity, new File()))
                 .collectList()
-                .map(folder::setFiles));
+                .map(files -> folder.setFiles(files).updateCanRead()));
     }
 
     @Override
