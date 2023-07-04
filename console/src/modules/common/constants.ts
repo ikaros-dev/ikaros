@@ -14,4 +14,8 @@ export const taskNamePrefix = {
 		pull: 'FilePull4RemoteTask-',
 		delete: 'FileDeleteRemoteTask-',
 	},
+	folderRemote: {
+		pull: 'FolderPull4RemoteTask-',
+		push: 'FolderPush2RemoteTask-',
+	},
 };

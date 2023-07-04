@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -28,6 +29,7 @@ import run.ikaros.server.store.repository.FileRemoteRepository;
 import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.TaskRepository;
 
+@Slf4j
 public class FilePush2RemoteTask extends Task {
     private final ApplicationContext applicationContext;
     private final Long fileId;
@@ -72,6 +74,23 @@ public class FilePush2RemoteTask extends Task {
         Assert.isTrue(fileEntityOp.isPresent(), "'fileEntity' must is present for id: " + fileId);
         FileEntity fileEntity = fileEntityOp.get();
 
+        // 查询是否已经存在远端，已经推送过的不需要重复推送
+        Optional<List<FileRemoteEntity>> fileRemoteEntitiesOp =
+            fileRemoteRepository.findAllByFileId(fileEntity.getId())
+                .collectList().blockOptional();
+        if (fileRemoteEntitiesOp.isPresent() && fileRemoteEntitiesOp.get().size() > 0) {
+            // 已经推送，更新文件记录即可
+            Path localFilePath =
+                Path.of(FileUtils.url2path(fileEntity.getUrl(), ikarosProperties.getWorkDir()));
+            Files.deleteIfExists(localFilePath);
+            log.debug("delete local file in path: {}", localFilePath);
+            fileRepository.findById(fileEntity.getId())
+                .checkpoint("UpdateFileEntity")
+                .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setOriginalPath(""))
+                .flatMap(fileRepository::save).block();
+            return;
+        }
+
         Optional<RemoteFileHandler> remoteFileHandlerOptional =
             extensionComponentsFinder.getExtensions(RemoteFileHandler.class)
                 .stream()
@@ -101,8 +120,8 @@ public class FilePush2RemoteTask extends Task {
             .resolve(UUID.randomUUID().toString().replace("-", ""));
         FileUtils.mkdirsIfNotExists(encryptChunksPath);
 
-        // 默认分割单片 30MB
-        List<Path> pathList = FileUtils.split(localFilePath, splitChunksPath, 1024 * 30);
+        // 默认分割单片 100MB
+        List<Path> pathList = FileUtils.split(localFilePath, splitChunksPath, 1024 * 100);
         byte[] keyByteArray = AesEncryptUtils.generateKeyByteArray();
 
         // 更新任务总数
@@ -131,35 +150,36 @@ public class FilePush2RemoteTask extends Task {
                 "encrypt files must not empty in path: " + encryptChunksPath);
         }
         List<RemoteFileChunk> remoteFileChunkList = new ArrayList<>(encryptFilePathList.size());
-        for (int i = 0; i < encryptFilePathList.size(); i++) {
-            remoteFileChunkList.add(remoteFileHandler.push(encryptFilePathList.get(i)));
-            // 更新任务进度
-            getRepository().save(getEntity().setIndex((long) (i + 1))).block();
-        }
-
-        // 保存云端分片信息
-        Flux.fromStream(remoteFileChunkList.stream())
-            .flatMap(remoteFileChunk -> fileRemoteRepository.save(FileRemoteEntity.builder()
-                .fileId(fileEntity.getId())
-                .fileName(remoteFileChunk.getFileName())
-                .remoteId(remoteFileChunk.getFileId())
-                .remote(remote)
-                .size(remoteFileChunk.getSize())
-                .path(remoteFileChunk.getPath())
-                .md5(remoteFileChunk.getMd5())
-                .build())).blockLast();
-
-
-        // 清理本地文件
         try {
-            // 分片文件
-            FileUtils.deleteDirByRecursion(splitChunksPath.toString());
-            // 分片加密文件
-            FileUtils.deleteDirByRecursion(encryptChunksPath.toString());
-            // 源文件
-            localFilePath.toFile().delete();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            for (int i = 0; i < encryptFilePathList.size(); i++) {
+                remoteFileChunkList.add(remoteFileHandler.push(encryptFilePathList.get(i)));
+                // 更新任务进度
+                getRepository().save(getEntity().setIndex((long) (i + 1))).block();
+            }
+
+            // 保存云端分片信息
+            Flux.fromStream(remoteFileChunkList.stream())
+                .flatMap(remoteFileChunk -> fileRemoteRepository.save(FileRemoteEntity.builder()
+                    .fileId(fileEntity.getId())
+                    .fileName(remoteFileChunk.getFileName())
+                    .remoteId(remoteFileChunk.getFileId())
+                    .remote(remote)
+                    .size(remoteFileChunk.getSize())
+                    .path(remoteFileChunk.getPath())
+                    .md5(remoteFileChunk.getMd5())
+                    .build())).blockLast();
+        } finally {
+            // 清理本地文件
+            try {
+                // 分片文件
+                FileUtils.deleteDirByRecursion(splitChunksPath.toString());
+                // 分片加密文件
+                FileUtils.deleteDirByRecursion(encryptChunksPath.toString());
+                // 源文件
+                localFilePath.toFile().delete();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
 

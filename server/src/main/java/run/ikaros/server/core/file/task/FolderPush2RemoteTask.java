@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -29,6 +30,7 @@ import run.ikaros.server.store.repository.FileRemoteRepository;
 import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.TaskRepository;
 
+@Slf4j
 public class FolderPush2RemoteTask extends Task {
     private final Folder folder;
     private final String remote;
@@ -103,7 +105,7 @@ public class FolderPush2RemoteTask extends Task {
 
     }
 
-    private void pushFile2Remote(File file, String remote) {
+    private void pushFile2Remote(File file, String remote) throws IOException {
         // 获取文件记录
         Optional<FileEntity> fileEntityOp = fileRepository.findById(file.getId()).blockOptional();
         if (fileEntityOp.isEmpty()) {
@@ -111,6 +113,23 @@ public class FolderPush2RemoteTask extends Task {
                 "'fileEntity' must is present for id: " + file.getId());
         }
         final FileEntity fileEntity = fileEntityOp.get();
+
+        // 查询是否已经存在远端，已经推送过的不需要重复推送
+        Optional<List<FileRemoteEntity>> fileRemoteEntitiesOp =
+            fileRemoteRepository.findAllByFileId(fileEntity.getId())
+                .collectList().blockOptional();
+        if (fileRemoteEntitiesOp.isPresent() && fileRemoteEntitiesOp.get().size() > 0) {
+            // 已经推送，更新文件记录即可
+            Path localFilePath =
+                Path.of(FileUtils.url2path(fileEntity.getUrl(), ikarosProperties.getWorkDir()));
+            Files.deleteIfExists(localFilePath);
+            log.debug("delete local file in path: {}", localFilePath);
+            fileRepository.findById(fileEntity.getId())
+                .checkpoint("UpdateFileEntity")
+                .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setOriginalPath(""))
+                .flatMap(fileRepository::save).block();
+            return;
+        }
 
         Path localFilePath =
             Path.of(FileUtils.url2path(fileEntity.getUrl(), ikarosProperties.getWorkDir()));
@@ -127,8 +146,8 @@ public class FolderPush2RemoteTask extends Task {
             .resolve(UUID.randomUUID().toString().replace("-", ""));
         FileUtils.mkdirsIfNotExists(encryptChunksPath);
 
-        // 默认分割单片 30MB
-        List<Path> pathList = FileUtils.split(localFilePath, splitChunksPath, 1024 * 30);
+        // 默认分割单片 100MB
+        List<Path> pathList = FileUtils.split(localFilePath, splitChunksPath, 1024 * 100);
         byte[] keyByteArray = AesEncryptUtils.generateKeyByteArray();
 
         // 加密
@@ -153,43 +172,45 @@ public class FolderPush2RemoteTask extends Task {
             throw new RuntimeException(
                 "encrypt files must not empty in path: " + encryptChunksPath);
         }
-        List<RemoteFileChunk> remoteFileChunkList = new ArrayList<>(encryptFilePathList.size());
-        for (Path path : encryptFilePathList) {
-            remoteFileChunkList.add(remoteFileHandler.push(path));
-        }
 
-        // 保存云端分片信息
-        Flux.fromStream(remoteFileChunkList.stream())
-            .flatMap(remoteFileChunk -> fileRemoteRepository.save(FileRemoteEntity.builder()
-                .fileId(fileEntity.getId())
-                .fileName(remoteFileChunk.getFileName())
-                .remoteId(remoteFileChunk.getFileId())
-                .remote(remote)
-                .size(remoteFileChunk.getSize())
-                .path(remoteFileChunk.getPath())
-                .md5(remoteFileChunk.getMd5())
-                .build())).blockLast();
-
-
-        // 清理本地文件
         try {
-            // 分片文件
-            FileUtils.deleteDirByRecursion(splitChunksPath.toString());
-            // 分片加密文件
-            FileUtils.deleteDirByRecursion(encryptChunksPath.toString());
-            // 源文件
-            localFilePath.toFile().delete();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            List<RemoteFileChunk> remoteFileChunkList = new ArrayList<>(encryptFilePathList.size());
+            for (Path path : encryptFilePathList) {
+                remoteFileChunkList.add(remoteFileHandler.push(path));
+            }
+
+            // 保存云端分片信息
+            Flux.fromStream(remoteFileChunkList.stream())
+                .flatMap(remoteFileChunk -> fileRemoteRepository.save(FileRemoteEntity.builder()
+                    .fileId(fileEntity.getId())
+                    .fileName(remoteFileChunk.getFileName())
+                    .remoteId(remoteFileChunk.getFileId())
+                    .remote(remote)
+                    .size(remoteFileChunk.getSize())
+                    .path(remoteFileChunk.getPath())
+                    .md5(remoteFileChunk.getMd5())
+                    .build())).blockLast();
+
+
+            // 更新文件状态
+            fileRepository.findById(fileEntity.getId())
+                .checkpoint("UpdateFileEntity")
+                .map(fe -> fe.setAesKey(new String(keyByteArray, StandardCharsets.UTF_8)))
+                .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setOriginalPath(""))
+                .flatMap(fileRepository::save).block();
+        } finally {
+            // 清理本地文件
+            try {
+                // 分片文件
+                FileUtils.deleteDirByRecursion(splitChunksPath.toString());
+                // 分片加密文件
+                FileUtils.deleteDirByRecursion(encryptChunksPath.toString());
+                // 源文件
+                localFilePath.toFile().delete();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
-
-
-        // 更新文件状态
-        fileRepository.findById(fileEntity.getId())
-            .checkpoint("UpdateFileEntity")
-            .map(fe -> fe.setAesKey(new String(keyByteArray, StandardCharsets.UTF_8)))
-            .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setOriginalPath(""))
-            .flatMap(fileRepository::save).block();
     }
 
     /**

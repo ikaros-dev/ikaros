@@ -5,6 +5,7 @@ import { Folder } from '@runikaros/api-client';
 import { base64Encode } from '@/utils/string-util';
 import { fileTypeMap } from '@/modules/common/constants';
 import FileFragmentUploadDrawer from './FileFragmentUploadDrawer.vue';
+import FolderRemoteActionDialog from './FolderRemoteActionDialog.vue';
 import FileDeatilDrawer from './FileDeatilDrawer.vue';
 import { formatFileSize } from '@/utils/string-util';
 import {
@@ -34,6 +35,7 @@ import {
 	ElPopconfirm,
 } from 'element-plus';
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 
 const findFolder = ref({
 	name: 'root',
@@ -228,8 +230,29 @@ const pasteFiles = async () => {
 	fetchFolders();
 };
 
-const openFolderRemoteActionDialog = (fold) => {
-	console.log(fold);
+const router = useRouter();
+
+const folderRemoteActionDialogVisible = ref(false);
+const currentFolderActionId = ref(0);
+const folderRemoteIsPush = ref(true);
+const openFolderRemoteActionDialog = () => {
+	let needActionFolderId = -1;
+	let needActionRemoteIsPush;
+	// console.log(currentSelectFolder.value);
+	if (currentSelectFolder.value) {
+		needActionFolderId = currentSelectFolder.value.id as number;
+		needActionRemoteIsPush = currentSelectFolder.value.canRead;
+	} else {
+		needActionFolderId = folder.value?.id as number;
+		needActionRemoteIsPush = folder.value?.canRead;
+	}
+
+	currentFolderActionId.value = needActionFolderId as number;
+	folderRemoteIsPush.value = needActionRemoteIsPush as boolean;
+	folderRemoteActionDialogVisible.value = true;
+};
+const onCloseWithTaskName = (taskName) => {
+	router.push('/tasks?name=' + taskName.substring(0, taskName.indexOf('-')));
 };
 
 onMounted(fetchFolders);
@@ -245,6 +268,13 @@ onMounted(fetchFolders);
 	<FileFragmentUploadDrawer
 		v-model:visible="fileUploadDrawerVisible"
 		@fileUploadDrawerCloes="onFileUploadDrawerClose"
+	/>
+
+	<FolderRemoteActionDialog
+		v-model:visible="folderRemoteActionDialogVisible"
+		v-model:folderId="currentFolderActionId"
+		v-model:is-push="folderRemoteIsPush"
+		@closeWithTaskName="onCloseWithTaskName"
 	/>
 
 	<el-dialog v-model="dialogFormVisible" title="新建文件夹">
@@ -304,6 +334,16 @@ onMounted(fetchFolders);
 					<el-button :icon="FolderDelete" type="danger">删除</el-button>
 				</template>
 			</el-popconfirm>
+			<el-button plain @click="openFolderRemoteActionDialog">
+				<span
+					v-if="
+						currentSelectFolder ? currentSelectFolder?.canRead : folder?.canRead
+					"
+				>
+					推送
+				</span>
+				<span v-else> 拉取 </span>
+			</el-button>
 		</el-col>
 	</el-row>
 	<br />
@@ -333,14 +373,14 @@ onMounted(fetchFolders);
 				<el-table-column prop="name" label="目录名" width="180" />
 				<el-table-column prop="create_time" label="创建时间" />
 				<el-table-column prop="update_time" label="更新时间" />
-				<el-table-column label="操作" width="300">
+				<!-- <el-table-column label="操作" width="300">
 					<template #default="scoped">
 						<el-button plain @click="openFolderRemoteActionDialog(scoped.row)">
 							<span v-if="scoped.row.canRead"> 推送 </span>
 							<span v-else> 拉取 </span>
 						</el-button>
 					</template>
-				</el-table-column>
+				</el-table-column> -->
 			</el-table>
 			<el-table
 				:data="folder?.files"

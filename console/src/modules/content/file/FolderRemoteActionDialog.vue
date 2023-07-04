@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { taskNamePrefix } from '@/modules/common/constants';
 import { usePluginModuleStore } from '@/stores/plugin';
+import { apiClient } from '@/utils/api-client';
 import { PluginModule } from '@runikaros/shared';
 import {
 	ElAlert,
@@ -15,8 +17,6 @@ import {
 	FormRules,
 } from 'element-plus';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { apiClient } from '@/utils/api-client';
-import { taskNamePrefix } from '@/modules/common/constants';
 
 const props = withDefaults(
 	defineProps<{
@@ -78,31 +78,42 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 				actionButtonLoading.value = true;
 				let taskName;
 				if (folderRemoteAction.value.isPush) {
-					// file push to remote
-					await apiClient.file
-						.pushFile2Remote({
+					// folder push to remote
+					await apiClient.folder
+						.pushFolder2Remote({
 							id: folderRemoteAction.value.folderId + '',
 							remote: folderRemoteAction.value.remote,
 						})
 						.then(() => {
+							ElMessage.success(
+								'请求推送目录至远端成功，目录=' +
+									folderRemoteAction.value.folderId +
+									' 远端=' +
+									folderRemoteAction.value.remote
+							);
 							taskName =
-								taskNamePrefix.fileRemote.push +
+								taskNamePrefix.folderRemote.push +
 								folderRemoteAction.value.folderId;
 						})
 						.finally(() => {
 							actionButtonLoading.value = false;
 						});
 				} else {
-					// file pull from remote
-					await apiClient.file
-						.pullFile4Remote({
-							// @ts-ignore
-							id: folderRemoteAction.value.fileId + '',
+					// folder pull from remote
+					await apiClient.folder
+						.pullFolder4Remote({
+							id: folderRemoteAction.value.folderId + '',
 							remote: folderRemoteAction.value.remote,
 						})
 						.then(() => {
+							ElMessage.success(
+								'请求从远端拉取目录成功，目录=' +
+									folderRemoteAction.value.folderId +
+									' 远端=' +
+									folderRemoteAction.value.remote
+							);
 							taskName =
-								taskNamePrefix.fileRemote.pull +
+								taskNamePrefix.folderRemote.pull +
 								folderRemoteAction.value.folderId;
 						})
 						.finally(() => {

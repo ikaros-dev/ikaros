@@ -21,7 +21,7 @@
     "@formkit/utils": "^0.17.3",
     "@formkit/validation": "0.17.3",
     "@intlify/unplugin-vue-i18n": "^0.11.0",
-    "@runikaros/api-client": "^0.1.5",
+    "@runikaros/api-client": "^0.1.6",
     "@runikaros/shared": "^0.0.4",
     "@uppy/core": "^3.2.0",
     "@uppy/dashboard": "^3.4.0",
