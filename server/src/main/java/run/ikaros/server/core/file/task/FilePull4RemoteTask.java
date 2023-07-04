@@ -103,7 +103,7 @@ public class FilePull4RemoteTask extends Task {
             .resolve(UUID.randomUUID().toString().replace("-", ""));
         FileUtils.mkdirsIfNotExists(decryptChunkFilesPath);
 
-        Path filePath = Path.of(FileUtils.buildAppUploadFilePath(
+        final Path filePath = Path.of(FileUtils.buildAppUploadFilePath(
             ikarosProperties.getWorkDir().toString(),
             FileUtils.parseFilePostfix(fileEntity.getOriginalName())
         ));

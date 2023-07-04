@@ -31,6 +31,11 @@ class TaskServiceTest {
         }
 
         @Override
+        protected String getTaskEntityName() {
+            return getClass().getName() + '-';
+        }
+
+        @Override
         protected void doRun() throws Exception {
             //System.out.println(getEntity().getName() + "-" + getEntity().getStatus());
             log.info(getEntity().getName() + "-" + getEntity().getStatus());
