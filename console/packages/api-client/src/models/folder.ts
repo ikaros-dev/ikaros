@@ -44,6 +44,12 @@ export interface Folder {
 	folders?: Array<Folder>;
 	/**
 	 *
+	 * @type {boolean}
+	 * @memberof Folder
+	 */
+	canRead?: boolean;
+	/**
+	 *
 	 * @type {number}
 	 * @memberof Folder
 	 */
