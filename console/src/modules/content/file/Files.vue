@@ -86,7 +86,7 @@ const handleDelete = async (file: FileEntity) => {
 		})
 		.then(() => {
 			ElMessage.success('删除文件成功，文件：' + file.id + '-' + file.name);
-			window.location.reload();
+			fetchFiles();
 		})
 		.catch((err) => {
 			console.error(err);

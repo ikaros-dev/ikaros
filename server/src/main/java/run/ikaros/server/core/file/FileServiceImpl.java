@@ -243,7 +243,8 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         return Mono.just(id)
             .flatMap(this::findById)
             .map(entity -> {
-                File file = new File(entity.getOriginalPath());
+                File file =
+                    new File(FileUtils.url2path(entity.getUrl(), ikarosProperties.getWorkDir()));
                 if (file.exists()) {
                     file.delete();
                     log.debug("delete local file in path: {}", file.getAbsolutePath());

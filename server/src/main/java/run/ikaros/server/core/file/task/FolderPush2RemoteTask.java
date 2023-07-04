@@ -1,6 +1,5 @@
 package run.ikaros.server.core.file.task;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -14,6 +13,8 @@ import java.util.UUID;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
+import run.ikaros.api.core.file.File;
+import run.ikaros.api.core.file.Folder;
 import run.ikaros.api.core.file.RemoteFileChunk;
 import run.ikaros.api.core.file.RemoteFileHandler;
 import run.ikaros.api.infra.properties.IkarosProperties;
@@ -28,50 +29,50 @@ import run.ikaros.server.store.repository.FileRemoteRepository;
 import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.TaskRepository;
 
-public class FilePush2RemoteTask extends Task {
-    private final ApplicationContext applicationContext;
-    private final Long fileId;
+public class FolderPush2RemoteTask extends Task {
+    private final Folder folder;
     private final String remote;
+    private final ApplicationContext applicationContext;
+    private FileRepository fileRepository;
+    private IkarosProperties ikarosProperties;
+    private FileRemoteRepository fileRemoteRepository;
+    private RemoteFileHandler remoteFileHandler;
 
     /**
      * Construct.
      */
-    public FilePush2RemoteTask(TaskEntity entity,
-                               TaskRepository repository,
-                               ApplicationContext applicationContext,
-                               Long fileId, String remote) {
+    public FolderPush2RemoteTask(TaskEntity entity,
+                                 TaskRepository repository,
+                                 Folder folder, String remote,
+                                 ApplicationContext applicationContext) {
         super(entity, repository);
-        this.applicationContext = applicationContext;
-        this.fileId = fileId;
+        this.folder = folder;
         this.remote = remote;
+        this.applicationContext = applicationContext;
     }
 
     @Override
     protected String getTaskEntityName() {
-        return this.getClass().getSimpleName() + "-" + fileId;
+        return this.getClass().getSimpleName() + "-" + folder.getId();
     }
 
     @Override
     protected void doRun() throws Exception {
         Assert.notNull(applicationContext, "'applicationContext' must not null.");
         Assert.notNull(getRepository(), "'repository' must not null.");
-        Assert.isTrue(fileId > 0, "'fileId' must gt 0.");
+        Assert.notNull(folder, "'folder' must not null.");
         Assert.hasText(remote, "'remote' must has text.");
 
         // 获取一些需要的Bean
         final ExtensionComponentsFinder extensionComponentsFinder =
             applicationContext.getBean(ExtensionComponentsFinder.class);
-        final FileRepository fileRepository = applicationContext.getBean(FileRepository.class);
-        final IkarosProperties ikarosProperties =
+        fileRepository = applicationContext.getBean(FileRepository.class);
+        ikarosProperties =
             applicationContext.getBean(IkarosProperties.class);
-        final FileRemoteRepository fileRemoteRepository =
+        fileRemoteRepository =
             applicationContext.getBean(FileRemoteRepository.class);
 
-        // 获取文件记录
-        Optional<FileEntity> fileEntityOp = fileRepository.findById(fileId).blockOptional();
-        Assert.isTrue(fileEntityOp.isPresent(), "'fileEntity' must is present for id: " + fileId);
-        FileEntity fileEntity = fileEntityOp.get();
-
+        // 获取远端处理器
         Optional<RemoteFileHandler> remoteFileHandlerOptional =
             extensionComponentsFinder.getExtensions(RemoteFileHandler.class)
                 .stream()
@@ -80,11 +81,36 @@ public class FilePush2RemoteTask extends Task {
         if (remoteFileHandlerOptional.isEmpty()) {
             throw new RuntimeException("no remote file handler for remote: " + remote);
         }
-        final RemoteFileHandler remoteFileHandler = remoteFileHandlerOptional.get();
+        remoteFileHandler = remoteFileHandlerOptional.get();
 
         if (!remoteFileHandler.ready()) {
             throw new RuntimeException("please config remote plugin for remote:" + remote);
         }
+
+        // 获取所有未推送至远端的文件
+        List<File> files = new ArrayList<>();
+        updateCanReadFiles(folder, files);
+
+        // 更新任务总数
+        getRepository().save(getEntity().setTotal((long) files.size())).block();
+
+        // 推送所有待推送的文件
+        for (int i = 0; i < files.size(); i++) {
+            pushFile2Remote(files.get(i), remote);
+            // 更新任务进度
+            getRepository().save(getEntity().setIndex((long) (i + 1))).block();
+        }
+
+    }
+
+    private void pushFile2Remote(File file, String remote) {
+        // 获取文件记录
+        Optional<FileEntity> fileEntityOp = fileRepository.findById(file.getId()).blockOptional();
+        if (fileEntityOp.isEmpty()) {
+            throw new IllegalArgumentException(
+                "'fileEntity' must is present for id: " + file.getId());
+        }
+        final FileEntity fileEntity = fileEntityOp.get();
 
         Path localFilePath =
             Path.of(FileUtils.url2path(fileEntity.getUrl(), ikarosProperties.getWorkDir()));
@@ -105,12 +131,9 @@ public class FilePush2RemoteTask extends Task {
         List<Path> pathList = FileUtils.split(localFilePath, splitChunksPath, 1024 * 30);
         byte[] keyByteArray = AesEncryptUtils.generateKeyByteArray();
 
-        // 更新任务总数
-        getRepository().save(getEntity().setTotal((long) pathList.size())).block();
-
         // 加密
         for (Path path : pathList) {
-            File file1 = path.toFile();
+            java.io.File file1 = path.toFile();
             String file1Name = file1.getName();
             try {
                 byte[] bytes = AesEncryptUtils.encryptFile(keyByteArray, file1);
@@ -131,10 +154,8 @@ public class FilePush2RemoteTask extends Task {
                 "encrypt files must not empty in path: " + encryptChunksPath);
         }
         List<RemoteFileChunk> remoteFileChunkList = new ArrayList<>(encryptFilePathList.size());
-        for (int i = 0; i < encryptFilePathList.size(); i++) {
-            remoteFileChunkList.add(remoteFileHandler.push(encryptFilePathList.get(i)));
-            // 更新任务进度
-            getRepository().save(getEntity().setIndex((long) (i + 1))).block();
+        for (Path path : encryptFilePathList) {
+            remoteFileChunkList.add(remoteFileHandler.push(path));
         }
 
         // 保存云端分片信息
@@ -169,5 +190,23 @@ public class FilePush2RemoteTask extends Task {
             .map(fe -> fe.setAesKey(new String(keyByteArray, StandardCharsets.UTF_8)))
             .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setOriginalPath(""))
             .flatMap(fileRepository::save).block();
+    }
+
+    /**
+     * Get all can read files from children.
+     */
+    private List<File> updateCanReadFiles(Folder folder, List<File> files) {
+        if (folder.hasFolder()) {
+            for (Folder f : folder.getFolders()) {
+                files.addAll(updateCanReadFiles(f, files));
+            }
+        }
+        if (folder.hasFile()) {
+            files.addAll(folder.getFiles()
+                .stream()
+                .filter(File::getCanRead)
+                .toList());
+        }
+        return files;
     }
 }

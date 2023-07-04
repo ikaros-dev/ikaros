@@ -50,7 +50,13 @@ public interface FolderService {
 
     Mono<Folder> findById(Long id);
 
+    Mono<Folder> findByIdShallow(Long id);
+
     Mono<Folder> findByParentIdAndName(Long parentId, String name);
 
     Flux<Folder> findByParentIdAndNameLike(Long parentId, String nameKeyWord);
+
+    Mono<Void> pushRemote(Long folderId, String remote);
+
+    Mono<Void> pullRemote(Long folderId, String remote);
 }

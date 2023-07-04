@@ -74,6 +74,7 @@ public class TaskServiceImpl implements TaskService {
         Assert.notNull(task, "'task' must not null.");
         TaskEntity entity = task.getEntity();
         Assert.notNull(entity, "'task entity' must not null.");
+        entity.setName(task.getTaskEntityName());
         setDefaultFieldValue(entity);
         Assert.hasText(entity.getName(), "'task entity name' must has text.");
 

@@ -116,7 +116,46 @@ public class FolderEndpoint implements CoreEndpoint {
                         .implementation(String.class))
                     .response(responseBuilder().implementation(Folder.class)))
 
+            .POST("/folder/remote/push", this::pushFolder2Remote,
+                builder -> builder.operationId("PushFolder2Remote")
+                    .tag(tag).description("Push folder to remote.")
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .required(true)
+                        .description("Folder id."))
+                    .parameter(parameterBuilder()
+                        .name("remote")
+                        .required(true)
+                        .description("Remote")))
+
+            .POST("/folder/remote/pull", this::pullFolder4Remote,
+                builder -> builder.operationId("PullFolder4Remote")
+                    .tag(tag).description("Pull folders from remote.")
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .required(true)
+                        .description("Folder id."))
+                    .parameter(parameterBuilder()
+                        .name("remote")
+                        .required(true)
+                        .description("Remote")))
+
+
             .build();
+    }
+
+    Mono<ServerResponse> pushFolder2Remote(ServerRequest request) {
+        Optional<String> idOp = request.queryParam("id");
+        Optional<String> remoteOp = request.queryParam("remote");
+        return folderService.pushRemote(Long.valueOf(idOp.orElse("-1")), remoteOp.orElse(null))
+            .then(ServerResponse.ok().build());
+    }
+
+    Mono<ServerResponse> pullFolder4Remote(ServerRequest request) {
+        Optional<String> idOp = request.queryParam("id");
+        Optional<String> remoteOp = request.queryParam("remote");
+        return folderService.pullRemote(Long.valueOf(idOp.orElse("-1")), remoteOp.orElse(null))
+            .then(ServerResponse.ok().build());
     }
 
     Mono<ServerResponse> findByParentIdAndNameLike(ServerRequest request) {
@@ -138,7 +177,7 @@ public class FolderEndpoint implements CoreEndpoint {
 
     Mono<ServerResponse> findById(ServerRequest request) {
         Long id = Long.valueOf(request.pathVariable("id"));
-        return folderService.findById(id)
+        return folderService.findByIdShallow(id)
             .flatMap(folder -> ServerResponse.ok().bodyValue(folder));
     }
 
