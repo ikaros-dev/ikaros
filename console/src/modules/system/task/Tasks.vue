@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { TaskEntity } from '@runikaros/api-client';
 import {
@@ -17,6 +17,7 @@ import {
 } from 'element-plus';
 import { base64Encode } from '@/utils/string-util';
 import router from '@/router';
+import { useRoute } from 'vue-router';
 
 const findTaskCondition = ref({
 	page: 1,
@@ -26,12 +27,29 @@ const findTaskCondition = ref({
 	status: undefined,
 });
 
+const route = useRoute();
+watch(
+	() => route.query,
+	(newValue) => {
+		// console.log(newValue);
+		if (newValue) {
+			findTaskCondition.value.name = newValue.name as string;
+			//@ts-ignore
+			findTaskCondition.value.status = newValue.status
+				? newValue.status
+				: undefined;
+		}
+	},
+	{ immediate: true }
+);
+
 const tasks = ref<TaskEntity[]>();
 const fetchTasks = async () => {
 	const { data } = await apiClient.task.listTasksByCondition({
 		page: findTaskCondition.value.page,
 		size: findTaskCondition.value.size,
 		name: base64Encode(findTaskCondition.value.name),
+		// @ts-ignore
 		status: findTaskCondition.value.status,
 	});
 	tasks.value = data.items;
@@ -114,7 +132,7 @@ onMounted(fetchTasks);
 				@row-dblclick="showTaskDetails"
 			>
 				<el-table-column prop="id" label="ID" width="80" sortable />
-				<el-table-column prop="name" label="名称" width="200"></el-table-column>
+				<el-table-column prop="name" label="名称" width="300"></el-table-column>
 				<el-table-column prop="status" label="状态"></el-table-column>
 				<el-table-column
 					prop="createTime"

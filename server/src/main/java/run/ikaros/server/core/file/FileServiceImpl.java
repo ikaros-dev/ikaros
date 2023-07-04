@@ -243,7 +243,8 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         return Mono.just(id)
             .flatMap(this::findById)
             .map(entity -> {
-                File file = new File(entity.getOriginalPath());
+                File file =
+                    new File(FileUtils.url2path(entity.getUrl(), ikarosProperties.getWorkDir()));
                 if (file.exists()) {
                     file.delete();
                     log.debug("delete local file in path: {}", file.getAbsolutePath());
@@ -368,11 +369,6 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         return fileRepository.findById(fileId)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("not found file entity for id is " + fileId)))
-            .filter(fileEntity -> fileEntity.getSize() != null
-                && fileEntity.getSize() >= 1024 * 1024 * 30)
-            .switchIfEmpty(
-                Mono.error(new RuntimeException("push operate only support file "
-                    + "that size > 30MB.")))
             .flatMap(fileEntity -> pushRemote(fileEntity, remote));
     }
 

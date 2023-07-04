@@ -5,6 +5,7 @@ import { Folder } from '@runikaros/api-client';
 import { base64Encode } from '@/utils/string-util';
 import { fileTypeMap } from '@/modules/common/constants';
 import FileFragmentUploadDrawer from './FileFragmentUploadDrawer.vue';
+import FolderRemoteActionDialog from './FolderRemoteActionDialog.vue';
 import FileDeatilDrawer from './FileDeatilDrawer.vue';
 import { formatFileSize } from '@/utils/string-util';
 import {
@@ -34,6 +35,7 @@ import {
 	ElPopconfirm,
 } from 'element-plus';
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 
 const findFolder = ref({
 	name: 'root',
@@ -85,11 +87,32 @@ const onCurrentFileChange = (val) => {
 const dialogFormVisible = ref(false);
 const createFolder = ref({
 	name: '',
+	parentId: 0,
+	parentName: 'root',
 });
+const onAddFolderButtonClick = () => {
+	// console.log(currentSelectFolder.value);
+	if (currentSelectFolder.value) {
+		createFolder.value.parentId = currentSelectFolder.value.id as number;
+		createFolder.value.parentName = currentSelectFolder.value.name + '';
+	} else {
+		createFolder.value.parentId = folder.value?.id as number;
+		createFolder.value.parentName = folder.value?.name + '';
+	}
+	dialogFormVisible.value = true;
+};
 const onCreateFolderButtonClick = async () => {
+	// console.log(currentSelectFolder.value);
+	if (currentSelectFolder.value) {
+		createFolder.value.parentId = currentSelectFolder.value.id as number;
+		createFolder.value.parentName = currentSelectFolder.value.name + '';
+	} else {
+		createFolder.value.parentId = folder.value?.id as number;
+		createFolder.value.parentName = folder.value?.name + '';
+	}
 	await apiClient.folder.createFolder({
 		name: base64Encode(createFolder.value.name),
-		parentId: currentSelectFolder.value.id,
+		parentId: createFolder.value.parentId,
 	});
 	ElMessage.success('创建目录成功：' + createFolder.value);
 	dialogFormVisible.value = false;
@@ -156,8 +179,9 @@ const onBreadcrumbClick = (path) => {
 
 const onDeleteButtonClick = async () => {
 	let needDeteFolderId = -1;
-	if (currentSelectFile.value) {
-		needDeteFolderId = currentSelectFile.value.id as number;
+	// console.log(currentSelectFolder.value);
+	if (currentSelectFolder.value) {
+		needDeteFolderId = currentSelectFolder.value.id as number;
 	} else {
 		needDeteFolderId = folder.value?.id as number;
 	}
@@ -190,8 +214,8 @@ const onSelectionChange = (files: any) => {
 
 const pasteFiles = async () => {
 	let needPasteFolderId = -1;
-	if (currentSelectFile.value) {
-		needPasteFolderId = currentSelectFile.value.id as number;
+	if (currentSelectFolder.value) {
+		needPasteFolderId = currentSelectFolder.value.id as number;
 	} else {
 		needPasteFolderId = folder.value?.id as number;
 	}
@@ -204,6 +228,31 @@ const pasteFiles = async () => {
 	ElMessage.success('粘贴成功');
 	selectFiles.value = [];
 	fetchFolders();
+};
+
+const router = useRouter();
+
+const folderRemoteActionDialogVisible = ref(false);
+const currentFolderActionId = ref(0);
+const folderRemoteIsPush = ref(true);
+const openFolderRemoteActionDialog = () => {
+	let needActionFolderId = -1;
+	let needActionRemoteIsPush;
+	// console.log(currentSelectFolder.value);
+	if (currentSelectFolder.value) {
+		needActionFolderId = currentSelectFolder.value.id as number;
+		needActionRemoteIsPush = currentSelectFolder.value.canRead;
+	} else {
+		needActionFolderId = folder.value?.id as number;
+		needActionRemoteIsPush = folder.value?.canRead;
+	}
+
+	currentFolderActionId.value = needActionFolderId as number;
+	folderRemoteIsPush.value = needActionRemoteIsPush as boolean;
+	folderRemoteActionDialogVisible.value = true;
+};
+const onCloseWithTaskName = (taskName) => {
+	router.push('/tasks?name=' + taskName.substring(0, taskName.indexOf('-')));
 };
 
 onMounted(fetchFolders);
@@ -221,11 +270,18 @@ onMounted(fetchFolders);
 		@fileUploadDrawerCloes="onFileUploadDrawerClose"
 	/>
 
+	<FolderRemoteActionDialog
+		v-model:visible="folderRemoteActionDialogVisible"
+		v-model:folderId="currentFolderActionId"
+		v-model:is-push="folderRemoteIsPush"
+		@closeWithTaskName="onCloseWithTaskName"
+	/>
+
 	<el-dialog v-model="dialogFormVisible" title="新建文件夹">
 		<el-form :model="createFolder">
 			<el-form-item label="父文件夹ID" :label-width="100">
 				<el-input
-					v-model="currentSelectFolder.id"
+					v-model="createFolder.parentId"
 					disabled
 					style="max-width: 600px"
 					size="large"
@@ -233,7 +289,7 @@ onMounted(fetchFolders);
 			</el-form-item>
 			<el-form-item label="父文件夹名称" :label-width="100">
 				<el-input
-					v-model="currentSelectFolder.name"
+					v-model="createFolder.parentName"
 					disabled
 					style="max-width: 600px"
 					size="large"
@@ -263,7 +319,7 @@ onMounted(fetchFolders);
 			<el-button :icon="DocumentAdd" @click="fileUploadDrawerVisible = true">
 				添加文件
 			</el-button>
-			<el-button :icon="FolderAdd" @click="dialogFormVisible = true">
+			<el-button :icon="FolderAdd" @click="onAddFolderButtonClick">
 				新建目录
 			</el-button>
 			<!-- <el-button :icon="KnifeFork" @click="handleSelect">剪切</el-button> -->
@@ -278,6 +334,16 @@ onMounted(fetchFolders);
 					<el-button :icon="FolderDelete" type="danger">删除</el-button>
 				</template>
 			</el-popconfirm>
+			<el-button plain @click="openFolderRemoteActionDialog">
+				<span
+					v-if="
+						currentSelectFolder ? currentSelectFolder?.canRead : folder?.canRead
+					"
+				>
+					推送
+				</span>
+				<span v-else> 拉取 </span>
+			</el-button>
 		</el-col>
 	</el-row>
 	<br />
@@ -307,6 +373,14 @@ onMounted(fetchFolders);
 				<el-table-column prop="name" label="目录名" width="180" />
 				<el-table-column prop="create_time" label="创建时间" />
 				<el-table-column prop="update_time" label="更新时间" />
+				<!-- <el-table-column label="操作" width="300">
+					<template #default="scoped">
+						<el-button plain @click="openFolderRemoteActionDialog(scoped.row)">
+							<span v-if="scoped.row.canRead"> 推送 </span>
+							<span v-else> 拉取 </span>
+						</el-button>
+					</template>
+				</el-table-column> -->
 			</el-table>
 			<el-table
 				:data="folder?.files"

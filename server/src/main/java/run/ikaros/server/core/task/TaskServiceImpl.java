@@ -74,6 +74,7 @@ public class TaskServiceImpl implements TaskService {
         Assert.notNull(task, "'task' must not null.");
         TaskEntity entity = task.getEntity();
         Assert.notNull(entity, "'task entity' must not null.");
+        entity.setName(task.getTaskEntityName());
         setDefaultFieldValue(entity);
         Assert.hasText(entity.getName(), "'task entity name' must has text.");
 
@@ -82,13 +83,20 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException("Do not submit tasks twice for task: " + entity.getName());
         }
 
-        return taskRepository.save(entity)
-            // 目前直接后台执行，不进行延迟支持
-            // .filter(te -> te.getCreateTime().equals(te.getStartTime()))
-            .flatMap(taskEntity -> {
-                futureMap.put(taskEntity.getName(), executorService.submit(task));
-                return Mono.empty();
-            });
+        // 是否已经存在未运行完成的拉取任务
+        return taskRepository.findAllByName(task.getTaskEntityName())
+            .filter(taskEntity -> TaskStatus.RUNNING.equals(taskEntity.getStatus())
+                || TaskStatus.CREATE.equals(taskEntity.getStatus()))
+            .collectList()
+            .filter(taskEntities -> taskEntities != null && taskEntities.size() > 0)
+            .flatMap(
+                taskEntities -> Mono.error(new RuntimeException("Submission failed, task exists.")))
+            .switchIfEmpty(taskRepository.save(entity)
+                .flatMap(taskEntity -> {
+                    futureMap.put(taskEntity.getName(), executorService.submit(task));
+                    return Mono.empty();
+                })
+            ).then();
     }
 
     private static void setDefaultFieldValue(TaskEntity entity) {

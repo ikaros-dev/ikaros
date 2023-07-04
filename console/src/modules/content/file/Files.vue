@@ -86,7 +86,7 @@ const handleDelete = async (file: FileEntity) => {
 		})
 		.then(() => {
 			ElMessage.success('删除文件成功，文件：' + file.id + '-' + file.name);
-			window.location.reload();
+			fetchFiles();
 		})
 		.catch((err) => {
 			console.error(err);
@@ -129,23 +129,8 @@ const openFileRemoteActionDialog = (file: FileEntity) => {
 	fileRemoteIsPush.value = file.canRead as boolean;
 	fileRemoteActionDialogVisible.value = true;
 };
-const onFileRemoteActionDialogCloseWithTaskName = async (taskName) => {
-	// 先获取任务ID，任务名称 + 状态是运行中
-	// console.log(taskName);
-	const { data } = await apiClient.task.listTasksByCondition({
-		page: 1,
-		size: 5,
-		name: base64Encode(taskName),
-	});
-	if (!data || !data.items || data.items.length === 0) {
-		ElMessage.error('未获取到任务信息，任务名称：' + taskName);
-		console.log('taskName', taskName);
-		console.log('data', data);
-	}
-	// @ts-ignore
-	const taskId = data.items[0]?.id;
-	// 再进行路由跳转
-	router.push('/tasks/task/details/' + taskId);
+const onFileRemoteActionDialogCloseWithTaskName = (taskName) => {
+	router.push('/tasks?name=' + taskName.substring(0, taskName.indexOf('-')));
 };
 
 onMounted(fetchFiles);
@@ -205,6 +190,7 @@ onMounted(fetchFiles);
 				v-model:current-page="findFilesCondition.page"
 				background
 				:total="findFilesCondition.total"
+				:pager-count="5"
 				layout="total, sizes, prev, pager, next, jumper"
 				@current-change="onCurrentPageChange"
 				@size-change="onSizeChange"

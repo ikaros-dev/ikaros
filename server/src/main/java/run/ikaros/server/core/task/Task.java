@@ -18,6 +18,8 @@ public abstract class Task implements Runnable {
         this.repository = repository;
     }
 
+    protected abstract String getTaskEntityName();
+
     @Override
     public void run() {
         try {
@@ -25,6 +27,7 @@ public abstract class Task implements Runnable {
             doRun();
             getRepository().save(getEntity()
                 .setStatus(TaskStatus.FINISH)
+                .setName(getTaskEntityName())
                 .setEndTime(LocalDateTime.now())
             ).block();
         } catch (Exception e) {

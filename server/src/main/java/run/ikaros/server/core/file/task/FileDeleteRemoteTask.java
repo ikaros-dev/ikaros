@@ -28,7 +28,11 @@ public class FileDeleteRemoteTask extends Task {
         super(entity, repository);
         this.applicationContext = applicationContext;
         this.fileId = fileId;
-        getEntity().setName(this.getClass().getSimpleName() + "-" + fileId);
+    }
+
+    @Override
+    protected String getTaskEntityName() {
+        return this.getClass().getSimpleName() + "-" + fileId;
     }
 
     @Override

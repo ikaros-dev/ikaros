@@ -4,7 +4,11 @@ import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -12,24 +16,49 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.Folder;
+import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.properties.IkarosProperties;
+import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.server.core.file.task.FolderPull4RemoteTask;
+import run.ikaros.server.core.file.task.FolderPush2RemoteTask;
+import run.ikaros.server.core.task.TaskService;
 import run.ikaros.server.infra.exception.file.FolderExistsException;
 import run.ikaros.server.infra.exception.file.FolderHasChildException;
 import run.ikaros.server.infra.exception.file.ParentFolderNotExistsException;
 import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.entity.FolderEntity;
+import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.FolderRepository;
+import run.ikaros.server.store.repository.TaskRepository;
 
 @Slf4j
 @Service
-public class FolderServiceImpl implements FolderService {
+public class FolderServiceImpl implements FolderService, ApplicationContextAware {
     private final FolderRepository folderRepository;
     private final FileRepository fileRepository;
+    private final TaskService taskService;
+    private final TaskRepository taskRepository;
+    private final IkarosProperties ikarosProperties;
+    private ApplicationContext applicationContext;
 
+    /**
+     * Construct.
+     */
     public FolderServiceImpl(FolderRepository folderRepository,
-                             FileRepository fileRepository) {
+                             FileRepository fileRepository,
+                             TaskService taskService, TaskRepository taskRepository,
+                             IkarosProperties ikarosProperties) {
         this.folderRepository = folderRepository;
         this.fileRepository = fileRepository;
+        this.taskService = taskService;
+        this.taskRepository = taskRepository;
+        this.ikarosProperties = ikarosProperties;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 
 
@@ -49,7 +78,7 @@ public class FolderServiceImpl implements FolderService {
     @Override
     public Mono<Void> delete(Long id, boolean allowDeleteWhenChildExists)
         throws FolderHasChildException {
-        Assert.isTrue(id > 0, "folder id must gt 0.");
+        Assert.isTrue(id >= 0, "folder id must >= 0.");
         return folderRepository.findAllByParentId(id)
             .flatMap(folderEntity -> allowDeleteWhenChildExists
                 ? delete(folderEntity.getId(), true)
@@ -66,7 +95,8 @@ public class FolderServiceImpl implements FolderService {
     }
 
     private Mono<FileEntity> deleteFile(FileEntity fileEntity) {
-        java.io.File file = new java.io.File(fileEntity.getOriginalPath());
+        java.io.File file = new java.io.File(
+            FileUtils.url2path(fileEntity.getUrl(), ikarosProperties.getWorkDir()));
         if (file.exists()) {
             file.delete();
             log.debug("delete file in path: {}", fileEntity.getOriginalPath());
@@ -112,11 +142,26 @@ public class FolderServiceImpl implements FolderService {
                 .map(folder1 -> folder1.setParentId(folder.getId())
                     .setParentName(folder.getName()))
                 .collectList()
-                .map(folder::setFolders))
+                .map(folders -> folder.setFolders(folders).updateCanRead()))
             .flatMap(folder -> fileRepository.findAllByFolderId(id)
                 .flatMap(fileEntity -> copyProperties(fileEntity, new File()))
                 .collectList()
-                .map(folder::setFiles));
+                .map(files -> folder.setFiles(files).updateCanRead()));
+    }
+
+    @Override
+    public Mono<Folder> findByIdShallow(Long id) {
+        Assert.isTrue(id > -1, "folder id must gt -1.");
+        return folderRepository.findById(id)
+            .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()))
+            .flatMap(folder -> folderRepository.findAllByParentId(folder.getId())
+                .flatMap(entity -> copyProperties(entity, new Folder()))
+                .collectList()
+                .map(folders -> folder.setFolders(folders).updateCanRead()))
+            .flatMap(folder -> fileRepository.findAllByFolderId(id)
+                .flatMap(fileEntity -> copyProperties(fileEntity, new File()))
+                .collectList()
+                .map(files -> folder.setFiles(files).updateCanRead()));
     }
 
     @Override
@@ -134,6 +179,48 @@ public class FolderServiceImpl implements FolderService {
         String nameLike = '%' + nameKeyWord + '%';
         return folderRepository.findAllByNameLikeAndParentId(nameLike, parentId)
             .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()));
+    }
+
+    private Mono<Void> pushRemote(Folder folder, String remote) {
+        return Mono.defer((Supplier<Mono<Void>>) () -> {
+            FolderPush2RemoteTask folderPush2RemoteTask =
+                new FolderPush2RemoteTask(TaskEntity.builder().build(), taskRepository,
+                    folder, remote, applicationContext);
+            return taskService.submit(folderPush2RemoteTask);
+        }).then();
+    }
+
+    @Override
+    public Mono<Void> pushRemote(Long folderId, String remote) {
+        Assert.isTrue(folderId >= 0, "'folderId' must >= 0.");
+        Assert.hasText(remote, "'remote' must has text.");
+        return folderRepository.findById(folderId)
+            .switchIfEmpty(
+                Mono.error(new NotFoundException("not found folder entity for id: " + folderId)))
+            .flatMap(entity -> findById(entity.getId()))
+            .flatMap(folder -> pushRemote(folder, remote))
+            .then();
+    }
+
+    @Override
+    public Mono<Void> pullRemote(Long folderId, String remote) {
+        Assert.isTrue(folderId >= 0, "'folderId' must >= 0.");
+        Assert.hasText(remote, "'remote' must has text.");
+        return folderRepository.findById(folderId)
+            .switchIfEmpty(
+                Mono.error(new NotFoundException("not found folder entity for id: " + folderId)))
+            .flatMap(entity -> findById(entity.getId()))
+            .flatMap(folder -> pullRemote(folder, remote))
+            .then();
+    }
+
+    private Mono<? extends Void> pullRemote(Folder folder, String remote) {
+        return Mono.defer((Supplier<Mono<Void>>) () -> {
+            FolderPull4RemoteTask folderPull4RemoteTask =
+                new FolderPull4RemoteTask(TaskEntity.builder().build(), taskRepository,
+                    folder, remote, applicationContext);
+            return taskService.submit(folderPull4RemoteTask);
+        }).then();
     }
 
 }

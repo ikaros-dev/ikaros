@@ -396,6 +396,130 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
 			};
 		},
 		/**
+		 * Pull folders from remote.
+		 * @param {string} id Folder id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pullFolder4Remote: async (
+			id: string,
+			remote: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'id' is not null or undefined
+			assertParamExists('pullFolder4Remote', 'id', id);
+			// verify required parameter 'remote' is not null or undefined
+			assertParamExists('pullFolder4Remote', 'remote', remote);
+			const localVarPath = `/api/v1alpha1/folder/remote/pull`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (id !== undefined) {
+				localVarQueryParameter['id'] = id;
+			}
+
+			if (remote !== undefined) {
+				localVarQueryParameter['remote'] = remote;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Push folder to remote.
+		 * @param {string} id Folder id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pushFolder2Remote: async (
+			id: string,
+			remote: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'id' is not null or undefined
+			assertParamExists('pushFolder2Remote', 'id', id);
+			// verify required parameter 'remote' is not null or undefined
+			assertParamExists('pushFolder2Remote', 'remote', remote);
+			const localVarPath = `/api/v1alpha1/folder/remote/push`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (id !== undefined) {
+				localVarQueryParameter['id'] = id;
+			}
+
+			if (remote !== undefined) {
+				localVarQueryParameter['remote'] = remote;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
 		 * Update folder name by id and new name.
 		 * @param {number} [id] Folder id
 		 * @param {string} [newName] Folder new name. encode by base 64.
@@ -620,6 +744,52 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
 			);
 		},
 		/**
+		 * Pull folders from remote.
+		 * @param {string} id Folder id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async pullFolder4Remote(
+			id: string,
+			remote: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.pullFolder4Remote(id, remote, options);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Push folder to remote.
+		 * @param {string} id Folder id.
+		 * @param {string} remote Remote
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async pushFolder2Remote(
+			id: string,
+			remote: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.pushFolder2Remote(id, remote, options);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
 		 * Update folder name by id and new name.
 		 * @param {number} [id] Folder id
 		 * @param {string} [newName] Folder new name. encode by base 64.
@@ -756,6 +926,42 @@ export const V1alpha1FolderApiFactory = function (
 				.moveFolder(
 					requestParameters.id,
 					requestParameters.newParentId,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Pull folders from remote.
+		 * @param {V1alpha1FolderApiPullFolder4RemoteRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pullFolder4Remote(
+			requestParameters: V1alpha1FolderApiPullFolder4RemoteRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.pullFolder4Remote(
+					requestParameters.id,
+					requestParameters.remote,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Push folder to remote.
+		 * @param {V1alpha1FolderApiPushFolder2RemoteRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		pushFolder2Remote(
+			requestParameters: V1alpha1FolderApiPushFolder2RemoteRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.pushFolder2Remote(
+					requestParameters.id,
+					requestParameters.remote,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -901,6 +1107,48 @@ export interface V1alpha1FolderApiMoveFolderRequest {
 }
 
 /**
+ * Request parameters for pullFolder4Remote operation in V1alpha1FolderApi.
+ * @export
+ * @interface V1alpha1FolderApiPullFolder4RemoteRequest
+ */
+export interface V1alpha1FolderApiPullFolder4RemoteRequest {
+	/**
+	 * Folder id.
+	 * @type {string}
+	 * @memberof V1alpha1FolderApiPullFolder4Remote
+	 */
+	readonly id: string;
+
+	/**
+	 * Remote
+	 * @type {string}
+	 * @memberof V1alpha1FolderApiPullFolder4Remote
+	 */
+	readonly remote: string;
+}
+
+/**
+ * Request parameters for pushFolder2Remote operation in V1alpha1FolderApi.
+ * @export
+ * @interface V1alpha1FolderApiPushFolder2RemoteRequest
+ */
+export interface V1alpha1FolderApiPushFolder2RemoteRequest {
+	/**
+	 * Folder id.
+	 * @type {string}
+	 * @memberof V1alpha1FolderApiPushFolder2Remote
+	 */
+	readonly id: string;
+
+	/**
+	 * Remote
+	 * @type {string}
+	 * @memberof V1alpha1FolderApiPushFolder2Remote
+	 */
+	readonly remote: string;
+}
+
+/**
  * Request parameters for updateFolderName operation in V1alpha1FolderApi.
  * @export
  * @interface V1alpha1FolderApiUpdateFolderNameRequest
@@ -1033,6 +1281,46 @@ export class V1alpha1FolderApi extends BaseAPI {
 	) {
 		return V1alpha1FolderApiFp(this.configuration)
 			.moveFolder(requestParameters.id, requestParameters.newParentId, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Pull folders from remote.
+	 * @param {V1alpha1FolderApiPullFolder4RemoteRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FolderApi
+	 */
+	public pullFolder4Remote(
+		requestParameters: V1alpha1FolderApiPullFolder4RemoteRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FolderApiFp(this.configuration)
+			.pullFolder4Remote(
+				requestParameters.id,
+				requestParameters.remote,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Push folder to remote.
+	 * @param {V1alpha1FolderApiPushFolder2RemoteRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1FolderApi
+	 */
+	public pushFolder2Remote(
+		requestParameters: V1alpha1FolderApiPushFolder2RemoteRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1FolderApiFp(this.configuration)
+			.pushFolder2Remote(
+				requestParameters.id,
+				requestParameters.remote,
+				options
+			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 

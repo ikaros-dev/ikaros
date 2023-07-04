@@ -3,6 +3,7 @@ package run.ikaros.api.core.file;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,6 +28,7 @@ public class Folder {
     private LocalDateTime updateTime;
     private List<File> files;
     private List<Folder> folders;
+    private boolean canRead;
 
     public boolean hasFile() {
         return !files.isEmpty();
@@ -34,6 +36,33 @@ public class Folder {
 
     public boolean hasFolder() {
         return !folders.isEmpty();
+    }
+
+    /**
+     * Update can read with files and folders.
+     */
+    public Folder updateCanRead() {
+        boolean result = true;
+        if (Objects.nonNull(files)) {
+            for (File file : files) {
+                if (!file.getCanRead()) {
+                    result = false;
+                    break;
+                }
+            }
+        }
+
+        if (result && Objects.nonNull(folders)) {
+            for (Folder folder : folders) {
+                if (!folder.canRead) {
+                    result = false;
+                    break;
+                }
+            }
+        }
+
+        this.canRead = result;
+        return this;
     }
 
 }

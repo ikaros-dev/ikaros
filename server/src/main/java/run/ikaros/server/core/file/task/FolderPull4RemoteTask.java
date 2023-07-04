@@ -2,11 +2,11 @@ package run.ikaros.server.core.file.task;
 
 import static run.ikaros.api.infra.utils.FileUtils.path2url;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -15,7 +15,10 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
+import run.ikaros.api.core.file.File;
+import run.ikaros.api.core.file.Folder;
 import run.ikaros.api.core.file.RemoteFileHandler;
+import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.server.core.task.Task;
@@ -29,49 +32,49 @@ import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.TaskRepository;
 
 @Slf4j
-public class FilePull4RemoteTask extends Task {
-    private final ApplicationContext applicationContext;
-    private final Long fileId;
+public class FolderPull4RemoteTask extends Task {
+    private final Folder folder;
     private final String remote;
+    private final ApplicationContext applicationContext;
+    private FileRepository fileRepository;
+    private IkarosProperties ikarosProperties;
+    private FileRemoteRepository fileRemoteRepository;
+    private RemoteFileHandler remoteFileHandler;
+
 
     /**
      * Construct.
      */
-    public FilePull4RemoteTask(TaskEntity entity,
-                               TaskRepository repository,
-                               ApplicationContext applicationContext,
-                               Long fileId, String remote) {
+    public FolderPull4RemoteTask(TaskEntity entity,
+                                 TaskRepository repository, Folder folder, String remote,
+                                 ApplicationContext applicationContext) {
         super(entity, repository);
-        this.applicationContext = applicationContext;
-        this.fileId = fileId;
+        this.folder = folder;
         this.remote = remote;
+        this.applicationContext = applicationContext;
     }
 
     @Override
     protected String getTaskEntityName() {
-        return this.getClass().getSimpleName() + "-" + fileId;
+        return this.getClass().getSimpleName() + "-" + folder.getId();
     }
 
     @Override
     protected void doRun() throws Exception {
         Assert.notNull(applicationContext, "'applicationContext' must not null.");
         Assert.notNull(getRepository(), "'repository' must not null.");
-        Assert.isTrue(fileId > 0, "'fileId' must gt 0.");
+        Assert.notNull(folder, "'folder' must not null.");
         Assert.hasText(remote, "'remote' must has text.");
-
         // 获取一些需要的Bean
         final ExtensionComponentsFinder extensionComponentsFinder =
             applicationContext.getBean(ExtensionComponentsFinder.class);
-        final FileRepository fileRepository = applicationContext.getBean(FileRepository.class);
-        final IkarosProperties ikarosProperties =
+        fileRepository = applicationContext.getBean(FileRepository.class);
+        ikarosProperties =
             applicationContext.getBean(IkarosProperties.class);
-        final FileRemoteRepository fileRemoteRepository =
+        fileRemoteRepository =
             applicationContext.getBean(FileRemoteRepository.class);
-        // 获取文件记录
-        Optional<FileEntity> fileEntityOp = fileRepository.findById(fileId).blockOptional();
-        Assert.isTrue(fileEntityOp.isPresent(), "'fileEntity' must is present for id: " + fileId);
-        final FileEntity fileEntity = fileEntityOp.get();
 
+        // 获取远端处理器
         Optional<RemoteFileHandler> remoteFileHandlerOptional =
             extensionComponentsFinder.getExtensions(RemoteFileHandler.class)
                 .stream()
@@ -80,10 +83,32 @@ public class FilePull4RemoteTask extends Task {
         if (remoteFileHandlerOptional.isEmpty()) {
             throw new RuntimeException("no remote file handler for remote: " + remote);
         }
-        final RemoteFileHandler remoteFileHandler = remoteFileHandlerOptional.get();
+        remoteFileHandler = remoteFileHandlerOptional.get();
 
         if (!remoteFileHandler.ready()) {
             throw new RuntimeException("please config remote plugin for remote:" + remote);
+        }
+
+        // 获取所有推送至远端的文件
+        List<File> files = new ArrayList<>();
+        updateCanNotReadFiles(folder, files);
+
+        // 更新任务总数
+        getRepository().save(getEntity().setTotal((long) files.size())).block();
+
+        // 拉取所有待拉取的文件
+        for (int i = 0; i < files.size(); i++) {
+            pullFile2Remote(files.get(i), remote);
+            // 更新任务进度
+            getRepository().save(getEntity().setIndex((long) (i + 1))).block();
+        }
+    }
+
+    private void pullFile2Remote(File file, String remote) {
+        // 获取文件实体记录
+        final FileEntity fileEntity = fileRepository.findById(file.getId()).block();
+        if (fileEntity == null) {
+            throw new NotFoundException("not found file entity for id=" + file.getId());
         }
 
         Path encryptChunkFilesPath = ikarosProperties.getWorkDir()
@@ -103,9 +128,9 @@ public class FilePull4RemoteTask extends Task {
             .resolve(UUID.randomUUID().toString().replace("-", ""));
         FileUtils.mkdirsIfNotExists(decryptChunkFilesPath);
 
-        Path filePath = Path.of(FileUtils.buildAppUploadFilePath(
+        final Path filePath = Path.of(FileUtils.buildAppUploadFilePath(
             ikarosProperties.getWorkDir().toString(),
-            FileUtils.parseFilePostfix(fileEntity.getOriginalName())
+            FileUtils.parseFilePostfix(file.getOriginalName())
         ));
 
         // 查询当前文件所有的远端ID
@@ -120,24 +145,19 @@ public class FilePull4RemoteTask extends Task {
         }
         List<String> remoteFileIdList = remoteFileIdListOp.get();
 
-        // 更新总数
-        getRepository().save(getEntity().setTotal((long) remoteFileIdList.size())).block();
-
-        for (int i = 0; i < remoteFileIdList.size(); i++) {
-            remoteFileHandler.pull(encryptChunkFilesPath, remoteFileIdList.get(i));
-            // 更新进度
-            getRepository().save(getEntity().setIndex((long) (i + 1))).block();
+        for (String s : remoteFileIdList) {
+            remoteFileHandler.pull(encryptChunkFilesPath, s);
         }
 
         // 解密文件分片
-        File[] encryptChunkFiles = encryptChunkFilesPath.toFile().listFiles();
+        java.io.File[] encryptChunkFiles = encryptChunkFilesPath.toFile().listFiles();
         if (encryptChunkFiles == null) {
             throw new RuntimeException(
                 "encrypt file dir is null for path: " + encryptChunkFilesPath);
         }
         int index = 0;
         final int total = encryptChunkFiles.length;
-        for (File encryptChunkFile : encryptChunkFiles) {
+        for (java.io.File encryptChunkFile : encryptChunkFiles) {
             String name = encryptChunkFile.getName();
             if (name.indexOf('-') > 0) {
                 name = name.substring(name.lastIndexOf("-") + 1);
@@ -157,7 +177,7 @@ public class FilePull4RemoteTask extends Task {
         List<Path> chunkFilePaths =
             Arrays.stream(
                     Objects.requireNonNull(decryptChunkFilesPath.toFile().listFiles()))
-                .map(File::toPath)
+                .map(java.io.File::toPath)
                 .toList();
         FileUtils.synthesize(chunkFilePaths, filePath);
 
@@ -174,6 +194,20 @@ public class FilePull4RemoteTask extends Task {
             .setOriginalPath(filePath.toString())
             .setUrl(path2url(filePath.toString(),
                 ikarosProperties.getWorkDir().toString()))).block();
+    }
 
+    private List<File> updateCanNotReadFiles(Folder folder, List<File> files) {
+        if (folder.hasFolder()) {
+            for (Folder f : folder.getFolders()) {
+                files.addAll(updateCanNotReadFiles(f, files));
+            }
+        }
+        if (folder.hasFile()) {
+            files.addAll(folder.getFiles()
+                .stream()
+                .filter(file -> !file.getCanRead())
+                .toList());
+        }
+        return files;
     }
 }
