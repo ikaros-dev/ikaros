@@ -7,6 +7,7 @@ import {
 	FileEntity,
 } from '@runikaros/api-client';
 import EpisodePostDialog from './EpisodePostDialog.vue';
+import EpisodePutDialog from './EpisodePutDialog.vue';
 import { Picture } from '@element-plus/icons-vue';
 import { formatDate } from '@/utils/date';
 import { apiClient } from '@/utils/api-client';
@@ -95,6 +96,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 					subject: subject.value,
 				})
 				.then(() => {
+					ElMessage.success('更新成功条目：' + subject.value.name);
 					router.push('/subjects');
 				});
 		} else {
@@ -135,6 +137,16 @@ const onFileSelectDialogCloseWithUrl = (file: FileEntity) => {
 	fileSelectDialogVisible.value = false;
 };
 
+const crrentPutEpisode = ref<Episode>();
+const episodePutDialogVisible = ref(false);
+const toEPisodeEdit = (episode) => {
+	crrentPutEpisode.value = episode;
+	episodePutDialogVisible.value = true;
+};
+const onEpisodePutDialogCloseWithEpsiode = (episode) => {
+	currentEpisode.value = episode;
+	episodePostDialogVisible.value = false;
+};
 onMounted(() => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
@@ -224,12 +236,18 @@ onMounted(() => {
 						show-word-limit
 						type="textarea"
 						class="ik-form-item"
+						placeholder="一行一个 key:value, 例子 中文名: 天降之物"
 					/>
 				</el-form-item>
 
 				<EpisodePostDialog
 					v-model:visible="episodePostDialogVisible"
 					@closeWithEpsiode="onEpisodePostDialogCloseWithEpsiode"
+				/>
+				<EpisodePutDialog
+					v-model:visible="episodePutDialogVisible"
+					v-model:ep="crrentPutEpisode"
+					@close-with-epsiode="onEpisodePutDialogCloseWithEpsiode"
 				/>
 
 				<el-form-item label="剧集">
@@ -252,7 +270,7 @@ onMounted(() => {
 							:formatter="airTimeDateFormatter"
 						/>
 						<!-- <el-table-column label="描述" prop="description" /> -->
-						<el-table-column align="right">
+						<el-table-column align="right" width="240">
 							<template #header>
 								<el-button plain @click="episodePostDialogVisible = true">
 									添加剧集
@@ -261,6 +279,9 @@ onMounted(() => {
 							<template #default="scoped">
 								<el-button plain @click="showEpisodeDetails(scoped.row)">
 									详情
+								</el-button>
+								<el-button plain @click="toEPisodeEdit(scoped.row)">
+									编辑
 								</el-button>
 								<el-button
 									plain

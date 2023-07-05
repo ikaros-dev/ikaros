@@ -223,8 +223,8 @@ const handleClose = (done: () => void) => {
 					<el-descriptions-item label="大小">
 						{{ formatFileSize(file.size) }}
 					</el-descriptions-item>
-					<el-descriptions-item label="创建时间：">
-						{{ file.createTime }}
+					<el-descriptions-item label="更新时间：">
+						{{ file.updateTime }}
 					</el-descriptions-item>
 					<el-descriptions-item v-if="file.md5" label="MD5">
 						{{ file.md5 }}
