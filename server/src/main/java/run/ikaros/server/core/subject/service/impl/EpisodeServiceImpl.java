@@ -66,7 +66,7 @@ public class EpisodeServiceImpl implements EpisodeFileService {
             .filter(entity -> FileType.VIDEO.equals(entity.getType()))
             .flatMap(fileEntity -> getSeqMono(fileEntity)
                 .flatMap(seq -> episodeRepository.findBySubjectIdAndSequence(subjectId,
-                    Integer.valueOf(String.valueOf(seq))))
+                    Double.valueOf(String.valueOf(seq))))
                 .flatMap(episodeEntity -> episodeFileRepository
                     .existsByEpisodeId(episodeEntity.getId())
                     .filter(exists -> !exists)
