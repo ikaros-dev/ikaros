@@ -166,7 +166,7 @@ class FileEndpointTest {
             .expectStatus().isOk();
 
         Long fileId = fileRepository.findOne(
-                Example.of(FileEntity.builder().originalName("UnitTestDocFile.TXT").build()))
+                Example.of(FileEntity.builder().name("UnitTestDocFile.TXT").build()))
             .flatMap(entity -> Mono.just(entity.getId()))
             .block(AppConst.BLOCK_TIMEOUT);
 

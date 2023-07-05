@@ -141,17 +141,15 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             }
             tempChunkFileCacheDir.delete();
 
-            uploadName = uploadName.substring(0, uploadName.lastIndexOf("."));
             // save to database.
             String reactiveUrl = path2url(filePath, workDir.toString());
             var fileEntity = FileEntity.builder()
                 .md5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5))
                 .url(reactiveUrl)
                 .name(uploadName)
-                .originalName(uploadName + "." + postfix)
                 .size(uploadLength)
                 .type(FileUtils.parseTypeByPostfix(postfix))
-                .originalPath(filePath)
+                .fsPath(filePath)
                 .canRead(true)
                 .createTime(LocalDateTime.now())
                 .folderId(FileConst.DEFAULT_FOLDER_ID)
@@ -243,8 +241,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         return Mono.just(id)
             .flatMap(this::findById)
             .map(entity -> {
-                File file =
-                    new File(FileUtils.url2path(entity.getUrl(), ikarosProperties.getWorkDir()));
+                File file = new File(entity.getFsPath());
                 if (file.exists()) {
                     file.delete();
                     log.debug("delete local file in path: {}", file.getAbsolutePath());
@@ -297,8 +294,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .type(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(fileName)))
                 .url(path2url(path.toString(), ikarosProperties.getWorkDir().toString()))
                 .name(fileName)
-                .originalPath(path.toString())
-                .originalName(fileName)
+                .fsPath(path.toString())
                 .md5(FileUtils.calculateFileHash(dataBufferFlux))
                 .canRead(true)
                 .createTime(LocalDateTime.now())
@@ -306,7 +302,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             .publishOn(Schedulers.boundedElastic())
             .<FileEntity>handle((fileEntity, sink) -> {
                 try {
-                    long size = Files.size(Path.of(fileEntity.getOriginalPath()));
+                    long size = Files.size(Path.of(fileEntity.getFsPath()));
                     fileEntity.setSize(size);
                 } catch (IOException e) {
                     sink.error(new RuntimeException(e));
@@ -336,7 +332,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             .flatMap(list -> fileRepository.findById(fileEntity.getId())
                 .<FileEntity>handle((fileEntity1, sink) -> {
                     log.debug("current file remote records has exists, skip push operate.");
-                    String originalPath = fileEntity1.getOriginalPath();
+                    String originalPath = fileEntity1.getFsPath();
                     try {
                         Files.delete(Path.of(originalPath));
                         log.debug("delete file in path: {}", originalPath);
@@ -347,7 +343,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                     sink.next(fileEntity1);
                 })
                 .map(fileEntity1 -> fileEntity1.setCanRead(false)
-                    .setUrl("").setOriginalPath(""))
+                    .setUrl("").setFsPath(""))
                 .flatMap(fileRepository::save).then()
             )
             .then(fileRemoteRepository.findAllByFileIdAndRemote(fileEntity.getId(), remote)

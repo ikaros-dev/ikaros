@@ -11,10 +11,9 @@ public class FileDocConverter {
         FileDoc fileDoc = new FileDoc();
         fileDoc.setId(entity.getId());
         fileDoc.setName(entity.getName());
-        fileDoc.setOriginalPath(entity.getOriginalPath());
         fileDoc.setUrl(entity.getUrl());
         fileDoc.setType(entity.getType());
-        fileDoc.setOriginalName(entity.getOriginalName());
+        fileDoc.setFsPath(entity.getFsPath());
         return fileDoc;
     }
 

@@ -2,14 +2,12 @@ package run.ikaros.server.core.file;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.FileOperate;
-import run.ikaros.api.store.enums.FileType;
 import run.ikaros.server.infra.utils.ReactiveBeanUtils;
 import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.repository.FileRepository;
@@ -34,36 +32,9 @@ public class FileOperator implements FileOperate {
     }
 
     @Override
-    public Mono<Boolean> existsByOriginalPath(String originalPath) {
-        Assert.hasText(originalPath, "'originalPath' must has text.");
-        return repository.existsByOriginalPath(originalPath)
-            .doOnSuccess(unused ->
-                log.debug("find file entity exists  by original path:[{}].", originalPath));
-    }
-
-    @Override
-    public Mono<File> findByOriginalPath(String originalPath) {
-        Assert.hasText(originalPath, "'originalPath' must has text.");
-        return repository.findByOriginalPath(originalPath)
-            .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity, new File()))
-            .doOnSuccess(unused ->
-                log.debug("find file entity  by original path:[{}].", originalPath));
-    }
-
-    @Override
     public Mono<File> findById(Long id) {
         Assert.notNull(id, "'id' must not null.");
         return repository.findById(id)
-            .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity, new File()));
-    }
-
-    @Override
-    public Flux<File> findAllByOriginalNameLikeAndType(String originalName, FileType type) {
-        Assert.hasText(originalName, "'originalName' must has text.");
-        Assert.notNull(type, "'type' must not null.");
-        String originalNameLike = "%" + originalName + "%";
-        PageRequest pageRequest = PageRequest.of(0, 99999);
-        return repository.findAllByOriginalNameLikeAndType(originalNameLike, type, pageRequest)
             .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity, new File()));
     }
 
@@ -98,5 +69,11 @@ public class FileOperator implements FileOperate {
     @Override
     public Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux) {
         return fileService.upload(fileName, dataBufferFlux);
+    }
+
+    @Override
+    public Mono<Boolean> existsByFsPath(String fsPath) {
+        Assert.hasText(fsPath, "'fsPath' must has text.");
+        return repository.existsByFsPath(fsPath);
     }
 }

@@ -84,18 +84,17 @@ create table if not exists episode_file
 -- file
 create table if not exists file
 (
-    id            int8          not null auto_increment,
-    folder_id     int8          null,
-    md5           varchar(255)  null,
-    aes_key       varchar(255)  null,
-    name          varchar(1000) not null,
-    original_name varchar(1000) null,
-    original_path varchar(3000) null,
-    size          int8          null,
-    type          varchar(255)  null,
-    url           varchar(3000) not null,
-    can_read      bool          null,
-    create_time   timestamp(6)  null,
+    id          int8          not null auto_increment,
+    folder_id   int8          null,
+    md5         varchar(255)  null,
+    aes_key     varchar(255)  null,
+    name        varchar(1000) not null,
+    fs_path     varchar(3000) null,
+    size        int8          null,
+    type        varchar(255)  null,
+    url         varchar(3000) not null,
+    can_read    bool          null,
+    create_time timestamp(6)  null,
     constraint file_pkey primary key (id)
 );
 
