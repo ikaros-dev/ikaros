@@ -25,7 +25,11 @@ public interface FileRepository extends R2dbcRepository<FileEntity, Long> {
 
     Flux<FileEntity> findAllByNameLikeAndType(String name, FileType type, Pageable pageable);
 
+    Flux<FileEntity> findAllByNameLikeAndType(String name, FileType type);
+
     Mono<Long> countAllByNameLikeAndType(String name, FileType type);
 
     Mono<Boolean> existsByFsPath(String fsPath);
+
+
 }

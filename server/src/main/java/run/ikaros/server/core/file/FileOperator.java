@@ -80,6 +80,10 @@ public class FileOperator implements FileOperate {
 
     @Override
     public Flux<File> findAllByNameLikeAndType(String nameLike, FileType type) {
-        return null;
+        Assert.hasText(nameLike, "'nameLike' must has text.");
+        Assert.notNull(type, "'type' must not null.");
+        nameLike = '%' + nameLike + '%';
+        return repository.findAllByNameLikeAndType(nameLike, type)
+            .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity, new File()));
     }
 }
