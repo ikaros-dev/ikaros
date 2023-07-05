@@ -42,12 +42,4 @@ class FileUtilsTest {
         FileUtils.synthesize(chunkPaths, targetFilePath);
     }
 
-    @Test
-    @Disabled
-    void url2path() {
-        Path basicPath = Path.of("C:\\Users\\li-guohao\\Videos");
-        String url = "/tests/2023-06-15 09-56-02.mp4";
-        String result = FileUtils.url2path(url, basicPath);
-        System.out.println(result);
-    }
 }
