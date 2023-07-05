@@ -23,4 +23,6 @@ public interface FileOperate extends AllowPluginOperate {
     Mono<Boolean> existsByFsPath(String fsPath);
 
     Flux<File> findAllByNameLikeAndType(String nameLike, FileType type);
+
+    Mono<File> updateFolder(Long id, Long folderId);
 }
