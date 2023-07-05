@@ -84,18 +84,17 @@ create table if not exists episode_file
 -- file
 create table if not exists file
 (
-    id            int8          not null auto_increment,
-    folder_id     int8          null,
-    md5           varchar(255)  null,
-    aes_key       varchar(255)  null,
-    name          varchar(1000) not null,
-    original_name varchar(1000) null,
-    original_path varchar(3000) null,
-    size          int8          null,
-    type          varchar(255)  null,
-    url           varchar(3000) not null,
-    can_read      bool          null,
-    create_time   timestamp(6)  null,
+    id          int8          not null auto_increment,
+    folder_id   int8          null,
+    md5         varchar(255)  null,
+    aes_key     varchar(255)  null,
+    name        varchar(1000) not null,
+    fs_path     varchar(3000) null,
+    size        int8          null,
+    type        varchar(255)  null,
+    url         varchar(3000) not null,
+    can_read    bool          null,
+    update_time timestamp(6)  null,
     constraint file_pkey primary key (id)
 );
 
@@ -125,14 +124,13 @@ create table if not exists folder
     id          int8         not null auto_increment,
     parent_id   int8         not null,
     name        varchar(255) not null,
-    create_time timestamp(6) null,
     update_time timestamp(6) null,
     constraint name_parent_uk unique (name, parent_id),
     constraint folder_pkey primary key (id)
 );
 
-INSERT INTO folder (parent_id, name, create_time, update_time)
-SELECT -1, 'root', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+INSERT INTO folder (parent_id, name, update_time)
+SELECT -1, 'root', CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
                   FROM folder
                   WHERE name = 'root'

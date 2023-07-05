@@ -35,8 +35,8 @@ public class IndicesServiceImpl implements IndicesService {
     public Mono<Void> rebuildFileIndices() {
         return fileRepository.findAll()
             .map(FileDocConverter::fromEntity)
-            .limitRate(100)
-            .buffer(100)
+            .limitRate(100000)
+            .buffer(100000)
             .doOnNext(fileDocs -> {
                 try {
                     fileSearchService.rebuild(fileDocs);

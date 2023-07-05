@@ -105,7 +105,7 @@ public class FilePull4RemoteTask extends Task {
 
         final Path filePath = Path.of(FileUtils.buildAppUploadFilePath(
             ikarosProperties.getWorkDir().toString(),
-            FileUtils.parseFilePostfix(fileEntity.getOriginalName())
+            FileUtils.parseFilePostfix(fileEntity.getName())
         ));
 
         // 查询当前文件所有的远端ID
@@ -116,7 +116,7 @@ public class FilePull4RemoteTask extends Task {
                 .collectList().blockOptional();
         if (remoteFileIdListOp.isEmpty()) {
             throw new RuntimeException(
-                "not remote record for file: " + fileEntity.getOriginalName());
+                "not remote record for file: " + fileEntity.getName());
         }
         List<String> remoteFileIdList = remoteFileIdListOp.get();
 
@@ -171,7 +171,7 @@ public class FilePull4RemoteTask extends Task {
 
         // 更新文件状态 是否可读 和 URL
         fileRepository.save(fileEntity.setCanRead(true)
-            .setOriginalPath(filePath.toString())
+            .setFsPath(filePath.toString())
             .setUrl(path2url(filePath.toString(),
                 ikarosProperties.getWorkDir().toString()))).block();
 

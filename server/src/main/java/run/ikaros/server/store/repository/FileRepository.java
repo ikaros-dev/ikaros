@@ -15,12 +15,9 @@ import run.ikaros.server.store.entity.FileEntity;
  * @see FileEntity
  */
 public interface FileRepository extends R2dbcRepository<FileEntity, Long> {
-    Flux<FileEntity> findAllBy(Pageable pageable);
 
     Flux<FileEntity> findAllByFolderId(Long folderId);
 
-    Flux<FileEntity> findAllByOriginalNameLikeAndType(String originalName, FileType type,
-                                                      Pageable pageable);
 
     Flux<FileEntity> findAllByNameLike(String name, Pageable pageable);
 
@@ -28,9 +25,11 @@ public interface FileRepository extends R2dbcRepository<FileEntity, Long> {
 
     Flux<FileEntity> findAllByNameLikeAndType(String name, FileType type, Pageable pageable);
 
+    Flux<FileEntity> findAllByNameLikeAndType(String name, FileType type);
+
     Mono<Long> countAllByNameLikeAndType(String name, FileType type);
 
-    Mono<Boolean> existsByOriginalPath(String originalPath);
+    Mono<Boolean> existsByFsPath(String fsPath);
 
-    Mono<FileEntity> findByOriginalPath(String originalPath);
+
 }

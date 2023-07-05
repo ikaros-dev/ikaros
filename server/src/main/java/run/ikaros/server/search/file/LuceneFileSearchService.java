@@ -171,20 +171,14 @@ public class LuceneFileSearchService implements FileSearchService, DisposableBea
         var doc = new Document();
         doc.add(new StringField("id", String.valueOf(fileDoc.getId()), YES));
         doc.add(new StringField("name", fileDoc.getName(), YES));
-        doc.add(new StringField("originalPath", fileDoc.getOriginalPath(), YES));
         doc.add(new StringField("url", fileDoc.getUrl(), YES));
         doc.add(new StringField("type", String.valueOf(fileDoc.getType()), YES));
-        if (StringUtils.hasText(fileDoc.getOriginalName())) {
-            doc.add(new StringField("originalName",
-                String.valueOf(fileDoc.getOriginalName()), YES));
-        }
         var content = Jsoup.clean(
             stripToEmpty(String.valueOf(fileDoc.getId())) + SPACE
                 + stripToEmpty(fileDoc.getName()) + SPACE
-                + stripToEmpty(fileDoc.getOriginalPath()) + SPACE
+                + stripToEmpty(fileDoc.getFsPath()) + SPACE
                 + stripToEmpty(fileDoc.getUrl()) + SPACE
-                + stripToEmpty(String.valueOf(fileDoc.getType())) + SPACE
-                + stripToEmpty(fileDoc.getOriginalName()) + SPACE,
+                + stripToEmpty(String.valueOf(fileDoc.getType())) + SPACE,
             Safelist.none());
         doc.add(new StoredField("content", content));
         doc.add(new TextField("searchable", content, NO));

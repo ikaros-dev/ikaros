@@ -385,18 +385,4 @@ public class FileUtils {
         log.debug("current url={}", url);
         return url;
     }
-
-    /**
-     * Convert url to path.
-     */
-    public static String url2path(String url, Path basicDir) {
-        Assert.hasText(url, "'url' must has text.");
-        Path currentAppDirPath =
-            StringUtils.hasText(basicDir.toString()) ? basicDir
-                : Path.of(SystemVarUtils.getCurrentAppDirPath());
-        return currentAppDirPath
-            + (url.startsWith(String.valueOf(File.separatorChar))
-            ? url
-            : File.separatorChar + url);
-    }
 }

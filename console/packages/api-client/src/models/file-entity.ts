@@ -41,6 +41,12 @@ export interface FileEntity {
 	 * @type {string}
 	 * @memberof FileEntity
 	 */
+	fsPath?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof FileEntity
+	 */
 	name?: string;
 	/**
 	 *
@@ -68,18 +74,6 @@ export interface FileEntity {
 	type?: FileEntityTypeEnum;
 	/**
 	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	originalPath?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	originalName?: string;
-	/**
-	 *
 	 * @type {boolean}
 	 * @memberof FileEntity
 	 */
@@ -89,7 +83,7 @@ export interface FileEntity {
 	 * @type {string}
 	 * @memberof FileEntity
 	 */
-	createTime?: string;
+	updateTime?: string;
 }
 
 export const FileEntityTypeEnum = {

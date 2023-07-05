@@ -223,8 +223,8 @@ const handleClose = (done: () => void) => {
 					<el-descriptions-item label="大小">
 						{{ formatFileSize(file.size) }}
 					</el-descriptions-item>
-					<el-descriptions-item label="创建时间：">
-						{{ file.createTime }}
+					<el-descriptions-item label="更新时间：">
+						{{ file.updateTime }}
 					</el-descriptions-item>
 					<el-descriptions-item v-if="file.md5" label="MD5">
 						{{ file.md5 }}
@@ -235,11 +235,8 @@ const handleClose = (done: () => void) => {
 					<el-descriptions-item v-if="file.url" label="URL">
 						<a :href="file.url" target="_blank">{{ file.url }}</a>
 					</el-descriptions-item>
-					<el-descriptions-item label="原始名称">
-						{{ file.originalName }}
-					</el-descriptions-item>
-					<el-descriptions-item v-if="file.originalPath" label="原始路径">
-						{{ file.originalPath }}
+					<el-descriptions-item v-if="file.fsPath" label="文件系统路径">
+						{{ file.fsPath }}
 					</el-descriptions-item>
 				</el-descriptions>
 			</el-col>

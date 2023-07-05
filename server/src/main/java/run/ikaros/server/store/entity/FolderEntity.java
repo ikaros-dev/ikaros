@@ -22,8 +22,6 @@ public class FolderEntity {
     @Column("parent_id")
     private Long parentId;
     private String name;
-    @Column("create_time")
-    private LocalDateTime createTime;
     @Column("update_time")
     private LocalDateTime updateTime;
 }

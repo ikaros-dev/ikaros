@@ -80,13 +80,12 @@ public class FilePush2RemoteTask extends Task {
                 .collectList().blockOptional();
         if (fileRemoteEntitiesOp.isPresent() && fileRemoteEntitiesOp.get().size() > 0) {
             // 已经推送，更新文件记录即可
-            Path localFilePath =
-                Path.of(FileUtils.url2path(fileEntity.getUrl(), ikarosProperties.getWorkDir()));
+            Path localFilePath = Path.of(fileEntity.getFsPath());
             Files.deleteIfExists(localFilePath);
             log.debug("delete local file in path: {}", localFilePath);
             fileRepository.findById(fileEntity.getId())
                 .checkpoint("UpdateFileEntity")
-                .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setOriginalPath(""))
+                .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setFsPath(""))
                 .flatMap(fileRepository::save).block();
             return;
         }
@@ -105,8 +104,7 @@ public class FilePush2RemoteTask extends Task {
             throw new RuntimeException("please config remote plugin for remote:" + remote);
         }
 
-        Path localFilePath =
-            Path.of(FileUtils.url2path(fileEntity.getUrl(), ikarosProperties.getWorkDir()));
+        Path localFilePath = Path.of(fileEntity.getFsPath());
         Path splitChunksPath = ikarosProperties.getWorkDir()
             .resolve("caches")
             .resolve("file")
@@ -187,7 +185,7 @@ public class FilePush2RemoteTask extends Task {
         fileRepository.findById(fileEntity.getId())
             .checkpoint("UpdateFileEntity")
             .map(fe -> fe.setAesKey(new String(keyByteArray, StandardCharsets.UTF_8)))
-            .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setOriginalPath(""))
+            .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setFsPath(""))
             .flatMap(fileRepository::save).block();
     }
 }

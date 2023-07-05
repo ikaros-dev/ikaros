@@ -65,6 +65,9 @@ const fetchSubjectById = async () => {
 const infoMap = ref<Map<string, string>>();
 
 watch(subject, () => {
+	if (!subject.value.infobox) {
+		return;
+	}
 	// console.log('subject.value.infobox', subject.value.infobox);
 	const infobox: string = subject.value.infobox as string;
 	// console.log("infobox.indexOf('\n') < 0", infobox.indexOf('\n') < 0);

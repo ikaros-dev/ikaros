@@ -137,11 +137,6 @@ const handleDelete = async (file: FileEntity) => {
 		});
 };
 
-const onFilePlaceSelectChange = (val) => {
-	findFilesCondition.value.place = val;
-	fetchFiles();
-};
-
 const onFileTypeSelectChange = (val) => {
 	findFilesCondition.value.type = val;
 	fetchFiles();
@@ -184,32 +179,12 @@ onMounted(fetchFiles);
 		/>
 
 		<el-row :gutter="10">
-			<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+			<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
 				<el-form :inline="true" :model="findFilesCondition">
-					<el-form-item label="文件名称">
-						<el-input
-							v-model="findFilesCondition.fileName"
-							placeholder="模糊匹配回车搜索"
-							clearable
-							style="max-width: 162px"
-							@change="fetchFiles"
-						/>
-					</el-form-item>
-					<el-form-item label="文件位置">
-						<el-select
-							v-model="findFilesCondition.place"
-							clearable
-							style="width: 90px"
-							@change="onFilePlaceSelectChange"
-						>
-							<el-option label="本地" value="LOCAL" />
-						</el-select>
-					</el-form-item>
-					<el-form-item label="文件类型">
+					<el-form-item label="文件类型" style="width: 15%">
 						<el-select
 							v-model="findFilesCondition.type"
 							clearable
-							style="width: 90px"
 							@change="onFileTypeSelectChange"
 						>
 							<el-option label="图片" value="IMAGE" />
@@ -219,10 +194,18 @@ onMounted(fetchFiles);
 							<el-option label="未知" value="UNKNOWN" />
 						</el-select>
 					</el-form-item>
+					<el-form-item label="文件名称" style="width: 80%">
+						<el-input
+							v-model="findFilesCondition.fileName"
+							placeholder="模糊匹配回车搜索"
+							clearable
+							@change="fetchFiles"
+						/>
+					</el-form-item>
 				</el-form>
 			</el-col>
 
-			<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
+			<el-col :xs="24" :sm="24" :md="24" :lg="20" :xl="20">
 				<el-pagination
 					v-model:page-size="findFilesCondition.size"
 					v-model:current-page="findFilesCondition.page"

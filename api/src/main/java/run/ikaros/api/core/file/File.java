@@ -23,8 +23,7 @@ public class File {
     private String aesKey;
     private Long size;
     private FileType type;
-    private String originalPath;
-    private String originalName;
+    private String fsPath;
     private Boolean canRead;
-    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

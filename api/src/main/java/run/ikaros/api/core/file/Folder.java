@@ -22,8 +22,6 @@ public class Folder {
     private Long parentId;
     @JsonProperty("parent_name")
     private String parentName;
-    @JsonProperty("create_time")
-    private LocalDateTime createTime;
     @JsonProperty("update_time")
     private LocalDateTime updateTime;
     private List<File> files;

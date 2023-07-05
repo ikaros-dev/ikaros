@@ -3,6 +3,10 @@
 Ikaros 的 JavaScript API 客户端请求库。使用
 [OpenAPI Generator](https://openapi-generator.tech/) 生成。
 
+## 说明
+当前包版本 x.y.z 中 x.y 部分与 服务端版本的 x.y部分一致，
+也就是服务端版本0.4.z的api包版本肯定也是0.4.z，其中z大概率不同
+
 ## 开发环境
 
 ```bash
@@ -52,7 +56,7 @@ npm publish
 选择当前目录下的更改进行`git add`
 
 ```bash
-git commit -m "build: gen new api-client@0.1.z and publish to npm center repo in @runikaros/api-client"
+git commit -m "build: gen new api-client@0.4.z and publish to npm center repo in @runikaros/api-client"
 ```
 
 合成版(powershell)，升级 package.json 版本，并启动服务端后，在 api-client 路径下：

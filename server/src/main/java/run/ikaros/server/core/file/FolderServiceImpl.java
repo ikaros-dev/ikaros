@@ -18,7 +18,6 @@ import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.Folder;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.infra.properties.IkarosProperties;
-import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.server.core.file.task.FolderPull4RemoteTask;
 import run.ikaros.server.core.file.task.FolderPush2RemoteTask;
 import run.ikaros.server.core.task.TaskService;
@@ -71,8 +70,7 @@ public class FolderServiceImpl implements FolderService, ApplicationContextAware
         }
         return folderRepository.findByNameAndParentId(name, parentId)
             .switchIfEmpty(folderRepository.save(FolderEntity.builder()
-                .parentId(parentId).name(name)
-                .createTime(LocalDateTime.now()).updateTime(LocalDateTime.now()).build()));
+                .parentId(parentId).name(name).updateTime(LocalDateTime.now()).build()));
     }
 
     @Override
@@ -95,11 +93,10 @@ public class FolderServiceImpl implements FolderService, ApplicationContextAware
     }
 
     private Mono<FileEntity> deleteFile(FileEntity fileEntity) {
-        java.io.File file = new java.io.File(
-            FileUtils.url2path(fileEntity.getUrl(), ikarosProperties.getWorkDir()));
+        java.io.File file = new java.io.File(fileEntity.getFsPath());
         if (file.exists()) {
             file.delete();
-            log.debug("delete file in path: {}", fileEntity.getOriginalPath());
+            log.debug("delete file in path: {}", fileEntity.getFsPath());
         }
         return folderRepository.deleteById(fileEntity.getId())
             .then(Mono.just(fileEntity));

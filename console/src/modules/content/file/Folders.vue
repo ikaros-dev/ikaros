@@ -3,7 +3,6 @@ import { ref, onMounted } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { Folder } from '@runikaros/api-client';
 import { base64Encode } from '@/utils/string-util';
-import { fileTypeMap } from '@/modules/common/constants';
 import FileFragmentUploadDrawer from './FileFragmentUploadDrawer.vue';
 import FolderRemoteActionDialog from './FolderRemoteActionDialog.vue';
 import FileDeatilDrawer from './FileDeatilDrawer.vue';
@@ -390,12 +389,6 @@ onMounted(fetchFolders);
 				<el-table-column prop="id" label="ID" width="60" />
 				<el-table-column prop="name" label="目录名" />
 				<el-table-column
-					prop="create_time"
-					label="创建时间"
-					width="160"
-					:formatter="dateFormat"
-				/>
-				<el-table-column
 					prop="update_time"
 					label="更新时间"
 					width="160"
@@ -412,23 +405,16 @@ onMounted(fetchFolders);
 			>
 				<el-table-column type="selection" width="55" />
 				<el-table-column prop="id" label="ID" width="60" />
-				<el-table-column prop="name" label="文件名" width="180" />
-				<el-table-column prop="originalName" label="原始名" width="250" />
-				<el-table-column prop="type" label="类型" width="180">
-					<template #default="scoped">
-						{{ fileTypeMap.get(scoped.row.type as string) }}
-					</template>
-				</el-table-column>
-				<el-table-column prop="size" label="大小" width="180">
+				<el-table-column prop="name" label="文件名" />
+				<el-table-column
+					prop="updateTime"
+					label="修改时间"
+					:formatter="dateFormat"
+					width="160"
+				/>
+				<el-table-column prop="size" label="大小" width="100">
 					<template #default="scoped">
 						{{ formatFileSize(scoped.row.size) }}
-					</template>
-				</el-table-column>
-				<el-table-column prop="url" label="URL">
-					<template #default="scoped">
-						<a :href="scoped.row.url" target="_blank">
-							{{ scoped.row.url }}
-						</a>
 					</template>
 				</el-table-column>
 			</el-table>
