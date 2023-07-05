@@ -86,4 +86,11 @@ public class FileOperator implements FileOperate {
         return repository.findAllByNameLikeAndType(nameLike, type)
             .flatMap(fileEntity -> ReactiveBeanUtils.copyProperties(fileEntity, new File()));
     }
+
+    @Override
+    public Mono<File> updateFolder(Long id, Long folderId) {
+        Assert.notNull(id, "'id' must not null.");
+        Assert.notNull(folderId, "'folderId' must not null.");
+        return fileService.updateFolder(id, folderId);
+    }
 }
