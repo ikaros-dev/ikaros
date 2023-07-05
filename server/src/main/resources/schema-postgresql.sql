@@ -136,7 +136,7 @@ create table if not exists file
     "type"      varchar(255)  null,
     url         varchar(3000) not null,
     can_read    bool          null,
-    create_time timestamp(6)  null,
+    update_time timestamp(6)  null,
     constraint file_pkey primary key (id)
 );
 
@@ -180,17 +180,15 @@ create table if not exists folder
     id          int8         not null default nextval('folder_seq'),
     parent_id   int8         not null,
     name        varchar(255) not null,
-    create_time timestamp(6) null,
     update_time timestamp(6) null,
     constraint name_parent_uk unique (name, parent_id),
     constraint folder_pkey primary key (id)
 );
 
-INSERT INTO folder (id, parent_id, name, create_time, update_time)
+INSERT INTO folder (id, parent_id, name, update_time)
 SELECT 0,
        -1,
        'root',
-       CURRENT_TIMESTAMP,
        CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
                   FROM folder

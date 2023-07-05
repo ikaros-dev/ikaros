@@ -151,7 +151,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .type(FileUtils.parseTypeByPostfix(postfix))
                 .fsPath(filePath)
                 .canRead(true)
-                .createTime(LocalDateTime.now())
+                .updateTime(LocalDateTime.now())
                 .folderId(FileConst.DEFAULT_FOLDER_ID)
                 .build();
             return save(fileEntity).then();
@@ -182,7 +182,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
     @Override
     public Mono<FileEntity> updateEntity(FileEntity fileEntity) {
         Assert.notNull(fileEntity, "'fileEntity' must not null.");
-        return save(fileEntity);
+        return save(fileEntity.setUpdateTime(LocalDateTime.now()));
     }
 
     @Override
@@ -297,7 +297,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .fsPath(path.toString())
                 .md5(FileUtils.calculateFileHash(dataBufferFlux))
                 .canRead(true)
-                .createTime(LocalDateTime.now())
+                .updateTime(LocalDateTime.now())
                 .build())
             .publishOn(Schedulers.boundedElastic())
             .<FileEntity>handle((fileEntity, sink) -> {
@@ -407,7 +407,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         Assert.isTrue(id > -1, "id must gt -1.");
         Assert.isTrue(folderId > -1, "folderId must gt -1.");
         return findById(id)
-            .map(fileEntity -> fileEntity.setFolderId(folderId))
+            .map(fileEntity -> fileEntity.setFolderId(folderId).setUpdateTime(LocalDateTime.now()))
             .flatMap(fileRepository::save)
             .flatMap(fileEntity -> copyProperties(fileEntity,
                 new run.ikaros.api.core.file.File()));

@@ -25,5 +25,5 @@ public class File {
     private FileType type;
     private String fsPath;
     private Boolean canRead;
-    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

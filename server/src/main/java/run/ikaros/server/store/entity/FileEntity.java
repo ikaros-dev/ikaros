@@ -45,7 +45,6 @@ public class FileEntity {
     private FileType type;
     @Column("can_read")
     private Boolean canRead;
-
-    @Column("create_time")
-    private LocalDateTime createTime;
+    @Column("update_time")
+    private LocalDateTime updateTime;
 }

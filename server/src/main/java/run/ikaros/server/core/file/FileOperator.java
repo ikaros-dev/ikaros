@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.FileOperate;
+import run.ikaros.api.store.enums.FileType;
 import run.ikaros.server.infra.utils.ReactiveBeanUtils;
 import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.repository.FileRepository;
@@ -75,5 +76,10 @@ public class FileOperator implements FileOperate {
     public Mono<Boolean> existsByFsPath(String fsPath) {
         Assert.hasText(fsPath, "'fsPath' must has text.");
         return repository.existsByFsPath(fsPath);
+    }
+
+    @Override
+    public Flux<File> findAllByNameLikeAndType(String nameLike, FileType type) {
+        return null;
     }
 }

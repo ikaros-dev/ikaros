@@ -70,8 +70,7 @@ public class FolderServiceImpl implements FolderService, ApplicationContextAware
         }
         return folderRepository.findByNameAndParentId(name, parentId)
             .switchIfEmpty(folderRepository.save(FolderEntity.builder()
-                .parentId(parentId).name(name)
-                .createTime(LocalDateTime.now()).updateTime(LocalDateTime.now()).build()));
+                .parentId(parentId).name(name).updateTime(LocalDateTime.now()).build()));
     }
 
     @Override
