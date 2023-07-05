@@ -71,13 +71,7 @@ export interface ModelFile {
 	 * @type {string}
 	 * @memberof ModelFile
 	 */
-	originalPath?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ModelFile
-	 */
-	originalName?: string;
+	fsPath?: string;
 	/**
 	 *
 	 * @type {boolean}
@@ -89,7 +83,7 @@ export interface ModelFile {
 	 * @type {string}
 	 * @memberof ModelFile
 	 */
-	createTime?: string;
+	updateTime?: string;
 }
 
 export const ModelFileTypeEnum = {

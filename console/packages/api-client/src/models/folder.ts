@@ -65,11 +65,5 @@ export interface Folder {
 	 * @type {string}
 	 * @memberof Folder
 	 */
-	create_time?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Folder
-	 */
 	update_time?: string;
 }
