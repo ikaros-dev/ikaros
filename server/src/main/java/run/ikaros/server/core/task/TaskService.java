@@ -7,6 +7,8 @@ import run.ikaros.server.store.entity.TaskEntity;
 public interface TaskService {
     void updateTaskStatus();
 
+    void updateAllRunningTaskStatusToCancel();
+
     Mono<TaskEntity> findById(Long id);
 
     Mono<Void> submit(Task task);

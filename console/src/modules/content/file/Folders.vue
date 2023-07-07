@@ -242,20 +242,17 @@ const router = useRouter();
 const folderRemoteActionDialogVisible = ref(false);
 const currentFolderActionId = ref(0);
 const folderRemoteIsPush = ref(true);
-const openFolderRemoteActionDialog = () => {
+const openFolderRemoteActionDialog = (isPush) => {
 	let needActionFolderId = -1;
-	let needActionRemoteIsPush;
 	// console.log(currentSelectFolder.value);
 	if (currentSelectFolder.value) {
 		needActionFolderId = currentSelectFolder.value.id as number;
-		needActionRemoteIsPush = currentSelectFolder.value.canRead;
 	} else {
 		needActionFolderId = folder.value?.id as number;
-		needActionRemoteIsPush = folder.value?.canRead;
 	}
 
 	currentFolderActionId.value = needActionFolderId as number;
-	folderRemoteIsPush.value = needActionRemoteIsPush as boolean;
+	folderRemoteIsPush.value = isPush as boolean;
 	folderRemoteActionDialogVisible.value = true;
 };
 const onCloseWithTaskName = (taskName) => {
@@ -351,15 +348,11 @@ onMounted(fetchFolders);
 					<el-button :icon="FolderDelete" type="danger">删除</el-button>
 				</template>
 			</el-popconfirm>
-			<el-button plain @click="openFolderRemoteActionDialog">
-				<span
-					v-if="
-						currentSelectFolder ? currentSelectFolder?.canRead : folder?.canRead
-					"
-				>
-					推送
-				</span>
-				<span v-else> 拉取 </span>
+			<el-button plain @click="openFolderRemoteActionDialog(true)">
+				推送
+			</el-button>
+			<el-button plain @click="openFolderRemoteActionDialog(false)">
+				拉取
 			</el-button>
 		</el-col>
 	</el-row>

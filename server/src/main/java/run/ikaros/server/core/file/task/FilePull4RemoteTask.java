@@ -3,9 +3,10 @@ package run.ikaros.server.core.file.task;
 import static run.ikaros.api.infra.utils.FileUtils.path2url;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -137,6 +138,7 @@ public class FilePull4RemoteTask extends Task {
         }
         int index = 0;
         final int total = encryptChunkFiles.length;
+        log.info("starting decrypt chunk file ...");
         for (File encryptChunkFile : encryptChunkFiles) {
             String name = encryptChunkFile.getName();
             if (name.indexOf('-') > 0) {
@@ -144,14 +146,16 @@ public class FilePull4RemoteTask extends Task {
             }
             Path decryptChunkFilePath = decryptChunkFilesPath.resolve(name);
             try {
-                byte[] bytes = AesEncryptUtils.decryptFile(aesKeyBytes, encryptChunkFile);
-                Files.write(decryptChunkFilePath, bytes);
+                FileInputStream data = new FileInputStream(encryptChunkFile);
+                FileOutputStream out = new FileOutputStream(decryptChunkFilePath.toFile());
+                AesEncryptUtils.decryptInputStream(data, true, out, aesKeyBytes);
                 index++;
-                log.debug("current encrypt chunk file: {}/{}.", index, total);
+                log.info("current decrypt chunk file: {}/{}.", index, total);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+        log.info("end decrypt chunk file ...");
 
         // 合并文件分片
         List<Path> chunkFilePaths =
