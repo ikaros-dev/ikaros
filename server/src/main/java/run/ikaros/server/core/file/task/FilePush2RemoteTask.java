@@ -1,6 +1,7 @@
 package run.ikaros.server.core.file.task;
 
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -126,17 +127,21 @@ public class FilePush2RemoteTask extends Task {
         getRepository().save(getEntity().setTotal((long) pathList.size())).block();
 
         // 加密
-        for (Path path : pathList) {
-            File file1 = path.toFile();
-            String file1Name = file1.getName();
+        log.info("starting encrypt all chunk files...");
+        for (int i = 0; i < pathList.size(); i++) {
+            java.io.File file1 = pathList.get(i).toFile();
             try {
-                byte[] bytes = AesEncryptUtils.encryptFile(keyByteArray, file1);
-                Path targetFilePath = encryptChunksPath.resolve(file1Name);
-                Files.write(targetFilePath, bytes);
+                FileInputStream data = new FileInputStream(file1);
+                Path targetFilePath = encryptChunksPath.resolve(file1.getName());
+                java.io.File file2 = targetFilePath.toFile();
+                FileOutputStream out = new FileOutputStream(file2);
+                AesEncryptUtils.encryptInputStream(data, true, out, keyByteArray);
+                log.info("current encrypt chunk file index : {}/{}", i + 1, pathList.size());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+        log.info("end encrypt all chunk files...");
 
         // 上传
         List<Path> encryptFilePathList = Arrays.stream(
@@ -148,38 +153,36 @@ public class FilePush2RemoteTask extends Task {
                 "encrypt files must not empty in path: " + encryptChunksPath);
         }
         List<RemoteFileChunk> remoteFileChunkList = new ArrayList<>(encryptFilePathList.size());
-        try {
-            for (int i = 0; i < encryptFilePathList.size(); i++) {
-                remoteFileChunkList.add(remoteFileHandler.push(encryptFilePathList.get(i)));
-                // 更新任务进度
-                getRepository().save(getEntity().setIndex((long) (i + 1))).block();
-            }
-
-            // 保存云端分片信息
-            Flux.fromStream(remoteFileChunkList.stream())
-                .flatMap(remoteFileChunk -> fileRemoteRepository.save(FileRemoteEntity.builder()
-                    .fileId(fileEntity.getId())
-                    .fileName(remoteFileChunk.getFileName())
-                    .remoteId(remoteFileChunk.getFileId())
-                    .remote(remote)
-                    .size(remoteFileChunk.getSize())
-                    .path(remoteFileChunk.getPath())
-                    .md5(remoteFileChunk.getMd5())
-                    .build())).blockLast();
-        } finally {
-            // 清理本地文件
-            try {
-                // 分片文件
-                FileUtils.deleteDirByRecursion(splitChunksPath.toString());
-                // 分片加密文件
-                FileUtils.deleteDirByRecursion(encryptChunksPath.toString());
-                // 源文件
-                localFilePath.toFile().delete();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        for (int i = 0; i < encryptFilePathList.size(); i++) {
+            remoteFileChunkList.add(remoteFileHandler.push(encryptFilePathList.get(i)));
+            // 更新任务进度
+            getRepository().save(getEntity().setIndex((long) (i + 1))).block();
         }
 
+        // 保存云端分片信息
+        Flux.fromStream(remoteFileChunkList.stream())
+            .flatMap(remoteFileChunk -> fileRemoteRepository.save(FileRemoteEntity.builder()
+                .fileId(fileEntity.getId())
+                .fileName(remoteFileChunk.getFileName())
+                .remoteId(remoteFileChunk.getFileId())
+                .remote(remote)
+                .size(remoteFileChunk.getSize())
+                .path(remoteFileChunk.getPath())
+                .md5(remoteFileChunk.getMd5())
+                .build())).blockLast();
+
+
+        // 清理本地文件
+        try {
+            // 分片文件
+            FileUtils.deleteDirByRecursion(splitChunksPath.toString());
+            // 分片加密文件
+            FileUtils.deleteDirByRecursion(encryptChunksPath.toString());
+            // 源文件
+            localFilePath.toFile().delete();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         // 更新文件状态
         fileRepository.findById(fileEntity.getId())

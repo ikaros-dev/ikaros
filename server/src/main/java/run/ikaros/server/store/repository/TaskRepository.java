@@ -10,6 +10,8 @@ import run.ikaros.server.store.entity.TaskEntity;
 public interface TaskRepository extends R2dbcRepository<TaskEntity, Long> {
     Flux<TaskEntity> findAllByName(String name);
 
+    Flux<TaskEntity> findAllByStatus(TaskStatus status);
+
     Flux<TaskEntity> findAllByNameLike(String name, Pageable pageable);
 
     Mono<Long> countAllByNameLike(String name);

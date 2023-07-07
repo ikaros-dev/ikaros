@@ -12,6 +12,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.store.enums.TaskStatus;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.TaskEntity;
@@ -60,6 +61,14 @@ public class TaskServiceImpl implements TaskService {
                 })
                 .subscribe();
         }
+    }
+
+    @Override
+    public void updateAllRunningTaskStatusToCancel() {
+        taskRepository.findAllByStatus(TaskStatus.RUNNING)
+            .flatMap(taskEntity -> taskRepository.save(taskEntity.setStatus(TaskStatus.CANCEL)))
+            .subscribeOn(Schedulers.boundedElastic())
+            .subscribe();
     }
 
     @Override

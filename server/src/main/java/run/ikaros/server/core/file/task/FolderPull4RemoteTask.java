@@ -2,9 +2,10 @@ package run.ikaros.server.core.file.task;
 
 import static run.ikaros.api.infra.utils.FileUtils.path2url;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -153,10 +154,11 @@ public class FolderPull4RemoteTask extends Task {
         java.io.File[] encryptChunkFiles = encryptChunkFilesPath.toFile().listFiles();
         if (encryptChunkFiles == null) {
             throw new RuntimeException(
-                "encrypt file dir is null for path: " + encryptChunkFilesPath);
+                "decrypt file dir is null for path: " + encryptChunkFilesPath);
         }
         int index = 0;
         final int total = encryptChunkFiles.length;
+        log.info("starting decrypt chunk file ...");
         for (java.io.File encryptChunkFile : encryptChunkFiles) {
             String name = encryptChunkFile.getName();
             if (name.indexOf('-') > 0) {
@@ -164,14 +166,16 @@ public class FolderPull4RemoteTask extends Task {
             }
             Path decryptChunkFilePath = decryptChunkFilesPath.resolve(name);
             try {
-                byte[] bytes = AesEncryptUtils.decryptFile(aesKeyBytes, encryptChunkFile);
-                Files.write(decryptChunkFilePath, bytes);
+                FileInputStream data = new FileInputStream(encryptChunkFile);
+                FileOutputStream out = new FileOutputStream(decryptChunkFilePath.toFile());
+                AesEncryptUtils.decryptInputStream(data, true, out, aesKeyBytes);
                 index++;
-                log.debug("current encrypt chunk file: {}/{}.", index, total);
+                log.info("current decrypt chunk file: {}/{}.", index, total);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+        log.info("end decrypt chunk file ...");
 
         // 合并文件分片
         List<Path> chunkFilePaths =

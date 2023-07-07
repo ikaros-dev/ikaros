@@ -3,18 +3,25 @@ package run.ikaros.server.infra.utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import org.springframework.util.Assert;
 
 public class AesEncryptUtils {
 
@@ -33,6 +40,10 @@ public class AesEncryptUtils {
      * AES密钥长度默认值 192.
      */
     private static final int DEFAULT_AES_KEY_LENGTH = 192;
+    /**
+     * 并发读写锁.
+     */
+    private static final Lock lock = new ReentrantLock();
 
 
     /**
@@ -104,6 +115,75 @@ public class AesEncryptUtils {
      */
     public static void generateKeyFile(File keyFile) throws IOException {
         generateKeyFile(DEFAULT_AES_KEY_LENGTH, keyFile);
+    }
+
+    /**
+     * Encrypt by stream.
+     */
+    public static void encryptInputStream(InputStream data, boolean isClose, OutputStream out,
+                                          byte[] keyBytes) throws IOException {
+        Assert.notNull(data, "'data' must not null.");
+        Assert.notNull(out, "'out' must not null.");
+        Assert.notNull(keyBytes, "'keyBytes' must not null.");
+        lock.lock();
+        Key key = new SecretKeySpec(keyBytes, KEY_ALGORITHM);
+        try (out) {
+            // 获取Cipher对象
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            // 设置加密模式
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            // 创建加密输出流
+            CipherOutputStream cipherOutputStream = new CipherOutputStream(out, cipher);
+            // 加密数据流
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = data.read(buffer)) != -1) {
+                cipherOutputStream.write(buffer, 0, bytesRead);
+            }
+            cipherOutputStream.close();
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+            if (isClose) {
+                data.close();
+            }
+        }
+
+    }
+
+    /**
+     * Decrypt by stream.
+     */
+    public static void decryptInputStream(InputStream data, boolean isClose, OutputStream out,
+                                          byte[] keyBytes) throws IOException {
+        Assert.notNull(data, "'data' must not null.");
+        Assert.notNull(out, "'out' must not null.");
+        Assert.notNull(keyBytes, "'keyBytes' must not null.");
+        lock.lock();
+        Key key = new SecretKeySpec(keyBytes, KEY_ALGORITHM);
+        try (out) {
+            // 获取Cipher对象
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            // 设置加密模式
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            // 创建解密输入流
+            CipherInputStream cipherInputStream = new CipherInputStream(data, cipher);
+            // 解密数据流
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = cipherInputStream.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+            cipherInputStream.close();
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+            if (isClose) {
+                data.close();
+            }
+        }
     }
 
 
