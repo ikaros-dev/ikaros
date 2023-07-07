@@ -194,7 +194,7 @@ public class FolderServiceImpl implements FolderService, ApplicationContextAware
         return folderRepository.findById(folderId)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("not found folder entity for id: " + folderId)))
-            .flatMap(entity -> findById(entity.getId()))
+            .flatMap(entity -> findByIdShallow(entity.getId()))
             .flatMap(folder -> pushRemote(folder, remote))
             .then();
     }
@@ -206,7 +206,7 @@ public class FolderServiceImpl implements FolderService, ApplicationContextAware
         return folderRepository.findById(folderId)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("not found folder entity for id: " + folderId)))
-            .flatMap(entity -> findById(entity.getId()))
+            .flatMap(entity -> findByIdShallow(entity.getId()))
             .flatMap(folder -> pullRemote(folder, remote))
             .then();
     }
