@@ -129,8 +129,8 @@ create table if not exists folder
     constraint folder_pkey primary key (id)
 );
 
-INSERT INTO folder (parent_id, name, update_time)
-SELECT -1, 'root', CURRENT_TIMESTAMP
+INSERT INTO folder (id, parent_id, name, update_time)
+SELECT 0, -1, 'root', CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
                   FROM folder
                   WHERE name = 'root'
