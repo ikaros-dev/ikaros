@@ -128,6 +128,7 @@ public class FilePush2RemoteTask extends Task {
 
         // 更新任务总数
         getRepository().save(getEntity().setTotal((long) pathList.size())).block(BLOCK_TIMEOUT);
+        log.debug("update [{}] total is [{}].", getTaskEntityName(), pathList.size());
 
         // 加密
         log.info("starting encrypt all chunk files...");
@@ -156,11 +157,14 @@ public class FilePush2RemoteTask extends Task {
                 "encrypt files must not empty in path: " + encryptChunksPath);
         }
         List<RemoteFileChunk> remoteFileChunkList = new ArrayList<>(encryptFilePathList.size());
+        log.debug("starting push file to remote...");
         for (int i = 0; i < encryptFilePathList.size(); i++) {
             remoteFileChunkList.add(remoteFileHandler.push(encryptFilePathList.get(i)));
             // 更新任务进度
             getRepository().save(getEntity().setIndex((long) (i + 1))).block(BLOCK_TIMEOUT);
+            log.debug("push file process: {}/{}", i + 1, encryptFilePathList.size());
         }
+        log.debug("end push file to remote...");
 
         // 保存云端分片信息
         Flux.fromStream(remoteFileChunkList.stream())

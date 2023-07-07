@@ -97,17 +97,21 @@ public class FolderPush2RemoteTask extends Task {
         updateCanReadFiles(folder, files);
 
         // 更新任务总数
-        getRepository().save(getEntity().setTotal((long) files.size()))
+        int total = files.size();
+        getRepository().save(getEntity().setTotal((long) total))
             .block(AppConst.BLOCK_TIMEOUT);
+        log.debug("update [{}] total is [{}].", getTaskEntityName(), total);
 
         // 推送所有待推送的文件
-        for (int i = 0; i < files.size(); i++) {
+        log.debug("starting push all file to remote...");
+        for (int i = 0; i < total; i++) {
             pushFile2Remote(files.get(i), remote);
             // 更新任务进度
             getRepository().save(getEntity().setIndex((long) (i + 1)))
                 .block(AppConst.BLOCK_TIMEOUT);
+            log.debug("push file process: {}/{}", i + 1, total);
         }
-
+        log.debug("end push all file to remote.");
     }
 
     private void pushFile2Remote(File file, String remote) throws IOException {
