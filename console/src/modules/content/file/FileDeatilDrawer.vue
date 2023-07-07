@@ -118,13 +118,19 @@ const handleEditName = () => {
 };
 
 const handleUpdateName = async () => {
-	if (file.value.name) {
+	if (!file.value.name) {
 		ElMessage.error('文件名称不能为空！');
+		window.location.reload();
+		return;
 	}
 	try {
-		await apiClient.file.updateFile({
-			fileEntity: file.value,
-		});
+		await apiClient.file
+			.updateFile({
+				fileEntity: file.value,
+			})
+			.then(() => {
+				ElMessage.success('更新文件名称成功');
+			});
 	} catch (error) {
 		console.error(error);
 	} finally {
@@ -213,7 +219,7 @@ const handleClose = (done: () => void) => {
 								@pressEnter="handleUpdateName"
 							/>
 						</span>
-						<span v-else>
+						<span v-else @dblclick="handleEditName">
 							{{ file.name }}
 						</span>
 					</el-descriptions-item>
