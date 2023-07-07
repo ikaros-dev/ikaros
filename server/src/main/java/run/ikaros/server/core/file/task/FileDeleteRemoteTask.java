@@ -1,10 +1,13 @@
 package run.ikaros.server.core.file.task;
 
+import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
+
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
+import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.core.file.RemoteFileHandler;
 import run.ikaros.server.core.task.Task;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
@@ -51,14 +54,15 @@ public class FileDeleteRemoteTask extends Task {
             extensionComponentsFinder.getExtensions(RemoteFileHandler.class);
 
         List<FileRemoteEntity> fileRemoteEntities = fileRemoteRepository.findAllByFileId(fileId)
-            .collectList().block();
+            .collectList().block(AppConst.BLOCK_TIMEOUT);
         if (fileRemoteEntities == null) {
             log.warn("not found file remote records for file id: {}", fileId);
             return;
         }
 
         // 更新总数
-        getRepository().save(getEntity().setTotal((long) fileRemoteEntities.size())).block();
+        getRepository().save(getEntity().setTotal((long) fileRemoteEntities.size()))
+            .block(BLOCK_TIMEOUT);
 
         for (int i = 0; i < fileRemoteEntities.size(); i++) {
             FileRemoteEntity fileRemoteEntity = fileRemoteEntities.get(i);
@@ -72,11 +76,11 @@ public class FileDeleteRemoteTask extends Task {
                     fileRemoteEntity.getRemote(), fileRemoteEntity.getPath());
             });
             // 更新进度
-            getRepository().save(getEntity().setIndex((long) (i + 1))).block();
+            getRepository().save(getEntity().setIndex((long) (i + 1))).block(BLOCK_TIMEOUT);
         }
 
         fileRemoteRepository.deleteAllByFileId(fileId)
             .doOnSuccess(unused -> log.debug("delete all remote records for file id: " + fileId))
-            .block();
+            .block(BLOCK_TIMEOUT);
     }
 }

@@ -3,6 +3,7 @@ package run.ikaros.server.core.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
+import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
 import static run.ikaros.server.core.user.UserService.DEFAULT_PASSWORD_ENCODING_ID_PREFIX;
 import static run.ikaros.server.test.TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS;
 
@@ -45,7 +46,7 @@ class UserServiceTest {
 
     @AfterEach
     void tearDown() {
-        userService.deleteAll().block();
+        userService.deleteAll().block(BLOCK_TIMEOUT);
     }
 
     @Test
@@ -76,7 +77,7 @@ class UserServiceTest {
                 .build())
             .map(User::new)
             .flatMap(userService::save)
-            .block();
+            .block(BLOCK_TIMEOUT);
 
 
         // verify get user
@@ -105,7 +106,7 @@ class UserServiceTest {
                 .build())
             .map(User::new)
             .flatMap(userService::save)
-            .block();
+            .block(BLOCK_TIMEOUT);
 
         Mono<String> encodedPasswordMono = userService.getUserByUsername(username)
             .map(User::entity)
@@ -121,7 +122,7 @@ class UserServiceTest {
             .verifyComplete();
 
         // update user password
-        userService.updatePassword(username, oldPassword, newPassword).block();
+        userService.updatePassword(username, oldPassword, newPassword).block(BLOCK_TIMEOUT);
 
         StepVerifier.create(
                 encodedPasswordMono
@@ -142,13 +143,13 @@ class UserServiceTest {
         StepVerifier.create(userService.updatePassword(username, oldPassword, newPassword))
             .expectErrorMatches(throwable ->
                 throwable.getClass() == PasswordNotMatchingException.class
-                && throwable.getMessage().startsWith("Old password not matching username: "))
+                    && throwable.getMessage().startsWith("Old password not matching username: "))
             .verify();
 
 
         // update by not same password
         final String newPassword2 = "newPassword2";
-        userService.updatePassword(username, newPassword, newPassword2).block();
+        userService.updatePassword(username, newPassword, newPassword2).block(BLOCK_TIMEOUT);
         StepVerifier.create(
                 encodedPasswordMono
                     .flatMap(encodedPassword -> Mono.just(

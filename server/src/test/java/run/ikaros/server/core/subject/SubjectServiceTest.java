@@ -1,6 +1,7 @@
 package run.ikaros.server.core.subject;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
+import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
@@ -35,7 +37,7 @@ class SubjectServiceTest {
     @Test
     void findByIdWhenIdNotGtZero() {
         try {
-            subjectService.findById(Long.MIN_VALUE).block();
+            subjectService.findById(Long.MIN_VALUE).block(AppConst.BLOCK_TIMEOUT);
         } catch (Exception e) {
             assertThat(e).isInstanceOf(IllegalArgumentException.class);
         }
@@ -72,7 +74,7 @@ class SubjectServiceTest {
     @Test
     void findByBgmIdWhenIdNotGtZero() {
         try {
-            subjectService.findByBgmId(Long.MIN_VALUE, Long.MIN_VALUE).block();
+            subjectService.findByBgmId(Long.MIN_VALUE, Long.MIN_VALUE).block(BLOCK_TIMEOUT);
         } catch (Exception e) {
             assertThat(e).isInstanceOf(IllegalArgumentException.class);
         }
