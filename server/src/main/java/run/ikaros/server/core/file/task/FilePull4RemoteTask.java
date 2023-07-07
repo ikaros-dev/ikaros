@@ -1,5 +1,6 @@
 package run.ikaros.server.core.file.task;
 
+import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
 import static run.ikaros.api.infra.utils.FileUtils.path2url;
 
 import java.io.File;
@@ -69,7 +70,8 @@ public class FilePull4RemoteTask extends Task {
         final FileRemoteRepository fileRemoteRepository =
             applicationContext.getBean(FileRemoteRepository.class);
         // 获取文件记录
-        Optional<FileEntity> fileEntityOp = fileRepository.findById(fileId).blockOptional();
+        Optional<FileEntity> fileEntityOp = fileRepository.findById(fileId)
+            .blockOptional(BLOCK_TIMEOUT);
         Assert.isTrue(fileEntityOp.isPresent(), "'fileEntity' must is present for id: " + fileId);
         final FileEntity fileEntity = fileEntityOp.get();
 
@@ -114,7 +116,7 @@ public class FilePull4RemoteTask extends Task {
             fileRemoteRepository.findAllByFileId(fileEntity.getId())
                 .filter(fileRemoteEntity -> remote.equals(fileRemoteEntity.getRemote()))
                 .map(FileRemoteEntity::getRemoteId)
-                .collectList().blockOptional();
+                .collectList().blockOptional(BLOCK_TIMEOUT);
         if (remoteFileIdListOp.isEmpty()) {
             throw new RuntimeException(
                 "not remote record for file: " + fileEntity.getName());
@@ -122,12 +124,13 @@ public class FilePull4RemoteTask extends Task {
         List<String> remoteFileIdList = remoteFileIdListOp.get();
 
         // 更新总数
-        getRepository().save(getEntity().setTotal((long) remoteFileIdList.size())).block();
+        getRepository().save(getEntity().setTotal((long) remoteFileIdList.size()))
+            .block(BLOCK_TIMEOUT);
 
         for (int i = 0; i < remoteFileIdList.size(); i++) {
             remoteFileHandler.pull(encryptChunkFilesPath, remoteFileIdList.get(i));
             // 更新进度
-            getRepository().save(getEntity().setIndex((long) (i + 1))).block();
+            getRepository().save(getEntity().setIndex((long) (i + 1))).block(BLOCK_TIMEOUT);
         }
 
         // 解密文件分片
@@ -177,7 +180,7 @@ public class FilePull4RemoteTask extends Task {
         fileRepository.save(fileEntity.setCanRead(true)
             .setFsPath(filePath.toString())
             .setUrl(path2url(filePath.toString(),
-                ikarosProperties.getWorkDir().toString()))).block();
+                ikarosProperties.getWorkDir().toString()))).block(BLOCK_TIMEOUT);
 
     }
 }

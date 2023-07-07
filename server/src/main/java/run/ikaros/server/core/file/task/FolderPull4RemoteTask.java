@@ -1,5 +1,6 @@
 package run.ikaros.server.core.file.task;
 
+import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
 import static run.ikaros.api.infra.utils.FileUtils.path2url;
 
 import java.io.FileInputStream;
@@ -95,19 +96,19 @@ public class FolderPull4RemoteTask extends Task {
         updateCanNotReadFiles(folder, files);
 
         // 更新任务总数
-        getRepository().save(getEntity().setTotal((long) files.size())).block();
+        getRepository().save(getEntity().setTotal((long) files.size())).block(BLOCK_TIMEOUT);
 
         // 拉取所有待拉取的文件
         for (int i = 0; i < files.size(); i++) {
             pullFile2Remote(files.get(i), remote);
             // 更新任务进度
-            getRepository().save(getEntity().setIndex((long) (i + 1))).block();
+            getRepository().save(getEntity().setIndex((long) (i + 1))).block(BLOCK_TIMEOUT);
         }
     }
 
     private void pullFile2Remote(File file, String remote) {
         // 获取文件实体记录
-        final FileEntity fileEntity = fileRepository.findById(file.getId()).block();
+        final FileEntity fileEntity = fileRepository.findById(file.getId()).block(BLOCK_TIMEOUT);
         if (fileEntity == null) {
             throw new NotFoundException("not found file entity for id=" + file.getId());
         }
@@ -139,7 +140,7 @@ public class FolderPull4RemoteTask extends Task {
             fileRemoteRepository.findAllByFileId(fileEntity.getId())
                 .filter(fileRemoteEntity -> remote.equals(fileRemoteEntity.getRemote()))
                 .map(FileRemoteEntity::getRemoteId)
-                .collectList().blockOptional();
+                .collectList().blockOptional(BLOCK_TIMEOUT);
         if (remoteFileIdListOp.isEmpty()) {
             throw new RuntimeException(
                 "not remote record for file: " + fileEntity.getName());
@@ -197,7 +198,7 @@ public class FolderPull4RemoteTask extends Task {
         fileRepository.save(fileEntity.setCanRead(true)
             .setFsPath(filePath.toString())
             .setUrl(path2url(filePath.toString(),
-                ikarosProperties.getWorkDir().toString()))).block();
+                ikarosProperties.getWorkDir().toString()))).block(BLOCK_TIMEOUT);
     }
 
     private List<File> updateCanNotReadFiles(Folder folder, List<File> files) {

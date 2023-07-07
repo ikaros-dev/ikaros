@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
+import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.Folder;
 import run.ikaros.api.core.file.RemoteFileChunk;
@@ -96,20 +97,23 @@ public class FolderPush2RemoteTask extends Task {
         updateCanReadFiles(folder, files);
 
         // 更新任务总数
-        getRepository().save(getEntity().setTotal((long) files.size())).block();
+        getRepository().save(getEntity().setTotal((long) files.size()))
+            .block(AppConst.BLOCK_TIMEOUT);
 
         // 推送所有待推送的文件
         for (int i = 0; i < files.size(); i++) {
             pushFile2Remote(files.get(i), remote);
             // 更新任务进度
-            getRepository().save(getEntity().setIndex((long) (i + 1))).block();
+            getRepository().save(getEntity().setIndex((long) (i + 1)))
+                .block(AppConst.BLOCK_TIMEOUT);
         }
 
     }
 
     private void pushFile2Remote(File file, String remote) throws IOException {
         // 获取文件记录
-        Optional<FileEntity> fileEntityOp = fileRepository.findById(file.getId()).blockOptional();
+        Optional<FileEntity> fileEntityOp = fileRepository.findById(file.getId())
+            .blockOptional(AppConst.BLOCK_TIMEOUT);
         if (fileEntityOp.isEmpty()) {
             throw new IllegalArgumentException(
                 "'fileEntity' must is present for id: " + file.getId());
@@ -119,7 +123,7 @@ public class FolderPush2RemoteTask extends Task {
         // 查询是否已经存在远端，已经推送过的不需要重复推送
         Optional<List<FileRemoteEntity>> fileRemoteEntitiesOp =
             fileRemoteRepository.findAllByFileId(fileEntity.getId())
-                .collectList().blockOptional();
+                .collectList().blockOptional(AppConst.BLOCK_TIMEOUT);
         if (fileRemoteEntitiesOp.isPresent() && fileRemoteEntitiesOp.get().size() > 0) {
             // 已经推送，更新文件记录即可
             Path localFilePath = Path.of(file.getFsPath());
@@ -128,7 +132,7 @@ public class FolderPush2RemoteTask extends Task {
             fileRepository.findById(fileEntity.getId())
                 .checkpoint("UpdateFileEntity")
                 .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setFsPath(""))
-                .flatMap(fileRepository::save).block();
+                .flatMap(fileRepository::save).block(AppConst.BLOCK_TIMEOUT);
             return;
         }
 
@@ -192,7 +196,7 @@ public class FolderPush2RemoteTask extends Task {
                 .size(remoteFileChunk.getSize())
                 .path(remoteFileChunk.getPath())
                 .md5(remoteFileChunk.getMd5())
-                .build())).blockLast();
+                .build())).blockLast(AppConst.BLOCK_TIMEOUT);
 
 
         // 更新文件状态
@@ -200,7 +204,7 @@ public class FolderPush2RemoteTask extends Task {
             .checkpoint("UpdateFileEntity")
             .map(fe -> fe.setAesKey(new String(keyByteArray, StandardCharsets.UTF_8)))
             .map(fileEntity1 -> fileEntity1.setUrl("").setCanRead(false).setFsPath(""))
-            .flatMap(fileRepository::save).block();
+            .flatMap(fileRepository::save).block(AppConst.BLOCK_TIMEOUT);
 
         // 清理本地文件
         try {

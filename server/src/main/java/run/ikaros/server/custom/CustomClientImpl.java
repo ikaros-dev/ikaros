@@ -1,5 +1,6 @@
 package run.ikaros.server.custom;
 
+import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
 import static run.ikaros.server.custom.CustomConverter.getNameFieldValue;
 
 import jakarta.annotation.Nullable;
@@ -48,7 +49,7 @@ public class CustomClientImpl implements CustomClient {
     public <C> C create(C custom) {
         Assert.notNull(custom, "'custom' must not null.");
         CustomDto customDto = CustomConverter.convertTo(custom);
-        CustomEntity customEntity = repository.save(customDto.customEntity()).block();
+        CustomEntity customEntity = repository.save(customDto.customEntity()).block(BLOCK_TIMEOUT);
         if (customEntity == null) {
             throw new RuntimeException("Save custom entity fail for custom: " + custom);
         }
@@ -59,7 +60,7 @@ public class CustomClientImpl implements CustomClient {
             for (CustomMetadataEntity customMetadataEntity : customMetadataEntities) {
                 customMetadataEntity.setCustomId(customEntity.getId());
                 newCustomMetadataEntities.add(
-                    metadataRepository.save(customMetadataEntity).block());
+                    metadataRepository.save(customMetadataEntity).block(BLOCK_TIMEOUT));
             }
             customMetadataEntities = newCustomMetadataEntities;
         }
@@ -72,11 +73,12 @@ public class CustomClientImpl implements CustomClient {
         Assert.hasText(name, "'name' must has text");
         Custom annotation = type.getAnnotation(Custom.class);
         return Mono.fromCallable(() -> repository.findOne(Example.of(CustomEntity.builder()
-            .group(annotation.group())
-            .version(annotation.version())
-            .kind(annotation.kind())
-            .name(name)
-            .build())).block()).subscribeOn(Schedulers.boundedElastic()).block();
+                .group(annotation.group())
+                .version(annotation.version())
+                .kind(annotation.kind())
+                .name(name)
+                .build())).block(BLOCK_TIMEOUT))
+            .subscribeOn(Schedulers.boundedElastic()).block(BLOCK_TIMEOUT);
     }
 
     @Override
@@ -100,15 +102,16 @@ public class CustomClientImpl implements CustomClient {
             for (CustomMetadataEntity customMetadataEntity : customMetadataEntities) {
                 CustomMetadataEntity existsCustomMetadataEntity =
                     metadataRepository.findByCustomIdAndKey(customMetadataEntity.getCustomId(),
-                        customMetadataEntity.getKey()).block();
+                        customMetadataEntity.getKey()).block(BLOCK_TIMEOUT);
                 if (existsCustomMetadataEntity == null) {
-                    customMetadataEntity = metadataRepository.save(customMetadataEntity).block();
+                    customMetadataEntity = metadataRepository.save(customMetadataEntity)
+                        .block(BLOCK_TIMEOUT);
                 } else {
                     if (customMetadataEntity.getValue() != null
                         && !customMetadataEntity.getValue()
                         .equals(existsCustomMetadataEntity.getValue())) {
                         customMetadataEntity =
-                            metadataRepository.save(customMetadataEntity).block();
+                            metadataRepository.save(customMetadataEntity).block(BLOCK_TIMEOUT);
                     }
                 }
                 newCustomMetadataEntities.add(customMetadataEntity);
@@ -140,7 +143,7 @@ public class CustomClientImpl implements CustomClient {
             .flatMap(customId -> metadataRepository.updateValueByCustomIdAndKeyAndValue(
                 customId, metaName, metaNewVal
             ))
-            .as(rxtx::transactional).block();
+            .as(rxtx::transactional).block(BLOCK_TIMEOUT);
     }
 
     @Override
@@ -152,7 +155,8 @@ public class CustomClientImpl implements CustomClient {
         Long customEntityId = customEntity.getId();
 
         CustomMetadataEntity customMetadata =
-            metadataRepository.findByCustomIdAndKey(customEntityId, metaName).block();
+            metadataRepository.findByCustomIdAndKey(customEntityId, metaName)
+                .block(BLOCK_TIMEOUT);
         if (customMetadata == null) {
             throw new NotFoundException("Not found metadata for class: " + clazz
                 + ", name: " + name + ", metaName: " + metaName);
@@ -166,8 +170,9 @@ public class CustomClientImpl implements CustomClient {
         CustomEntity customEntity =
             findCustomEntityOne(custom.getClass(), getNameFieldValue(custom));
         Long customEntityId = customEntity.getId();
-        repository.delete(customEntity).block();
-        metadataRepository.deleteAllByCustomId(customEntityId).block();
+        repository.delete(customEntity).block(BLOCK_TIMEOUT);
+        metadataRepository.deleteAllByCustomId(customEntityId)
+            .block(BLOCK_TIMEOUT);
     }
 
     @Override
@@ -181,8 +186,8 @@ public class CustomClientImpl implements CustomClient {
 
     @Override
     public void deleteAll() {
-        metadataRepository.deleteAll().block();
-        repository.deleteAll().block();
+        metadataRepository.deleteAll().block(BLOCK_TIMEOUT);
+        repository.deleteAll().block(BLOCK_TIMEOUT);
     }
 
     @Override
@@ -231,7 +236,7 @@ public class CustomClientImpl implements CustomClient {
 
         Long total = repository.countCustomEntitiesByGroupAndVersionAndKind(
             annotation.group(), annotation.version(), annotation.kind()
-        ).block();
+        ).block(BLOCK_TIMEOUT);
 
         if (total == null) {
             total = 0L;

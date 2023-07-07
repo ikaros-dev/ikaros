@@ -40,6 +40,7 @@ public class TaskServiceImpl implements TaskService {
         for (Map.Entry<String, Future<?>> entry : futureMap.entrySet()) {
             String name = entry.getKey();
             Future<?> future = entry.getValue();
+
             TaskStatus taskStatus;
             if (future.isDone()) {
                 taskStatus = TaskStatus.FINISH;
