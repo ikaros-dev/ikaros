@@ -10,8 +10,6 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -40,10 +38,6 @@ public class AesEncryptUtils {
      * AES密钥长度默认值 192.
      */
     private static final int DEFAULT_AES_KEY_LENGTH = 192;
-    /**
-     * 并发读写锁.
-     */
-    private static final Lock lock = new ReentrantLock();
 
 
     /**
@@ -120,12 +114,12 @@ public class AesEncryptUtils {
     /**
      * Encrypt by stream.
      */
-    public static void encryptInputStream(InputStream data, boolean isClose, OutputStream out,
-                                          byte[] keyBytes) throws IOException {
+    public static void encryptInputStream(InputStream data, boolean isClose,
+                                          OutputStream out, byte[] keyBytes)
+        throws IOException {
         Assert.notNull(data, "'data' must not null.");
         Assert.notNull(out, "'out' must not null.");
         Assert.notNull(keyBytes, "'keyBytes' must not null.");
-        lock.lock();
         Key key = new SecretKeySpec(keyBytes, KEY_ALGORITHM);
         try (out) {
             // 获取Cipher对象
@@ -144,7 +138,6 @@ public class AesEncryptUtils {
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
             throw new RuntimeException(e);
         } finally {
-            lock.unlock();
             if (isClose) {
                 data.close();
             }
@@ -160,7 +153,6 @@ public class AesEncryptUtils {
         Assert.notNull(data, "'data' must not null.");
         Assert.notNull(out, "'out' must not null.");
         Assert.notNull(keyBytes, "'keyBytes' must not null.");
-        lock.lock();
         Key key = new SecretKeySpec(keyBytes, KEY_ALGORITHM);
         try (out) {
             // 获取Cipher对象
@@ -179,7 +171,6 @@ public class AesEncryptUtils {
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
             throw new RuntimeException(e);
         } finally {
-            lock.unlock();
             if (isClose) {
                 data.close();
             }
