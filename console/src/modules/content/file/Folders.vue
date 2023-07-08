@@ -34,7 +34,7 @@ import {
 	ElPopconfirm,
 } from 'element-plus';
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router';
 import moment from 'moment';
 
 const findFolder = ref({
@@ -237,7 +237,7 @@ const pasteFiles = async () => {
 	fetchFolders();
 };
 
-const router = useRouter();
+// const router = useRouter();
 
 const folderRemoteActionDialogVisible = ref(false);
 const currentFolderActionId = ref(0);
@@ -256,7 +256,8 @@ const openFolderRemoteActionDialog = (isPush) => {
 	folderRemoteActionDialogVisible.value = true;
 };
 const onCloseWithTaskName = (taskName) => {
-	router.push('/tasks?name=' + taskName.substring(0, taskName.indexOf('-')));
+	// router.push('/tasks?name=' + taskName.substring(0, taskName.indexOf('-')));
+	console.log(taskName);
 };
 
 const dateFormat = (row, column) => {
