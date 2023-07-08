@@ -1,21 +1,27 @@
 package run.ikaros.server.core.subject;
 
+import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectOperate;
+import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.subject.service.SubjectService;
+import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
 
 @Slf4j
 @Component
 public class SubjectOperator implements SubjectOperate {
     private final SubjectService subjectService;
+    private final SubjectSyncPlatformService syncPlatformService;
 
-    public SubjectOperator(SubjectService subjectService) {
+    public SubjectOperator(SubjectService subjectService,
+                           SubjectSyncPlatformService syncPlatformService) {
         this.subjectService = subjectService;
+        this.syncPlatformService = syncPlatformService;
     }
 
 
@@ -45,5 +51,17 @@ public class SubjectOperator implements SubjectOperate {
     @Override
     public Mono<Void> removeById(Long id) {
         return subjectService.deleteById(id);
+    }
+
+    @Override
+    public Mono<Subject> syncByPlatform(@Nullable Long subjectId, SubjectSyncPlatform platform,
+                                        String platformId) {
+        return syncPlatformService.sync(subjectId, platform, platformId);
+    }
+
+    @Override
+    public Mono<Subject> findByPlatform(@Nullable Long subjectId, SubjectSyncPlatform platform,
+                                        String keyword) {
+        return null;
     }
 }
