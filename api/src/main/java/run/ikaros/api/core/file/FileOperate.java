@@ -20,7 +20,10 @@ public interface FileOperate extends AllowPluginOperate {
 
     Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux);
 
+    @Deprecated
     Mono<Boolean> existsByFsPath(String fsPath);
+
+    Mono<Boolean> existsByMd5(String md5);
 
     Flux<File> findAllByNameLikeAndType(String nameLike, FileType type);
 

@@ -3,6 +3,8 @@ package run.ikaros.server.core.file;
 import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +20,8 @@ import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.Folder;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.infra.properties.IkarosProperties;
-import run.ikaros.server.core.file.task.FolderPull4RemoteTask;
-import run.ikaros.server.core.file.task.FolderPush2RemoteTask;
+import run.ikaros.server.core.file.task.FilePull4RemoteTask;
+import run.ikaros.server.core.file.task.FilePush2RemoteTask;
 import run.ikaros.server.core.task.TaskService;
 import run.ikaros.server.infra.exception.file.FolderExistsException;
 import run.ikaros.server.infra.exception.file.FolderHasChildException;
@@ -178,12 +180,54 @@ public class FolderServiceImpl implements FolderService, ApplicationContextAware
             .flatMap(folderEntity -> copyProperties(folderEntity, new Folder()));
     }
 
+    /**
+     * Get all can read files from children.
+     */
+    private List<File> updateCanReadFiles(Folder folder, List<File> files) {
+        if (folder.hasFolder()) {
+            for (Folder f : folder.getFolders()) {
+                files.addAll(updateCanReadFiles(f, files));
+            }
+        }
+        if (folder.hasFile()) {
+            files.addAll(folder.getFiles()
+                .stream()
+                .filter(File::getCanRead)
+                .toList());
+        }
+        log.debug("current can read file size: {}", files.size());
+        return files;
+    }
+
+    /**
+     * Get all can not read files from children.
+     */
+    private List<File> updateCanNotReadFiles(Folder folder, List<File> files) {
+        if (folder.hasFolder()) {
+            for (Folder f : folder.getFolders()) {
+                files.addAll(updateCanNotReadFiles(f, files));
+            }
+        }
+        if (folder.hasFile()) {
+            files.addAll(folder.getFiles()
+                .stream()
+                .filter(file -> !file.getCanRead())
+                .toList());
+        }
+        log.debug("current can read file size: {}", files.size());
+        return files;
+    }
+
     private Mono<Void> pushRemote(Folder folder, String remote) {
         return Mono.defer((Supplier<Mono<Void>>) () -> {
-            FolderPush2RemoteTask folderPush2RemoteTask =
-                new FolderPush2RemoteTask(TaskEntity.builder().build(), taskRepository,
-                    folder, remote, applicationContext);
-            return taskService.submit(folderPush2RemoteTask);
+            List<File> files = new ArrayList<>();
+            updateCanReadFiles(folder, files);
+            return Flux.fromStream(files.stream())
+                .map(file -> new FilePush2RemoteTask(
+                    TaskEntity.builder().build(), taskRepository, applicationContext,
+                    file.getId(), remote))
+                .flatMap(taskService::submit)
+                .then();
         }).then();
     }
 
@@ -194,7 +238,7 @@ public class FolderServiceImpl implements FolderService, ApplicationContextAware
         return folderRepository.findById(folderId)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("not found folder entity for id: " + folderId)))
-            .flatMap(entity -> findByIdShallow(entity.getId()))
+            .flatMap(entity -> findById(entity.getId()))
             .flatMap(folder -> pushRemote(folder, remote))
             .then();
     }
@@ -213,10 +257,14 @@ public class FolderServiceImpl implements FolderService, ApplicationContextAware
 
     private Mono<? extends Void> pullRemote(Folder folder, String remote) {
         return Mono.defer((Supplier<Mono<Void>>) () -> {
-            FolderPull4RemoteTask folderPull4RemoteTask =
-                new FolderPull4RemoteTask(TaskEntity.builder().build(), taskRepository,
-                    folder, remote, applicationContext);
-            return taskService.submit(folderPull4RemoteTask);
+            List<File> files = new ArrayList<>();
+            updateCanNotReadFiles(folder, files);
+            return Flux.fromStream(files.stream())
+                .map(file -> new FilePull4RemoteTask(
+                    TaskEntity.builder().build(), taskRepository, applicationContext,
+                    file.getId(), remote))
+                .flatMap(taskService::submit)
+                .then();
         }).then();
     }
 

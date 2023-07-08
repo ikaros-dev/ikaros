@@ -16,6 +16,6 @@ public class TaskInit {
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
-        taskService.updateAllRunningTaskStatusToCancel();
+        taskService.updateAllRunningAndCreatedTaskStatusToCancel();
     }
 }

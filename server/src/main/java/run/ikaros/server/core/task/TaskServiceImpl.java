@@ -65,9 +65,13 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void updateAllRunningTaskStatusToCancel() {
+    public void updateAllRunningAndCreatedTaskStatusToCancel() {
         taskRepository.findAllByStatus(TaskStatus.RUNNING)
-            .flatMap(taskEntity -> taskRepository.save(taskEntity.setStatus(TaskStatus.CANCEL)))
+            .flatMap(taskEntity -> taskRepository.save(taskEntity.setStatus(TaskStatus.CANCEL)
+                .setFailMessage("Application stop.")))
+            .thenMany(taskRepository.findAllByStatus(TaskStatus.CREATE))
+            .flatMap(taskEntity -> taskRepository.save(taskEntity.setStatus(TaskStatus.CANCEL)
+                .setFailMessage("Application stop.")))
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe();
     }
