@@ -7,6 +7,12 @@ ikaros:
     plugins-root: ${ikaros.work-dir}/plugins
     system-version: 1.0.0-SNAPSHOT
 
+  task:
+    core-pool-size: 4
+    maximum-pool-size: 40
+    keep-alive-time: 0
+    queue-count: 10000
+
 server:
   port: 9999
   compression:
