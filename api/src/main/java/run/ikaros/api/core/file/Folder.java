@@ -29,11 +29,11 @@ public class Folder {
     private boolean canRead;
 
     public boolean hasFile() {
-        return !files.isEmpty();
+        return Objects.nonNull(files) && !files.isEmpty();
     }
 
     public boolean hasFolder() {
-        return !folders.isEmpty();
+        return Objects.nonNull(folders) && !folders.isEmpty();
     }
 
     /**
