@@ -79,6 +79,12 @@ public class FileOperator implements FileOperate {
     }
 
     @Override
+    public Mono<Boolean> existsByMd5(String md5) {
+        Assert.hasText(md5, "'md5' must has text.");
+        return repository.existsByMd5(md5);
+    }
+
+    @Override
     public Flux<File> findAllByNameLikeAndType(String nameLike, FileType type) {
         Assert.hasText(nameLike, "'nameLike' must has text.");
         Assert.notNull(type, "'type' must not null.");
