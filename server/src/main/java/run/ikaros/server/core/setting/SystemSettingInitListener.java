@@ -42,6 +42,9 @@ public class SystemSettingInitListener {
         settingConfigMap.putDataItem("GLOBAL_HEADER", "");
         settingConfigMap.putDataItem("GLOBAL_FOOTER", "");
 
+        // System remote settings
+        settingConfigMap.putDataItem("REMOTE_ENABLE", "false");
+
         return reactiveCustomClient.findOne(ConfigMap.class, configMapName)
             .onErrorResume(NotFoundException.class, e ->
                 reactiveCustomClient.create(settingConfigMap)

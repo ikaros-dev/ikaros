@@ -13,7 +13,9 @@ import {
 	ElIcon,
 	ElButton,
 	ElSwitch,
+	ElAlert,
 } from 'element-plus';
+import { useSettingStore } from '@/stores/setting';
 
 const setting = ref({
 	SITE_TITLE: '',
@@ -24,6 +26,7 @@ const setting = ref({
 	DEFAULT_ROLE: 'anonymous',
 	GLOBAL_HEADER: '',
 	GLOBAL_FOOTER: '',
+	REMOTE_ENABLE: 'false',
 });
 
 const settingFormRules = reactive<FormRules>({
@@ -44,6 +47,7 @@ const getSettingFromServer = async () => {
 	setting.value = data;
 };
 
+const settingStore = useSettingStore();
 // eslint-disable-next-line no-unused-vars
 const updateSetting = async () => {
 	await apiClient.configmap
@@ -52,9 +56,18 @@ const updateSetting = async () => {
 			metaName: 'data',
 			body: JSON.stringify(setting.value),
 		})
-		.then(() => {
+		.then(async () => {
 			ElMessage.success('更新成功');
+			await settingStore.fetchSystemSetting();
 		});
+};
+
+const onDisableClick = () => {
+	ElMessage({
+		showClose: true,
+		message: '此功能尚未实现',
+		type: 'warning',
+	});
 };
 
 onMounted(getSettingFromServer);
@@ -89,9 +102,14 @@ onMounted(getSettingFromServer);
 				</el-form-item>
 
 				<el-form-item label="LOGO">
-					<el-input v-model="setting.LOGO" style="max-width: 600px" clearable>
+					<el-input
+						v-model="setting.LOGO"
+						disabled
+						style="max-width: 600px"
+						clearable
+					>
 						<template #prepend>
-							<el-button>
+							<el-button disabled @click="onDisableClick">
 								<el-icon><FolderOpened /></el-icon>
 							</el-button>
 						</template>
@@ -103,15 +121,35 @@ onMounted(getSettingFromServer);
 						v-model="setting.FAVICON"
 						style="max-width: 600px"
 						clearable
+						disabled
 					>
 						<template #prepend>
-							<el-button>
+							<el-button disabled @click="onDisableClick">
 								<el-icon><FolderOpened /></el-icon>
 							</el-button>
 						</template>
 					</el-input>
 				</el-form-item>
 
+				<el-form-item>
+					<el-button type="primary" @click="updateSetting">保存</el-button>
+				</el-form-item>
+			</el-tab-pane>
+			<el-tab-pane label="远端配置">
+				<el-alert
+					title="此功能尚不稳定，不建议开启。"
+					type="warning"
+					show-icon
+				/>
+				<el-form-item label="启用远端">
+					<el-switch
+						v-model="setting.REMOTE_ENABLE"
+						inline-prompt
+						size="large"
+						active-text="启用"
+						inactive-text="禁用"
+					/>
+				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" @click="updateSetting">保存</el-button>
 				</el-form-item>
@@ -124,6 +162,8 @@ onMounted(getSettingFromServer);
 						size="large"
 						active-text="开启"
 						inactive-text="关闭"
+						disabled
+						@click="onDisableClick"
 					/>
 				</el-form-item>
 				<el-form-item>
@@ -140,6 +180,7 @@ onMounted(getSettingFromServer);
 						rows="10"
 						show-word-limit
 						type="textarea"
+						disabled
 					/>
 				</el-form-item>
 				<el-form-item label="全局Footer">
@@ -151,6 +192,7 @@ onMounted(getSettingFromServer);
 						rows="10"
 						show-word-limit
 						type="textarea"
+						disabled
 					/>
 				</el-form-item>
 

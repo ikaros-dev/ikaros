@@ -36,6 +36,9 @@ import {
 import { computed } from 'vue';
 // import { useRouter } from 'vue-router';
 import moment from 'moment';
+import { useSettingStore } from '@/stores/setting';
+
+const settingStore = useSettingStore();
 
 const findFolder = ref({
 	name: 'root',
@@ -349,10 +352,18 @@ onMounted(fetchFolders);
 					<el-button :icon="FolderDelete" type="danger">删除</el-button>
 				</template>
 			</el-popconfirm>
-			<el-button plain @click="openFolderRemoteActionDialog(true)">
+			<el-button
+				v-if="settingStore.remoteEnable"
+				plain
+				@click="openFolderRemoteActionDialog(true)"
+			>
 				推送
 			</el-button>
-			<el-button plain @click="openFolderRemoteActionDialog(false)">
+			<el-button
+				v-if="settingStore.remoteEnable"
+				plain
+				@click="openFolderRemoteActionDialog(false)"
+			>
 				拉取
 			</el-button>
 		</el-col>
