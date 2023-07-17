@@ -30,8 +30,10 @@ import {
 import FileRemoteActionDialog from '@/modules/content/file/FileRemoteActionDialog.vue';
 import { base64Encode } from '@/utils/string-util';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
+import { useSettingStore } from '@/stores/setting';
 
 const route = useRoute();
+const settingStore = useSettingStore();
 
 watch(route, () => {
 	if (!route.params?.id && route.params?.id === undefined) {
@@ -302,10 +304,18 @@ onMounted(() => {
 				信息拉取
 			</el-button>
 
-			<el-button plain @click="onSubjectRemoteButtonClick(true)">
+			<el-button
+				v-if="settingStore.remoteEnable"
+				plain
+				@click="onSubjectRemoteButtonClick(true)"
+			>
 				全部推送
 			</el-button>
-			<el-button plain @click="onSubjectRemoteButtonClick(false)">
+			<el-button
+				v-if="settingStore.remoteEnable"
+				plain
+				@click="onSubjectRemoteButtonClick(false)"
+			>
 				全部拉取
 			</el-button>
 		</el-col>
@@ -406,7 +416,11 @@ onMounted(() => {
 									绑定
 								</el-button>
 								<el-button
-									v-if="scoped.row.resources && scoped.row.resources.length > 0"
+									v-if="
+										settingStore.remoteEnable &&
+										scoped.row.resources &&
+										scoped.row.resources.length > 0
+									"
 									plain
 									@click="
 										openFileRemoteActionDialog(

@@ -1,17 +1,9 @@
 <script setup lang="ts">
 import { ref, nextTick, computed } from 'vue';
 import { apiClient } from '@/utils/api-client';
-import { FileHint, SubjectHint } from '@runikaros/api-client';
+import { SubjectHint } from '@runikaros/api-client';
 import { useRouter } from 'vue-router';
-import {
-	ElMessage,
-	ElDialog,
-	ElInput,
-	ElSelect,
-	ElOption,
-	ElTabs,
-	ElTabPane,
-} from 'element-plus';
+import { ElMessage, ElDialog, ElInput } from 'element-plus';
 
 const props = withDefaults(
 	defineProps<{
@@ -41,40 +33,24 @@ const dialogVisible = computed({
 });
 
 const search = ref({
-	type: 'SUBJECT',
 	keyword: '',
 });
 
 const subjectHits = ref<SubjectHint[]>();
-const fileHits = ref<FileHint[]>();
 
 const searchByKeyword = async () => {
 	if (!search.value.keyword) {
 		ElMessage.warning('请输入值进行查询');
 		return;
 	}
-	const type = search.value.type;
-	if ('SUBJECT' === type) {
-		const { data } = await apiClient.indices.searchSubject({
-			keyword: search.value.keyword,
-			limit: 10,
-		});
-		if (!data.hits || data.hits.length === 0) {
-			ElMessage.warning('未查询到条目数据');
-		}
-		subjectHits.value = data.hits;
+	const { data } = await apiClient.indices.searchSubject({
+		keyword: search.value.keyword,
+		limit: 10,
+	});
+	if (!data.hits || data.hits.length === 0) {
+		ElMessage.warning('未查询到条目数据');
 	}
-
-	if ('FILE' === type) {
-		const { data } = await apiClient.indices.searchFile({
-			keyword: search.value.keyword,
-			limit: 10,
-		});
-		if (!data.hits || data.hits.length === 0) {
-			ElMessage.warning('未查询到文件数据');
-		}
-		fileHits.value = data.hits;
-	}
+	subjectHits.value = data.hits;
 };
 
 const toDetailPage = (url: string) => {
@@ -90,12 +66,6 @@ const onOpened = () => {
 	nextTick(() => {
 		searchInputRef.value.focus();
 	});
-};
-
-const activeTab = ref('SUBJECT');
-
-const onselectionchange = (val: string) => {
-	activeTab.value = val;
 };
 </script>
 
@@ -115,70 +85,34 @@ const onselectionchange = (val: string) => {
 				v-model="search.keyword"
 				style="width: 100%"
 				size="large"
-				placeholder="请输入关键词，回车搜索。"
+				placeholder="请输入条目关键词，回车搜索。"
 				@keydown.enter="searchByKeyword"
 			>
-				<template #prepend>
-					<el-select
-						v-model="search.type"
-						style="width: 80px"
-						size="large"
-						@change="onselectionchange"
-					>
-						<el-option label="条目" value="SUBJECT" />
-						<el-option label="文件" value="FILE" />
-					</el-select>
-				</template>
 				<!-- <template #append>
 					<el-button :icon="Search" @click="searchByKeyword" />
 				</template> -->
 			</el-input>
 		</template>
 
-		<el-tabs v-model="activeTab">
-			<el-tab-pane label="条目" name="SUBJECT">
-				<ul v-if="subjectHits && subjectHits.length > 0" class="ik-content-ul">
-					<li
-						v-for="subjectHit in subjectHits"
-						:key="subjectHit.id"
-						class="ik-content-ul-li"
-						tabindex="0"
-						@keydown.enter="
-							toDetailPage('/subjects/subject/details/' + subjectHit.id)
-						"
-						@click="toDetailPage('/subjects/subject/details/' + subjectHit.id)"
-					>
-						<span class="ik-subject-name">
-							<span>{{ subjectHit.name }} </span>
-							<span class="grey">{{ subjectHit.nameCn }}</span>
-						</span>
-					</li>
-				</ul>
+		<ul v-if="subjectHits && subjectHits.length > 0" class="ik-content-ul">
+			<li
+				v-for="subjectHit in subjectHits"
+				:key="subjectHit.id"
+				class="ik-content-ul-li"
+				tabindex="0"
+				@keydown.enter="
+					toDetailPage('/subjects/subject/details/' + subjectHit.id)
+				"
+				@click="toDetailPage('/subjects/subject/details/' + subjectHit.id)"
+			>
+				<span class="ik-subject-name">
+					<span>{{ subjectHit.name }} </span>
+					<span class="grey">{{ subjectHit.nameCn }}</span>
+				</span>
+			</li>
+		</ul>
 
-				<span v-else> 暂无数据 </span>
-			</el-tab-pane>
-			<el-tab-pane label="文件" name="FILE">
-				<ul v-if="fileHits && fileHits.length > 0" class="ik-content-ul">
-					<li
-						v-for="fileHit in fileHits"
-						:key="fileHit.id"
-						class="ik-content-ul-li"
-						tabindex="0"
-						@keydown.enter="
-							toDetailPage('/files?searchFileName=' + fileHit.name)
-						"
-						@click="toDetailPage('/files?searchFileName=' + fileHit.name)"
-					>
-						<span class="ik-subject-name">
-							<span>{{ fileHit.name }} </span>
-							<span class="grey">{{ fileHit.originalName }}</span>
-						</span>
-					</li>
-				</ul>
-
-				<span v-else> 暂无数据 </span>
-			</el-tab-pane>
-		</el-tabs>
+		<span v-else> 暂无数据 </span>
 
 		<template #footer>
 			<span> [Tab]-下一个 &nbsp; [Shift+Tab]-上一个 &nbsp; [Enter]-确认</span>

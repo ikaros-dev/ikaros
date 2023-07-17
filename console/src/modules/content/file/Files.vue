@@ -26,6 +26,10 @@ import { useRoute } from 'vue-router';
 import { onMounted, ref, watch } from 'vue';
 import router from '@/router';
 import moment from 'moment';
+import { useSettingStore } from '@/stores/setting';
+
+// eslint-disable-next-line no-unused-vars
+const settingStore = useSettingStore();
 
 const fileUploadDrawerVisible = ref(false);
 
@@ -255,7 +259,11 @@ onMounted(fetchFiles);
 			<template #default="scoped">
 				<el-button plain @click="showFileDetails(scoped.row)">详情</el-button>
 
-				<el-button plain @click="openFileRemoteActionDialog(scoped.row)">
+				<el-button
+					v-if="settingStore.remoteEnable"
+					plain
+					@click="openFileRemoteActionDialog(scoped.row)"
+				>
 					<span v-if="scoped.row.canRead"> 推送 </span>
 					<span v-else> 拉取 </span>
 				</el-button>

@@ -21,7 +21,7 @@ public class IndicesInitializer {
     @Async
     @EventListener(SchemeInitializedEvent.class)
     public void whenSchemeInitialized(SchemeInitializedEvent event) throws InterruptedException {
-        initFileIndices();
+        // initFileIndices();
         initSubjectIndices();
     }
 

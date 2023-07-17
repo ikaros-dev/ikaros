@@ -11,6 +11,7 @@ import { coreModules } from './modules';
 import { usePluginModuleStore } from '@/stores/plugin';
 import { apiClient } from '@/utils/api-client';
 import { useUserStore } from '@/stores/user';
+import { useSettingStore } from '@/stores/setting';
 import { ElMessage } from 'element-plus';
 import { useScriptTag } from '@vueuse/core';
 import { defaultConfig, plugin } from '@formkit/vue';
@@ -198,6 +199,8 @@ async function initApp() {
 		loadCoreModules();
 		const userStore = useUserStore();
 		await userStore.fetchCurrentUser();
+		const settingStore = useSettingStore();
+		await settingStore.fetchSystemSetting();
 
 		if (userStore.isAnonymous) {
 			return;
