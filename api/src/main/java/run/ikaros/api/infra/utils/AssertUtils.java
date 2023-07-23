@@ -1,4 +1,4 @@
-package run.ikaros.server.infra.utils;
+package run.ikaros.api.infra.utils;
 
 
 public class AssertUtils {

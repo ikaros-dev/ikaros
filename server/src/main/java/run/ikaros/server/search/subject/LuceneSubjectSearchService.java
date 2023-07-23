@@ -29,6 +29,7 @@ import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleFragmenter;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.jsoup.Jsoup;
@@ -119,6 +120,8 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                     throw Exceptions.propagate(e);
                 }
             });
+        } catch (AlreadyClosedException alreadyClosedException) {
+            log.warn("can not rebuild indies for dir has closed.");
         }
     }
 
@@ -142,6 +145,8 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                     throw Exceptions.propagate(e);
                 }
             });
+        } catch (AlreadyClosedException alreadyClosedException) {
+            log.warn("can not rebuild indies for dir has closed.");
         }
     }
 
@@ -163,6 +168,8 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
             writer.commit();
             log.debug("Deleted documents size [{}] with sequence number {}",
                 queries.length, seqNum);
+        } catch (AlreadyClosedException alreadyClosedException) {
+            log.warn("can not rebuild indies for dir has closed.");
         }
     }
 

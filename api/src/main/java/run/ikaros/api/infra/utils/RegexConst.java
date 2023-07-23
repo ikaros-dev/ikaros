@@ -1,4 +1,4 @@
-package run.ikaros.server.infra.constant;
+package run.ikaros.api.infra.utils;
 
 public interface RegexConst {
     String EMAIL = "^([a-zA-Z0-9]*[-_]?[a-zA-Z0-9]+)*@([a-zA-Z0-9]*[-_]?"
@@ -10,6 +10,7 @@ public interface RegexConst {
 
     String FILE_NAME_TAG_EPISODE_SEQUENCE = "[0-9]{1,2}";
     String FILE_NAME_TAG_EPISODE_SEQUENCE_WITH_BRACKETS = "\\[[0-9]{1,2}\\]";
+    String FILE_NAME_EPISODE_SEQUENCE_WITH_BLANK = "\\s{1}[0-9]{1,2}\\s{1}";
     String FILE_NAME_TAG = "\\[[^\\[^\\]]+\\]";
     String BRACKETS = "\\([^\\(^\\)]+\\)";
     String FILE_POSTFIX = "\\.[A-Za-z0-9_-]+$";

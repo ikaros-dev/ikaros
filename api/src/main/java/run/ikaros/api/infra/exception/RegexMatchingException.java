@@ -1,4 +1,4 @@
-package run.ikaros.server.infra.exception;
+package run.ikaros.api.infra.exception;
 
 public class RegexMatchingException extends RuntimeException {
     public RegexMatchingException() {

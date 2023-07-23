@@ -44,8 +44,8 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
     }
 
     @Override
-    public Mono<Subject> sync(@Nullable Long subjectId, SubjectSyncPlatform platform,
-                              String platformId) {
+    public synchronized Mono<Subject> sync(@Nullable Long subjectId, SubjectSyncPlatform platform,
+                                           String platformId) {
         Assert.notNull(platform, "'platform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
         // 查询是否已经同步过了，如果已经同步过则返回对应的条目信息

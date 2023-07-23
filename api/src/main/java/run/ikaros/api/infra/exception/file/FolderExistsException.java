@@ -1,4 +1,4 @@
-package run.ikaros.server.infra.exception.file;
+package run.ikaros.api.infra.exception.file;
 
 public class FolderExistsException extends RuntimeException {
     public FolderExistsException() {
