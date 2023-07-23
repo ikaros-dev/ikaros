@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.infra.exception.RegexMatchingException;
+import run.ikaros.api.infra.utils.RegexUtils;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.server.core.subject.service.EpisodeFileService;
-import run.ikaros.server.infra.exception.RegexMatchingException;
-import run.ikaros.server.infra.utils.RegexUtils;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
 import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
@@ -87,13 +87,10 @@ public class EpisodeServiceImpl implements EpisodeFileService {
     private static Mono<Double> getSeqMono(FileEntity entity) {
         Double seq;
         try {
-            seq = Double.valueOf(RegexUtils.getFileNameTagEpSeq(entity.getName()));
+            seq = Double.valueOf(RegexUtils.parseEpisodeSeqByFileName(entity.getName()));
         } catch (RegexMatchingException regexMatchingException) {
-            try {
-                seq = Double.valueOf(RegexUtils.getFileNameTagEpSeq(entity.getName()));
-            } catch (RegexMatchingException regexException) {
-                return Mono.empty();
-            }
+            log.warn("parse episode seq by file name fail", regexMatchingException);
+            return Mono.empty();
         }
         return Mono.justOrEmpty(seq);
     }

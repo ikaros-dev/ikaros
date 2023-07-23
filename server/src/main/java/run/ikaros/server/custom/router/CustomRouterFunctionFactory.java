@@ -3,7 +3,7 @@ package run.ikaros.server.custom.router;
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
-import static run.ikaros.server.infra.utils.StringUtils.upperCaseFirst;
+import static run.ikaros.api.infra.utils.StringUtils.upperCaseFirst;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;

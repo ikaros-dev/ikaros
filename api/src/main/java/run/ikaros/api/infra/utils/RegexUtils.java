@@ -1,4 +1,4 @@
-package run.ikaros.server.infra.utils;
+package run.ikaros.api.infra.utils;
 
 import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
@@ -12,11 +12,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import run.ikaros.server.infra.constant.RegexConst;
-import run.ikaros.server.infra.exception.RegexMatchingException;
+import run.ikaros.api.infra.exception.RegexMatchingException;
 
 public class RegexUtils {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegexUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(RegexUtils.class);
 
     /**
      * Get file Postfix.
@@ -65,13 +64,13 @@ public class RegexUtils {
      * Get file name tag episode seq.
      */
     @Nonnull
-    public static Long getFileNameTagEpSeq(@Nonnull String fileName) {
+    public static Long getFileNameTagEpSeq(@Nonnull final String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
         Set<String> strSet = new HashSet<>();
         if ("[]".equalsIgnoreCase(fileName)) {
             return -1L;
         }
-        final String originalFileName = fileName;
+        String originalFileName = fileName;
 
         // matching file tag that is seq
         Matcher matcher =
@@ -79,20 +78,6 @@ public class RegexUtils {
                 .matcher(fileName);
         while (matcher.find()) {
             strSet.add(matcher.group());
-        }
-
-        // remove file tag if exist
-        fileName = fileName.replaceAll(RegexConst.FILE_NAME_TAG, "");
-        // remove file postfix if exist
-        fileName = fileName.replaceAll(RegexConst.FILE_POSTFIX, "");
-        // remove year such as 2022
-        fileName = fileName.replaceAll(RegexConst.YEAR, "");
-
-        // matching seq
-        Matcher tagMatcher =
-            Pattern.compile(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE).matcher(fileName);
-        while (tagMatcher.find()) {
-            strSet.add(tagMatcher.group());
         }
 
         return strSet.stream()
@@ -104,10 +89,37 @@ public class RegexUtils {
                 } catch (NumberFormatException numberFormatException) {
                     throw new RegexMatchingException(
                         "file name tag episode seq matching exception , file name: "
-                            + originalFileName);
+                            + fileName);
                 }
             }).findFirst().orElseThrow(() -> new RegexMatchingException(
-                "file name tag episode seq matching exception, file name: " + originalFileName));
+                "file name tag episode seq matching exception, file name: " + fileName));
+    }
+
+    /**
+     * Get episode seq by file name, such as: xxxx 04 xxxx.mp4 => 04 .
+     */
+    @Nonnull
+    public static Long getFileNameBlankEpSeq(@Nonnull final String fileName) {
+        AssertUtils.notBlank(fileName, "fileName");
+        Set<String> strSet = new HashSet<>();
+
+        Matcher matcher =
+            Pattern.compile(RegexConst.FILE_NAME_EPISODE_SEQUENCE_WITH_BLANK)
+                .matcher(fileName);
+        while (matcher.find()) {
+            strSet.add(matcher.group());
+        }
+
+        if (strSet.isEmpty()) {
+            throw new RegexMatchingException(
+                "file name episode seq matching exception , file name: "
+                    + fileName);
+        }
+
+        return strSet.stream().findFirst()
+            .map(String::trim)
+            .map(Long::parseLong)
+            .orElse(null);
     }
 
     /**
@@ -155,7 +167,7 @@ public class RegexUtils {
         str = str.replaceAll(RegexConst.FILE_NAME_TAG, "");
         str = str.replaceAll(RegexConst.FILE_POSTFIX, "");
         if (StringUtils.isBlank(str) || "[]".equalsIgnoreCase(str)) {
-            LOGGER.warn("str is blank after remove file tag, originalStr={}", originalStr);
+            log.warn("str is blank after remove file tag, originalStr={}", originalStr);
             // 针对全用中括号包裹的文件名称 获取第二个中括号的内容为标题
             List<String> fileTagList = getFileTag(originalStr);
             if (fileTagList.isEmpty() || fileTagList.size() <= 1) {
@@ -188,11 +200,30 @@ public class RegexUtils {
         str = str.replaceAll(RegexConst.FILE_POSTFIX, "");
         str = str.replaceAll(RegexConst.FILE_NAME_TAG_EPISODE_SEQUENCE, "");
         if (StringUtils.isBlank(str)) {
-            LOGGER.warn("str is blank after remove file tag, originalStr={}", originalStr);
+            log.warn("str is blank after remove file tag, originalStr={}", originalStr);
             return str;
         }
         final String regex = "[\\u2E80-\\u9FFF]";
         return getMatchingStr(str, regex);
+    }
+
+    /**
+     * Parse episode seq by file name.
+     */
+    @Nonnull
+    public static Long parseEpisodeSeqByFileName(String fileName) {
+        AssertUtils.notBlank(fileName, "fileName");
+        Long seq = -1L;
+        try {
+            seq = getFileNameBlankEpSeq(fileName);
+        } catch (RegexMatchingException e) {
+            try {
+                seq = getFileNameTagEpSeq(fileName);
+            } catch (RegexMatchingException e1) {
+                log.warn("parse episode seq fail by file name: {}.", fileName, e1);
+            }
+        }
+        return seq;
     }
 
 }

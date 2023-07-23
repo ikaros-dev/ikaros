@@ -3,7 +3,7 @@ package run.ikaros.server.core.file;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.Folder;
-import run.ikaros.server.infra.exception.file.FolderHasChildException;
+import run.ikaros.api.infra.exception.file.FolderHasChildException;
 import run.ikaros.server.store.entity.FolderEntity;
 
 public interface FolderService {

@@ -205,7 +205,9 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMapMany(episodes -> Flux.fromStream(episodes.stream()))
             .flatMap(episode -> copyProperties(episode, new EpisodeEntity()))
             .map(entity -> entity.setSubjectId(subjectId.get()))
-            .flatMap(episodeRepository::save)
+            .flatMap(entity ->
+                episodeRepository.findBySubjectIdAndSequence(subjectId.get(), entity.getSequence())
+                    .switchIfEmpty(episodeRepository.save(entity)))
             .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
             .collectList()
             .map(subject::setEpisodes)

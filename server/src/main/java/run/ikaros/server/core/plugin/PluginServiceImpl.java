@@ -14,7 +14,7 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.exception.PluginInstallRuntimeException;
-import run.ikaros.server.infra.utils.StringUtils;
+import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.plugin.IkarosPluginManager;
 
 @Slf4j

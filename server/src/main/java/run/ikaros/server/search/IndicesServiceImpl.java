@@ -53,11 +53,11 @@ public class IndicesServiceImpl implements IndicesService {
             .flatMap(ReactiveSubjectDocConverter::fromEntity)
             .limitRate(100)
             .buffer(100)
-            .doOnNext(subjectDocs -> {
+            .handle((subjectDocs, sink) -> {
                 try {
                     subjectSearchService.rebuild(subjectDocs);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    sink.error(new RuntimeException(e));
                 }
             })
             .then();
