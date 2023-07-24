@@ -151,8 +151,6 @@ public class MailServiceImpl implements MailService {
     public Mono<Void> send(MailRequest request, String template, Context context) {
         Assert.notNull(request, "'request' must not null.");
         Assert.hasText(request.getTitle(), "title must has text.");
-        Assert.hasText(request.getContent(), "context must has text.");
-        Assert.hasText(request.getContent(), "context must has text.");
         Assert.hasText(template, "template must has text.");
         Assert.notNull(context, "context must not null.");
         String address = StringUtils.isBlank(request.getAddress())
