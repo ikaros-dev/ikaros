@@ -1,6 +1,5 @@
 package run.ikaros.server.core.notify.listener;
 
-import java.util.HashMap;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -55,17 +54,15 @@ public class EpisodeFileUpdateEventListener {
         final Long episodeId = event.getEpisodeId();
         final Long fileId = event.getFileId();
         final var context = new Context();
-        var vars = new HashMap<String, Object>();
-        context.setVariables(vars);
         MailRequest mailRequest = new MailRequest();
         mailRequest.setAddress(null);
         return episodeRepository.findById(episodeId)
             .doOnNext(entity -> {
-                vars.put("epTitle",
+                context.setVariable("epTitle",
                     StringUtils.isNotBlank(entity.getNameCn()) ? entity.getNameCn() :
                         entity.getName());
-                vars.put("epSeq", entity.getSequence());
-                vars.put("epIntroduction", entity.getDescription());
+                context.setVariable("epSeq", entity.getSequence());
+                context.setVariable("epIntroduction", entity.getDescription());
                 mailRequest.setTitle("第" + entity.getSequence() + "集更新");
             })
             .map(EpisodeEntity::getSubjectId)
@@ -73,14 +70,15 @@ public class EpisodeFileUpdateEventListener {
             .doOnNext(subject -> {
                 String title = StringUtils.isNotBlank(subject.getNameCn()) ? subject.getNameCn() :
                     subject.getName();
-                vars.put("title", title);
-                vars.put("introduction", subject.getSummary());
-                vars.put("coverImgUrl", ikarosProperties.getExternalUrl() + subject.getCover());
+                context.setVariable("title", title);
+                context.setVariable("introduction", subject.getSummary());
+                context.setVariable("coverImgUrl",
+                    ikarosProperties.getExternalUrl() + subject.getCover());
                 String oldReqTitle = mailRequest.getTitle();
                 mailRequest.setTitle("番剧《" + title + "》" + oldReqTitle);
             })
             .then(fileService.findById(fileId))
-            .doOnNext(fileEntity -> vars.put("epUrlFileName", fileEntity.getName()))
+            .doOnNext(fileEntity -> context.setVariable("epUrlFileName", fileEntity.getName()))
             .then(Mono.just(mailService))
             .flatMap(mailService1 -> mailService1.send(mailRequest, ThymeleafConst.ANIME_UPDATE,
                 context))
