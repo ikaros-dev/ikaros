@@ -86,7 +86,7 @@ public class EpisodeServiceImpl implements EpisodeFileService {
                             .fileId(fileEntity.getId())
                             .episodeId(episodeEntity.getId())
                             .build()))
-                    .doOnSuccess(episodeFileEntity -> {
+                    .doOnNext(episodeFileEntity -> {
                         log.info("save episode file matching "
                                 + "for file name:[{}] and episode seq:[{}] "
                                 + "when subjectId=[{}].",
