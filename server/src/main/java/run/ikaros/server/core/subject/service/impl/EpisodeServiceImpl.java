@@ -2,7 +2,6 @@ package run.ikaros.server.core.subject.service.impl;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotNull;
-import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -86,24 +85,21 @@ public class EpisodeServiceImpl implements EpisodeFileService {
                         .save(EpisodeFileEntity.builder()
                             .fileId(fileEntity.getId())
                             .episodeId(episodeEntity.getId())
-                            .build())
-                        .mapNotNull(episodeFileEntity -> {
-                            log.info("save episode file matching "
-                                    + "for file name:[{}] and episode seq:[{}] "
-                                    + "when subjectId=[{}].",
-                                fileEntity.getName(), episodeEntity.getSequence(), subjectId);
-                            if (Objects.nonNull(episodeFileEntity)
-                                && Objects.nonNull(episodeFileEntity.getEpisodeId())) {
-                                EpisodeFileUpdateEvent event =
-                                    new EpisodeFileUpdateEvent(this,
-                                        episodeFileEntity.getEpisodeId(),
-                                        episodeFileEntity.getFileId(), notify);
-                                applicationEventPublisher.publishEvent(event);
-                                log.debug("publish event EpisodeFileUpdateEvent "
-                                    + "for episodeFileEntity: {}", episodeFileEntity);
-                            }
-                            return episodeFileEntity;
-                        }))
+                            .build()))
+                    .doOnSuccess(episodeFileEntity -> {
+                        log.info("save episode file matching "
+                                + "for file name:[{}] and episode seq:[{}] "
+                                + "when subjectId=[{}].",
+                            fileEntity.getName(), episodeEntity.getSequence(), subjectId);
+                        EpisodeFileUpdateEvent event =
+                            new EpisodeFileUpdateEvent(this,
+                                episodeEntity.getId(),
+                                fileEntity.getId(), notify);
+                        applicationEventPublisher.publishEvent(event);
+                        log.debug("publish event EpisodeFileUpdateEvent "
+                            + "for episodeFileEntity: {}", episodeFileEntity);
+                        ;
+                    })
                 ))
             .then();
 
