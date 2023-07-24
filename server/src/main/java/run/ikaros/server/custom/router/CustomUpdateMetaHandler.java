@@ -10,7 +10,6 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomScheme;
-import run.ikaros.server.custom.CustomConverter;
 import run.ikaros.server.custom.event.CustomUpdateEvent;
 
 @Slf4j
@@ -35,8 +34,8 @@ public class CustomUpdateMetaHandler implements CustomRouterFunctionFactory.Upda
         var metaName = request.pathVariable("metaName");
         return request.bodyToMono(byte[].class)
             .flatMap(bytes -> customClient.updateOneMeta(scheme.type(), customName, metaName, bytes)
-                .doOnSuccess(custom -> applicationEventPublisher.publishEvent(
-                    new CustomUpdateEvent(this, scheme, CustomConverter.getNameFieldValue(custom))))
+                .doOnSuccess(unused -> applicationEventPublisher.publishEvent(
+                    new CustomUpdateEvent(this, scheme, customName)))
                 .then(ServerResponse.ok().build()));
     }
 

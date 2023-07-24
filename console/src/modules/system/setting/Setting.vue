@@ -27,12 +27,35 @@ const setting = ref({
 	GLOBAL_HEADER: '',
 	GLOBAL_FOOTER: '',
 	REMOTE_ENABLE: 'false',
+	MAIL_ENABLE: 'false',
+	MAIL_PROTOCOL: 'smtp',
+	MAIL_SMTP_HOST: '',
+	MAIL_SMTP_PORT: '465',
+	MAIL_SMTP_ACCOUNT: '',
+	MAIL_SMTP_PASSWORD: '',
+	MAIL_SMTP_ACCOUNT_ALIAS: '',
+	MAIL_RECEIVE_ADDRESS: '',
 });
 
 const settingFormRules = reactive<FormRules>({
 	SITE_TITLE: [
 		{ required: true, message: '请输入有效的站点标题', trigger: 'blur' },
 		{ min: 3, max: 15, message: '长度应该在3到15个字符内', trigger: 'blur' },
+	],
+	MAIL_SMTP_HOST: [
+		{ required: true, message: '请输入服务器地址', trigger: 'blur' },
+	],
+	MAIL_SMTP_PORT: [
+		{ required: true, message: '请输入邮件服务器端口', trigger: 'blur' },
+	],
+	MAIL_SMTP_ACCOUNT: [
+		{ required: true, message: '请输入邮件服务用户名', trigger: 'blur' },
+	],
+	MAIL_SMTP_PASSWORD: [
+		{ required: true, message: '请输入邮件服务密码', trigger: 'blur' },
+	],
+	MAIL_RECEIVE_ADDRESS: [
+		{ required: true, message: '请输入收件方邮件地址', trigger: 'blur' },
 	],
 });
 
@@ -131,6 +154,81 @@ onMounted(getSettingFromServer);
 					</el-input>
 				</el-form-item>
 
+				<el-form-item>
+					<el-button type="primary" @click="updateSetting">保存</el-button>
+				</el-form-item>
+			</el-tab-pane>
+			<el-tab-pane label="邮件配置">
+				<el-form-item label="启用邮件">
+					<el-switch
+						v-model="setting.MAIL_ENABLE"
+						inline-prompt
+						size="large"
+						active-text="启用"
+						inactive-text="禁用"
+					/>
+				</el-form-item>
+				<span v-if="setting.MAIL_ENABLE">
+					<el-form-item label="协议" prop="MAIL_PROTOCOL">
+						<el-input
+							v-model="setting.MAIL_PROTOCOL"
+							style="max-width: 600px"
+							clearable
+							disabled
+						/>
+					</el-form-item>
+					<el-form-item label="服务器地址" prop="MAIL_SMTP_HOST">
+						<el-input
+							v-model="setting.MAIL_SMTP_HOST"
+							placeholder="请输入邮件服务器地址"
+							style="max-width: 600px"
+							clearable
+						/>
+					</el-form-item>
+					<el-form-item label="服务器端口" prop="MAIL_SMTP_PORT">
+						<el-input
+							v-model="setting.MAIL_SMTP_PORT"
+							placeholder="请输入邮件服务器端口"
+							style="max-width: 600px"
+							clearable
+						/>
+					</el-form-item>
+					<el-form-item label="邮件服务用户名" prop="MAIL_SMTP_ACCOUNT">
+						<el-input
+							v-model="setting.MAIL_SMTP_ACCOUNT"
+							placeholder="请输入邮件服务用户名"
+							style="max-width: 600px"
+							clearable
+						/>
+					</el-form-item>
+					<el-form-item label="邮件服务密码" prop="MAIL_SMTP_PASSWORD">
+						<el-input
+							v-model="setting.MAIL_SMTP_PASSWORD"
+							placeholder="请输入邮件服务密码"
+							style="max-width: 600px"
+							clearable
+						/>
+					</el-form-item>
+					<el-form-item
+						label="邮件服务用户名别名"
+						prop="MAIL_SMTP_ACCOUNT_ALIAS"
+					>
+						<el-input
+							v-model="setting.MAIL_SMTP_ACCOUNT_ALIAS"
+							placeholder="请输入邮件服务用户名别名"
+							style="max-width: 600px"
+							clearable
+						/>
+					</el-form-item>
+					<el-form-item label="收件方邮件地址" prop="MAIL_RECEIVE_ADDRESS">
+						<el-input
+							v-model="setting.MAIL_RECEIVE_ADDRESS"
+							placeholder="请输入收件方邮件地址"
+							style="max-width: 600px"
+							clearable
+						/>
+					</el-form-item>
+				</span>
 				<el-form-item>
 					<el-button type="primary" @click="updateSetting">保存</el-button>
 				</el-form-item>
