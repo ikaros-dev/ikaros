@@ -3,6 +3,7 @@ package run.ikaros.server.core.subject.service.impl;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -10,6 +11,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.infra.exception.RegexMatchingException;
 import run.ikaros.api.infra.utils.RegexUtils;
 import run.ikaros.api.store.enums.FileType;
+import run.ikaros.server.core.subject.event.EpisodeFileUpdateEvent;
 import run.ikaros.server.core.subject.service.EpisodeFileService;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
 import run.ikaros.server.store.entity.FileEntity;
@@ -23,15 +25,18 @@ public class EpisodeServiceImpl implements EpisodeFileService {
     private final EpisodeFileRepository episodeFileRepository;
     private final EpisodeRepository episodeRepository;
     private final FileRepository fileRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Construct.
      */
     public EpisodeServiceImpl(EpisodeFileRepository episodeFileRepository,
-                              EpisodeRepository episodeRepository, FileRepository fileRepository) {
+                              EpisodeRepository episodeRepository, FileRepository fileRepository,
+                              ApplicationEventPublisher applicationEventPublisher) {
         this.episodeFileRepository = episodeFileRepository;
         this.episodeRepository = episodeRepository;
         this.fileRepository = fileRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Override
@@ -59,6 +64,12 @@ public class EpisodeServiceImpl implements EpisodeFileService {
 
     @Override
     public Mono<Void> batchMatching(@NotNull Long subjectId, @NotNull Long[] fileIds) {
+        return batchMatching(subjectId, fileIds, false);
+    }
+
+    @Override
+    public Mono<Void> batchMatching(@NotNull Long subjectId, @NotNull Long[] fileIds,
+                                    boolean notify) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.notNull(fileIds, "'fileIds' must not null.");
         return Flux.fromArray(fileIds)
@@ -75,10 +86,15 @@ public class EpisodeServiceImpl implements EpisodeFileService {
                             .fileId(fileEntity.getId())
                             .episodeId(episodeEntity.getId())
                             .build()))
-                    .doOnSuccess(episodeFileEntity ->
+                    .doOnSuccess(episodeFileEntity -> {
                         log.info("save episode file matching "
                                 + "for file name:[{}] and episode seq:[{}] when subjectId=[{}].",
-                            fileEntity.getName(), episodeEntity.getSequence(), subjectId))
+                            fileEntity.getName(), episodeEntity.getSequence(), subjectId);
+                        EpisodeFileUpdateEvent event =
+                            new EpisodeFileUpdateEvent(this, episodeFileEntity.getEpisodeId(),
+                                episodeFileEntity.getFileId(), notify);
+                        applicationEventPublisher.publishEvent(event);
+                    })
                 ))
             .then();
 

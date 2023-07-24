@@ -10,5 +10,6 @@ public interface EpisodeFileOperate extends AllowPluginOperate {
 
     Mono<Void> remove(@Nonnull Long episodeId, @Nonnull Long fileId);
 
-    Mono<Void> batchMatching(@Nonnull Long subjectId, @Nonnull Long[] fileIds);
+    Mono<Void> batchMatching(@Nonnull Long subjectId, @Nonnull Long[] fileIds,
+                             boolean notify);
 }

@@ -27,7 +27,8 @@ public class EpisodeFileOperator implements EpisodeFileOperate {
     }
 
     @Override
-    public Mono<Void> batchMatching(@NotNull Long subjectId, @NotNull Long[] fileIds) {
-        return episodeFileService.batchMatching(subjectId, fileIds);
+    public Mono<Void> batchMatching(@NotNull Long subjectId, @NotNull Long[] fileIds,
+                                    boolean notify) {
+        return episodeFileService.batchMatching(subjectId, fileIds, notify);
     }
 }

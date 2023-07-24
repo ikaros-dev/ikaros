@@ -15,9 +15,14 @@ import run.ikaros.server.custom.scheme.SchemeInitializedEvent;
 @Component
 public class SystemSettingInitListener {
     private final ReactiveCustomClient reactiveCustomClient;
+    private static final String configMapName = "setting.server.ikaros.run";
 
     public SystemSettingInitListener(ReactiveCustomClient reactiveCustomClient) {
         this.reactiveCustomClient = reactiveCustomClient;
+    }
+
+    public static String getConfigMapName() {
+        return configMapName;
     }
 
     /**
@@ -25,7 +30,6 @@ public class SystemSettingInitListener {
      */
     @EventListener(SchemeInitializedEvent.class)
     public Mono<Void> handle(SchemeInitializedEvent event) {
-        final var configMapName = "setting.server.ikaros.run";
         var settingConfigMap = new ConfigMap();
         settingConfigMap.setName(configMapName);
 
@@ -39,10 +43,11 @@ public class SystemSettingInitListener {
         settingConfigMap.putDataItem("MAIL_ENABLE", "false");
         settingConfigMap.putDataItem("MAIL_PROTOCOL", "smtp");
         settingConfigMap.putDataItem("MAIL_SMTP_HOST", "");
-        settingConfigMap.putDataItem("MAIL_SMTP_PORT", "");
+        settingConfigMap.putDataItem("MAIL_SMTP_PORT", "465");
         settingConfigMap.putDataItem("MAIL_SMTP_ACCOUNT", "");
         settingConfigMap.putDataItem("MAIL_SMTP_PASSWORD", "");
         settingConfigMap.putDataItem("MAIL_SMTP_ACCOUNT_ALIAS", "");
+        settingConfigMap.putDataItem("MAIL_RECEIVE_ADDRESS", "");
 
         // System user settings
         settingConfigMap.putDataItem("ALLOW_REGISTER", "false");

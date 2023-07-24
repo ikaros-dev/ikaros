@@ -36,6 +36,6 @@ public class ConfigMapCustomUpdateEventListener {
         reactiveCustomClient.findOne(scheme.type(), name)
             .map(custom -> (ConfigMap) custom)
             .subscribe(configMap -> applicationEventPublisher.publishEvent(
-                new PluginConfigMapUpdateEvent(this, name, configMap)));
+                new PluginConfigMapUpdateEvent(this, "ALL", configMap)));
     }
 }
