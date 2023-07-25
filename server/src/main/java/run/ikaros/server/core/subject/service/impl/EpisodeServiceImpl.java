@@ -85,21 +85,20 @@ public class EpisodeServiceImpl implements EpisodeFileService {
                         .save(EpisodeFileEntity.builder()
                             .fileId(fileEntity.getId())
                             .episodeId(episodeEntity.getId())
-                            .build()))
-                    .doOnNext(episodeFileEntity -> {
-                        log.info("save episode file matching "
-                                + "for file name:[{}] and episode seq:[{}] "
-                                + "when subjectId=[{}].",
-                            fileEntity.getName(), episodeEntity.getSequence(), subjectId);
-                        EpisodeFileUpdateEvent event =
-                            new EpisodeFileUpdateEvent(this,
-                                episodeEntity.getId(),
-                                fileEntity.getId(), notify);
-                        applicationEventPublisher.publishEvent(event);
-                        log.debug("publish event EpisodeFileUpdateEvent "
-                            + "for episodeFileEntity: {}", episodeFileEntity);
-                        ;
-                    })
+                            .build())
+                        .doOnSuccess(episodeFileEntity -> {
+                            log.info("save episode file matching "
+                                    + "for file name:[{}] and episode seq:[{}] "
+                                    + "when subjectId=[{}].",
+                                fileEntity.getName(), episodeEntity.getSequence(), subjectId);
+                            EpisodeFileUpdateEvent event =
+                                new EpisodeFileUpdateEvent(this,
+                                    episodeEntity.getId(),
+                                    fileEntity.getId(), notify);
+                            applicationEventPublisher.publishEvent(event);
+                            log.debug("publish event EpisodeFileUpdateEvent "
+                                + "for episodeFileEntity: {}", episodeFileEntity);
+                        }))
                 ))
             .then();
 
