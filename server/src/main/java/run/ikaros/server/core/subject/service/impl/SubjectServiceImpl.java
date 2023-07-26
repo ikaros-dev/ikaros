@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Query;
@@ -179,7 +180,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    public Mono<Subject> create(Subject subject) {
+    public synchronized Mono<Subject> create(Subject subject) {
         Assert.notNull(subject, "'subject' must not be null.");
         final AtomicReference<Long> subjectId = new AtomicReference<>(-1L);
         return Mono.just(subject)
@@ -221,6 +222,11 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMap(subjectSync -> copyProperties(subjectSync, new SubjectSyncEntity()))
             .map(entity -> entity.setSubjectId(subjectId.get()))
             .flatMap(subjectSyncRepository::save)
+            .onErrorResume(DuplicateKeyException.class, e -> {
+                log.warn("duplicate key when save subject sync record, exception msg: {}",
+                    e.getMessage());
+                return Mono.empty();
+            })
             .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, new SubjectSync()))
             .collectList()
             .map(subject::setSyncs)

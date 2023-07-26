@@ -378,6 +378,7 @@ create table if not exists subject_sync
     platform      varchar(255) not null,
     platform_id   varchar(255) null,
     sync_time     timestamp(6) null,
+    constraint platform_pid_ukey unique (platform, platform_id),
     constraint subject_sync_pkey primary key (id)
 );
 
