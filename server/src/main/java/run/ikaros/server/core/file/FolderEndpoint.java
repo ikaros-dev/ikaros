@@ -57,7 +57,11 @@ public class FolderEndpoint implements CoreEndpoint {
                         .implementation(Long.class))
                     .parameter(parameterBuilder()
                         .name("allowDeleteWhenChildExists")
-                        .description("Allow delete when children exists.")
+                        .description("Allow delete when children exists, "
+                            + "when it is true, will delete folder "
+                            + "and all children folders and files"
+                            + ", when it is false, "
+                            + "delete folder only on no children folders or files.")
                         .implementation(Boolean.class)))
 
             .PUT("/folder/name", this::updateFolderName,

@@ -30,7 +30,9 @@ import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
+import run.ikaros.api.core.subject.Subtitle;
 import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -111,6 +113,13 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                                 .url(fileEntity.getUrl())
                                 .canRead(fileEntity.getCanRead())
                                 .build())
+                            .flatMap(episodeResource ->
+                                findEpisodeResourceSubtitles(episodeResource.getName())
+                                    .collectList()
+                                    .map(subtitles -> {
+                                        episodeResource.setSubtitles(subtitles);
+                                        return episodeResource;
+                                    }))
                     ).collectList()
                     .map(episode::setResources))
                 .sort(Comparator.comparingDouble(Episode::getSequence))
@@ -126,6 +135,25 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, new SubjectSync()))
                 .collectList().map(subject::setSyncs))
             .checkpoint("FindSyncEntitiesBySubjectId");
+    }
+
+    private Flux<Subtitle> findEpisodeResourceSubtitles(String fileEntityName) {
+        String postfix = FileUtils.parseFilePostfix(fileEntityName);
+        fileEntityName = fileEntityName.substring(0, fileEntityName.indexOf(postfix));
+        String finalFileEntityName = fileEntityName;
+        return fileRepository.findAllByNameLike(fileEntityName + "%")
+            .filter(fileEntity -> fileEntity.getName().endsWith("ass"))
+            .filter(FileEntity::getCanRead)
+            .map(fileEntity -> Subtitle.builder()
+                .fileId(fileEntity.getId())
+                .name(fileEntity.getName())
+                .url(fileEntity.getUrl())
+                .language(fileEntity.getName()
+                    .replace(finalFileEntityName, "")
+                    .replace(".ass", ""))
+                .build())
+            ;
+
     }
 
     private boolean getSubjectCanReadByEpisodes(List<Episode> episodes) {

@@ -18,6 +18,7 @@ public interface FileRepository extends R2dbcRepository<FileEntity, Long> {
 
     Flux<FileEntity> findAllByFolderId(Long folderId);
 
+    Flux<FileEntity> findAllByNameLike(String name);
 
     Flux<FileEntity> findAllByNameLike(String name, Pageable pageable);
 
