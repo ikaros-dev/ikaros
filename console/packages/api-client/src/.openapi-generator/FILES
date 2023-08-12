@@ -39,6 +39,7 @@ models/subject-hints.ts
 models/subject-relation.ts
 models/subject-sync.ts
 models/subject.ts
+models/subtitle.ts
 models/task-entity.ts
 models/update-user-request.ts
 models/user-entity.ts

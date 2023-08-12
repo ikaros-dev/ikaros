@@ -76,8 +76,7 @@ public class EpisodeServiceImpl implements EpisodeFileService {
             .flatMap(fileRepository::findById)
             .filter(entity -> FileType.VIDEO.equals(entity.getType()))
             .flatMap(fileEntity -> getSeqMono(fileEntity)
-                .flatMap(seq -> episodeRepository.findBySubjectIdAndSequence(subjectId,
-                    Double.valueOf(String.valueOf(seq))))
+                .flatMap(seq -> episodeRepository.findBySubjectIdAndSequence(subjectId, seq))
                 .flatMap(episodeEntity -> episodeFileRepository
                     .existsByEpisodeId(episodeEntity.getId())
                     .filter(exists -> !exists)
@@ -104,10 +103,11 @@ public class EpisodeServiceImpl implements EpisodeFileService {
 
     }
 
-    private static Mono<Double> getSeqMono(FileEntity entity) {
-        Double seq;
+    private static Mono<Integer> getSeqMono(FileEntity entity) {
+        Integer seq;
         try {
-            seq = Double.valueOf(RegexUtils.parseEpisodeSeqByFileName(entity.getName()));
+            seq = Integer.valueOf(
+                String.valueOf(RegexUtils.parseEpisodeSeqByFileName(entity.getName())));
         } catch (RegexMatchingException regexMatchingException) {
             log.warn("parse episode seq by file name fail", regexMatchingException);
             return Mono.empty();

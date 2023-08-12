@@ -10,5 +10,5 @@ public interface EpisodeRepository extends R2dbcRepository<EpisodeEntity, Long> 
 
     Mono<Void> deleteAllBySubjectId(Long subjectId);
 
-    Mono<EpisodeEntity> findBySubjectIdAndSequence(Long subjectId, Double sequence);
+    Mono<EpisodeEntity> findBySubjectIdAndSequence(Long subjectId, Integer sequence);
 }

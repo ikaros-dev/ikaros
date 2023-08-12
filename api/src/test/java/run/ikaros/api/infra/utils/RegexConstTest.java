@@ -11,7 +11,8 @@ class RegexConstTest {
     @Test
     void testFileNameEpSeqWithBlank() {
         String fileName =
-            "[ANi] Reign of the Seven Spellblades - 七魔剑支配天下 - 03 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]";
+            "[ANi] Reign of the Seven Spellblades "
+                + "- 七魔剑支配天下 - 03 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]";
         Set<String> strSet = new HashSet<>();
 
         Matcher matcher =

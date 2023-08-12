@@ -9,7 +9,13 @@ import {
 	ElDatePicker,
 	ElButton,
 	ElInput,
+	ElSelect,
+	ElOption,
 } from 'element-plus';
+import {
+	episodeGroups,
+	episodeGroupLabelMap,
+} from '@/modules/common/constants';
 
 const props = withDefaults(
 	defineProps<{
@@ -42,7 +48,9 @@ const onClose = () => {
 	emit('close');
 };
 
-const episode = ref<Episode>({});
+const episode = ref<Episode>({
+	group: 'MAIN',
+});
 const onConfirm = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate((valid, fields) => {
@@ -76,6 +84,7 @@ const episodeRuleFormRules = reactive<FormRules>({
 			trigger: 'change',
 		},
 	],
+	group: [{ required: true }],
 	name: [
 		{ required: true, message: '请输入剧集原始名称', trigger: 'blur' },
 		{ min: 1, max: 100, message: '长度应该在 1 到 100 之间', trigger: 'blur' },
@@ -102,6 +111,16 @@ const episodeElFormRef = ref<FormInstance>();
 					type="date"
 					placeholder="请选择一天"
 				/>
+			</el-form-item>
+			<el-form-item label="剧集分组" prop="group" :label-width="formLabelWidth">
+				<el-select v-model="episode.group" clearable placeholder="请选择分组">
+					<el-option
+						v-for="item in episodeGroups"
+						:key="item"
+						:label="episodeGroupLabelMap.get(item)"
+						:value="item"
+					/>
+				</el-select>
 			</el-form-item>
 			<el-form-item label="剧集名称" :label-width="formLabelWidth" prop="name">
 				<el-input v-model="episode.name" />

@@ -110,7 +110,7 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
 		/**
 		 * Delete folder
 		 * @param {number} id Folder id.
-		 * @param {boolean} [allowDeleteWhenChildExists] Allow delete when children exists.
+		 * @param {boolean} [allowDeleteWhenChildExists] Allow delete when children exists, when it is true, will delete folder and all children folders and files, when it is false, delete folder only on no children folders or files.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -617,7 +617,7 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
 		/**
 		 * Delete folder
 		 * @param {number} id Folder id.
-		 * @param {boolean} [allowDeleteWhenChildExists] Allow delete when children exists.
+		 * @param {boolean} [allowDeleteWhenChildExists] Allow delete when children exists, when it is true, will delete folder and all children folders and files, when it is false, delete folder only on no children folders or files.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -1022,7 +1022,7 @@ export interface V1alpha1FolderApiDeleteFolderRequest {
 	readonly id: number;
 
 	/**
-	 * Allow delete when children exists.
+	 * Allow delete when children exists, when it is true, will delete folder and all children folders and files, when it is false, delete folder only on no children folders or files.
 	 * @type {boolean}
 	 * @memberof V1alpha1FolderApiDeleteFolder
 	 */

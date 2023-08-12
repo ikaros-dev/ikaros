@@ -18,6 +18,7 @@ export * from './subject-hint';
 export * from './subject-hints';
 export * from './subject-relation';
 export * from './subject-sync';
+export * from './subtitle';
 export * from './task-entity';
 export * from './update-user-request';
 export * from './user';

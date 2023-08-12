@@ -62,7 +62,9 @@ create table if not exists episode
     name_cn       varchar(255)   null,
     description   varchar(50000) null,
     air_time      timestamp(6)   null,
-    sequence      double         null,
+    sequence      int8           null,
+    ep_group      varchar(50)    not null,
+    constraint group_seq_uk unique (ep_group, sequence),
     constraint episode_pkey primary key (id)
 );
 

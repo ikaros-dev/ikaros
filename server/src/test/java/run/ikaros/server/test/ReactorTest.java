@@ -3,6 +3,9 @@ package run.ikaros.server.test;
 import reactor.core.publisher.Mono;
 
 public class ReactorTest {
+    /**
+     * Test reactor demo.
+     */
     public static void main(String[] args) {
         boolean exists = true;
         Mono.just(exists)

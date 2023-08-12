@@ -32,6 +32,7 @@ import {
 	ElTableColumn,
 	ElImage,
 } from 'element-plus';
+import { episodeGroupLabelMap } from '@/modules/common/constants';
 
 const router = useRouter();
 const route = useRoute();
@@ -256,12 +257,12 @@ onMounted(() => {
 						class="ik-form-item"
 						@row-dblclick="showEpisodeDetails"
 					>
-						<el-table-column
-							label="序列号"
-							sortable
-							prop="sequence"
-							width="80px"
-						/>
+						<el-table-column label="分组" prop="group" width="100px">
+							<template #default="scoped">
+								{{ episodeGroupLabelMap.get(scoped.row.group) }}
+							</template>
+						</el-table-column>
+						<el-table-column label="序号" prop="sequence" width="80px" />
 						<el-table-column label="原始名称" prop="name" />
 						<el-table-column label="中文名称" prop="name_cn" />
 						<el-table-column

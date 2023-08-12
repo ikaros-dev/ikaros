@@ -12,6 +12,10 @@
  * Do not edit the class manually.
  */
 
+// May contain unused imports in some cases
+// @ts-ignore
+import { Subtitle } from './subtitle';
+
 /**
  *
  * @export
@@ -42,6 +46,12 @@ export interface EpisodeResource {
 	 * @memberof EpisodeResource
 	 */
 	tags?: Set<string>;
+	/**
+	 *
+	 * @type {Array<Subtitle>}
+	 * @memberof EpisodeResource
+	 */
+	subtitles?: Array<Subtitle>;
 	/**
 	 *
 	 * @type {number}
