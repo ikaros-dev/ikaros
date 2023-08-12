@@ -48,6 +48,12 @@ export interface Episode {
 	sequence?: number;
 	/**
 	 *
+	 * @type {string}
+	 * @memberof Episode
+	 */
+	group?: string;
+	/**
+	 *
 	 * @type {Array<EpisodeResource>}
 	 * @memberof Episode
 	 */
