@@ -42,8 +42,8 @@ import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.SystemVarUtils;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.api.wrap.PagingWrap;
-import run.ikaros.server.core.file.event.FileAddEvent;
 import run.ikaros.server.core.file.event.FileRemoveEvent;
+import run.ikaros.server.core.file.event.FileSaveEvent;
 import run.ikaros.server.core.file.task.FileDeleteRemoteTask;
 import run.ikaros.server.core.file.task.FilePull4RemoteTask;
 import run.ikaros.server.core.file.task.FilePush2RemoteTask;
@@ -277,7 +277,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
         Assert.notNull(entity, "'entity' must not null.");
         return fileRepository.save(entity)
             .doOnSuccess(fileEntity ->
-                applicationContext.publishEvent(new FileAddEvent(this, fileEntity)));
+                applicationContext.publishEvent(new FileSaveEvent(this, fileEntity)));
     }
 
     @Override
@@ -310,7 +310,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 }
                 sink.next(fileEntity);
             })
-            .flatMap(fileRepository::save)
+            .flatMap(this::save)
             .flatMap(fileEntity -> copyProperties(fileEntity,
                 new run.ikaros.api.core.file.File()));
     }
