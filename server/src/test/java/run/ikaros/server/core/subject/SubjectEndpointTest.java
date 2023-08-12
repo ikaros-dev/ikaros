@@ -28,6 +28,7 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.infra.utils.JsonUtils;
@@ -102,7 +103,9 @@ class SubjectEndpointTest {
             .subjectId(Long.MAX_VALUE)
             .airTime(LocalDateTime.now())
             .name("ep-01")
-            .nameCn("第一集").build());
+            .nameCn("第一集")
+            .group(EpisodeGroup.MAIN.name())
+            .build());
         subject.setEpisodes(episodes)
             .setTotalEpisodes((long) episodes.size());
         return subject;
