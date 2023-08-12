@@ -19,3 +19,27 @@ export const taskNamePrefix = {
 		push: 'FolderPush2RemoteTask-',
 	},
 };
+
+export const episodeGroups = [
+	'MAIN',
+	'PROMOTION_VIDEO',
+	'OPENING_SONG',
+	'ENDING_SONG',
+	'SPECIAL_PROMOTION',
+	'SMALL_THEATER',
+	'COMMERCIAL_MESSAGE',
+	'LIVE',
+	'OTHER',
+];
+
+export const episodeGroupLabelMap = new Map([
+	['MAIN', '正片(MAIN)'],
+	['PROMOTION_VIDEO', '宣传(PV)'],
+	['OPENING_SONG', '片头曲(OP)'],
+	['ENDING_SONG', '片尾曲(ED)'],
+	['SPECIAL_PROMOTION', '特典(SP)'],
+	['SMALL_THEATER', '小剧场(ST)'],
+	['COMMERCIAL_MESSAGE', '广告(CM)'],
+	['LIVE', '直播(Live)'],
+	['OTHER', '其它(Other)'],
+]);

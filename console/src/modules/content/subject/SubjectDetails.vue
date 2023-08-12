@@ -31,6 +31,7 @@ import FileRemoteActionDialog from '@/modules/content/file/FileRemoteActionDialo
 import { base64Encode } from '@/utils/string-util';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import { useSettingStore } from '@/stores/setting';
+import { episodeGroupLabelMap } from '@/modules/common/constants';
 
 const route = useRoute();
 const settingStore = useSettingStore();
@@ -123,6 +124,10 @@ watch(subject, () => {
 const airTimeDateFormatter = (row) => {
 	// console.log('row', row);
 	return formatDate(new Date(row.air_time), 'yyyy-MM-dd');
+};
+
+const episodeGroupLabelFormatter = (row: any) => {
+	return episodeGroupLabelMap.get(row.group as string);
 };
 
 const currentEpisode = ref<Episode>();
@@ -378,11 +383,12 @@ onMounted(() => {
 				<el-col :span="24">
 					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
 						<el-table-column
-							label="序号"
-							sortable
-							prop="sequence"
-							width="80px"
+							label="分组"
+							prop="group"
+							width="100px"
+							:formatter="episodeGroupLabelFormatter"
 						/>
+						<el-table-column label="序号" prop="sequence" width="80px" />
 						<el-table-column label="原始名称" prop="name" />
 						<el-table-column label="中文名称" prop="name_cn" />
 						<el-table-column

@@ -26,5 +26,7 @@ public class EpisodeEntity extends BaseEntity {
     private String description;
     @Column("air_time")
     private LocalDateTime airTime;
-    private Double sequence;
+    private Integer sequence;
+    @Column("ep_group")
+    private String group;
 }

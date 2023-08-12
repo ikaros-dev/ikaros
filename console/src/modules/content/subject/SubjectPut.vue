@@ -32,6 +32,7 @@ import {
 	ElTableColumn,
 	ElImage,
 } from 'element-plus';
+import { episodeGroupLabelMap } from '@/modules/common/constants';
 
 const router = useRouter();
 const route = useRoute();
@@ -114,6 +115,10 @@ const onEpisodePostDialogCloseWithEpsiode = (ep: Episode) => {
 
 const airTimeDateFormatter = (row) => {
 	return formatDate(row.air_time, 'yyyy-MM-dd');
+};
+
+const episodeGroupLabelFormatter = (row: any) => {
+	return episodeGroupLabelMap.get(row.group as string);
 };
 
 const removeCurrentRowEpisode = (ep: Episode) => {
@@ -257,11 +262,12 @@ onMounted(() => {
 						@row-dblclick="showEpisodeDetails"
 					>
 						<el-table-column
-							label="序列号"
-							sortable
-							prop="sequence"
-							width="80px"
+							label="分组"
+							prop="group"
+							width="100px"
+							:formatter="episodeGroupLabelFormatter"
 						/>
+						<el-table-column label="序号" prop="sequence" width="80px" />
 						<el-table-column label="原始名称" prop="name" />
 						<el-table-column label="中文名称" prop="name_cn" />
 						<el-table-column
