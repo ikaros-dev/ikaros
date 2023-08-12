@@ -476,3 +476,20 @@ create table if not exists task
     constraint task_pkey primary key (id)
 );
 
+-- video_subtitle
+create sequence if not exists video_subtitle_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
+create table if not exists video_subtitle
+(
+    id               int8 not null default nextval('video_subtitle_seq'),
+    video_file_id    int8 not null,
+    subtitle_file_id int8 not null,
+    constraint video_subtitle_file_id_uk unique (video_file_id, subtitle_file_id),
+    constraint video_subtitle_pkey primary key (id)
+);
+

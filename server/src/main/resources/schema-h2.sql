@@ -334,3 +334,13 @@ create table if not exists `task`
     fail_message varchar(2000) null,
     constraint task_pkey primary key (id)
 );
+
+-- video_subtitle
+create table if not exists `video_subtitle`
+(
+    id               int8 not null auto_increment,
+    video_file_id    int8 not null,
+    subtitle_file_id int8 not null,
+    constraint video_subtitle_file_id_uk unique (video_file_id, subtitle_file_id),
+    constraint video_subtitle_pkey primary key (id)
+);

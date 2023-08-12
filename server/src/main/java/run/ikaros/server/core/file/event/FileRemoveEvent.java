@@ -1,17 +1,15 @@
 package run.ikaros.server.core.file.event;
 
-import org.springframework.context.ApplicationEvent;
+import java.time.Clock;
 import run.ikaros.server.store.entity.FileEntity;
 
-public class FileRemoveEvent extends ApplicationEvent {
-    private final FileEntity fileEntity;
+public class FileRemoveEvent extends FileChangeEvent {
 
     public FileRemoveEvent(Object source, FileEntity fileEntity) {
-        super(source);
-        this.fileEntity = fileEntity;
+        super(source, fileEntity);
     }
 
-    public FileEntity getFileEntity() {
-        return fileEntity;
+    public FileRemoveEvent(Object source, Clock clock, FileEntity fileEntity) {
+        super(source, clock, fileEntity);
     }
 }

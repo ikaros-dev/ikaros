@@ -40,6 +40,7 @@ import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.vo.FindSubjectCondition;
+import run.ikaros.server.infra.constants.NumberConst;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.CollectionEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
@@ -47,12 +48,14 @@ import run.ikaros.server.store.entity.EpisodeFileEntity;
 import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
+import run.ikaros.server.store.entity.VideoSubtitleEntity;
 import run.ikaros.server.store.repository.CollectionRepository;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
+import run.ikaros.server.store.repository.VideoSubtitleRepository;
 
 @Slf4j
 @Service
@@ -63,32 +66,37 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     private final EpisodeFileRepository episodeFileRepository;
     private final SubjectSyncRepository subjectSyncRepository;
     private final FileRepository fileRepository;
+    private final VideoSubtitleRepository videoSubtitleRepository;
     private final R2dbcEntityTemplate template;
     private ApplicationContext applicationContext;
 
     /**
      * Construct a {@link SubjectService} instance.
      *
-     * @param subjectRepository     {@link SubjectEntity} repository
-     * @param collectionRepository  {@link CollectionEntity} repository
-     * @param episodeRepository     {@link EpisodeEntity} repository
-     * @param episodeFileRepository {@link EpisodeFileEntity} repository
-     * @param subjectSyncRepository {@link SubjectSyncEntity} repository
-     * @param fileRepository        {@link FileEntity} repository
-     * @param template              {@link R2dbcEntityTemplate}
+     * @param subjectRepository       {@link SubjectEntity} repository
+     * @param collectionRepository    {@link CollectionEntity} repository
+     * @param episodeRepository       {@link EpisodeEntity} repository
+     * @param episodeFileRepository   {@link EpisodeFileEntity} repository
+     * @param subjectSyncRepository   {@link SubjectSyncEntity} repository
+     * @param fileRepository          {@link FileEntity} repository
+     * @param videoSubtitleRepository {@link VideoSubtitleEntity} repository
+     * @param template                {@link R2dbcEntityTemplate}
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
                               CollectionRepository collectionRepository,
                               EpisodeRepository episodeRepository,
                               EpisodeFileRepository episodeFileRepository,
                               SubjectSyncRepository subjectSyncRepository,
-                              FileRepository fileRepository, R2dbcEntityTemplate template) {
+                              FileRepository fileRepository,
+                              VideoSubtitleRepository videoSubtitleRepository,
+                              R2dbcEntityTemplate template) {
         this.subjectRepository = subjectRepository;
         this.collectionRepository = collectionRepository;
         this.episodeRepository = episodeRepository;
         this.episodeFileRepository = episodeFileRepository;
         this.subjectSyncRepository = subjectSyncRepository;
         this.fileRepository = fileRepository;
+        this.videoSubtitleRepository = videoSubtitleRepository;
         this.template = template;
     }
 
@@ -114,7 +122,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                                 .canRead(fileEntity.getCanRead())
                                 .build())
                             .flatMap(episodeResource ->
-                                findEpisodeResourceSubtitles(episodeResource.getName())
+                                findEpisodeResourceSubtitles(episodeResource.getFileId())
                                     .collectList()
                                     .map(subtitles -> {
                                         episodeResource.setSubtitles(subtitles);
@@ -154,6 +162,45 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 .build())
             ;
 
+    }
+
+    private synchronized Flux<Subtitle> findEpisodeResourceSubtitles(Long fileId) {
+        return videoSubtitleRepository.findAllByVideoFileId(fileId)
+            .collectList()
+            .filter(videoSubtitleEntities -> !videoSubtitleEntities.isEmpty())
+            .switchIfEmpty(fileRepository.findById(fileId)
+                .map(FileEntity::getName)
+                .map(fileEntityName ->
+                    fileEntityName.substring(0,
+                        fileEntityName.indexOf(
+                            FileUtils.parseFilePostfix(fileEntityName))))
+                .flatMapMany(
+                    fileEntityName -> fileRepository.findAllByNameLike(fileEntityName + "%")
+                        .filter(fileEntity -> fileEntity.getName().endsWith("ass"))
+                        .filter(FileEntity::getCanRead)
+                        .map(FileEntity::getId)
+                        .map(subtitleFileId -> VideoSubtitleEntity.builder()
+                            .videoFileId(fileId)
+                            .subtitleFileId(subtitleFileId)
+                            .build())
+                        .switchIfEmpty(Mono.just(VideoSubtitleEntity.builder()
+                            .videoFileId(fileId)
+                            .subtitleFileId(NumberConst.UN_USE_ID)
+                            .build()))
+                        .flatMap(videoSubtitleRepository::save)
+                )
+                .collectList()
+            )
+            .flatMapMany(videoSubtitleEntities -> Flux.fromStream(videoSubtitleEntities.stream()))
+            .filter(videoSubtitleEntity ->
+                !NumberConst.UN_USE_ID.equals(videoSubtitleEntity.getSubtitleFileId()))
+            .flatMap(videoSubtitleEntity ->
+                fileRepository.findById(videoSubtitleEntity.getSubtitleFileId())
+                    .map(subtitleFileEntity -> Subtitle.builder()
+                        .fileId(videoSubtitleEntity.getVideoFileId())
+                        .name(subtitleFileEntity.getName())
+                        .url(subtitleFileEntity.getUrl())
+                        .build()));
     }
 
     private boolean getSubjectCanReadByEpisodes(List<Episode> episodes) {

@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.search.file.FileDoc;
 import run.ikaros.api.search.file.FileSearchService;
-import run.ikaros.server.core.file.event.FileAddEvent;
 import run.ikaros.server.core.file.event.FileRemoveEvent;
+import run.ikaros.server.core.file.event.FileSaveEvent;
 import run.ikaros.server.store.entity.FileEntity;
 
 @Component
@@ -21,10 +21,10 @@ public class FileEventListener {
     }
 
     /**
-     * {@link FileAddEvent} listener.
+     * {@link FileSaveEvent} listener.
      */
-    @EventListener(FileAddEvent.class)
-    public Mono<Void> handleFileAddEvent(FileAddEvent event) throws Exception {
+    @EventListener(FileSaveEvent.class)
+    public Mono<Void> handleFileAddEvent(FileSaveEvent event) throws Exception {
         FileEntity entity = event.getFileEntity();
         FileDoc fileDoc = FileDocConverter.fromEntity(entity);
         fileSearchService.updateDocument(List.of(fileDoc));
