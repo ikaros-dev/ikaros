@@ -32,6 +32,7 @@ import {
 	ElBreadcrumb,
 	ElBreadcrumbItem,
 	ElPopconfirm,
+	ElMessageBox,
 } from 'element-plus';
 import { computed } from 'vue';
 // import { useRouter } from 'vue-router';
@@ -194,23 +195,70 @@ const onDeleteButtonClick = async () => {
 	} else {
 		needDeteFolderId = folder.value?.id as number;
 	}
-	await apiClient.folder.deleteFolder({
-		id: needDeteFolderId,
-		allowDeleteWhenChildExists: false,
-	});
-	ElMessage.success('删除目录成功, ID：' + needDeteFolderId);
-	if (needDeteFolderId === folder.value?.id) {
-		findFolder.value.parentId = -1;
-		findFolder.value.name = 'root';
-		paths.value = [
+
+	const { data } = await apiClient.folder.findById({ id: needDeteFolderId });
+	var currentNeedDeleteFolder = data;
+
+	console.log('currentNeedDeleteFolder', currentNeedDeleteFolder);
+	if (
+		(currentNeedDeleteFolder.files != undefined &&
+			currentNeedDeleteFolder.files.length > 0) ||
+		(currentNeedDeleteFolder.folders != undefined &&
+			currentNeedDeleteFolder.folders.length > 0)
+	) {
+		ElMessageBox.confirm(
+			'检测到选择的目录内部有文件或者目录，您确认要一起(递归)删除吗? (耗时可能较长)',
+			'Warning',
 			{
-				name: 'root',
-				parentId: -1,
-				id: 0,
-			},
-		];
+				confirmButtonText: '确认',
+				cancelButtonText: '取消',
+				type: 'warning',
+			}
+		)
+			.then(async () => {
+				await apiClient.folder.deleteFolder({
+					id: needDeteFolderId,
+					allowDeleteWhenChildExists: true,
+				});
+				ElMessage.success('删除目录成功, ID：' + needDeteFolderId);
+				if (needDeteFolderId === folder.value?.id) {
+					findFolder.value.parentId = -1;
+					findFolder.value.name = 'root';
+					paths.value = [
+						{
+							name: 'root',
+							parentId: -1,
+							id: 0,
+						},
+					];
+				}
+				fetchFolders();
+			})
+			.catch(() => {
+				ElMessage({
+					type: 'info',
+					message: '删除取消',
+				});
+			});
+	} else {
+		await apiClient.folder.deleteFolder({
+			id: needDeteFolderId,
+			allowDeleteWhenChildExists: false,
+		});
+		ElMessage.success('删除目录成功, ID：' + needDeteFolderId);
+		if (needDeteFolderId === folder.value?.id) {
+			findFolder.value.parentId = -1;
+			findFolder.value.name = 'root';
+			paths.value = [
+				{
+					name: 'root',
+					parentId: -1,
+					id: 0,
+				},
+			];
+		}
+		fetchFolders();
 	}
-	fetchFolders();
 };
 
 const selectFiles = ref<any[]>([]);
