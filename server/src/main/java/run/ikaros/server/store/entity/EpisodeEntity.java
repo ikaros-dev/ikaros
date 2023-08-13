@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import run.ikaros.api.store.enums.EpisodeGroup;
 
 @Data
 @Builder
@@ -28,5 +29,5 @@ public class EpisodeEntity extends BaseEntity {
     private LocalDateTime airTime;
     private Integer sequence;
     @Column("ep_group")
-    private String group;
+    private EpisodeGroup group;
 }

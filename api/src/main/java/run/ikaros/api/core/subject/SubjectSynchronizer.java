@@ -1,6 +1,7 @@
 package run.ikaros.api.core.subject;
 
 import org.pf4j.ExtensionPoint;
+import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 
 public interface SubjectSynchronizer extends ExtensionPoint {
@@ -18,5 +19,14 @@ public interface SubjectSynchronizer extends ExtensionPoint {
      * @return 从平台拉取的数据，进行格式转化。
      * @see Subject
      */
-    Subject pull(String platformId);
+    Mono<Subject> pull(String platformId);
+
+    /**
+     * 根据对应API从对应平台拉取数据并合并到Ikaros已经存在的条目.
+     *
+     * @param subject    已经存在的条目
+     * @param platformId 三方平台的条目ID
+     * @return 更新后的条目对象
+     */
+    Mono<Subject> merge(Subject subject, String platformId);
 }

@@ -17,8 +17,10 @@ import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSynchronizer;
 import run.ikaros.api.exception.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
+import run.ikaros.server.core.subject.emus.SubjectSyncAction;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
+import run.ikaros.server.core.subject.vo.PostSubjectSyncCondition;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
@@ -55,6 +57,49 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
             .switchIfEmpty(syncBySubjectSynchronizer(subjectId, platform, platformId));
     }
 
+    @Override
+    public Mono<Subject> sync(PostSubjectSyncCondition condition) {
+        Assert.notNull(condition, "'condition' must not null.");
+        Long subjectId = condition.getSubjectId();
+        SubjectSyncPlatform platform = condition.getPlatform();
+        String platformId = condition.getPlatformId();
+        SubjectSyncAction action = condition.getSubjectSyncAction();
+
+        if (SubjectSyncAction.PULL.equals(action)) {
+            return sync(subjectId, platform, platformId);
+        }
+
+        Assert.notNull(subjectId, "'subjectId' must not null when action is MERGE.");
+
+        return subjectService.findById(subjectId)
+            .flatMapMany(subject ->
+                Flux.fromStream(extensionComponentsFinder.getExtensions(SubjectSynchronizer.class)
+                    .stream())
+            )
+            .filter(subjectSynchronizer -> platform.equals(subjectSynchronizer.getSyncPlatform()))
+            .collectList()
+            .filter(subjectSynchronizes -> !subjectSynchronizes.isEmpty())
+            .switchIfEmpty(Mono.error(new NoAvailableSubjectPlatformSynchronizerException(
+                "No found available subject platform synchronizer for platform-id: "
+                    + platform.name() + "-" + platformId)))
+            .map(subjectSynchronizes -> subjectSynchronizes.get(0))
+            .flatMap(subjectSynchronizer -> subjectService.findById(subjectId)
+                .flatMap(subject -> subjectSynchronizer.merge(subject, platformId)))
+            .onErrorResume(Exception.class, e -> {
+                String msg =
+                    "Operate has exception "
+                        + "for platform-id: "
+                        + platform.name() + "-" + platformId
+                        + ", plugin exception msg: " + e.getMessage();
+                log.error(msg, e);
+                return Mono.error(new NoAvailableSubjectPlatformSynchronizerException(msg));
+            })
+            .flatMap(subject -> subjectService.update(subject)
+                .then(Mono.defer(() -> subjectService.findById(subjectId))))
+            .subscribeOn(Schedulers.boundedElastic());
+
+    }
+
     private Mono<Subject> syncBySubjectSynchronizer(@Nullable Long subjectId,
                                                     SubjectSyncPlatform platform,
                                                     String platformId) {
@@ -62,13 +107,12 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
                 .stream())
             .filter(subjectSynchronizer -> platform.equals(subjectSynchronizer.getSyncPlatform()))
             .collectList()
-            .filter(subjectSynchronizes -> subjectSynchronizes.size() > 0)
+            .filter(subjectSynchronizes -> !subjectSynchronizes.isEmpty())
             .switchIfEmpty(Mono.error(new NoAvailableSubjectPlatformSynchronizerException(
                 "No found available subject platform synchronizer for platform-id: "
                     + platform.name() + "-" + platformId)))
             .map(subjectSynchronizes -> subjectSynchronizes.get(0))
-            .flatMap(subjectSynchronizer -> Mono.fromCallable(() ->
-                subjectSynchronizer.pull(platformId)))
+            .flatMap(subjectSynchronizer -> subjectSynchronizer.pull(platformId))
             .onErrorResume(Exception.class, e -> {
                 String msg =
                     "Operate has exception "
