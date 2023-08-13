@@ -165,8 +165,9 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 		 * @param {number} [size] 每页条数，默认为10.
 		 * @param {string} [name] 经过Basic64编码的名称，名称字段模糊查询。
 		 * @param {string} [nameCn] 经过Basic64编码的中文名称，中文名称字段模糊查询。
-		 * @param {boolean} [nsfw] Not Safe/Suitable For Work.
-		 * @param {'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER'} [type]
+		 * @param {boolean} [nsfw] Not Safe/Suitable For Work. default is false.
+		 * @param {'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER'} [type] 条目类型E
+		 * @param {boolean} [airTimeDesc] 是否根据放送时间倒序，新番在列表前面。默认为 true.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -177,6 +178,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 			nameCn?: string,
 			nsfw?: boolean,
 			type?: 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER',
+			airTimeDesc?: boolean,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			const localVarPath = `/api/v1alpha1/subjects/condition`;
@@ -225,6 +227,10 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 
 			if (type !== undefined) {
 				localVarQueryParameter['type'] = type;
+			}
+
+			if (airTimeDesc !== undefined) {
+				localVarQueryParameter['airTimeDesc'] = airTimeDesc;
 			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -468,8 +474,9 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 		 * @param {number} [size] 每页条数，默认为10.
 		 * @param {string} [name] 经过Basic64编码的名称，名称字段模糊查询。
 		 * @param {string} [nameCn] 经过Basic64编码的中文名称，中文名称字段模糊查询。
-		 * @param {boolean} [nsfw] Not Safe/Suitable For Work.
-		 * @param {'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER'} [type]
+		 * @param {boolean} [nsfw] Not Safe/Suitable For Work. default is false.
+		 * @param {'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER'} [type] 条目类型E
+		 * @param {boolean} [airTimeDesc] 是否根据放送时间倒序，新番在列表前面。默认为 true.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -480,6 +487,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 			nameCn?: string,
 			nsfw?: boolean,
 			type?: 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER',
+			airTimeDesc?: boolean,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
@@ -492,6 +500,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 					nameCn,
 					nsfw,
 					type,
+					airTimeDesc,
 					options
 				);
 			return createRequestFunction(
@@ -632,6 +641,7 @@ export const V1alpha1SubjectApiFactory = function (
 					requestParameters.nameCn,
 					requestParameters.nsfw,
 					requestParameters.type,
+					requestParameters.airTimeDesc,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -748,14 +758,14 @@ export interface V1alpha1SubjectApiListSubjectsByConditionRequest {
 	readonly nameCn?: string;
 
 	/**
-	 * Not Safe/Suitable For Work.
+	 * Not Safe/Suitable For Work. default is false.
 	 * @type {boolean}
 	 * @memberof V1alpha1SubjectApiListSubjectsByCondition
 	 */
 	readonly nsfw?: boolean;
 
 	/**
-	 *
+	 * 条目类型E
 	 * @type {'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER'}
 	 * @memberof V1alpha1SubjectApiListSubjectsByCondition
 	 */
@@ -767,6 +777,13 @@ export interface V1alpha1SubjectApiListSubjectsByConditionRequest {
 		| 'NOVEL'
 		| 'REAL'
 		| 'OTHER';
+
+	/**
+	 * 是否根据放送时间倒序，新番在列表前面。默认为 true.
+	 * @type {boolean}
+	 * @memberof V1alpha1SubjectApiListSubjectsByCondition
+	 */
+	readonly airTimeDesc?: boolean;
 }
 
 /**
@@ -876,6 +893,7 @@ export class V1alpha1SubjectApi extends BaseAPI {
 				requestParameters.nameCn,
 				requestParameters.nsfw,
 				requestParameters.type,
+				requestParameters.airTimeDesc,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));

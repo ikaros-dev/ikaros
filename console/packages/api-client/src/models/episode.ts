@@ -51,7 +51,7 @@ export interface Episode {
 	 * @type {string}
 	 * @memberof Episode
 	 */
-	group?: string;
+	group?: EpisodeGroupEnum;
 	/**
 	 *
 	 * @type {Array<EpisodeResource>}
@@ -77,3 +77,18 @@ export interface Episode {
 	 */
 	air_time?: string;
 }
+
+export const EpisodeGroupEnum = {
+	Main: 'MAIN',
+	PromotionVideo: 'PROMOTION_VIDEO',
+	OpeningSong: 'OPENING_SONG',
+	EndingSong: 'ENDING_SONG',
+	SpecialPromotion: 'SPECIAL_PROMOTION',
+	SmallTheater: 'SMALL_THEATER',
+	Live: 'LIVE',
+	CommercialMessage: 'COMMERCIAL_MESSAGE',
+	Other: 'OTHER',
+} as const;
+
+export type EpisodeGroupEnum =
+	(typeof EpisodeGroupEnum)[keyof typeof EpisodeGroupEnum];

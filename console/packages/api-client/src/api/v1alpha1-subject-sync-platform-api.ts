@@ -52,6 +52,7 @@ export const V1alpha1SubjectSyncPlatformApiAxiosParamCreator = function (
 		 * @param {'BGM_TV' | 'TMDB' | 'AniDB' | 'TVDB' | 'VNDB' | 'DOU_BAN' | 'OTHER'} platform Platform.
 		 * @param {string} platformId Platform id
 		 * @param {number} [subjectId] Subject id.
+		 * @param {'PULL' | 'MERGE'} [action] Sync action, such as PULL or MERGE, default is PULL PULL will override all subject meta info, MERGE will update meta info that absent.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -66,6 +67,7 @@ export const V1alpha1SubjectSyncPlatformApiAxiosParamCreator = function (
 				| 'OTHER',
 			platformId: string,
 			subjectId?: number,
+			action?: 'PULL' | 'MERGE',
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'platform' is not null or undefined
@@ -108,6 +110,10 @@ export const V1alpha1SubjectSyncPlatformApiAxiosParamCreator = function (
 				localVarQueryParameter['platformId'] = platformId;
 			}
 
+			if (action !== undefined) {
+				localVarQueryParameter['action'] = action;
+			}
+
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
 				baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -140,6 +146,7 @@ export const V1alpha1SubjectSyncPlatformApiFp = function (
 		 * @param {'BGM_TV' | 'TMDB' | 'AniDB' | 'TVDB' | 'VNDB' | 'DOU_BAN' | 'OTHER'} platform Platform.
 		 * @param {string} platformId Platform id
 		 * @param {number} [subjectId] Subject id.
+		 * @param {'PULL' | 'MERGE'} [action] Sync action, such as PULL or MERGE, default is PULL PULL will override all subject meta info, MERGE will update meta info that absent.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -154,6 +161,7 @@ export const V1alpha1SubjectSyncPlatformApiFp = function (
 				| 'OTHER',
 			platformId: string,
 			subjectId?: number,
+			action?: 'PULL' | 'MERGE',
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Subject>
@@ -163,6 +171,7 @@ export const V1alpha1SubjectSyncPlatformApiFp = function (
 					platform,
 					platformId,
 					subjectId,
+					action,
 					options
 				);
 			return createRequestFunction(
@@ -201,6 +210,7 @@ export const V1alpha1SubjectSyncPlatformApiFactory = function (
 					requestParameters.platform,
 					requestParameters.platformId,
 					requestParameters.subjectId,
+					requestParameters.action,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -241,6 +251,13 @@ export interface V1alpha1SubjectSyncPlatformApiSyncSubjectAndPlatformRequest {
 	 * @memberof V1alpha1SubjectSyncPlatformApiSyncSubjectAndPlatform
 	 */
 	readonly subjectId?: number;
+
+	/**
+	 * Sync action, such as PULL or MERGE, default is PULL PULL will override all subject meta info, MERGE will update meta info that absent.
+	 * @type {'PULL' | 'MERGE'}
+	 * @memberof V1alpha1SubjectSyncPlatformApiSyncSubjectAndPlatform
+	 */
+	readonly action?: 'PULL' | 'MERGE';
 }
 
 /**
@@ -266,6 +283,7 @@ export class V1alpha1SubjectSyncPlatformApi extends BaseAPI {
 				requestParameters.platform,
 				requestParameters.platformId,
 				requestParameters.subjectId,
+				requestParameters.action,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));
