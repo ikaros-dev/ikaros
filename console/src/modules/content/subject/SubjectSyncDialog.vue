@@ -17,15 +17,21 @@ import {
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
+		isMerge?: boolean;
+		defineSubjectId?: number;
 	}>(),
 	{
 		visible: false,
+		isMerge: false,
+		defineSubjectId: undefined,
 	}
 );
 
 const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
+	// eslint-disable-next-line no-unused-vars
+	(event: 'update:defineSubjectId', defineSubjectId: number): void;
 	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 	// eslint-disable-next-line no-unused-vars
@@ -41,10 +47,20 @@ const dialogVisible = computed({
 	},
 });
 
+const subjectId = computed({
+	get() {
+		return props.defineSubjectId;
+	},
+	set(value) {
+		emit('update:defineSubjectId', value as number);
+	},
+});
+
 const subjectSync = ref({
 	platform: '',
 	platformId: '',
 	subjectId: undefined,
+	action: props.isMerge ? 'MERGE' : 'PULL',
 });
 
 const subjectPlatformArr = ref<string[]>([]);
@@ -61,11 +77,15 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 		await formEl.validate(async (valid, fields) => {
 			if (valid) {
 				syncButtonLoading.value = true;
+				console.log('subjectSync', subjectSync.value);
 				const { data } = await apiClient.subjectSyncPlatform
 					.syncSubjectAndPlatform({
 						// @ts-ignore
 						platform: subjectSync.value.platform,
 						platformId: subjectSync.value.platformId,
+						// @ts-ignore
+						action: subjectSync.value.action,
+						subjectId: subjectId.value,
 					})
 					.finally(() => {
 						syncButtonLoading.value = false;
@@ -115,7 +135,10 @@ onMounted(() => {
 </script>
 
 <template>
-	<el-dialog v-model="dialogVisible" title="条目同步">
+	<el-dialog
+		v-model="dialogVisible"
+		:title="props.isMerge ? '条目更新' : '条目拉取'"
+	>
 		<el-form
 			v-if="subjectPlatformArr.length > 0"
 			ref="subjectSyncFormRef"

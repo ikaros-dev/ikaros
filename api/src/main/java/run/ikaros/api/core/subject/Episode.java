@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import run.ikaros.api.store.enums.EpisodeGroup;
 
 @Data
 @Builder
@@ -25,7 +26,7 @@ public class Episode {
     @JsonProperty("air_time")
     private LocalDateTime airTime;
     private Integer sequence;
-    private String group;
+    private EpisodeGroup group;
 
     private List<EpisodeResource> resources;
 }

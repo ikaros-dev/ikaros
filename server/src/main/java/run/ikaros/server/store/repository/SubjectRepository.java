@@ -14,6 +14,8 @@ public interface SubjectRepository extends R2dbcRepository<SubjectEntity, Long> 
 
     Flux<SubjectEntity> findAllBy(Pageable pageable);
 
+    Flux<SubjectEntity> findAllByOrderByAirTimeDesc(Pageable pageable);
+
     Flux<SubjectEntity> findAllByNsfw(Boolean nsfw, Pageable pageable);
 
     Mono<Long> countAllByNsfw(Boolean nsfw);

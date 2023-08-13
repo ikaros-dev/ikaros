@@ -140,7 +140,7 @@ class SubjectServiceTest {
         episodes.add(Episode.builder()
             .airTime(LocalDateTime.now())
             .sequence(1)
-            .group(EpisodeGroup.MAIN.name())
+            .group(EpisodeGroup.MAIN)
             .name("ep-01")
             .nameCn("第一集").build());
         subject.setEpisodes(episodes)
@@ -179,7 +179,7 @@ class SubjectServiceTest {
         Episode addEpisode = Episode.builder()
             .airTime(LocalDateTime.now())
             .sequence(10)
-            .group(EpisodeGroup.MAIN.name())
+            .group(EpisodeGroup.MAIN)
             .name("ep-02")
             .nameCn("第二集").build();
         List<Episode> episodes = subject.getEpisodes();

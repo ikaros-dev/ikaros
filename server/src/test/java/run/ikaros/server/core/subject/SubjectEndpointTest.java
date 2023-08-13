@@ -104,7 +104,7 @@ class SubjectEndpointTest {
             .airTime(LocalDateTime.now())
             .name("ep-01")
             .nameCn("第一集")
-            .group(EpisodeGroup.MAIN.name())
+            .group(EpisodeGroup.MAIN)
             .build());
         subject.setEpisodes(episodes)
             .setTotalEpisodes((long) episodes.size());

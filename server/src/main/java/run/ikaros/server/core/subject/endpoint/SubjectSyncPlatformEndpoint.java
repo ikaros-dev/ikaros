@@ -18,7 +18,9 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.exception.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
+import run.ikaros.server.core.subject.emus.SubjectSyncAction;
 import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
+import run.ikaros.server.core.subject.vo.PostSubjectSyncCondition;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -56,6 +58,13 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
                         .description("Platform id")
                         .required(true)
                         .implementation(String.class))
+                    .parameter(parameterBuilder()
+                        .name("action")
+                        .description("Sync action, such as PULL or MERGE, "
+                            + "default is PULL "
+                            + "PULL will override all subject meta info, "
+                            + "MERGE will update meta info that absent.")
+                        .implementation(SubjectSyncAction.class))
                     .response(Builder.responseBuilder()
                         .implementation(Subject.class))
             )
@@ -66,15 +75,27 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
         Optional<String> subjectIdOp = request.queryParam("subjectId");
         Long subjectId = subjectIdOp.isPresent() && StringUtils.hasText(subjectIdOp.get())
             ? Long.valueOf(subjectIdOp.get()) : null;
+
         Optional<String> platformOp = request.queryParam("platform");
         Assert.isTrue(platformOp.isPresent() && StringUtils.hasText(platformOp.get()),
             "'platform' must not blank and belong of SubjectSyncPlatform.");
         SubjectSyncPlatform platform = SubjectSyncPlatform.valueOf(platformOp.get());
+
         Optional<String> platformIdOp = request.queryParam("platformId");
         Assert.isTrue(platformIdOp.isPresent() && StringUtils.hasText(platformIdOp.get()),
             "'platformId' must has text.");
         String platformId = platformIdOp.get();
-        return service.sync(subjectId, platform, platformId)
+
+        Optional<String> actionOp = request.queryParam("action");
+        SubjectSyncAction subjectSyncAction =
+            SubjectSyncAction.valueOf(actionOp.orElse(SubjectSyncAction.PULL.name()));
+
+        PostSubjectSyncCondition condition = PostSubjectSyncCondition.builder()
+            .subjectId(subjectId).platform(platform)
+            .platformId(platformId).subjectSyncAction(subjectSyncAction)
+            .build();
+
+        return service.sync(condition)
             .flatMap(subject -> ServerResponse.ok().bodyValue(subject))
             .onErrorResume(NoAvailableSubjectPlatformSynchronizerException.class,
                 err -> ServerResponse.status(HttpStatus.SERVICE_UNAVAILABLE)

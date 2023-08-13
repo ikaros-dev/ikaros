@@ -18,7 +18,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.data.relational.core.query.Update;
 import org.springframework.data.relational.core.sql.SqlIdentifier;
@@ -33,6 +35,7 @@ import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.core.subject.Subtitle;
 import run.ikaros.api.exception.NotFoundException;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -385,7 +388,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         Assert.isTrue(pagingWrap.getSize() > 0, "'pagingWrap' size must gt 0");
         return Mono.just(pagingWrap)
             .flatMap(pagingWrap1 ->
-                subjectRepository.findAllBy(
+                subjectRepository.findAllByOrderByAirTimeDesc(
                         PageRequest.of(pagingWrap1.getPage() - 1, pagingWrap1.getSize()))
                     .map(BaseEntity::getId)
                     .flatMap(this::findById)
@@ -399,6 +402,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     @Override
     public Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition) {
         Assert.notNull(condition, "'condition' must not null.");
+        condition.initDefaultIfNull();
         Integer page = condition.getPage();
         Integer size = condition.getSize();
         String name = condition.getName();
@@ -407,128 +411,31 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         String nameCnLike = "%" + nameCn + "%";
         Boolean nsfw = condition.getNsfw();
         SubjectType type = condition.getType();
+        final Boolean airTimeDesc = condition.getAirTimeDesc();
 
-        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        final PageRequest pageRequest = PageRequest.of(page - 1, size);
 
-        Flux<SubjectEntity> subjectEntityFlux;
-        Mono<Long> countMono;
-        // todo 使用 R2dbcEntityTemplate 进行动态拼接
-        if (name == null) {
-            if (nameCn == null) {
-                if (type == null) {
-                    if (nsfw == null) {
-                        subjectEntityFlux = subjectRepository.findAllBy(pageRequest);
-                        countMono = subjectRepository.count();
-                    } else {
-                        subjectEntityFlux = subjectRepository.findAllByNsfw(nsfw, pageRequest);
-                        countMono = subjectRepository.countAllByNsfw(nsfw);
-                    }
-                } else {
-                    if (nsfw == null) {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByType(type, pageRequest);
-                        countMono = subjectRepository.countAllByType(type);
-                    } else {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNsfwAndType(nsfw, type,
-                                pageRequest);
-                        countMono = subjectRepository.countAllByNsfwAndType(nsfw, type);
-                    }
-                }
-            } else {
-                if (type == null) {
-                    if (nsfw == null) {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNameCnLike(nameCnLike, pageRequest);
-                        countMono = subjectRepository.countAllByNameCnLike(nameCnLike);
-                    } else {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNsfwAndNameCnLike(nsfw, nameCnLike,
-                                pageRequest);
-                        countMono = subjectRepository.countAllByNsfwAndNameCnLike(nsfw, nameCnLike);
-                    }
-                } else {
-                    if (nsfw == null) {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNameCnLikeAndType(nameCnLike, type,
-                                pageRequest);
-                        countMono = subjectRepository.countAllByNameCnLikeAndType(nameCnLike,
-                            type);
-                    } else {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNsfwAndNameCnLikeAndType(nsfw, nameCnLike,
-                                type, pageRequest);
-                        countMono =
-                            subjectRepository.countAllByNsfwAndNameCnLikeAndType(nsfw, nameCnLike,
-                                type);
-                    }
-                }
-            }
-        } else {
-            if (nameCn == null) {
-                if (type == null) {
-                    if (nsfw == null) {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNameLike(nameLike, pageRequest);
-                        countMono =
-                            subjectRepository.countAllByNameLike(nameLike);
-                    } else {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNsfwAndNameLike(nsfw, nameLike, pageRequest);
-                        countMono =
-                            subjectRepository.countAllByNsfwAndNameLike(nsfw, nameLike);
-                    }
-                } else {
-                    if (nsfw == null) {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNameLikeAndType(nameLike, type,
-                                pageRequest);
-                        countMono =
-                            subjectRepository.countAllByNameLikeAndType(nameLike, type);
-                    } else {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNsfwAndNameLikeAndType(nsfw, nameLike,
-                                type, pageRequest);
-                        countMono =
-                            subjectRepository.countAllByNsfwAndNameLikeAndType(nsfw, nameLike,
-                                type);
-                    }
-                }
-            } else {
-                if (type == null) {
-                    if (nsfw == null) {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNameLikeAndNameCnLike(nameLike, nameCnLike,
-                                pageRequest);
-                        countMono =
-                            subjectRepository.countAllByNameLikeAndNameCnLike(nameLike, nameCnLike);
-                    } else {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNsfwAndNameLikeAndNameCnLike(nsfw, nameLike,
-                                nameCnLike, pageRequest);
-                        countMono =
-                            subjectRepository.countAllByNsfwAndNameLikeAndNameCnLike(nsfw, nameLike,
-                                nameCnLike);
-                    }
-                } else {
-                    if (nsfw == null) {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNameLikeAndNameCnLikeAndType(nameLike,
-                                nameCnLike, type, pageRequest);
-                        countMono =
-                            subjectRepository.countAllByNameLikeAndNameCnLikeAndType(nameLike,
-                                nameCnLike, type);
-                    } else {
-                        subjectEntityFlux =
-                            subjectRepository.findAllByNsfwAndNameLikeAndNameCnLikeAndType(nsfw,
-                                nameLike, nameCnLike, type, pageRequest);
-                        countMono =
-                            subjectRepository.countAllByNsfwAndNameLikeAndNameCnLikeAndType(nsfw,
-                                nameLike, nameCnLike, type);
-                    }
-                }
-            }
+        Criteria criteria =
+            Criteria.where("nsfw").is(nsfw);
+
+        if (StringUtils.isNotBlank(name)) {
+            criteria = criteria.and("name").like(nameLike);
         }
+        if (StringUtils.isNotBlank(nameCn)) {
+            criteria = criteria.and("name_cn").like(nameCnLike);
+        }
+        if (!Objects.isNull(type)) {
+            criteria = criteria.and("type").is(type);
+        }
+
+        Query query = Query.query(criteria)
+            .sort(Sort.by(airTimeDesc
+                ? Sort.Order.desc("air_time")
+                : Sort.Order.asc("air_time")))
+            .with(pageRequest);
+
+        Flux<SubjectEntity> subjectEntityFlux = template.select(query, SubjectEntity.class);
+        Mono<Long> countMono = template.count(query, SubjectEntity.class);
 
         return subjectEntityFlux.map(BaseEntity::getId)
             .flatMap(this::findById)
