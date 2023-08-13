@@ -211,8 +211,11 @@ const onCloseWithFileIdArr = async (fileIds) => {
 };
 
 const subjectSyncDialogVisible = ref(false);
+const openSubjectSyncDialog = () => {
+	subjectSyncDialogVisible.value = true;
+};
 const onSubjectSyncDialogCloseWithSubjectName = () => {
-	ElMessage.success('请求同步条目信息成功');
+	ElMessage.success('请求更新条目信息成功');
 	fetchSubjectById();
 };
 
@@ -271,6 +274,8 @@ onMounted(() => {
 	/>
 	<SubjectSyncDialog
 		v-model:visible="subjectSyncDialogVisible"
+		:define-subject-id="subject.id"
+		:is-merge="true"
 		@closeWithSubjectName="onSubjectSyncDialogCloseWithSubjectName"
 	/>
 
@@ -291,6 +296,7 @@ onMounted(() => {
 	<el-row>
 		<el-col :span="24">
 			<el-button plain @click="toSubjectPut"> 编辑</el-button>
+			<el-button plain @click="openSubjectSyncDialog"> 更新</el-button>
 			<el-popconfirm title="您确定要删除该条目吗？" @confirm="deleteSubject">
 				<template #reference>
 					<el-button plain type="danger"> 删除</el-button>

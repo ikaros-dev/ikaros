@@ -69,7 +69,8 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
             return sync(subjectId, platform, platformId);
         }
 
-        Assert.notNull(subjectId, "'subjectId' must not null when action is MERGE.");
+        Assert.isTrue(subjectId > 0,
+            "'subjectId' must not null and gt 0 when action is MERGE.");
 
         return subjectService.findById(subjectId)
             .flatMapMany(subject ->

@@ -35,8 +35,8 @@ importers:
         specifier: ^0.11.0
         version: 0.11.0(vue-i18n@9.2.2)
       '@runikaros/api-client':
-        specifier: ^0.4.1
-        version: 0.4.1
+        specifier: ^0.6.0
+        version: 0.6.0
       '@runikaros/shared':
         specifier: ^0.0.4
         version: 0.0.4(vue-router@4.2.1)(vue@3.2.47)
@@ -1356,8 +1356,8 @@ packages:
       estree-walker: 2.0.2
       picomatch: 2.3.1
 
-  /@runikaros/api-client@0.4.1:
-    resolution: {integrity: sha512-5XGDWXyiF/m19C3QxuzdJ3QeBIS3QOWFtDXqt7+lEefj6yn7bxFePoPj99F5eG+zMn9bQRDX5NWNBSuxh6xycg==}
+  /@runikaros/api-client@0.6.0:
+    resolution: {integrity: sha512-8fsrNKMDsDb7scmlNSkjI4365oEey4YLVJMSznWoEHoniEaQi2OInnvshAaZe8/g+RxCtCJgJd7M4mcsCF/MPA==}
     dev: false
 
   /@runikaros/shared@0.0.4(vue-router@4.2.1)(vue@3.2.47):
