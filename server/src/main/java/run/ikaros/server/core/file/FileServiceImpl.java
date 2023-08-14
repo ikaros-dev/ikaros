@@ -295,7 +295,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .url(path2url(path.toString(), ikarosProperties.getWorkDir().toString()))
                 .name(fileName)
                 .fsPath(path.toString())
-                .md5(FileUtils.calculateFileHash(dataBufferFlux))
+                // .md5(FileUtils.calculateFileHash(dataBufferFlux))
                 .canRead(true)
                 .updateTime(LocalDateTime.now())
                 .build())
