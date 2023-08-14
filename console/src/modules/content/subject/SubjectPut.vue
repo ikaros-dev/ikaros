@@ -98,7 +98,16 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 				})
 				.then(() => {
 					ElMessage.success('更新成功条目：' + subject.value.name);
-					router.push('/subjects');
+					router.push(
+						'/subjects?name=' +
+							subject.value.name +
+							'&nameCn=' +
+							subject.value.name_cn +
+							'&nsfw=' +
+							subject.value.nsfw +
+							'&type=' +
+							subject.value.type
+					);
 				});
 		} else {
 			console.log('error submit!', fields);

@@ -21,20 +21,16 @@ public class PluginPropertiesEnablesInitListener {
     private final IkarosPluginManager ikarosPluginManager;
     private final PluginProperties pluginProperties;
     private final ReactiveCustomClient reactiveCustomClient;
-    private final PluginStateChangedListener pluginStateChangedListener;
 
     /**
      * Construct.
      */
     public PluginPropertiesEnablesInitListener(IkarosPluginManager ikarosPluginManager,
                                                PluginProperties pluginProperties,
-                                               ReactiveCustomClient reactiveCustomClient,
-                                               PluginStateChangedListener
-                                                   pluginStateChangedListener) {
+                                               ReactiveCustomClient reactiveCustomClient) {
         this.ikarosPluginManager = ikarosPluginManager;
         this.pluginProperties = pluginProperties;
         this.reactiveCustomClient = reactiveCustomClient;
-        this.pluginStateChangedListener = pluginStateChangedListener;
     }
 
     /**
@@ -73,8 +69,10 @@ public class PluginPropertiesEnablesInitListener {
             ikarosPluginManager.getPlugins().stream()
                 .filter(
                     pluginWrapper -> PluginState.RESOLVED.equals(pluginWrapper.getPluginState()))
-                .forEach(
-                    pluginWrapper -> ikarosPluginManager.startPlugin(pluginWrapper.getPluginId()));
+                .map(PluginWrapper::getPluginId)
+                .forEach(pluginId -> reactiveCustomClient.findOne(Plugin.class, pluginId)
+                    .filter(plugin -> PluginState.DISABLED != plugin.getState())
+                    .subscribe(plugin -> ikarosPluginManager.startPlugin(plugin.getName())));
         }
 
         // Sync plugin records for manager and database.
@@ -101,6 +99,10 @@ public class PluginPropertiesEnablesInitListener {
             .flatMap(plugin -> reactiveCustomClient.delete(ConfigMap.class, plugin.getName())
                 .onErrorResume(NotFoundException.class, e -> Mono.empty()))
             .checkpoint("RemoveDatabasePluginThatManagerNone.")
+
+            .thenMany(reactiveCustomClient.findAll(Plugin.class, null))
+            .filter(plugin -> PluginState.DISABLED == plugin.getState())
+            .map(plugin -> ikarosPluginManager.disablePlugin(plugin.getName()))
             .then();
     }
 

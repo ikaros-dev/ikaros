@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
+import run.ikaros.api.infra.exception.plugin.PluginDisabledException;
 import run.ikaros.server.plugin.event.IkarosPluginDeleteEvent;
 
 /**
@@ -167,7 +168,15 @@ public class IkarosPluginManager extends DefaultPluginManager
         for (PluginWrapper pluginWrapper : resolvedPlugins) {
             // checkExtensionFinderReady(pluginWrapper);
             PluginState pluginState = pluginWrapper.getPluginState();
-            if ((PluginState.DISABLED != pluginState) && (PluginState.STARTED != pluginState)) {
+
+            if (PluginState.DISABLED == pluginState) {
+                // not allow start when plugin has disabled.
+                throw new PluginDisabledException("Not allow start "
+                    + "when plugin has disabled for id = " + pluginWrapper.getPluginId()
+                    + " ,you need enable before start.");
+            }
+
+            if (PluginState.STARTED != pluginState) {
                 try {
                     log.info("Start plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
                     // inject bean
@@ -226,10 +235,14 @@ public class IkarosPluginManager extends DefaultPluginManager
         }
 
         if (PluginState.DISABLED == pluginState) {
+            // not allow start when plugin has disabled.
+            throw new PluginDisabledException("Not allow start "
+                + "when plugin has disabled for id = " + pluginWrapper.getPluginId()
+                + " ,you need enable before start.");
             // automatically enable plugin on manual plugin start
-            if (!enablePlugin(pluginId)) {
-                return pluginState;
-            }
+            // if (!enablePlugin(pluginId)) {
+            //     return pluginState;
+            // }
         }
 
         for (PluginDependency dependency : pluginDescriptor.getDependencies()) {
@@ -391,5 +404,40 @@ public class IkarosPluginManager extends DefaultPluginManager
     @Override
     protected void resolvePlugins() {
         super.resolvePlugins();
+    }
+
+    @Override
+    public boolean disablePlugin(String pluginId) {
+        checkPluginId(pluginId);
+
+        PluginWrapper pluginWrapper = getPlugin(pluginId);
+        PluginDescriptor pluginDescriptor = pluginWrapper.getDescriptor();
+        PluginState pluginState = pluginWrapper.getPluginState();
+        if (PluginState.DISABLED == pluginState) {
+            firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, PluginState.DISABLED));
+            log.debug("Already disabled plugin '{}'", getPluginLabel(pluginDescriptor));
+            return true;
+        }
+
+        if (PluginState.RESOLVED == pluginState) {
+            pluginWrapper.setPluginState(PluginState.DISABLED);
+            firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, PluginState.RESOLVED));
+            log.info("Disabled plugin '{}'", getPluginLabel(pluginDescriptor));
+            return true;
+        }
+
+
+        if (PluginState.STOPPED == stopPlugin(pluginId)) {
+            pluginWrapper.setPluginState(PluginState.DISABLED);
+
+            firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, PluginState.STOPPED));
+
+            pluginStatusProvider.disablePlugin(pluginId);
+            log.info("Disabled plugin '{}'", getPluginLabel(pluginDescriptor));
+
+            return true;
+        }
+
+        return false;
     }
 }

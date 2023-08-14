@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.infra.exception.NotFoundException;
-import run.ikaros.api.infra.exception.plugin.PluginInstallRuntimeException;
+import run.ikaros.api.infra.exception.plugin.PluginInstallException;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.plugin.IkarosPluginManager;
 
@@ -108,7 +108,7 @@ public class PluginServiceImpl implements PluginService {
                     log.debug("Load plugin by path success, pluginId: [{}].", pluginId))
                 .then();
         } catch (Exception e) {
-            throw new PluginInstallRuntimeException(e);
+            throw new PluginInstallException(e);
         }
     }
 }
