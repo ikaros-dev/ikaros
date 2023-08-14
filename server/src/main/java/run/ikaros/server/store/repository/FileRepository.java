@@ -34,5 +34,6 @@ public interface FileRepository extends R2dbcRepository<FileEntity, Long> {
 
     Mono<Boolean> existsByMd5(String md5);
 
+    Mono<Boolean> existsByFolderIdAndName(Long folderId, String name);
 
 }

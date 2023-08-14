@@ -413,6 +413,13 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 new run.ikaros.api.core.file.File()));
     }
 
+    @Override
+    public Mono<Boolean> existsByFolderIdAndFileName(Long folderId, String fileName) {
+        Assert.isTrue(folderId >= 0, "'folderId' must >= 0");
+        Assert.hasText(fileName, "'fileName' must has text.");
+        return fileRepository.existsByFolderIdAndName(folderId, fileName);
+    }
+
 
     private static Mono<Path> writeToImportPath(Flux<DataBuffer> dataBufferFlux,
                                                 Path importPath) {

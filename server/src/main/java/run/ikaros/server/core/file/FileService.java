@@ -43,4 +43,6 @@ public interface FileService {
     Mono<Void> pullRemoteBatch(List<Long> fileIds, String remote);
 
     Mono<File> updateFolder(Long id, Long folderId);
+
+    Mono<Boolean> existsByFolderIdAndFileName(Long folderId, String fileName);
 }
