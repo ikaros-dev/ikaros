@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { Subject } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import { base64Encode } from '@/utils/string-util';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import {
 	ElRow,
 	ElCol,
@@ -19,15 +19,60 @@ import {
 } from 'element-plus';
 
 const router = useRouter();
+const route = useRoute();
 
-const findSubjectsCondition = ref({
+const fetchSubjectByRouterQuery = () => {
+	// console.log('route.query', route.query);
+
+	if (route.query.name !== undefined) {
+		findSubjectsCondition.value.name = route.query.name as string;
+	}
+
+	if (route.query.nameCn !== undefined) {
+		findSubjectsCondition.value.nameCn = route.query.nameCn as string;
+	}
+
+	if (route.query.nsfw !== undefined) {
+		findSubjectsCondition.value.nsfw = route.query.nsfw as unknown as boolean;
+	}
+
+	if (route.query.type !== undefined) {
+		findSubjectsCondition.value.type = route.query.type as
+			| 'ANIME'
+			| 'COMIC'
+			| 'GAME'
+			| 'MUSIC'
+			| 'NOVEL'
+			| 'REAL'
+			| 'OTHER';
+	}
+
+	// console.log('findSubjectsCondition', findSubjectsCondition.value);
+	fetchSubjects();
+};
+
+watch(route, () => {
+	fetchSubjectByRouterQuery();
+});
+
+interface SubjectsCondition {
+	page: number;
+	size: number;
+	total: number;
+	name: string;
+	nameCn: string;
+	nsfw: boolean;
+	type?: 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER';
+}
+
+const findSubjectsCondition = ref<SubjectsCondition>({
 	page: 1,
 	size: 10,
 	total: 10,
 	name: '',
 	nameCn: '',
-	nsfw: undefined,
-	type: undefined,
+	nsfw: false,
+	type: 'ANIME',
 });
 
 const toSubjectPost = () => {
@@ -57,7 +102,7 @@ const onSubjectSyncDialogCloseWithSubjectName = (subjectName: string) => {
 	fetchSubjects();
 };
 
-onMounted(fetchSubjects);
+onMounted(fetchSubjectByRouterQuery);
 </script>
 
 <template>
