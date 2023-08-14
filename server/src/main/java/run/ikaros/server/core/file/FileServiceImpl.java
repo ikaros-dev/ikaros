@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -36,7 +37,9 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.constant.FileConst;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.file.FileExistsException;
+import run.ikaros.api.infra.exception.file.FolderNotFoundException;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.SystemVarUtils;
@@ -50,6 +53,7 @@ import run.ikaros.server.core.file.task.FilePush2RemoteTask;
 import run.ikaros.server.core.task.TaskService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.FileEntity;
+import run.ikaros.server.store.entity.FolderEntity;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.FileRemoteRepository;
@@ -141,20 +145,10 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             }
             tempChunkFileCacheDir.delete();
 
-            // save to database.
-            String reactiveUrl = path2url(filePath, workDir.toString());
-            var fileEntity = FileEntity.builder()
-                .md5(FileUtils.checksum2Str(bytes, FileUtils.Hash.MD5))
-                .url(reactiveUrl)
-                .name(uploadName)
-                .size(uploadLength)
-                .type(FileUtils.parseTypeByPostfix(postfix))
-                .fsPath(filePath)
-                .canRead(true)
-                .updateTime(LocalDateTime.now())
-                .folderId(FileConst.DEFAULT_FOLDER_ID)
-                .build();
-            return save(fileEntity).then();
+            File file = new File(filePath);
+            Flux<DataBuffer> dataBufferFlux = FileUtils.convertToDataBufferFlux(file);
+
+            return upload(uploadName, dataBufferFlux).then();
         }
         return Mono.empty();
     }
@@ -283,36 +277,131 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
     @Override
     public Mono<run.ikaros.api.core.file.File> upload(String fileName,
                                                       Flux<DataBuffer> dataBufferFlux) {
-        Assert.notNull(dataBufferFlux, "'dataBufferFlux' must not null.");
-        Assert.hasText(fileName, "'fileName' must has text.");
+        return upload(fileName, true, dataBufferFlux);
+    }
 
-        return Mono.just(FileUtils.buildAppUploadFilePath(ikarosProperties.getWorkDir().toString(),
-                FileUtils.parseFilePostfix(fileName)))
-            .flatMap(path -> writeToImportPath(dataBufferFlux, Path.of(path)))
-            .map(path -> FileEntity.builder()
+    @Override
+    public Mono<run.ikaros.api.core.file.File> upload(String fileName, Boolean isAutoReName,
+                                                      Flux<DataBuffer> dataBufferFlux) {
+        LocalDateTime now = LocalDateTime.now();
+        String year = String.valueOf(now.getYear());
+        String month = String.valueOf(now.getMonth().getValue());
+        String day = String.valueOf(now.getDayOfMonth());
+
+
+        // create default upload folder if not exists
+        return folderRepository.findByNameAndParentId(FileConst.DEFAULT_UPLOAD_FOLDER_NAME,
+                FileConst.DEFAULT_FOLDER_ROOT_ID)
+            .switchIfEmpty(folderRepository.save(FolderEntity.builder()
+                .parentId(FileConst.DEFAULT_FOLDER_ROOT_ID)
+                .name(FileConst.DEFAULT_UPLOAD_FOLDER_NAME)
+                .updateTime(now)
+                .build()))
+            .map(FolderEntity::getId)
+
+            // create sub folder by year
+            .flatMap(parentFolderId -> folderRepository.findByNameAndParentId(
+                    year, parentFolderId)
+                .switchIfEmpty(folderRepository.save(FolderEntity.builder()
+                    .parentId(parentFolderId)
+                    .name(year)
+                    .updateTime(now)
+                    .build()))
+                .map(FolderEntity::getId)
+            )
+
+            // create sub folder by month
+            .flatMap(parentFolderId -> folderRepository.findByNameAndParentId(
+                    month, parentFolderId)
+                .switchIfEmpty(folderRepository.save(FolderEntity.builder()
+                    .parentId(parentFolderId)
+                    .name(month)
+                    .updateTime(now)
+                    .build()))
+                .map(FolderEntity::getId)
+            )
+
+            // create sub folder by day
+            .flatMap(parentFolderId -> folderRepository.findByNameAndParentId(
+                    day, parentFolderId)
+                .switchIfEmpty(folderRepository.save(FolderEntity.builder()
+                    .parentId(parentFolderId)
+                    .name(day)
+                    .updateTime(now)
+                    .build()))
+                .map(FolderEntity::getId)
+            )
+
+            // upload file to folder
+            .flatMap(folderId -> upload(folderId, fileName, isAutoReName, dataBufferFlux))
+            ;
+
+    }
+
+    @Override
+    public Mono<run.ikaros.api.core.file.File> upload(Long folderId, String fileName,
+                                                      Boolean isAutoReName,
+                                                      Flux<DataBuffer> dataBufferFlux)
+        throws FolderNotFoundException, FileExistsException {
+        Assert.isTrue(folderId >= 0, "'folderId' must >= 0");
+        Assert.hasText(fileName, "'fileName' must has text");
+        Assert.notNull(dataBufferFlux, "'dataBufferFlux' must not null");
+        if (Objects.isNull(isAutoReName)) {
+            isAutoReName = true;
+        }
+
+        // build file upload path
+        String uploadFilePath =
+            FileUtils.buildAppUploadFilePath(ikarosProperties.getWorkDir().toString(),
+                FileUtils.parseFilePostfix(fileName));
+
+        // check folder is exists
+        Boolean finalIsAutoReName = isAutoReName;
+        return folderRepository.existsById(folderId)
+            .filter(exists -> exists)
+            .switchIfEmpty(
+                Mono.error(new FolderNotFoundException("folder not found for id: " + folderId)))
+            // check file folder_id and name has exists
+            .then(fileRepository.existsByFolderIdAndName(folderId, fileName))
+            .filter(exists -> !exists)
+            .map(exists -> fileName)
+            .switchIfEmpty(Mono.just(fileName)
+                .<String>handle((name, sink) -> {
+                    if (finalIsAutoReName) {
+                        name = FileUtils.parseFileNameWithoutPostfix(name)
+                            + " - " + UUID.randomUUID().toString().replace("-", "")
+                            + "."
+                            + FileUtils.parseFilePostfix(name);
+                        sink.next(name);
+                    } else {
+                        sink.error(new FileExistsException(
+                            "current file has exists for folder id: " + folderId
+                                + " fileName: " + fileName));
+                    }
+                }))
+
+            // build file entity
+            .map(newFileName -> FileEntity.builder()
                 .folderId(FileConst.DEFAULT_FOLDER_ID)
                 .type(FileUtils.parseTypeByPostfix(FileUtils.parseFilePostfix(fileName)))
-                .url(path2url(path.toString(), ikarosProperties.getWorkDir().toString()))
-                .name(fileName)
-                .fsPath(path.toString())
-                // .md5(FileUtils.calculateFileHash(dataBufferFlux))
+                .url(path2url(uploadFilePath, ikarosProperties.getWorkDir().toString()))
+                .name(newFileName)
+                .fsPath(uploadFilePath)
+                .folderId(folderId)
                 .canRead(true)
                 .updateTime(LocalDateTime.now())
                 .build())
-            .publishOn(Schedulers.boundedElastic())
-            .<FileEntity>handle((fileEntity, sink) -> {
-                try {
-                    long size = Files.size(Path.of(fileEntity.getFsPath()));
-                    fileEntity.setSize(size);
-                } catch (IOException e) {
-                    sink.error(new RuntimeException(e));
-                    return;
-                }
-                sink.next(fileEntity);
-            })
+
+            // upload file to server path
+            .flatMap(fileEntity -> writeToImportPath(dataBufferFlux, Path.of(uploadFilePath))
+                .publishOn(Schedulers.boundedElastic())
+                .map(path -> fileEntity))
+
+            // save file entity to database
             .flatMap(this::save)
             .flatMap(fileEntity -> copyProperties(fileEntity,
-                new run.ikaros.api.core.file.File()));
+                new run.ikaros.api.core.file.File()))
+            ;
     }
 
     private Mono<Void> pushRemote(FileEntity fileEntity, String remote) {
@@ -514,7 +603,7 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
             }
         }
 
-        log.debug("Merging all chunk files success, absolute path: {}", absolutePath);
+        log.info("Merging all chunk files success, absolute path: {}", absolutePath);
         return absolutePath;
     }
 

@@ -20,7 +20,7 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.custom.Custom;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;

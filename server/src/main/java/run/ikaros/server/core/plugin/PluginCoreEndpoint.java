@@ -23,7 +23,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Component

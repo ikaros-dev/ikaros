@@ -20,6 +20,8 @@ public interface FileOperate extends AllowPluginOperate {
 
     Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux);
 
+    Mono<File> upload(String fileName, Boolean isAutoReName, Flux<DataBuffer> dataBufferFlux);
+
 
     Mono<Boolean> existsByFolderIdAndFileName(Long folderId, String fileName);
 

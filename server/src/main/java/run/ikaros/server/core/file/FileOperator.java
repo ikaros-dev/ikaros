@@ -73,6 +73,12 @@ public class FileOperator implements FileOperate {
     }
 
     @Override
+    public Mono<File> upload(String fileName, Boolean isAutoReName,
+                             Flux<DataBuffer> dataBufferFlux) {
+        return fileService.upload(fileName, isAutoReName, dataBufferFlux);
+    }
+
+    @Override
     public Mono<Boolean> existsByFolderIdAndFileName(Long folderId, String fileName) {
         return fileService.existsByFolderIdAndFileName(folderId, fileName);
     }

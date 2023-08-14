@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.plugin.custom.Plugin;
 import run.ikaros.server.plugin.IkarosPluginDescriptor;

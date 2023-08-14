@@ -7,6 +7,8 @@ import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.file.File;
+import run.ikaros.api.infra.exception.file.FileExistsException;
+import run.ikaros.api.infra.exception.file.FolderNotFoundException;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.FileEntity;
 
@@ -33,6 +35,13 @@ public interface FileService {
     Mono<FileEntity> save(FileEntity entity);
 
     Mono<File> upload(String fileName, Flux<DataBuffer> dataBufferFlux);
+
+    Mono<File> upload(String fileName, Boolean isAutoReName, Flux<DataBuffer> dataBufferFlux);
+
+    Mono<File> upload(Long folderId, String fileName, Boolean isAutoReName,
+                      Flux<DataBuffer> dataBufferFlux)
+        throws FolderNotFoundException, FileExistsException;
+
 
     Mono<Void> pushRemote(Long fileId, String remote);
 

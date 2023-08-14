@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSynchronizer;
-import run.ikaros.api.exception.NoAvailableSubjectPlatformSynchronizerException;
+import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.subject.emus.SubjectSyncAction;
 import run.ikaros.server.core.subject.service.SubjectService;

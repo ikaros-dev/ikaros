@@ -18,7 +18,7 @@ import org.thymeleaf.context.Context;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.server.core.notify.MailService;
 import run.ikaros.server.core.notify.model.MailConfig;
 import run.ikaros.server.core.notify.model.MailProtocol;

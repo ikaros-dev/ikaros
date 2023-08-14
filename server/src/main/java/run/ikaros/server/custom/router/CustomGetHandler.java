@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomScheme;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.exception.NotFoundException;
 
 public class CustomGetHandler implements CustomRouterFunctionFactory.GetHandler {
     private final ReactiveCustomClient customClient;
