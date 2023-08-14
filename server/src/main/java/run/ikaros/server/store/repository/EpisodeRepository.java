@@ -3,6 +3,7 @@ package run.ikaros.server.store.repository;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.store.entity.EpisodeEntity;
 
 public interface EpisodeRepository extends R2dbcRepository<EpisodeEntity, Long> {
@@ -10,5 +11,6 @@ public interface EpisodeRepository extends R2dbcRepository<EpisodeEntity, Long> 
 
     Mono<Void> deleteAllBySubjectId(Long subjectId);
 
-    Mono<EpisodeEntity> findBySubjectIdAndSequence(Long subjectId, Integer sequence);
+    Mono<EpisodeEntity> findBySubjectIdAndGroupAAndSequence(Long subjectId, EpisodeGroup group,
+                                                            Integer sequence);
 }

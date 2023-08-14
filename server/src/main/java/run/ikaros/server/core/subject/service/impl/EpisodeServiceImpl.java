@@ -10,6 +10,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.infra.exception.RegexMatchingException;
 import run.ikaros.api.infra.utils.RegexUtils;
+import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.server.core.subject.event.EpisodeFileUpdateEvent;
 import run.ikaros.server.core.subject.service.EpisodeFileService;
@@ -76,7 +77,8 @@ public class EpisodeServiceImpl implements EpisodeFileService {
             .flatMap(fileRepository::findById)
             .filter(entity -> FileType.VIDEO.equals(entity.getType()))
             .flatMap(fileEntity -> getSeqMono(fileEntity)
-                .flatMap(seq -> episodeRepository.findBySubjectIdAndSequence(subjectId, seq))
+                .flatMap(seq -> episodeRepository.findBySubjectIdAndGroupAAndSequence(subjectId,
+                    EpisodeGroup.MAIN, seq))
                 .flatMap(episodeEntity -> episodeFileRepository
                     .existsByEpisodeId(episodeEntity.getId())
                     .filter(exists -> !exists)
