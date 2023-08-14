@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.exception.CustomException;
 import run.ikaros.api.custom.scheme.CustomScheme;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.server.custom.CustomConverter;
 import run.ikaros.server.custom.event.CustomCreateEvent;
 

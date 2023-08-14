@@ -33,7 +33,7 @@ import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.core.subject.Subtitle;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
@@ -285,7 +285,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMap(episode -> copyProperties(episode, new EpisodeEntity()))
             .map(entity -> entity.setSubjectId(subjectId.get()))
             .flatMap(entity ->
-                episodeRepository.findBySubjectIdAndSequence(subjectId.get(), entity.getSequence())
+                episodeRepository.findBySubjectIdAndGroupAndSequence(subjectId.get(),
+                        entity.getGroup(), entity.getSequence())
                     .switchIfEmpty(episodeRepository.save(entity)))
             .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
             .collectList()

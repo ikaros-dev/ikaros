@@ -1,4 +1,4 @@
-package run.ikaros.api.exception;
+package run.ikaros.api.infra.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

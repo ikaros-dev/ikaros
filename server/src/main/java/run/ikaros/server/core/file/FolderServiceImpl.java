@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.Folder;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.file.FolderExistsException;
 import run.ikaros.api.infra.exception.file.FolderHasChildException;
 import run.ikaros.api.infra.exception.file.ParentFolderNotExistsException;

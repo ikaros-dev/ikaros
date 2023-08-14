@@ -1,4 +1,4 @@
-package run.ikaros.api.exception;
+package run.ikaros.api.infra.exception.plugin;
 
 import org.pf4j.PluginRuntimeException;
 

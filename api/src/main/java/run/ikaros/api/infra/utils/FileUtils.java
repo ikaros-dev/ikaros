@@ -201,6 +201,15 @@ public class FileUtils {
         return originalFilename.substring(dotIndex + 1);
     }
 
+    /**
+     * Parse file name without postfix.
+     */
+    public static String parseFileNameWithoutPostfix(String originalFilename) {
+        Assert.hasText(originalFilename, "originalFilename");
+        int dotIndex = originalFilename.lastIndexOf(".");
+        return originalFilename.substring(0, dotIndex);
+    }
+
     public static String parseFileName(String filePath) {
         Assert.hasText(filePath, "filePath");
         return filePath.substring(filePath.lastIndexOf("/") + 1);
@@ -320,7 +329,7 @@ public class FileUtils {
     /**
      * Convert file to data buffer flux.
      */
-    public static Flux<DataBuffer> convertToDataBufferFlux(File file) throws IOException {
+    public static Flux<DataBuffer> convertToDataBufferFlux(File file) {
         DefaultDataBufferFactory bufferFactory = new DefaultDataBufferFactory();
         return DataBufferUtils.readInputStream(() ->
             Files.newInputStream(file.toPath()), bufferFactory, 1024);

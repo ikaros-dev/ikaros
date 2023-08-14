@@ -1,4 +1,4 @@
-package run.ikaros.api.exception;
+package run.ikaros.api.infra.exception.console;
 
 public class LoadConsoleBundleException extends RuntimeException {
 

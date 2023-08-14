@@ -18,7 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.api.exception.PasswordNotMatchingException;
+import run.ikaros.api.infra.exception.security.PasswordNotMatchingException;
 import run.ikaros.server.security.SecurityProperties;
 import run.ikaros.server.store.entity.UserEntity;
 

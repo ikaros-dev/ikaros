@@ -16,7 +16,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Subject;
-import run.ikaros.api.exception.NoAvailableSubjectPlatformSynchronizerException;
+import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.subject.emus.SubjectSyncAction;
 import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;

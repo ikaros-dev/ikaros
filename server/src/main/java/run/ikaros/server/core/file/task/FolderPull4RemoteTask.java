@@ -20,7 +20,7 @@ import org.springframework.util.Assert;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.core.file.Folder;
 import run.ikaros.api.core.file.RemoteFileHandler;
-import run.ikaros.api.exception.NotFoundException;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.server.core.task.Task;

@@ -97,6 +97,7 @@ create table if not exists file
     url         varchar(3000) not null,
     can_read    bool          null,
     update_time timestamp(6)  null,
+    constraint folder_name_uk unique (folder_id, name),
     constraint file_pkey primary key (id)
 );
 

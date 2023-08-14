@@ -73,15 +73,14 @@ public class FileOperator implements FileOperate {
     }
 
     @Override
-    public Mono<Boolean> existsByFsPath(String fsPath) {
-        Assert.hasText(fsPath, "'fsPath' must has text.");
-        return repository.existsByFsPath(fsPath);
+    public Mono<File> upload(String fileName, Boolean isAutoReName,
+                             Flux<DataBuffer> dataBufferFlux) {
+        return fileService.upload(fileName, isAutoReName, dataBufferFlux);
     }
 
     @Override
-    public Mono<Boolean> existsByMd5(String md5) {
-        Assert.hasText(md5, "'md5' must has text.");
-        return repository.existsByMd5(md5);
+    public Mono<Boolean> existsByFolderIdAndFileName(Long folderId, String fileName) {
+        return fileService.existsByFolderIdAndFileName(folderId, fileName);
     }
 
     @Override
