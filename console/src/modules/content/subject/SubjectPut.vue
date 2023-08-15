@@ -32,7 +32,11 @@ import {
 	ElTableColumn,
 	ElImage,
 } from 'element-plus';
-import { episodeGroupLabelMap } from '@/modules/common/constants';
+import {
+	episodeGroupLabelMap,
+	subjectTypes,
+	subjectTypeAliasMap,
+} from '@/modules/common/constants';
 
 const router = useRouter();
 const route = useRoute();
@@ -218,12 +222,15 @@ onMounted(() => {
 
 				<el-form-item label="条目类型" prop="type" class="ik-form-item">
 					<el-radio-group v-model="subject.type">
-						<el-radio label="ANIME" border>动漫</el-radio>
-						<el-radio label="COMIC" border>漫画</el-radio>
-						<el-radio label="GAME" border>游戏</el-radio>
-						<el-radio label="MUSIC" border>音声</el-radio>
-						<el-radio label="NOVEL" border>小说</el-radio>
-						<el-radio label="OTHER" border>其它</el-radio>
+						<el-radio
+							v-for="type in subjectTypes"
+							:key="type"
+							:label="type"
+							border
+							style="margin-right: 8px"
+						>
+							{{ subjectTypeAliasMap.get(type) }}
+						</el-radio>
 					</el-radio-group>
 				</el-form-item>
 

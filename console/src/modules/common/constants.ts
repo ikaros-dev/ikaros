@@ -43,3 +43,23 @@ export const episodeGroupLabelMap = new Map([
 	['LIVE', '直播(Live)'],
 	['OTHER', '其它(Other)'],
 ]);
+
+export const subjectTypes = [
+	'ANIME',
+	'COMIC',
+	'GAME',
+	'MUSIC',
+	'NOVEL',
+	'REAL',
+	'OTHER',
+];
+
+export const subjectTypeAliasMap = new Map([
+	['ANIME', '动漫'],
+	['COMIC', '漫画'],
+	['GAME', '游戏'],
+	['MUSIC', '音声'],
+	['NOVEL', '小说'],
+	['REAL', '三次元'],
+	['OTHER', '其它'],
+]);
