@@ -2,13 +2,13 @@ package run.ikaros.server.plugin.listener;
 
 import static run.ikaros.server.plugin.listener.PluginDatabaseUtils.savePluginToDatabase;
 
+import java.nio.file.Files;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginState;
 import org.pf4j.PluginStateEvent;
 import org.pf4j.PluginStateListener;
 import org.pf4j.PluginWrapper;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.plugin.custom.Plugin;
@@ -33,25 +33,30 @@ public class PluginStateChangedListener implements PluginStateListener {
         PluginWrapper pluginWrapper = event.getPlugin();
         String pluginId = pluginWrapper.getPluginId();
         PluginState state = pluginWrapper.getPluginState();
-        // 插件加载后，保存插件数据到数据库
-        if (PluginState.RESOLVED.equals(state)) {
-            savePluginToDatabase(pluginId, ikarosPluginManager, reactiveCustomClient)
-                .doOnSuccess(plugin ->
-                    log.debug("Save plugin info to database for id: [{}].", pluginId))
-                .subscribeOn(Schedulers.boundedElastic()).subscribe();
+
+        if (!Files.exists(pluginWrapper.getPluginPath())) {
+            return;
         }
 
-        // 更新插件状态
-        reactiveCustomClient
-            .updateOneMeta(Plugin.class, pluginId, "state",
-                JsonUtils.obj2Bytes(state))
-            .doOnSuccess(unused ->
-                log.debug("Update plugin [{}] state to [{}]", pluginId, state))
-            .onErrorResume(NotFoundException.class, e -> {
-                log.warn("Skip first update plugin [{}] state.", pluginId);
-                return Mono.empty();
-            })
-            .subscribeOn(Schedulers.boundedElastic())
+        Mono.just(Files.exists(pluginWrapper.getPluginPath()))
+            .filter(exists -> exists)
+            .filter(ex -> PluginState.RESOLVED.equals(state))
+            .flatMap(eq -> savePluginToDatabase(pluginId, ikarosPluginManager, reactiveCustomClient)
+                .doOnSuccess(plugin ->
+                    log.debug("Save plugin info to database for id: [{}], plugin: [{}]", pluginId,
+                        plugin))
+            )
+
+            .then(reactiveCustomClient.findOne(Plugin.class, pluginId))
+            .onErrorResume(NotFoundException.class, e -> Mono.empty())
+            .flatMap(plugin -> reactiveCustomClient.updateOneMeta(Plugin.class, pluginId, "state",
+                    JsonUtils.obj2Bytes(state))
+                .doOnSuccess(unused ->
+                    log.debug("Update plugin [{}] state to [{}]", pluginId, state))
+                .onErrorResume(NotFoundException.class, e -> {
+                    log.warn("Skip first update plugin [{}] state.", pluginId);
+                    return Mono.empty();
+                }))
             .subscribe();
     }
 }

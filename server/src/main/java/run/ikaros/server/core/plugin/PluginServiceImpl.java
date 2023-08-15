@@ -1,5 +1,7 @@
 package run.ikaros.server.core.plugin;
 
+import static run.ikaros.server.plugin.listener.PluginDatabaseUtils.getPluginByDescriptor;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.File;
@@ -130,6 +132,11 @@ public class PluginServiceImpl implements PluginService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return install(filePart);
+        return install(filePart)
+            .then(Mono.just(pluginManager))
+            .map(ikarosPluginManager -> ikarosPluginManager.getPlugin(pluginId))
+            .map(pluginWrapper -> getPluginByDescriptor(pluginId, pluginManager, pluginWrapper))
+            .flatMap(customClient::update)
+            .then();
     }
 }

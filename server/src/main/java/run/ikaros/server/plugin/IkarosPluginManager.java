@@ -394,6 +394,8 @@ public class IkarosPluginManager extends DefaultPluginManager
         Path pluginPath = pluginWrapper.getPluginPath();
         boolean result = pluginRepository.deletePluginPath(pluginPath);
 
+        pluginWrapper.setPluginState(PluginState.DISABLED);
+
         firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, null));
         // publish plugin deleted event.
         rootApplicationContext.publishEvent(new IkarosPluginDeleteEvent(this, pluginId));
