@@ -1,5 +1,7 @@
 package run.ikaros.server.plugin.listener;
 
+import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +74,11 @@ public class PluginDatabaseUtils {
 
         return customClient.findOne(Plugin.class, pluginId)
             .onErrorResume(NotFoundException.class, e -> customClient.create(plugin)
-                .doOnSuccess(p -> log.debug("Create new plugin record for name: [{}].", pluginId)));
+                .doOnSuccess(p -> log.debug("Create new plugin record for name: [{}].", pluginId)))
+            .flatMap(p1 -> copyProperties(plugin, p1, "configMapSchemas")
+                .flatMap(customClient::update)
+                .doOnSuccess(p ->
+                    log.debug("Update exists plugin record for name: [{}].", pluginId)));
     }
 
     private static Mono<Void> savePluginConfigMap(String configMapSchemas,
