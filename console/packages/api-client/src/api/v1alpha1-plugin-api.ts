@@ -334,6 +334,72 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
 				options: localVarRequestOptions,
 			};
 		},
+		/**
+		 * Upgrade plugin by upload jar file.
+		 * @param {string} pluginId Plugin id(name).
+		 * @param {File} [file]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		upgradePluginByFile: async (
+			pluginId: string,
+			file?: File,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'pluginId' is not null or undefined
+			assertParamExists('upgradePluginByFile', 'pluginId', pluginId);
+			const localVarPath =
+				`/api/v1alpha1/plugin/upgrade/file/{pluginId}`.replace(
+					`{${'pluginId'}}`,
+					encodeURIComponent(String(pluginId))
+				);
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+			const localVarFormParams = new ((configuration &&
+				configuration.formDataCtor) ||
+				FormData)();
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (file !== undefined) {
+				localVarFormParams.append('file', file as any);
+			}
+
+			localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = localVarFormParams;
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
 	};
 };
 
@@ -471,6 +537,33 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
 				configuration
 			);
 		},
+		/**
+		 * Upgrade plugin by upload jar file.
+		 * @param {string} pluginId Plugin id(name).
+		 * @param {File} [file]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async upgradePluginByFile(
+			pluginId: string,
+			file?: File,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.upgradePluginByFile(
+					pluginId,
+					file,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
 	};
 };
 
@@ -557,6 +650,24 @@ export const V1alpha1PluginApiFactory = function (
 		): AxiosPromise<boolean> {
 			return localVarFp
 				.stopPluginById(requestParameters.name, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Upgrade plugin by upload jar file.
+		 * @param {V1alpha1PluginApiUpgradePluginByFileRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		upgradePluginByFile(
+			requestParameters: V1alpha1PluginApiUpgradePluginByFileRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.upgradePluginByFile(
+					requestParameters.pluginId,
+					requestParameters.file,
+					options
+				)
 				.then((request) => request(axios, basePath));
 		},
 	};
@@ -651,6 +762,27 @@ export interface V1alpha1PluginApiStopPluginByIdRequest {
 }
 
 /**
+ * Request parameters for upgradePluginByFile operation in V1alpha1PluginApi.
+ * @export
+ * @interface V1alpha1PluginApiUpgradePluginByFileRequest
+ */
+export interface V1alpha1PluginApiUpgradePluginByFileRequest {
+	/**
+	 * Plugin id(name).
+	 * @type {string}
+	 * @memberof V1alpha1PluginApiUpgradePluginByFile
+	 */
+	readonly pluginId: string;
+
+	/**
+	 *
+	 * @type {File}
+	 * @memberof V1alpha1PluginApiUpgradePluginByFile
+	 */
+	readonly file?: File;
+}
+
+/**
  * V1alpha1PluginApi - object-oriented interface
  * @export
  * @class V1alpha1PluginApi
@@ -738,6 +870,26 @@ export class V1alpha1PluginApi extends BaseAPI {
 	) {
 		return V1alpha1PluginApiFp(this.configuration)
 			.stopPluginById(requestParameters.name, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Upgrade plugin by upload jar file.
+	 * @param {V1alpha1PluginApiUpgradePluginByFileRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1PluginApi
+	 */
+	public upgradePluginByFile(
+		requestParameters: V1alpha1PluginApiUpgradePluginByFileRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1PluginApiFp(this.configuration)
+			.upgradePluginByFile(
+				requestParameters.pluginId,
+				requestParameters.file,
+				options
+			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }
