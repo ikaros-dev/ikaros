@@ -45,42 +45,42 @@ create table if not exists character
     constraint character_pkey primary key (id)
 );
 
--- user_subject_collection
-create sequence if not exists user_subject_collection_seq
+-- subject_collection
+create sequence if not exists subject_collection_seq
     increment 1
     start 1
     minvalue 1
     cache 1
     no cycle;
 
-create table if not exists user_subject_collection
+create table if not exists subject_collection
 (
-    id               int8         not null default nextval('user_subject_collection_seq'),
+    id               int8         not null default nextval('subject_collection_seq'),
     user_id          int8         not null,
     subject_id       int8         not null,
     type             varchar(255) not null,
     main_ep_progress int8         not null,
     is_private       bool         not null,
-    constraint user_subject_collection_pkey primary key (id)
+    constraint subject_collection_pkey primary key (id)
 );
 
--- user_episode_collection
-create sequence if not exists user_episode_collection_seq
+-- episode_collection
+create sequence if not exists episode_collection_seq
     increment 1
     start 1
     minvalue 1
     cache 1
     no cycle;
 
-create table if not exists user_episode_collection
+create table if not exists episode_collection
 (
-    id         int8 not null default nextval('user_episode_collection_seq'),
+    id         int8 not null default nextval('episode_collection_seq'),
     user_id    int8 not null,
     episode_id int8 not null,
     finish     bool not null,
     progress   int8 null,
     duration   int8 null,
-    constraint user_episode_collection_pkey primary key (id)
+    constraint episode_collection_pkey primary key (id)
 );
 
 -- episode

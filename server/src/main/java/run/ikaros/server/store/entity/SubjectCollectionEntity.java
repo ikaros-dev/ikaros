@@ -14,9 +14,9 @@ import run.ikaros.api.store.enums.CollectionType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "user_subject_collection")
+@Table(name = "subject_collection")
 @Accessors(chain = true)
-public class UserSubjectCollectionEntity {
+public class SubjectCollectionEntity {
     @Id
     private Long id;
     @Column("user_id")

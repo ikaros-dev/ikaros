@@ -48,9 +48,9 @@ import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
 import run.ikaros.server.store.entity.FileEntity;
+import run.ikaros.server.store.entity.SubjectCollectionEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
-import run.ikaros.server.store.entity.UserSubjectCollectionEntity;
 import run.ikaros.server.store.entity.VideoSubtitleEntity;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
@@ -77,7 +77,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
      * Construct a {@link SubjectService} instance.
      *
      * @param subjectRepository               {@link SubjectEntity} repository
-     * @param userSubjectCollectionRepository {@link UserSubjectCollectionEntity} repository
+     * @param userSubjectCollectionRepository {@link SubjectCollectionEntity} repository
      * @param episodeRepository               {@link EpisodeEntity} repository
      * @param episodeFileRepository           {@link EpisodeFileEntity} repository
      * @param subjectSyncRepository           {@link SubjectSyncEntity} repository

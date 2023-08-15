@@ -31,8 +31,8 @@ create table if not exists character
     constraint character_pkey primary key (id)
 );
 
--- user_subject_collection
-create table if not exists user_subject_collection
+-- subject_collection
+create table if not exists subject_collection
 (
     id               int8         not null auto_increment,
     user_id          int8         not null,
@@ -40,11 +40,11 @@ create table if not exists user_subject_collection
     type             varchar(255) not null,
     main_ep_progress int8         not null,
     is_private       bool         not null,
-    constraint user_subject_collection_pkey primary key (id)
+    constraint subject_collection_pkey primary key (id)
 );
 
--- user_episode_collection
-create table if not exists user_episode_collection
+-- episode_collection
+create table if not exists episode_collection
 (
     id         int8 not null auto_increment,
     user_id    int8 not null,
@@ -52,7 +52,7 @@ create table if not exists user_episode_collection
     finish     bool not null,
     progress   int8 null,
     duration   int8 null,
-    constraint user_episode_collection_pkey primary key (id)
+    constraint episode_collection_pkey primary key (id)
 );
 
 -- episode
