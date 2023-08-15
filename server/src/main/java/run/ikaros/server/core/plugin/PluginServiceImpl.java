@@ -121,12 +121,6 @@ public class PluginServiceImpl implements PluginService {
     public Mono<Void> upgrade(String pluginId, FilePart filePart) {
         Assert.hasText(pluginId, "'pluginId' must has text.");
         Assert.notNull(filePart, "'filePart' must not null.");
-        String pluginDir = System.getProperty("pf4j.pluginsDir");
-        File pluginDirFile = new File(pluginDir);
-        if (!pluginDirFile.exists()) {
-            pluginDirFile.mkdirs();
-        }
-        // Path destPath = Path.of(pluginDirFile.toURI()).resolve(filePart.filename());
 
         Path oldPath = pluginManager.getPlugin(pluginId).getPluginPath();
         pluginManager.unloadPlugin(pluginId);
@@ -136,34 +130,6 @@ public class PluginServiceImpl implements PluginService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        // return customClient.findOne(ConfigMap.class, pluginId)
-        //     .flatMap(oldPluginConfigMap -> {
-        //         Mono.just(pluginManager.deletePlugin(pluginId))
-        //             .filter(deleted -> deleted)
-        //             .switchIfEmpty(Mono.error(
-        //                 new PluginUpgradeException("Delete plugin fail for id: " + pluginId)))
-        //             .flatMap(d -> filePart.transferTo(destPath.toFile())
-        //                 .doOnSuccess(unused -> log.debug("Upload plugin file [{}] to plugin dir [{}].",
-        //                     filePart.filename(), destPath)))
-        //             .then(Mono.fromCallable(() -> pluginManager.loadPlugin(destPath))
-        //                 .doOnSuccess(pi ->
-        //                     log.debug("Load plugin by path success, pluginId: [{}].", pluginId))
-        //             )
-        //             .flatMap(pi -> customClient.findOne(ConfigMap.class, pi))
-        //             .flatMap(configMap -> copyProperties(oldPluginConfigMap, configMap))
-        //             .flatMap(configMap -> customClient.update(configMap)
-        //                 .doOnSuccess(cm -> log.debug("Update config map for plugin: " + pluginId)))
-        //             .switchIfEmpty(customClient.create(oldPluginConfigMap)
-        //                 .doOnSuccess(cm -> log.debug("Create old config map for plugin: " + pluginId)))
-        //
-        //             return Mono.empty();
-        //         }
-        //     )
-        //     .onErrorResume(Exception.class,
-        //         e -> Mono.error(
-        //             new PluginUpgradeException(e, "Upgrade plugin fail for id=" + pluginId)))
-        //     .then();
         return install(filePart);
     }
 }
