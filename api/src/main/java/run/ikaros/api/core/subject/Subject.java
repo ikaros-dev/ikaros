@@ -12,7 +12,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import run.ikaros.api.store.enums.CollectionStatus;
+import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.store.enums.SubjectType;
 
 @Data
@@ -42,7 +42,7 @@ public class Subject {
     @JsonProperty("total_episodes")
     private Long totalEpisodes;
     @JsonProperty("collection_status")
-    private CollectionStatus collectionStatus;
+    private CollectionType collectionType;
     private List<SubjectSync> syncs;
     private boolean canRead;
 }
