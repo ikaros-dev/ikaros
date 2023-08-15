@@ -72,7 +72,7 @@ const findSubjectsCondition = ref<SubjectsCondition>({
 	name: '',
 	nameCn: '',
 	nsfw: false,
-	type: 'ANIME',
+	type: undefined,
 });
 
 const toSubjectPost = () => {

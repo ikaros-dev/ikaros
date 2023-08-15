@@ -1,8 +1,12 @@
 package run.ikaros.server.core.plugin;
 
+import static run.ikaros.server.plugin.listener.PluginDatabaseUtils.getPluginByDescriptor;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginRuntimeException;
@@ -12,6 +16,7 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.plugin.PluginInstallException;
 import run.ikaros.api.infra.utils.StringUtils;
@@ -21,9 +26,11 @@ import run.ikaros.server.plugin.IkarosPluginManager;
 @Service
 public class PluginServiceImpl implements PluginService {
     private final IkarosPluginManager pluginManager;
+    private final ReactiveCustomClient customClient;
 
-    public PluginServiceImpl(IkarosPluginManager pluginManager) {
+    public PluginServiceImpl(IkarosPluginManager pluginManager, ReactiveCustomClient customClient) {
         this.pluginManager = pluginManager;
+        this.customClient = customClient;
     }
 
     @Override
@@ -110,5 +117,26 @@ public class PluginServiceImpl implements PluginService {
         } catch (Exception e) {
             throw new PluginInstallException(e);
         }
+    }
+
+    @Override
+    public Mono<Void> upgrade(String pluginId, FilePart filePart) {
+        Assert.hasText(pluginId, "'pluginId' must has text.");
+        Assert.notNull(filePart, "'filePart' must not null.");
+
+        Path oldPath = pluginManager.getPlugin(pluginId).getPluginPath();
+        pluginManager.unloadPlugin(pluginId);
+        try {
+            Files.delete(oldPath);
+            log.debug("delete old plugin for path: {}", oldPath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return install(filePart)
+            .then(Mono.just(pluginManager))
+            .map(ikarosPluginManager -> ikarosPluginManager.getPlugin(pluginId))
+            .map(pluginWrapper -> getPluginByDescriptor(pluginId, pluginManager, pluginWrapper))
+            .flatMap(customClient::update)
+            .then();
     }
 }

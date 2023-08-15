@@ -19,5 +19,6 @@ public interface PluginService {
 
     Mono<Void> install(@Nonnull FilePart filePart);
 
-    // Mono<Boolean> upgrade(String pluginId);
+    Mono<Void> upgrade(String pluginId, FilePart filePart);
+
 }

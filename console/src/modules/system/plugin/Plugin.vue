@@ -181,7 +181,7 @@ const enablePlugin = (pluginName: string | undefined) => {
 
 const disablePlugin = (pluginName: string | undefined) => {
 	ElMessageBox.confirm(
-		'您确定要禁用插件吗? 禁用后也可直接启动，会进行启用并启动。',
+		'您确定要禁用插件吗? 禁用后不可直接启动，需要先进行启用再启动。',
 		'警告',
 		{
 			confirmButtonText: '确定',
@@ -295,7 +295,28 @@ const deletePlugin = (pluginName: string | undefined) => {
 		});
 };
 
+// eslint-disable-next-line no-unused-vars
+const upgradePlugin = (plugin: Plugin) => {
+	ElMessageBox.confirm('您确定要升级插件吗? ', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			// console.log('upgrade plugin.', plugin);
+			pluginUploadDrawerVisible.value = true;
+			pluginUploadDrawerUpgradePlugin.value = plugin;
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '已取消',
+			});
+		});
+};
+
 const pluginUploadDrawerVisible = ref(false);
+const pluginUploadDrawerUpgradePlugin = ref<Plugin>();
 
 const onPluginUploadDrawerClose = () => {
 	pluginUploadDrawerVisible.value = false;
@@ -312,6 +333,7 @@ onMounted(getPluginsFromServer);
 <template>
 	<PluginUploadDrawer
 		v-model:visible="pluginUploadDrawerVisible"
+		v-model:upgradePlugin="pluginUploadDrawerUpgradePlugin"
 		@close="onPluginUploadDrawerClose"
 	/>
 
@@ -475,7 +497,9 @@ onMounted(getPluginsFromServer);
 							<el-dropdown-item divided @click="reloadPlugin(scope.row.name)">
 								重载
 							</el-dropdown-item>
-							<el-dropdown-item disabled> 升级</el-dropdown-item>
+							<el-dropdown-item @click="upgradePlugin(scope.row)">
+								升级</el-dropdown-item
+							>
 							<el-dropdown-item
 								style="width: 170; color: red"
 								divided

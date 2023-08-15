@@ -1,5 +1,6 @@
 package run.ikaros.server.plugin.listener;
 
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import run.ikaros.server.plugin.resource.BundleResourceUtils;
 @Slf4j
 public class PluginDatabaseUtils {
 
+
     /**
      * Save plugin to database.
      *
@@ -41,6 +43,26 @@ public class PluginDatabaseUtils {
         if (Objects.isNull(pluginWrapper)) {
             return Mono.empty();
         }
+        if (!Files.exists(pluginWrapper.getPluginPath())) {
+            return Mono.empty();
+        }
+        Plugin plugin = getPluginByDescriptor(pluginId, pluginManager, pluginWrapper);
+
+        if (StringUtils.isNotBlank(plugin.getConfigMapSchemas())) {
+            savePluginConfigMap(plugin.getConfigMapSchemas(), customClient, pluginId)
+                .subscribeOn(Schedulers.boundedElastic()).subscribe();
+        }
+
+        return customClient.findOne(Plugin.class, pluginId)
+            .onErrorResume(NotFoundException.class, e -> customClient.create(plugin)
+                .doOnSuccess(p -> log.debug("Create new plugin record for name: [{}].", pluginId)));
+    }
+
+    /**
+     * Convert plugin descriptor to db plugin.
+     */
+    public static Plugin getPluginByDescriptor(String pluginId, IkarosPluginManager pluginManager,
+                                               PluginWrapper pluginWrapper) {
         IkarosPluginDescriptor pluginDescriptor =
             (IkarosPluginDescriptor) pluginWrapper.getDescriptor();
         Plugin plugin = new Plugin();
@@ -64,15 +86,7 @@ public class PluginDatabaseUtils {
         plugin.setLoadLocation(pluginDescriptor.getLoadLocation());
         plugin.setConfigMapSchemas(pluginDescriptor.getConfigMapSchemas());
         setPluginStaticResourceIfExists(pluginId, plugin, pluginManager);
-
-        if (StringUtils.isNotBlank(plugin.getConfigMapSchemas())) {
-            savePluginConfigMap(plugin.getConfigMapSchemas(), customClient, pluginId)
-                .subscribeOn(Schedulers.boundedElastic()).subscribe();
-        }
-
-        return customClient.findOne(Plugin.class, pluginId)
-            .onErrorResume(NotFoundException.class, e -> customClient.create(plugin)
-                .doOnSuccess(p -> log.debug("Create new plugin record for name: [{}].", pluginId)));
+        return plugin;
     }
 
     private static Mono<Void> savePluginConfigMap(String configMapSchemas,

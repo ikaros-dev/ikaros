@@ -132,6 +132,29 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                         .responseCode("200")
                         .description("Install plugin by jar file success.")))
 
+            .POST("/plugin/upgrade/file/{pluginId}",
+                contentType(MediaType.MULTIPART_FORM_DATA),
+                this::upgradePlugin,
+                builder -> builder.operationId("UpgradePluginByFile")
+                    .tag(tag)
+                    .description("Upgrade plugin by upload jar file.")
+                    .parameter(Builder.parameterBuilder()
+                        .name("pluginId")
+                        .in(ParameterIn.PATH)
+                        .description("Plugin id(name).")
+                        .implementation(String.class))
+                    .requestBody(requestBodyBuilder()
+                        .required(true)
+                        .content(contentBuilder()
+                            .mediaType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                            .schema(schemaBuilder().required(true)
+                                .name("file").description("Plugin jar file.")
+                                .implementation(UploadRequest.class))
+                        ))
+                    .response(responseBuilder()
+                        .responseCode("200")
+                        .description("Upgrade plugin by jar file success.")))
+
             .build();
 
     }
@@ -161,6 +184,17 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .map(DefaultUploadRequest::new)
             .map(DefaultUploadRequest::getFile)
             .flatMap(pluginService::install)
+            .then(ServerResponse.ok().build());
+    }
+
+    Mono<ServerResponse> upgradePlugin(ServerRequest request) {
+
+        String pluginId = request.pathVariable("pluginId");
+
+        return request.body(toMultipartData())
+            .map(DefaultUploadRequest::new)
+            .map(DefaultUploadRequest::getFile)
+            .flatMap(filePart -> pluginService.upgrade(pluginId, filePart))
             .then(ServerResponse.ok().build());
     }
 

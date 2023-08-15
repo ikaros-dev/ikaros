@@ -23,6 +23,8 @@ const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
 	// eslint-disable-next-line no-unused-vars
+	(event: 'update:upgradePlugin', plugin: Plugin): void;
+	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 }>();
 
@@ -30,7 +32,7 @@ const uploadVisible = ref(false);
 const drawerVisible = ref(false);
 
 const modalTitle = computed(() => {
-	return props.upgradePlugin
+	return props.upgradePlugin && props.upgradePlugin.name
 		? t('core.plugin.upload_modal.titles.upgrade', {
 				display_name: props.upgradePlugin.displayName
 					? props.upgradePlugin.displayName
@@ -47,8 +49,8 @@ const handleVisibleChange = (visible: boolean) => {
 };
 
 const endpoint = computed(() => {
-	if (props.upgradePlugin) {
-		return `/api/v1alpha1/plugin/${props.upgradePlugin.name}/upgrade`;
+	if (props.upgradePlugin && props.upgradePlugin.name) {
+		return `/api/v1alpha1/plugin/upgrade/file/${props.upgradePlugin.name}`;
 	}
 	return '/api/v1alpha1/plugin/install/file';
 });
@@ -75,7 +77,7 @@ const handleClose = (done: () => void) => {
 };
 
 const onUploaded = async () => {
-	if (props.upgradePlugin) {
+	if (props.upgradePlugin && props.upgradePlugin.name) {
 		ElMessage.success('升级成功');
 		window.location.reload();
 		return;
