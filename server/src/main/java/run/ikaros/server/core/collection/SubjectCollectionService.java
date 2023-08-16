@@ -4,6 +4,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.collection.SubjectCollection;
 import run.ikaros.api.store.enums.CollectionType;
+import run.ikaros.api.wrap.PagingWrap;
 
 public interface SubjectCollectionService {
 
@@ -18,4 +19,7 @@ public interface SubjectCollectionService {
     Mono<Void> unCollect(Long userId, Long subjectId);
 
     Mono<SubjectCollection> findCollection(Long userId, Long subjectId);
+
+    Mono<PagingWrap<SubjectCollection>> findUserCollections(Long userId, Integer page,
+                                                            Integer size);
 }

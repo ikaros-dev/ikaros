@@ -6,20 +6,25 @@ import static run.ikaros.api.store.enums.CollectionType.WISH;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
+import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.server.security.SecurityProperties;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
+import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.EpisodeCollectionRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.SubjectCollectionRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
+import run.ikaros.server.store.repository.UserRepository;
 
 @SpringBootTest
 class SubjectCollectionServiceTest {
@@ -34,6 +39,10 @@ class SubjectCollectionServiceTest {
     EpisodeCollectionRepository episodeCollectionRepository;
     @Autowired
     SubjectRepository subjectRepository;
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    SecurityProperties securityProperties;
 
 
     @AfterEach
@@ -81,11 +90,19 @@ class SubjectCollectionServiceTest {
         return episodeEntities;
     }
 
+    private Long getDefaultUserId() {
+        String masterUsername = securityProperties.getInitializer().getMasterUsername();
+        UserEntity userEntity =
+            userRepository.findByUsernameAndEnableAndDeleteStatus(masterUsername, true, false)
+                .block(AppConst.BLOCK_TIMEOUT);
+        return Objects.requireNonNull(userEntity).getId();
+    }
+
     @Test
     void collect() {
         SubjectEntity subjectEntity = randomAndSaveSubjectEntity();
         Long subjectId = subjectEntity.getId();
-        Long userId = new Random().nextLong(0, Long.MAX_VALUE);
+        Long userId = getDefaultUserId();
         randomAndSaveEpisodeEntities(subjectId, 10);
 
         StepVerifier.create(subjectCollectionService.findCollection(userId, subjectId))
@@ -102,6 +119,7 @@ class SubjectCollectionServiceTest {
             .verifyComplete();
 
     }
+
 
     @Test
     void unCollect() {
