@@ -2,10 +2,6 @@ package run.ikaros.api.store.enums;
 
 public enum CollectionType {
     /**
-     * Not collection.
-     */
-    NOT,
-    /**
      * Wist watch.
      */
     WISH,
