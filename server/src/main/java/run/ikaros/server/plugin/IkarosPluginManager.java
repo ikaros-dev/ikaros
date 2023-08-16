@@ -392,7 +392,7 @@ public class IkarosPluginManager extends DefaultPluginManager
 
         // delete plugin path.
         Path pluginPath = pluginWrapper.getPluginPath();
-        boolean result = pluginRepository.deletePluginPath(pluginPath);
+        final boolean result = pluginRepository.deletePluginPath(pluginPath);
 
         pluginWrapper.setPluginState(PluginState.DISABLED);
 

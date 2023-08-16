@@ -55,16 +55,16 @@ import run.ikaros.server.store.entity.VideoSubtitleEntity;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.FileRepository;
+import run.ikaros.server.store.repository.SubjectCollectionRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
-import run.ikaros.server.store.repository.UserSubjectCollectionRepository;
 import run.ikaros.server.store.repository.VideoSubtitleRepository;
 
 @Slf4j
 @Service
 public class SubjectServiceImpl implements SubjectService, ApplicationContextAware {
     private final SubjectRepository subjectRepository;
-    private final UserSubjectCollectionRepository userSubjectCollectionRepository;
+    private final SubjectCollectionRepository subjectCollectionRepository;
     private final EpisodeRepository episodeRepository;
     private final EpisodeFileRepository episodeFileRepository;
     private final SubjectSyncRepository subjectSyncRepository;
@@ -76,17 +76,17 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     /**
      * Construct a {@link SubjectService} instance.
      *
-     * @param subjectRepository               {@link SubjectEntity} repository
-     * @param userSubjectCollectionRepository {@link SubjectCollectionEntity} repository
-     * @param episodeRepository               {@link EpisodeEntity} repository
-     * @param episodeFileRepository           {@link EpisodeFileEntity} repository
-     * @param subjectSyncRepository           {@link SubjectSyncEntity} repository
-     * @param fileRepository                  {@link FileEntity} repository
-     * @param videoSubtitleRepository         {@link VideoSubtitleEntity} repository
-     * @param template                        {@link R2dbcEntityTemplate}
+     * @param subjectRepository           {@link SubjectEntity} repository
+     * @param subjectCollectionRepository {@link SubjectCollectionEntity} repository
+     * @param episodeRepository           {@link EpisodeEntity} repository
+     * @param episodeFileRepository       {@link EpisodeFileEntity} repository
+     * @param subjectSyncRepository       {@link SubjectSyncEntity} repository
+     * @param fileRepository              {@link FileEntity} repository
+     * @param videoSubtitleRepository     {@link VideoSubtitleEntity} repository
+     * @param template                    {@link R2dbcEntityTemplate}
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
-                              UserSubjectCollectionRepository userSubjectCollectionRepository,
+                              SubjectCollectionRepository subjectCollectionRepository,
                               EpisodeRepository episodeRepository,
                               EpisodeFileRepository episodeFileRepository,
                               SubjectSyncRepository subjectSyncRepository,
@@ -94,7 +94,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                               VideoSubtitleRepository videoSubtitleRepository,
                               R2dbcEntityTemplate template) {
         this.subjectRepository = subjectRepository;
-        this.userSubjectCollectionRepository = userSubjectCollectionRepository;
+        this.subjectCollectionRepository = subjectCollectionRepository;
         this.episodeRepository = episodeRepository;
         this.episodeFileRepository = episodeFileRepository;
         this.subjectSyncRepository = subjectSyncRepository;

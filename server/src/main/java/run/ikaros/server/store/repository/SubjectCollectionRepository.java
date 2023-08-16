@@ -4,7 +4,7 @@ import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.store.entity.SubjectCollectionEntity;
 
-public interface UserSubjectCollectionRepository
+public interface SubjectCollectionRepository
     extends R2dbcRepository<SubjectCollectionEntity, Long> {
     Mono<SubjectCollectionEntity> findByUserIdAndSubjectId(Long userId, Long subjectId);
 }
