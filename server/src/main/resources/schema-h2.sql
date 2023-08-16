@@ -52,6 +52,7 @@ create table if not exists episode_collection
     finish     bool not null,
     progress   int8 null,
     duration   int8 null,
+    constraint user_episode_id_uk unique (user_id, episode_id),
     constraint episode_collection_pkey primary key (id)
 );
 
