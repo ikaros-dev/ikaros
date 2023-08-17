@@ -65,13 +65,13 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .implementation(Long.class))
                     .parameter(parameterBuilder()
                         .name("progress")
-                        .description("Episode collection progress.")
+                        .description("Episode collection progress, unit is milliseconds.")
                         .in(ParameterIn.QUERY)
                         .required(true)
                         .implementation(Long.class))
                     .parameter(parameterBuilder()
                         .name("duration")
-                        .description("Episode collection duration.")
+                        .description("Episode collection duration, unit is milliseconds.")
                         .in(ParameterIn.QUERY)
                         .required(false)
                         .implementation(Long.class))
@@ -163,7 +163,9 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                 Long.valueOf(userId),
                 Long.valueOf(episodeId),
                 progress, duration)
-            .then(ServerResponse.ok().build());
+            .then(ServerResponse.ok().build())
+            .onErrorResume(IllegalArgumentException.class,
+                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
     }
 
     private Mono<ServerResponse> updateEpisodeCollectionFinish(ServerRequest serverRequest) {
