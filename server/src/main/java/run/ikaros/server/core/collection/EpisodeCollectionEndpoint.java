@@ -73,7 +73,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .name("duration")
                         .description("Episode collection duration.")
                         .in(ParameterIn.QUERY)
-                        .required(true)
+                        .required(false)
                         .implementation(Long.class))
             )
 
