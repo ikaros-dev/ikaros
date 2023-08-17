@@ -81,8 +81,9 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
         if (Objects.isNull(progress) || progress < 0) {
             progress = 0L;
         }
+        Long finalProgress = progress;
         return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
-            .map(episodeCollectionEntity -> episodeCollectionEntity.setProgress(progress))
+            .map(episodeCollectionEntity -> episodeCollectionEntity.setProgress(finalProgress))
             .flatMap(
                 episodeCollectionEntity -> episodeCollectionRepository.save(episodeCollectionEntity)
                     .doOnSuccess(episodeCollectionEntity1 -> log.info(
