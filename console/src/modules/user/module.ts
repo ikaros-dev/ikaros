@@ -30,7 +30,7 @@ export default definePlugin({
 					title: 'core.profile.title',
 					menu: {
 						name: 'core.sidebar.menu.items.profile',
-						group: 'system',
+						group: 'user',
 						icon: markRaw(UserFilled),
 						priority: 1,
 					},

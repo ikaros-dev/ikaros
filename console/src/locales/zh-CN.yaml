@@ -71,12 +71,13 @@ core:
     menu:
       groups:
         content: 内容
+        user: 用户
         interface: 外观
         system: 系统
         tool: 工具
       items:
         dashboard: 仪表盘
-        profile: 我的
+        profile: 个人中心
         files: 文件
         subjects: 条目
         plugins: 插件
