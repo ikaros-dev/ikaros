@@ -1,6 +1,8 @@
 package run.ikaros.api.infra.exception.user;
 
-public class UserNotFoundException extends RuntimeException {
+import run.ikaros.api.infra.exception.NotFoundException;
+
+public class UserNotFoundException extends NotFoundException {
     public UserNotFoundException(String message) {
         super(message);
     }

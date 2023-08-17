@@ -20,11 +20,13 @@ public interface SubjectCollectionService {
 
     Mono<SubjectCollection> findCollection(Long userId, Long subjectId);
 
-    Mono<PagingWrap<SubjectCollection>> findUserCollections(Long userId, Integer page,
-                                                            Integer size);
+    Mono<PagingWrap<SubjectCollection>> findCollections(Long userId, Integer page,
+                                                        Integer size);
 
-    Mono<PagingWrap<SubjectCollection>> findUserCollections(Long userId, Integer page,
-                                                            Integer size,
-                                                            CollectionType type,
-                                                            Boolean isPrivate);
+    Mono<PagingWrap<SubjectCollection>> findCollections(Long userId, Integer page,
+                                                        Integer size,
+                                                        CollectionType type,
+                                                        Boolean isPrivate);
+
+    Mono<Void> updateMainEpisodeProgress(Long userId, Long subjectId, Integer progress);
 }

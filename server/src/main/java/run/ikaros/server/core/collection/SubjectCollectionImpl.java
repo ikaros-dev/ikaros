@@ -14,9 +14,11 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.collection.SubjectCollection;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.subject.SubjectNotFoundException;
 import run.ikaros.api.infra.exception.user.UserNotFoundException;
 import run.ikaros.api.store.enums.CollectionType;
+import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeCollectionEntity;
@@ -58,6 +60,13 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
             .filter(exists -> exists)
             .switchIfEmpty(
                 Mono.error(new UserNotFoundException("User not found for id=" + userId)));
+    }
+
+    private Mono<Boolean> checkSubjectIdExists(Long subjectId) {
+        return subjectRepository.existsById(subjectId)
+            .filter(exists -> exists)
+            .switchIfEmpty(
+                Mono.error(new SubjectNotFoundException("Subject not found for id=" + subjectId)));
     }
 
     @Override
@@ -148,19 +157,19 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     }
 
     @Override
-    public Mono<PagingWrap<SubjectCollection>> findUserCollections(Long userId, Integer page,
-                                                                   Integer size) {
+    public Mono<PagingWrap<SubjectCollection>> findCollections(Long userId, Integer page,
+                                                               Integer size) {
         Assert.isTrue(userId >= 0, "'userId' must >= 0");
         Assert.isTrue(page > 0, "'page' must > 0");
         Assert.isTrue(size > 0, "'size' must > 0");
-        return findUserCollections(userId, page, size, null, null);
+        return findCollections(userId, page, size, null, null);
     }
 
     @Override
-    public Mono<PagingWrap<SubjectCollection>> findUserCollections(Long userId, Integer page,
-                                                                   Integer size,
-                                                                   CollectionType type,
-                                                                   Boolean isPrivate) {
+    public Mono<PagingWrap<SubjectCollection>> findCollections(Long userId, Integer page,
+                                                               Integer size,
+                                                               CollectionType type,
+                                                               Boolean isPrivate) {
         Assert.isTrue(userId >= 0, "'userId' must >= 0");
         Assert.isTrue(page > 0, "'page' must > 0");
         Assert.isTrue(size > 0, "'size' must > 0");
@@ -192,5 +201,32 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
             .collectList()
             .flatMap(subjectCollectionEntities -> countMono
                 .map(count -> new PagingWrap<>(page, size, count, subjectCollectionEntities)));
+    }
+
+    @Override
+    public Mono<Void> updateMainEpisodeProgress(Long userId, Long subjectId, Integer progress) {
+        Assert.isTrue(userId >= 0, "'userId' must >= 0");
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0");
+        Assert.isTrue(progress >= 0, "'progress' must >= 0");
+
+        return checkUserIdExists(userId)
+            .then(checkSubjectIdExists(subjectId))
+            .then(subjectCollectionRepository.findByUserIdAndSubjectId(userId, subjectId))
+            .switchIfEmpty(Mono.error(new NotFoundException(
+                "Subject collection not found for userId=" + userId + " subjectId=" + subjectId)))
+            .map(entity -> entity.setMainEpisodeProgress(progress))
+            .flatMap(subjectCollectionRepository::save)
+            .flatMapMany(entity -> episodeRepository.findAllBySubjectId(subjectId))
+            .filter(episodeEntity -> episodeEntity.getGroup() == EpisodeGroup.MAIN)
+            .filter(episodeEntity -> progress >= episodeEntity.getSequence())
+            .map(BaseEntity::getId)
+            .flatMap(episodeId -> episodeCollectionRepository.findByUserIdAndEpisodeId(userId,
+                episodeId))
+            .map(entity -> entity.setFinish(true))
+            .flatMap(entity -> episodeCollectionRepository.save(entity)
+                .doOnSuccess(e -> log.info(
+                    "Mark episode collection finish is true for userId={} and episode={}",
+                    userId, entity.getEpisodeId())))
+            .then();
     }
 }
