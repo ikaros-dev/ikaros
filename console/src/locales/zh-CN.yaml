@@ -77,7 +77,7 @@ core:
         tool: 工具
       items:
         dashboard: 仪表盘
-        profile: 个人中心
+        profile: 个人
         files: 文件
         subjects: 条目
         plugins: 插件
