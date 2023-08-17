@@ -12,6 +12,9 @@ public interface EpisodeCollectionOperate extends CollectionOperate {
     Mono<Void> updateEpisodeCollectionProgress(Long userId, Long episodeId,
                                                Long progress);
 
+    Mono<Void> updateEpisodeCollection(Long userId, Long episodeId,
+                                       Long progress, Long duration);
+
     Mono<Void> updateEpisodeCollectionFinish(Long userId, Long episodeId,
                                              Boolean finish);
 }

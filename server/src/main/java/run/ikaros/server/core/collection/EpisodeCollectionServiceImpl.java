@@ -2,6 +2,7 @@ package run.ikaros.server.core.collection;
 
 import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -77,12 +78,36 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
                                                       Long progress) {
         Assert.isTrue(userId >= 0, "userId must >= 0");
         Assert.isTrue(episodeId >= 0, "episodeId must >= 0");
+        if (Objects.isNull(progress) || progress < 0) {
+            progress = 0L;
+        }
         return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
             .map(episodeCollectionEntity -> episodeCollectionEntity.setProgress(progress))
             .flatMap(
                 episodeCollectionEntity -> episodeCollectionRepository.save(episodeCollectionEntity)
                     .doOnSuccess(episodeCollectionEntity1 -> log.info(
                         "Update episode collection process for episodeId=[{}] and userId=[{}]",
+                        episodeId, userId)))
+            .then();
+    }
+
+    @Override
+    public Mono<Void> updateEpisodeCollection(Long userId, Long episodeId, Long progress,
+                                              Long duration) {
+        Assert.isTrue(userId >= 0, "userId must >= 0");
+        Assert.isTrue(episodeId >= 0, "episodeId must >= 0");
+
+        if (Objects.isNull(duration) || duration <= 0) {
+            return updateEpisodeCollectionProgress(userId, episodeId, progress);
+        }
+
+        return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
+            .map(episodeCollectionEntity ->
+                episodeCollectionEntity.setProgress(progress).setDuration(duration))
+            .flatMap(
+                episodeCollectionEntity -> episodeCollectionRepository.save(episodeCollectionEntity)
+                    .doOnSuccess(episodeCollectionEntity1 -> log.info(
+                        "Update episode collection for episodeId=[{}] and userId=[{}]",
                         episodeId, userId)))
             .then();
     }

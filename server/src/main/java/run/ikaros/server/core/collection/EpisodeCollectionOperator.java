@@ -37,6 +37,12 @@ public class EpisodeCollectionOperator implements EpisodeCollectionOperate {
     }
 
     @Override
+    public Mono<Void> updateEpisodeCollection(Long userId, Long episodeId, Long progress,
+                                              Long duration) {
+        return service.updateEpisodeCollection(userId, episodeId, progress, duration);
+    }
+
+    @Override
     public Mono<Void> updateEpisodeCollectionFinish(Long userId, Long episodeId, Boolean finish) {
         return service.updateEpisodeCollectionFinish(userId, episodeId, finish);
     }
