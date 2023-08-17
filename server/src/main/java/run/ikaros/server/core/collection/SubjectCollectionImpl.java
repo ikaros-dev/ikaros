@@ -129,15 +129,16 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                     .doOnSuccess(unused -> log.info("Delete exists subject collection "
                             + "for userId is [{}] and subjectId is [{}]",
                         userId, subjectId)))
-            .thenMany(episodeRepository.findAllBySubjectId(subjectId))
-            .map(BaseEntity::getId)
-            .flatMap(epId ->
-                episodeCollectionRepository.findByUserIdAndEpisodeId(userId, epId)
-                    .flatMap(entity -> episodeCollectionRepository.delete(entity)
-                        .doOnSuccess(unused -> log.info(
-                            "Delete exists episode collection "
-                                + "for userId is [{}] and episode id is [{}]",
-                            userId, entity.getEpisodeId()))))
+            // not delete user episode collection record for retain watch progress.
+            // .thenMany(episodeRepository.findAllBySubjectId(subjectId))
+            // .map(BaseEntity::getId)
+            // .flatMap(epId ->
+            //     episodeCollectionRepository.findByUserIdAndEpisodeId(userId, epId)
+            //         .flatMap(entity -> episodeCollectionRepository.delete(entity)
+            //             .doOnSuccess(unused -> log.info(
+            //                 "Delete exists episode collection "
+            //                     + "for userId is [{}] and episode id is [{}]",
+            //                 userId, entity.getEpisodeId()))))
             .then();
     }
 
