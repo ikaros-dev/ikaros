@@ -51,6 +51,18 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .in(ParameterIn.QUERY)
                         .implementation(Long.class)
                         .description("Page size, default is 12."))
+                    .parameter(Builder.parameterBuilder()
+                        .name("type")
+                        .required(false)
+                        .in(ParameterIn.QUERY)
+                        .implementation(CollectionType.class)
+                        .description("Collection type, default is null."))
+                    .parameter(Builder.parameterBuilder()
+                        .name("is_private")
+                        .required(false)
+                        .in(ParameterIn.QUERY)
+                        .implementation(Boolean.class)
+                        .description("Collection is private, default is null."))
             )
 
             .POST("/collection/subject/collect", this::collectSubject,
@@ -115,7 +127,11 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
         Optional<String> sizeOp = serverRequest.queryParam("size");
         Integer size = (sizeOp.isEmpty() || Integer.parseInt(sizeOp.get()) <= 0)
             ? 12 : Integer.parseInt(sizeOp.get());
-        return subjectCollectionService.findUserCollections(uid, page, size)
+        Optional<String> typeOp = serverRequest.queryParam("type");
+        CollectionType type = typeOp.map(CollectionType::valueOf).orElse(null);
+        Optional<String> isPrivateOp = serverRequest.queryParam("is_private");
+        Boolean isPrivate = isPrivateOp.map(Boolean::valueOf).orElse(null);
+        return subjectCollectionService.findUserCollections(uid, page, size, type, isPrivate)
             .flatMap(pagingWarp -> ServerResponse.ok().bodyValue(pagingWarp))
             .switchIfEmpty(ServerResponse.notFound().build())
             .onErrorResume(NotFoundException.class,

@@ -2,10 +2,16 @@ package run.ikaros.server.core.collection;
 
 import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.collection.SubjectCollection;
 import run.ikaros.api.infra.exception.subject.SubjectNotFoundException;
@@ -29,6 +35,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     private final EpisodeCollectionRepository episodeCollectionRepository;
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
+    private final R2dbcEntityTemplate template;
 
     /**
      * Construct.
@@ -37,12 +44,13 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                                  EpisodeCollectionRepository episodeCollectionRepository,
                                  EpisodeRepository episodeRepository,
                                  SubjectRepository subjectRepository,
-                                 UserRepository userRepository) {
+                                 UserRepository userRepository, R2dbcEntityTemplate template) {
         this.subjectCollectionRepository = subjectCollectionRepository;
         this.episodeCollectionRepository = episodeCollectionRepository;
         this.episodeRepository = episodeRepository;
         this.subjectRepository = subjectRepository;
         this.userRepository = userRepository;
+        this.template = template;
     }
 
     private Mono<Boolean> checkUserIdExists(Long userId) {
@@ -145,15 +153,44 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
         Assert.isTrue(userId >= 0, "'userId' must >= 0");
         Assert.isTrue(page > 0, "'page' must > 0");
         Assert.isTrue(size > 0, "'size' must > 0");
-        return checkUserIdExists(userId)
-            .flatMapMany(exists ->
-                subjectCollectionRepository.findAllByUserId(userId, PageRequest.of(page - 1, size)))
+        return findUserCollections(userId, page, size, null, null);
+    }
+
+    @Override
+    public Mono<PagingWrap<SubjectCollection>> findUserCollections(Long userId, Integer page,
+                                                                   Integer size,
+                                                                   CollectionType type,
+                                                                   Boolean isPrivate) {
+        Assert.isTrue(userId >= 0, "'userId' must >= 0");
+        Assert.isTrue(page > 0, "'page' must > 0");
+        Assert.isTrue(size > 0, "'size' must > 0");
+
+        final PageRequest pageRequest = PageRequest.of(page - 1, size);
+
+        Criteria criteria =
+            Criteria.where("user_id").is(userId);
+
+        if (Objects.nonNull(type)) {
+            criteria = criteria.and("type").is(type);
+        }
+
+        if (Objects.nonNull(isPrivate)) {
+            criteria = criteria.and("is_private").is(isPrivate);
+        }
+
+        Query query = Query.query(criteria)
+            .sort(Sort.by(Sort.Order.desc("subject_id")))
+            .with(pageRequest);
+
+        Flux<SubjectCollectionEntity> subjectCollectionEntityFlux =
+            template.select(query, SubjectCollectionEntity.class);
+        Mono<Long> countMono = template.count(query, SubjectCollectionEntity.class);
+
+        return subjectCollectionEntityFlux
             .map(SubjectCollectionEntity::getSubjectId)
             .flatMap(subjectId -> findCollection(userId, subjectId))
             .collectList()
-            .flatMap(subjectCollections ->
-                subjectCollectionRepository.countAllByUserId(userId)
-                    .map(total -> new PagingWrap<>(page, size, total, subjectCollections)))
-            ;
+            .flatMap(subjectCollectionEntities -> countMono
+                .map(count -> new PagingWrap<>(page, size, count, subjectCollectionEntities)));
     }
 }

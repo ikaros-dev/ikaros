@@ -37,4 +37,12 @@ public class SubjectCollectionOperator implements SubjectCollectionOperate {
         Long userId, Integer page, Integer size) {
         return service.findUserCollections(userId, page, size);
     }
+
+    @Override
+    public Mono<PagingWrap<SubjectCollection>> findUserCollections(Long userId, Integer page,
+                                                                   Integer size,
+                                                                   CollectionType type,
+                                                                   Boolean isPrivate) {
+        return service.findUserCollections(userId, page, size, type, isPrivate);
+    }
 }

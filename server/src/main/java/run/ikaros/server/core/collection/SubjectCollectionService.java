@@ -22,4 +22,9 @@ public interface SubjectCollectionService {
 
     Mono<PagingWrap<SubjectCollection>> findUserCollections(Long userId, Integer page,
                                                             Integer size);
+
+    Mono<PagingWrap<SubjectCollection>> findUserCollections(Long userId, Integer page,
+                                                            Integer size,
+                                                            CollectionType type,
+                                                            Boolean isPrivate);
 }
