@@ -2,6 +2,7 @@ import type { Component } from 'vue';
 
 export type CoreMenuGroupId =
 	| 'dashboard'
+	| 'user'
 	| 'content'
 	| 'interface'
 	| 'system'
