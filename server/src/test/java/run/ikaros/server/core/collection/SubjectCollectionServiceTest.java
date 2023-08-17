@@ -125,7 +125,7 @@ class SubjectCollectionServiceTest {
     void unCollect() {
         SubjectEntity subjectEntity = randomAndSaveSubjectEntity();
         Long subjectId = subjectEntity.getId();
-        Long userId = new Random().nextLong(0, Long.MAX_VALUE);
+        Long userId = getDefaultUserId();
         randomAndSaveEpisodeEntities(subjectId, 10);
 
         StepVerifier.create(subjectCollectionService.findCollection(userId, subjectId))
