@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { SubjectCollection } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
 import {
@@ -26,15 +27,19 @@ import {
 	ElRow,
 	ElTable,
 	ElTableColumn,
+	ElSelect,
+	ElOption,
 } from 'element-plus';
 import FileRemoteActionDialog from '@/modules/content/file/FileRemoteActionDialog.vue';
 import { base64Encode } from '@/utils/string-util';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import { useSettingStore } from '@/stores/setting';
 import { episodeGroupLabelMap } from '@/modules/common/constants';
+import { useUserStore } from '@/stores/user';
 
 const route = useRoute();
 const settingStore = useSettingStore();
+const userStore = useUserStore();
 
 watch(route, () => {
 	if (!route.params?.id && route.params?.id === undefined) {
@@ -259,10 +264,79 @@ const onSubjectRemoteButtonClick = (isPush: boolean) => {
 	subjectRemoteActionDialogVisible.value = true;
 };
 
+const notCollectText = '未收藏';
+const clickCollectText = '点击收藏';
+const removeCollectText = '取消收藏';
+const collectText = '已收藏';
+const collectButtonText = ref(notCollectText);
+const updateSubjectCollection = async () => {
+	var isUnCollect = subjectCollection.value && subjectCollection.value.type;
+	if (!isUnCollect) {
+		return;
+	}
+	await apiClient.subjectCollection.collectSubject({
+		userId: userStore.currentUser?.entity?.id as number,
+		subjectId: subject.value.id as number,
+		type: subjectCollection.value.type as
+			| 'WISH'
+			| 'DOING'
+			| 'DONE'
+			| 'SHELVE'
+			| 'DISCARD',
+	});
+	ElMessage.success('更新成功');
+};
+
+const changeSubjectCollectState = async () => {
+	var isUnCollect = subjectCollection.value && subjectCollection.value.type;
+	console.log('isUnCollect', isUnCollect);
+	if (isUnCollect) {
+		// un collect
+		await apiClient.subjectCollection.removeSubjectCollect({
+			userId: userStore.currentUser?.entity?.id as number,
+			subjectId: subject.value.id as number,
+		});
+		ElMessage.success('取消收藏成功');
+	} else {
+		// collect
+		await apiClient.subjectCollection.collectSubject({
+			userId: userStore.currentUser?.entity?.id as number,
+			subjectId: subject.value.id as number,
+			type: 'WISH',
+		});
+		ElMessage.success('收藏成功');
+	}
+	fetchSubjectCollection();
+};
+// eslint-disable-next-line no-unused-vars
+const subjectCollection = ref<SubjectCollection>({});
+// eslint-disable-next-line no-unused-vars
+const fetchSubjectCollection = async () => {
+	// eslint-disable-next-line no-unused-vars
+	const rsp = await apiClient.subjectCollection.findSubjectCollection({
+		userId: userStore.currentUser?.entity?.id as number,
+		subjectId: subject.value.id as number,
+	});
+
+	// if (rsp.status === 404) {
+	// 	subjectCollection.value = {};
+	// 	return;
+	// }
+
+	if (rsp && rsp.status === 200) {
+		subjectCollection.value = rsp.data;
+		collectButtonText.value = collectText;
+	} else {
+		subjectCollection.value = {};
+		collectButtonText.value = notCollectText;
+	}
+};
+
 onMounted(() => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
 	fetchSubjectById();
+	fetchSubjectCollection();
 });
 </script>
 
@@ -329,7 +403,7 @@ onMounted(() => {
 	</el-row>
 	<br />
 	<el-row>
-		<el-col :xs="24" :sm="24" :md="24" :lg="16" :xl="16">
+		<el-col :xs="24" :sm="24" :md="24" :lg="20" :xl="20">
 			<el-row>
 				<el-col :xs="24" :sm="24" :md="12" :lg="6" :xl="6">
 					<el-image
@@ -349,19 +423,19 @@ onMounted(() => {
 						size="large"
 						border
 					>
-						<el-descriptions-item label="ID">
+						<el-descriptions-item label="ID" :span="1">
 							{{ subject.id }}
 						</el-descriptions-item>
-						<el-descriptions-item label="名称">
+						<el-descriptions-item label="名称" :span="1">
 							{{ subject.name }}
 						</el-descriptions-item>
-						<el-descriptions-item label="中文名称">
+						<el-descriptions-item label="中文名称" :span="1">
 							{{ subject.name_cn }}
 						</el-descriptions-item>
-						<el-descriptions-item label="放送时间">
+						<el-descriptions-item label="放送时间" :span="1">
 							{{ subject.airTime }}
 						</el-descriptions-item>
-						<el-descriptions-item label="NSFW">
+						<el-descriptions-item label="NSFW" :span="1">
 							{{ subject.nsfw }}
 						</el-descriptions-item>
 						<el-descriptions-item label="介绍" :span="5">
@@ -377,6 +451,54 @@ onMounted(() => {
 							<span v-for="(sync, index) in subject.syncs" :key="index">
 								{{ sync.platform }} : {{ sync.platformId }}
 							</span>
+						</el-descriptions-item>
+					</el-descriptions>
+					<el-descriptions size="large" border>
+						<el-descriptions-item label="收藏状态">
+							<el-popconfirm
+								:title="
+									'您确定要' +
+									(subjectCollection && subjectCollection.type
+										? '取消收藏'
+										: '收藏') +
+									'该条目吗？'
+								"
+								@confirm="changeSubjectCollectState"
+							>
+								<template #reference>
+									<el-button
+										style="width: 100px"
+										plain
+										@mouseleave="
+											collectButtonText =
+												subjectCollection && subjectCollection.type
+													? collectText
+													: notCollectText
+										"
+										@mouseover="
+											collectButtonText =
+												subjectCollection && subjectCollection.type
+													? removeCollectText
+													: clickCollectText
+										"
+									>
+										{{ collectButtonText }}
+									</el-button>
+								</template>
+							</el-popconfirm>
+							&nbsp;&nbsp;
+							<el-select
+								v-if="subjectCollection && subjectCollection.type"
+								v-model="subjectCollection.type"
+								placeholder="Select"
+								@change="updateSubjectCollection"
+							>
+								<el-option label="想看" value="WISH" />
+								<el-option label="在看" value="DOING" />
+								<el-option label="看完" value="DONE" />
+								<el-option label="搁置" value="SHELVE" />
+								<el-option label="抛弃" value="DISCARD" />
+							</el-select>
 						</el-descriptions-item>
 					</el-descriptions>
 				</el-col>
@@ -445,7 +567,7 @@ onMounted(() => {
 				</el-col>
 			</el-row>
 		</el-col>
-		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
+		<el-col :xs="24" :sm="24" :md="24" :lg="4" :xl="4">
 			<ul>
 				<li v-for="(value, key) in infoMap" :key="key" class="infinite-list">
 					<span style="font-weight: 800">{{ value[0] }}</span> :

@@ -141,8 +141,8 @@ onMounted(fetchSubjectByRouterQuery);
 								clearable
 								@change="fetchSubjects"
 							>
-								<el-option label="是" value="true" />
-								<el-option label="非" value="false" />
+								<el-option label="是" :value="true" />
+								<el-option label="非" :value="false" />
 							</el-select>
 						</el-form-item>
 					</el-col>

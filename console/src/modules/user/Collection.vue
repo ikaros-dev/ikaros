@@ -10,6 +10,8 @@ import {
 	ElSelect,
 	ElOption,
 	ElPagination,
+	ElForm,
+	ElCard,
 } from 'element-plus';
 
 const userStore = useUserStore();
@@ -60,7 +62,7 @@ onMounted(fetchCollections);
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="5" :xl="5">
-						<el-form-item label="所属类型" style="width: 95%">
+						<el-form-item label="收藏类型" style="width: 95%">
 							<el-select
 								v-model="findSubjectCollection.type"
 								clearable
@@ -145,4 +147,22 @@ onMounted(fetchCollections);
 	</el-row>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.container {
+	margin: 5px 0;
+	border-radius: 5px;
+	// border: 1px solid rebeccapurple;
+	cursor: pointer;
+}
+
+.card-header {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	height: 15px;
+	.grey {
+		font-size: 10px;
+		color: #999;
+	}
+}
+</style>

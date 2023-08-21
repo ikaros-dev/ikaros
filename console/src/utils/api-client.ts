@@ -98,13 +98,14 @@ axiosInstance.interceptors.response.use(
 				i18n.global.t('core.common.exception.forbidden') + ': ' + msg
 			);
 		} else if (status === 404) {
-			console.error(
-				i18n.global.t('core.common.exception.not_found') + ': ' + msg,
-				error
-			);
-			ElMessage.error(
-				i18n.global.t('core.common.exception.not_found') + ': ' + msg
-			);
+			return Promise.resolve();
+			// console.error(
+			// 	i18n.global.t('core.common.exception.not_found') + ': ' + msg,
+			// 	error
+			// );
+			// ElMessage.error(
+			// 	i18n.global.t('core.common.exception.not_found') + ': ' + msg
+			// );
 		} else if (status === 500) {
 			console.error(
 				i18n.global.t(
