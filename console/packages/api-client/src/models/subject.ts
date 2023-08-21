@@ -124,7 +124,6 @@ export const SubjectTypeEnum = {
 export type SubjectTypeEnum =
 	(typeof SubjectTypeEnum)[keyof typeof SubjectTypeEnum];
 export const SubjectCollectionStatusEnum = {
-	Not: 'NOT',
 	Wish: 'WISH',
 	Doing: 'DOING',
 	Done: 'DONE',

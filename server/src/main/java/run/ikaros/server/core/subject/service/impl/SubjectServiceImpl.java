@@ -45,17 +45,17 @@ import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.vo.FindSubjectCondition;
 import run.ikaros.server.infra.constants.NumberConst;
 import run.ikaros.server.store.entity.BaseEntity;
-import run.ikaros.server.store.entity.CollectionEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
 import run.ikaros.server.store.entity.FileEntity;
+import run.ikaros.server.store.entity.SubjectCollectionEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
 import run.ikaros.server.store.entity.VideoSubtitleEntity;
-import run.ikaros.server.store.repository.CollectionRepository;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.FileRepository;
+import run.ikaros.server.store.repository.SubjectCollectionRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
 import run.ikaros.server.store.repository.VideoSubtitleRepository;
@@ -64,7 +64,7 @@ import run.ikaros.server.store.repository.VideoSubtitleRepository;
 @Service
 public class SubjectServiceImpl implements SubjectService, ApplicationContextAware {
     private final SubjectRepository subjectRepository;
-    private final CollectionRepository collectionRepository;
+    private final SubjectCollectionRepository subjectCollectionRepository;
     private final EpisodeRepository episodeRepository;
     private final EpisodeFileRepository episodeFileRepository;
     private final SubjectSyncRepository subjectSyncRepository;
@@ -76,17 +76,17 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     /**
      * Construct a {@link SubjectService} instance.
      *
-     * @param subjectRepository       {@link SubjectEntity} repository
-     * @param collectionRepository    {@link CollectionEntity} repository
-     * @param episodeRepository       {@link EpisodeEntity} repository
-     * @param episodeFileRepository   {@link EpisodeFileEntity} repository
-     * @param subjectSyncRepository   {@link SubjectSyncEntity} repository
-     * @param fileRepository          {@link FileEntity} repository
-     * @param videoSubtitleRepository {@link VideoSubtitleEntity} repository
-     * @param template                {@link R2dbcEntityTemplate}
+     * @param subjectRepository           {@link SubjectEntity} repository
+     * @param subjectCollectionRepository {@link SubjectCollectionEntity} repository
+     * @param episodeRepository           {@link EpisodeEntity} repository
+     * @param episodeFileRepository       {@link EpisodeFileEntity} repository
+     * @param subjectSyncRepository       {@link SubjectSyncEntity} repository
+     * @param fileRepository              {@link FileEntity} repository
+     * @param videoSubtitleRepository     {@link VideoSubtitleEntity} repository
+     * @param template                    {@link R2dbcEntityTemplate}
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
-                              CollectionRepository collectionRepository,
+                              SubjectCollectionRepository subjectCollectionRepository,
                               EpisodeRepository episodeRepository,
                               EpisodeFileRepository episodeFileRepository,
                               SubjectSyncRepository subjectSyncRepository,
@@ -94,7 +94,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                               VideoSubtitleRepository videoSubtitleRepository,
                               R2dbcEntityTemplate template) {
         this.subjectRepository = subjectRepository;
-        this.collectionRepository = collectionRepository;
+        this.subjectCollectionRepository = subjectCollectionRepository;
         this.episodeRepository = episodeRepository;
         this.episodeFileRepository = episodeFileRepository;
         this.subjectSyncRepository = subjectSyncRepository;

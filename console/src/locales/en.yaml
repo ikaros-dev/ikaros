@@ -73,6 +73,7 @@ core:
     menu:
       groups:
         content: Content
+        user: User
         interface: Interface
         system: System
         tool: Tool

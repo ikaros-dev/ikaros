@@ -29,7 +29,7 @@ export const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/login',
 		name: 'Login',
-		component: () => import('@/modules/system/user/Login.vue'),
+		component: () => import('@/modules/user/Login.vue'),
 	},
 	{
 		path: '/redirect',
@@ -50,19 +50,24 @@ export const coreMenuGroups: MenuGroupType[] = [
 		priority: 1,
 	},
 	{
+		id: 'user',
+		name: 'core.sidebar.menu.groups.user',
+		priority: 2,
+	},
+	{
 		id: 'interface',
 		name: 'core.sidebar.menu.groups.interface',
-		priority: 2,
+		priority: 3,
 	},
 	{
 		id: 'system',
 		name: 'core.sidebar.menu.groups.system',
-		priority: 3,
+		priority: 4,
 	},
 	{
 		id: 'tool',
 		name: 'core.sidebar.menu.groups.tool',
-		priority: 4,
+		priority: 5,
 	},
 ];
 

@@ -1,31 +1,42 @@
 package run.ikaros.server.store.entity;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import run.ikaros.api.store.enums.CollectionStatus;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "collection")
+@Table(name = "episode_collection")
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-public class CollectionEntity extends BaseEntity {
+public class EpisodeCollectionEntity {
+    @Id
+    private Long id;
     @Column("user_id")
     private Long userId;
     @Column("subject_id")
     private Long subjectId;
+    @Column("episode_id")
+    private Long episodeId;
     /**
-     * collection status.
-     *
-     * @see CollectionStatus#getCode()
+     * 是否已经看过.
      */
-    private Integer status;
+    private Boolean finish;
+    /**
+     * 观看进度，时间戳.
+     */
+    private Long progress;
+    /**
+     * 总时长，时间戳.
+     */
+    private Long duration;
+    @Column("update_time")
+    private LocalDateTime updateTime;
 }

@@ -1,11 +1,7 @@
-package run.ikaros.api.core.subject;
-
-import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+package run.ikaros.api.core.collection;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,28 +17,38 @@ import run.ikaros.api.store.enums.SubjectType;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class Subject {
+public class SubjectCollection {
     private Long id;
-    @Schema(requiredMode = REQUIRED)
-    private SubjectType type;
-    @Schema(requiredMode = REQUIRED)
+    @JsonProperty("user_id")
+    private Long userId;
+    @JsonProperty("subject_id")
+    private Long subjectId;
+    private CollectionType type;
+
+    /**
+     * User main group episode watching progress.
+     */
+    @JsonProperty("main_ep_progress")
+    private Integer mainEpisodeProgress;
+
+    /**
+     * Whether it can be accessed without login.
+     */
+    @JsonProperty("is_private")
+    private Boolean isPrivate;
+
+    @JsonProperty("subject_type")
+    private SubjectType subjectType;
     private String name;
     @JsonProperty("name_cn")
     private String nameCn;
     private String infobox;
     private String summary;
     /**
-     * Can search by anonymous access.
+     * Not Safe/Suitable For Work.
      */
-    @Schema(requiredMode = REQUIRED)
     private Boolean nsfw;
-    private LocalDateTime airTime;
     private String cover;
-    private List<Episode> episodes;
-    @JsonProperty("total_episodes")
-    private Long totalEpisodes;
-    @JsonProperty("collection_status")
-    private CollectionType collectionType;
-    private List<SubjectSync> syncs;
-    private boolean canRead;
+    @JsonProperty("air_time")
+    private LocalDateTime airTime;
 }

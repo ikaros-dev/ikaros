@@ -18,7 +18,7 @@ const props = withDefaults(
 	defineProps<{
 		visible: boolean;
 		isMerge?: boolean;
-		defineSubjectId?: number;
+		defineSubjectId?: number | string;
 	}>(),
 	{
 		visible: false,
@@ -31,7 +31,7 @@ const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
 	// eslint-disable-next-line no-unused-vars
-	(event: 'update:defineSubjectId', defineSubjectId: number): void;
+	(event: 'update:defineSubjectId', defineSubjectId: number | string): void;
 	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 	// eslint-disable-next-line no-unused-vars
@@ -85,7 +85,7 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 						platformId: subjectSync.value.platformId,
 						// @ts-ignore
 						action: subjectSync.value.action,
-						subjectId: subjectId.value,
+						subjectId: subjectId.value as number,
 					})
 					.finally(() => {
 						syncButtonLoading.value = false;

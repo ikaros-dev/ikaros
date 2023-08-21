@@ -35,11 +35,11 @@ importers:
         specifier: ^0.11.0
         version: 0.11.0(vue-i18n@9.2.2)
       '@runikaros/api-client':
-        specifier: ^0.6.3
-        version: 0.6.3
+        specifier: ^0.7.1
+        version: 0.7.1
       '@runikaros/shared':
-        specifier: ^0.0.4
-        version: 0.0.4(vue-router@4.2.1)(vue@3.2.47)
+        specifier: ^0.7.0
+        version: 0.7.0(vue-router@4.2.1)(vue@3.2.47)
       '@uppy/core':
         specifier: ^3.2.0
         version: 3.2.0
@@ -1356,12 +1356,12 @@ packages:
       estree-walker: 2.0.2
       picomatch: 2.3.1
 
-  /@runikaros/api-client@0.6.3:
-    resolution: {integrity: sha512-biO+dJgb97x0EGA5dlqGhBp2Da+3Y6rdMPuCZLnJDzq0q5e8b7RwbV/qJHwHndiNXXOTiX1Fi8Lf9D386Io6eQ==}
+  /@runikaros/api-client@0.7.1:
+    resolution: {integrity: sha512-9R5Sblh4I5UaX/w3ekSMzl4Xl8ZtbCGbHNiRlSm2EiH6rtVFs47TsxhGcoAJE+n+xAGa7Z3OY8ge3RTrbsSEDQ==}
     dev: false
 
-  /@runikaros/shared@0.0.4(vue-router@4.2.1)(vue@3.2.47):
-    resolution: {integrity: sha512-C5yQ3iSDwlhGJIS4t5wBQadALNRXMTxght6MvV3jFvE/VlbUjgkvIEdgKIRGoAso9IO1LyEYyQ6X2V9REdKPSg==}
+  /@runikaros/shared@0.7.0(vue-router@4.2.1)(vue@3.2.47):
+    resolution: {integrity: sha512-N+ZC7jyCMtbIxB5gk5hrzFz4T/Uul/EbAEbrn3Tk2vfhG3NwuX5+chMNERJXYtOHAe4II2vBDuEHlNEw5jwFMg==}
     peerDependencies:
       vue: ^3.2.37
       vue-router: ^4.1.6
