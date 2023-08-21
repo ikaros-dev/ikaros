@@ -6,6 +6,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -180,7 +181,9 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
         Integer size = (sizeOp.isEmpty() || Integer.parseInt(sizeOp.get()) <= 0)
             ? 12 : Integer.parseInt(sizeOp.get());
         Optional<String> typeOp = serverRequest.queryParam("type");
-        CollectionType type = typeOp.map(CollectionType::valueOf).orElse(null);
+        CollectionType type = (typeOp.isPresent() && StringUtils.isNotBlank(typeOp.get()))
+            ? CollectionType.valueOf(typeOp.get())
+            : null;
         Optional<String> isPrivateOp = serverRequest.queryParam("is_private");
         Boolean isPrivate = isPrivateOp.map(Boolean::valueOf).orElse(null);
         return subjectCollectionService.findCollections(uid, page, size, type, isPrivate)
