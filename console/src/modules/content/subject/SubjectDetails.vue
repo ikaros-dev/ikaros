@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SubjectCollection } from '@runikaros/api-client';
+import { EpisodeCollection, SubjectCollection } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
 import {
@@ -29,6 +29,7 @@ import {
 	ElTableColumn,
 	ElSelect,
 	ElOption,
+	ElInput,
 } from 'element-plus';
 import FileRemoteActionDialog from '@/modules/content/file/FileRemoteActionDialog.vue';
 import { base64Encode } from '@/utils/string-util';
@@ -286,7 +287,14 @@ const updateSubjectCollection = async () => {
 	});
 	ElMessage.success('更新成功');
 };
-
+const updateSubjectCollectionProgress = async () => {
+	await apiClient.subjectCollection.updateSubjectCollectionMainEpProgress({
+		userId: userStore.currentUser?.entity?.id as number,
+		subjectId: subject.value.id as number,
+		progress: subjectCollection.value.main_ep_progress as number,
+	});
+	ElMessage.success('更新条目正片观看进度成功');
+};
 const changeSubjectCollectState = async () => {
 	var isUnCollect = subjectCollection.value && subjectCollection.value.type;
 	console.log('isUnCollect', isUnCollect);
@@ -330,6 +338,21 @@ const fetchSubjectCollection = async () => {
 		subjectCollection.value = {};
 		collectButtonText.value = notCollectText;
 	}
+};
+
+const currentEpisodeCollection = ref<EpisodeCollection>({});
+// eslint-disable-next-line no-unused-vars
+const showEpisodeCollectionDetails = async (episode: Episode) => {
+	console.log('episode', episode);
+	if (!episode) {
+		return;
+	}
+	const { data } = await apiClient.episodeCollection.findEpisodeCollection({
+		userId: userStore.currentUser?.entity?.id as number,
+		episodeId: episode.id as number,
+	});
+	currentEpisodeCollection.value = data;
+	console.log('currentEpisodeCollection', currentEpisodeCollection.value);
 };
 
 onMounted(() => {
@@ -499,6 +522,13 @@ onMounted(() => {
 								<el-option label="搁置" value="SHELVE" />
 								<el-option label="抛弃" value="DISCARD" />
 							</el-select>
+							&nbsp;&nbsp; 观看进度：
+							<el-input
+								v-model="subjectCollection.main_ep_progress"
+								placeholder="输入观看进度，回车更新"
+								style="width: 200px"
+								@change="updateSubjectCollectionProgress"
+							/>
 						</el-descriptions-item>
 					</el-descriptions>
 				</el-col>
@@ -519,7 +549,7 @@ onMounted(() => {
 							prop="air_time"
 							:formatter="airTimeDateFormatter"
 						/>
-						<el-table-column label="操作" width="250">
+						<el-table-column label="操作" width="320">
 							<template #header>
 								<el-button
 									plain
@@ -543,6 +573,12 @@ onMounted(() => {
 									@click="bingResources(scoped.row)"
 								>
 									绑定
+								</el-button>
+								<el-button
+									plain
+									@click="showEpisodeCollectionDetails(scoped.row)"
+								>
+									进度
 								</el-button>
 								<el-button
 									v-if="

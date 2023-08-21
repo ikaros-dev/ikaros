@@ -4,6 +4,7 @@ import type { AxiosError, AxiosInstance } from 'axios';
 import {
 	PluginIkarosRunV1alpha1PluginApi,
 	SettingIkarosRunV1alpha1ConfigMapApi,
+	V1alpha1CollectionEpisodeApi,
 	V1alpha1CollectionSubjectApi,
 	V1alpha1EpisodeFileApi,
 	V1alpha1FileApi,
@@ -164,6 +165,11 @@ function setupApiClient(axios: AxiosInstance) {
 		indices: new V1alpha1IndicesApi(undefined, baseURL, axios),
 		task: new V1alpha1TaskApi(undefined, baseURL, axios),
 		subjectCollection: new V1alpha1CollectionSubjectApi(
+			undefined,
+			baseURL,
+			axios
+		),
+		episodeCollection: new V1alpha1CollectionEpisodeApi(
 			undefined,
 			baseURL,
 			axios

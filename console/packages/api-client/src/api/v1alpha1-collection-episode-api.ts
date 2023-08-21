@@ -164,6 +164,71 @@ export const V1alpha1CollectionEpisodeApiAxiosParamCreator = function (
 		/**
 		 *
 		 * @param {number} userId User id
+		 * @param {number} subjectId Subject id
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		findEpisodeCollectionsByUserIdAndSubjectId: async (
+			userId: number,
+			subjectId: number,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'userId' is not null or undefined
+			assertParamExists(
+				'findEpisodeCollectionsByUserIdAndSubjectId',
+				'userId',
+				userId
+			);
+			// verify required parameter 'subjectId' is not null or undefined
+			assertParamExists(
+				'findEpisodeCollectionsByUserIdAndSubjectId',
+				'subjectId',
+				subjectId
+			);
+			const localVarPath =
+				`/api/v1alpha1/collections/episode/subjectId/{userId}/{subjectId}`
+					.replace(`{${'userId'}}`, encodeURIComponent(String(userId)))
+					.replace(`{${'subjectId'}}`, encodeURIComponent(String(subjectId)));
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 *
+		 * @param {number} userId User id
 		 * @param {number} episodeId Episode id
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -431,6 +496,36 @@ export const V1alpha1CollectionEpisodeApiFp = function (
 		/**
 		 *
 		 * @param {number} userId User id
+		 * @param {number} subjectId Subject id
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async findEpisodeCollectionsByUserIdAndSubjectId(
+			userId: number,
+			subjectId: number,
+			options?: AxiosRequestConfig
+		): Promise<
+			(
+				axios?: AxiosInstance,
+				basePath?: string
+			) => AxiosPromise<Array<EpisodeCollection>>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.findEpisodeCollectionsByUserIdAndSubjectId(
+					userId,
+					subjectId,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 *
+		 * @param {number} userId User id
 		 * @param {number} episodeId Episode id
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -573,6 +668,24 @@ export const V1alpha1CollectionEpisodeApiFactory = function (
 		},
 		/**
 		 *
+		 * @param {V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		findEpisodeCollectionsByUserIdAndSubjectId(
+			requestParameters: V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<Array<EpisodeCollection>> {
+			return localVarFp
+				.findEpisodeCollectionsByUserIdAndSubjectId(
+					requestParameters.userId,
+					requestParameters.subjectId,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 *
 		 * @param {V1alpha1CollectionEpisodeApiSaveEpisodeCollectionRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -671,6 +784,27 @@ export interface V1alpha1CollectionEpisodeApiFindEpisodeCollectionRequest {
 	 * @memberof V1alpha1CollectionEpisodeApiFindEpisodeCollection
 	 */
 	readonly episodeId: number;
+}
+
+/**
+ * Request parameters for findEpisodeCollectionsByUserIdAndSubjectId operation in V1alpha1CollectionEpisodeApi.
+ * @export
+ * @interface V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest
+ */
+export interface V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest {
+	/**
+	 * User id
+	 * @type {number}
+	 * @memberof V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectId
+	 */
+	readonly userId: number;
+
+	/**
+	 * Subject id
+	 * @type {number}
+	 * @memberof V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectId
+	 */
+	readonly subjectId: number;
 }
 
 /**
@@ -799,6 +933,26 @@ export class V1alpha1CollectionEpisodeApi extends BaseAPI {
 			.findEpisodeCollection(
 				requestParameters.userId,
 				requestParameters.episodeId,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 *
+	 * @param {V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1CollectionEpisodeApi
+	 */
+	public findEpisodeCollectionsByUserIdAndSubjectId(
+		requestParameters: V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1CollectionEpisodeApiFp(this.configuration)
+			.findEpisodeCollectionsByUserIdAndSubjectId(
+				requestParameters.userId,
+				requestParameters.subjectId,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));
