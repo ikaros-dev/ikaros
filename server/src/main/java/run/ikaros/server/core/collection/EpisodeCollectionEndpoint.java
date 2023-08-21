@@ -47,6 +47,25 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                     .response(responseBuilder()
                         .implementation(EpisodeCollection.class)))
 
+            .GET("/collections/episode/subjectId/{userId}/{subjectId}",
+                this::findEpisodeCollectionsByUserIdAndSubjectId,
+                builder -> builder.operationId("FindEpisodeCollectionsByUserIdAndSubjectId")
+                    .tag(tag)
+                    .parameter(parameterBuilder()
+                        .name("userId")
+                        .description("User id")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .parameter(parameterBuilder()
+                        .name("subjectId")
+                        .description("Subject id")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(responseBuilder()
+                        .implementationArray(EpisodeCollection.class)))
+
             .PUT("/collection/episode/{userId}/{episodeId}",
                 this::updateEpisodeCollection,
                 builder -> builder.operationId("UpdateEpisodeCollection")
@@ -148,6 +167,18 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
             .findByUserIdAndEpisodeId(Long.valueOf(userId), Long.valueOf(episodeId))
             .flatMap(episodeCollection -> ServerResponse.ok()
                 .bodyValue(episodeCollection))
+            .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    private Mono<ServerResponse> findEpisodeCollectionsByUserIdAndSubjectId(
+        ServerRequest serverRequest) {
+        String userId = serverRequest.pathVariable("userId");
+        String subjectId = serverRequest.pathVariable("subjectId");
+        return episodeCollectionService
+            .findAllByUserIdAndSubjectId(Long.valueOf(userId), Long.valueOf(subjectId))
+            .collectList()
+            .flatMap(episodeCollections -> ServerResponse.ok()
+                .bodyValue(episodeCollections))
             .switchIfEmpty(ServerResponse.notFound().build());
     }
 

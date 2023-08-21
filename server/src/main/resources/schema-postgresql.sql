@@ -77,6 +77,7 @@ create table if not exists episode_collection
 (
     id          int8         not null default nextval('episode_collection_seq'),
     user_id     int8         not null,
+    subject_id  int8         not null,
     episode_id  int8         not null,
     finish      bool         not null,
     progress    int8         null,

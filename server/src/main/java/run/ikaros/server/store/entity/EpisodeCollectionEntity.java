@@ -21,6 +21,8 @@ public class EpisodeCollectionEntity {
     private Long id;
     @Column("user_id")
     private Long userId;
+    @Column("subject_id")
+    private Long subjectId;
     @Column("episode_id")
     private Long episodeId;
     /**

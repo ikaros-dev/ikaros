@@ -100,6 +100,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                     .switchIfEmpty(
                         episodeCollectionRepository.save(EpisodeCollectionEntity.builder()
                                 .userId(userId)
+                                .subjectId(subjectId)
                                 .episodeId(episodeId)
                                 .finish(false)
                                 .build())
