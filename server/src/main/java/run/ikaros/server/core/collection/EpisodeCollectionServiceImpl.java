@@ -101,13 +101,7 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
         Assert.isTrue(progress > 0, "progress must > 0");
 
         return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
-            .switchIfEmpty(episodeCollectionRepository.save(EpisodeCollectionEntity.builder()
-                    .userId(userId).episodeId(episodeId).progress(progress)
-                    .finish(false).updateTime(LocalDateTime.now())
-                    .build())
-                .doOnSuccess(entity ->
-                    log.info("Create new episode collection for episodeId=[{}] and userId=[{}]",
-                        episodeId, userId)))
+            .switchIfEmpty(createNewEpisodeCollectionEntity(userId, episodeId, progress, null))
             .flatMap(episodeCollectionEntity -> updateSubjectId(episodeId, episodeCollectionEntity))
             .map(episodeCollectionEntity -> episodeCollectionEntity.setProgress(progress))
             .flatMap(
@@ -130,14 +124,7 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
         }
 
         return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
-            .switchIfEmpty(episodeCollectionRepository.save(EpisodeCollectionEntity.builder()
-                    .userId(userId).episodeId(episodeId).progress(progress).duration(duration)
-                    .finish(((double) progress / duration) >= AppConst.EPISODE_FINISH)
-                    .updateTime(LocalDateTime.now())
-                    .build())
-                .doOnSuccess(entity ->
-                    log.info("Create new episode collection for episodeId=[{}] and userId=[{}]",
-                        episodeId, userId)))
+            .switchIfEmpty(createNewEpisodeCollectionEntity(userId, episodeId, progress, duration))
             .flatMap(episodeCollectionEntity -> updateSubjectId(episodeId, episodeCollectionEntity))
             .map(episodeCollectionEntity ->
                 episodeCollectionEntity.setProgress(progress).setDuration(duration)
@@ -149,6 +136,27 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
                         "Update episode collection for episodeId=[{}] and userId=[{}]",
                         episodeId, userId)))
             .then();
+    }
+
+    private Mono<EpisodeCollectionEntity> createNewEpisodeCollectionEntity(Long userId,
+                                                                           Long episodeId,
+                                                                           Long progress,
+                                                                           Long duration) {
+        return episodeRepository.findById(episodeId)
+            .switchIfEmpty(
+                Mono.error(new EpisodeNotFoundException("Episode not found for id: " + episodeId)))
+            .map(EpisodeEntity::getSubjectId)
+            .flatMap(subjectId ->
+                episodeCollectionRepository.save(EpisodeCollectionEntity.builder()
+                        .userId(userId).subjectId(subjectId)
+                        .episodeId(episodeId).progress(progress).duration(duration)
+                        .finish(((double) progress / duration) >= AppConst.EPISODE_FINISH)
+                        .updateTime(LocalDateTime.now())
+                        .build())
+                    .doOnSuccess(entity ->
+                        log.info(
+                            "Create new episode collection for episodeId=[{}] and userId=[{}]",
+                            episodeId, userId)));
     }
 
     private Mono<EpisodeCollectionEntity> updateSubjectId(
