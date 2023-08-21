@@ -3,6 +3,8 @@
 api.ts
 api/plugin-ikaros-run-v1alpha1-plugin-api.ts
 api/setting-ikaros-run-v1alpha1-config-map-api.ts
+api/v1alpha1-collection-episode-api.ts
+api/v1alpha1-collection-subject-api.ts
 api/v1alpha1-episode-file-api.ts
 api/v1alpha1-file-api.ts
 api/v1alpha1-folder-api.ts
@@ -21,6 +23,7 @@ index.ts
 models/author.ts
 models/batch-matching-episode-file.ts
 models/config-map.ts
+models/episode-collection.ts
 models/episode-resource.ts
 models/episode.ts
 models/file-batch-request.ts
@@ -34,6 +37,7 @@ models/paging-wrap.ts
 models/plugin-load-location-file-system.ts
 models/plugin-load-location.ts
 models/plugin.ts
+models/subject-collection.ts
 models/subject-hint.ts
 models/subject-hints.ts
 models/subject-relation.ts
