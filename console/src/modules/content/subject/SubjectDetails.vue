@@ -47,9 +47,7 @@ watch(route, () => {
 		return;
 	}
 	// console.log(route.params.id);
-	//@ts-ignore
-	subject.value.id = route.params.id as number;
-	fetchSubjectById();
+	fetchDatas();
 });
 
 const subject = ref<Subject>({
@@ -294,6 +292,7 @@ const updateSubjectCollectionProgress = async () => {
 		progress: subjectCollection.value.main_ep_progress as number,
 	});
 	ElMessage.success('更新条目正片观看进度成功');
+	await fetchDatas();
 };
 const changeSubjectCollectState = async () => {
 	var isUnCollect = subjectCollection.value && subjectCollection.value.type;
@@ -340,27 +339,49 @@ const fetchSubjectCollection = async () => {
 	}
 };
 
-const currentEpisodeCollection = ref<EpisodeCollection>({});
-// eslint-disable-next-line no-unused-vars
-const showEpisodeCollectionDetails = async (episode: Episode) => {
-	console.log('episode', episode);
-	if (!episode) {
-		return;
+const episodeCollections = ref<EpisodeCollection[]>([]);
+const fetchEpisodeCollections = async () => {
+	const { data } =
+		await apiClient.episodeCollection.findEpisodeCollectionsByUserIdAndSubjectId(
+			{
+				userId: userStore.currentUser?.entity?.id as number,
+				subjectId: subject.value.id as number,
+			}
+		);
+	episodeCollections.value = data;
+};
+const getEpisodeCollectionByEpisodeId = (episode: Episode) => {
+	if (!episodeCollections.value || !episode) {
+		return undefined;
 	}
-	const { data } = await apiClient.episodeCollection.findEpisodeCollection({
+	var result = episodeCollections.value.find(
+		(ele) => ele?.episode_id === episode.id
+	);
+	// console.log('result', result);
+	return result;
+};
+const udpateEpisodeCollectionProgress = async (
+	isFinish: boolean,
+	episode: Episode
+) => {
+	await apiClient.episodeCollection.updateEpisodeCollectionFinish({
 		userId: userStore.currentUser?.entity?.id as number,
 		episodeId: episode.id as number,
+		finish: isFinish,
 	});
-	currentEpisodeCollection.value = data;
-	console.log('currentEpisodeCollection', currentEpisodeCollection.value);
+	ElMessage.success('标记是否观看完成成功');
+	await fetchDatas();
 };
 
-onMounted(() => {
+const fetchDatas = async () => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
 	fetchSubjectById();
 	fetchSubjectCollection();
-});
+	fetchEpisodeCollections();
+};
+
+onMounted(fetchDatas);
 </script>
 
 <template>
@@ -576,10 +597,30 @@ onMounted(() => {
 								</el-button>
 								<el-button
 									plain
+									:icon="
+										getEpisodeCollectionByEpisodeId(scoped.row)?.finish
+											? Check
+											: Close
+									"
+									@click="
+										udpateEpisodeCollectionProgress(
+											!getEpisodeCollectionByEpisodeId(scoped.row)?.finish,
+											scoped.row
+										)
+									"
+								>
+									{{
+										getEpisodeCollectionByEpisodeId(scoped.row)?.finish
+											? '重置'
+											: '看完'
+									}}
+								</el-button>
+								<!-- <el-button
+									plain
 									@click="showEpisodeCollectionDetails(scoped.row)"
 								>
 									进度
-								</el-button>
+								</el-button> -->
 								<el-button
 									v-if="
 										settingStore.remoteEnable &&
