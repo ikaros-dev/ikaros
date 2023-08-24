@@ -111,7 +111,7 @@ create table if not exists episode
     air_time      timestamp(6)   null,
     sequence      int8           null,
     ep_group      varchar(50)    not null,
-    constraint name_parent_uk unique (ep_group, ep_group),
+    constraint group_seq_uk unique (ep_group, sequence),
     constraint episode_pkey primary key (id)
 );
 
