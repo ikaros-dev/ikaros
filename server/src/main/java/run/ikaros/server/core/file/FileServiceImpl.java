@@ -398,10 +398,20 @@ public class FileServiceImpl implements FileService, ApplicationContextAware {
                 .map(path -> fileEntity))
 
             // save file entity to database
+            .map(fileEntity -> fileEntity.setSize(findFileSize(uploadFilePath)))
             .flatMap(this::save)
             .flatMap(fileEntity -> copyProperties(fileEntity,
                 new run.ikaros.api.core.file.File()))
             ;
+    }
+
+    private Long findFileSize(String uploadFilePath) {
+        try {
+            return Files.size(Path.of(uploadFilePath));
+        } catch (IOException e) {
+            log.warn("get file size fail for file system path: {}", uploadFilePath, e);
+            return 0L;
+        }
     }
 
     private Mono<Void> pushRemote(FileEntity fileEntity, String remote) {
