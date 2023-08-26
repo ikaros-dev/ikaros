@@ -8,7 +8,7 @@
 
 - 上传的文件大小异常 #420
 - 剧集表唯一键配置不正确
-- git push --set-upstream origin fixfilesize
+- 更新剧集收藏时，没有取到条目ID，导致无法正常插入数据库
 
 # 0.7.0
 
