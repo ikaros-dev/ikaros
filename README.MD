@@ -54,7 +54,6 @@ Ikaros 的作用是为了辅助**个人**对本地资源进行管理，类似于
 
 - GitHub: [Ikaros project github offical repo](https://github.com/ikaros-dev/ikaros)
 - 微信公众号：见下方[微信公众号](#微信公众号)
-- QQ频道：https://pd.qq.com/s/h5jes8af6
 - TG 群组：https://t.me/run_ikaros
 - TG 频道：https://t.me/run_ikaros_channel
 - 论坛：[Ikaros github discussions](https://github.com/orgs/ikaros-dev/discussions)
