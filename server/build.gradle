@@ -53,6 +53,10 @@ ext {
     pf4j = '3.9.0'
     jsoup = '1.15.3'
     springDocOpenAPI = "2.0.2"
+    javaCvVersion = '1.5.9'
+    ffmpegVersion = '6.0'
+    osWindowsX86_64 = 'windows-x86_64'
+    osLinuxX86_64 = 'linux-x86_64'
 }
 
 dependencies {
@@ -64,6 +68,13 @@ dependencies {
     // 针对插件RestTemplate的支持
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
     implementation 'org.json:json:20230227'
+
+    // ffmpeg
+    implementation "org.bytedeco:javacv:$javaCvVersion"
+    implementation "org.bytedeco:javacpp-platform:$javaCvVersion"
+    implementation "org.bytedeco:ffmpeg:$ffmpegVersion-$javaCvVersion"
+    implementation "org.bytedeco:ffmpeg:$ffmpegVersion-$javaCvVersion:$osWindowsX86_64"
+    implementation "org.bytedeco:ffmpeg:$ffmpegVersion-$javaCvVersion:$osLinuxX86_64"
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
