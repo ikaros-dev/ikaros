@@ -1,4 +1,4 @@
-**简体中文** | **[English](README-EN.MD)**
+**简体中文** | **[English](README-EN.MD)** | **[日本語](README-JP.MD)**
 <hr />
 <p align="center">
     <a href="#" target="_blank">
