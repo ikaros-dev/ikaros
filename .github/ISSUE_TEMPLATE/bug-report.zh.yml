@@ -30,6 +30,7 @@ body:
         - "服务端 (server)"
         - "控制台 (console)"
         - "插件 (plugin)"
+        - "文档 (docs)"
     validations:
       required: true
 
