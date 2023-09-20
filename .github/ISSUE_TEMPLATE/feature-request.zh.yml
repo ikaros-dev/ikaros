@@ -14,8 +14,9 @@ body:
         有红色的 * 号，代表这项必填，没有则可不填。
 
   - type: checkboxes
+    id: searchBeforeAsking
     attributes:
-      label: Search before asking
+      label: 创建前查询
       description: >
         请去我们的 [issues](https://github.com/ikaros-dev/ikaros/issues?q=is%3Aissue) 列表里查询下，是否已经有类似的问题存在。
       options:
@@ -24,25 +25,29 @@ body:
           required: true
 
   - type: textarea
+    id: description
     attributes:
-      label: Description
+      label: 描述
       description: 您期望的新功能的描述
 
   - type: textarea
+    id: useCase
     attributes:
-      label: Use case
+      label: 使用案例
       description: 你想要新功能有什么样的行为？
       placeholder: >
         这个新功能想要实现什么样的目标？对应实现思路有什么建议吗？
 
   - type: textarea
+    id: relatedIssues
     attributes:
-      label: Related issues
+      label: 相关的Issues
       description: 目前是否有与此新功能有关的 issue, 您可以填写 `#数字` 或者URL 方便我们快速定位到这个issue
 
   - type: checkboxes
+    id: submitPullRequest
     attributes:
-      label: Are you willing to submit a PR?
+      label: 您想要提交PR吗?
       description: >
         这个不是必须的，但是如果您知道这个问题如何修复，并且原因提交RP给这个项目做贡献，我们将非常欢迎。
       options:
@@ -50,8 +55,9 @@ body:
           required: false
 
   - type: textarea
+    id: relatedPullRequests
     attributes:
-      label: Related pull requests
+      label: 相关的PR
       description: 目前是否有与此新功能有关的 pull request, 您可以填写 `#数字` 或者URL 方便我们快速定位到这个pr, 未完成的PR请在PR的title加上前缀`[WIP]`
       placeholder: >
         - [ ] 组件名1: PR链接 

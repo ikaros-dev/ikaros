@@ -11,8 +11,9 @@ body:
         有红色的 * 号，代表这项必填，没有则可不填。
 
   - type: checkboxes
+    id: searchBeforeAsking
     attributes:
-      label: Search before asking
+      label: 提问前查询
       description: >
         请去我们的 [issues](https://github.com/ikaros-dev/ikaros/issues?q=is%3Aissue) 列表里查询下，是否已经有类似的问题存在。
       options:
@@ -21,8 +22,9 @@ body:
           required: true
 
   - type: dropdown
+    id: ikarosComponent
     attributes:
-      label: Ikaros Component
+      label: 组件
       description: |
         请问是 Ikaros 哪个组件的问题 Ikaros 有很多子项目，请确认你选择的组件是对应这个BUG的组件。
       multiple: false
@@ -30,12 +32,14 @@ body:
         - "服务端 (server)"
         - "控制台 (console)"
         - "插件 (plugin)"
+        - "文档 (docs)"
     validations:
       required: true
 
   - type: textarea
+    id: whatHappend
     attributes:
-      label: What happened
+      label: 发生了什么
       description: 描述下发生了什么
       placeholder: >
         请描述下发生了什么
@@ -43,8 +47,9 @@ body:
       required: true
 
   - type: textarea
+    id: whatYouExpectedToHappen
     attributes:
-      label: What you expected to happen
+      label: 预期是怎样
       description: 你预期是什么样的行为(或动作)，长日志格式  `<details><summary>x.log</summary> 很长的日志内容</details>`
       placeholder: >
         请解释下你为什么认为这个行为(或动作)是不符合预期的。并请您复制粘贴下 具体的错误日志或者UI截图
@@ -58,8 +63,9 @@ body:
       required: true
 
   - type: textarea
+    id: howToReproduce
     attributes:
-      label: How to reproduce
+      label: 如何复现
       description: >
         这个问题如何去复现，如果您没法提供相对准确的复现步骤，请开个 [Discussion](https://github.com/li-guohao/ikaros/discussions)
       placeholder: >
@@ -70,8 +76,9 @@ body:
       required: true
 
   - type: textarea
+    id: anythingElse
     attributes:
-      label: Anything else
+      label: 其它补充内容
       description: 其它的我们需要知道的补充内容，长日志格式  `<details><summary>x.log</summary> 很长的日志内容</details>`
       placeholder: >
         比如这个问题发生的频率? (一次? 多次? 经常发生)。
@@ -79,8 +86,9 @@ body:
         如果日志内容太长，可以用这个格式包裹起来：<details><summary>x.log</summary> 很长的日志内容</details>
 
   - type: checkboxes
+    id: submitPullRequest
     attributes:
-      label: Are you willing to submit PR?
+      label: 您将要去提交PR吗？
       description: >
         这个不是必须的，但是如果您知道这个问题如何修复，并且愿意提交RP给这个项目做贡献，我们将非常欢迎。
       options:
