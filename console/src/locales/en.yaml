@@ -105,6 +105,12 @@ core:
     title: Profile
   file:
     title: Files
+    form:
+      item:
+        label:
+          search:
+            type: File Type
+            name: File Name
   folder:
     title: Folders
   subject:

@@ -2,8 +2,18 @@
 import { ElConfigProvider } from 'element-plus';
 
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
+import { getBrowserLanguage } from './locales';
+import en from 'element-plus/dist/locale/en.mjs';
+import ja from 'element-plus/dist/locale/ja.mjs';
 
-const locale = zhCn;
+const language = getBrowserLanguage();
+
+let locale = zhCn;
+if ('en' === language) {
+	locale = en;
+} else if ('jp' === language) {
+	locale = ja;
+}
 </script>
 
 <template>

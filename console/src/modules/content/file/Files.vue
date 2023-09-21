@@ -27,11 +27,14 @@ import { onMounted, ref, watch } from 'vue';
 import router from '@/router';
 import moment from 'moment';
 import { useSettingStore } from '@/stores/setting';
+import { useI18n } from 'vue-i18n';
 
 // eslint-disable-next-line no-unused-vars
 const settingStore = useSettingStore();
 
 const fileUploadDrawerVisible = ref(false);
+
+const { t } = useI18n();
 
 // eslint-disable-next-line no-unused-vars
 const onFileUploadDrawerClose = (firstFile) => {
@@ -173,7 +176,10 @@ onMounted(fetchFiles);
 	<el-row :gutter="10">
 		<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
 			<el-form :inline="true" :model="findFilesCondition">
-				<el-form-item label="文件类型" style="width: 15%">
+				<el-form-item
+					:label="t('core.file.form.item.label.search.type')"
+					style="width: 15%"
+				>
 					<el-select
 						v-model="findFilesCondition.type"
 						clearable
@@ -187,7 +193,10 @@ onMounted(fetchFiles);
 					</el-select>
 				</el-form-item>
 
-				<el-form-item label="文件名称" style="width: 80%">
+				<el-form-item
+					:label="t('core.file.form.item.label.search.name')"
+					style="width: 80%"
+				>
 					<el-input
 						v-model="findFilesCondition.fileName"
 						placeholder="模糊匹配回车搜索"
