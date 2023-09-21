@@ -109,6 +109,35 @@ core:
           search:
             type: 文件类型
             name: 文件名称
+            namePlaceHolder: 模糊匹配回车搜索
+    button:
+      label:
+        upload: 上传文件
+    table:
+      column:
+        label:
+          id: ID
+          name: 文件名称
+          updateTime: 修改时间
+          size: 文件大小
+          operators: 操作
+        operations:
+          details: 详情
+          push: 推送
+          pull: 拉取
+          delete:
+            button: 删除
+            popconfirm:
+              title: 你确定要删除该文件吗？
+              confirm: 确定
+              cancel: 取消
+    message:
+      delete:
+        success: 删除文件成功，文件：
+        fail: 删除文件失败，异常：
+      update:
+        success: 更新文件成功，文件名称：
+
   folder:
     title: 目录
   subject:

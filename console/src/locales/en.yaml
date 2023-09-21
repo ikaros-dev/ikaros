@@ -111,6 +111,35 @@ core:
           search:
             type: File Type
             name: File Name
+            namePlaceHolder: Fuzzy matching carriage return search
+    button:
+      label:
+        upload: Upload Files
+    table:
+      column:
+        label:
+          id: ID
+          name: Name
+          updateTime: Update Time
+          size: Size
+          operators: Operators
+        operations:
+          details: Details
+          push: Push
+          pull: Pull
+          delete:
+            button: Delete
+            popconfirm:
+              title: Are you sure you want to delete this file?
+              confirm: Confirm
+              cancel: Cancel
+    message:
+      delete:
+        success: Delete file success for
+        fail: Delete file fail for
+      update:
+        success: Update file success for
+
   folder:
     title: Folders
   subject:
