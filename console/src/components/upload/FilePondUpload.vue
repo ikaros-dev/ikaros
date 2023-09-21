@@ -12,8 +12,10 @@ import FilePondPluginFileRename from 'filepond-plugin-file-rename';
 import Utf8 from 'crypto-js/enc-utf8';
 import Base64 from 'crypto-js/enc-base64';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const filePondRef = ref(null);
+const { t } = useI18n();
 
 // Create component and register plugins
 const filePond = VueFilePond(
@@ -36,7 +38,6 @@ const props = withDefaults(
 		field?: string;
 		multiple?: boolean;
 		accepts?: string[];
-		label?: string;
 		uploadHandler: any;
 		enableChunkUploads?: boolean;
 		enableChunkForce?: boolean;
@@ -47,7 +48,6 @@ const props = withDefaults(
 		field: '',
 		multiple: true,
 		accepts: undefined,
-		label: '点击选择文件或将文件拖拽到此处',
 		// 是否开启分片上传
 		enableChunkUploads: false,
 		// 是否强制分片上传
@@ -103,7 +103,7 @@ defineExpose({
 		:allowImagePreview="true"
 		:allowRevert="false"
 		:files="fileList"
-		:label-idle="props.label"
+		:label-idle="t('components.upload.file-pond-upload.mainLabel')"
 		:maxFiles="100"
 		:maxParallelUploads="5"
 		:name="props.name"
@@ -112,13 +112,21 @@ defineExpose({
 		:chunkSize="props.chunkSize"
 		:chunkForce="props.enableChunkForce"
 		fileValidateTypeLabelExpectedTypes="请选择 {lastType} 格式的文件"
-		labelFileProcessing="上传中"
-		labelFileProcessingAborted="取消上传"
-		labelFileProcessingComplete="上传完成"
-		labelFileProcessingError="上传错误"
-		labelFileTypeNotAllowed="不支持当前文件格式"
-		labelTapToCancel="点击取消"
-		labelTapToRetry="点击重试"
+		:labelFileProcessing="t('components.upload.file-pond-upload.uploadding')"
+		:labelFileProcessingAborted="
+			t('components.upload.file-pond-upload.cancelUpload')
+		"
+		:labelFileProcessingComplete="
+			t('components.upload.file-pond-upload.uploadFinish')
+		"
+		:labelFileProcessingError="
+			t('components.upload.file-pond-upload.uploadException')
+		"
+		:labelFileTypeNotAllowed="
+			t('components.upload.file-pond-upload.notSupportFileFormat')
+		"
+		:labelTapToCancel="t('components.upload.file-pond-upload.clickCancel')"
+		:labelTapToRetry="t('components.upload.file-pond-upload.clickRetry')"
 		@init="handleFilePondInit"
 	>
 	</file-pond>

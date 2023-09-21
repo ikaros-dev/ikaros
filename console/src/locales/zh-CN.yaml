@@ -1,4 +1,15 @@
 Root: 首页
+components:
+  upload:
+    file-pond-upload:
+      mainLabel: 点击选择文件或将文件拖拽到此处
+      uploadding: 上传中
+      cancelUpload: 取消上传
+      uploadFinish: 上传完成
+      uploadException: 上传异常
+      notSupportFileFormat: 不支持的文件格式
+      clickCancel: 点击取消
+      clickRetry: 点击重试
 core:
   common:
     exception:
@@ -137,6 +148,15 @@ core:
         fail: 删除文件失败，异常：
       update:
         success: 更新文件成功，文件名称：
+    drawer:
+      upload:
+        title: 上传文件
+        closeConfirm:
+          message: 退出上传页时，如有文件还未上传完毕，下次需要从零开始上传，您确定要退出当前上传页吗？
+          title: 温馨提示
+          confirm: 退出
+          cancel: 不退出
+          hintMsg: 已取消退出。
 
   folder:
     title: 目录

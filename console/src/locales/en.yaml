@@ -1,4 +1,16 @@
 Root: Root
+components:
+  upload:
+    file-pond-upload:
+      mainLabel: Click Select File or drag the file here
+      uploadding: Uploadding
+      cancelUpload: Cancel upload
+      uploadFinish: Uplaod finish
+      uploadException: Uplaod exception
+      notSupportFileFormat: Not support file format
+      clickCancel: Click cancel
+      clickRetry: Click retry
+
 core:
   common:
     exception:
@@ -139,6 +151,15 @@ core:
         fail: Delete file fail for
       update:
         success: Update file success for
+    drawer:
+      upload:
+        title: Upload Files
+        closeConfirm:
+          message: When exiting the upload page, if a file has not been uploaded, the next time you need to upload from scratch, are you sure you want to exit the current upload page?
+          title: kind reminder
+          confirm: Exit
+          cancel: Not Exit
+          hintMsg: Exit has been cancelled.
 
   folder:
     title: Folders
