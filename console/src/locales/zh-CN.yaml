@@ -91,6 +91,7 @@ core:
         novel: 书籍
         tasks: 任务
         folders: 目录
+        collection: 收藏
     operations:
       profile:
         button: 个人资料
@@ -130,3 +131,7 @@ core:
     title: 任务
     details:
       title: 任务详情
+  collection:
+    title: 收藏
+    details:
+      title: 收藏

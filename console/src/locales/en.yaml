@@ -93,6 +93,7 @@ core:
         novel: Novels
         tasks: Tasks
         folders: Folders
+        collection: Collection
     operations:
       profile:
         button: Profile
@@ -132,3 +133,7 @@ core:
     title: Tasks
     details:
       title: Task Details
+  collection:
+    title: Collection
+    details:
+      title: Collection

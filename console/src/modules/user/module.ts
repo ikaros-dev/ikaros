@@ -47,9 +47,9 @@ export default definePlugin({
 				name: 'Collection',
 				component: Collection,
 				meta: {
-					title: '收藏',
+					title: 'core.collection.title',
 					menu: {
-						name: '收藏',
+						name: 'core.sidebar.menu.items.collection',
 						group: 'user',
 						icon: markRaw(MessageBox),
 						priority: 1,
