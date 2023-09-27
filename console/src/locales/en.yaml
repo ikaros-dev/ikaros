@@ -161,6 +161,26 @@ core:
           cancel: Not Exit
           hintMsg: Exit has been cancelled.
 
+  fileDetail:
+    title: File details
+    descTitle: File Details
+    descItemLabel:
+      name: Name
+      type: Type
+      size: Size
+      updateTime: Update Time
+      fsPath: File System Path
+    message:
+      hint:
+        name: File name must not empty
+        videoFormat: Your browser does not support video in this format
+        audioFormat: Your browser does not support audio in this format
+        preview: This file does not support preview
+        needPull: The file is unreadable and needs to be pulled from the remote end.
+      event:
+        delete: Delete file successful
+        updateName: Update file name successful
+
   folder:
     title: Folders
     button:

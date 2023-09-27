@@ -158,6 +158,26 @@ core:
           cancel: 不退出
           hintMsg: 已取消退出。
 
+  fileDetail:
+    title: 文件详情
+    descTitle: 文件详情
+    descItemLabel:
+      name: 名称
+      type: 类型
+      size: 大小
+      updateTime: 更新时间
+      fsPath: 文件系统路径
+    message:
+      hint:
+        name: 文件名称不能为空！
+        videoFormat: 您的浏览器不支持这个格式的视频
+        audioFormat: 您的浏览器不支持这个格式的音频
+        preview: 此文件不支持预览
+        needPull: 文件不可读取，需要从远端拉取下来。
+      event:
+        delete: 删除文件成功
+        updateName: 更新文件名称成功
+
   folder:
     title: 目录
     button:
