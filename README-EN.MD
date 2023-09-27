@@ -1,3 +1,4 @@
+**[简体中文](README.MD)** | **English**
 <p align="center">
     <a href="#" target="_blank">
         <img width="100" src="assets/logo.png" alt="Ikaros logo" />
