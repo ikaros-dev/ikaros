@@ -17,6 +17,9 @@ import {
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { taskNamePrefix } from '@/modules/common/constants';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -111,7 +114,7 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 				emit('closeWithTaskName', taskName);
 			} else {
 				console.log('error submit!', fields);
-				ElMessage.error('请检查所填内容是否有必要项缺失。');
+				ElMessage.error(t('core.fileRemoteAction.message.hint.submitFail'));
 			}
 		});
 	}
@@ -122,7 +125,7 @@ const fileActionFormRules = reactive<FormRules>({
 	remote: [
 		{
 			required: true,
-			message: '请选择远端的名称',
+			message: t('core.fileRemoteAction.message.hint.selectRemote'),
 			trigger: 'change',
 		},
 	],
@@ -141,9 +144,9 @@ onMounted(() => {
 </script>
 
 <template>
-	<el-dialog v-model="dialogVisible" title="文件远端操作">
+	<el-dialog v-model="dialogVisible" :title="t('core.fileRemoteAction.title')">
 		<el-alert
-			title="文件越大，操作时间越长，请耐心等待操作完成。"
+			:title="t('core.fileRemoteAction.alert.title')"
 			type="warning"
 			show-icon
 			:closable="false"
@@ -158,7 +161,10 @@ onMounted(() => {
 			:model="fileRemoteAction"
 			label-width="120px"
 		>
-			<el-form-item label="远端" prop="remote">
+			<el-form-item
+				:label="t('core.fileRemoteAction.formItemLabel.remote')"
+				prop="remote"
+			>
 				<el-select v-model="fileRemoteAction.remote">
 					<el-option
 						v-for="remote in fileRemoteArr"
@@ -168,12 +174,12 @@ onMounted(() => {
 					/>
 				</el-select>
 			</el-form-item>
-			<el-form-item label="文件ID">
+			<el-form-item :label="t('core.fileRemoteAction.formItemLabel.fileId')">
 				<el-input v-model="fileRemoteAction.fileId" disabled />
 			</el-form-item>
 		</el-form>
 		<span v-else>
-			暂无可用的远端，请开启相关的插件并启动，比如百度网盘的插件。
+			{{ t('core.fileRemoteAction.message.hint.noStartPlugin') }}
 		</span>
 		<template #footer>
 			<span>
@@ -183,7 +189,11 @@ onMounted(() => {
 					@click="onConfirm(fileActionFormRef)"
 				>
 					{{
-						fileRemoteArr.length === 0 ? '返回' : props.isPush ? '推送' : '拉取'
+						fileRemoteArr.length === 0
+							? t('core.fileRemoteAction.button.cancel')
+							: props.isPush
+							? t('core.fileRemoteAction.button.push')
+							: t('core.fileRemoteAction.button.pull')
 					}}
 				</el-button>
 			</span>

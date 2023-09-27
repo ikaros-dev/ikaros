@@ -217,6 +217,24 @@ core:
         delete: Delete folder successful
         deleteCancel: Delete cancel
         paste: Paste successful
+
+  fileRemoteAction:
+    title: File remote operate
+    alert:
+      title: The larger the file, the longer the operation time. Please wait until the operation is complete.
+    formItemLabel:
+      remote: Remote
+      fileId: File ID
+    button:
+      cancel: Cancel
+      push: Push
+      pull: PUll
+    message:
+      hint:
+        submitFail: Please check if any necessary items are missing.
+        selectRemote: Please select remote
+        noStartPlugin: If there is no remote end available, please open the relevant plug-in and start it, such as the plug-in of Baidu web disk.
+
   subject:
     title: Subjects
     put:

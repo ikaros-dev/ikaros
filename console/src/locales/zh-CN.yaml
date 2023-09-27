@@ -157,7 +157,6 @@ core:
           confirm: 退出
           cancel: 不退出
           hintMsg: 已取消退出。
-
   fileDetail:
     title: 文件详情
     descTitle: 文件详情
@@ -177,7 +176,6 @@ core:
       event:
         delete: 删除文件成功
         updateName: 更新文件名称成功
-
   folder:
     title: 目录
     button:
@@ -214,6 +212,22 @@ core:
         delete: 删除目录成功
         deleteCancel: 删除取消
         paste: 粘贴成功
+  fileRemoteAction:
+    title: 文件远端操作
+    alert:
+      title: 文件越大，操作时间越长，请耐心等待操作完成。
+    formItemLabel:
+      remote: 远端
+      fileId: 文件ID
+    button:
+      cancel: 返回
+      push: 推送
+      pull: 拉取
+    message:
+      hint:
+        submitFail: 请检查所填内容是否有必要项缺失。
+        selectRemote: 请选择远端的名称
+        noStartPlugin: 暂无可用的远端，请开启相关的插件并启动，比如百度网盘的插件。
 
   subject:
     title: 条目
