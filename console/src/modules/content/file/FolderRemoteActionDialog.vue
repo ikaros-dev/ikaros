@@ -17,7 +17,9 @@ import {
 	FormRules,
 } from 'element-plus';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
@@ -86,9 +88,12 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 						})
 						.then(() => {
 							ElMessage.success(
-								'请求推送目录至远端成功，目录=' +
+								t('core.folderRemoteAction.message.hint.pushSuccess.prefix') +
 									folderRemoteAction.value.folderId +
-									' 远端=' +
+									' ' +
+									t(
+										'core.folderRemoteAction.message.hint.pushSuccess.postfix'
+									) +
 									folderRemoteAction.value.remote
 							);
 							taskName =
@@ -107,9 +112,12 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 						})
 						.then(() => {
 							ElMessage.success(
-								'请求从远端拉取目录成功，目录=' +
+								t('core.folderRemoteAction.message.hint.pullSuccess.prefix') +
 									folderRemoteAction.value.folderId +
 									' 远端=' +
+									t(
+										'core.folderRemoteAction.message.hint.pullSuccess.postfix'
+									) +
 									folderRemoteAction.value.remote
 							);
 							taskName =
@@ -124,7 +132,7 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 				emit('closeWithTaskName', taskName);
 			} else {
 				console.log('error submit!', fields);
-				ElMessage.error('请检查所填内容是否有必要项缺失。');
+				ElMessage.error(t('core.folderRemoteAction.message.hint.submitFail'));
 			}
 		});
 	}
@@ -135,7 +143,7 @@ const folderActionFormRules = reactive<FormRules>({
 	remote: [
 		{
 			required: true,
-			message: '请选择远端的名称',
+			message: t('core.folderRemoteAction.message.hint.selectRemote'),
 			trigger: 'change',
 		},
 	],
@@ -154,9 +162,12 @@ onMounted(() => {
 </script>
 
 <template>
-	<el-dialog v-model="dialogVisible" title="目录远端操作">
+	<el-dialog
+		v-model="dialogVisible"
+		:title="t('core.folderRemoteAction.title')"
+	>
 		<el-alert
-			title="目录包含文件越多，文件越大，操作时间越长，请耐心等待操作完成。"
+			:title="t('core.folderRemoteAction.alert.title')"
 			type="warning"
 			show-icon
 			:closable="false"
@@ -171,7 +182,10 @@ onMounted(() => {
 			:model="folderRemoteAction"
 			label-width="120px"
 		>
-			<el-form-item label="远端" prop="remote">
+			<el-form-item
+				:label="t('core.fileRemoteAction.formItemLabel.remote')"
+				prop="remote"
+			>
 				<el-select v-model="folderRemoteAction.remote">
 					<el-option
 						v-for="remote in folderRemoteArr"
@@ -181,12 +195,14 @@ onMounted(() => {
 					/>
 				</el-select>
 			</el-form-item>
-			<el-form-item label="目录ID">
+			<el-form-item
+				:label="t('core.folderRemoteAction.formItemLabel.folderId')"
+			>
 				<el-input v-model="folderRemoteAction.folderId" disabled />
 			</el-form-item>
 		</el-form>
 		<span v-else>
-			暂无可用的远端，请开启相关的插件并启动，比如百度网盘的插件。
+			{{ t('core.folderRemoteAction.message.hint.noStartPlugin') }}
 		</span>
 		<template #footer>
 			<span>
@@ -197,10 +213,10 @@ onMounted(() => {
 				>
 					{{
 						folderRemoteArr.length === 0
-							? '返回'
+							? t('core.folderRemoteAction.button.cancel')
 							: props.isPush
-							? '推送'
-							: '拉取'
+							? t('core.folderRemoteAction.button.push')
+							: t('core.folderRemoteAction.button.pull')
 					}}
 				</el-button>
 			</span>

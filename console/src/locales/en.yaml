@@ -233,7 +233,29 @@ core:
       hint:
         submitFail: Please check if any necessary items are missing.
         selectRemote: Please select remote
-        noStartPlugin: If there is no remote end available, please open the relevant plug-in and start it, such as the plug-in of Baidu web disk.
+        noStartPlugin: If there is no remote end available, please open the relevant plugin and start it, such as the plugin of Baidu web disk.
+  folderRemoteAction:
+    title: Remote directory operation
+    alert:
+      title: The more files the directory contains, the larger the file and the longer the operation time. Please wait until the operation is complete.
+    formItemLabel:
+      remote: Remote
+      folderId: Folder ID
+    button:
+      cancel: Cancel
+      push: Push
+      pull: Pull
+    message:
+      hint:
+        pushSuccess:
+          prefix: The request to push the directory to the remote end succeeds. The directory =
+          postfix: remote=
+        pullSuccess:
+          prefix: The request succeeds in retrieving the directory from the remote end. Directory =
+          postfix: remote=
+        submitFail: Please check if any necessary items are missing.
+        selectRemote: Please select remote
+        noStartPlugin: If there is no remote end available, please open the relevant plugin and start it, such as the plugin of Baidu web disk.
 
   subject:
     title: Subjects
