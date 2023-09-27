@@ -38,8 +38,10 @@ import { computed } from 'vue';
 // import { useRouter } from 'vue-router';
 import moment from 'moment';
 import { useSettingStore } from '@/stores/setting';
+import { useI18n } from 'vue-i18n';
 
 const settingStore = useSettingStore();
+const { t } = useI18n();
 
 const findFolder = ref({
 	name: 'root',
@@ -119,7 +121,7 @@ const onCreateFolderButtonClick = async () => {
 		name: base64Encode(createFolder.value.name),
 		parentId: createFolder.value.parentId,
 	});
-	ElMessage.success('创建目录成功：' + createFolder.value);
+	ElMessage.success(t('core.folder.message.event.create') + createFolder.value);
 	dialogFormVisible.value = false;
 	fetchFolders();
 };
@@ -130,7 +132,7 @@ const moveFile2Folder = async () => {
 		id: currentSelectFile.value.id,
 		folderId: currentSelectFolder.value.id + '',
 	});
-	ElMessage.success('移动文件成功');
+	ElMessage.success(t('core.folder.message.event.move'));
 	fetchFolders();
 };
 
@@ -207,11 +209,11 @@ const onDeleteButtonClick = async () => {
 			currentNeedDeleteFolder.folders.length > 0)
 	) {
 		ElMessageBox.confirm(
-			'检测到选择的目录内部有文件或者目录，您确认要一起(递归)删除吗? (耗时可能较长)',
+			t('core.folder.message.deleteRecursivelyHint'),
 			'Warning',
 			{
-				confirmButtonText: '确认',
-				cancelButtonText: '取消',
+				confirmButtonText: t('core.folder.button.confirm'),
+				cancelButtonText: t('core.folder.button.cancel'),
 				type: 'warning',
 			}
 		)
@@ -220,7 +222,9 @@ const onDeleteButtonClick = async () => {
 					id: needDeteFolderId,
 					allowDeleteWhenChildExists: true,
 				});
-				ElMessage.success('删除目录成功, ID：' + needDeteFolderId);
+				ElMessage.success(
+					t('core.folder.message.event.delete') + ', ID：' + needDeteFolderId
+				);
 				if (needDeteFolderId === folder.value?.id) {
 					findFolder.value.parentId = -1;
 					findFolder.value.name = 'root';
@@ -237,7 +241,7 @@ const onDeleteButtonClick = async () => {
 			.catch(() => {
 				ElMessage({
 					type: 'info',
-					message: '删除取消',
+					message: t('core.folder.message.event.deleteCancel'),
 				});
 			});
 	} else {
@@ -245,7 +249,9 @@ const onDeleteButtonClick = async () => {
 			id: needDeteFolderId,
 			allowDeleteWhenChildExists: false,
 		});
-		ElMessage.success('删除目录成功, ID：' + needDeteFolderId);
+		ElMessage.success(
+			t('core.folder.message.event.delete') + ', ID：' + needDeteFolderId
+		);
 		if (needDeteFolderId === folder.value?.id) {
 			findFolder.value.parentId = -1;
 			findFolder.value.name = 'root';
@@ -283,7 +289,7 @@ const pasteFiles = async () => {
 			folderId: needPasteFolderId + '',
 		});
 	});
-	ElMessage.success('粘贴成功');
+	ElMessage.success(t('core.folder.message.event.paste'));
 	selectFiles.value = [];
 	fetchFolders();
 };
@@ -343,9 +349,15 @@ onMounted(fetchFolders);
 		@closeWithTaskName="onCloseWithTaskName"
 	/>
 
-	<el-dialog v-model="dialogFormVisible" title="新建文件夹">
+	<el-dialog
+		v-model="dialogFormVisible"
+		:title="t('core.folder.createDialog.title')"
+	>
 		<el-form :model="createFolder">
-			<el-form-item label="父文件夹ID" :label-width="100">
+			<el-form-item
+				:label="t('core.folder.createDialog.parentId')"
+				:label-width="100"
+			>
 				<el-input
 					v-model="createFolder.parentId"
 					disabled
@@ -353,7 +365,10 @@ onMounted(fetchFolders);
 					size="large"
 				/>
 			</el-form-item>
-			<el-form-item label="父文件夹名称" :label-width="100">
+			<el-form-item
+				:label="t('core.folder.createDialog.parentName')"
+				:label-width="100"
+			>
 				<el-input
 					v-model="createFolder.parentName"
 					disabled
@@ -361,7 +376,10 @@ onMounted(fetchFolders);
 					size="large"
 				/>
 			</el-form-item>
-			<el-form-item label="文件夹名称" :label-width="100">
+			<el-form-item
+				:label="t('core.folder.createDialog.name')"
+				:label-width="100"
+			>
 				<el-input
 					v-model="createFolder.name"
 					autocomplete="off"
@@ -372,9 +390,11 @@ onMounted(fetchFolders);
 		</el-form>
 		<template #footer>
 			<span class="dialog-footer">
-				<el-button @click="dialogFormVisible = false">返回</el-button>
+				<el-button @click="dialogFormVisible = false">{{
+					t('core.folder.createDialog.cancel')
+				}}</el-button>
 				<el-button type="primary" @click="onCreateFolderButtonClick">
-					提交
+					{{ t('core.folder.createDialog.confirm') }}
 				</el-button>
 			</span>
 		</template>
@@ -383,21 +403,25 @@ onMounted(fetchFolders);
 	<el-row>
 		<el-col :span="24">
 			<el-button :icon="DocumentAdd" @click="fileUploadDrawerVisible = true">
-				添加文件
+				{{ t('core.folder.button.newFile') }}
 			</el-button>
 			<el-button :icon="FolderAdd" @click="onAddFolderButtonClick">
-				新建目录
+				{{ t('core.folder.button.newFolder') }}
 			</el-button>
 			<!-- <el-button :icon="KnifeFork" @click="handleSelect">剪切</el-button> -->
 			<!-- <el-button :icon="CopyDocument">复制</el-button> -->
-			<el-button :icon="Brush" @click="pasteFiles">粘贴</el-button>
+			<el-button :icon="Brush" @click="pasteFiles">{{
+				t('core.folder.button.paste')
+			}}</el-button>
 			<el-popconfirm
-				title="您确定删除选中目录吗?"
+				:title="t('core.folder.message.deleteFolderHint')"
 				width="200"
 				@confirm="onDeleteButtonClick"
 			>
 				<template #reference>
-					<el-button :icon="FolderDelete" type="danger">删除</el-button>
+					<el-button :icon="FolderDelete" type="danger">{{
+						t('core.folder.button.deleteFolder')
+					}}</el-button>
 				</template>
 			</el-popconfirm>
 			<el-button
@@ -405,14 +429,14 @@ onMounted(fetchFolders);
 				plain
 				@click="openFolderRemoteActionDialog(true)"
 			>
-				推送
+				{{ t('core.folder.button.push') }}
 			</el-button>
 			<el-button
 				v-if="settingStore.remoteEnable"
 				plain
 				@click="openFolderRemoteActionDialog(false)"
 			>
-				拉取
+				{{ t('core.folder.button.pull') }}
 			</el-button>
 		</el-col>
 	</el-row>
@@ -440,10 +464,13 @@ onMounted(fetchFolders);
 				@row-dblclick="enrtyFolder"
 			>
 				<el-table-column prop="id" label="ID" width="60" />
-				<el-table-column prop="name" label="目录名" />
+				<el-table-column
+					prop="name"
+					:label="t('core.folder.folderTable.column.name')"
+				/>
 				<el-table-column
 					prop="update_time"
-					label="更新时间"
+					:label="t('core.folder.folderTable.column.updateTime')"
 					width="160"
 					:formatter="dateFormat"
 				/>
@@ -458,14 +485,21 @@ onMounted(fetchFolders);
 			>
 				<el-table-column type="selection" width="55" />
 				<el-table-column prop="id" label="ID" width="60" />
-				<el-table-column prop="name" label="文件名" />
+				<el-table-column
+					prop="name"
+					:label="t('core.folder.fileTable.column.name')"
+				/>
 				<el-table-column
 					prop="updateTime"
-					label="修改时间"
+					:label="t('core.folder.fileTable.column.updateTime')"
 					:formatter="dateFormat"
 					width="160"
 				/>
-				<el-table-column prop="size" label="大小" width="100">
+				<el-table-column
+					prop="size"
+					:label="t('core.folder.fileTable.column.size')"
+					width="100"
+				>
 					<template #default="scoped">
 						{{ formatFileSize(scoped.row.size) }}
 					</template>

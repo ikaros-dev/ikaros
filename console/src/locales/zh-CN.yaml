@@ -160,6 +160,41 @@ core:
 
   folder:
     title: 目录
+    button:
+      confirm: 确认
+      cancel: 取消
+      newFile: 添加文件
+      newFolder: 新建目录
+      deleteFolder: 删除
+      push: 推送
+      pull: 拉取
+      paste: 粘贴
+    createDialog:
+      title: 新建文件夹
+      parentId: 父文件夹ID
+      parentName: 父文件夹名称
+      name: 文件夹名称
+      confirm: 提交
+      cancel: 返回
+    folderTable:
+      column:
+        name: 目录名
+        updateTime: 更新时间
+    fileTable:
+      column:
+        name: 文件名
+        updateTime: 更新时间
+        size: 大小
+    message:
+      deleteRecursivelyHint: 检测到选择的目录内部有文件或者目录，您确认要一起(递归)删除吗? (耗时可能较长)
+      deleteFolderHint: 您确定删除选中目录吗?
+      event:
+        create: 创建目录成功
+        move: 移动文件成功
+        delete: 删除目录成功
+        deleteCancel: 删除取消
+        paste: 粘贴成功
+
   subject:
     title: 条目
     put:

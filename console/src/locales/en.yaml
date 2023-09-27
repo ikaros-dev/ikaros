@@ -147,10 +147,10 @@ core:
               cancel: Cancel
     message:
       delete:
-        success: Delete file success for
+        success: Delete file successful for
         fail: Delete file fail for
       update:
-        success: Update file success for
+        success: Update file successful for
     drawer:
       upload:
         title: Upload Files
@@ -163,6 +163,40 @@ core:
 
   folder:
     title: Folders
+    button:
+      confirm: Confirm
+      cancel: Cancel
+      newFile: New file
+      newFolder: New folder
+      deleteFolder: Delete
+      push: Push
+      pull: Pull
+      paste: Paste
+    folderTable:
+      column:
+        name: Folder name
+        updateTime: Updated time
+    fileTable:
+      column:
+        name: File name
+        updateTime: Updated time
+        size: Size
+    createDialog:
+      title: New folder
+      parentId: Parent ID
+      parentName: Parent name
+      name: Name
+      confirm: Confirm
+      cancel: Cancel
+    message:
+      deleteRecursivelyHint: Detected that there are files or directories inside the selected directory. Are you sure you want to delete them all together (recursively)? This might take some time.
+      deleteFolderHint: Are you sure you want to delete the selected directory?
+      event:
+        create: Create folder successful
+        move: Move folder successful
+        delete: Delete folder successful
+        deleteCancel: Delete cancel
+        paste: Paste successful
   subject:
     title: Subjects
     put:
