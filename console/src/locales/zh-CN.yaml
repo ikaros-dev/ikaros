@@ -114,6 +114,12 @@ core:
     title: 个人中心
   file:
     title: 文件
+    type:
+      image: 图片
+      video: 视频
+      document: 文档
+      voice: 音声
+      unknown: 未知
     form:
       item:
         label:

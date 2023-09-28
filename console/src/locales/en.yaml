@@ -117,6 +117,12 @@ core:
     title: Profile
   file:
     title: Files
+    type:
+      image: Image
+      video: Video
+      document: Document
+      voice: Voice
+      unknown: Unknown
     form:
       item:
         label:

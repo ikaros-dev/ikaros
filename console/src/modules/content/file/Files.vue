@@ -187,11 +187,11 @@ onMounted(fetchFiles);
 						clearable
 						@change="onFileTypeSelectChange"
 					>
-						<el-option label="图片" value="IMAGE" />
-						<el-option label="视频" value="VIDEO" />
-						<el-option label="文档" value="DOCUMENT" />
-						<el-option label="音声" value="VOICE" />
-						<el-option label="未知" value="UNKNOWN" />
+						<el-option :label="t('core.file.type.image')" value="IMAGE" />
+						<el-option :label="t('core.file.type.video')" value="VIDEO" />
+						<el-option :label="t('core.file.type.document')" value="DOCUMENT" />
+						<el-option :label="t('core.file.type.voice')" value="VOICE" />
+						<el-option :label="t('core.file.type.unknown')" value="UNKNOWN" />
 					</el-select>
 				</el-form-item>
 
