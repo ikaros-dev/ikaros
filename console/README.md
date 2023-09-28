@@ -1,3 +1,21 @@
 # Ikaros Console Moudle
 
-ikaros的后台管理console模块
+Ikaros console module.
+
+### Install
+
+```
+pnpm install
+```
+
+### Local Develop
+
+```
+pnpm dev
+```
+
+### Build
+
+```
+pnpm build
+```

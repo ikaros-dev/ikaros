@@ -3,6 +3,9 @@ import FilePondUpload from '@/components/upload/FilePondUpload.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { ref, watch } from 'vue';
 import { ElDrawer } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -55,11 +58,11 @@ const filePondUploadRef = ref(null);
 const handleClose = (done: () => void) => {
 	// console.log('firstFile', firstFile);
 	ElMessageBox.confirm(
-		'退出上传页时，如有文件还未上传完毕，下次需要从零开始上传，您确定要退出当前上传页吗？',
-		'温馨提示',
+		t('core.file.drawer.upload.closeConfirm.message'),
+		t('core.file.drawer.upload.closeConfirm.title'),
 		{
-			confirmButtonText: '退出',
-			cancelButtonText: '不退出',
+			confirmButtonText: t('core.file.drawer.upload.closeConfirm.confirm'),
+			cancelButtonText: t('core.file.drawer.upload.closeConfirm.cancel'),
 			type: 'warning',
 		}
 	)
@@ -73,7 +76,7 @@ const handleClose = (done: () => void) => {
 			handleVisibleChange(false);
 		})
 		.catch(() => {
-			ElMessage.warning('已取消退出。');
+			ElMessage.warning(t('core.file.drawer.upload.closeConfirm.hintMsg'));
 		});
 };
 
@@ -94,7 +97,7 @@ const uploadHandler = (file, onUploadProgress) => {
 	>
 		<template #header>
 			<div align="center">
-				<h4>上传文件</h4>
+				<h4>{{ t('core.file.drawer.upload.title') }}</h4>
 			</div>
 		</template>
 		<template #default>

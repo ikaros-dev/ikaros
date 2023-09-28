@@ -34,17 +34,19 @@ const messages = locales.reduce((acc, cur) => {
 
 const i18n = createI18n({
 	legacy: false,
-	locale: 'zh-CN',
-	fallbackLocale: 'zh-CN',
+	locale: getBrowserLanguage(),
+	fallbackLocale: getBrowserLanguage(),
 	messages,
 });
 
 export function getBrowserLanguage(): string {
 	const browserLanguage = navigator.language;
+	// eslint-disable-next-line no-unused-vars
 	const language = messages[browserLanguage]
 		? browserLanguage
 		: browserLanguage.split('-')[0];
-	return language in messages ? language : 'zh-CN';
+	// return language in messages ? language : 'zh-CN';
+	return 'en';
 }
 
 export function setupI18n(app: App) {

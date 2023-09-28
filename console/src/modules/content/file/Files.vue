@@ -27,11 +27,14 @@ import { onMounted, ref, watch } from 'vue';
 import router from '@/router';
 import moment from 'moment';
 import { useSettingStore } from '@/stores/setting';
+import { useI18n } from 'vue-i18n';
 
 // eslint-disable-next-line no-unused-vars
 const settingStore = useSettingStore();
 
 const fileUploadDrawerVisible = ref(false);
+
+const { t } = useI18n();
 
 // eslint-disable-next-line no-unused-vars
 const onFileUploadDrawerClose = (firstFile) => {
@@ -90,12 +93,14 @@ const handleDelete = async (file: FileEntity) => {
 			id: file.id as number,
 		})
 		.then(() => {
-			ElMessage.success('删除文件成功，文件：' + file.id + '-' + file.name);
+			ElMessage.success(
+				t('core.file.message.delete.success') + file.id + '-' + file.name
+			);
 			fetchFiles();
 		})
 		.catch((err) => {
 			console.error(err);
-			ElMessage.error('删除文件失败，异常：' + err.message);
+			ElMessage.error(t('core.file.message.delete.fail') + err.message);
 		});
 };
 
@@ -110,7 +115,7 @@ const updateFile = async (file: FileEntity) => {
 			fileEntity: file,
 		})
 		.then(() => {
-			ElMessage.success('更新文件成功，文件名称：' + file.name);
+			ElMessage.success(t('core.file.message.update.success') + file.name);
 			fetchFiles();
 		});
 };
@@ -173,24 +178,30 @@ onMounted(fetchFiles);
 	<el-row :gutter="10">
 		<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
 			<el-form :inline="true" :model="findFilesCondition">
-				<el-form-item label="文件类型" style="width: 15%">
+				<el-form-item
+					:label="t('core.file.form.item.label.search.type')"
+					style="width: 15%"
+				>
 					<el-select
 						v-model="findFilesCondition.type"
 						clearable
 						@change="onFileTypeSelectChange"
 					>
-						<el-option label="图片" value="IMAGE" />
-						<el-option label="视频" value="VIDEO" />
-						<el-option label="文档" value="DOCUMENT" />
-						<el-option label="音声" value="VOICE" />
-						<el-option label="未知" value="UNKNOWN" />
+						<el-option :label="t('core.file.type.image')" value="IMAGE" />
+						<el-option :label="t('core.file.type.video')" value="VIDEO" />
+						<el-option :label="t('core.file.type.document')" value="DOCUMENT" />
+						<el-option :label="t('core.file.type.voice')" value="VOICE" />
+						<el-option :label="t('core.file.type.unknown')" value="UNKNOWN" />
 					</el-select>
 				</el-form-item>
 
-				<el-form-item label="文件名称" style="width: 80%">
+				<el-form-item
+					:label="t('core.file.form.item.label.search.name')"
+					style="width: 80%"
+				>
 					<el-input
 						v-model="findFilesCondition.fileName"
-						placeholder="模糊匹配回车搜索"
+						:placeholder="t('core.file.form.item.label.search.namePlaceHolder')"
 						clearable
 						@change="fetchFiles"
 					/>
@@ -223,7 +234,7 @@ onMounted(fetchFiles);
 				<el-icon>
 					<Upload />
 				</el-icon>
-				上传文件
+				{{ t('core.file.button.label.upload') }}
 			</el-button>
 		</el-col>
 	</el-row>
@@ -234,8 +245,16 @@ onMounted(fetchFiles);
 		style="width: 100%"
 		@row-dblclick="showFileDetails"
 	>
-		<el-table-column prop="id" label="文件ID" width="80" sortable />
-		<el-table-column prop="name" label="文件名称">
+		<el-table-column
+			prop="id"
+			:label="t('core.file.table.column.label.id')"
+			width="80"
+			sortable
+		/>
+		<el-table-column
+			prop="name"
+			:label="t('core.file.table.column.label.name')"
+		>
 			<template #default="scope">
 				<el-input
 					v-model="scope.row.name"
@@ -246,36 +265,56 @@ onMounted(fetchFiles);
 		</el-table-column>
 		<el-table-column
 			prop="updateTime"
-			label="修改时间"
+			:label="t('core.file.table.column.label.updateTime')"
 			:formatter="dateFormat"
 			width="160"
 		/>
-		<el-table-column label="大小" width="100">
+		<el-table-column
+			:label="t('core.file.table.column.label.size')"
+			width="100"
+		>
 			<template #default="scoped">
 				{{ formatFileSize(scoped.row.size) }}
 			</template>
 		</el-table-column>
-		<el-table-column label="操作" width="300">
+		<el-table-column
+			:label="t('core.file.table.column.label.operators')"
+			width="300"
+		>
 			<template #default="scoped">
-				<el-button plain @click="showFileDetails(scoped.row)">详情</el-button>
+				<el-button plain @click="showFileDetails(scoped.row)">
+					{{ t('core.file.table.column.operations.details') }}
+				</el-button>
 
 				<el-button
 					v-if="settingStore.remoteEnable"
 					plain
 					@click="openFileRemoteActionDialog(scoped.row)"
 				>
-					<span v-if="scoped.row.canRead"> 推送 </span>
-					<span v-else> 拉取 </span>
+					<span v-if="scoped.row.canRead">
+						{{ t('core.file.table.column.operations.push') }}
+					</span>
+					<span v-else>
+						{{ t('core.file.table.column.operations.pull') }}
+					</span>
 				</el-button>
 				<el-popconfirm
-					title="你确定要删除该文件？"
-					confirm-button-text="确定"
-					cancel-button-text="取消"
+					:title="
+						t('core.file.table.column.operations.delete.popconfirm.title')
+					"
+					:confirm-button-text="
+						t('core.file.table.column.operations.delete.popconfirm.confirm')
+					"
+					:cancel-button-text="
+						t('core.file.table.column.operations.delete.popconfirm.cancel')
+					"
 					confirm-button-type="danger"
 					@confirm="handleDelete(scoped.row)"
 				>
 					<template #reference>
-						<el-button type="danger"> 删除</el-button>
+						<el-button type="danger">
+							{{ t('core.file.table.column.operations.delete.button') }}
+						</el-button>
 					</template>
 				</el-popconfirm>
 			</template>

@@ -15,6 +15,9 @@ import {
 	ElPopconfirm,
 	ElRow,
 } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -92,7 +95,9 @@ const handleDelete = async () => {
 				id: file.value.id as number,
 			})
 			.then(() => {
-				ElMessage.success('删除文件成功：' + file.value.name);
+				ElMessage.success(
+					t('core.fileDetail.message.event.delete') + ' ' + file.value.name
+				);
 				emit('delete', file.value);
 				drawerVisible.value = false;
 			});
@@ -119,7 +124,7 @@ const handleEditName = () => {
 
 const handleUpdateName = async () => {
 	if (!file.value.name) {
-		ElMessage.error('文件名称不能为空！');
+		ElMessage.error(t('core.fileDetail.message.hint.name'));
 		window.location.reload();
 		return;
 	}
@@ -129,7 +134,7 @@ const handleUpdateName = async () => {
 				fileEntity: file.value,
 			})
 			.then(() => {
-				ElMessage.success('更新文件名称成功');
+				ElMessage.success(t('core.fileDetail.message.event.updateName'));
 			});
 	} catch (error) {
 		console.error(error);
@@ -154,7 +159,7 @@ const handleClose = (done: () => void) => {
 <template>
 	<el-drawer
 		v-model="drawerVisible"
-		title="文件详情"
+		:title="t('core.fileDetail.title')"
 		direction="ltr"
 		:before-close="handleClose"
 		size="40%"
@@ -180,18 +185,18 @@ const handleClose = (done: () => void) => {
 						controls
 						preload="metadata"
 					>
-						您的浏览器不支持这个格式的视频
+						{{ t('core.fileDetail.message.hint.videoFormat') }}
 					</video>
 					<audio
 						v-else-if="isVoice"
 						controls
 						:src="getCompleteFileUrl(file.url)"
 					>
-						您的浏览器不支持这个格式的音频
+						{{ t('core.fileDetail.message.hint.audioFormat') }}
 					</audio>
-					<div v-else>此文件不支持预览</div>
+					<div v-else>{{ t('core.fileDetail.message.hint.preview') }}</div>
 				</div>
-				<div v-else>文件不可读取，需要从远端拉取下来。</div>
+				<div v-else>{{ t('core.fileDetail.message.hint.needPull') }}</div>
 			</el-col>
 		</el-row>
 
@@ -201,7 +206,7 @@ const handleClose = (done: () => void) => {
 		<el-row :gutter="24" type="flex">
 			<el-col :lg="24" :md="24" :sm="24" :xl="24" :xs="24">
 				<el-descriptions
-					title="文件详情"
+					:title="t('core.fileDetail.descTitle')"
 					:column="1"
 					size="large"
 					border
@@ -210,7 +215,9 @@ const handleClose = (done: () => void) => {
 					<el-descriptions-item label="ID">
 						{{ file.id }}
 					</el-descriptions-item>
-					<el-descriptions-item label="名称">
+					<el-descriptions-item
+						:label="t('core.fileDetail.descItemLabel.name')"
+					>
 						<span v-if="editable">
 							<el-input
 								ref="nameInput"
@@ -223,13 +230,19 @@ const handleClose = (done: () => void) => {
 							{{ file.name }}
 						</span>
 					</el-descriptions-item>
-					<el-descriptions-item label="类型">
+					<el-descriptions-item
+						:label="t('core.fileDetail.descItemLabel.type')"
+					>
 						{{ fileTypeMap.get(file.type as string) }}
 					</el-descriptions-item>
-					<el-descriptions-item label="大小">
+					<el-descriptions-item
+						:label="t('core.fileDetail.descItemLabel.size')"
+					>
 						{{ formatFileSize(file.size) }}
 					</el-descriptions-item>
-					<el-descriptions-item label="更新时间：">
+					<el-descriptions-item
+						:label="t('core.fileDetail.descItemLabel.updateTime')"
+					>
 						{{ file.updateTime }}
 					</el-descriptions-item>
 					<el-descriptions-item v-if="file.md5" label="MD5">
@@ -241,7 +254,10 @@ const handleClose = (done: () => void) => {
 					<el-descriptions-item v-if="file.url" label="URL">
 						<a :href="file.url" target="_blank">{{ file.url }}</a>
 					</el-descriptions-item>
-					<el-descriptions-item v-if="file.fsPath" label="文件系统路径">
+					<el-descriptions-item
+						v-if="file.fsPath"
+						:label="t('core.fileDetail.descItemLabel.fsPath')"
+					>
 						{{ file.fsPath }}
 					</el-descriptions-item>
 				</el-descriptions>

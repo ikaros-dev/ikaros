@@ -1,4 +1,15 @@
 Root: 首页
+components:
+  upload:
+    file-pond-upload:
+      mainLabel: 点击选择文件或将文件拖拽到此处
+      uploadding: 上传中
+      cancelUpload: 取消上传
+      uploadFinish: 上传完成
+      uploadException: 上传异常
+      notSupportFileFormat: 不支持的文件格式
+      clickCancel: 点击取消
+      clickRetry: 点击重试
 core:
   common:
     exception:
@@ -91,6 +102,7 @@ core:
         novel: 书籍
         tasks: 任务
         folders: 目录
+        collection: 收藏
     operations:
       profile:
         button: 个人资料
@@ -102,8 +114,149 @@ core:
     title: 个人中心
   file:
     title: 文件
+    type:
+      image: 图片
+      video: 视频
+      document: 文档
+      voice: 音声
+      unknown: 未知
+    form:
+      item:
+        label:
+          search:
+            type: 文件类型
+            name: 文件名称
+            namePlaceHolder: 模糊匹配回车搜索
+    button:
+      label:
+        upload: 上传文件
+    table:
+      column:
+        label:
+          id: ID
+          name: 文件名称
+          updateTime: 修改时间
+          size: 文件大小
+          operators: 操作
+        operations:
+          details: 详情
+          push: 推送
+          pull: 拉取
+          delete:
+            button: 删除
+            popconfirm:
+              title: 你确定要删除该文件吗？
+              confirm: 确定
+              cancel: 取消
+    message:
+      delete:
+        success: 删除文件成功，文件：
+        fail: 删除文件失败，异常：
+      update:
+        success: 更新文件成功，文件名称：
+    drawer:
+      upload:
+        title: 上传文件
+        closeConfirm:
+          message: 退出上传页时，如有文件还未上传完毕，下次需要从零开始上传，您确定要退出当前上传页吗？
+          title: 温馨提示
+          confirm: 退出
+          cancel: 不退出
+          hintMsg: 已取消退出。
+  fileDetail:
+    title: 文件详情
+    descTitle: 文件详情
+    descItemLabel:
+      name: 名称
+      type: 类型
+      size: 大小
+      updateTime: 更新时间
+      fsPath: 文件系统路径
+    message:
+      hint:
+        name: 文件名称不能为空！
+        videoFormat: 您的浏览器不支持这个格式的视频
+        audioFormat: 您的浏览器不支持这个格式的音频
+        preview: 此文件不支持预览
+        needPull: 文件不可读取，需要从远端拉取下来。
+      event:
+        delete: 删除文件成功
+        updateName: 更新文件名称成功
   folder:
     title: 目录
+    button:
+      confirm: 确认
+      cancel: 取消
+      newFile: 添加文件
+      newFolder: 新建目录
+      deleteFolder: 删除
+      push: 推送
+      pull: 拉取
+      paste: 粘贴
+    createDialog:
+      title: 新建文件夹
+      parentId: 父文件夹ID
+      parentName: 父文件夹名称
+      name: 文件夹名称
+      confirm: 提交
+      cancel: 返回
+    folderTable:
+      column:
+        name: 目录名
+        updateTime: 更新时间
+    fileTable:
+      column:
+        name: 文件名
+        updateTime: 更新时间
+        size: 大小
+    message:
+      deleteRecursivelyHint: 检测到选择的目录内部有文件或者目录，您确认要一起(递归)删除吗? (耗时可能较长)
+      deleteFolderHint: 您确定删除选中目录吗?
+      event:
+        create: 创建目录成功
+        move: 移动文件成功
+        delete: 删除目录成功
+        deleteCancel: 删除取消
+        paste: 粘贴成功
+  fileRemoteAction:
+    title: 文件远端操作
+    alert:
+      title: 文件越大，操作时间越长，请耐心等待操作完成。
+    formItemLabel:
+      remote: 远端
+      fileId: 文件ID
+    button:
+      cancel: 返回
+      push: 推送
+      pull: 拉取
+    message:
+      hint:
+        submitFail: 请检查所填内容是否有必要项缺失。
+        selectRemote: 请选择远端的名称
+        noStartPlugin: 暂无可用的远端，请开启相关的插件并启动，比如百度网盘的插件。
+  folderRemoteAction:
+    title: 目录远端操作
+    alert:
+      title: 目录包含文件越多，文件越大，操作时间越长，请耐心等待操作完成。
+    formItemLabel:
+      remote: 远端
+      folderId: 目录ID
+    button:
+      cancel: 返回
+      push: 推送
+      pull: 拉取
+    message:
+      hint:
+        pushSuccess:
+          prefix: 请求推送目录至远端成功，目录=
+          postfix: 远端=
+        pullSuccess:
+          prefix: 请求从远端拉取目录成功，目录=
+          postfix: 远端=
+        submitFail: 请检查所填内容是否有必要项缺失。
+        selectRemote: 请选择远端的名称
+        noStartPlugin: 暂无可用的远端，请开启相关的插件并启动，比如百度网盘的插件。
+
   subject:
     title: 条目
     put:
@@ -130,3 +283,7 @@ core:
     title: 任务
     details:
       title: 任务详情
+  collection:
+    title: 收藏
+    details:
+      title: 收藏
