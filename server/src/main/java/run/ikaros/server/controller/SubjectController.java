@@ -8,16 +8,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.subject.service.SubjectService;
+import run.ikaros.server.theme.ThemeService;
 
 @Controller
 @RequestMapping("/subject")
 public class SubjectController {
 
     private final SubjectService subjectService;
-
-    public SubjectController(SubjectService subjectService) {
+    private final ThemeService themeService;
+    public SubjectController(SubjectService subjectService, ThemeService themeService) {
         this.subjectService = subjectService;
+        this.themeService = themeService;
     }
+
+
 
     /**
      * Subject list page.
@@ -27,7 +31,8 @@ public class SubjectController {
         return subjectService.findAllByPageable(new PagingWrap<>(1, 100, 0, null))
             .map(PagingWrap::getItems)
             .map(subs -> model.addAttribute("subjects", subs))
-            .thenReturn("subjects");
+            .then(themeService.getCurrentTheme())
+            .map(theme -> "/" + theme + "/" + "subjects");
     }
 
     /**
@@ -37,6 +42,7 @@ public class SubjectController {
     public Mono<String> findById(@PathVariable("id") Long id, Model model) {
         return subjectService.findById(id)
             .map(subject -> model.addAttribute("subject", subject))
-            .thenReturn("subject-details");
+            .then(themeService.getCurrentTheme())
+            .map(theme -> "/" + theme + "/" +  "subject-details");
     }
 }

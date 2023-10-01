@@ -1,7 +1,9 @@
 package run.ikaros.server.core.setting;
 
 import java.util.Map;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -10,21 +12,18 @@ import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.server.custom.scheme.SchemeInitializedEvent;
+import run.ikaros.server.infra.constants.SettingKeyConst;
+import run.ikaros.server.infra.constants.ThemeConst;
 
 @Slf4j
 @Component
 public class SystemSettingInitListener {
     private final ReactiveCustomClient reactiveCustomClient;
-    private static final String configMapName = "setting.server.ikaros.run";
+    @Getter private static final String configMapName = "setting.server.ikaros.run";
 
     public SystemSettingInitListener(ReactiveCustomClient reactiveCustomClient) {
         this.reactiveCustomClient = reactiveCustomClient;
     }
-
-    public static String getConfigMapName() {
-        return configMapName;
-    }
-
     /**
      * Init add system default config items.
      */
@@ -59,6 +58,9 @@ public class SystemSettingInitListener {
 
         // System remote settings
         settingConfigMap.putDataItem("REMOTE_ENABLE", "false");
+
+        // System web theme settings
+        settingConfigMap.putDataItem(SettingKeyConst.THEME_SELECT, ThemeConst.DEFAULT);
 
         return reactiveCustomClient.findOne(ConfigMap.class, configMapName)
             .onErrorResume(NotFoundException.class, e ->

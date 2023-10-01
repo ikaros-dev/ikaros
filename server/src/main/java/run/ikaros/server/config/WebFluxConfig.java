@@ -14,6 +14,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.codec.CodecConfigurer;
 import org.springframework.http.codec.HttpMessageWriter;
 import org.springframework.lang.NonNull;
+import org.springframework.web.reactive.config.PathMatchConfigurer;
 import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -26,10 +27,15 @@ import org.springframework.web.reactive.result.view.ViewResolutionResultHandler;
 import org.springframework.web.reactive.result.view.ViewResolver;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
+import run.ikaros.api.core.setting.ConfigMap;
+import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.server.console.ConsoleProperties;
+import run.ikaros.server.core.setting.SystemSettingInitListener;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.endpoint.CoreEndpointsBuilder;
+import run.ikaros.server.infra.constants.SettingKeyConst;
+import run.ikaros.server.infra.constants.ThemeConst;
 import run.ikaros.server.plugin.PluginApplicationContextRegistry;
 
 @Configuration(proxyBeanMethods = false)
@@ -39,19 +45,23 @@ public class WebFluxConfig implements WebFluxConfigurer {
     private final ApplicationContext applicationContext;
     private final IkarosProperties ikarosProperties;
     private final ConsoleProperties consoleProperties;
+    private final ReactiveCustomClient reactiveCustomClient;
 
     /**
      * construct a {@link WebFluxConfig} instance.
      *
-     * @param applicationContext root application context
-     * @param ikarosProperties   ikaros prop
-     * @param consoleProperties  console prop
+     * @param applicationContext   root application context
+     * @param ikarosProperties     ikaros prop
+     * @param consoleProperties    console prop
+     * @param reactiveCustomClient custom client
      */
     public WebFluxConfig(ApplicationContext applicationContext, IkarosProperties ikarosProperties,
-                         ConsoleProperties consoleProperties) {
+                         ConsoleProperties consoleProperties,
+                         ReactiveCustomClient reactiveCustomClient) {
         this.applicationContext = applicationContext;
         this.ikarosProperties = ikarosProperties;
         this.consoleProperties = consoleProperties;
+        this.reactiveCustomClient = reactiveCustomClient;
     }
 
     @Bean
@@ -107,7 +117,6 @@ public class WebFluxConfig implements WebFluxConfigurer {
         }
     }
 
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         var importRoot = ikarosProperties.getWorkDir().resolve(FileConst.DEFAULT_DIR_NAME);
@@ -131,6 +140,14 @@ public class WebFluxConfig implements WebFluxConfigurer {
         // Add thymeleaf static resource
         registry.addResourceHandler("/static/**")
             .addResourceLocations("classpath:/templates/static/");
+
+        // Register theme static files path
+        reactiveCustomClient.findOne(ConfigMap.class, SystemSettingInitListener.getConfigMapName())
+            .map(ConfigMap::getData)
+            .map(map -> map.getOrDefault(SettingKeyConst.THEME_SELECT, ThemeConst.DEFAULT))
+            .map(theme -> registry.addResourceHandler("/static/" + theme + "/**")
+                .addResourceLocations("classpath:/templates/"+theme+"/static/"))
+            .block();
 
     }
 }
