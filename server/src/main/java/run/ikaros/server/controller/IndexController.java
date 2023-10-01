@@ -17,6 +17,6 @@ public class IndexController {
     @RequestMapping("/")
     public Mono<String> index(Model model) {
         return themeService.getCurrentTheme()
-            .map(theme -> "/" + theme + "/index");
+            .map(theme -> "/theme/" + theme + "/index");
     }
 }

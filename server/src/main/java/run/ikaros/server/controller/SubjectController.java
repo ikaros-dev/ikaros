@@ -32,7 +32,7 @@ public class SubjectController {
             .map(PagingWrap::getItems)
             .map(subs -> model.addAttribute("subjects", subs))
             .then(themeService.getCurrentTheme())
-            .map(theme -> "/" + theme + "/" + "subjects");
+            .map(theme -> "/theme/" + theme + "/" + "subjects");
     }
 
     /**
@@ -43,6 +43,6 @@ public class SubjectController {
         return subjectService.findById(id)
             .map(subject -> model.addAttribute("subject", subject))
             .then(themeService.getCurrentTheme())
-            .map(theme -> "/" + theme + "/" +  "subject-details");
+            .map(theme -> "/theme/" + theme + "/" +  "subject-details");
     }
 }

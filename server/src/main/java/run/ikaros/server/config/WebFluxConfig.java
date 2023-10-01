@@ -4,9 +4,17 @@ import static org.springframework.util.ResourceUtils.FILE_URL_PREFIX;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
+
+import org.apache.commons.lang3.ClassPathUtils;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.sql.init.SqlDataSourceScriptDatabaseInitializer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +22,8 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.codec.CodecConfigurer;
 import org.springframework.http.codec.HttpMessageWriter;
 import org.springframework.lang.NonNull;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.reactive.config.PathMatchConfigurer;
 import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
@@ -45,7 +55,6 @@ public class WebFluxConfig implements WebFluxConfigurer {
     private final ApplicationContext applicationContext;
     private final IkarosProperties ikarosProperties;
     private final ConsoleProperties consoleProperties;
-    private final ReactiveCustomClient reactiveCustomClient;
 
     /**
      * construct a {@link WebFluxConfig} instance.
@@ -56,12 +65,10 @@ public class WebFluxConfig implements WebFluxConfigurer {
      * @param reactiveCustomClient custom client
      */
     public WebFluxConfig(ApplicationContext applicationContext, IkarosProperties ikarosProperties,
-                         ConsoleProperties consoleProperties,
-                         ReactiveCustomClient reactiveCustomClient) {
+                         ConsoleProperties consoleProperties) {
         this.applicationContext = applicationContext;
         this.ikarosProperties = ikarosProperties;
         this.consoleProperties = consoleProperties;
-        this.reactiveCustomClient = reactiveCustomClient;
     }
 
     @Bean
@@ -142,12 +149,16 @@ public class WebFluxConfig implements WebFluxConfigurer {
             .addResourceLocations("classpath:/templates/static/");
 
         // Register theme static files path
-        reactiveCustomClient.findOne(ConfigMap.class, SystemSettingInitListener.getConfigMapName())
-            .map(ConfigMap::getData)
-            .map(map -> map.getOrDefault(SettingKeyConst.THEME_SELECT, ThemeConst.DEFAULT))
-            .map(theme -> registry.addResourceHandler("/static/" + theme + "/**")
-                .addResourceLocations("classpath:/templates/"+theme+"/static/"))
-            .block();
+        try {
+            File themeRootDir = ResourceUtils.getFile("classpath:templates/theme");
+            for (File themeDir : Objects.requireNonNull(themeRootDir.listFiles())) {
+                String theme = themeDir.getName();
+                registry.addResourceHandler("/static/" + theme + "/**")
+                    .addResourceLocations("classpath:/templates/theme/" + theme + "/static/");
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Not exists theme dir in classpath.", e);
+        }
 
     }
 }
