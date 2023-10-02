@@ -45,8 +45,11 @@ export function getBrowserLanguage(): string {
 	const language = messages[browserLanguage]
 		? browserLanguage
 		: browserLanguage.split('-')[0];
-	// return language in messages ? language : 'zh-CN';
-	return 'en';
+	return language in messages ? language : 'zh-CN';
+}
+
+export function changeI18nLocal(val) {
+	i18n.global.locale = val;
 }
 
 export function setupI18n(app: App) {

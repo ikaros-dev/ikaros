@@ -18,7 +18,7 @@ const layoutStore = useLayoutStore();
 const { t } = useI18n();
 const userStore = useUserStore();
 
-const avatarSrcUrl = 'https://ikaros.run/logo.png';
+const avatarSrcUrl = 'https://docs.ikaros.run/img/favicon.ico';
 
 const router = useRouter();
 const toUserProfile = () => {
