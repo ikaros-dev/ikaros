@@ -7,6 +7,16 @@
 - Vue: 3
 - IDE: IntelliJ IDEA
 
+拉取代码后需要进行
+git module 初始化
+
+需要初始化是由于主题使用的是git module关联的另一个仓库
+
+```git
+git submodule init
+git submodule update
+```
+
 执行gradle任务前，默认会走一遍单元测试， 如需跳过，加上`-x test` 即可。
 
 建议先使用`java -version`检查下jdk版本，如本地JDK版本不是17编译会报错。
