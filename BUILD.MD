@@ -1,5 +1,3 @@
-# 文档状态
-WIP
 # 编译环境
 
 - JDK: 17
@@ -7,6 +5,7 @@ WIP
 - SpringBoot: 3.0.1
 - CheckStyle: 9.3
 - Vue: 3
+- IDE: IntelliJ IDEA
 
 执行gradle任务前，默认会走一遍单元测试， 如需跳过，加上`-x test` 即可。
 
@@ -62,3 +61,15 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 
 ## 本地开发
 在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win`
+
+## IDEA格式化配置
+
+1. 打开 `Setting` => `Editor` => `Code Style` => `Java`
+2. 选择 `Scheme` => 选择 `Project`
+3. 点击右边小齿轮 => `Import Scheme` => `Checkstyle configuration` 
+4. 选择项目目录 `config/checkstyle` 下的 配置文件`checkstyle.xml` 保存导入
+5. 保存设置
+
+# 更多
+WIP
+<https://docs.ikaros.run>

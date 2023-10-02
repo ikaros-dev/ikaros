@@ -10,11 +10,6 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
-
-import org.apache.commons.lang3.ClassPathUtils;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.sql.init.SqlDataSourceScriptDatabaseInitializer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,9 +17,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.codec.CodecConfigurer;
 import org.springframework.http.codec.HttpMessageWriter;
 import org.springframework.lang.NonNull;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ResourceUtils;
-import org.springframework.web.reactive.config.PathMatchConfigurer;
 import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -37,15 +30,10 @@ import org.springframework.web.reactive.result.view.ViewResolutionResultHandler;
 import org.springframework.web.reactive.result.view.ViewResolver;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
-import run.ikaros.api.core.setting.ConfigMap;
-import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.server.console.ConsoleProperties;
-import run.ikaros.server.core.setting.SystemSettingInitListener;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.endpoint.CoreEndpointsBuilder;
-import run.ikaros.server.infra.constants.SettingKeyConst;
-import run.ikaros.server.infra.constants.ThemeConst;
 import run.ikaros.server.plugin.PluginApplicationContextRegistry;
 
 @Configuration(proxyBeanMethods = false)
@@ -59,10 +47,9 @@ public class WebFluxConfig implements WebFluxConfigurer {
     /**
      * construct a {@link WebFluxConfig} instance.
      *
-     * @param applicationContext   root application context
-     * @param ikarosProperties     ikaros prop
-     * @param consoleProperties    console prop
-     * @param reactiveCustomClient custom client
+     * @param applicationContext root application context
+     * @param ikarosProperties   ikaros prop
+     * @param consoleProperties  console prop
      */
     public WebFluxConfig(ApplicationContext applicationContext, IkarosProperties ikarosProperties,
                          ConsoleProperties consoleProperties) {

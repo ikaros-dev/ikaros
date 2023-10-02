@@ -16,11 +16,11 @@ public class SubjectController {
 
     private final SubjectService subjectService;
     private final ThemeService themeService;
+
     public SubjectController(SubjectService subjectService, ThemeService themeService) {
         this.subjectService = subjectService;
         this.themeService = themeService;
     }
-
 
 
     /**
@@ -43,6 +43,6 @@ public class SubjectController {
         return subjectService.findById(id)
             .map(subject -> model.addAttribute("subject", subject))
             .then(themeService.getCurrentTheme())
-            .map(theme -> "/theme/" + theme + "/" +  "subject-details");
+            .map(theme -> "/theme/" + theme + "/" + "subject-details");
     }
 }

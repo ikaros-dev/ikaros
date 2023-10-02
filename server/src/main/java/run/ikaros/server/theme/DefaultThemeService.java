@@ -1,5 +1,6 @@
 package run.ikaros.server.theme;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.setting.ConfigMap;
@@ -8,11 +9,9 @@ import run.ikaros.server.core.setting.SystemSettingInitListener;
 import run.ikaros.server.infra.constants.SettingKeyConst;
 import run.ikaros.server.infra.constants.ThemeConst;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 @Service
-public class DefaultThemeService implements ThemeService{
+public class DefaultThemeService implements ThemeService {
     private final ReactiveCustomClient reactiveCustomClient;
 
     public DefaultThemeService(ReactiveCustomClient reactiveCustomClient) {
