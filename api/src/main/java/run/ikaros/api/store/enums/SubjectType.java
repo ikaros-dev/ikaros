@@ -7,6 +7,6 @@ public enum SubjectType {
     MUSIC,
     NOVEL,
     REAL,
-    OTHER;
+    OTHER
 
 }

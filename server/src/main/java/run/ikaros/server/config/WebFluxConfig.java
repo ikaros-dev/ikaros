@@ -4,9 +4,12 @@ import static org.springframework.util.ResourceUtils.FILE_URL_PREFIX;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +17,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.codec.CodecConfigurer;
 import org.springframework.http.codec.HttpMessageWriter;
 import org.springframework.lang.NonNull;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -107,7 +111,6 @@ public class WebFluxConfig implements WebFluxConfigurer {
         }
     }
 
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         var importRoot = ikarosProperties.getWorkDir().resolve(FileConst.DEFAULT_DIR_NAME);
@@ -131,6 +134,18 @@ public class WebFluxConfig implements WebFluxConfigurer {
         // Add thymeleaf static resource
         registry.addResourceHandler("/static/**")
             .addResourceLocations("classpath:/templates/static/");
+
+        // Register theme static files path
+        try {
+            File themeRootDir = ResourceUtils.getFile("classpath:templates/theme");
+            for (File themeDir : Objects.requireNonNull(themeRootDir.listFiles())) {
+                String theme = themeDir.getName();
+                registry.addResourceHandler("/static/" + theme + "/**")
+                    .addResourceLocations("classpath:/templates/theme/" + theme + "/static/");
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Not exists theme dir in classpath.", e);
+        }
 
     }
 }
