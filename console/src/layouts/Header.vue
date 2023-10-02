@@ -2,6 +2,7 @@
 import Hamburger from './components/Hamburger.vue';
 import Avatar from './components/Avatar.vue';
 import Breadcrumb from './components/Breadcrumb.vue';
+import LanguageSelect from './components/LanguageSelect.vue';
 </script>
 
 <template>
@@ -10,6 +11,8 @@ import Breadcrumb from './components/Breadcrumb.vue';
 		<Breadcrumb />
 
 		<div class="navbar-right">
+			<LanguageSelect />
+			&nbsp;&nbsp;&nbsp;&nbsp;
 			<Avatar class="navbar-item" />
 		</div>
 	</div>
