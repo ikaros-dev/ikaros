@@ -136,11 +136,12 @@ public class WebFluxConfig implements WebFluxConfigurer {
             .addResourceLocations("classpath:/templates/static/");
 
         // Register theme static files path
+        // /theme/{name}/static => classpath:/templates/theme/{name}/static/
         try {
             File themeRootDir = ResourceUtils.getFile("classpath:templates/theme");
             for (File themeDir : Objects.requireNonNull(themeRootDir.listFiles())) {
                 String theme = themeDir.getName();
-                registry.addResourceHandler("/static/" + theme + "/**")
+                registry.addResourceHandler("/theme/" + theme + "/static/**")
                     .addResourceLocations("classpath:/templates/theme/" + theme + "/static/");
             }
         } catch (FileNotFoundException e) {
