@@ -1,5 +1,6 @@
 package run.ikaros.server.controller;
 
+import java.util.Objects;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,10 +28,15 @@ public class SubjectController {
      * Subject list page.
      */
     @GetMapping("/list")
-    public Mono<String> index(Model model) {
-        return subjectService.findAllByPageable(new PagingWrap<>(1, 100, 0, null))
-            .map(PagingWrap::getItems)
-            .map(subs -> model.addAttribute("subjects", subs))
+    public Mono<String> index(Model model, Integer page, Integer size) {
+        if (Objects.isNull(page) || page <= 0) {
+            page = 1;
+        }
+        if (Objects.isNull(size) || size <= 0) {
+            size = 8;
+        }
+        return subjectService.findAllByPageable(new PagingWrap<>(page, size, 0, null))
+            .map(pagingWarp -> model.addAttribute("pagingWarp", pagingWarp))
             .then(themeService.getCurrentTheme())
             .map(theme -> "/theme/" + theme + "/" + "subjects");
     }
