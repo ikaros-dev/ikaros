@@ -42,6 +42,7 @@ bootJar {
         attributes "Implementation-Title": "Ikaros Application",
                 "Implementation-Version": archiveVersion
     }
+    archiveFileName = "ikaros-server.jar"
 }
 
 tasks.named('jar') {
