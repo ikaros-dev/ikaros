@@ -43,7 +43,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.LI_GUOHAO_TOKEN }}
-          file: /home/runner/work/ikaros/ikaros/server/build/libs/*.jar
+          file: /home/runner/work/ikaros/ikaros/server/build/libs/ikaros-server.jar
           asset_name: ikaros-server.jar
 
 
