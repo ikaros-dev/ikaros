@@ -108,7 +108,7 @@ java -jar ./ikaros-server.jar
 在打包文件所在目录，`Windwos` 运行，
 需要加上额外参数`--spring.profiles.active=win`
 ```shell
-java -jar --spring.profiles.active=win ./ikaros-server.jar
+java -jar ikaros-server.jar --spring.profiles.active=win 
 ```
 
 # 更多
