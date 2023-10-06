@@ -5,11 +5,15 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.lang3.ClassPathUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -137,16 +141,21 @@ public class WebFluxConfig implements WebFluxConfigurer {
 
         // Register theme static files path
         // /theme/{name}/static => classpath:/templates/theme/{name}/static/
-        try {
-            File themeRootDir = ResourceUtils.getFile("classpath:templates/theme");
-            for (File themeDir : Objects.requireNonNull(themeRootDir.listFiles())) {
-                String theme = themeDir.getName();
-                registry.addResourceHandler("/theme/" + theme + "/static/**")
-                    .addResourceLocations("classpath:/templates/theme/" + theme + "/static/");
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Not exists theme dir in classpath.", e);
-        }
+        // try {
+        //     InputStream resourceAsStream = Thread.currentThread().getContextClassLoader()
+        //         .getResourceAsStream("classpath:templates/theme");
+        //     File themeRootDir = ResourceUtils.getFile("classpath:templates/theme");
+        //     for (File themeDir : Objects.requireNonNull(themeRootDir.listFiles())) {
+        //         String theme = themeDir.getName();
+        //         registry.addResourceHandler("/theme/" + theme + "/static/**")
+        //             .addResourceLocations("classpath:/templates/theme/" + theme + "/static/");
+        //     }
+        // } catch (FileNotFoundException e) {
+        //     throw new RuntimeException("Not exists theme dir in classpath.", e);
+        // }
+        // /theme/simple/static => classpath:/templates/theme/simple/static/
+        registry.addResourceHandler("/theme/simple/static")
+            .addResourceLocations("classpath:/templates/theme/simple/static/");
 
     }
 }

@@ -7,6 +7,12 @@
 - Vue: 3
 - IDE: IntelliJ IDEA
 
+您可以通过`git`拉取代码库
+```shell
+git clone https://github.com/ikaros-dev/ikaros.git
+cd ikaros
+```
+
 拉取代码后需要进行
 git module 初始化
 
@@ -56,7 +62,7 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 编译打包，告警可以忽视
 
 ```text
-.\gradlew.bat clean bootJar
+.\gradlew.bat clean bootJar -x test
 ```
 
 ## 代码格式化
@@ -79,6 +85,34 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 3. 点击右边小齿轮 => `Import Scheme` => `Checkstyle configuration` 
 4. 选择项目目录 `config/checkstyle` 下的 配置文件`checkstyle.xml` 保存导入
 5. 保存设置
+
+## Fast Jar
+需要有`Java17`的运行环境
+
+请先按照上放先进行`build`
+
+打`Fast Jar`包，在项目根目录运行下方命令
+```shell
+# linux
+./gradlew clean bootJar -x test
+# windows
+./gradlew.bat clean bootJar -x test
+```
+打包后的文件在`server/build/libs/`目录下
+
+下方`version`代表当前打包的版本
+
+
+在打包文件所在目录，`Linux` 运行
+```shell
+java -jar ./server-{version}.jar
+```
+
+在打包文件所在目录，`Windwos` 运行，
+需要加上额外参数`--spring.profiles.active=win`
+```shell
+java -jar --spring.profiles.active=win ./server-{version}.jar
+```
 
 # 更多
 WIP
