@@ -1,6 +1,6 @@
 name: Ikaros feature request
 description: Suggest an idea for this project
-title: "[Feature] "
+title: ""
 labels: [ "feature" ]
 body:
   - type: markdown
