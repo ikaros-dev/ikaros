@@ -5,7 +5,7 @@
     </a>
 </p>
 
-<p align="center"><b>Ikaros</b>, focused on being a Content Management System (CMS) for ACGMN.</p>
+<p align="center"><b>Ikaros</b>, Dedicated to ACGMN's Content Management System (CMS)..</p>
 
 <p align="center">ACGMN stands for: Anime + Comic + Game + Music + Novel</p>
 
