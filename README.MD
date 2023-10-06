@@ -6,7 +6,7 @@
     </a>
 </p>
 
-<p align="center"><b>Ikaros</b> [Ίκαρος]，专注于ACGMN的个人内容管家(CMS)。</p>
+<p align="center"><b>Ikaros</b> [Ίκαρος]，专注于ACGMN的内容管理系统(CMS)。</p>
 
 <p align="center">ACGMN全拼是：Anime(动画) + Comic(漫画) + Game(游戏) + Music(音乐) + Novel(小说)</p>
 
