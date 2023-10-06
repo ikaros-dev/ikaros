@@ -1,6 +1,5 @@
 name: Ikaros 新功能请求
 description: 中文选这个，给这个项目提关于 新功能 的建议
-title: "[Feature] "
 labels: [ "feature" ]
 body:
   - type: markdown
