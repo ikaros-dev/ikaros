@@ -37,6 +37,7 @@ import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import { useSettingStore } from '@/stores/setting';
 import { episodeGroupLabelMap } from '@/modules/common/constants';
 import { useUserStore } from '@/stores/user';
+import SubjectRelationDialog from './SubjectRelationDialog.vue';
 
 const route = useRoute();
 const settingStore = useSettingStore();
@@ -221,6 +222,11 @@ const openSubjectSyncDialog = () => {
 const onSubjectSyncDialogCloseWithSubjectName = () => {
 	ElMessage.success('请求更新条目信息成功');
 	fetchSubjectById();
+};
+
+const subjectRelationDialogVisible = ref(false);
+const openSubjectRelationDialog = () => {
+	subjectRelationDialogVisible.value = true;
 };
 
 const fileRemoteActionDialogVisible = ref(false);
@@ -411,6 +417,11 @@ onMounted(fetchDatas);
 		@close="onSubjectRemoteActionDialogClose"
 	/>
 
+	<SubjectRelationDialog
+		v-model:visible="subjectRelationDialogVisible"
+		v-model:subject="subject"
+	/>
+
 	<el-row>
 		<el-col :span="24">
 			<el-button plain @click="toSubjectPut"> 编辑</el-button>
@@ -443,6 +454,8 @@ onMounted(fetchDatas);
 			>
 				全部拉取
 			</el-button>
+
+			<el-button plain @click="openSubjectRelationDialog"> 关系</el-button>
 		</el-col>
 	</el-row>
 	<br />
