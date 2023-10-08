@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Subject } from '@runikaros/api-client';
+import SubjectCard from '@/components/modules/content/subject/SubjectCard.vue';
 import {
 	ElDialog,
 	ElTabs,
@@ -82,7 +83,9 @@ const activeTabName = ref('AFTER');
 			<el-tab-pane label="小说" name="NOVEL">Task</el-tab-pane>
 			<el-tab-pane label="三次元" name="REAL">Task</el-tab-pane>
 			<el-tab-pane label="前传" name="BEFORE">Task</el-tab-pane>
-			<el-tab-pane label="后传" name="AFTER">Task</el-tab-pane>
+			<el-tab-pane label="后传" name="AFTER">
+				<SubjectCard :subject="props.subject" :link="false" />
+			</el-tab-pane>
 			<el-tab-pane label="相同世界观" name="SAME_WORLDVIEW">Task</el-tab-pane>
 			<el-tab-pane label="OST" name="ORIGINAL_SOUND_TRACK">Task</el-tab-pane>
 			<el-tab-pane label="其它" name="OTHER">Task</el-tab-pane>
