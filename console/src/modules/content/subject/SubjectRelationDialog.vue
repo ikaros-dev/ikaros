@@ -18,8 +18,10 @@ import {
 	ElDescriptionsItem,
 	ElRow,
 	ElCol,
+	ElButton,
 } from 'element-plus';
 import { onMounted } from 'vue';
+import SubjectRelactionPostDialog from './SubjectRelactionPostDialog.vue';
 
 const route = useRoute();
 watch(route, () => {
@@ -213,8 +215,6 @@ watch(subjectRelations, async () => {
 				relationOthers.value = subjects;
 				break;
 			}
-			// window.location.reload();
-			// dialogVisible.value = true;
 		}
 	});
 });
@@ -228,10 +228,17 @@ const onTabActive = (pane) => {
 	console.log('subject', subject);
 };
 
+const subjectRelactionPostDialogVisible = ref(false);
+
 onMounted(loadSubject);
 </script>
 
 <template>
+	<SubjectRelactionPostDialog
+		v-model:visible="subjectRelactionPostDialogVisible"
+		v-model:masterSubjectId="subject.id"
+	/>
+
 	<el-dialog
 		v-model="dialogVisible"
 		title="条目关系"
@@ -261,6 +268,17 @@ onMounted(loadSubject);
 				{{ subject.summary }}
 			</el-descriptions-item>
 		</el-descriptions>
+
+		<br />
+
+		<el-row>
+			<el-col :span="24">
+				<el-button @click="subjectRelactionPostDialogVisible = true">
+					新增
+				</el-button>
+				<el-button type="danger">删除</el-button>
+			</el-col>
+		</el-row>
 
 		<br />
 

@@ -5,7 +5,6 @@ import SubjectPut from './SubjectPut.vue';
 import SubjectPost from './SubjectPost.vue';
 import SubjectDetails from './SubjectDetails.vue';
 import { markRaw } from 'vue';
-import SubjectRelation from './SubjectRelation.vue';
 
 export default definePlugin({
 	name: 'Subjects',
@@ -60,18 +59,6 @@ export default definePlugin({
 				component: SubjectPost,
 				meta: {
 					title: 'core.subject.post.title',
-					hidden: true,
-				},
-			},
-		},
-		{
-			parentName: 'Root',
-			route: {
-				path: '/subjects/subject/relaction/:id',
-				name: 'SubjectRelaction',
-				component: SubjectRelation,
-				meta: {
-					title: 'core.subject.relaction.title',
 					hidden: true,
 				},
 			},
