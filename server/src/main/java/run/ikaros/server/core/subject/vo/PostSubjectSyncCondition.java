@@ -3,7 +3,7 @@ package run.ikaros.server.core.subject.vo;
 import lombok.Builder;
 import lombok.Data;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
-import run.ikaros.server.core.subject.emus.SubjectSyncAction;
+import run.ikaros.server.core.subject.enums.SubjectSyncAction;
 
 @Data
 @Builder

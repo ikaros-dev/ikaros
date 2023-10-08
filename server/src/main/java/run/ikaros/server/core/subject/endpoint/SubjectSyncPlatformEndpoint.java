@@ -18,7 +18,7 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
-import run.ikaros.server.core.subject.emus.SubjectSyncAction;
+import run.ikaros.server.core.subject.enums.SubjectSyncAction;
 import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
 import run.ikaros.server.core.subject.vo.PostSubjectSyncCondition;
 import run.ikaros.server.endpoint.CoreEndpoint;
