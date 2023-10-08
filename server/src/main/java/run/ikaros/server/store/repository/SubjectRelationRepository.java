@@ -12,7 +12,6 @@ public interface SubjectRelationRepository extends R2dbcRepository<SubjectRelati
 
     Flux<SubjectRelationEntity> findAllBySubjectId(Long subjectId);
 
-    Mono<Void> deleteBySubjectIdAndRelationTypeAndRelationSubjectId(Long subjectId,
-                                                                    SubjectRelationType relationType,
-                                                                    Long relationSubjectId);
+    Mono<Void> deleteBySubjectIdAndRelationTypeAndRelationSubjectId(
+        Long subjectId, SubjectRelationType relationType, Long relationSubjectId);
 }
