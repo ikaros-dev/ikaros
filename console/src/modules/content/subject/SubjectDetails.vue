@@ -417,10 +417,7 @@ onMounted(fetchDatas);
 		@close="onSubjectRemoteActionDialogClose"
 	/>
 
-	<SubjectRelationDialog
-		v-model:visible="subjectRelationDialogVisible"
-		v-model:subject="subject"
-	/>
+	<SubjectRelationDialog v-model:visible="subjectRelationDialogVisible" />
 
 	<el-row>
 		<el-col :span="24">
@@ -476,7 +473,7 @@ onMounted(fetchDatas);
 					<el-descriptions
 						style="margin: 0 5px"
 						direction="vertical"
-						:column="5"
+						:column="6"
 						size="large"
 						border
 					>
@@ -492,10 +489,13 @@ onMounted(fetchDatas);
 						<el-descriptions-item label="放送时间" :span="1">
 							{{ subject.airTime }}
 						</el-descriptions-item>
+						<el-descriptions-item label="类型" :span="1">
+							{{ subject.type }}
+						</el-descriptions-item>
 						<el-descriptions-item label="NSFW" :span="1">
 							{{ subject.nsfw }}
 						</el-descriptions-item>
-						<el-descriptions-item label="介绍" :span="5">
+						<el-descriptions-item label="介绍" :span="6">
 							{{ subject.summary }}
 						</el-descriptions-item>
 					</el-descriptions>

@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
-import { Subject, SubjectRelation } from '@runikaros/api-client';
+import {
+	Subject,
+	SubjectRelation,
+	SubjectTypeEnum,
+} from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
+import { useRoute } from 'vue-router';
 import SubjectCard from '@/components/modules/content/subject/SubjectCard.vue';
 // eslint-disable-next-line no-unused-vars
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
@@ -14,15 +19,23 @@ import {
 	ElRow,
 	ElCol,
 } from 'element-plus';
+import { onMounted } from 'vue';
+
+const route = useRoute();
+watch(route, () => {
+	if (!route.params?.id && route.params?.id === undefined) {
+		return;
+	}
+	// console.log(route.params.id);
+	loadSubject();
+});
 
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		subject: Subject;
 	}>(),
 	{
 		visible: false,
-		subject: undefined,
 	}
 );
 
@@ -47,11 +60,28 @@ const onClose = () => {
 };
 
 const activeTabName = ref('AFTER');
-
+const subject = ref<Subject>({
+	id: -1,
+	name: '',
+	type: SubjectTypeEnum.Other,
+	nsfw: true,
+	name_cn: '',
+});
+const loadSubject = async () => {
+	//@ts-ignore
+	subject.value.id = route.params.id as number;
+	const { data } = await apiClient.subject.searchSubjectById({
+		id: subject.value.id,
+	});
+	subject.value = data;
+};
+watch(subject, () => {
+	loadSubjectRelations();
+});
 const subjectRelations = ref<SubjectRelation[]>([]);
 const loadSubjectRelations = async () => {
 	const rsp = await apiClient.subjectRelation.getSubjectRelationsById({
-		subjectId: props.subject.id as number,
+		subjectId: subject.value.id as number,
 	});
 	// console.log('subject relations rsp:', rsp);
 	if (rsp) {
@@ -183,6 +213,8 @@ watch(subjectRelations, async () => {
 				relationOthers.value = subjects;
 				break;
 			}
+			// window.location.reload();
+			// dialogVisible.value = true;
 		}
 	});
 });
@@ -193,14 +225,10 @@ const findSubjectById = async (id: number): Promise<Subject> => {
 
 const onTabActive = (pane) => {
 	console.log('pane', pane);
-	console.log('subject', props.subject);
+	console.log('subject', subject);
 };
 
-watch(props.subject, () => {
-	// console.log('watch', 'subject', props.subject);
-	// console.log('watch', 'subject id', props.subject.id);
-	loadSubjectRelations();
-});
+onMounted(loadSubject);
 </script>
 
 <template>
@@ -210,24 +238,27 @@ watch(props.subject, () => {
 		fullscreen
 		@close="onClose"
 	>
-		<el-descriptions direction="vertical" :column="5" size="large" border>
+		<el-descriptions direction="vertical" :column="6" size="large" border>
 			<el-descriptions-item label="ID" :span="1">
-				{{ props.subject.id }}
+				{{ subject.id }}
 			</el-descriptions-item>
 			<el-descriptions-item label="名称" :span="1">
-				{{ props.subject.name }}
+				{{ subject.name }}
 			</el-descriptions-item>
 			<el-descriptions-item label="中文名称" :span="1">
-				{{ props.subject.name_cn }}
+				{{ subject.name_cn }}
 			</el-descriptions-item>
 			<el-descriptions-item label="放送时间" :span="1">
-				{{ props.subject.airTime }}
+				{{ subject.airTime }}
+			</el-descriptions-item>
+			<el-descriptions-item label="类型" :span="1">
+				{{ subject.type }}
 			</el-descriptions-item>
 			<el-descriptions-item label="NSFW" :span="1">
-				{{ props.subject.nsfw }}
+				{{ subject.nsfw }}
 			</el-descriptions-item>
-			<el-descriptions-item label="介绍" :span="5">
-				{{ props.subject.summary }}
+			<el-descriptions-item label="介绍" :span="6">
+				{{ subject.summary }}
 			</el-descriptions-item>
 		</el-descriptions>
 
@@ -249,7 +280,7 @@ watch(props.subject, () => {
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane :label="'漫画(' + relationComics.length + ')'" name="COMIC">
+			<el-tab-pane name="COMIC" :label="'漫画(' + relationComics.length + ')'">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
 						v-for="comic in relationComics"
