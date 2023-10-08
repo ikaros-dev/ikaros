@@ -57,7 +57,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt zero.");
         Assert.notNull(relationType, "'relationType' must not be null.");
         return subjectRelationRepository
-            .findAllBySubjectIdAndRelationType(subjectId, relationType.getCode())
+            .findAllBySubjectIdAndRelationType(subjectId, relationType)
             .map(SubjectRelationEntity::getRelationSubjectId)
             .collect(Collectors.toSet())
             .flatMap(relationSubjects -> Mono.just(SubjectRelation.builder()
@@ -74,6 +74,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
         return findBySubjectIdAndType(subjectRelation.getSubject(),
             subjectRelation.getRelationType())
             .map(SubjectRelation::getRelationSubjects)
+            .switchIfEmpty(Mono.just(new HashSet<>()))
             .flatMapMany(
                 existsRelationSubjectSet -> Flux.fromStream(subjectRelation.getRelationSubjects()
                         .stream())
@@ -96,6 +97,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
         return findBySubjectIdAndType(subjectRelation.getSubject(),
             subjectRelation.getRelationType())
             .map(SubjectRelation::getRelationSubjects)
+            .switchIfEmpty(Mono.just(new HashSet<>()))
             .flatMapMany(existsRelationSubjectSet
                 -> Flux.fromStream(subjectRelation.getRelationSubjects().stream())
                 .filter(existsRelationSubjectSet::contains)
@@ -103,7 +105,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
                     -> subjectRelationRepository
                     .deleteBySubjectIdAndRelationTypeAndRelationSubjectId(
                         subjectRelation.getSubject(),
-                        subjectRelation.getRelationType().getCode(), relationSubject))
+                        subjectRelation.getRelationType(), relationSubject))
             )
             .then(Mono.just(subjectRelation));
     }
