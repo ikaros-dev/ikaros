@@ -10,16 +10,22 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.SubjectRelation;
 import run.ikaros.api.store.enums.SubjectRelationType;
+import run.ikaros.server.core.subject.SubjectRelationCourt;
 import run.ikaros.server.core.subject.service.SubjectRelationService;
+import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.entity.SubjectRelationEntity;
 import run.ikaros.server.store.repository.SubjectRelationRepository;
+import run.ikaros.server.store.repository.SubjectRepository;
 
 @Service
 public class SubjectRelationServiceImpl implements SubjectRelationService {
     private final SubjectRelationRepository subjectRelationRepository;
+    private final SubjectRepository subjectRepository;
 
-    public SubjectRelationServiceImpl(SubjectRelationRepository subjectRelationRepository) {
+    public SubjectRelationServiceImpl(SubjectRelationRepository subjectRelationRepository,
+                                      SubjectRepository subjectRepository) {
         this.subjectRelationRepository = subjectRelationRepository;
+        this.subjectRepository = subjectRepository;
     }
 
 
@@ -79,12 +85,25 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
                 existsRelationSubjectSet -> Flux.fromStream(subjectRelation.getRelationSubjects()
                         .stream())
                     .filter(relationSubject -> !existsRelationSubjectSet.contains(relationSubject))
-                    .flatMap(relationSubject -> Mono.just(SubjectRelationEntity.builder()
+                    // save master relation
+                    .map(relationSubject -> SubjectRelationEntity.builder()
                         .subjectId(subjectRelation.getSubject())
                         .relationType(subjectRelation.getRelationType())
                         .relationSubjectId(relationSubject)
-                        .build()))
+                        .build())
                     .flatMap(subjectRelationRepository::save)
+                    // save slave relation
+                    .flatMap(subjectRelationEntity -> subjectRepository.findById(
+                            subjectRelationEntity.getSubjectId())
+                        .map(SubjectEntity::getType)
+                        .flatMap(subjectType -> Mono.just(SubjectRelationEntity.builder()
+                            .subjectId(subjectRelationEntity.getRelationSubjectId())
+                            .relationSubjectId(subjectRelationEntity.getSubjectId())
+                            .relationType(SubjectRelationCourt.judge(subjectType,
+                                subjectRelationEntity.getRelationType()))
+                            .build())))
+                    .flatMap(subjectRelationRepository::save)
+
             )
             .then(findBySubjectIdAndType(subjectRelation.getSubject(),
                 subjectRelation.getRelationType()));
@@ -103,9 +122,20 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
                 .filter(existsRelationSubjectSet::contains)
                 .flatMap(relationSubject
                     -> subjectRelationRepository
+                    // delete master relation
                     .deleteBySubjectIdAndRelationTypeAndRelationSubjectId(
                         subjectRelation.getSubject(),
-                        subjectRelation.getRelationType(), relationSubject))
+                        subjectRelation.getRelationType(), relationSubject)
+                    // delete slave relation
+                    .then(subjectRepository.findById(subjectRelation.getSubject())
+                        .map(SubjectEntity::getType)
+                        .map(subjectType -> SubjectRelationCourt.judge(subjectType,
+                            subjectRelation.getRelationType())))
+                    .flatMap(relationType -> subjectRelationRepository
+                        .deleteBySubjectIdAndRelationTypeAndRelationSubjectId(relationSubject,
+                            relationType, subjectRelation.getSubject()))
+                )
+
             )
             .then(Mono.just(subjectRelation));
     }
