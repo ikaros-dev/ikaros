@@ -21,7 +21,7 @@ import {
 	ElButton,
 } from 'element-plus';
 import { onMounted } from 'vue';
-import SubjectRelactionPostDialog from './SubjectRelactionPostDialog.vue';
+import SubjectRelationPostDialog from './SubjectRelationPostDialog.vue';
 
 const route = useRoute();
 watch(route, () => {
@@ -228,15 +228,19 @@ const onTabActive = (pane) => {
 	console.log('subject', subject);
 };
 
-const subjectRelactionPostDialogVisible = ref(false);
+const subjectRelationPostDialogVisible = ref(false);
 
+const onSubjectRelationPostDialogClose = async () => {
+	await loadSubjectRelations();
+};
 onMounted(loadSubject);
 </script>
 
 <template>
-	<SubjectRelactionPostDialog
-		v-model:visible="subjectRelactionPostDialogVisible"
+	<SubjectRelationPostDialog
+		v-model:visible="subjectRelationPostDialogVisible"
 		v-model:masterSubjectId="subject.id"
+		@close="onSubjectRelationPostDialogClose"
 	/>
 
 	<el-dialog
@@ -273,7 +277,7 @@ onMounted(loadSubject);
 
 		<el-row>
 			<el-col :span="24">
-				<el-button @click="subjectRelactionPostDialogVisible = true">
+				<el-button @click="subjectRelationPostDialogVisible = true">
 					新增
 				</el-button>
 				<el-button type="danger">删除</el-button>
