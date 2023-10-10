@@ -1,7 +1,6 @@
 package run.ikaros.api.core.subject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,5 +25,4 @@ public class EpisodeResource {
      * Such as 1080p 720p.
      */
     private Set<String> tags;
-    private List<Subtitle> subtitles;
 }

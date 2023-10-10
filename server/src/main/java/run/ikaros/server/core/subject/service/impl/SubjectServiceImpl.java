@@ -32,9 +32,7 @@ import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
-import run.ikaros.api.core.subject.Subtitle;
 import run.ikaros.api.infra.exception.NotFoundException;
-import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
@@ -43,7 +41,6 @@ import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.vo.FindSubjectCondition;
-import run.ikaros.server.infra.constants.NumberConst;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
@@ -79,6 +76,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
      * @param episodeFileRepository       {@link EpisodeFileEntity} repository
      * @param subjectSyncRepository       {@link SubjectSyncEntity} repository
      * @param fileRepository              {@link FileEntity} repository
+     * @param fileRelationRepository
      * @param template                    {@link R2dbcEntityTemplate}
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
@@ -118,13 +116,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                                 .url(fileEntity.getUrl())
                                 .canRead(fileEntity.getCanRead())
                                 .build())
-                            .flatMap(episodeResource ->
-                                findEpisodeResourceSubtitles(episodeResource.getFileId())
-                                    .collectList()
-                                    .map(subtitles -> {
-                                        episodeResource.setSubtitles(subtitles);
-                                        return episodeResource;
-                                    }))
                     ).collectList()
                     .map(episode::setResources))
                 .sort(Comparator.comparingDouble(Episode::getSequence))
@@ -140,66 +131,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, new SubjectSync()))
                 .collectList().map(subject::setSyncs))
             .checkpoint("FindSyncEntitiesBySubjectId");
-    }
-
-    private Flux<Subtitle> findEpisodeResourceSubtitles(String fileEntityName) {
-        String postfix = FileUtils.parseFilePostfix(fileEntityName);
-        fileEntityName = fileEntityName.substring(0, fileEntityName.indexOf(postfix));
-        String finalFileEntityName = fileEntityName;
-        return fileRepository.findAllByNameLike(fileEntityName + "%")
-            .filter(fileEntity -> fileEntity.getName().endsWith("ass"))
-            .filter(FileEntity::getCanRead)
-            .map(fileEntity -> Subtitle.builder()
-                .fileId(fileEntity.getId())
-                .name(fileEntity.getName())
-                .url(fileEntity.getUrl())
-                .language(fileEntity.getName()
-                    .replace(finalFileEntityName, "")
-                    .replace(".ass", ""))
-                .build())
-            ;
-
-    }
-
-    private synchronized Flux<Subtitle> findEpisodeResourceSubtitles(Long fileId) {
-        // TODO refactor
-        return Flux.fromStream(new ArrayList<Subtitle>().stream());
-        //return videoSubtitleRepository.findAllByVideoFileId(fileId)
-        //    .collectList()
-        //    .filter(videoSubtitleEntities -> !videoSubtitleEntities.isEmpty())
-        //    .switchIfEmpty(fileRepository.findById(fileId)
-        //        .map(FileEntity::getName)
-        //        .map(fileEntityName ->
-        //            fileEntityName.substring(0,
-        //                fileEntityName.indexOf(
-        //                    FileUtils.parseFilePostfix(fileEntityName))))
-        //        .flatMapMany(
-        //            fileEntityName -> fileRepository.findAllByNameLike(fileEntityName + "%")
-        //                .filter(fileEntity -> fileEntity.getName().endsWith("ass"))
-        //                .filter(FileEntity::getCanRead)
-        //                .map(FileEntity::getId)
-        //                .map(subtitleFileId -> VideoSubtitleEntity.builder()
-        //                    .videoFileId(fileId)
-        //                    .subtitleFileId(subtitleFileId)
-        //                    .build())
-        //                .switchIfEmpty(Mono.just(VideoSubtitleEntity.builder()
-        //                    .videoFileId(fileId)
-        //                    .subtitleFileId(NumberConst.UN_USE_ID)
-        //                    .build()))
-        //                .flatMap(videoSubtitleRepository::save)
-        //        )
-        //        .collectList()
-        //    )
-        //    .flatMapMany(videoSubtitleEntities -> Flux.fromStream(videoSubtitleEntities.stream()))
-        //    .filter(videoSubtitleEntity ->
-        //        !NumberConst.UN_USE_ID.equals(videoSubtitleEntity.getSubtitleFileId()))
-        //    .flatMap(videoSubtitleEntity ->
-        //        fileRepository.findById(videoSubtitleEntity.getSubtitleFileId())
-        //            .map(subtitleFileEntity -> Subtitle.builder()
-        //                .fileId(videoSubtitleEntity.getVideoFileId())
-        //                .name(subtitleFileEntity.getName())
-        //                .url(subtitleFileEntity.getUrl())
-        //                .build()));
     }
 
     private boolean getSubjectCanReadByEpisodes(List<Episode> episodes) {
