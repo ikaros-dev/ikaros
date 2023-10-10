@@ -192,6 +192,12 @@ onMounted(fetchSubjects);
 						label="中文名称"
 						show-overflow-tooltip
 					/>
+					<el-table-column
+						prop="type"
+						label="类型"
+						width="100"
+						show-overflow-tooltip
+					/>
 				</el-table>
 			</el-row>
 		</template>
