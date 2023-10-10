@@ -5,6 +5,7 @@ import { apiClient } from '@/utils/api-client';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import { base64Encode } from '@/utils/string-util';
 import { useRouter, useRoute } from 'vue-router';
+import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
 import {
 	ElRow,
 	ElCol,
@@ -14,7 +15,6 @@ import {
 	ElSelect,
 	ElOption,
 	ElButton,
-	ElCard,
 	ElPagination,
 } from 'element-plus';
 
@@ -55,7 +55,7 @@ watch(route, () => {
 	fetchSubjectByRouterQuery();
 });
 
-interface SubjectsCondition {
+export interface SubjectsCondition {
 	page: number;
 	size: number;
 	total: number;
@@ -192,26 +192,7 @@ onMounted(fetchSubjectByRouterQuery);
 			:lg="4"
 			:xl="4"
 		>
-			<router-link :to="'/subjects/subject/details/' + subject.id">
-				<el-card
-					shadow="hover"
-					class="container"
-					:body-style="{ padding: '0px' }"
-				>
-					<template #header>
-						<div class="card-header">
-							<span>{{ subject?.name }} </span>
-							<span class="grey">{{ subject?.name_cn }}</span>
-						</div>
-					</template>
-					<span>
-						<img
-							:src="subject?.cover"
-							style="width: 100%; border-radius: 5px"
-						/>
-					</span>
-				</el-card>
-			</router-link>
+			<SubjectCardLink :subject="subject" />
 		</el-col>
 	</el-row>
 
@@ -235,16 +216,5 @@ onMounted(fetchSubjectByRouterQuery);
 	border-radius: 5px;
 	// border: 1px solid rebeccapurple;
 	cursor: pointer;
-}
-
-.card-header {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	height: 15px;
-	.grey {
-		font-size: 10px;
-		color: #999;
-	}
 }
 </style>

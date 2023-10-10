@@ -37,18 +37,32 @@ import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import { useSettingStore } from '@/stores/setting';
 import { episodeGroupLabelMap } from '@/modules/common/constants';
 import { useUserStore } from '@/stores/user';
+import SubjectRelationDialog from './SubjectRelationDialog.vue';
+import { useSubjectStore } from '@/stores/subject';
+import { nextTick } from 'vue';
 
 const route = useRoute();
 const settingStore = useSettingStore();
 const userStore = useUserStore();
+const subjectStore = useSubjectStore();
 
-watch(route, () => {
+const refreshSubjectRelactionDialog = ref(true);
+watch(route, async () => {
 	if (!route.params?.id && route.params?.id === undefined) {
 		return;
 	}
 	// console.log(route.params.id);
-	fetchDatas();
+	await fetchDatas();
+	doRefreshSubjectRelactionDialog();
 });
+
+const doRefreshSubjectRelactionDialog = () => {
+	subjectRelationDialogVisible.value = false;
+	refreshSubjectRelactionDialog.value = false;
+	nextTick(() => {
+		refreshSubjectRelactionDialog.value = true;
+	});
+};
 
 const subject = ref<Subject>({
 	id: -1,
@@ -61,10 +75,9 @@ const subject = ref<Subject>({
 // eslint-disable-next-line no-unused-vars
 const fetchSubjectById = async () => {
 	if (subject.value.id) {
-		const { data } = await apiClient.subject.searchSubjectById({
-			id: subject.value.id as number,
-		});
-		subject.value = data;
+		subject.value = await subjectStore.fetchSubjectById(
+			subject.value.id as number
+		);
 	}
 };
 
@@ -221,6 +234,11 @@ const openSubjectSyncDialog = () => {
 const onSubjectSyncDialogCloseWithSubjectName = () => {
 	ElMessage.success('请求更新条目信息成功');
 	fetchSubjectById();
+};
+
+const subjectRelationDialogVisible = ref(false);
+const openSubjectRelationDialog = () => {
+	subjectRelationDialogVisible.value = true;
 };
 
 const fileRemoteActionDialogVisible = ref(false);
@@ -411,6 +429,11 @@ onMounted(fetchDatas);
 		@close="onSubjectRemoteActionDialogClose"
 	/>
 
+	<SubjectRelationDialog
+		v-if="refreshSubjectRelactionDialog"
+		v-model:visible="subjectRelationDialogVisible"
+	/>
+
 	<el-row>
 		<el-col :span="24">
 			<el-button plain @click="toSubjectPut"> 编辑</el-button>
@@ -443,6 +466,8 @@ onMounted(fetchDatas);
 			>
 				全部拉取
 			</el-button>
+
+			<el-button plain @click="openSubjectRelationDialog"> 关系</el-button>
 		</el-col>
 	</el-row>
 	<br />
@@ -463,7 +488,7 @@ onMounted(fetchDatas);
 					<el-descriptions
 						style="margin: 0 5px"
 						direction="vertical"
-						:column="5"
+						:column="6"
 						size="large"
 						border
 					>
@@ -479,10 +504,13 @@ onMounted(fetchDatas);
 						<el-descriptions-item label="放送时间" :span="1">
 							{{ subject.airTime }}
 						</el-descriptions-item>
+						<el-descriptions-item label="类型" :span="1">
+							{{ subject.type }}
+						</el-descriptions-item>
 						<el-descriptions-item label="NSFW" :span="1">
 							{{ subject.nsfw }}
 						</el-descriptions-item>
-						<el-descriptions-item label="介绍" :span="5">
+						<el-descriptions-item label="介绍" :span="6">
 							{{ subject.summary }}
 						</el-descriptions-item>
 					</el-descriptions>

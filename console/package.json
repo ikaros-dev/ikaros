@@ -11,7 +11,7 @@
     "prettier-format": "prettier --config .prettierrc.cjs \"src/**/*.{vue,js,ts}\" --write"
   },
   "dependencies": {
-    "@runikaros/api-client": "^0.7.1",
+    "@runikaros/api-client": "^0.8.0",
     "@runikaros/shared": "^0.7.0",
     "@element-plus/icons-vue": "^2.1.0",
     "@formkit/core": "^0.17.3",
@@ -84,7 +84,7 @@
     "eslint-plugin-vue": "^9.14.0",
     "husky": "^8.0.3",
     "lint-staged": "^13.1.2",
-    "postcss": "^8.4.23",
+    "postcss": "^8.4.31",
     "postcss-html": "^1.5.0",
     "prettier": "^2.8.7",
     "sass": "^1.56.2",

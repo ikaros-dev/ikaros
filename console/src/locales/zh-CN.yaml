@@ -265,6 +265,8 @@ core:
       title: 条目新增
     details:
       title: 条目详情
+    relaction:
+      title: 条目关系
   plugin:
     title: 插件
     details:

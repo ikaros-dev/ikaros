@@ -15,6 +15,7 @@ import {
 	V1alpha1SubjectSyncPlatformApi,
 	V1alpha1TaskApi,
 	V1alpha1UserApi,
+	V1alpha1SubjectRelationApi,
 } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
 
@@ -169,6 +170,7 @@ function setupApiClient(axios: AxiosInstance) {
 			baseURL,
 			axios
 		),
+		subjectRelation: new V1alpha1SubjectRelationApi(undefined, baseURL, axios),
 		episodeCollection: new V1alpha1CollectionEpisodeApi(
 			undefined,
 			baseURL,
