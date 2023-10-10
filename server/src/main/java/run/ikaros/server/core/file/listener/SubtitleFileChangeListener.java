@@ -9,21 +9,16 @@ import run.ikaros.server.core.file.event.FileChangeEvent;
 import run.ikaros.server.core.file.event.FileRemoveEvent;
 import run.ikaros.server.core.file.event.FileSaveEvent;
 import run.ikaros.server.store.entity.FileEntity;
-import run.ikaros.server.store.entity.VideoSubtitleEntity;
 import run.ikaros.server.store.repository.FileRepository;
-import run.ikaros.server.store.repository.VideoSubtitleRepository;
 
 @Slf4j
 @Component
 public class SubtitleFileChangeListener {
 
     private final FileRepository fileRepository;
-    private final VideoSubtitleRepository videoSubtitleRepository;
 
-    public SubtitleFileChangeListener(FileRepository fileRepository,
-                                      VideoSubtitleRepository videoSubtitleRepository) {
+    public SubtitleFileChangeListener(FileRepository fileRepository) {
         this.fileRepository = fileRepository;
-        this.videoSubtitleRepository = videoSubtitleRepository;
     }
 
     /**
@@ -66,23 +61,25 @@ public class SubtitleFileChangeListener {
      */
     private Mono<Void> handleSubtitleFileSaveEvent(FileEntity subtitleFileEntity) {
         String subtitleFileEntityName = substringFileEntityNamePrefix(subtitleFileEntity);
-        return fileRepository.findAllByNameLike(subtitleFileEntityName + "%")
-            .collectList().map(fileEntities -> fileEntities.get(0))
-            .flatMap(fileEntity -> videoSubtitleRepository.findByVideoFileIdAndSubtitleFileId(
-                    fileEntity.getId(), subtitleFileEntity.getId())
-                .switchIfEmpty(Mono.just(VideoSubtitleEntity.builder()
-                        .subtitleFileId(subtitleFileEntity.getId())
-                        .videoFileId(fileEntity.getId())
-                        .build())
-                    .flatMap(videoSubtitleEntity ->
-                        videoSubtitleRepository.save(videoSubtitleEntity)
-                            .doOnSuccess(videoSubtitleEntity2 -> log.info(
-                                "add new video => subtitle map record: [{}] => [{}].",
-                                fileEntity.getName(), subtitleFileEntity.getName()))
-                    )
-                )
-            )
-            .then();
+        return Mono.empty();
+        // todo refactor
+        //return fileRepository.findAllByNameLike(subtitleFileEntityName + "%")
+        //    .collectList().map(fileEntities -> fileEntities.get(0))
+        //    .flatMap(fileEntity -> videoSubtitleRepository.findByVideoFileIdAndSubtitleFileId(
+        //            fileEntity.getId(), subtitleFileEntity.getId())
+        //        .switchIfEmpty(Mono.just(VideoSubtitleEntity.builder()
+        //                .subtitleFileId(subtitleFileEntity.getId())
+        //                .videoFileId(fileEntity.getId())
+        //                .build())
+        //            .flatMap(videoSubtitleEntity ->
+        //                videoSubtitleRepository.save(videoSubtitleEntity)
+        //                    .doOnSuccess(videoSubtitleEntity2 -> log.info(
+        //                        "add new video => subtitle map record: [{}] => [{}].",
+        //                        fileEntity.getName(), subtitleFileEntity.getName()))
+        //            )
+        //        )
+        //    )
+        //    .then();
     }
 
     /**
@@ -90,17 +87,19 @@ public class SubtitleFileChangeListener {
      */
     private Mono<Void> handleSubtitleFileRemoveEvent(FileEntity subtitleFileEntity) {
         String subtitleFileEntityName = substringFileEntityNamePrefix(subtitleFileEntity);
-        return fileRepository.findAllByNameLike(subtitleFileEntityName + "%")
-            .collectList().map(fileEntities -> fileEntities.get(0))
-            .flatMap(fileEntity -> videoSubtitleRepository.findByVideoFileIdAndSubtitleFileId(
-                    fileEntity.getId(), subtitleFileEntity.getId())
-                .flatMap(videoSubtitleEntity -> videoSubtitleRepository.delete(videoSubtitleEntity)
-                    .doOnSuccess(
-                        unused -> log.info("remove video => subtitle map record: [{}] => [{}].",
-                            fileEntity.getName(), subtitleFileEntity.getName()))
-                )
-
-            )
-            .then();
+        // todo refactor
+        return Mono.empty();
+        //return fileRepository.findAllByNameLike(subtitleFileEntityName + "%")
+        //    .collectList().map(fileEntities -> fileEntities.get(0))
+        //    .flatMap(fileEntity -> videoSubtitleRepository.findByVideoFileIdAndSubtitleFileId(
+        //            fileEntity.getId(), subtitleFileEntity.getId())
+        //  .flatMap(videoSubtitleEntity -> videoSubtitleRepository.delete(videoSubtitleEntity)
+        //            .doOnSuccess(
+        //                unused -> log.info("remove video => subtitle map record: [{}] => [{}].",
+        //                    fileEntity.getName(), subtitleFileEntity.getName()))
+        //        )
+        //
+        //    )
+        //    .then();
     }
 }
