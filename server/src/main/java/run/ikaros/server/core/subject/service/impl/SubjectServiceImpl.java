@@ -78,7 +78,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
      * @param episodeFileRepository       {@link EpisodeFileEntity} repository
      * @param subjectSyncRepository       {@link SubjectSyncEntity} repository
      * @param fileRepository              {@link FileEntity} repository
-     * @param fileRelationRepository
      * @param template                    {@link R2dbcEntityTemplate}
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
@@ -322,7 +321,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                         PageRequest.of(pagingWrap1.getPage() - 1, pagingWrap1.getSize()))
                     .map(BaseEntity::getId)
                     .flatMap(subjectRepository::findById)
-                    .flatMap(subject -> ReactiveBeanUtils.copyProperties(subject, new SubjectMeta()))
+                    .flatMap(
+                        subject -> ReactiveBeanUtils.copyProperties(subject, new SubjectMeta()))
                     .collectList()
                     .flatMap(subjects -> subjectRepository.count()
                         .flatMap(total -> Mono.just(

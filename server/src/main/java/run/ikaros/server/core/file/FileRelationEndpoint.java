@@ -17,7 +17,6 @@ import run.ikaros.api.core.file.FileRelations;
 import run.ikaros.api.core.subject.Subtitle;
 import run.ikaros.api.store.enums.FileRelationType;
 import run.ikaros.server.endpoint.CoreEndpoint;
-import run.ikaros.server.store.entity.FileEntity;
 
 @Slf4j
 @Component
