@@ -55,7 +55,7 @@ watch(route, () => {
 	fetchSubjectByRouterQuery();
 });
 
-export interface SubjectsCondition {
+interface SubjectsCondition {
 	page: number;
 	size: number;
 	total: number;

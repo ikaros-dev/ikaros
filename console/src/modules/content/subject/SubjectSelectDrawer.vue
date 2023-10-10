@@ -3,7 +3,6 @@ import { computed, ref } from 'vue';
 import { Subject } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { base64Encode } from '@/utils/string-util';
-import { SubjectsCondition } from '@/modules/content/subject/Subjects.vue';
 import {
 	ElDrawer,
 	ElRow,
@@ -51,6 +50,15 @@ const handleClose = () => {
 	drawerVisible.value = false;
 };
 
+interface SubjectsCondition {
+	page: number;
+	size: number;
+	total: number;
+	name: string;
+	nameCn: string;
+	nsfw: boolean;
+	type?: 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER';
+}
 const findSubjectsCondition = ref<SubjectsCondition>({
 	page: 1,
 	size: 10,
