@@ -38,10 +38,12 @@ import { useSettingStore } from '@/stores/setting';
 import { episodeGroupLabelMap } from '@/modules/common/constants';
 import { useUserStore } from '@/stores/user';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
+import { useSubjectStore } from '@/stores/subject';
 
 const route = useRoute();
 const settingStore = useSettingStore();
 const userStore = useUserStore();
+const subjectStore = useSubjectStore();
 
 watch(route, () => {
 	if (!route.params?.id && route.params?.id === undefined) {
@@ -62,10 +64,9 @@ const subject = ref<Subject>({
 // eslint-disable-next-line no-unused-vars
 const fetchSubjectById = async () => {
 	if (subject.value.id) {
-		const { data } = await apiClient.subject.searchSubjectById({
-			id: subject.value.id as number,
-		});
-		subject.value = data;
+		subject.value = await subjectStore.fetchSubjectById(
+			subject.value.id as number
+		);
 	}
 };
 

@@ -4,9 +4,11 @@ import {
 	SubjectRelation,
 	SubjectRelationRelationTypeEnum,
 } from '@runikaros/api-client';
-import { apiClient } from '@/utils/api-client';
 import { computed, ref } from 'vue';
 import { ElDrawer, ElTable, ElTableColumn } from 'element-plus';
+import { useSubjectStore } from '@/stores/subject';
+
+const subjectStore = useSubjectStore();
 
 const props = withDefaults(
 	defineProps<{
@@ -70,11 +72,6 @@ const handleSelectionChange = (selection) => {
 	// console.log('selectionSubjectReactions', selectionSubjectReactions);
 };
 
-const findSubjectById = async (id: number): Promise<Subject> => {
-	const { data } = await apiClient.subject.searchSubjectById({ id: id });
-	return data;
-};
-
 const subjectIdMapCache = new Map<number, Subject>();
 const subjects = ref<Subject[]>([]);
 const onOpen = async () => {
@@ -87,7 +84,7 @@ const onOpen = async () => {
 	await ids.forEach(async (id) => {
 		let sub = subjectIdMapCache.get(id);
 		if (!sub) {
-			sub = await findSubjectById(id);
+			sub = await subjectStore.getSubjectById(id);
 			subjectIdMapCache.set(id, sub);
 		}
 		subjects.value.push(sub);

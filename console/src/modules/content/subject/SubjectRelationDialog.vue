@@ -24,7 +24,9 @@ import {
 import { onMounted } from 'vue';
 import SubjectRelationPostDialog from './SubjectRelationPostDialog.vue';
 import SubjectRelationDeleteDialog from './SubjectRelationDeleteDialog.vue';
+import { useSubjectStore } from '@/stores/subject';
 
+const subjectStore = useSubjectStore();
 const route = useRoute();
 watch(route, async () => {
 	if (!route.params?.id && route.params?.id === undefined) {
@@ -126,7 +128,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'ANIME': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationAnimes.value = subjects;
@@ -135,7 +137,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'COMIC': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationComics.value = subjects;
@@ -144,7 +146,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'GAME': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationGames.value = subjects;
@@ -153,7 +155,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'MUSIC': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationMusics.value = subjects;
@@ -162,7 +164,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'NOVEL': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationNovels.value = subjects;
@@ -171,7 +173,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'REAL': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationReals.value = subjects;
@@ -180,7 +182,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'BEFORE': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationBefores.value = subjects;
@@ -189,7 +191,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'AFTER': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationAfters.value = subjects;
@@ -198,7 +200,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'SAME_WORLDVIEW': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationSWs.value = subjects;
@@ -207,7 +209,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'ORIGINAL_SOUND_TRACK': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationOSTs.value = subjects;
@@ -216,7 +218,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			case 'OTHER': {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationOthers.value = subjects;
@@ -225,7 +227,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 			default: {
 				let subjects: Subject[] = [];
 				await relSubs.forEach(async (id) => {
-					let tmpSub = await findSubjectById(id);
+					let tmpSub = await subjectStore.getSubjectById(id);
 					subjects.push(tmpSub);
 				});
 				relationOthers.value = subjects;
@@ -234,10 +236,6 @@ watch(subjectRelations, async (newSubjectRelations) => {
 		}
 	});
 });
-const findSubjectById = async (id: number): Promise<Subject> => {
-	const { data } = await apiClient.subject.searchSubjectById({ id: id });
-	return data;
-};
 
 const subjectRelationPostDialogVisible = ref(false);
 
