@@ -26,12 +26,12 @@ import SubjectRelationPostDialog from './SubjectRelationPostDialog.vue';
 import SubjectRelationDeleteDialog from './SubjectRelationDeleteDialog.vue';
 
 const route = useRoute();
-watch(route, () => {
+watch(route, async () => {
 	if (!route.params?.id && route.params?.id === undefined) {
 		return;
 	}
 	// console.log(route.params.id);
-	loadSubject();
+	await loadSubject();
 });
 
 const props = withDefaults(
@@ -79,9 +79,9 @@ const loadSubject = async () => {
 	});
 	subject.value = data;
 };
-watch(subject, () => {
+watch(subject, async () => {
 	subjectRelations.value = [];
-	loadSubjectRelations();
+	await loadSubjectRelations();
 });
 const subjectRelations = ref<SubjectRelation[]>([]);
 const loadSubjectRelations = async () => {
