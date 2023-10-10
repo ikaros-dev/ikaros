@@ -5,25 +5,26 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.store.enums.FileRelationType;
 import run.ikaros.server.core.file.event.FileChangeEvent;
 import run.ikaros.server.core.file.event.FileRemoveEvent;
 import run.ikaros.server.core.file.event.FileSaveEvent;
 import run.ikaros.server.store.entity.FileEntity;
-import run.ikaros.server.store.entity.VideoSubtitleEntity;
+import run.ikaros.server.store.entity.FileRelationEntity;
+import run.ikaros.server.store.repository.FileRelationRepository;
 import run.ikaros.server.store.repository.FileRepository;
-import run.ikaros.server.store.repository.VideoSubtitleRepository;
 
 @Slf4j
 @Component
 public class SubtitleFileChangeListener {
 
     private final FileRepository fileRepository;
-    private final VideoSubtitleRepository videoSubtitleRepository;
+    private final FileRelationRepository fileRelationRepository;
 
     public SubtitleFileChangeListener(FileRepository fileRepository,
-                                      VideoSubtitleRepository videoSubtitleRepository) {
+                                      FileRelationRepository fileRelationRepository) {
         this.fileRepository = fileRepository;
-        this.videoSubtitleRepository = videoSubtitleRepository;
+        this.fileRelationRepository = fileRelationRepository;
     }
 
     /**
@@ -68,19 +69,19 @@ public class SubtitleFileChangeListener {
         String subtitleFileEntityName = substringFileEntityNamePrefix(subtitleFileEntity);
         return fileRepository.findAllByNameLike(subtitleFileEntityName + "%")
             .collectList().map(fileEntities -> fileEntities.get(0))
-            .flatMap(fileEntity -> videoSubtitleRepository.findByVideoFileIdAndSubtitleFileId(
-                    fileEntity.getId(), subtitleFileEntity.getId())
-                .switchIfEmpty(Mono.just(VideoSubtitleEntity.builder()
-                        .subtitleFileId(subtitleFileEntity.getId())
-                        .videoFileId(fileEntity.getId())
-                        .build())
-                    .flatMap(videoSubtitleEntity ->
-                        videoSubtitleRepository.save(videoSubtitleEntity)
-                            .doOnSuccess(videoSubtitleEntity2 -> log.info(
-                                "add new video => subtitle map record: [{}] => [{}].",
-                                fileEntity.getName(), subtitleFileEntity.getName()))
-                    )
-                )
+            .flatMap(fileEntity ->
+                fileRelationRepository.findByRelationTypeAndFileIdAndRelationFileId(
+                        FileRelationType.VIDEO_SUBTITLE, fileEntity.getId(),
+                        subtitleFileEntity.getId())
+                    .switchIfEmpty(Mono.just(FileRelationEntity.builder()
+                        .fileId(fileEntity.getId())
+                        .relationType(FileRelationType.VIDEO_SUBTITLE)
+                        .relationFileId(subtitleFileEntity.getId())
+                        .build()))
+                    .flatMap(fileRelationEntity -> fileRelationRepository.save(fileRelationEntity)
+                        .doOnSuccess(fileRelationEntity1 -> log.info(
+                            "add new video => subtitle map record: [{}] => [{}].",
+                            fileEntity.getName(), subtitleFileEntity.getName())))
             )
             .then();
     }
@@ -92,14 +93,14 @@ public class SubtitleFileChangeListener {
         String subtitleFileEntityName = substringFileEntityNamePrefix(subtitleFileEntity);
         return fileRepository.findAllByNameLike(subtitleFileEntityName + "%")
             .collectList().map(fileEntities -> fileEntities.get(0))
-            .flatMap(fileEntity -> videoSubtitleRepository.findByVideoFileIdAndSubtitleFileId(
-                    fileEntity.getId(), subtitleFileEntity.getId())
-                .flatMap(videoSubtitleEntity -> videoSubtitleRepository.delete(videoSubtitleEntity)
-                    .doOnSuccess(
-                        unused -> log.info("remove video => subtitle map record: [{}] => [{}].",
-                            fileEntity.getName(), subtitleFileEntity.getName()))
-                )
-
+            .flatMap(fileEntity ->
+                fileRelationRepository.findByRelationTypeAndFileIdAndRelationFileId(
+                        FileRelationType.VIDEO_SUBTITLE, fileEntity.getId(),
+                        subtitleFileEntity.getId())
+                    .flatMap(fileRelationEntity -> fileRelationRepository.delete(fileRelationEntity)
+                        .doOnSuccess(fileRelationEntity1 -> log.info(
+                            "remove video => subtitle map record:: [{}] => [{}].",
+                            fileEntity.getName(), subtitleFileEntity.getName())))
             )
             .then();
     }

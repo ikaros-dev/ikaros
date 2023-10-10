@@ -162,6 +162,22 @@ create table if not exists file
     constraint file_pkey primary key (id)
 );
 
+-- file_relation
+create sequence if not exists file_relation_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+create table if not exists file_relation
+(
+    id               int8         not null default nextval('file_relation_seq'),
+    file_id          int8         not null,
+    relation_type    varchar(255) not null,
+    relation_file_id int8         not null,
+    constraint file_relation_pkey primary key (id)
+);
+
 -- file_remote
 create sequence if not exists file_remote_seq
     increment 1

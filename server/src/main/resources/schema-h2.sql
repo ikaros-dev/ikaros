@@ -113,6 +113,16 @@ create table if not exists file
     constraint file_pkey primary key (id)
 );
 
+-- file_relation
+create table if not exists file_relation
+(
+    id                  int8         not null auto_increment,
+    file_id          int8         not null,
+    relation_type       varchar(255) not null,
+    relation_file_id int8         not null,
+    constraint file_relation_pkey primary key (id)
+);
+
 -- file_remote
 create table if not exists file_remote
 (
@@ -132,6 +142,7 @@ create table if not exists file_remote
     file_size     int8         null,
     constraint file_remote_pkey primary key (id)
 );
+
 
 -- folder
 create table if not exists folder

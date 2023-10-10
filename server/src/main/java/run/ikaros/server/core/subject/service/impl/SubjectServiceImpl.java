@@ -31,10 +31,9 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.SubjectMeta;
 import run.ikaros.api.core.subject.SubjectSync;
-import run.ikaros.api.core.subject.Subtitle;
 import run.ikaros.api.infra.exception.NotFoundException;
-import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
@@ -43,7 +42,7 @@ import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.vo.FindSubjectCondition;
-import run.ikaros.server.infra.constants.NumberConst;
+import run.ikaros.server.infra.utils.ReactiveBeanUtils;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
@@ -51,14 +50,12 @@ import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.entity.SubjectCollectionEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
-import run.ikaros.server.store.entity.VideoSubtitleEntity;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.SubjectCollectionRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
-import run.ikaros.server.store.repository.VideoSubtitleRepository;
 
 @Slf4j
 @Service
@@ -69,7 +66,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     private final EpisodeFileRepository episodeFileRepository;
     private final SubjectSyncRepository subjectSyncRepository;
     private final FileRepository fileRepository;
-    private final VideoSubtitleRepository videoSubtitleRepository;
     private final R2dbcEntityTemplate template;
     private ApplicationContext applicationContext;
 
@@ -82,7 +78,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
      * @param episodeFileRepository       {@link EpisodeFileEntity} repository
      * @param subjectSyncRepository       {@link SubjectSyncEntity} repository
      * @param fileRepository              {@link FileEntity} repository
-     * @param videoSubtitleRepository     {@link VideoSubtitleEntity} repository
      * @param template                    {@link R2dbcEntityTemplate}
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
@@ -91,7 +86,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                               EpisodeFileRepository episodeFileRepository,
                               SubjectSyncRepository subjectSyncRepository,
                               FileRepository fileRepository,
-                              VideoSubtitleRepository videoSubtitleRepository,
                               R2dbcEntityTemplate template) {
         this.subjectRepository = subjectRepository;
         this.subjectCollectionRepository = subjectCollectionRepository;
@@ -99,7 +93,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         this.episodeFileRepository = episodeFileRepository;
         this.subjectSyncRepository = subjectSyncRepository;
         this.fileRepository = fileRepository;
-        this.videoSubtitleRepository = videoSubtitleRepository;
         this.template = template;
     }
 
@@ -124,13 +117,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                                 .url(fileEntity.getUrl())
                                 .canRead(fileEntity.getCanRead())
                                 .build())
-                            .flatMap(episodeResource ->
-                                findEpisodeResourceSubtitles(episodeResource.getFileId())
-                                    .collectList()
-                                    .map(subtitles -> {
-                                        episodeResource.setSubtitles(subtitles);
-                                        return episodeResource;
-                                    }))
                     ).collectList()
                     .map(episode::setResources))
                 .sort(Comparator.comparingDouble(Episode::getSequence))
@@ -146,64 +132,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, new SubjectSync()))
                 .collectList().map(subject::setSyncs))
             .checkpoint("FindSyncEntitiesBySubjectId");
-    }
-
-    private Flux<Subtitle> findEpisodeResourceSubtitles(String fileEntityName) {
-        String postfix = FileUtils.parseFilePostfix(fileEntityName);
-        fileEntityName = fileEntityName.substring(0, fileEntityName.indexOf(postfix));
-        String finalFileEntityName = fileEntityName;
-        return fileRepository.findAllByNameLike(fileEntityName + "%")
-            .filter(fileEntity -> fileEntity.getName().endsWith("ass"))
-            .filter(FileEntity::getCanRead)
-            .map(fileEntity -> Subtitle.builder()
-                .fileId(fileEntity.getId())
-                .name(fileEntity.getName())
-                .url(fileEntity.getUrl())
-                .language(fileEntity.getName()
-                    .replace(finalFileEntityName, "")
-                    .replace(".ass", ""))
-                .build())
-            ;
-
-    }
-
-    private synchronized Flux<Subtitle> findEpisodeResourceSubtitles(Long fileId) {
-        return videoSubtitleRepository.findAllByVideoFileId(fileId)
-            .collectList()
-            .filter(videoSubtitleEntities -> !videoSubtitleEntities.isEmpty())
-            .switchIfEmpty(fileRepository.findById(fileId)
-                .map(FileEntity::getName)
-                .map(fileEntityName ->
-                    fileEntityName.substring(0,
-                        fileEntityName.indexOf(
-                            FileUtils.parseFilePostfix(fileEntityName))))
-                .flatMapMany(
-                    fileEntityName -> fileRepository.findAllByNameLike(fileEntityName + "%")
-                        .filter(fileEntity -> fileEntity.getName().endsWith("ass"))
-                        .filter(FileEntity::getCanRead)
-                        .map(FileEntity::getId)
-                        .map(subtitleFileId -> VideoSubtitleEntity.builder()
-                            .videoFileId(fileId)
-                            .subtitleFileId(subtitleFileId)
-                            .build())
-                        .switchIfEmpty(Mono.just(VideoSubtitleEntity.builder()
-                            .videoFileId(fileId)
-                            .subtitleFileId(NumberConst.UN_USE_ID)
-                            .build()))
-                        .flatMap(videoSubtitleRepository::save)
-                )
-                .collectList()
-            )
-            .flatMapMany(videoSubtitleEntities -> Flux.fromStream(videoSubtitleEntities.stream()))
-            .filter(videoSubtitleEntity ->
-                !NumberConst.UN_USE_ID.equals(videoSubtitleEntity.getSubtitleFileId()))
-            .flatMap(videoSubtitleEntity ->
-                fileRepository.findById(videoSubtitleEntity.getSubtitleFileId())
-                    .map(subtitleFileEntity -> Subtitle.builder()
-                        .fileId(videoSubtitleEntity.getVideoFileId())
-                        .name(subtitleFileEntity.getName())
-                        .url(subtitleFileEntity.getUrl())
-                        .build()));
     }
 
     private boolean getSubjectCanReadByEpisodes(List<Episode> episodes) {
@@ -383,7 +311,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    public Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pagingWrap) {
+    public Mono<PagingWrap<SubjectMeta>> findAllByPageable(PagingWrap<Subject> pagingWrap) {
         Assert.notNull(pagingWrap, "'pagingWrap' must not be null");
         Assert.isTrue(pagingWrap.getPage() > 0, "'pagingWrap' page must gt 0");
         Assert.isTrue(pagingWrap.getSize() > 0, "'pagingWrap' size must gt 0");
@@ -392,7 +320,9 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 subjectRepository.findAllByOrderByAirTimeDesc(
                         PageRequest.of(pagingWrap1.getPage() - 1, pagingWrap1.getSize()))
                     .map(BaseEntity::getId)
-                    .flatMap(this::findById)
+                    .flatMap(subjectRepository::findById)
+                    .flatMap(
+                        subject -> ReactiveBeanUtils.copyProperties(subject, new SubjectMeta()))
                     .collectList()
                     .flatMap(subjects -> subjectRepository.count()
                         .flatMap(total -> Mono.just(
@@ -401,7 +331,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    public Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition) {
+    public Mono<PagingWrap<SubjectMeta>> listEntitiesByCondition(FindSubjectCondition condition) {
         Assert.notNull(condition, "'condition' must not null.");
         condition.initDefaultIfNull();
         Integer page = condition.getPage();
@@ -439,7 +369,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         Mono<Long> countMono = template.count(query, SubjectEntity.class);
 
         return subjectEntityFlux.map(BaseEntity::getId)
-            .flatMap(this::findById)
+            .flatMap(subjectRepository::findById)
+            .flatMap(subject -> ReactiveBeanUtils.copyProperties(subject, new SubjectMeta()))
             .collectList()
             .flatMap(subjects -> countMono
                 .map(count -> new PagingWrap<>(page, size, count, subjects)));

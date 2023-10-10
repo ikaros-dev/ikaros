@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.SubjectMeta;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.subject.vo.FindSubjectCondition;
@@ -27,9 +28,9 @@ public interface SubjectService {
     @Transactional
     Mono<Void> deleteById(Long id);
 
-    Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pagingWrap);
+    Mono<PagingWrap<SubjectMeta>> findAllByPageable(PagingWrap<Subject> pagingWrap);
 
-    Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition);
+    Mono<PagingWrap<SubjectMeta>> listEntitiesByCondition(FindSubjectCondition condition);
 
     Mono<Void> deleteAll();
 }
