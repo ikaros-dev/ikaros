@@ -39,19 +39,30 @@ import { episodeGroupLabelMap } from '@/modules/common/constants';
 import { useUserStore } from '@/stores/user';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
 import { useSubjectStore } from '@/stores/subject';
+import { nextTick } from 'vue';
 
 const route = useRoute();
 const settingStore = useSettingStore();
 const userStore = useUserStore();
 const subjectStore = useSubjectStore();
 
-watch(route, () => {
+const refreshSubjectRelactionDialog = ref(true);
+watch(route, async () => {
 	if (!route.params?.id && route.params?.id === undefined) {
 		return;
 	}
 	// console.log(route.params.id);
-	fetchDatas();
+	await fetchDatas();
+	doRefreshSubjectRelactionDialog();
 });
+
+const doRefreshSubjectRelactionDialog = () => {
+	subjectRelationDialogVisible.value = false;
+	refreshSubjectRelactionDialog.value = false;
+	nextTick(() => {
+		refreshSubjectRelactionDialog.value = true;
+	});
+};
 
 const subject = ref<Subject>({
 	id: -1,
@@ -418,7 +429,10 @@ onMounted(fetchDatas);
 		@close="onSubjectRemoteActionDialogClose"
 	/>
 
-	<SubjectRelationDialog v-model:visible="subjectRelationDialogVisible" />
+	<SubjectRelationDialog
+		v-if="refreshSubjectRelactionDialog"
+		v-model:visible="subjectRelationDialogVisible"
+	/>
 
 	<el-row>
 		<el-col :span="24">

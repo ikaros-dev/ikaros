@@ -28,13 +28,13 @@ import { useSubjectStore } from '@/stores/subject';
 
 const subjectStore = useSubjectStore();
 const route = useRoute();
-watch(route, async () => {
-	if (!route.params?.id && route.params?.id === undefined) {
-		return;
-	}
-	// console.log(route.params.id);
-	await loadSubject();
-});
+// watch(route, async () => {
+// 	if (!route.params?.id && route.params?.id === undefined) {
+// 		return;
+// 	}
+// 	// console.log(route.params.id);
+// 	await loadSubject();
+// });
 
 const props = withDefaults(
 	defineProps<{
