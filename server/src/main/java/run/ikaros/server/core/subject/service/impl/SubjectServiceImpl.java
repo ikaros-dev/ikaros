@@ -31,6 +31,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.SubjectMeta;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.StringUtils;
@@ -41,6 +42,7 @@ import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.vo.FindSubjectCondition;
+import run.ikaros.server.infra.utils.ReactiveBeanUtils;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
@@ -310,7 +312,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    public Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pagingWrap) {
+    public Mono<PagingWrap<SubjectMeta>> findAllByPageable(PagingWrap<Subject> pagingWrap) {
         Assert.notNull(pagingWrap, "'pagingWrap' must not be null");
         Assert.isTrue(pagingWrap.getPage() > 0, "'pagingWrap' page must gt 0");
         Assert.isTrue(pagingWrap.getSize() > 0, "'pagingWrap' size must gt 0");
@@ -319,7 +321,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 subjectRepository.findAllByOrderByAirTimeDesc(
                         PageRequest.of(pagingWrap1.getPage() - 1, pagingWrap1.getSize()))
                     .map(BaseEntity::getId)
-                    .flatMap(this::findById)
+                    .flatMap(subjectRepository::findById)
+                    .flatMap(subject -> ReactiveBeanUtils.copyProperties(subject, new SubjectMeta()))
                     .collectList()
                     .flatMap(subjects -> subjectRepository.count()
                         .flatMap(total -> Mono.just(
@@ -328,7 +331,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    public Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition) {
+    public Mono<PagingWrap<SubjectMeta>> listEntitiesByCondition(FindSubjectCondition condition) {
         Assert.notNull(condition, "'condition' must not null.");
         condition.initDefaultIfNull();
         Integer page = condition.getPage();
@@ -366,7 +369,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         Mono<Long> countMono = template.count(query, SubjectEntity.class);
 
         return subjectEntityFlux.map(BaseEntity::getId)
-            .flatMap(this::findById)
+            .flatMap(subjectRepository::findById)
+            .flatMap(subject -> ReactiveBeanUtils.copyProperties(subject, new SubjectMeta()))
             .collectList()
             .flatMap(subjects -> countMono
                 .map(count -> new PagingWrap<>(page, size, count, subjects)));
