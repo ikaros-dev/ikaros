@@ -7,6 +7,7 @@ import {
 } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { useRoute } from 'vue-router';
+// eslint-disable-next-line no-unused-vars
 import SubjectCard from '@/components/modules/content/subject/SubjectCard.vue';
 // eslint-disable-next-line no-unused-vars
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
@@ -22,6 +23,7 @@ import {
 } from 'element-plus';
 import { onMounted } from 'vue';
 import SubjectRelationPostDialog from './SubjectRelationPostDialog.vue';
+import SubjectRelationDeleteDialog from './SubjectRelationDeleteDialog.vue';
 
 const route = useRoute();
 watch(route, () => {
@@ -78,6 +80,7 @@ const loadSubject = async () => {
 	subject.value = data;
 };
 watch(subject, () => {
+	subjectRelations.value = [];
 	loadSubjectRelations();
 });
 const subjectRelations = ref<SubjectRelation[]>([]);
@@ -102,8 +105,21 @@ const relationAfters = ref<Subject[]>([]);
 const relationSWs = ref<Subject[]>([]);
 const relationOSTs = ref<Subject[]>([]);
 const relationOthers = ref<Subject[]>([]);
-watch(subjectRelations, async () => {
-	await subjectRelations.value.forEach(async (subRel: SubjectRelation) => {
+watch(subjectRelations, async (newSubjectRelations) => {
+	if (!newSubjectRelations || newSubjectRelations.length === 0) {
+		relationAnimes.value = [];
+		relationComics.value = [];
+		relationGames.value = [];
+		relationMusics.value = [];
+		relationNovels.value = [];
+		relationReals.value = [];
+		relationBefores.value = [];
+		relationAfters.value = [];
+		relationSWs.value = [];
+		relationOSTs.value = [];
+		relationOthers.value = [];
+	}
+	await newSubjectRelations.forEach(async (subRel: SubjectRelation) => {
 		const type = subRel.relation_type;
 		const relSubs: Set<number> = subRel.relation_subjects;
 		switch (type) {
@@ -223,16 +239,16 @@ const findSubjectById = async (id: number): Promise<Subject> => {
 	return data;
 };
 
-const onTabActive = (pane) => {
-	console.log('pane', pane);
-	console.log('subject', subject);
-};
-
 const subjectRelationPostDialogVisible = ref(false);
 
 const onSubjectRelationPostDialogClose = async () => {
 	await loadSubjectRelations();
 };
+const onSubjectRelationDeleteDialogClose = async () => {
+	await loadSubjectRelations();
+};
+
+const subjectRelationDeleteDialogVisible = ref(false);
 onMounted(loadSubject);
 </script>
 
@@ -241,6 +257,12 @@ onMounted(loadSubject);
 		v-model:visible="subjectRelationPostDialogVisible"
 		v-model:masterSubjectId="subject.id"
 		@close="onSubjectRelationPostDialogClose"
+	/>
+	<SubjectRelationDeleteDialog
+		v-model:visible="subjectRelationDeleteDialogVisible"
+		v-model:masterSubjectId="subject.id"
+		v-model:relationSubjects="subjectRelations"
+		@close="onSubjectRelationDeleteDialogClose"
 	/>
 
 	<el-dialog
@@ -280,13 +302,17 @@ onMounted(loadSubject);
 				<el-button @click="subjectRelationPostDialogVisible = true">
 					新增
 				</el-button>
-				<el-button type="danger">删除</el-button>
+				<el-button
+					type="danger"
+					@click="subjectRelationDeleteDialogVisible = true"
+					>删除</el-button
+				>
 			</el-col>
 		</el-row>
 
 		<br />
 
-		<el-tabs v-model="activeTabName" @tab-click="onTabActive">
+		<el-tabs v-model="activeTabName">
 			<el-tab-pane :label="'动漫(' + relationAnimes.length + ')'" name="ANIME">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
@@ -298,11 +324,11 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="anime" />
+						<SubjectCardLink :subject="anime" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane name="COMIC" :label="'漫画(' + relationComics.length + ')'">
+			<el-tab-pane :label="'漫画(' + relationComics.length + ')'" name="COMIC">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
 						v-for="comic in relationComics"
@@ -313,7 +339,7 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="comic" />
+						<SubjectCardLink :subject="comic" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -328,7 +354,7 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="game" />
+						<SubjectCardLink :subject="game" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -343,7 +369,7 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="music" />
+						<SubjectCardLink :subject="music" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -358,7 +384,7 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="novel" />
+						<SubjectCardLink :subject="novel" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -373,7 +399,7 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="real" />
+						<SubjectCardLink :subject="real" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -391,7 +417,7 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="before" />
+						<SubjectCardLink :subject="before" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -406,7 +432,7 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="after" />
+						<SubjectCardLink :subject="after" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -424,7 +450,7 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="sw" />
+						<SubjectCardLink :subject="sw" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -442,7 +468,7 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="ost" />
+						<SubjectCardLink :subject="ost" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -457,7 +483,7 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCard :subject="other" />
+						<SubjectCardLink :subject="other" />
 					</el-col>
 				</el-row>
 			</el-tab-pane>
