@@ -1,4 +1,4 @@
-name: ikaros_ci_build_tag_container
+name: Build Tag Container
 
 on:
   push:
