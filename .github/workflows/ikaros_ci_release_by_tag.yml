@@ -1,0 +1,28 @@
+name: Create Draft Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - v[0-9]+.*
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/create-gh-release-action@v1
+        with:
+          # (Optional)
+          changelog: CHANGELOG.MD
+          # (Optional) Create a draft release.
+          # [default value: false]
+          draft: true
+          # (Optional) Format of title.
+          # [default value: $tag]
+          # [possible values: variables $tag, $version, and any string]
+          title: v$version
+          # (Required) GitHub token for creating GitHub Releases.
+          token: ${{ secrets.LI_GUOHAO_TOKEN }}
