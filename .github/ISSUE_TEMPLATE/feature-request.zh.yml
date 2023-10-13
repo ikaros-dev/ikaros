@@ -1,5 +1,6 @@
 name: Ikaros 新功能请求
 description: 中文选这个，给这个项目提关于 新功能 的建议
+title: "[Feature]: "
 labels: [ "feature" ]
 body:
   - type: markdown
@@ -52,16 +53,6 @@ body:
       options:
         - label: 是的我想要提交个PR!
           required: false
-
-  - type: textarea
-    id: relatedPullRequests
-    attributes:
-      label: 相关的PR
-      description: 目前是否有与此新功能有关的 pull request, 您可以填写 `#数字` 或者URL 方便我们快速定位到这个pr, 未完成的PR请在PR的title加上前缀`[WIP]`
-      placeholder: >
-        - [ ] 组件名1: PR链接 
-
-        - [ ] 组件名2: PR链接 
 
   - type: markdown
     attributes:

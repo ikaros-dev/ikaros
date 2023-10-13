@@ -1,5 +1,6 @@
 name: Ikaros Bug Report
 description: Problems and issues with code of Ikaros
+title: "[Bug]: "
 labels: [ "bug" ]
 body:
   - type: markdown
@@ -31,8 +32,31 @@ body:
         - "console"
         - "plugin"
         - "docs"
+        - "theme"
     validations:
       required: true
+
+  - type: textarea
+    attributes:
+      label: Runtime environment
+      description: Describe what runtime environment.
+      placeholder: >
+        Please provide the Runtime environment in which the problem occurred,
+        os:
+        database:
+        deployment: docker or fastjar
+        server version: 
+        clients:
+        and more ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
 
   - type: textarea
     attributes:

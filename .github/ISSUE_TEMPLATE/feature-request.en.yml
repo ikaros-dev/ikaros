@@ -1,5 +1,6 @@
 name: Ikaros feature request
 description: Suggest an idea for this project
+title: "[Feature]: "
 labels: [ "feature" ]
 body:
   - type: markdown
@@ -49,15 +50,6 @@ body:
       options:
         - label: Yes I am willing to submit a PR!
           required: false
-
-  - type: textarea
-    attributes:
-      label: Related pull requests
-      description: Is there currently another pull request associated with this?
-      placeholder: >
-        - [ ] component1: pr link
-
-        - [ ] component2: pr link
 
   - type: markdown
     attributes:
