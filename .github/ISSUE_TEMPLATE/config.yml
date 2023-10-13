@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Ikaros docs
+    url: https://docs.ikaros.run
+    about: Ikaros offical docs site
   - name: Ask a question or get support
     url: https://github.com/ikaros-dev/ikaros/discussions
     about: Ask a question or request support for using Ikaros

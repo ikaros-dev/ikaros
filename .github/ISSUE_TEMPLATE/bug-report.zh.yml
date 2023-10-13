@@ -1,5 +1,6 @@
 name: Ikaros Bug 报告
 description: 中文选这个，给 Ikaros 项目报告一个BUG
+title: "[Bug]: "
 labels: [ "bug" ]
 body:
   - type: markdown
@@ -32,8 +33,32 @@ body:
         - "控制台 (console)"
         - "插件 (plugin)"
         - "文档 (docs)"
+        - "主题 (theme)"
     validations:
       required: true
+
+  - type: textarea
+    id: runtimeEnvironment
+    attributes:
+      label: 运行环境
+      description: 描述下您的运行环境
+      placeholder: >
+        请提供问题发生时的运行环境，
+        操作系统：
+        数据库：
+        部署方式: docker 或者 fastjar
+        服务端版本: 
+        客户端:
+        更多 ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 报错相关的日志
+      description: 请复制并粘贴任何相关的日志输出。这将自动格式化为代码，因此不需要反引号。
+      render: shell
 
   - type: textarea
     id: whatHappend
