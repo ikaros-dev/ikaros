@@ -1,6 +1,6 @@
 name: Ikaros Bug 报告
 description: 中文选这个，给 Ikaros 项目报告一个BUG
-title: "[Bug]: "
+title: "[Bug] "
 labels: [ "bug" ]
 body:
   - type: markdown

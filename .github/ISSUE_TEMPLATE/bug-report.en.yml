@@ -1,6 +1,6 @@
 name: Ikaros Bug Report
 description: Problems and issues with code of Ikaros
-title: "[Bug]: "
+title: "[Bug] "
 labels: [ "bug" ]
 body:
   - type: markdown
