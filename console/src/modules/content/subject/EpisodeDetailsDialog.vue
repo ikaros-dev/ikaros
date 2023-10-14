@@ -56,6 +56,10 @@ const remvoeEpisodeFileBind = async () => {
 			emit('removeEpisodeFileBind');
 		});
 };
+
+const urlIsArachivePackage = (url: string | undefined): boolean => {
+	return !url || url.endsWith('zip') || url.endsWith('7z');
+};
 </script>
 
 <template>
@@ -81,12 +85,18 @@ const remvoeEpisodeFileBind = async () => {
 					v-if="episode?.resources && episode?.resources.length > 0"
 					align="center"
 				>
-					<div>{{ episode?.resources[0].name }}</div>
+					<div>
+						<router-link
+							:to="'/files?searchFileName=' + episode?.resources[0].name"
+							>{{ episode?.resources[0].name }}</router-link
+						>
+					</div>
 					<video
 						v-if="
 							episode?.resources &&
 							episode?.resources.length > 0 &&
 							episode?.resources &&
+							!urlIsArachivePackage(episode.resources[0].url) &&
 							episode?.resources[0]?.canRead
 						"
 						style="width: 100%"
@@ -96,7 +106,9 @@ const remvoeEpisodeFileBind = async () => {
 					>
 						您的浏览器不支持这个格式的视频
 					</video>
-					<span v-else>当前资源文件不可读取，如需读取，请请求从远端拉取。</span>
+					<span v-else>
+						当前资源文件非视频文件、或者不可读取，如是视频文件且需读取，请先从远端拉取。
+					</span>
 				</div>
 				<span v-else> 当前剧集暂未绑定资源文件 </span>
 			</el-descriptions-item>
