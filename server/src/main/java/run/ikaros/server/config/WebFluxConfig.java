@@ -146,7 +146,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
         //     throw new RuntimeException("Not exists theme dir in classpath.", e);
         // }
         // /theme/simple/static => classpath:/templates/theme/simple/static/
-        registry.addResourceHandler("/theme/simple/static")
+        registry.addResourceHandler("/theme/simple/static/**")
             .addResourceLocations("classpath:/templates/theme/simple/static/");
 
     }
