@@ -41,7 +41,7 @@ public class SubjectEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/Subject";
+        var tag = OpenApiConst.CORE_VERSION + "/subject";
         return SpringdocRouteBuilder.route()
             .GET("/subjects/{page}/{size}", this::list,
                 builder -> builder.operationId("SearchAllSubjectByPaging")

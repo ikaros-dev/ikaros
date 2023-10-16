@@ -35,7 +35,7 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/SubjectSyncPlatform";
+        var tag = OpenApiConst.CORE_VERSION + "/subject/sync/platform";
         return SpringdocRouteBuilder.route()
             .POST("/subject/sync/platform", this::sync,
                 builder -> builder.operationId("SyncSubjectAndPlatform")

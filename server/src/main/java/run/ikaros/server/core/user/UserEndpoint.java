@@ -36,7 +36,7 @@ public class UserEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/User";
+        var tag = OpenApiConst.CORE_VERSION + "/user";
         return SpringdocRouteBuilder.route()
             .GET("/user/current", this::getCurrentUserDetail,
                 builder -> builder.operationId("GetCurrentUserDetail")

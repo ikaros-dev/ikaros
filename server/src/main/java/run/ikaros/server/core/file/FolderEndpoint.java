@@ -31,7 +31,7 @@ public class FolderEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/Folder";
+        var tag = OpenApiConst.CORE_VERSION + "/folder";
         return SpringdocRouteBuilder.route()
             .POST("/folder", this::createFolder,
                 builder -> builder.operationId("CreateFolder")

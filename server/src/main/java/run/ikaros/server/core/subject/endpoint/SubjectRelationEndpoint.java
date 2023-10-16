@@ -37,9 +37,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/SubjectRelation";
+        var tag = OpenApiConst.CORE_VERSION + "/subject/relation";
         return SpringdocRouteBuilder.route()
-            .GET("/subject-relations/{subjectId}", this::findAllBySubjectId,
+            .GET("/subject/relations/{subjectId}", this::findAllBySubjectId,
                 builder -> builder
                     .tag(tag)
                     .operationId("GetSubjectRelationsById")
@@ -49,7 +49,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .description("Subject id")
                         .implementation(Long.class)
                         .required(true)))
-            .GET("/subject-relation/{subjectId}/{relationType}", this::findBySubjectIdAndType,
+            .GET("/subject/relation/{subjectId}/{relationType}", this::findBySubjectIdAndType,
                 builder -> builder
                     .tag(tag)
                     .operationId("GetSubjectRelationByIdAndType")
@@ -65,7 +65,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .description("Subject relation type")
                         .implementation(SubjectRelationType.class)
                         .required(true)))
-            .POST("/subject-relation", this::createSubjectRelation,
+            .POST("/subject/relation", this::createSubjectRelation,
                 builder -> builder
                     .tag(tag)
                     .operationId("CreateSubjectRelation")
@@ -74,7 +74,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .required(true)
                         .description("SubjectRelation")
                         .implementation(SubjectRelation.class)))
-            .DELETE("/subject-relation", this::removeSubjectRelation,
+            .DELETE("/subject/relation", this::removeSubjectRelation,
                 builder -> builder
                     .tag(tag)
                     .operationId("RemoveSubjectRelation")

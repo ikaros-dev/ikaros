@@ -3,10 +3,10 @@ ikaros:
     runtime-mode: development
     fixed-plugin-path:
       - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-bgmtv
-  #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-baidupan
-  #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-jellyfin
-  #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-local-files-import
-  #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-mikan
+      #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-jellyfin
+      #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-local-files-import
+      #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-mikan
+      #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-baidupan
   #    auto-start-plugin: false
   security:
     initializer:

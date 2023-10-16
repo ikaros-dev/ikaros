@@ -32,9 +32,9 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/Collection/Subject";
+        var tag = OpenApiConst.CORE_VERSION + "/subject/collection";
         return SpringdocRouteBuilder.route()
-            .GET("/collection/subject/{userId}", this::findSubjectCollections,
+            .GET("/subject/collections/{userId}", this::findSubjectCollections,
                 builder -> builder.operationId("FindSubjectCollections")
                     .tag(tag)
                     .description("Find user subject collections.")
@@ -72,7 +72,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .implementation(PagingWrap.class))
             )
 
-            .GET("/collection/subject/{userId}/{subjectId}", this::findSubjectCollection,
+            .GET("/subject/collection/{userId}/{subjectId}", this::findSubjectCollection,
                 builder -> builder.operationId("FindSubjectCollection")
                     .tag(tag)
                     .description("Find user subject collection.")
@@ -94,7 +94,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
             )
 
 
-            .POST("/collection/subject/collect", this::collectSubject,
+            .POST("/subject/collection/collect", this::collectSubject,
                 builder -> builder.operationId("CollectSubject.")
                     .tag(tag)
                     .description("Collect subject by user.")
@@ -124,7 +124,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .description("Is private, default is false."))
             )
 
-            .DELETE("/collection/subject/collect", this::unCollectSubject,
+            .DELETE("/subject/collection/collect", this::unCollectSubject,
                 builder -> builder.operationId("RemoveSubjectCollect.")
                     .tag(tag)
                     .description("Remove subject collect.")
@@ -142,7 +142,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .description("Subject id."))
             )
 
-            .PUT("/collection/subject/mainEpisodeProgress/{userId}/{subjectId}/{progress}",
+            .PUT("/subject/collection/mainEpisodeProgress/{userId}/{subjectId}/{progress}",
                 this::updateSubjectCollectionMainEpProgress,
                 builder -> builder.operationId("UpdateSubjectCollectionMainEpProgress")
                     .tag(tag).description("Update subject collection main episode progress.")
