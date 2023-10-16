@@ -112,5 +112,4 @@ java -jar ikaros-server.jar --spring.profiles.active=win
 ```
 
 # 更多
-WIP
 <https://docs.ikaros.run>

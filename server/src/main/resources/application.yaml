@@ -35,6 +35,8 @@ spring:
 springdoc:
   api-docs:
     enabled: false
+  swagger-ui:
+    doc-expansion: none
 
 logging:
   file:
