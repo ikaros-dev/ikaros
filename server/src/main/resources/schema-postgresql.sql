@@ -1,3 +1,42 @@
+-- attachment
+create sequence if not exists attachment_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
+create table if not exists attachment
+(
+    id          int8          not null default nextval('attachment_seq'),
+    parent_id   int8          not null,
+    type        varchar(255)  not null,
+    url         varchar(5000) null,
+    fs_path     varchar(5000) null,
+    name        varchar(255)  not null,
+    md5         varchar(255)  null,
+    size        int8          null,
+    update_time timestamp(6)  null,
+    constraint attachment_pkey primary key (id)
+);
+
+-- attachment_relation
+create sequence if not exists attachment_relation_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
+create table if not exists attachment_relation
+(
+    id                     int8         not null default nextval('attachment_relation_seq'),
+    attachment_id          int8         not null,
+    type                   varchar(255) not null,
+    relation_attachment_id int8         not null,
+    constraint attachment_relation_pkey primary key (id)
+);
+
 -- authority
 create sequence if not exists authority_seq
     increment 1
@@ -125,9 +164,9 @@ create sequence if not exists episode_file_seq
 
 create table if not exists episode_file
 (
-    id            int8         not null default nextval('episode_file_seq'),
-    episode_id    int8         not null,
-    file_id       int8         not null,
+    id         int8 not null default nextval('episode_file_seq'),
+    episode_id int8 not null,
+    file_id    int8 not null,
     constraint episode_file_pkey primary key (id)
 );
 
