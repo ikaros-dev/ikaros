@@ -30,7 +30,7 @@ public class FileRelationEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/File/Relation";
+        var tag = OpenApiConst.CORE_VERSION + "/file/relation";
         return SpringdocRouteBuilder.route()
             .GET("/file/relations", this::findFileRelations,
                 builder -> builder

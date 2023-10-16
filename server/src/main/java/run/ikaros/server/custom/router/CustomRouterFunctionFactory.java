@@ -50,7 +50,7 @@ public class CustomRouterFunctionFactory {
         var updateMetaHandler = new CustomUpdateMetaHandler(client, scheme,
             applicationEventPublisher);
         GroupVersionKind gvk = scheme.groupVersionKind();
-        String tag = gvk.group() + '/' + gvk.version() + '/' + gvk.kind();
+        String tag = gvk.group() + '/' + gvk.version() + '/' + gvk.kind().toLowerCase();
         return SpringdocRouteBuilder.route()
             .GET(getHandler.pathPattern(), getHandler,
                 builder -> builder.operationId("Get" + upperCaseFirst(scheme.singular()))

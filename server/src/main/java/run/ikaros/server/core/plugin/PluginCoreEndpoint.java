@@ -36,7 +36,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/Plugin";
+        var tag = OpenApiConst.CORE_VERSION + "/plugin";
         return SpringdocRouteBuilder.route()
             // .PUT("/plugin/{name}", this::operatePluginById,
             //     builder -> builder.operationId("OperatePluginById")

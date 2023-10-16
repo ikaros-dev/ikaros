@@ -33,7 +33,7 @@ public class TaskEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/Task";
+        var tag = OpenApiConst.CORE_VERSION + "/task";
         return SpringdocRouteBuilder.route()
             .GET("/task/id/{id}", this::findById,
                 builder -> builder

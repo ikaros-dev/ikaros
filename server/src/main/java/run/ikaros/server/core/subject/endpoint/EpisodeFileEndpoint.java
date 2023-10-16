@@ -28,9 +28,9 @@ public class EpisodeFileEndpoint implements CoreEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/EpisodeFile";
+        var tag = OpenApiConst.CORE_VERSION + "/episode/file";
         return SpringdocRouteBuilder.route()
-            .POST("/episodefile/{episodeId}/{fileId}", this::create,
+            .POST("/episode/file/{episodeId}/{fileId}", this::create,
                 builder -> builder.operationId("CreateEpisodeFile")
                     .tag(tag).description("Create episode and file bind record.")
                     .parameter(parameterBuilder()
@@ -46,7 +46,7 @@ public class EpisodeFileEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
             )
-            .DELETE("/episodefile/{episodeId}/{fileId}", this::remove,
+            .DELETE("/episode/file/{episodeId}/{fileId}", this::remove,
                 builder -> builder.operationId("RemoveEpisodeFile")
                     .tag(tag).description("Remove episode and file bind record.")
                     .parameter(parameterBuilder()
@@ -62,7 +62,7 @@ public class EpisodeFileEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
             )
-            .POST("/episodefile/batch", this::batchMatchingEpisodeFile,
+            .POST("/episode/file/batch", this::batchMatchingEpisodeFile,
                 builder -> builder.operationId("BatchMatchingEpisodeFile")
                     .tag(tag).description("Batch matching episode file.")
                     .requestBody(Builder.requestBodyBuilder()
