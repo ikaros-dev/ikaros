@@ -36,7 +36,6 @@ public class AttachmentEntity {
      * filename with postfix.
      */
     private String name;
-    private String md5;
     private Long size;
     @Column("update_time")
     private LocalDateTime updateTime;

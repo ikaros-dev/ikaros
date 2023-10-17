@@ -27,6 +27,9 @@ public class IndicesEndpoint implements CoreEndpoint {
     private final FileSearchService fileSearchService;
     private final SubjectSearchService subjectSearchService;
 
+    /**
+     * Construct.
+     */
     public IndicesEndpoint(IndicesService indicesService, FileSearchService fileSearchService,
                            SubjectSearchService subjectSearchService) {
         this.indicesService = indicesService;
