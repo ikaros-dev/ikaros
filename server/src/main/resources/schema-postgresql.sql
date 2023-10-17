@@ -36,6 +36,23 @@ create table if not exists attachment_relation
     constraint attachment_relation_pkey primary key (id)
 );
 
+-- attachment_reference
+create sequence if not exists attachment_reference_seq
+    increment 1
+    start 1
+    minvalue 1
+    cache 1
+    no cycle;
+
+create table if not exists attachment_reference
+(
+    id            int8         not null default nextval('attachment_reference_seq'),
+    type          varchar(255) not null,
+    attachment_id int8         not null,
+    reference_id  int8         not null,
+    constraint attachment_reference_pkey primary key (id)
+);
+
 -- authority
 create sequence if not exists authority_seq
     increment 1

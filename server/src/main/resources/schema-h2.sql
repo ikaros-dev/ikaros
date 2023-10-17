@@ -22,6 +22,16 @@ create table if not exists attachment_relation
     constraint attachment_relation_pkey primary key (id)
 );
 
+-- attachment_reference
+create table if not exists attachment_reference
+(
+    id            int8         not null auto_increment,
+    type          varchar(255) not null,
+    attachment_id int8         not null,
+    reference_id  int8         not null,
+    constraint attachment_reference_pkey primary key (id)
+);
+
 
 -- authority
 create table if not exists authority

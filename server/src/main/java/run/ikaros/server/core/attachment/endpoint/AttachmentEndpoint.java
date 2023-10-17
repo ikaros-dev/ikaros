@@ -99,13 +99,21 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .response(responseBuilder().implementation(PagingWrap.class))
             )
 
+            .GET("/attachment/{id}", this::getById,
+                builder -> builder.operationId("GetAttachmentById").tag(tag)
+                    .parameter(parameterBuilder().name("id")
+                        .description("Attachment ID")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class)))
+
             .DELETE("/attachment/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteAttachment").tag(tag)
                     .parameter(parameterBuilder().name("id")
                         .description("Attachment ID")
                         .in(ParameterIn.PATH)
-                        .required(true).implementation(
-                            Long.class)))
+                        .required(true)
+                        .implementation(Long.class)))
 
             .PUT("/attachment/update", this::update,
                 builder -> builder.operationId("UpdateAttachment")
@@ -216,13 +224,19 @@ public class AttachmentEndpoint implements CoreEndpoint {
 
     }
 
+    private Mono<ServerResponse> getById(ServerRequest request) {
+        String id = request.pathVariable("id");
+        return attachmentService.findById(Long.parseLong(id))
+            .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
+            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
+                .bodyValue("Not found for id: " + id));
+    }
+
     private Mono<ServerResponse> deleteById(ServerRequest request) {
         String id = request.pathVariable("id");
         return attachmentService.removeById(Long.parseLong(id))
             .then(ServerResponse.ok()
-                .bodyValue("Delete success"))
-            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
-                .bodyValue("Not found for id: " + id));
+                .bodyValue("Delete success"));
     }
 
     private Mono<ServerResponse> update(ServerRequest request) {

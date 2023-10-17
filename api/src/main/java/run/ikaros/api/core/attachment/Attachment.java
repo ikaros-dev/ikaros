@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
 import run.ikaros.api.store.enums.AttachmentType;
 
 @Data
@@ -16,7 +15,6 @@ import run.ikaros.api.store.enums.AttachmentType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class Attachment {
-    @Id
     private Long id;
     @JsonProperty("parent_id")
     private Long parentId;
