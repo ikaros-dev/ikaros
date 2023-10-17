@@ -13,15 +13,19 @@
  */
 
 export * from './api/plugin-ikaros-run-v1alpha1-plugin-api';
-export * from './api/setting-ikaros-run-v1alpha1-config-map-api';
-export * from './api/v1alpha1-collection-episode-api';
-export * from './api/v1alpha1-collection-subject-api';
+export * from './api/setting-ikaros-run-v1alpha1-configmap-api';
+export * from './api/v1alpha1-attachment-api';
+export * from './api/v1alpha1-attachment-reference-api';
+export * from './api/v1alpha1-attachment-relation-api';
+export * from './api/v1alpha1-episode-collection-api';
 export * from './api/v1alpha1-episode-file-api';
 export * from './api/v1alpha1-file-api';
+export * from './api/v1alpha1-file-relation-api';
 export * from './api/v1alpha1-folder-api';
 export * from './api/v1alpha1-indices-api';
 export * from './api/v1alpha1-plugin-api';
 export * from './api/v1alpha1-subject-api';
+export * from './api/v1alpha1-subject-collection-api';
 export * from './api/v1alpha1-subject-relation-api';
 export * from './api/v1alpha1-subject-sync-platform-api';
 export * from './api/v1alpha1-task-api';

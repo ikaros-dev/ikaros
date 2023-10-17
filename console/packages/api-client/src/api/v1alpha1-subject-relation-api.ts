@@ -63,7 +63,7 @@ export const V1alpha1SubjectRelationApiAxiosParamCreator = function (
 				'subjectRelation',
 				subjectRelation
 			);
-			const localVarPath = `/api/v1alpha1/subject-relation`;
+			const localVarPath = `/api/v1alpha1/subject/relation`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -144,7 +144,7 @@ export const V1alpha1SubjectRelationApiAxiosParamCreator = function (
 				relationType
 			);
 			const localVarPath =
-				`/api/v1alpha1/subject-relation/{subjectId}/{relationType}`
+				`/api/v1alpha1/subject/relation/{subjectId}/{relationType}`
 					.replace(`{${'subjectId'}}`, encodeURIComponent(String(subjectId)))
 					.replace(
 						`{${'relationType'}}`,
@@ -200,7 +200,7 @@ export const V1alpha1SubjectRelationApiAxiosParamCreator = function (
 			// verify required parameter 'subjectId' is not null or undefined
 			assertParamExists('getSubjectRelationsById', 'subjectId', subjectId);
 			const localVarPath =
-				`/api/v1alpha1/subject-relations/{subjectId}`.replace(
+				`/api/v1alpha1/subject/relations/{subjectId}`.replace(
 					`{${'subjectId'}}`,
 					encodeURIComponent(String(subjectId))
 				);
@@ -276,7 +276,7 @@ export const V1alpha1SubjectRelationApiAxiosParamCreator = function (
 				'relationSubjects',
 				relationSubjects
 			);
-			const localVarPath = `/api/v1alpha1/subject-relation`;
+			const localVarPath = `/api/v1alpha1/subject/relation`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;

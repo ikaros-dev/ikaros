@@ -32,12 +32,6 @@ export interface Subtitle {
 	url?: string;
 	/**
 	 *
-	 * @type {string}
-	 * @memberof Subtitle
-	 */
-	language?: string;
-	/**
-	 *
 	 * @type {number}
 	 * @memberof Subtitle
 	 */
