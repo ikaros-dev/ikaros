@@ -3,14 +3,12 @@ package run.ikaros.server.core.attachment.service.impl;
 import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ArrayReferenceType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentReference;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
-import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.core.attachment.service.AttachmentReferenceService;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
