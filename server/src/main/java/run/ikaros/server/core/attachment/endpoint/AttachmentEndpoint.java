@@ -128,7 +128,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .response(responseBuilder()
                         .description("Random uuid.")
                         .implementation(String.class)))
-            .PATCH("/file/fragment/patch/{unique}", this::receiveFragmentUploadChunkAttachment,
+            .PATCH("/attachment/fragment/patch/{unique}", this::receiveFragmentUploadChunkAttachment,
                 builder -> builder.operationId("ReceiveFragmentUploadChunkAttachment")
                     .tag(tag).description("Receive fragment upload chunk attachment.")
                     .parameter(parameterBuilder().in(ParameterIn.PATH)
@@ -143,7 +143,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder().in(ParameterIn.HEADER)
                         .name("Upload-Name").required(true)
                         .description("Upload chunk attachment file name.")))
-            .DELETE("/file/fragment/revert", this::revertFragmentUploadAttachmentByUnique,
+            .DELETE("/attachment/fragment/revert", this::revertFragmentUploadAttachmentByUnique,
                 builder -> builder.operationId("RevertFragmentUploadAttachmentByUnique")
                     .tag(tag).description("Revert fragment upload attachment by unique id.")
                     .requestBody(Builder.requestBodyBuilder()
