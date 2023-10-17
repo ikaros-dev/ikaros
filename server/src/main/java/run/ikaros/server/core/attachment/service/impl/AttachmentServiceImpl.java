@@ -6,12 +6,18 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -256,14 +262,123 @@ public class AttachmentServiceImpl implements AttachmentService {
                                                               @Nonnull Long uploadLength,
                                                               @Nonnull Long uploadOffset,
                                                               String uploadName, byte[] bytes) {
-        // todo impl
-        return null;
+        Assert.hasText(unique, "'unique' must has text.");
+        Assert.notNull(uploadLength, "'uploadLength' must not null.");
+        Assert.notNull(uploadOffset, "'uploadOffset' must not null.");
+        Assert.hasText(uploadName, "'uploadName' must has text.");
+        Assert.notNull(bytes, "'bytes' must not null.");
+        Path workDir = ikarosProperties.getWorkDir();
+        File tempChunkFileCacheDir =
+            new File(SystemVarUtils.getOsCacheDirPath(workDir) + File.separator + unique);
+        if (!tempChunkFileCacheDir.exists()) {
+            tempChunkFileCacheDir.mkdirs();
+            log.debug("create temp dir: {}", tempChunkFileCacheDir);
+        }
+
+        Assert.notNull(bytes, "file bytes must not be null");
+
+        long offset = uploadOffset + bytes.length;
+        File uploadedChunkCacheFile = new File(tempChunkFileCacheDir + File.separator + offset);
+        try {
+            Files.write(Path.of(uploadedChunkCacheFile.toURI()), bytes);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        log.debug("upload chunk[{}] to path: {}", uploadOffset,
+            uploadedChunkCacheFile.getAbsolutePath());
+
+        if (offset == uploadLength) {
+            String postfix = uploadName.substring(uploadName.lastIndexOf(".") + 1);
+            final String filePath;
+            try {
+                filePath = meringTempChunkFile(unique, postfix);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            for (File file : Objects.requireNonNull(tempChunkFileCacheDir.listFiles())) {
+                file.delete();
+            }
+            tempChunkFileCacheDir.delete();
+
+            File file = new File(filePath);
+            Flux<DataBuffer> dataBufferFlux = FileUtils.convertToDataBufferFlux(file);
+
+            return upload(AttachmentUploadCondition.builder()
+                .name(uploadName).dataBufferFlux(dataBufferFlux)
+                .build()).then();
+        }
+        return Mono.empty();
+    }
+
+    private String meringTempChunkFile(String unique, String postfix) throws IOException {
+        log.debug("All chunks upload has finish, will start merging files");
+
+        Path workDir = ikarosProperties.getWorkDir();
+        File targetFile = new File(FileUtils.buildAppUploadFilePath(
+            workDir.toFile().getAbsolutePath(), postfix));
+        String absolutePath = targetFile.getAbsolutePath();
+
+        String chunkFileDirPath =
+            SystemVarUtils.getOsCacheDirPath(workDir) + File.separator + unique;
+        File chunkFileDir = new File(chunkFileDirPath);
+        File[] files = chunkFileDir.listFiles();
+        List<File> chunkFileList = Arrays.asList(files);
+        // PS: 这里需要根据文件名(偏移量)升序, 不然合并的文件分片内容的顺序不正常
+        Collections.sort(chunkFileList, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                long o1Offset = Long.parseLong(o1.getName());
+                long o2Offset = Long.parseLong(o2.getName());
+                if (o1Offset < o2Offset) {
+                    return -1;
+                } else if (o1Offset > o2Offset) {
+                    return 1;
+                }
+                return 0;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                return false;
+            }
+        });
+        int targetFileWriteOffset = 0;
+        for (File chunkFile : chunkFileList) {
+            try (RandomAccessFile randomAccessFile = new RandomAccessFile(targetFile, "rw");
+                 FileInputStream fileInputStream = new FileInputStream(chunkFile);) {
+                randomAccessFile.seek(targetFileWriteOffset);
+                byte[] bytes = new byte[fileInputStream.available()];
+                int read = fileInputStream.read(bytes);
+                randomAccessFile.write(bytes);
+                targetFileWriteOffset += read;
+                log.debug("[{}] current merge targetFileWriteOffset: {}", chunkFile.getName(),
+                    targetFileWriteOffset);
+            }
+        }
+
+        log.info("Merging all chunk files success, absolute path: {}", absolutePath);
+        return absolutePath;
     }
 
     @Override
     public Mono<Void> revertFragmentUploadFile(String unique) {
-        // todo impl
-        return null;
+        Assert.hasText(unique, "'unique' must has text.");
+        log.debug("exec revertUploadChunkFileAndDir method for unique={}", unique);
+        Path workDir = ikarosProperties.getWorkDir();
+        String fileChunkCacheDirPath =
+            SystemVarUtils.getOsCacheDirPath(workDir) + File.separator + unique;
+        File fileChunkCacheDir = new File(fileChunkCacheDirPath);
+        if (fileChunkCacheDir.exists()) {
+            for (File file : Objects.requireNonNull(fileChunkCacheDir.listFiles())) {
+                if (file.exists()) {
+                    file.delete();
+                }
+            }
+            fileChunkCacheDir.delete();
+            log.debug("remove uploading file with unique={}", unique);
+        }
+        return Mono.empty();
     }
 
     private AttachmentEntity removeFileSystemFile(AttachmentEntity attachmentEntity) {

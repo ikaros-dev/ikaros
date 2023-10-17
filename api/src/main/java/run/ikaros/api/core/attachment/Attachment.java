@@ -34,7 +34,6 @@ public class Attachment {
      * filename with postfix.
      */
     private String name;
-    private String md5;
     private Long size;
     @JsonProperty("update_time")
     private LocalDateTime updateTime;
