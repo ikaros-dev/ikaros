@@ -3,9 +3,9 @@ import { i18n } from '../locales';
 import type { AxiosError, AxiosInstance } from 'axios';
 import {
 	PluginIkarosRunV1alpha1PluginApi,
-	SettingIkarosRunV1alpha1ConfigMapApi,
-	V1alpha1CollectionEpisodeApi,
-	V1alpha1CollectionSubjectApi,
+	SettingIkarosRunV1alpha1ConfigmapApi,
+	V1alpha1EpisodeCollectionApi,
+	V1alpha1SubjectCollectionApi,
 	V1alpha1EpisodeFileApi,
 	V1alpha1FileApi,
 	V1alpha1FolderApi,
@@ -165,20 +165,20 @@ function setupApiClient(axios: AxiosInstance) {
 		episodefile: new V1alpha1EpisodeFileApi(undefined, baseURL, axios),
 		indices: new V1alpha1IndicesApi(undefined, baseURL, axios),
 		task: new V1alpha1TaskApi(undefined, baseURL, axios),
-		subjectCollection: new V1alpha1CollectionSubjectApi(
+		subjectCollection: new V1alpha1SubjectCollectionApi(
 			undefined,
 			baseURL,
 			axios
 		),
 		subjectRelation: new V1alpha1SubjectRelationApi(undefined, baseURL, axios),
-		episodeCollection: new V1alpha1CollectionEpisodeApi(
+		episodeCollection: new V1alpha1EpisodeCollectionApi(
 			undefined,
 			baseURL,
 			axios
 		),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
-		configmap: new SettingIkarosRunV1alpha1ConfigMapApi(
+		configmap: new SettingIkarosRunV1alpha1ConfigmapApi(
 			undefined,
 			baseURL,
 			axios

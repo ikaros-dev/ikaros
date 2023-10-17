@@ -103,6 +103,7 @@ core:
         tasks: 任务
         folders: 目录
         collection: 收藏
+        attachment: 附件
     operations:
       profile:
         button: 个人资料
@@ -112,6 +113,8 @@ core:
     title: 仪表板
   profile:
     title: 个人中心
+  attachment:
+    title: 附件
   file:
     title: 文件
     type:
