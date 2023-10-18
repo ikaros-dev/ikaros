@@ -77,6 +77,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public Mono<Attachment> save(Attachment attachment) {
         Assert.notNull(attachment, "'attachment' must not be null.");
+        attachment.setParentId(Optional.ofNullable(attachment.getParentId())
+            .orElse(AttachmentConst.ROOT_DIRECTORY_ID));
         return repository.findById(attachment.getId())
             .flatMap(attachmentEntity -> copyProperties(attachment, attachmentEntity))
             .flatMap(this::saveEntity)

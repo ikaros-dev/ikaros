@@ -33,6 +33,7 @@ import { onMounted } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { base64Encode, formatFileSize } from '@/utils/string-util';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
+import AttachmentDeatilDrawer from './AttachmentDeatilDrawer.vue';
 
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
@@ -108,6 +109,9 @@ const entryAttachment = (attachment) => {
 			id: attachment.id,
 		});
 		fetchAttachments();
+	} else {
+		currentSelectionAttachment.value = attachment;
+		attachmentDetailDrawerVisible.value = true;
 	}
 };
 
@@ -137,7 +141,7 @@ const onCreateFolderButtonClick = async () => {
 
 const currentSelectionAttachment = ref<Attachment>();
 const onCurrentChange = (val: Attachment | undefined) => {
-	if (val !== undefined) {
+	if (val) {
 		currentSelectionAttachment.value = val;
 	}
 };
@@ -184,6 +188,8 @@ const onDeleteButtonClick = async () => {
 	}
 	fetchAttachments();
 };
+
+const attachmentDetailDrawerVisible = ref(false);
 </script>
 
 <template>
@@ -191,6 +197,11 @@ const onDeleteButtonClick = async () => {
 		v-model:visible="attachmentUploadDrawerVisible"
 		v-model:parentId="attachmentCondition.parentId"
 		@fileUploadDrawerCloes="onFileUploadDrawerClose"
+	/>
+
+	<AttachmentDeatilDrawer
+		v-model:visible="attachmentDetailDrawerVisible"
+		v-model:define-file="currentSelectionAttachment"
 	/>
 
 	<el-dialog v-model="dialogFolderVisible" title="新建目录">

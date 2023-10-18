@@ -56,7 +56,7 @@ npm publish
 选择当前目录下的更改进行`git add`
 
 ```bash
-git commit -am "build: gen new api-client@0.8.z and publish to npm center repo in @runikaros/api-client"
+git commit -am "build: gen new api-client@0.10.z and publish to npm center repo in @runikaros/api-client"
 ```
 
 合成版(powershell)，升级 package.json 版本，并启动服务端后，在 api-client 路径下：

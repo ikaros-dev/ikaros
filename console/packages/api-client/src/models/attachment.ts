@@ -26,6 +26,12 @@ export interface Attachment {
 	id?: number;
 	/**
 	 *
+	 * @type {number}
+	 * @memberof Attachment
+	 */
+	parentId?: number;
+	/**
+	 *
 	 * @type {string}
 	 * @memberof Attachment
 	 */
@@ -41,6 +47,12 @@ export interface Attachment {
 	 * @type {string}
 	 * @memberof Attachment
 	 */
+	fsPath?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof Attachment
+	 */
 	name?: string;
 	/**
 	 *
@@ -50,22 +62,10 @@ export interface Attachment {
 	size?: number;
 	/**
 	 *
-	 * @type {number}
-	 * @memberof Attachment
-	 */
-	parent_id?: number;
-	/**
-	 *
 	 * @type {string}
 	 * @memberof Attachment
 	 */
-	fs_path?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Attachment
-	 */
-	update_time?: string;
+	updateTime?: string;
 }
 
 export const AttachmentTypeEnum = {

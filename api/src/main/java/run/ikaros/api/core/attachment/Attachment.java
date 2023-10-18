@@ -16,7 +16,6 @@ import run.ikaros.api.store.enums.AttachmentType;
 @Accessors(chain = true)
 public class Attachment {
     private Long id;
-    @JsonProperty("parent_id")
     private Long parentId;
     private AttachmentType type;
     /**
@@ -26,13 +25,11 @@ public class Attachment {
     /**
      * File path in file system.
      */
-    @JsonProperty("fs_path")
     private String fsPath;
     /**
      * filename with postfix.
      */
     private String name;
     private Long size;
-    @JsonProperty("update_time")
     private LocalDateTime updateTime;
 }
