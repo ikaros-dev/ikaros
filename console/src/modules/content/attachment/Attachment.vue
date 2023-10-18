@@ -258,7 +258,7 @@ const onDeleteButtonClick = async () => {
 
 	<br />
 
-	<el-row>
+	<el-row v-if="attachmentCondition.total > 10">
 		<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
 			<el-pagination
 				v-model:page-size="attachmentCondition.size"
