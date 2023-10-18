@@ -38,7 +38,8 @@ public interface AttachmentService {
                                                        @Nonnull Long uploadLength,
                                                        @Nonnull Long uploadOffset,
                                                        @NotBlank String uploadName,
-                                                       byte[] bytes);
+                                                       byte[] bytes,
+                                                       @Nullable Long parentId);
 
     Mono<Void> revertFragmentUploadFile(@NotBlank String unique);
 

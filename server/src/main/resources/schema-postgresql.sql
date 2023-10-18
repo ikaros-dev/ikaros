@@ -16,8 +16,19 @@ create table if not exists attachment
     name        varchar(255)  not null,
     size        int8          null,
     update_time timestamp(6)  null,
+    constraint type_parent_name_uk unique (type, parent_id, name),
     constraint attachment_pkey primary key (id)
 );
+-- Insert root directory
+INSERT INTO attachment (id, type, parent_id, name, update_time)
+SELECT 0,
+       'Directory',
+       -1,
+       '/',
+       CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1
+                  FROM attachment
+                  WHERE id = 0);
 
 -- attachment_relation
 create sequence if not exists attachment_relation_seq

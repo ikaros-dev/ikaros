@@ -21,6 +21,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -42,6 +43,7 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
+import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.wrap.PagingWrap;
@@ -147,6 +149,9 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder().in(ParameterIn.PATH)
                         .name("unique").required(true)
                         .description("Chunk attachment unique id."))
+                    .parameter(parameterBuilder()
+                        .name("PARENT-ID").in(ParameterIn.HEADER)
+                        .description("附件的父附件ID，父附件一般时目录类型。"))
                     .parameter(parameterBuilder().in(ParameterIn.HEADER)
                         .name("Upload-Length").required(true)
                         .description("Upload chunk attachment length."))
@@ -261,7 +266,12 @@ public class AttachmentEndpoint implements CoreEndpoint {
         Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
 
         return attachmentService.createDirectory(parentId, name)
-            .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment));
+            .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
+            .onErrorResume(AttachmentParentNotFoundException.class,
+                e -> ServerResponse.status(HttpStatus.NOT_FOUND).bodyValue(e.getMessage()))
+            .onErrorResume(DuplicateKeyException.class, e ->
+                ServerResponse.status(HttpStatus.BAD_REQUEST)
+                    .bodyValue("Duplicate directory for name: " + name));
     }
 
     private Mono<ServerResponse> update(ServerRequest request) {
@@ -283,17 +293,25 @@ public class AttachmentEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> receiveFragmentUploadChunkAttachment(ServerRequest request) {
         List<String> uploadLengthList = request.headers().header("Upload-Length");
         Assert.notEmpty(uploadLengthList, "Request header 'Upload-Length' must has text.");
+
         final var uploadLength = Long.valueOf(uploadLengthList.get(0));
         List<String> uploadOffsetList = request.headers().header("Upload-Offset");
         Assert.notEmpty(uploadOffsetList, "Request header 'Upload-Offset' must has text.");
+
         final var uploadOffset = Long.valueOf(uploadOffsetList.get(0));
         List<String> uploadNameList = request.headers().header("Upload-Name");
         Assert.notEmpty(uploadNameList, "Request header 'Upload-Name' must has text.");
+
         final var uploadName = new String(Base64.getDecoder()
             .decode(uploadNameList.get(0).getBytes(StandardCharsets.UTF_8)),
             StandardCharsets.UTF_8);
+
         final String unique = request.pathVariable("unique");
         Assert.hasText(unique, "Request path var 'unique' must has text.");
+
+        List<String> parentIdList = request.headers().header("PARENT-ID");
+        Long parentId = parentIdList.isEmpty() ? null : Long.parseLong(parentIdList.get(0));
+
         return request.body(BodyExtractors.toDataBuffers())
             .publishOn(Schedulers.boundedElastic())
             .<byte[]>handle((dataBuffer, sink) -> {
@@ -310,7 +328,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                 return result;
             })
             .flatMap(bytes -> attachmentService.receiveAndHandleFragmentUploadChunkFile(
-                unique, uploadLength, uploadOffset, uploadName, bytes
+                unique, uploadLength, uploadOffset, uploadName, bytes, parentId
             ))
             .then(ServerResponse.ok().bodyValue("SUCCESS"));
     }

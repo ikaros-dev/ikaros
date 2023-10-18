@@ -22,6 +22,7 @@ import {
 import { onMounted } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { base64Encode, formatFileSize } from '@/utils/string-util';
+import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
@@ -30,7 +31,7 @@ const attachmentCondition = ref({
 	page: 1,
 	size: 10,
 	total: 10,
-	parentId: undefined,
+	parentId: 0,
 	name: '',
 	type: undefined,
 });
@@ -41,7 +42,7 @@ const fetchAttachments = async () => {
 		page: attachmentCondition.value.page,
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
-		parentId: attachmentCondition.value.parentId,
+		parentId: attachmentCondition.value.parentId as any as string,
 	});
 	attachments.value = data.items;
 	attachmentCondition.value.page = data.page;
@@ -60,16 +61,17 @@ const onSizeChange = (val: number) => {
 };
 
 const attachmentUploadDrawerVisible = ref(false);
+const onFileUploadDrawerClose = () => {
+	fetchAttachments();
+};
 
 const onBreadcrumbClick = (path) => {
-	console.log('path', path);
+	// console.log('path', path);
 	var index = paths.value.indexOf(path);
 	if (index !== -1) {
 		paths.value.splice(index + 1);
 	}
-	if (path.parentId === -1) {
-		attachmentCondition.value.parentId = undefined;
-	}
+	attachmentCondition.value.parentId = path.id;
 	fetchAttachments();
 };
 interface Path {
@@ -81,7 +83,7 @@ interface Path {
 const paths = ref<Path[]>([
 	{
 		name: '/',
-		parentId: -1,
+		parentId: 0,
 		id: 0,
 	},
 ]);
@@ -117,6 +119,12 @@ const onCreateFolderButtonClick = async () => {};
 </script>
 
 <template>
+	<AttachmentFragmentUploadDrawer
+		v-model:visible="attachmentUploadDrawerVisible"
+		v-model:parentId="attachmentCondition.parentId"
+		@fileUploadDrawerCloes="onFileUploadDrawerClose"
+	/>
+
 	<el-dialog v-model="dialogFolderVisible" title="新建目录">
 		<el-input
 			v-model="createFolderName"
@@ -154,7 +162,7 @@ const onCreateFolderButtonClick = async () => {};
 				@change="fetchAttachments"
 			>
 				<template #append>
-					<el-button :icon="Search" />
+					<el-button :icon="Search" @click="fetchAttachments" />
 				</template>
 			</el-input>
 		</el-col>
@@ -204,7 +212,7 @@ const onCreateFolderButtonClick = async () => {};
 				highlight-current-row
 				@row-dblclick="entryAttachment"
 			>
-				<el-table-column type="selection" width="60" />
+				<!-- <el-table-column type="selection" width="60" /> -->
 				<!-- <el-table-column prop="id" label="ID" width="60" /> -->
 				<el-table-column prop="name" label="名称" show-overflow-tooltip>
 					<template #default="scoped">

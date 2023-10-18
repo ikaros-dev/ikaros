@@ -76,11 +76,16 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> findAllByTypeAndAttachmentId(ServerRequest request) {
         Optional<String> typeOp = request.queryParam("type");
-        AttachmentReferenceType type =
-            AttachmentReferenceType.valueOf(typeOp.orElse(AttachmentReferenceType.EPISODE.name()));
+        if (typeOp.isEmpty()) {
+            return ServerResponse.badRequest().bodyValue("type must has value.");
+        }
+        AttachmentReferenceType type = AttachmentReferenceType.valueOf(typeOp.get());
 
         Optional<String> attachmentIdOp = request.queryParam("attachmentId");
-        Long attachmentId = Long.valueOf(attachmentIdOp.orElse("-1"));
+        if (attachmentIdOp.isEmpty()) {
+            return ServerResponse.badRequest().bodyValue("attachmentId must has value.");
+        }
+        Long attachmentId = Long.valueOf(attachmentIdOp.get());
 
         return service.findAllByTypeAndAttachmentId(type, attachmentId)
             .collectList()

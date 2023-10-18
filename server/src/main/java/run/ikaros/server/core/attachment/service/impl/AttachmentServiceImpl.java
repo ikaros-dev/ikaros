@@ -35,8 +35,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.attachment.Attachment;
+import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
+import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
 import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.core.attachment.exception.AttachmentUploadException;
 import run.ikaros.api.infra.properties.IkarosProperties;
@@ -92,13 +94,12 @@ public class AttachmentServiceImpl implements AttachmentService {
             ? searchCondition.getName() : "";
         final String nameLike = "%" + name + "%";
         final AttachmentType type = searchCondition.getType();
-        final Long parentId = searchCondition.getParentId();
+        final Long parentId = Optional.ofNullable(searchCondition.getParentId())
+            .orElse(AttachmentConst.ROOT_DIRECTORY_ID);
 
         PageRequest pageRequest = PageRequest.of(page - 1, size);
 
-        Criteria criteria = Objects.isNull(parentId)
-            ? Criteria.where("parent_id").isNull()
-            : Criteria.where("parent_id").is(parentId);
+        Criteria criteria = Criteria.where("parent_id").is(parentId);
 
         if (Objects.nonNull(type)) {
             criteria = criteria.and("type").is(type);
@@ -128,7 +129,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                         }
 
                         if (AttachmentType.File.equals(type1) && Directory.equals(type2)) {
-                            return -1;
+                            return 1;
                         }
                         return 0;
                     });
@@ -152,8 +153,22 @@ public class AttachmentServiceImpl implements AttachmentService {
     public Mono<Void> removeById(Long attachmentId) {
         Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
         return repository.findById(attachmentId)
+            .flatMap(this::removeChildrenAttachment)
             .map(this::removeFileSystemFile)
             .flatMap(repository::delete);
+    }
+
+    private Mono<AttachmentEntity> removeChildrenAttachment(AttachmentEntity attachmentEntity) {
+        return Mono.just(attachmentEntity)
+            .map(AttachmentEntity::getType)
+            .filter(Directory::equals)
+            .map(eq -> attachmentEntity.getId())
+            .flatMapMany(repository::findAllByParentId)
+            .flatMap(this::removeChildrenAttachment)
+            .switchIfEmpty(Mono.just(attachmentEntity))
+            .map(this::removeFileSystemFile)
+            .flatMap(repository::delete)
+            .then(Mono.just(attachmentEntity));
     }
 
     @Override
@@ -162,7 +177,8 @@ public class AttachmentServiceImpl implements AttachmentService {
         String name = uploadCondition.getName();
         final Boolean isAutoReName =
             Optional.ofNullable(uploadCondition.getIsAutoReName()).orElse(true);
-        Long parentId = uploadCondition.getParentId();
+        Long parentId = Optional.ofNullable(uploadCondition.getParentId())
+            .orElse(AttachmentConst.ROOT_DIRECTORY_ID);
 
         // build file upload path
         String uploadFilePath =
@@ -183,6 +199,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                     .flatMap(n ->
                         // save attachment entity
                         saveEntity(AttachmentEntity.builder()
+                            .parentId(parentId)
                             .fsPath(fsPath.toString())
                             .updateTime(LocalDateTime.now())
                             .type(AttachmentType.File)
@@ -207,6 +224,9 @@ public class AttachmentServiceImpl implements AttachmentService {
                                                          @Nullable Long parentId, String name) {
         Assert.notNull(type, "'type' must not null.");
         Assert.hasText(name, "'name' must has text.");
+        if (Objects.isNull(parentId)) {
+            parentId = AttachmentConst.ROOT_DIRECTORY_ID;
+        }
         return repository.findByTypeAndParentIdAndName(type, parentId, name)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }
@@ -216,6 +236,9 @@ public class AttachmentServiceImpl implements AttachmentService {
                                                      @Nullable Long parentId, String name) {
         Assert.notNull(type, "'type' must not null.");
         Assert.hasText(name, "'name' must has text.");
+        if (Objects.isNull(parentId)) {
+            parentId = AttachmentConst.ROOT_DIRECTORY_ID;
+        }
         return repository.removeByTypeAndParentIdAndName(type, parentId, name);
     }
 
@@ -281,12 +304,16 @@ public class AttachmentServiceImpl implements AttachmentService {
     public Mono<Void> receiveAndHandleFragmentUploadChunkFile(String unique,
                                                               @Nonnull Long uploadLength,
                                                               @Nonnull Long uploadOffset,
-                                                              String uploadName, byte[] bytes) {
+                                                              String uploadName, byte[] bytes,
+                                                              @Nullable Long parentId) {
         Assert.hasText(unique, "'unique' must has text.");
         Assert.notNull(uploadLength, "'uploadLength' must not null.");
         Assert.notNull(uploadOffset, "'uploadOffset' must not null.");
         Assert.hasText(uploadName, "'uploadName' must has text.");
         Assert.notNull(bytes, "'bytes' must not null.");
+        if (Objects.isNull(parentId)) {
+            parentId = AttachmentConst.ROOT_DIRECTORY_ID;
+        }
         Path workDir = ikarosProperties.getWorkDir();
         File tempChunkFileCacheDir =
             new File(SystemVarUtils.getOsCacheDirPath(workDir) + File.separator + unique);
@@ -325,7 +352,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             Flux<DataBuffer> dataBufferFlux = FileUtils.convertToDataBufferFlux(file);
 
             return upload(AttachmentUploadCondition.builder()
-                .name(uploadName).dataBufferFlux(dataBufferFlux)
+                .name(uploadName).dataBufferFlux(dataBufferFlux).parentId(parentId)
                 .build()).then();
         }
         return Mono.empty();
@@ -404,17 +431,30 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name) {
         Assert.hasText(name, "'name' must has text.");
-        return repository.save(AttachmentEntity.builder()
-                .parentId(parentId)
+        final Long fParentId =
+            Optional.ofNullable(parentId).orElse(AttachmentConst.ROOT_DIRECTORY_ID);
+        return repository.existsById(fParentId)
+            .filter(exists -> exists)
+            .switchIfEmpty(Mono.error(new AttachmentParentNotFoundException(
+                "Parent attachment not found for id = " + fParentId)))
+            .map(exists -> AttachmentEntity.builder()
+                .parentId(fParentId)
                 .name(name)
                 .updateTime(LocalDateTime.now())
                 .type(Directory)
                 .build())
+            .flatMap(repository::save)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }
 
     private AttachmentEntity removeFileSystemFile(AttachmentEntity attachmentEntity) {
+        if (Directory.equals(attachmentEntity.getType())) {
+            return attachmentEntity;
+        }
         String fsPath = attachmentEntity.getFsPath();
+        if (!StringUtils.hasText(fsPath)) {
+            return attachmentEntity;
+        }
         try {
             Files.deleteIfExists(Path.of(fsPath));
         } catch (IOException e) {
