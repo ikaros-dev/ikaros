@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Upload, Search, Folder, Document } from '@element-plus/icons-vue';
 import { Attachment } from '@runikaros/api-client';
 import moment from 'moment';
+import {
+	Upload,
+	Search,
+	Folder,
+	Document,
+	FolderDelete,
+	FolderAdd,
+} from '@element-plus/icons-vue';
 import {
 	ElRow,
 	ElCol,
@@ -19,6 +26,8 @@ import {
 	ElTableColumn,
 	ElDialog,
 	ElMessage,
+	ElPopconfirm,
+	ElMessageBox,
 } from 'element-plus';
 import { onMounted } from 'vue';
 import { apiClient } from '@/utils/api-client';
@@ -125,6 +134,56 @@ const onCreateFolderButtonClick = async () => {
 	dialogFolderVisible.value = false;
 	await fetchAttachments();
 };
+
+const currentSelectionAttachment = ref<Attachment>();
+const onCurrentChange = (val: Attachment | undefined) => {
+	if (val !== undefined) {
+		currentSelectionAttachment.value = val;
+	}
+};
+
+const onDeleteButtonClick = async () => {
+	if (
+		!currentSelectionAttachment.value ||
+		!currentSelectionAttachment.value?.id
+	) {
+		return;
+	}
+
+	if (currentSelectionAttachment.value?.type === 'Directory') {
+		ElMessageBox.confirm(
+			'您当前在删除目录，系统默认会删除目录里的所有内容，您确定要删除吗？',
+			'警告',
+			{
+				confirmButtonText: '确认',
+				cancelButtonText: '取消',
+				type: 'warning',
+			}
+		)
+			.then(async () => {
+				await apiClient.attachment.deleteAttachment({
+					id: currentSelectionAttachment.value?.id as number,
+				});
+				ElMessage.success(
+					'删除目录【' + currentSelectionAttachment.value?.name + '】成功。'
+				);
+			})
+			.catch(() => {
+				ElMessage({
+					type: 'info',
+					message: '删除目录取消',
+				});
+			});
+	} else {
+		await apiClient.attachment.deleteAttachment({
+			id: currentSelectionAttachment.value.id as number,
+		});
+		ElMessage.success(
+			'删除文件【' + currentSelectionAttachment.value.name + '】成功'
+		);
+	}
+	fetchAttachments();
+};
 </script>
 
 <template>
@@ -161,7 +220,27 @@ const onCreateFolderButtonClick = async () => {
 				</el-icon>
 				上传附件
 			</el-button>
-			<el-button @click="dialogFolderVisible = true"> 新建目录 </el-button>
+			<el-button :icon="FolderAdd" @click="dialogFolderVisible = true">
+				新建目录
+			</el-button>
+
+			<el-popconfirm
+				v-if="currentSelectionAttachment && currentSelectionAttachment.id"
+				:title="
+					'您确定删除' +
+					(currentSelectionAttachment.type === 'Directory' ? '目录' : '附件') +
+					'【' +
+					currentSelectionAttachment.name +
+					'】' +
+					'吗？'
+				"
+				width="300"
+				@confirm="onDeleteButtonClick"
+			>
+				<template #reference>
+					<el-button :icon="FolderDelete" type="danger"> 删除 </el-button>
+				</template>
+			</el-popconfirm>
 		</el-col>
 		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
 			<el-input
@@ -219,6 +298,7 @@ const onCreateFolderButtonClick = async () => {
 				style="width: 100%"
 				row-key="id"
 				highlight-current-row
+				@current-change="onCurrentChange"
 				@row-dblclick="entryAttachment"
 			>
 				<!-- <el-table-column type="selection" width="60" /> -->
