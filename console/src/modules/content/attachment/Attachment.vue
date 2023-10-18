@@ -18,6 +18,7 @@ import {
 	ElTable,
 	ElTableColumn,
 	ElDialog,
+	ElMessage,
 } from 'element-plus';
 import { onMounted } from 'vue';
 import { apiClient } from '@/utils/api-client';
@@ -115,7 +116,15 @@ onMounted(fetchAttachments);
 
 const dialogFolderVisible = ref(false);
 const createFolderName = ref('');
-const onCreateFolderButtonClick = async () => {};
+const onCreateFolderButtonClick = async () => {
+	await apiClient.attachment.createDirectory({
+		parentId: attachmentCondition.value.parentId as any as string,
+		name: base64Encode(createFolderName.value),
+	});
+	ElMessage.success('创建目录成功，目录名：' + createFolderName.value);
+	dialogFolderVisible.value = false;
+	await fetchAttachments();
+};
 </script>
 
 <template>
