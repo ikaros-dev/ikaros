@@ -115,6 +115,18 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class)))
 
+            .POST("/attachment/directory", this::createDirectory,
+                builder -> builder.operationId("CreateDirectory")
+                    .tag(tag).description("Create directory")
+                    .parameter(parameterBuilder()
+                        .name("name").required(true)
+                        .description("经过Basic64编码的附件名称，附件名称字段模糊查询。")
+                        .implementation(String.class))
+                    .parameter(parameterBuilder()
+                        .name("parentId")
+                        .description("附件的父附件ID，父附件一般时目录类型。"))
+                    .response(responseBuilder().implementationArray(Attachment.class)))
+
             .PUT("/attachment/update", this::update,
                 builder -> builder.operationId("UpdateAttachment")
                     .tag(tag).description("Update attachment.")
@@ -128,7 +140,8 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .response(responseBuilder()
                         .description("Random uuid.")
                         .implementation(String.class)))
-            .PATCH("/attachment/fragment/patch/{unique}", this::receiveFragmentUploadChunkAttachment,
+            .PATCH("/attachment/fragment/patch/{unique}",
+                this::receiveFragmentUploadChunkAttachment,
                 builder -> builder.operationId("ReceiveFragmentUploadChunkAttachment")
                     .tag(tag).description("Receive fragment upload chunk attachment.")
                     .parameter(parameterBuilder().in(ParameterIn.PATH)
@@ -153,7 +166,6 @@ public class AttachmentEndpoint implements CoreEndpoint {
 
             .build();
     }
-
 
     public interface UploadRequest {
 
@@ -237,6 +249,19 @@ public class AttachmentEndpoint implements CoreEndpoint {
         return attachmentService.removeById(Long.parseLong(id))
             .then(ServerResponse.ok()
                 .bodyValue("Delete success"));
+    }
+
+    private Mono<ServerResponse> createDirectory(ServerRequest request) {
+        Optional<String> nameOp = request.queryParam("name");
+        final String name = nameOp.isPresent() && StringUtils.hasText(nameOp.get())
+            ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
+            : "";
+
+        Optional<String> parentIdOp = request.queryParam("parentId");
+        Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
+
+        return attachmentService.createDirectory(parentId, name)
+            .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment));
     }
 
     private Mono<ServerResponse> update(ServerRequest request) {

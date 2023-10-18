@@ -41,4 +41,7 @@ public interface AttachmentService {
                                                        byte[] bytes);
 
     Mono<Void> revertFragmentUploadFile(@NotBlank String unique);
+
+    Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name);
+
 }

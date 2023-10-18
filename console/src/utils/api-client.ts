@@ -16,6 +16,7 @@ import {
 	V1alpha1TaskApi,
 	V1alpha1UserApi,
 	V1alpha1SubjectRelationApi,
+	V1alpha1AttachmentApi,
 } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
 
@@ -154,6 +155,7 @@ function setupApiClient(axios: AxiosInstance) {
 		// core endpoints
 		user: new V1alpha1UserApi(undefined, baseURL, axios),
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),
+		attachment: new V1alpha1AttachmentApi(undefined, baseURL, axios),
 		file: new V1alpha1FileApi(undefined, baseURL, axios),
 		folder: new V1alpha1FolderApi(undefined, baseURL, axios),
 		subject: new V1alpha1SubjectApi(undefined, baseURL, axios),

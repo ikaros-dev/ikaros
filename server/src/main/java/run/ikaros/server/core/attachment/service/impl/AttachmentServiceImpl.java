@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.service.impl;
 
+import static run.ikaros.api.store.enums.AttachmentType.Directory;
 import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import jakarta.annotation.Nonnull;
@@ -114,6 +115,25 @@ public class AttachmentServiceImpl implements AttachmentService {
         Mono<Long> countMono = template.count(query, AttachmentEntity.class);
 
         return countMono.flatMap(total -> attachmentEntityFlux.collectList()
+            .map(attachmentEntities -> {
+                Collections.sort(attachmentEntities,
+                    (o1, o2) -> {
+                        AttachmentType type1 = o1.getType();
+                        AttachmentType type2 = o2.getType();
+                        if (Directory.equals(type1) && Directory.equals(type2)) {
+                            return 0;
+                        }
+                        if (Directory.equals(type1) && AttachmentType.File.equals(type2)) {
+                            return -1;
+                        }
+
+                        if (AttachmentType.File.equals(type1) && Directory.equals(type2)) {
+                            return -1;
+                        }
+                        return 0;
+                    });
+                return attachmentEntities;
+            })
             .map(attachmentEntities -> new PagingWrap<>(page, size, total, attachmentEntities)));
     }
 
@@ -379,6 +399,18 @@ public class AttachmentServiceImpl implements AttachmentService {
             log.debug("remove uploading file with unique={}", unique);
         }
         return Mono.empty();
+    }
+
+    @Override
+    public Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name) {
+        Assert.hasText(name, "'name' must has text.");
+        return repository.save(AttachmentEntity.builder()
+                .parentId(parentId)
+                .name(name)
+                .updateTime(LocalDateTime.now())
+                .type(Directory)
+                .build())
+            .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }
 
     private AttachmentEntity removeFileSystemFile(AttachmentEntity attachmentEntity) {
