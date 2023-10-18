@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
@@ -109,32 +110,15 @@ public class AttachmentServiceImpl implements AttachmentService {
             criteria = criteria.and("name").like(nameLike);
         }
 
-        Query query = Query.query(criteria).with(pageRequest);
+        Query query = Query.query(criteria)
+            .sort(Sort.by(Sort.Order.by("type")))
+            .with(pageRequest);
 
         Flux<AttachmentEntity> attachmentEntityFlux =
             template.select(query, AttachmentEntity.class);
         Mono<Long> countMono = template.count(query, AttachmentEntity.class);
 
         return countMono.flatMap(total -> attachmentEntityFlux.collectList()
-            .map(attachmentEntities -> {
-                Collections.sort(attachmentEntities,
-                    (o1, o2) -> {
-                        AttachmentType type1 = o1.getType();
-                        AttachmentType type2 = o2.getType();
-                        if (Directory.equals(type1) && Directory.equals(type2)) {
-                            return 0;
-                        }
-                        if (Directory.equals(type1) && AttachmentType.File.equals(type2)) {
-                            return -1;
-                        }
-
-                        if (AttachmentType.File.equals(type1) && Directory.equals(type2)) {
-                            return 1;
-                        }
-                        return 0;
-                    });
-                return attachmentEntities;
-            })
             .map(attachmentEntities -> new PagingWrap<>(page, size, total, attachmentEntities)));
     }
 
