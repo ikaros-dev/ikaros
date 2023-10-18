@@ -50,6 +50,66 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
 ) {
 	return {
 		/**
+		 * Create directory
+		 * @param {string} name 经过Basic64编码的附件名称，附件名称字段模糊查询。
+		 * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		createDirectory: async (
+			name: string,
+			parentId?: string,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'name' is not null or undefined
+			assertParamExists('createDirectory', 'name', name);
+			const localVarPath = `/api/v1alpha1/attachment/directory`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (name !== undefined) {
+				localVarQueryParameter['name'] = name;
+			}
+
+			if (parentId !== undefined) {
+				localVarQueryParameter['parentId'] = parentId;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
 		 *
 		 * @param {number} id Attachment ID
 		 * @param {*} [options] Override http request option.
@@ -277,6 +337,7 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
 		 * @param {string} uploadLength Upload chunk attachment length.
 		 * @param {string} uploadOffset Upload chunk attachment offset.
 		 * @param {string} uploadName Upload chunk attachment file name.
+		 * @param {string} [pARENTID] 附件的父附件ID，父附件一般时目录类型。
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -285,6 +346,7 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
 			uploadLength: string,
 			uploadOffset: string,
 			uploadName: string,
+			pARENTID?: string,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
 			// verify required parameter 'unique' is not null or undefined
@@ -338,6 +400,10 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
 			// authentication BearerAuth required
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (pARENTID != null) {
+				localVarHeaderParameter['PARENT-ID'] = String(pARENTID);
+			}
 
 			if (uploadLength != null) {
 				localVarHeaderParameter['Upload-Length'] = String(uploadLength);
@@ -549,6 +615,35 @@ export const V1alpha1AttachmentApiFp = function (
 		V1alpha1AttachmentApiAxiosParamCreator(configuration);
 	return {
 		/**
+		 * Create directory
+		 * @param {string} name 经过Basic64编码的附件名称，附件名称字段模糊查询。
+		 * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async createDirectory(
+			name: string,
+			parentId?: string,
+			options?: AxiosRequestConfig
+		): Promise<
+			(
+				axios?: AxiosInstance,
+				basePath?: string
+			) => AxiosPromise<Array<Attachment>>
+		> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.createDirectory(
+				name,
+				parentId,
+				options
+			);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
 		 *
 		 * @param {number} id Attachment ID
 		 * @param {*} [options] Override http request option.
@@ -650,6 +745,7 @@ export const V1alpha1AttachmentApiFp = function (
 		 * @param {string} uploadLength Upload chunk attachment length.
 		 * @param {string} uploadOffset Upload chunk attachment offset.
 		 * @param {string} uploadName Upload chunk attachment file name.
+		 * @param {string} [pARENTID] 附件的父附件ID，父附件一般时目录类型。
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
@@ -658,6 +754,7 @@ export const V1alpha1AttachmentApiFp = function (
 			uploadLength: string,
 			uploadOffset: string,
 			uploadName: string,
+			pARENTID?: string,
 			options?: AxiosRequestConfig
 		): Promise<
 			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
@@ -668,6 +765,7 @@ export const V1alpha1AttachmentApiFp = function (
 					uploadLength,
 					uploadOffset,
 					uploadName,
+					pARENTID,
 					options
 				);
 			return createRequestFunction(
@@ -758,6 +856,24 @@ export const V1alpha1AttachmentApiFactory = function (
 	const localVarFp = V1alpha1AttachmentApiFp(configuration);
 	return {
 		/**
+		 * Create directory
+		 * @param {V1alpha1AttachmentApiCreateDirectoryRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		createDirectory(
+			requestParameters: V1alpha1AttachmentApiCreateDirectoryRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<Array<Attachment>> {
+			return localVarFp
+				.createDirectory(
+					requestParameters.name,
+					requestParameters.parentId,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
 		 *
 		 * @param {V1alpha1AttachmentApiDeleteAttachmentRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
@@ -833,6 +949,7 @@ export const V1alpha1AttachmentApiFactory = function (
 					requestParameters.uploadLength,
 					requestParameters.uploadOffset,
 					requestParameters.uploadName,
+					requestParameters.pARENTID,
 					options
 				)
 				.then((request) => request(axios, basePath));
@@ -881,6 +998,27 @@ export const V1alpha1AttachmentApiFactory = function (
 		},
 	};
 };
+
+/**
+ * Request parameters for createDirectory operation in V1alpha1AttachmentApi.
+ * @export
+ * @interface V1alpha1AttachmentApiCreateDirectoryRequest
+ */
+export interface V1alpha1AttachmentApiCreateDirectoryRequest {
+	/**
+	 * 经过Basic64编码的附件名称，附件名称字段模糊查询。
+	 * @type {string}
+	 * @memberof V1alpha1AttachmentApiCreateDirectory
+	 */
+	readonly name: string;
+
+	/**
+	 * 附件的父附件ID，父附件一般时目录类型。
+	 * @type {string}
+	 * @memberof V1alpha1AttachmentApiCreateDirectory
+	 */
+	readonly parentId?: string;
+}
 
 /**
  * Request parameters for deleteAttachment operation in V1alpha1AttachmentApi.
@@ -978,6 +1116,13 @@ export interface V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentReques
 	 * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
 	 */
 	readonly uploadName: string;
+
+	/**
+	 * 附件的父附件ID，父附件一般时目录类型。
+	 * @type {string}
+	 * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
+	 */
+	readonly pARENTID?: string;
 }
 
 /**
@@ -1029,6 +1174,26 @@ export interface V1alpha1AttachmentApiUploadAttachmentRequest {
  * @extends {BaseAPI}
  */
 export class V1alpha1AttachmentApi extends BaseAPI {
+	/**
+	 * Create directory
+	 * @param {V1alpha1AttachmentApiCreateDirectoryRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1AttachmentApi
+	 */
+	public createDirectory(
+		requestParameters: V1alpha1AttachmentApiCreateDirectoryRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1AttachmentApiFp(this.configuration)
+			.createDirectory(
+				requestParameters.name,
+				requestParameters.parentId,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
 	/**
 	 *
 	 * @param {V1alpha1AttachmentApiDeleteAttachmentRequest} requestParameters Request parameters.
@@ -1114,6 +1279,7 @@ export class V1alpha1AttachmentApi extends BaseAPI {
 				requestParameters.uploadLength,
 				requestParameters.uploadOffset,
 				requestParameters.uploadName,
+				requestParameters.pARENTID,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));

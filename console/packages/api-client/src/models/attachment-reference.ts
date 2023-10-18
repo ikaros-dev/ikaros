@@ -45,6 +45,7 @@ export interface AttachmentReference {
 }
 
 export const AttachmentReferenceTypeEnum = {
+	Subject: 'SUBJECT',
 	Episode: 'EPISODE',
 } as const;
 
