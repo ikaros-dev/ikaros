@@ -16,6 +16,7 @@ import {
 } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { isImage, isVideo, isVoice } from '@/utils/file';
+import { Edit } from '@element-plus/icons-vue';
 
 const { t } = useI18n();
 
@@ -163,6 +164,7 @@ const handleClose = (done: () => void) => {
 					<audio
 						v-else-if="isVoice(file.url as string)"
 						controls
+						:volume="0.3"
 						:src="getCompleteFileUrl(file.url)"
 					>
 						{{ t('core.fileDetail.message.hint.audioFormat') }}
@@ -187,16 +189,17 @@ const handleClose = (done: () => void) => {
 					<el-descriptions-item label="ID">
 						{{ file.id }}
 					</el-descriptions-item>
-					<el-descriptions-item
-						:label="t('core.fileDetail.descItemLabel.name')"
-					>
+					<el-descriptions-item label="名称（双击值进行重命名）">
 						<span v-if="editable">
 							<el-input
 								ref="nameInput"
 								v-model="file.name"
 								@blur="handleUpdateName"
-								@pressEnter="handleUpdateName"
-							/>
+							>
+								<template #append>
+									<el-button :icon="Edit" @click="handleUpdateName" />
+								</template>
+							</el-input>
 						</span>
 						<span v-else @dblclick="handleEditName">
 							{{ file.name }}

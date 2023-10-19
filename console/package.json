@@ -23,6 +23,7 @@
     "@formkit/utils": "^0.17.3",
     "@formkit/validation": "0.17.3",
     "@formkit/vue": "^0.17.3",
+    "@imengyu/vue3-context-menu": "^1.3.3",
     "@intlify/unplugin-vue-i18n": "^0.11.0",
     "@runikaros/api-client": "workspace:*",
     "@runikaros/shared": "workspace:*",
