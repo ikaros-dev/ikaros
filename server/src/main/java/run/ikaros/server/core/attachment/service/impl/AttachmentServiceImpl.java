@@ -173,7 +173,7 @@ public class AttachmentServiceImpl implements AttachmentService {
 
         // upload file data buffer
         return writeDataToFsPath(uploadCondition.getDataBufferFlux(), Path.of(uploadFilePath))
-            .publishOn(Schedulers.boundedElastic())
+            //.publishOn(Schedulers.boundedElastic())
             .flatMap(fsPath ->
                 // rename if isAutoReName=true and exists same file.
                 repository.existsByTypeAndParentIdAndName(
@@ -334,12 +334,26 @@ public class AttachmentServiceImpl implements AttachmentService {
             }
             tempChunkFileCacheDir.delete();
 
-            File file = new File(filePath);
-            Flux<DataBuffer> dataBufferFlux = FileUtils.convertToDataBufferFlux(file);
-
-            return upload(AttachmentUploadCondition.builder()
-                .name(uploadName).dataBufferFlux(dataBufferFlux).parentId(parentId)
-                .build()).then();
+            Long finalParentId = parentId;
+            return
+                // rename if  exists same file.
+                repository.existsByTypeAndParentIdAndName(
+                        AttachmentType.File, parentId, uploadName
+                    )
+                    .filter(exists -> exists)
+                    .map(exists -> System.currentTimeMillis() + "-" + uploadName)
+                    .switchIfEmpty(Mono.just(uploadName))
+                    .flatMap(n ->
+                        // save attachment entity
+                        saveEntity(AttachmentEntity.builder()
+                            .parentId(finalParentId)
+                            .fsPath(filePath)
+                            .updateTime(LocalDateTime.now())
+                            .type(AttachmentType.File)
+                            .name(n)
+                            .url(path2url(filePath, ikarosProperties.getWorkDir().toString()))
+                            .size(findFileSize(filePath))
+                            .build())).then();
         }
         return Mono.empty();
     }
