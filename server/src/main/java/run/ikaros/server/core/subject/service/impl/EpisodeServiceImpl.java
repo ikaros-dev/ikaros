@@ -9,13 +9,16 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.infra.exception.RegexMatchingException;
+import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.RegexUtils;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.FileType;
 import run.ikaros.server.core.subject.event.EpisodeFileUpdateEvent;
 import run.ikaros.server.core.subject.service.EpisodeFileService;
+import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.EpisodeFileEntity;
 import run.ikaros.server.store.entity.FileEntity;
+import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.EpisodeFileRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.FileRepository;
@@ -25,18 +28,19 @@ import run.ikaros.server.store.repository.FileRepository;
 public class EpisodeServiceImpl implements EpisodeFileService {
     private final EpisodeFileRepository episodeFileRepository;
     private final EpisodeRepository episodeRepository;
-    private final FileRepository fileRepository;
+    private final AttachmentRepository attachmentRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Construct.
      */
     public EpisodeServiceImpl(EpisodeFileRepository episodeFileRepository,
-                              EpisodeRepository episodeRepository, FileRepository fileRepository,
+                              EpisodeRepository episodeRepository,
+                              AttachmentRepository attachmentRepository,
                               ApplicationEventPublisher applicationEventPublisher) {
         this.episodeFileRepository = episodeFileRepository;
         this.episodeRepository = episodeRepository;
-        this.fileRepository = fileRepository;
+        this.attachmentRepository = attachmentRepository;
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
@@ -74,9 +78,9 @@ public class EpisodeServiceImpl implements EpisodeFileService {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.notNull(fileIds, "'fileIds' must not null.");
         return Flux.fromArray(fileIds)
-            .flatMap(fileRepository::findById)
-            .filter(entity -> FileType.VIDEO.equals(entity.getType()))
-            .flatMap(fileEntity -> getSeqMono(fileEntity)
+            .flatMap(attachmentRepository::findById)
+            .filter(entity -> FileUtils.isVideo(entity.getUrl()))
+            .flatMap(entity -> getSeqMono(entity.getName())
                 .flatMap(seq -> episodeRepository.findBySubjectIdAndGroupAndSequence(subjectId,
                     EpisodeGroup.MAIN, seq))
                 .flatMap(episodeEntity -> episodeFileRepository
@@ -84,18 +88,18 @@ public class EpisodeServiceImpl implements EpisodeFileService {
                     .filter(exists -> !exists)
                     .flatMap(exists -> episodeFileRepository
                         .save(EpisodeFileEntity.builder()
-                            .fileId(fileEntity.getId())
+                            .fileId(entity.getId())
                             .episodeId(episodeEntity.getId())
                             .build())
                         .doOnSuccess(episodeFileEntity -> {
                             log.info("save episode file matching "
-                                    + "for file name:[{}] and episode seq:[{}] "
+                                    + "for attachment name:[{}] and episode seq:[{}] "
                                     + "when subjectId=[{}].",
-                                fileEntity.getName(), episodeEntity.getSequence(), subjectId);
+                                entity.getName(), episodeEntity.getSequence(), subjectId);
                             EpisodeFileUpdateEvent event =
                                 new EpisodeFileUpdateEvent(this,
                                     episodeEntity.getId(),
-                                    fileEntity.getId(), notify);
+                                    entity.getId(), notify);
                             applicationEventPublisher.publishEvent(event);
                             log.debug("publish event EpisodeFileUpdateEvent "
                                 + "for episodeFileEntity: {}", episodeFileEntity);
@@ -105,11 +109,10 @@ public class EpisodeServiceImpl implements EpisodeFileService {
 
     }
 
-    private static Mono<Integer> getSeqMono(FileEntity entity) {
-        Integer seq;
+    private static Mono<Integer> getSeqMono(String name) {
+        int seq;
         try {
-            seq = Integer.valueOf(
-                String.valueOf(RegexUtils.parseEpisodeSeqByFileName(entity.getName())));
+            seq = Integer.parseInt(String.valueOf(RegexUtils.parseEpisodeSeqByFileName(name)));
         } catch (RegexMatchingException regexMatchingException) {
             log.warn("parse episode seq by file name fail", regexMatchingException);
             return Mono.empty();

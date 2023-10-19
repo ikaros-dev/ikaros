@@ -3,10 +3,8 @@ package run.ikaros.server.core.subject.endpoint;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -17,8 +15,8 @@ import run.ikaros.server.core.subject.service.EpisodeFileService;
 import run.ikaros.server.core.subject.vo.BatchMatchingEpisodeFile;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
-@Slf4j
-@Component
+//@Slf4j
+//@Component
 public class EpisodeFileEndpoint implements CoreEndpoint {
     private final EpisodeFileService episodeFileService;
 

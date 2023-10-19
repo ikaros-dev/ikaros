@@ -100,6 +100,18 @@ public class FileUtils {
         return false;
     }
 
+    public static boolean isVideo(String url) {
+        return VIDEOS.contains(parseFilePostfix(url));
+    }
+
+    public static boolean isDocument(String url) {
+        return DOCUMENTS.contains(parseFilePostfix(url));
+    }
+
+    public static boolean isVoice(String url) {
+        return VOICES.contains(parseFilePostfix(url));
+    }
+
     public enum Hash {
         MD5("MD5"),
         SHA1("SHA1"),
@@ -198,7 +210,7 @@ public class FileUtils {
     public static String parseFilePostfix(String originalFilename) {
         Assert.hasText(originalFilename, "originalFilename");
         int dotIndex = originalFilename.lastIndexOf(".");
-        return originalFilename.substring(dotIndex + 1);
+        return originalFilename.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
     }
 
     /**

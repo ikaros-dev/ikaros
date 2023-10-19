@@ -16,8 +16,6 @@ import run.ikaros.api.store.enums.AttachmentReferenceType;
 public class AttachmentReference {
     private Long id;
     private AttachmentReferenceType type;
-    @JsonProperty(" attachment_id")
     private Long attachmentId;
-    @JsonProperty("reference_id")
     private Long referenceId;
 }

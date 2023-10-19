@@ -12,4 +12,9 @@ public interface AttachmentReferenceService {
         AttachmentReferenceType type, Long attachmentId);
 
     Mono<Void> removeById(Long attachmentRefId);
+
+    Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds);
+
+    Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
+                                                     boolean notify);
 }

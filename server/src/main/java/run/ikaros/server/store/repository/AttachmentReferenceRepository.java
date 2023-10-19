@@ -14,4 +14,6 @@ public interface AttachmentReferenceRepository
     Mono<AttachmentReferenceEntity> findByTypeAndAttachmentIdAndReferenceId(
         AttachmentReferenceType type, Long attachmentId, Long referenceId
     );
+
+    Mono<Boolean> existsByTypeAndReferenceId(AttachmentReferenceType type, Long referenceId);
 }
