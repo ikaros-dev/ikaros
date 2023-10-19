@@ -78,17 +78,29 @@ node {
     nodeProjectDir = file("${rootProject.projectDir}/console")
 }
 
+task pnpmInstallPackageShared(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/shared', 'install']
+}
+
 task buildFrontendPackageShared(type: NpxTask) {
     command = 'pnpm'
     args = ['--filter', './packages/shared', 'build']
+    dependsOn("pnpmInstallPackageShared")
+}
+
+task pnpmInstallPackageApiClient(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/api-client', 'install']
 }
 
 task buildFrontendPackageApiClient(type: NpxTask) {
     command = 'pnpm'
     args = ['--filter', './packages/api-client', 'build']
+    dependsOn("pnpmInstallPackageApiClient")
 }
 
-task pnpmInstall(type: NpxTask) {
+task pnpmInstallFrontend(type: NpxTask) {
     command = "pnpm"
     args = ["install"]
     dependsOn("buildFrontendPackageShared", "buildFrontendPackageApiClient")
@@ -97,12 +109,13 @@ task pnpmInstall(type: NpxTask) {
 task buildFrontend(type: NpxTask) {
     command = 'pnpm'
     args = ['build']
-    dependsOn("pnpmInstall")
+    dependsOn("pnpmInstallFrontend")
 }
 
 task pnpmDev(type: NpxTask) {
     command = "pnpm"
     args = ["dev"]
+    dependsOn("buildFrontend")
 }
 
 build {
