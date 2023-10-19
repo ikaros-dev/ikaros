@@ -46,6 +46,7 @@ import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.file.FileEndpoint;
@@ -91,6 +92,10 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .name("size")
                         .description("每页条数，默认为10.")
                         .implementation(Integer.class))
+                    .parameter(parameterBuilder()
+                        .name("type")
+                        .description("附件类型。")
+                        .implementation(AttachmentType.class))
                     .parameter(parameterBuilder()
                         .name("name")
                         .description("经过Basic64编码的附件名称，附件名称字段模糊查询。")
@@ -233,12 +238,15 @@ public class AttachmentEndpoint implements CoreEndpoint {
         Optional<String> parentIdOp = request.queryParam("parentId");
         Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
 
+        Optional<String> typeOp = request.queryParam("type");
+        AttachmentType type = typeOp.map(AttachmentType::valueOf).orElse(null);
+
         return Mono.just(AttachmentSearchCondition.builder()
-                .page(page).size(size).name(name).parentId(parentId)
+                .page(page).size(size).type(type)
+                .name(name).parentId(parentId)
                 .build())
             .flatMap(attachmentService::listEntitiesByCondition)
             .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
-
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {
@@ -257,6 +265,24 @@ public class AttachmentEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> createDirectory(ServerRequest request) {
+        Optional<String> nameOp = request.queryParam("name");
+        final String name = nameOp.isPresent() && StringUtils.hasText(nameOp.get())
+            ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
+            : "";
+
+        Optional<String> parentIdOp = request.queryParam("parentId");
+        Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
+
+        return attachmentService.createDirectory(parentId, name)
+            .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
+            .onErrorResume(AttachmentParentNotFoundException.class,
+                e -> ServerResponse.status(HttpStatus.NOT_FOUND).bodyValue(e.getMessage()))
+            .onErrorResume(DuplicateKeyException.class, e ->
+                ServerResponse.status(HttpStatus.BAD_REQUEST)
+                    .bodyValue("Duplicate directory for name: " + name));
+    }
+
+    private Mono<ServerResponse> listDirectory(ServerRequest request) {
         Optional<String> nameOp = request.queryParam("name");
         final String name = nameOp.isPresent() && StringUtils.hasText(nameOp.get())
             ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
