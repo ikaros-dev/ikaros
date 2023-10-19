@@ -265,6 +265,7 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
 		 * List attachments by condition.
 		 * @param {number} [page] 第几页，从1开始, 默认为1.
 		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {'File' | 'Directory'} [type] 附件类型。
 		 * @param {string} [name] 经过Basic64编码的附件名称，附件名称字段模糊查询。
 		 * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
 		 * @param {*} [options] Override http request option.
@@ -273,6 +274,7 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
 		listAttachmentsByCondition: async (
 			page?: number,
 			size?: number,
+			type?: 'File' | 'Directory',
 			name?: string,
 			parentId?: string,
 			options: AxiosRequestConfig = {}
@@ -307,6 +309,10 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
 
 			if (size !== undefined) {
 				localVarQueryParameter['size'] = size;
+			}
+
+			if (type !== undefined) {
+				localVarQueryParameter['type'] = type;
 			}
 
 			if (name !== undefined) {
@@ -710,6 +716,7 @@ export const V1alpha1AttachmentApiFp = function (
 		 * List attachments by condition.
 		 * @param {number} [page] 第几页，从1开始, 默认为1.
 		 * @param {number} [size] 每页条数，默认为10.
+		 * @param {'File' | 'Directory'} [type] 附件类型。
 		 * @param {string} [name] 经过Basic64编码的附件名称，附件名称字段模糊查询。
 		 * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
 		 * @param {*} [options] Override http request option.
@@ -718,6 +725,7 @@ export const V1alpha1AttachmentApiFp = function (
 		async listAttachmentsByCondition(
 			page?: number,
 			size?: number,
+			type?: 'File' | 'Directory',
 			name?: string,
 			parentId?: string,
 			options?: AxiosRequestConfig
@@ -728,6 +736,7 @@ export const V1alpha1AttachmentApiFp = function (
 				await localVarAxiosParamCreator.listAttachmentsByCondition(
 					page,
 					size,
+					type,
 					name,
 					parentId,
 					options
@@ -927,6 +936,7 @@ export const V1alpha1AttachmentApiFactory = function (
 				.listAttachmentsByCondition(
 					requestParameters.page,
 					requestParameters.size,
+					requestParameters.type,
 					requestParameters.name,
 					requestParameters.parentId,
 					options
@@ -1067,6 +1077,13 @@ export interface V1alpha1AttachmentApiListAttachmentsByConditionRequest {
 	 * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
 	 */
 	readonly size?: number;
+
+	/**
+	 * 附件类型。
+	 * @type {'File' | 'Directory'}
+	 * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+	 */
+	readonly type?: 'File' | 'Directory';
 
 	/**
 	 * 经过Basic64编码的附件名称，附件名称字段模糊查询。
@@ -1255,6 +1272,7 @@ export class V1alpha1AttachmentApi extends BaseAPI {
 			.listAttachmentsByCondition(
 				requestParameters.page,
 				requestParameters.size,
+				requestParameters.type,
 				requestParameters.name,
 				requestParameters.parentId,
 				options
