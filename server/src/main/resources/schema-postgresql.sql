@@ -1,8 +1,8 @@
 -- attachment
 create sequence if not exists attachment_seq
     increment 1
-    start 1
-    minvalue 1
+    start 10
+    minvalue 10
     cache 1
     no cycle;
 
@@ -29,6 +29,16 @@ SELECT 0,
 WHERE NOT EXISTS (SELECT 1
                   FROM attachment
                   WHERE id = 0);
+-- Insert cover directory
+INSERT INTO attachment (id, type, parent_id, name, update_time)
+SELECT 1,
+       'Directory',
+       0,
+       'Cover',
+       CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1
+                  FROM attachment
+                  WHERE id = 1);
 
 -- attachment_relation
 create sequence if not exists attachment_relation_seq

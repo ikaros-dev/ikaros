@@ -18,6 +18,12 @@ SELECT 0, -1, 'Directory', '/', CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
                   FROM attachment
                   WHERE id = 0);
+-- Insert cover directory
+INSERT INTO attachment (id, parent_id, type, name, update_time)
+SELECT 1, 0, 'Directory', 'Cover', CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1
+                  FROM attachment
+                  WHERE id = 1);
 
 -- attachment_relation
 create table if not exists attachment_relation

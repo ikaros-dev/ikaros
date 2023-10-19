@@ -138,6 +138,11 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public Mono<Void> removeById(Long attachmentId) {
         Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
+        if (AttachmentConst.COVER_DIRECTORY_ID.equals(attachmentId)) {
+            return Mono.error(new AttachmentRemoveException(
+                "Forbid remove system internal subject cover dir for attachment id="
+                    + attachmentId));
+        }
         return repository.findById(attachmentId)
             .flatMap(this::removeChildrenAttachment)
             .map(this::removeFileSystemFile)

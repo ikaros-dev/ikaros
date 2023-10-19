@@ -44,6 +44,7 @@ import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
+import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.core.file.File;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.store.enums.AttachmentType;
