@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { EpisodeCollection, SubjectCollection } from '@runikaros/api-client';
+import {
+	Attachment,
+	EpisodeCollection,
+	SubjectCollection,
+} from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
 import {
@@ -12,7 +16,6 @@ import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import FileSelectDialog from '../file/FileSelectDialog.vue';
 import router from '@/router';
 import { Check, Close } from '@element-plus/icons-vue';
-import FileMultiSelectDialog from '../file/FileMultiSelectDialog.vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import { useRoute } from 'vue-router';
 import { onMounted, ref, watch } from 'vue';
@@ -40,6 +43,7 @@ import { useUserStore } from '@/stores/user';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
 import { useSubjectStore } from '@/stores/subject';
 import { nextTick } from 'vue';
+import AttachmentMultiSelectDialog from '../attachment/AttachmentMultiSelectDialog.vue';
 
 const route = useRoute();
 const settingStore = useSettingStore();
@@ -201,29 +205,6 @@ const deleteSubject = async () => {
 		.then(() => {
 			ElMessage.success('删除条目' + subject.value.name + '成功');
 			router.push('/subjects');
-		});
-};
-
-const batchMatchingButtonLoading = ref(false);
-const fileMultiSelectDialogVisible = ref(false);
-const onCloseWithFileIdArr = async (fileIds) => {
-	console.log('receive fileIdArr', fileIds);
-	// eslint-disable-next-line no-unused-vars
-	const subjectId = subject.value.id;
-	batchMatchingButtonLoading.value = true;
-	await apiClient.episodefile
-		.batchMatchingEpisodeFile({
-			batchMatchingEpisodeFile: {
-				subjectId: subjectId as number,
-				fileIds: fileIds,
-			},
-		})
-		.then(() => {
-			ElMessage.success('批量匹配剧集和资源成功');
-			window.location.reload();
-		})
-		.finally(() => {
-			batchMatchingButtonLoading.value = false;
 		});
 };
 
@@ -399,14 +380,36 @@ const fetchDatas = async () => {
 	fetchEpisodeCollections();
 };
 
+const batchMatchingButtonLoading = ref(false);
+const attachmentMultiSelectDialogVisible = ref(false);
+const onCloseWIthAttachments = async (attachments: Attachment[]) => {
+	console.log('attachments', attachments);
+	// const subjectId = subject.value.id;
+	batchMatchingButtonLoading.value = true;
+	// await apiClient.attachmentRef
+	// await apiClient.episodefile
+	// 	.batchMatchingEpisodeFile({
+	// 		batchMatchingEpisodeFile: {
+	// 			subjectId: subjectId as number,
+	// 			fileIds: fileIds,
+	// 		},
+	// 	})
+	// 	.then(() => {
+	// 		ElMessage.success('批量匹配剧集和资源成功');
+	// 		window.location.reload();
+	// 	})
+	// 	.finally(() => {
+	// 		batchMatchingButtonLoading.value = false;
+	// 	});
+};
+
 onMounted(fetchDatas);
 </script>
 
 <template>
-	<FileMultiSelectDialog
-		v-model:visible="fileMultiSelectDialogVisible"
-		searchFileType="VIDEO"
-		@closeWithFileIdArr="onCloseWithFileIdArr"
+	<AttachmentMultiSelectDialog
+		v-model:visible="attachmentMultiSelectDialogVisible"
+		@close-with-attachments="onCloseWIthAttachments"
 	/>
 	<SubjectSyncDialog
 		v-model:visible="subjectSyncDialogVisible"
@@ -603,7 +606,7 @@ onMounted(fetchDatas);
 								<el-button
 									plain
 									:loading="batchMatchingButtonLoading"
-									@click="fileMultiSelectDialogVisible = true"
+									@click="attachmentMultiSelectDialogVisible = true"
 								>
 									批量绑定资源
 								</el-button>
