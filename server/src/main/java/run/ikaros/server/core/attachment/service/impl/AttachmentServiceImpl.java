@@ -97,12 +97,14 @@ public class AttachmentServiceImpl implements AttachmentService {
             ? searchCondition.getName() : "";
         final String nameLike = "%" + name + "%";
         final AttachmentType type = searchCondition.getType();
-        final Long parentId = Optional.ofNullable(searchCondition.getParentId())
-            .orElse(AttachmentConst.ROOT_DIRECTORY_ID);
+        final Long parentId = searchCondition.getParentId();
+        final PageRequest pageRequest = PageRequest.of(page - 1, size);
 
-        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        Criteria criteria = Criteria.empty();
 
-        Criteria criteria = Criteria.where("parent_id").is(parentId);
+        if (Objects.nonNull(parentId)) {
+            criteria = Criteria.where("parent_id").is(parentId);
+        }
 
         if (Objects.nonNull(type)) {
             criteria = criteria.and("type").is(type);
