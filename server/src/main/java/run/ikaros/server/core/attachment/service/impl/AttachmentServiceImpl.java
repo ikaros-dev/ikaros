@@ -108,7 +108,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             criteria = criteria.and("type").is(type);
         }
 
-        if (!StringUtils.hasText(name)) {
+        if (StringUtils.hasText(name)) {
             criteria = criteria.and("name").like(nameLike);
         }
 
