@@ -78,10 +78,21 @@ node {
     nodeProjectDir = file("${rootProject.projectDir}/console")
 }
 
+task buildFrontendPackageShared(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/shared', 'build']
+}
+
+task buildFrontendPackageApiClient(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/api-client', 'build']
+}
+
 task buildFrontend(type: NpxTask) {
     command = 'pnpm'
     args = ['build']
 }
+
 
 task pnpmInstall(type: NpxTask) {
     command = "pnpm"
@@ -96,6 +107,7 @@ task pnpmDev(type: NpxTask) {
 build {
     // build frontend before build
     // tasks.getByName('compileJava').dependsOn('buildFrontend')
+    tasks.getByName("pnpmInstall").dependsOn("buildFrontendPackageShared", "buildFrontendPackageApiClient")
     tasks.getByName("buildFrontend").dependsOn("pnpmInstall")
 }
 
