@@ -368,7 +368,6 @@ const onDirectorySelectDialogButtonClick = async () => {
 		style="width: 50%"
 		title="选择目录"
 	>
-		{{ targetDirectoryId }}
 		<el-tree-select
 			v-model="targetDirectoryId"
 			lazy
