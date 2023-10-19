@@ -1,17 +1,11 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import {
-	Episode,
-	Subject,
-	SubjectTypeEnum,
-	FileEntity,
-} from '@runikaros/api-client';
+import { Episode, Subject, SubjectTypeEnum } from '@runikaros/api-client';
 import EpisodePostDialog from './EpisodePostDialog.vue';
 import { Picture } from '@element-plus/icons-vue';
 import { formatDate } from '@/utils/date';
 import { apiClient } from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
-import FileSelectDialog from '../file/FileSelectDialog.vue';
 import { useRouter } from 'vue-router';
 import {
 	ElMessage,
@@ -36,6 +30,7 @@ import {
 	subjectTypes,
 	subjectTypeAliasMap,
 } from '@/modules/common/constants';
+import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
 
 const router = useRouter();
 
@@ -116,18 +111,17 @@ const showEpisodeDetails = (ep: Episode) => {
 
 const episodeDetailsDialogVisible = ref(false);
 
-const fileSelectDialogVisible = ref(false);
-const onFileSelectDialogCloseWithUrl = (file: FileEntity) => {
-	// console.log('receive file entity: ', file);
-	subject.value.cover = file.url as string;
-	fileSelectDialogVisible.value = false;
+const attachmentSelectDialogVisible = ref(false);
+const onCloseWithAttachment = (attachment) => {
+	subject.value.cover = attachment.url as string;
+	attachmentSelectDialogVisible.value = false;
 };
 </script>
 
 <template>
-	<FileSelectDialog
-		v-model:visible="fileSelectDialogVisible"
-		@closeWithFileEntity="onFileSelectDialogCloseWithUrl"
+	<AttachmentSelectDialog
+		v-model:visible="attachmentSelectDialogVisible"
+		@close-with-attachment="onCloseWithAttachment"
 	/>
 
 	<el-row>
@@ -163,7 +157,7 @@ const onFileSelectDialogCloseWithUrl = (file: FileEntity) => {
 							<el-button
 								:icon="Picture"
 								plain
-								@click="fileSelectDialogVisible = true"
+								@click="attachmentSelectDialogVisible = true"
 							/>
 						</template>
 					</el-input>

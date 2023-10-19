@@ -11,7 +11,7 @@ const props = withDefaults(
 	defineProps<{
 		visible: boolean;
 		allowMultiple?: boolean;
-		parentId: number;
+		parentId?: number;
 	}>(),
 	{
 		visible: false,

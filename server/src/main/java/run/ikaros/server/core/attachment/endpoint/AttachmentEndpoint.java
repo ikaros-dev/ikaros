@@ -337,7 +337,10 @@ public class AttachmentEndpoint implements CoreEndpoint {
         Assert.hasText(unique, "Request path var 'unique' must has text.");
 
         List<String> parentIdList = request.headers().header("PARENT-ID");
-        Long parentId = parentIdList.isEmpty() ? null : Long.parseLong(parentIdList.get(0));
+        Long parentId =
+            (parentIdList.isEmpty() || "undefined".equalsIgnoreCase(parentIdList.get(0)))
+                ? null :
+                Long.parseLong(parentIdList.get(0));
 
         return request.body(BodyExtractors.toDataBuffers())
             .publishOn(Schedulers.boundedElastic())

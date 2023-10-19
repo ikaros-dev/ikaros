@@ -7,7 +7,15 @@ import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue
 import moment from 'moment';
 import { isImage, isVideo, isVoice } from '@/utils/file';
 
-import { Upload, Search } from '@element-plus/icons-vue';
+import {
+	Upload,
+	Search,
+	Folder,
+	Document,
+	Picture,
+	Headset,
+	Film,
+} from '@element-plus/icons-vue';
 import {
 	ElRow,
 	ElCol,
@@ -67,6 +75,7 @@ const fetchAttachments = async () => {
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
 		parentId: attachmentCondition.value.parentId as any as string,
+		type: attachmentCondition.value.type as 'File' | 'Directory',
 	});
 	attachments.value = data.items;
 	attachmentCondition.value.page = data.page;
@@ -117,7 +126,6 @@ onMounted(fetchAttachments);
 <template>
 	<AttachmentFragmentUploadDrawer
 		v-model:visible="attachmentUploadDrawerVisible"
-		v-model:parentId="attachmentCondition.parentId"
 		@fileUploadDrawerCloes="onFileUploadDrawerClose"
 	/>
 
