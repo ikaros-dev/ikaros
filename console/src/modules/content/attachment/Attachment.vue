@@ -2,6 +2,8 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Attachment } from '@runikaros/api-client';
+// eslint-disable-next-line no-unused-vars
+import { isImage, isVideo, isVoice } from '@/utils/file';
 import moment from 'moment';
 import {
 	Upload,
@@ -10,6 +12,9 @@ import {
 	Document,
 	FolderDelete,
 	FolderAdd,
+	Picture,
+	Headset,
+	Film,
 } from '@element-plus/icons-vue';
 import {
 	ElRow,
@@ -202,6 +207,7 @@ const attachmentDetailDrawerVisible = ref(false);
 	<AttachmentDeatilDrawer
 		v-model:visible="attachmentDetailDrawerVisible"
 		v-model:define-file="currentSelectionAttachment"
+		@delete="fetchAttachments"
 	/>
 
 	<el-dialog v-model="dialogFolderVisible" title="新建目录">
@@ -321,7 +327,12 @@ const attachmentDetailDrawerVisible = ref(false);
 							style="position: relative; top: 7px; margin: 0 5px 0 0px"
 						>
 							<Folder v-if="'Directory' === scoped.row.type" />
-							<Document v-else />
+							<span v-else>
+								<Picture v-if="isImage(scoped.row.name)" />
+								<Headset v-else-if="isVoice(scoped.row.name)" />
+								<Film v-else-if="isVideo(scoped.row.name)" />
+								<Document v-else />
+							</span>
 						</el-icon>
 						<!-- &nbsp;&nbsp; -->
 						<span>
@@ -335,7 +346,7 @@ const attachmentDetailDrawerVisible = ref(false);
 					width="160"
 					:formatter="dateFormat"
 				/>
-				<el-table-column prop="size" label="大小" width="100">
+				<el-table-column prop="size" label="大小" width="130">
 					<template #default="scoped">
 						<span v-if="scoped.row.type === 'File'">
 							{{ formatFileSize(scoped.row.size) }}

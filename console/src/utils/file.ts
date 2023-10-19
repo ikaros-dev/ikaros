@@ -39,7 +39,6 @@ const POSTFIX_VIDEO = [
 	'm3u8',
 ];
 
-// eslint-disable-next-line no-unused-vars
 const POSTFIX_DOCUMENTS = ['txt', 'doc', 'docx', 'ppt', 'xlsx', 'pptx', 'ass'];
 
 const POSTFIX_VOICES = ['mp3', 'wma', 'wav', 'ape', 'flac', 'ogg', 'aac'];
@@ -56,4 +55,8 @@ export function isVideo(name: string): boolean {
 }
 export function isVoice(name: string): boolean {
 	return POSTFIX_VOICES.indexOf(getPostfix(name)) !== -1;
+}
+
+export function isDoucment(name: string): boolean {
+	return POSTFIX_DOCUMENTS.indexOf(getPostfix(name)) !== -1;
 }

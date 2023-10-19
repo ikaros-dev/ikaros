@@ -210,16 +210,16 @@ const handleClose = (done: () => void) => {
 					<el-descriptions-item
 						:label="t('core.fileDetail.descItemLabel.updateTime')"
 					>
-						{{ file.update_time }}
+						{{ file.updateTime }}
 					</el-descriptions-item>
 					<el-descriptions-item v-if="file.url" label="URL">
 						<a :href="file.url" target="_blank">{{ file.url }}</a>
 					</el-descriptions-item>
 					<el-descriptions-item
-						v-if="file.fs_path"
+						v-if="file.fsPath"
 						:label="t('core.fileDetail.descItemLabel.fsPath')"
 					>
-						{{ file.fs_path }}
+						{{ file.fsPath }}
 					</el-descriptions-item>
 				</el-descriptions>
 			</el-col>
