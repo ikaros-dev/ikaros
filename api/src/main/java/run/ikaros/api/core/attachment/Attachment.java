@@ -1,6 +1,5 @@
 package run.ikaros.api.core.attachment;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
