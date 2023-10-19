@@ -3,9 +3,9 @@ import { i18n } from '../locales';
 import type { AxiosError, AxiosInstance } from 'axios';
 import {
 	PluginIkarosRunV1alpha1PluginApi,
-	SettingIkarosRunV1alpha1ConfigMapApi,
-	V1alpha1CollectionEpisodeApi,
-	V1alpha1CollectionSubjectApi,
+	SettingIkarosRunV1alpha1ConfigmapApi,
+	V1alpha1EpisodeCollectionApi,
+	V1alpha1SubjectCollectionApi,
 	V1alpha1EpisodeFileApi,
 	V1alpha1FileApi,
 	V1alpha1FolderApi,
@@ -16,6 +16,7 @@ import {
 	V1alpha1TaskApi,
 	V1alpha1UserApi,
 	V1alpha1SubjectRelationApi,
+	V1alpha1AttachmentApi,
 } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
 
@@ -154,6 +155,7 @@ function setupApiClient(axios: AxiosInstance) {
 		// core endpoints
 		user: new V1alpha1UserApi(undefined, baseURL, axios),
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),
+		attachment: new V1alpha1AttachmentApi(undefined, baseURL, axios),
 		file: new V1alpha1FileApi(undefined, baseURL, axios),
 		folder: new V1alpha1FolderApi(undefined, baseURL, axios),
 		subject: new V1alpha1SubjectApi(undefined, baseURL, axios),
@@ -165,20 +167,20 @@ function setupApiClient(axios: AxiosInstance) {
 		episodefile: new V1alpha1EpisodeFileApi(undefined, baseURL, axios),
 		indices: new V1alpha1IndicesApi(undefined, baseURL, axios),
 		task: new V1alpha1TaskApi(undefined, baseURL, axios),
-		subjectCollection: new V1alpha1CollectionSubjectApi(
+		subjectCollection: new V1alpha1SubjectCollectionApi(
 			undefined,
 			baseURL,
 			axios
 		),
 		subjectRelation: new V1alpha1SubjectRelationApi(undefined, baseURL, axios),
-		episodeCollection: new V1alpha1CollectionEpisodeApi(
+		episodeCollection: new V1alpha1EpisodeCollectionApi(
 			undefined,
 			baseURL,
 			axios
 		),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
-		configmap: new SettingIkarosRunV1alpha1ConfigMapApi(
+		configmap: new SettingIkarosRunV1alpha1ConfigmapApi(
 			undefined,
 			baseURL,
 			axios

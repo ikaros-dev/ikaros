@@ -106,6 +106,7 @@ core:
         tasks: Tasks
         folders: Folders
         collection: Collection
+        attachment: Attachment
     operations:
       profile:
         button: Profile
@@ -115,6 +116,8 @@ core:
     title: Dashboard
   profile:
     title: Profile
+  attachment:
+    title: Attachment
   file:
     title: Files
     type:

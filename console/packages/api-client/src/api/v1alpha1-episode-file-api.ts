@@ -63,7 +63,7 @@ export const V1alpha1EpisodeFileApiAxiosParamCreator = function (
 				'batchMatchingEpisodeFile',
 				batchMatchingEpisodeFile
 			);
-			const localVarPath = `/api/v1alpha1/episodefile/batch`;
+			const localVarPath = `/api/v1alpha1/episode/file/batch`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -124,7 +124,7 @@ export const V1alpha1EpisodeFileApiAxiosParamCreator = function (
 			assertParamExists('createEpisodeFile', 'episodeId', episodeId);
 			// verify required parameter 'fileId' is not null or undefined
 			assertParamExists('createEpisodeFile', 'fileId', fileId);
-			const localVarPath = `/api/v1alpha1/episodefile/{episodeId}/{fileId}`
+			const localVarPath = `/api/v1alpha1/episode/file/{episodeId}/{fileId}`
 				.replace(`{${'episodeId'}}`, encodeURIComponent(String(episodeId)))
 				.replace(`{${'fileId'}}`, encodeURIComponent(String(fileId)));
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -180,7 +180,7 @@ export const V1alpha1EpisodeFileApiAxiosParamCreator = function (
 			assertParamExists('removeEpisodeFile', 'episodeId', episodeId);
 			// verify required parameter 'fileId' is not null or undefined
 			assertParamExists('removeEpisodeFile', 'fileId', fileId);
-			const localVarPath = `/api/v1alpha1/episodefile/{episodeId}/{fileId}`
+			const localVarPath = `/api/v1alpha1/episode/file/{episodeId}/{fileId}`
 				.replace(`{${'episodeId'}}`, encodeURIComponent(String(episodeId)))
 				.replace(`{${'fileId'}}`, encodeURIComponent(String(fileId)));
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.

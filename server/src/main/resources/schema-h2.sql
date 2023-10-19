@@ -1,3 +1,45 @@
+-- attachment
+create table if not exists attachment
+(
+    id          int8          not null auto_increment,
+    parent_id   int8          null,
+    type        varchar(255)  not null,
+    url         varchar(5000) null,
+    fs_path     varchar(5000) null,
+    name        varchar(255)  not null,
+    size        int8          null,
+    update_time timestamp(6)  null,
+    constraint type_parent_name_uk unique (type, parent_id, name),
+    constraint attachment_pkey primary key (id)
+);
+-- Insert root directory
+INSERT INTO attachment (id, parent_id, type, name, update_time)
+SELECT 0, -1, 'Directory', '/', CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1
+                  FROM attachment
+                  WHERE id = 0);
+
+-- attachment_relation
+create table if not exists attachment_relation
+(
+    id                     int8         not null auto_increment,
+    attachment_id          int8         not null,
+    type                   varchar(255) not null,
+    relation_attachment_id int8         not null,
+    constraint attachment_relation_pkey primary key (id)
+);
+
+-- attachment_reference
+create table if not exists attachment_reference
+(
+    id            int8         not null auto_increment,
+    type          varchar(255) not null,
+    attachment_id int8         not null,
+    reference_id  int8         not null,
+    constraint attachment_reference_pkey primary key (id)
+);
+
+
 -- authority
 create table if not exists authority
 (
@@ -83,9 +125,9 @@ create table if not exists episode
 -- episode_file
 create table if not exists episode_file
 (
-    id            int8         not null auto_increment,
-    episode_id    int8         not null,
-    file_id       int8         not null,
+    id         int8 not null auto_increment,
+    episode_id int8 not null,
+    file_id    int8 not null,
     constraint episode_file_pkey primary key (id)
 );
 
@@ -110,9 +152,9 @@ create table if not exists file
 -- file_relation
 create table if not exists file_relation
 (
-    id                  int8         not null auto_increment,
+    id               int8         not null auto_increment,
     file_id          int8         not null,
-    relation_type       varchar(255) not null,
+    relation_type    varchar(255) not null,
     relation_file_id int8         not null,
     constraint file_relation_pkey primary key (id)
 );

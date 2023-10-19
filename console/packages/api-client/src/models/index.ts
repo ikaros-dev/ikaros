@@ -1,3 +1,6 @@
+export * from './attachment';
+export * from './attachment-reference';
+export * from './attachment-relation';
 export * from './author';
 export * from './batch-matching-episode-file';
 export * from './config-map';
@@ -8,6 +11,7 @@ export * from './file-batch-request';
 export * from './file-entity';
 export * from './file-hint';
 export * from './file-hints';
+export * from './file-relations';
 export * from './folder';
 export * from './model-file';
 export * from './paging-wrap';

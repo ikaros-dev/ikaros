@@ -78,25 +78,49 @@ node {
     nodeProjectDir = file("${rootProject.projectDir}/console")
 }
 
+task pnpmInstallPackageShared(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/shared', 'install']
+}
+
+task buildFrontendPackageShared(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/shared', 'build']
+    dependsOn("pnpmInstallPackageShared")
+}
+
+task pnpmInstallPackageApiClient(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/api-client', 'install']
+}
+
+task buildFrontendPackageApiClient(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/api-client', 'build']
+    dependsOn("pnpmInstallPackageApiClient")
+}
+
+task pnpmInstallFrontend(type: NpxTask) {
+    command = "pnpm"
+    args = ["install"]
+    dependsOn("buildFrontendPackageShared", "buildFrontendPackageApiClient")
+}
+
 task buildFrontend(type: NpxTask) {
     command = 'pnpm'
     args = ['build']
-}
-
-task pnpmInstall(type: NpxTask) {
-    command = "pnpm"
-    args = ["install"]
+    dependsOn("pnpmInstallFrontend")
 }
 
 task pnpmDev(type: NpxTask) {
     command = "pnpm"
     args = ["dev"]
+    dependsOn("buildFrontend")
 }
 
 build {
     // build frontend before build
     // tasks.getByName('compileJava').dependsOn('buildFrontend')
-    tasks.getByName("buildFrontend").dependsOn("pnpmInstall")
 }
 
 
