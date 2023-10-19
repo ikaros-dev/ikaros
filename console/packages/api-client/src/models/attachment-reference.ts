@@ -35,13 +35,13 @@ export interface AttachmentReference {
 	 * @type {number}
 	 * @memberof AttachmentReference
 	 */
-	' attachment_id'?: number;
+	attachmentId?: number;
 	/**
 	 *
 	 * @type {number}
 	 * @memberof AttachmentReference
 	 */
-	reference_id?: number;
+	referenceId?: number;
 }
 
 export const AttachmentReferenceTypeEnum = {

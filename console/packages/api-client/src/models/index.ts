@@ -2,7 +2,7 @@ export * from './attachment';
 export * from './attachment-reference';
 export * from './attachment-relation';
 export * from './author';
-export * from './batch-matching-episode-file';
+export * from './batch-matching-episode-attachment';
 export * from './config-map';
 export * from './episode';
 export * from './episode-collection';
