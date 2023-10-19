@@ -88,15 +88,16 @@ task buildFrontendPackageApiClient(type: NpxTask) {
     args = ['--filter', './packages/api-client', 'build']
 }
 
-task buildFrontend(type: NpxTask) {
-    command = 'pnpm'
-    args = ['build']
-}
-
-
 task pnpmInstall(type: NpxTask) {
     command = "pnpm"
     args = ["install"]
+    dependsOn("buildFrontendPackageShared", "buildFrontendPackageApiClient")
+}
+
+task buildFrontend(type: NpxTask) {
+    command = 'pnpm'
+    args = ['build']
+    dependsOn("pnpmInstall")
 }
 
 task pnpmDev(type: NpxTask) {
@@ -107,8 +108,6 @@ task pnpmDev(type: NpxTask) {
 build {
     // build frontend before build
     // tasks.getByName('compileJava').dependsOn('buildFrontend')
-    tasks.getByName("pnpmInstall").dependsOn("buildFrontendPackageShared", "buildFrontendPackageApiClient")
-    tasks.getByName("buildFrontend").dependsOn("pnpmInstall")
 }
 
 
