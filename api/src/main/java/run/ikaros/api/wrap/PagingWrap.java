@@ -101,7 +101,7 @@ public class PagingWrap<T> implements Streamable<T> {
     @Override
     @JsonIgnore
     public boolean isEmpty() {
-        return Streamable.super.isEmpty();
+        return items.isEmpty();
     }
 
     @Schema(description = "Indicates total pages.", requiredMode = REQUIRED)
