@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { apiClient } from '@/utils/api-client';
-import { Attachment } from '@runikaros/api-client';
 import { ref, computed } from 'vue';
-import { ElButton, ElDialog, ElTreeSelect } from 'element-plus';
+import { ElButton, ElDialog } from 'element-plus';
+import AttachmentDirectoryTreeSelect from '@/components/modules/content/attachment/AttachmentDirectoryTreeSelect.vue';
 
 const props = withDefaults(
 	defineProps<{
@@ -32,42 +31,12 @@ const dialogVisible = computed({
 });
 
 const onClose = () => {
+	dialogVisible.value = false;
+	targetDirectoryId.value = 0;
 	emit('close');
 };
 
 const targetDirectoryId = ref(0);
-const dirTreeProps = {
-	label: 'label',
-	children: 'children',
-	isLeaf: 'isLeaf',
-};
-interface DirNode {
-	value: number;
-	label: string;
-	isLeaf?: boolean;
-}
-const loadDirectoryNodes = async (node, resolve) => {
-	console.log('node', node);
-	console.log('node.data.value', node.data.value);
-	let parentId = node.data.value;
-	if (!parentId) {
-		parentId = 0;
-	}
-	if (node.isLeaf) return resolve([]);
-	const { data } = await apiClient.attachment.listAttachmentsByCondition({
-		type: 'Directory',
-		parentId: parentId as any as string,
-	});
-	const attachments: Attachment[] = data.items;
-	const dirNodes: DirNode[] = attachments.map((attachment) => {
-		let node: DirNode = {
-			value: attachment.id as number,
-			label: attachment.name as string,
-		};
-		return node;
-	});
-	resolve(dirNodes);
-};
 
 const onDirectorySelectDialogButtonClick = async () => {
 	if (!targetDirectoryId.value) {
@@ -85,17 +54,10 @@ const onDirectorySelectDialogButtonClick = async () => {
 		title="选择目录"
 		@close="onClose"
 	>
-		<el-tree-select
-			v-model="targetDirectoryId"
-			lazy
-			style="width: 100%"
-			check-strictly
-			:load="loadDirectoryNodes"
-			:props="dirTreeProps"
-		/>
+		<AttachmentDirectoryTreeSelect v-model:target-dirid="targetDirectoryId" />
 		<template #footer>
 			<span class="dialog-footer">
-				<el-button @click="dialogVisible = false">返回</el-button>
+				<el-button @click="onClose">返回</el-button>
 				<el-button type="primary" @click="onDirectorySelectDialogButtonClick">
 					提交
 				</el-button>

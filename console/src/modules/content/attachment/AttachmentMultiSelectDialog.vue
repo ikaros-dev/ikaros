@@ -4,6 +4,7 @@ import { computed, ref, onMounted } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { base64Encode, formatFileSize } from '@/utils/string-util';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
+import AttachmentDirectoryTreeSelect from '@/components/modules/content/attachment/AttachmentDirectoryTreeSelect.vue';
 import moment from 'moment';
 import { isImage, isVideo, isVoice } from '@/utils/file';
 
@@ -26,6 +27,7 @@ import {
 	ElTable,
 	ElTableColumn,
 	ElDialog,
+	ElFormItem,
 } from 'element-plus';
 
 const props = withDefaults(
@@ -120,6 +122,15 @@ const onConfirm = () => {
 	dialogVisible.value = false;
 };
 
+const onParentDirSelected = async (val) => {
+	console.log('val', val);
+	if (!val || val === '') {
+		val = 0;
+		attachmentCondition.value.parentId = undefined;
+	}
+	await fetchAttachments();
+};
+
 onMounted(fetchAttachments);
 </script>
 
@@ -137,12 +148,24 @@ onMounted(fetchAttachments);
 	>
 		<el-row>
 			<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-				<el-button plain @click="attachmentUploadDrawerVisible = true">
-					<el-icon>
-						<Upload />
-					</el-icon>
-					上传附件
-				</el-button>
+				<el-row>
+					<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+						<el-button plain @click="attachmentUploadDrawerVisible = true">
+							<el-icon>
+								<Upload />
+							</el-icon>
+							上传附件
+						</el-button>
+					</el-col>
+					<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+						<el-form-item label="父目录">
+							<AttachmentDirectoryTreeSelect
+								v-model:target-dirid="attachmentCondition.parentId"
+								@change="onParentDirSelected"
+							/>
+						</el-form-item>
+					</el-col>
+				</el-row>
 			</el-col>
 			<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
 				<el-input

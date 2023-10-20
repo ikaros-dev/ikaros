@@ -7,6 +7,7 @@ import moment from 'moment';
 import { apiClient } from '@/utils/api-client';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import AttachmentDeatilDrawer from './AttachmentDeatilDrawer.vue';
+import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
 import { useRoute } from 'vue-router';
 
 import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css';
@@ -49,7 +50,7 @@ import {
 	ElPopconfirm,
 	ElMessageBox,
 } from 'element-plus';
-import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
+
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
 const route = useRoute();
