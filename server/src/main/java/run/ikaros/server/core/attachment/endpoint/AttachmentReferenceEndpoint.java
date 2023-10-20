@@ -38,16 +38,15 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                     .requestBody(Builder.requestBodyBuilder()
                         .implementation(AttachmentReference.class)))
 
-            .DELETE("/attachment/reference/{id}", this::deleteById,
+            .DELETE("/attachment/reference/id", this::deleteById,
                 builder -> builder.tag(tag)
                     .operationId("DeleteAttachmentReference")
                     .parameter(parameterBuilder().name("id")
                         .description("AttachmentReference ID")
-                        .in(ParameterIn.PATH)
                         .required(true)
                         .implementation(Long.class)))
 
-            .DELETE("/attachment/reference", this::removeByTypeAndAttachmentIdAndReferenceId,
+            .DELETE("/attachment/reference/uk", this::removeByTypeAndAttachmentIdAndReferenceId,
                 builder -> builder.operationId("RemoveByTypeAndAttachmentIdAndReferenceId")
                     .tag(tag).description("Remove by type and attachmentId and referenceId")
                     .requestBody(Builder.requestBodyBuilder()
@@ -84,7 +83,7 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
-        String id = request.pathVariable("id");
+        String id = request.queryParam("id").orElse("-1");
         return service.removeById(Long.parseLong(id))
             .then(ServerResponse.ok()
                 .bodyValue("Delete success"));
