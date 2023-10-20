@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { apiClient } from '@/utils/api-client';
 import { Episode } from '@runikaros/api-client';
 import { computed } from 'vue';
 import {
@@ -46,15 +45,16 @@ const remvoeEpisodeFileBind = async () => {
 		ElMessage.warning('操作无效，您当前剧集并未绑定资源文件');
 		return;
 	}
-	await apiClient.episodefile
-		.removeEpisodeFile({
-			episodeId: resouce.episode_id as number,
-			fileId: resouce.file_id as number,
-		})
-		.then(() => {
-			dialogVisible.value = false;
-			emit('removeEpisodeFileBind');
-		});
+	// todo request server api
+	// await apiClient.episodefile
+	// 	.removeEpisodeFile({
+	// 		episodeId: resouce.episode_id as number,
+	// 		fileId: resouce.file_id as number,
+	// 	})
+	// 	.then(() => {
+	// 		dialogVisible.value = false;
+	// 		emit('removeEpisodeFileBind');
+	// 	});
 };
 
 const urlIsArachivePackage = (url: string | undefined): boolean => {

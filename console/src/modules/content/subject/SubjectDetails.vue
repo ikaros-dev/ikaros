@@ -184,14 +184,17 @@ const bingResources = (episode: Episode) => {
 };
 
 const bindEpisodeAndFile = async (episodeId: number, fileId: number) => {
-	await apiClient.episodefile
-		.createEpisodeFile({
-			episodeId: episodeId,
-			fileId: fileId,
-		})
-		.then(() => {
-			fetchSubjectById();
-		});
+	// todo request server api
+	console.log('episodeId', episodeId);
+	console.log('fileId', fileId);
+	// await apiClient.episodefile
+	// 	.createEpisodeFile({
+	// 		episodeId: episodeId,
+	// 		fileId: fileId,
+	// 	})
+	// 	.then(() => {
+	// 		fetchSubjectById();
+	// 	});
 };
 
 const deleteSubject = async () => {
@@ -383,10 +386,24 @@ const fetchDatas = async () => {
 const batchMatchingButtonLoading = ref(false);
 const attachmentMultiSelectDialogVisible = ref(false);
 const onCloseWIthAttachments = async (attachments: Attachment[]) => {
-	console.log('attachments', attachments);
-	// const subjectId = subject.value.id;
+	// console.log('attachments', attachments);
+	const subjectId = subject.value.id;
 	batchMatchingButtonLoading.value = true;
-	// await apiClient.attachmentRef
+	const attIds: number[] = attachments.map((att) => att.id) as number[];
+	await apiClient.attachmentRef
+		.matchingAttachmentsAndSubjectEpisodes({
+			batchMatchingEpisodeAttachment: {
+				subjectId: subjectId as number,
+				attachmentIds: attIds,
+			},
+		})
+		.then(() => {
+			ElMessage.success('批量匹配剧集和资源成功');
+			window.location.reload();
+		})
+		.finally(() => {
+			batchMatchingButtonLoading.value = false;
+		});
 	// await apiClient.episodefile
 	// 	.batchMatchingEpisodeFile({
 	// 		batchMatchingEpisodeFile: {

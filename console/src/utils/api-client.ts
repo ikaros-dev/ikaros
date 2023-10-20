@@ -6,7 +6,6 @@ import {
 	SettingIkarosRunV1alpha1ConfigmapApi,
 	V1alpha1EpisodeCollectionApi,
 	V1alpha1SubjectCollectionApi,
-	V1alpha1EpisodeFileApi,
 	V1alpha1FileApi,
 	V1alpha1FolderApi,
 	V1alpha1IndicesApi,
@@ -170,7 +169,6 @@ function setupApiClient(axios: AxiosInstance) {
 			baseURL,
 			axios
 		),
-		episodefile: new V1alpha1EpisodeFileApi(undefined, baseURL, axios),
 		indices: new V1alpha1IndicesApi(undefined, baseURL, axios),
 		task: new V1alpha1TaskApi(undefined, baseURL, axios),
 		subjectCollection: new V1alpha1SubjectCollectionApi(
