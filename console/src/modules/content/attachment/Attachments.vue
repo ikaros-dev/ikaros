@@ -48,8 +48,8 @@ import {
 	ElMessage,
 	ElPopconfirm,
 	ElMessageBox,
-	ElTreeSelect,
 } from 'element-plus';
+import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
 const route = useRoute();
@@ -287,50 +287,16 @@ const onRowContextmenu = (row, column, event) => {
 };
 
 const directorySelectDialogVisible = ref(false);
-const targetDirectoryId = ref(0);
-const props = {
-	label: 'label',
-	children: 'children',
-	isLeaf: 'isLeaf',
-};
-interface DirNode {
-	value: number;
-	label: string;
-	isLeaf?: boolean;
-}
-const loadDirectoryNodes = async (node, resolve) => {
-	console.log('node', node);
-	console.log('node.data.value', node.data.value);
-	let parentId = node.data.value;
-	if (!parentId) {
-		parentId = 0;
-	}
-	if (node.isLeaf) return resolve([]);
-	const { data } = await apiClient.attachment.listAttachmentsByCondition({
-		type: 'Directory',
-		parentId: parentId as any as string,
-	});
-	const attachments: Attachment[] = data.items;
-	const dirNodes: DirNode[] = attachments.map((attachment) => {
-		let node: DirNode = {
-			value: attachment.id as number,
-			label: attachment.name as string,
-		};
-		return node;
-	});
-	resolve(dirNodes);
-};
-const onDirectorySelectDialogButtonClick = async () => {
+const onDirSelected = async (targetDirid: number) => {
 	await selectionAttachments.value
-		.filter((attachment) => targetDirectoryId.value !== attachment.id)
+		.filter((attachment) => targetDirid !== attachment.id)
 		.forEach(async (attachment) => {
-			attachment.parentId = targetDirectoryId.value;
+			attachment.parentId = targetDirid;
 			await apiClient.attachment.updateAttachment({
 				attachment: attachment,
 			});
 		});
 	await ElMessage.success('批量移动附件成功');
-	directorySelectDialogVisible.value = false;
 	await fetchAttachments();
 };
 
@@ -381,30 +347,10 @@ watch(
 		</template>
 	</el-dialog>
 
-	<el-dialog
-		v-model="directorySelectDialogVisible"
-		style="width: 50%"
-		title="选择目录"
-	>
-		<el-tree-select
-			v-model="targetDirectoryId"
-			lazy
-			style="width: 100%"
-			check-strictly
-			:load="loadDirectoryNodes"
-			:props="props"
-		/>
-		<template #footer>
-			<span class="dialog-footer">
-				<el-button @click="directorySelectDialogVisible = false">{{
-					t('core.folder.createDialog.cancel')
-				}}</el-button>
-				<el-button type="primary" @click="onDirectorySelectDialogButtonClick">
-					{{ t('core.folder.createDialog.confirm') }}
-				</el-button>
-			</span>
-		</template>
-	</el-dialog>
+	<AttachmentDirectorySelectDialog
+		v-model:visible="directorySelectDialogVisible"
+		@close-with-target-dir-id="onDirSelected"
+	/>
 
 	<el-row>
 		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
