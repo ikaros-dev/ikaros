@@ -21,21 +21,7 @@ public class IndicesInitializer {
     @Async
     @EventListener(SchemeInitializedEvent.class)
     public void whenSchemeInitialized(SchemeInitializedEvent event) throws InterruptedException {
-        // initFileIndices();
         initSubjectIndices();
-    }
-
-    private void initFileIndices() throws InterruptedException {
-        var latch = new CountDownLatch(1);
-        log.info("Initialize file indices...");
-        var watch = new StopWatch("FileIndicesWatch");
-        watch.start("file-indices-rebuild");
-        indicesService.rebuildFileIndices()
-            .doFinally(signalType -> latch.countDown())
-            .subscribe();
-        latch.await();
-        watch.stop();
-        log.info("Initialized file indices. Usage: {}", watch);
     }
 
     private void initSubjectIndices() throws InterruptedException {

@@ -128,30 +128,7 @@ public class FileUtils {
         }
     }
 
-    /**
-     * Parse file type by postfix.
-     *
-     * @param postfix file name postfix
-     * @return file name postfix
-     */
-    public static FileType parseTypeByPostfix(String postfix) {
-        Assert.hasText(postfix, "'postfix' must not be blank");
-        postfix = postfix.startsWith(".") ? postfix.substring(1) : postfix;
-        postfix = postfix.toLowerCase(Locale.ROOT);
-        if (IMAGES.contains(postfix)) {
-            return FileType.IMAGE;
-        }
-        if (DOCUMENTS.contains(postfix)) {
-            return FileType.DOCUMENT;
-        }
-        if (VIDEOS.contains(postfix)) {
-            return FileType.VIDEO;
-        }
-        if (VOICES.contains(postfix)) {
-            return FileType.VOICE;
-        }
-        return FileType.UNKNOWN;
-    }
+
 
 
     /**

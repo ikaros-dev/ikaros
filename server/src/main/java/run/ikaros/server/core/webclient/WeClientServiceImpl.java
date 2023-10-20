@@ -10,24 +10,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.core.file.FileService;
-import run.ikaros.server.infra.utils.ReactiveBeanUtils;
-import run.ikaros.server.store.entity.FileEntity;
+import run.ikaros.api.core.attachment.Attachment;
+import run.ikaros.api.core.attachment.AttachmentConst;
+import run.ikaros.api.core.attachment.AttachmentUploadCondition;
+import run.ikaros.server.core.attachment.service.AttachmentService;
 
 @Slf4j
 @Service
 public class WeClientServiceImpl implements WeClientService {
     private final WebClient webClient;
-    private final FileService fileService;
+    private final AttachmentService attachmentService;
 
-    public WeClientServiceImpl(WebClient webClient, FileService fileService) {
+    public WeClientServiceImpl(WebClient webClient, AttachmentService attachmentService) {
         this.webClient = webClient;
-        this.fileService = fileService;
+        this.attachmentService = attachmentService;
     }
 
     @NotNull
     @Override
-    public Mono<FileEntity> downloadImageWithGet(@NotBlank String policy,
+    public Mono<Attachment> downloadImageWithGet(@NotBlank String policy,
                                                  @NotBlank String url) {
         Assert.hasText(policy, "'policy' must has text.");
         Assert.hasText(url, "'url' must has text.");
@@ -37,7 +38,10 @@ public class WeClientServiceImpl implements WeClientService {
             .exchangeToMono(clientResponse -> clientResponse.bodyToMono(byte[].class))
             .map(dataBufferFactory::wrap)
             .flatMap(dataBuffer -> Mono.just(Mono.just(dataBuffer).flux()))
-            .flatMap(dataBuffer -> fileService.upload(fileName, dataBuffer)
-                .flatMap(file -> ReactiveBeanUtils.copyProperties(file, new FileEntity())));
+            .flatMap(dataBuffer -> attachmentService.upload(AttachmentUploadCondition.builder()
+                .dataBufferFlux(dataBuffer)
+                .name(fileName)
+                .parentId(AttachmentConst.DOWNLOAD_DIRECTORY_ID)
+                .build()));
     }
 }

@@ -4,7 +4,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.retry.annotation.Retryable;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.store.entity.FileEntity;
+import run.ikaros.api.core.attachment.Attachment;
 
 public interface WeClientService {
     /**
@@ -15,6 +15,6 @@ public interface WeClientService {
      */
     @Nonnull
     @Retryable
-    Mono<FileEntity> downloadImageWithGet(@NotBlank String policy,
+    Mono<Attachment> downloadImageWithGet(@NotBlank String policy,
                                           @NotBlank String url);
 }
