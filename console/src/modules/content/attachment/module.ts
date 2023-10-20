@@ -1,7 +1,7 @@
 import { definePlugin } from '@runikaros/shared';
 import { markRaw } from 'vue';
 import { Folder as FolderIcon } from '@element-plus/icons-vue';
-import Attachment from './Attachment.vue';
+import Attachments from './Attachments.vue';
 
 // <el-icon><MessageBox /></el-icon>
 export default definePlugin({
@@ -11,9 +11,9 @@ export default definePlugin({
 		{
 			parentName: 'Root',
 			route: {
-				path: '/attachment',
-				name: 'Attachment',
-				component: Attachment,
+				path: '/attachments',
+				name: 'Attachments',
+				component: Attachments,
 				meta: {
 					title: 'core.attachment.title',
 					menu: {

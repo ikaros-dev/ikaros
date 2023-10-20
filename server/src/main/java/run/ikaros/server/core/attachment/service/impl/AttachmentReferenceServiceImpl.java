@@ -10,10 +10,8 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentReference;
-import run.ikaros.api.core.attachment.exception.AttachmentExistsException;
 import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.core.attachment.exception.AttachmentRefMatchingException;
-import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.infra.exception.RegexMatchingException;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.RegexUtils;
@@ -71,6 +69,17 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     @Override
     public Mono<Void> removeById(Long attachmentRefId) {
         return repository.deleteById(attachmentRefId);
+    }
+
+    @Override
+    public Mono<Void> removeByTypeAndAttachmentIdAndReferenceId(AttachmentReferenceType type,
+                                                                Long attachmentId,
+                                                                Long referenceId) {
+        Assert.notNull(type, "'type' must not null.");
+        Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
+        Assert.isTrue(referenceId > 0, "'referenceId' must gt 0.");
+        return repository.deleteByTypeAndAttachmentIdAndReferenceId(
+            type, attachmentId, referenceId);
     }
 
     @Override

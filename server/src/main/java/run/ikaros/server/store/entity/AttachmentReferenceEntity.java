@@ -20,7 +20,7 @@ public class AttachmentReferenceEntity {
     @Id
     private Long id;
     private AttachmentReferenceType type;
-    @Column(" attachment_id")
+    @Column("attachment_id")
     private Long attachmentId;
     @Column("reference_id")
     private Long referenceId;

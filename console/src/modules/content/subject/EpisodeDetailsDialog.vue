@@ -9,6 +9,7 @@ import {
 	ElMessage,
 	ElPopconfirm,
 } from 'element-plus';
+import { base64Encode } from '@/utils/string-util';
 
 const props = withDefaults(
 	defineProps<{
@@ -38,6 +39,7 @@ const dialogVisible = computed({
 	},
 });
 
+// eslint-disable-next-line no-unused-vars
 const remvoeEpisodeFileBind = async () => {
 	// @ts-ignore
 	const resouce = props.episode.resources[0];
@@ -55,6 +57,18 @@ const remvoeEpisodeFileBind = async () => {
 	// 		dialogVisible.value = false;
 	// 		emit('removeEpisodeFileBind');
 	// 	});
+};
+const removeEpisodeAttachmentRef = async () => {
+	// @ts-ignore
+	const resouce = props.episode.resources[0];
+	if (!resouce || !resouce.episode_id || !resouce.file_id) {
+		ElMessage.warning('操作无效，您当前剧集并未绑定资源文件');
+		return;
+	}
+	// const episodeId = resouce.episode_id as number;
+	// await apiClient.attachmentRef.deleteAttachmentReference({
+
+	// })
 };
 
 const urlIsArachivePackage = (url: string | undefined): boolean => {
@@ -87,7 +101,10 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 				>
 					<div>
 						<router-link
-							:to="'/files?searchFileName=' + episode?.resources[0].name"
+							:to="
+								'/attachments?searchName=' +
+								base64Encode(episode?.resources[0].name)
+							"
 							>{{ episode?.resources[0].name }}</router-link
 						>
 					</div>
@@ -118,7 +135,7 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 			<el-popconfirm
 				title="确定移除绑定吗？"
 				width="180"
-				@confirm="remvoeEpisodeFileBind"
+				@confirm="removeEpisodeAttachmentRef"
 			>
 				<template #reference>
 					<el-button plain type="danger"> 移除资源绑定</el-button>

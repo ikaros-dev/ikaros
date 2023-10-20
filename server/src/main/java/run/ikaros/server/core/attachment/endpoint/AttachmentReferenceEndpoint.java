@@ -47,6 +47,12 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class)))
 
+            .DELETE("/attachment/reference", this::removeByTypeAndAttachmentIdAndReferenceId,
+                builder -> builder.operationId("RemoveByTypeAndAttachmentIdAndReferenceId")
+                    .tag(tag).description("Remove by type and attachmentId and referenceId")
+                    .requestBody(Builder.requestBodyBuilder()
+                        .implementation(AttachmentReference.class)))
+
             .GET("/attachment/references", this::findAllByTypeAndAttachmentId,
                 builder -> builder.tag(tag)
                     .operationId("FindAllByTypeAndAttachmentId")
@@ -82,6 +88,14 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
         return service.removeById(Long.parseLong(id))
             .then(ServerResponse.ok()
                 .bodyValue("Delete success"));
+    }
+
+    private Mono<ServerResponse> removeByTypeAndAttachmentIdAndReferenceId(ServerRequest request) {
+        return request.bodyToMono(AttachmentReference.class)
+            .flatMap(attachmentReference -> service.removeByTypeAndAttachmentIdAndReferenceId(
+                attachmentReference.getType(), attachmentReference.getAttachmentId(),
+                attachmentReference.getReferenceId()))
+            .then(ServerResponse.ok().bodyValue("Delete success."));
     }
 
     private Mono<ServerResponse> findAllByTypeAndAttachmentId(ServerRequest request) {

@@ -274,7 +274,7 @@ public class FileEndpoint implements CoreEndpoint {
                 .filter(Objects::nonNull)
                 .filter(resources -> !resources.isEmpty())
                 .map(episodeResources -> episodeResources.get(0))
-                .map(EpisodeResource::getFileId)
+                .map(EpisodeResource::getAttachmentId)
                 .toList())
             .flatMap(fileIds -> fileService.pushRemoteBatch(fileIds, remote))
             .then(ServerResponse.ok().build());
@@ -304,7 +304,7 @@ public class FileEndpoint implements CoreEndpoint {
                 .filter(Objects::nonNull)
                 .filter(resources -> !resources.isEmpty())
                 .map(episodeResources -> episodeResources.get(0))
-                .map(EpisodeResource::getFileId)
+                .map(EpisodeResource::getAttachmentId)
                 .toList())
             .flatMap(fileIds -> fileService.pullRemoteBatch(fileIds, remote))
             .then(ServerResponse.ok().build());
