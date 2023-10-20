@@ -1,19 +1,14 @@
 <script setup lang="ts">
 import {
 	Attachment,
+	AttachmentReferenceTypeEnum,
 	EpisodeCollection,
 	SubjectCollection,
 } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
-import {
-	Episode,
-	FileEntity,
-	Subject,
-	SubjectTypeEnum,
-} from '@runikaros/api-client';
+import { Episode, Subject, SubjectTypeEnum } from '@runikaros/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
-import FileSelectDialog from '../file/FileSelectDialog.vue';
 import router from '@/router';
 import { Check, Close } from '@element-plus/icons-vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
@@ -43,7 +38,8 @@ import { useUserStore } from '@/stores/user';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
 import { useSubjectStore } from '@/stores/subject';
 import { nextTick } from 'vue';
-import AttachmentMultiSelectDialog from '../attachment/AttachmentMultiSelectDialog.vue';
+import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
+import AttachmentSelectDialog from '@/modules/content/attachment/AttachmentSelectDialog.vue';
 
 const route = useRoute();
 const settingStore = useSettingStore();
@@ -163,38 +159,12 @@ const toSubjectPut = () => {
 	}
 };
 
-const fileSelectDialogVisible = ref(false);
-const onFileSelectDialogClose = () => {
-	fileSelectDialogVisible.value = false;
-};
-// eslint-disable-next-line no-unused-vars
-const onFileSelectDialogCloseWithFile = (file: FileEntity) => {
-	// console.log('receive file entity: ', file);
-	bindEpisodeAndFile(
-		currentOperateEpisode.value?.id as number,
-		file.id as number
-	);
-	fileSelectDialogVisible.value = false;
-};
 const currentOperateEpisode = ref<Episode>();
 // eslint-disable-next-line no-unused-vars
 const bingResources = (episode: Episode) => {
+	console.log('episode', episode);
 	currentOperateEpisode.value = episode;
-	fileSelectDialogVisible.value = true;
-};
-
-const bindEpisodeAndFile = async (episodeId: number, fileId: number) => {
-	// todo request server api
-	console.log('episodeId', episodeId);
-	console.log('fileId', fileId);
-	// await apiClient.episodefile
-	// 	.createEpisodeFile({
-	// 		episodeId: episodeId,
-	// 		fileId: fileId,
-	// 	})
-	// 	.then(() => {
-	// 		fetchSubjectById();
-	// 	});
+	attachmentSelectDialog.value = true;
 };
 
 const deleteSubject = async () => {
@@ -404,22 +374,23 @@ const onCloseWIthAttachments = async (attachments: Attachment[]) => {
 		.finally(() => {
 			batchMatchingButtonLoading.value = false;
 		});
-	// await apiClient.episodefile
-	// 	.batchMatchingEpisodeFile({
-	// 		batchMatchingEpisodeFile: {
-	// 			subjectId: subjectId as number,
-	// 			fileIds: fileIds,
-	// 		},
-	// 	})
-	// 	.then(() => {
-	// 		ElMessage.success('批量匹配剧集和资源成功');
-	// 		window.location.reload();
-	// 	})
-	// 	.finally(() => {
-	// 		batchMatchingButtonLoading.value = false;
-	// 	});
 };
 
+const attachmentSelectDialog = ref(false);
+const onCloseWithAttachmentForAttachmentSelectDialog = async (
+	attachment: Attachment
+) => {
+	console.log('attachment', attachment);
+	console.log('currentOperateEpisode', currentOperateEpisode.value);
+	await apiClient.attachmentRef.saveAttachmentReference({
+		attachmentReference: {
+			type: 'EPISODE' as AttachmentReferenceTypeEnum,
+			attachmentId: attachment.id as number,
+			referenceId: currentOperateEpisode.value?.id as number,
+		},
+	});
+	ElMessage.success('当个剧集和附件匹配成功');
+};
 onMounted(fetchDatas);
 </script>
 
@@ -706,10 +677,10 @@ onMounted(fetchDatas);
 		v-model:episode="currentEpisode"
 		@removeEpisodeFileBind="fetchSubjectById"
 	/>
-	<FileSelectDialog
-		v-model:visible="fileSelectDialogVisible"
-		@close="onFileSelectDialogClose"
-		@closeWithFileEntity="onFileSelectDialogCloseWithFile"
+
+	<AttachmentSelectDialog
+		v-model:visible="attachmentSelectDialog"
+		@close-with-attachment="onCloseWithAttachmentForAttachmentSelectDialog"
 	/>
 </template>
 
