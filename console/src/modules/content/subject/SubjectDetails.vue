@@ -29,8 +29,6 @@ import {
 	ElOption,
 	ElInput,
 } from 'element-plus';
-import FileRemoteActionDialog from '@/modules/content/file/FileRemoteActionDialog.vue';
-import { base64Encode } from '@/utils/string-util';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import { useSettingStore } from '@/stores/setting';
 import { episodeGroupLabelMap } from '@/modules/common/constants';
@@ -203,24 +201,6 @@ const openFileRemoteActionDialog = (fileId, fileCanRead) => {
 	fileRemoteIsPush.value = fileCanRead as boolean;
 	fileRemoteActionDialogVisible.value = true;
 };
-const onFileRemoteActionDialogCloseWithTaskName = async (taskName) => {
-	// 先获取任务ID，任务名称 + 状态是运行中
-	console.log(taskName);
-	const { data } = await apiClient.task.listTasksByCondition({
-		page: 1,
-		size: 5,
-		name: base64Encode(taskName),
-	});
-	if (!data || !data.items || data.items.length === 0) {
-		ElMessage.error('未获取到任务信息，任务名称：' + taskName);
-		console.log('taskName', taskName);
-		console.log('data', data);
-	}
-	// @ts-ignore
-	const taskId = data.items[0]?.id;
-	// 再进行路由跳转
-	router.push('/tasks/task/details/' + taskId);
-};
 
 const subjectRemoteActionDialogVisible = ref(false);
 const subjectRemoteIsPush = ref(true);
@@ -229,11 +209,11 @@ const onSubjectRemoteActionDialogClose = () => {
 	subjectRemoteActionDialogVisible.value = false;
 	router.push('/tasks');
 };
-const onSubjectRemoteButtonClick = (isPush: boolean) => {
-	subjectRemoteIsPush.value = isPush;
-	subjectRemoteFileId.value = subject.value.id;
-	subjectRemoteActionDialogVisible.value = true;
-};
+// const onSubjectRemoteButtonClick = (isPush: boolean) => {
+// 	subjectRemoteIsPush.value = isPush;
+// 	subjectRemoteFileId.value = subject.value.id;
+// 	subjectRemoteActionDialogVisible.value = true;
+// };
 
 const notCollectText = '未收藏';
 const clickCollectText = '点击收藏';
@@ -406,13 +386,6 @@ onMounted(fetchDatas);
 		@closeWithSubjectName="onSubjectSyncDialogCloseWithSubjectName"
 	/>
 
-	<FileRemoteActionDialog
-		v-model:visible="fileRemoteActionDialogVisible"
-		v-model:file-id="fileRemoteFileId"
-		v-model:is-push="fileRemoteIsPush"
-		@closeWithTaskName="onFileRemoteActionDialogCloseWithTaskName"
-	/>
-
 	<SubjectRemoteActionDialog
 		v-model:visible="subjectRemoteActionDialogVisible"
 		v-model:is-push="subjectRemoteIsPush"
@@ -434,29 +407,6 @@ onMounted(fetchDatas);
 					<el-button plain type="danger"> 删除</el-button>
 				</template>
 			</el-popconfirm>
-			<el-button
-				v-if="false"
-				disabled
-				plain
-				@click="subjectSyncDialogVisible = true"
-			>
-				信息拉取
-			</el-button>
-
-			<el-button
-				v-if="settingStore.remoteEnable"
-				plain
-				@click="onSubjectRemoteButtonClick(true)"
-			>
-				全部推送
-			</el-button>
-			<el-button
-				v-if="settingStore.remoteEnable"
-				plain
-				@click="onSubjectRemoteButtonClick(false)"
-			>
-				全部拉取
-			</el-button>
 
 			<el-button plain @click="openSubjectRelationDialog"> 关系</el-button>
 		</el-col>

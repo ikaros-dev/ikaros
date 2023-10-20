@@ -4,7 +4,7 @@ import {
 	Episode,
 	Subject,
 	SubjectTypeEnum,
-	FileEntity,
+	Attachment,
 } from '@runikaros/api-client';
 import EpisodePostDialog from './EpisodePostDialog.vue';
 import EpisodePutDialog from './EpisodePutDialog.vue';
@@ -12,7 +12,6 @@ import { Picture } from '@element-plus/icons-vue';
 import { formatDate } from '@/utils/date';
 import { apiClient } from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
-import FileSelectDialog from '../file/FileSelectDialog.vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
 	ElMessage,
@@ -37,6 +36,7 @@ import {
 	subjectTypes,
 	subjectTypeAliasMap,
 } from '@/modules/common/constants';
+import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -144,11 +144,13 @@ const showEpisodeDetails = (ep: Episode) => {
 
 const episodeDetailsDialogVisible = ref(false);
 
-const fileSelectDialogVisible = ref(false);
-const onFileSelectDialogCloseWithUrl = (file: FileEntity) => {
+const attachmentSelectDialogVisible = ref(false);
+const onAttachmentSelectDialogColseWithAttachment = (
+	attachment: Attachment
+) => {
 	// console.log('receive file entity: ', file);
-	subject.value.cover = file.url as string;
-	fileSelectDialogVisible.value = false;
+	subject.value.cover = attachment.url as string;
+	attachmentSelectDialogVisible.value = false;
 };
 
 const crrentPutEpisode = ref<Episode>();
@@ -169,9 +171,9 @@ onMounted(() => {
 </script>
 
 <template>
-	<FileSelectDialog
-		v-model:visible="fileSelectDialogVisible"
-		@closeWithFileEntity="onFileSelectDialogCloseWithUrl"
+	<AttachmentSelectDialog
+		v-model:visible="attachmentSelectDialogVisible"
+		@close-with-attachment="onAttachmentSelectDialogColseWithAttachment"
 	/>
 	<el-row>
 		<el-col :xs="24" :sm="24" :md="24" :lg="16" :xl="16">
@@ -206,7 +208,7 @@ onMounted(() => {
 							<el-button
 								:icon="Picture"
 								plain
-								@click="fileSelectDialogVisible = true"
+								@click="attachmentSelectDialogVisible = true"
 							/>
 						</template>
 					</el-input>
