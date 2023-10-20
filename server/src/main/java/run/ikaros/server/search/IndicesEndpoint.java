@@ -14,8 +14,6 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.search.SearchParam;
 import run.ikaros.api.search.SearchResult;
-import run.ikaros.api.search.file.FileHint;
-import run.ikaros.api.search.file.FileSearchService;
 import run.ikaros.api.search.subject.SubjectHint;
 import run.ikaros.api.search.subject.SubjectSearchService;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -24,16 +22,14 @@ import run.ikaros.server.endpoint.CoreEndpoint;
 @Component
 public class IndicesEndpoint implements CoreEndpoint {
     private final IndicesService indicesService;
-    private final FileSearchService fileSearchService;
     private final SubjectSearchService subjectSearchService;
 
     /**
      * Construct.
      */
-    public IndicesEndpoint(IndicesService indicesService, FileSearchService fileSearchService,
+    public IndicesEndpoint(IndicesService indicesService,
                            SubjectSearchService subjectSearchService) {
         this.indicesService = indicesService;
-        this.fileSearchService = fileSearchService;
         this.subjectSearchService = subjectSearchService;
     }
 
@@ -41,27 +37,11 @@ public class IndicesEndpoint implements CoreEndpoint {
     public RouterFunction<ServerResponse> endpoint() {
         final var tag = OpenApiConst.CORE_VERSION + "/indices";
         return SpringdocRouteBuilder.route()
-            .POST("indices/file", this::rebuildFileIndices,
-                builder -> builder.operationId("BuildFileIndices")
-                    .tag(tag)
-                    .description("Build or rebuild file indices for full text search"))
 
             .POST("indices/subject", this::rebuildSubjectIndices,
                 builder -> builder.operationId("BuildSubjectIndices")
                     .tag(tag)
                     .description("Build or rebuild subject indices for full text search"))
-
-            .GET("indices/file", this::searchFile,
-                builder -> {
-                    builder.operationId("SearchFile")
-                        .tag(tag)
-                        .description("Search files with fuzzy query")
-                        .response(Builder.responseBuilder().implementation(
-                            generateConcreteClass(SearchResult.class, FileHint.class,
-                                () -> "FileHints")));
-                    buildParametersFromType(builder, SearchParam.class);
-                }
-            )
 
             .GET("indices/subject", this::searchSubject,
                 builder -> {
@@ -78,27 +58,10 @@ public class IndicesEndpoint implements CoreEndpoint {
             .build();
     }
 
-    private Mono<ServerResponse> rebuildFileIndices(ServerRequest request) {
-        return indicesService.rebuildFileIndices()
-            .then(Mono.defer(() -> ServerResponse.ok().bodyValue("Rebuild file indices")));
-    }
 
     private Mono<ServerResponse> rebuildSubjectIndices(ServerRequest request) {
         return indicesService.rebuildSubjectIndices()
             .then(Mono.defer(() -> ServerResponse.ok().bodyValue("Rebuild subject indices")));
-    }
-
-    private Mono<ServerResponse> searchFile(ServerRequest request) {
-        return Mono.fromSupplier(
-                () -> new SearchParam(request.queryParams()))
-            .map(searchParam -> {
-                try {
-                    return fileSearchService.search(searchParam);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .flatMap(result -> ServerResponse.ok().bodyValue(result));
     }
 
     private Mono<ServerResponse> searchSubject(ServerRequest request) {

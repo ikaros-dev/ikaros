@@ -35,6 +35,7 @@ import run.ikaros.api.core.subject.SubjectMeta;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.StringUtils;
+import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -43,16 +44,16 @@ import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.vo.FindSubjectCondition;
 import run.ikaros.server.infra.utils.ReactiveBeanUtils;
+import run.ikaros.server.store.entity.AttachmentEntity;
+import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
-import run.ikaros.server.store.entity.EpisodeFileEntity;
-import run.ikaros.server.store.entity.FileEntity;
 import run.ikaros.server.store.entity.SubjectCollectionEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
-import run.ikaros.server.store.repository.EpisodeFileRepository;
+import run.ikaros.server.store.repository.AttachmentReferenceRepository;
+import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
-import run.ikaros.server.store.repository.FileRepository;
 import run.ikaros.server.store.repository.SubjectCollectionRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
@@ -63,36 +64,36 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     private final SubjectRepository subjectRepository;
     private final SubjectCollectionRepository subjectCollectionRepository;
     private final EpisodeRepository episodeRepository;
-    private final EpisodeFileRepository episodeFileRepository;
+    private final AttachmentRepository attachmentRepository;
+    private final AttachmentReferenceRepository attachmentReferenceRepository;
     private final SubjectSyncRepository subjectSyncRepository;
-    private final FileRepository fileRepository;
     private final R2dbcEntityTemplate template;
     private ApplicationContext applicationContext;
 
     /**
      * Construct a {@link SubjectService} instance.
      *
-     * @param subjectRepository           {@link SubjectEntity} repository
-     * @param subjectCollectionRepository {@link SubjectCollectionEntity} repository
-     * @param episodeRepository           {@link EpisodeEntity} repository
-     * @param episodeFileRepository       {@link EpisodeFileEntity} repository
-     * @param subjectSyncRepository       {@link SubjectSyncEntity} repository
-     * @param fileRepository              {@link FileEntity} repository
-     * @param template                    {@link R2dbcEntityTemplate}
+     * @param subjectRepository             {@link SubjectEntity} repository
+     * @param subjectCollectionRepository   {@link SubjectCollectionEntity} repository
+     * @param episodeRepository             {@link EpisodeEntity} repository
+     * @param attachmentRepository          {@link AttachmentEntity} repository
+     * @param attachmentReferenceRepository {@link AttachmentReferenceEntity} repository
+     * @param subjectSyncRepository         {@link SubjectSyncEntity} repository
+     * @param template                      {@link R2dbcEntityTemplate}
      */
     public SubjectServiceImpl(SubjectRepository subjectRepository,
                               SubjectCollectionRepository subjectCollectionRepository,
                               EpisodeRepository episodeRepository,
-                              EpisodeFileRepository episodeFileRepository,
+                              AttachmentRepository attachmentRepository,
+                              AttachmentReferenceRepository attachmentReferenceRepository,
                               SubjectSyncRepository subjectSyncRepository,
-                              FileRepository fileRepository,
                               R2dbcEntityTemplate template) {
         this.subjectRepository = subjectRepository;
         this.subjectCollectionRepository = subjectCollectionRepository;
         this.episodeRepository = episodeRepository;
-        this.episodeFileRepository = episodeFileRepository;
+        this.attachmentRepository = attachmentRepository;
+        this.attachmentReferenceRepository = attachmentReferenceRepository;
         this.subjectSyncRepository = subjectSyncRepository;
-        this.fileRepository = fileRepository;
         this.template = template;
     }
 
@@ -107,15 +108,16 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
 
             .flatMap(subject -> episodeRepository.findAllBySubjectId(subject.getId())
                 .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
-                .flatMap(episode -> episodeFileRepository.findAllByEpisodeId(episode.getId())
-                    .flatMap(episodeFileEntity ->
-                        fileRepository.findById(episodeFileEntity.getFileId())
-                            .map(fileEntity -> EpisodeResource.builder()
+                .flatMap(episode -> attachmentReferenceRepository.findAllByTypeAndReferenceId(
+                        AttachmentReferenceType.EPISODE, episode.getId())
+                    .flatMap(attachmentReferenceEntity ->
+                        attachmentRepository.findById(attachmentReferenceEntity.getAttachmentId())
+                            .map(attachmentEntity -> EpisodeResource.builder()
                                 .episodeId(episode.getId())
-                                .fileId(episodeFileEntity.getFileId())
-                                .name(fileEntity.getName())
-                                .url(fileEntity.getUrl())
-                                .canRead(fileEntity.getCanRead())
+                                .attachmentId(attachmentEntity.getId())
+                                .name(attachmentEntity.getName())
+                                .url(attachmentEntity.getUrl())
+                                .canRead(true)
                                 .build())
                     ).collectList()
                     .map(episode::setResources))

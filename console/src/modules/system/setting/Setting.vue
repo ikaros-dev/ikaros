@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { FolderOpened } from '@element-plus/icons-vue';
 import { apiClient } from '@/utils/api-client';
 import { onMounted, reactive, ref } from 'vue';
 import {
@@ -10,12 +9,11 @@ import {
 	ElTabPane,
 	ElFormItem,
 	ElInput,
-	ElIcon,
 	ElButton,
 	ElSwitch,
-	ElAlert,
 } from 'element-plus';
 import { useSettingStore } from '@/stores/setting';
+import { watch } from 'vue';
 
 const setting = ref({
 	SITE_TITLE: '',
@@ -85,6 +83,7 @@ const updateSetting = async () => {
 		});
 };
 
+// eslint-disable-next-line no-unused-vars
 const onDisableClick = () => {
 	ElMessage({
 		showClose: true,
@@ -92,6 +91,15 @@ const onDisableClick = () => {
 		type: 'warning',
 	});
 };
+
+const mailEnable = ref(false);
+
+watch(setting, () => {
+	mailEnable.value = setting.value.MAIL_ENABLE === 'true';
+});
+watch(mailEnable, () => {
+	setting.value.MAIL_ENABLE = mailEnable.value ? 'true' : 'false';
+});
 
 onMounted(getSettingFromServer);
 </script>
@@ -105,7 +113,7 @@ onMounted(getSettingFromServer);
 		:rules="settingFormRules"
 	>
 		<el-tabs>
-			<el-tab-pane label="基础设置">
+			<!-- <el-tab-pane label="基础设置">
 				<el-form-item label="站点标题" prop="SITE_TITLE">
 					<el-input
 						v-model="setting.SITE_TITLE"
@@ -157,18 +165,18 @@ onMounted(getSettingFromServer);
 				<el-form-item>
 					<el-button type="primary" @click="updateSetting">保存</el-button>
 				</el-form-item>
-			</el-tab-pane>
+			</el-tab-pane> -->
 			<el-tab-pane label="邮件配置">
 				<el-form-item label="启用邮件">
 					<el-switch
-						v-model="setting.MAIL_ENABLE"
+						v-model="mailEnable"
 						inline-prompt
 						size="large"
 						active-text="启用"
 						inactive-text="禁用"
 					/>
 				</el-form-item>
-				<span v-if="setting.MAIL_ENABLE">
+				<span v-if="mailEnable">
 					<el-form-item label="协议" prop="MAIL_PROTOCOL">
 						<el-input
 							v-model="setting.MAIL_PROTOCOL"
@@ -233,7 +241,7 @@ onMounted(getSettingFromServer);
 					<el-button type="primary" @click="updateSetting">保存</el-button>
 				</el-form-item>
 			</el-tab-pane>
-			<el-tab-pane label="远端配置">
+			<!-- <el-tab-pane label="远端配置">
 				<el-alert
 					title="此功能尚不稳定，不建议开启。"
 					type="warning"
@@ -297,7 +305,7 @@ onMounted(getSettingFromServer);
 				<el-form-item>
 					<el-button type="primary" @click="updateSetting">保存</el-button>
 				</el-form-item>
-			</el-tab-pane>
+			</el-tab-pane> -->
 		</el-tabs>
 	</el-form>
 </template>

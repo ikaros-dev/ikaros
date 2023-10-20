@@ -41,8 +41,8 @@ class AttachmentServiceTest {
     void upload() throws IOException {
         StepVerifier.create(attachmentService.listEntitiesByCondition(
                     AttachmentSearchCondition.builder().build())
-                .map(PagingWrap::isEmpty))
-            .expectNext(true)
+                .map(PagingWrap::getTotal))
+            .expectNext(3L)
             .verifyComplete();
 
         final String name = "UnitTestDocFile.TXT";

@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { EpisodeCollection, SubjectCollection } from '@runikaros/api-client';
+import {
+	Attachment,
+	AttachmentReferenceTypeEnum,
+	EpisodeCollection,
+	SubjectCollection,
+} from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
-import {
-	Episode,
-	FileEntity,
-	Subject,
-	SubjectTypeEnum,
-} from '@runikaros/api-client';
+import { Episode, Subject, SubjectTypeEnum } from '@runikaros/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
-import FileSelectDialog from '../file/FileSelectDialog.vue';
 import router from '@/router';
 import { Check, Close } from '@element-plus/icons-vue';
-import FileMultiSelectDialog from '../file/FileMultiSelectDialog.vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import { useRoute } from 'vue-router';
 import { onMounted, ref, watch } from 'vue';
@@ -31,8 +29,6 @@ import {
 	ElOption,
 	ElInput,
 } from 'element-plus';
-import FileRemoteActionDialog from '@/modules/content/file/FileRemoteActionDialog.vue';
-import { base64Encode } from '@/utils/string-util';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import { useSettingStore } from '@/stores/setting';
 import { episodeGroupLabelMap } from '@/modules/common/constants';
@@ -40,6 +36,8 @@ import { useUserStore } from '@/stores/user';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
 import { useSubjectStore } from '@/stores/subject';
 import { nextTick } from 'vue';
+import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
+import AttachmentSelectDialog from '@/modules/content/attachment/AttachmentSelectDialog.vue';
 
 const route = useRoute();
 const settingStore = useSettingStore();
@@ -159,35 +157,12 @@ const toSubjectPut = () => {
 	}
 };
 
-const fileSelectDialogVisible = ref(false);
-const onFileSelectDialogClose = () => {
-	fileSelectDialogVisible.value = false;
-};
-// eslint-disable-next-line no-unused-vars
-const onFileSelectDialogCloseWithFile = (file: FileEntity) => {
-	// console.log('receive file entity: ', file);
-	bindEpisodeAndFile(
-		currentOperateEpisode.value?.id as number,
-		file.id as number
-	);
-	fileSelectDialogVisible.value = false;
-};
 const currentOperateEpisode = ref<Episode>();
 // eslint-disable-next-line no-unused-vars
 const bingResources = (episode: Episode) => {
+	console.log('episode', episode);
 	currentOperateEpisode.value = episode;
-	fileSelectDialogVisible.value = true;
-};
-
-const bindEpisodeAndFile = async (episodeId: number, fileId: number) => {
-	await apiClient.episodefile
-		.createEpisodeFile({
-			episodeId: episodeId,
-			fileId: fileId,
-		})
-		.then(() => {
-			fetchSubjectById();
-		});
+	attachmentSelectDialog.value = true;
 };
 
 const deleteSubject = async () => {
@@ -201,29 +176,6 @@ const deleteSubject = async () => {
 		.then(() => {
 			ElMessage.success('删除条目' + subject.value.name + '成功');
 			router.push('/subjects');
-		});
-};
-
-const batchMatchingButtonLoading = ref(false);
-const fileMultiSelectDialogVisible = ref(false);
-const onCloseWithFileIdArr = async (fileIds) => {
-	console.log('receive fileIdArr', fileIds);
-	// eslint-disable-next-line no-unused-vars
-	const subjectId = subject.value.id;
-	batchMatchingButtonLoading.value = true;
-	await apiClient.episodefile
-		.batchMatchingEpisodeFile({
-			batchMatchingEpisodeFile: {
-				subjectId: subjectId as number,
-				fileIds: fileIds,
-			},
-		})
-		.then(() => {
-			ElMessage.success('批量匹配剧集和资源成功');
-			window.location.reload();
-		})
-		.finally(() => {
-			batchMatchingButtonLoading.value = false;
 		});
 };
 
@@ -249,24 +201,6 @@ const openFileRemoteActionDialog = (fileId, fileCanRead) => {
 	fileRemoteIsPush.value = fileCanRead as boolean;
 	fileRemoteActionDialogVisible.value = true;
 };
-const onFileRemoteActionDialogCloseWithTaskName = async (taskName) => {
-	// 先获取任务ID，任务名称 + 状态是运行中
-	console.log(taskName);
-	const { data } = await apiClient.task.listTasksByCondition({
-		page: 1,
-		size: 5,
-		name: base64Encode(taskName),
-	});
-	if (!data || !data.items || data.items.length === 0) {
-		ElMessage.error('未获取到任务信息，任务名称：' + taskName);
-		console.log('taskName', taskName);
-		console.log('data', data);
-	}
-	// @ts-ignore
-	const taskId = data.items[0]?.id;
-	// 再进行路由跳转
-	router.push('/tasks/task/details/' + taskId);
-};
 
 const subjectRemoteActionDialogVisible = ref(false);
 const subjectRemoteIsPush = ref(true);
@@ -275,11 +209,11 @@ const onSubjectRemoteActionDialogClose = () => {
 	subjectRemoteActionDialogVisible.value = false;
 	router.push('/tasks');
 };
-const onSubjectRemoteButtonClick = (isPush: boolean) => {
-	subjectRemoteIsPush.value = isPush;
-	subjectRemoteFileId.value = subject.value.id;
-	subjectRemoteActionDialogVisible.value = true;
-};
+// const onSubjectRemoteButtonClick = (isPush: boolean) => {
+// 	subjectRemoteIsPush.value = isPush;
+// 	subjectRemoteFileId.value = subject.value.id;
+// 	subjectRemoteActionDialogVisible.value = true;
+// };
 
 const notCollectText = '未收藏';
 const clickCollectText = '点击收藏';
@@ -399,27 +333,57 @@ const fetchDatas = async () => {
 	fetchEpisodeCollections();
 };
 
+const batchMatchingButtonLoading = ref(false);
+const attachmentMultiSelectDialogVisible = ref(false);
+const onCloseWIthAttachments = async (attachments: Attachment[]) => {
+	// console.log('attachments', attachments);
+	const subjectId = subject.value.id;
+	batchMatchingButtonLoading.value = true;
+	const attIds: number[] = attachments.map((att) => att.id) as number[];
+	await apiClient.attachmentRef
+		.matchingAttachmentsAndSubjectEpisodes({
+			batchMatchingEpisodeAttachment: {
+				subjectId: subjectId as number,
+				attachmentIds: attIds,
+			},
+		})
+		.then(() => {
+			ElMessage.success('批量匹配剧集和资源成功');
+			window.location.reload();
+		})
+		.finally(() => {
+			batchMatchingButtonLoading.value = false;
+		});
+};
+
+const attachmentSelectDialog = ref(false);
+const onCloseWithAttachmentForAttachmentSelectDialog = async (
+	attachment: Attachment
+) => {
+	console.log('attachment', attachment);
+	console.log('currentOperateEpisode', currentOperateEpisode.value);
+	await apiClient.attachmentRef.saveAttachmentReference({
+		attachmentReference: {
+			type: 'EPISODE' as AttachmentReferenceTypeEnum,
+			attachmentId: attachment.id as number,
+			referenceId: currentOperateEpisode.value?.id as number,
+		},
+	});
+	ElMessage.success('当个剧集和附件匹配成功');
+};
 onMounted(fetchDatas);
 </script>
 
 <template>
-	<FileMultiSelectDialog
-		v-model:visible="fileMultiSelectDialogVisible"
-		searchFileType="VIDEO"
-		@closeWithFileIdArr="onCloseWithFileIdArr"
+	<AttachmentMultiSelectDialog
+		v-model:visible="attachmentMultiSelectDialogVisible"
+		@close-with-attachments="onCloseWIthAttachments"
 	/>
 	<SubjectSyncDialog
 		v-model:visible="subjectSyncDialogVisible"
 		:define-subject-id="subject.id"
 		:is-merge="true"
 		@closeWithSubjectName="onSubjectSyncDialogCloseWithSubjectName"
-	/>
-
-	<FileRemoteActionDialog
-		v-model:visible="fileRemoteActionDialogVisible"
-		v-model:file-id="fileRemoteFileId"
-		v-model:is-push="fileRemoteIsPush"
-		@closeWithTaskName="onFileRemoteActionDialogCloseWithTaskName"
 	/>
 
 	<SubjectRemoteActionDialog
@@ -443,29 +407,6 @@ onMounted(fetchDatas);
 					<el-button plain type="danger"> 删除</el-button>
 				</template>
 			</el-popconfirm>
-			<el-button
-				v-if="false"
-				disabled
-				plain
-				@click="subjectSyncDialogVisible = true"
-			>
-				信息拉取
-			</el-button>
-
-			<el-button
-				v-if="settingStore.remoteEnable"
-				plain
-				@click="onSubjectRemoteButtonClick(true)"
-			>
-				全部推送
-			</el-button>
-			<el-button
-				v-if="settingStore.remoteEnable"
-				plain
-				@click="onSubjectRemoteButtonClick(false)"
-			>
-				全部拉取
-			</el-button>
 
 			<el-button plain @click="openSubjectRelationDialog"> 关系</el-button>
 		</el-col>
@@ -603,7 +544,7 @@ onMounted(fetchDatas);
 								<el-button
 									plain
 									:loading="batchMatchingButtonLoading"
-									@click="fileMultiSelectDialogVisible = true"
+									@click="attachmentMultiSelectDialogVisible = true"
 								>
 									批量绑定资源
 								</el-button>
@@ -686,10 +627,10 @@ onMounted(fetchDatas);
 		v-model:episode="currentEpisode"
 		@removeEpisodeFileBind="fetchSubjectById"
 	/>
-	<FileSelectDialog
-		v-model:visible="fileSelectDialogVisible"
-		@close="onFileSelectDialogClose"
-		@closeWithFileEntity="onFileSelectDialogCloseWithFile"
+
+	<AttachmentSelectDialog
+		v-model:visible="attachmentSelectDialog"
+		@close-with-attachment="onCloseWithAttachmentForAttachmentSelectDialog"
 	/>
 </template>
 

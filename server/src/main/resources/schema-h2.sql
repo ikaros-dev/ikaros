@@ -12,12 +12,24 @@ create table if not exists attachment
     constraint type_parent_name_uk unique (type, parent_id, name),
     constraint attachment_pkey primary key (id)
 );
--- Insert root directory
+-- Insert Root directory
 INSERT INTO attachment (id, parent_id, type, name, update_time)
 SELECT 0, -1, 'Directory', '/', CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
                   FROM attachment
                   WHERE id = 0);
+-- Insert Covers directory
+INSERT INTO attachment (id, parent_id, type, name, update_time)
+SELECT 1, 0, 'Directory', 'Covers', CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1
+                  FROM attachment
+                  WHERE id = 1);
+-- Insert Downloads directory
+INSERT INTO attachment (id, parent_id, type, name, update_time)
+SELECT 2, 0, 'Directory', 'Downloads', CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1
+                  FROM attachment
+                  WHERE id = 2);
 
 -- attachment_relation
 create table if not exists attachment_relation
@@ -36,6 +48,7 @@ create table if not exists attachment_reference
     type          varchar(255) not null,
     attachment_id int8         not null,
     reference_id  int8         not null,
+    constraint type_attachment_reference_uk unique (type, attachment_id, reference_id),
     constraint attachment_reference_pkey primary key (id)
 );
 
@@ -121,83 +134,6 @@ create table if not exists episode
     constraint subject_group_seq_uk unique (subject_id, ep_group, sequence),
     constraint episode_pkey primary key (id)
 );
-
--- episode_file
-create table if not exists episode_file
-(
-    id         int8 not null auto_increment,
-    episode_id int8 not null,
-    file_id    int8 not null,
-    constraint episode_file_pkey primary key (id)
-);
-
--- file
-create table if not exists file
-(
-    id          int8          not null auto_increment,
-    folder_id   int8          null,
-    md5         varchar(255)  null,
-    aes_key     varchar(255)  null,
-    name        varchar(1000) not null,
-    fs_path     varchar(3000) null,
-    size        int8          null,
-    type        varchar(255)  null,
-    url         varchar(3000) not null,
-    can_read    bool          null,
-    update_time timestamp(6)  null,
-    constraint folder_name_uk unique (folder_id, name),
-    constraint file_pkey primary key (id)
-);
-
--- file_relation
-create table if not exists file_relation
-(
-    id               int8         not null auto_increment,
-    file_id          int8         not null,
-    relation_type    varchar(255) not null,
-    relation_file_id int8         not null,
-    constraint file_relation_pkey primary key (id)
-);
-
--- file_remote
-create table if not exists file_remote
-(
-    id            int8         not null auto_increment,
-    create_time   timestamp(6) null,
-    create_uid    int8         null,
-    delete_status bool         null,
-    update_time   timestamp(6) null,
-    update_uid    int8         null,
-    ol_version    int8         null,
-    file_id       int8         not null,
-    remote_id     varchar(100) not null,
-    remote        varchar(100) not null,
-    md5           varchar(300) null,
-    file_name     varchar(300) null,
-    path          varchar(600) null,
-    file_size     int8         null,
-    constraint file_remote_pkey primary key (id)
-);
-
-
--- folder
-create table if not exists folder
-(
-    id          int8         not null auto_increment,
-    parent_id   int8         not null,
-    name        varchar(255) not null,
-    update_time timestamp(6) null,
-    constraint name_parent_uk unique (name, parent_id),
-    constraint folder_pkey primary key (id)
-);
-
-INSERT INTO folder (id, parent_id, name, update_time)
-SELECT 0, -1, 'root', CURRENT_TIMESTAMP
-WHERE NOT EXISTS (SELECT 1
-                  FROM folder
-                  WHERE name = 'root'
-                    AND parent_id = -1);
-
 
 -- person_character
 create table if not exists person_character

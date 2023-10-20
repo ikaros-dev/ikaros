@@ -34,7 +34,6 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
-import run.ikaros.api.store.enums.FileType;
 
 @Slf4j
 public class FileUtils {
@@ -100,6 +99,18 @@ public class FileUtils {
         return false;
     }
 
+    public static boolean isVideo(String url) {
+        return VIDEOS.contains(parseFilePostfix(url));
+    }
+
+    public static boolean isDocument(String url) {
+        return DOCUMENTS.contains(parseFilePostfix(url));
+    }
+
+    public static boolean isVoice(String url) {
+        return VOICES.contains(parseFilePostfix(url));
+    }
+
     public enum Hash {
         MD5("MD5"),
         SHA1("SHA1"),
@@ -114,31 +125,6 @@ public class FileUtils {
         public String getName() {
             return name;
         }
-    }
-
-    /**
-     * Parse file type by postfix.
-     *
-     * @param postfix file name postfix
-     * @return file name postfix
-     */
-    public static FileType parseTypeByPostfix(String postfix) {
-        Assert.hasText(postfix, "'postfix' must not be blank");
-        postfix = postfix.startsWith(".") ? postfix.substring(1) : postfix;
-        postfix = postfix.toLowerCase(Locale.ROOT);
-        if (IMAGES.contains(postfix)) {
-            return FileType.IMAGE;
-        }
-        if (DOCUMENTS.contains(postfix)) {
-            return FileType.DOCUMENT;
-        }
-        if (VIDEOS.contains(postfix)) {
-            return FileType.VIDEO;
-        }
-        if (VOICES.contains(postfix)) {
-            return FileType.VOICE;
-        }
-        return FileType.UNKNOWN;
     }
 
 
@@ -198,7 +184,7 @@ public class FileUtils {
     public static String parseFilePostfix(String originalFilename) {
         Assert.hasText(originalFilename, "originalFilename");
         int dotIndex = originalFilename.lastIndexOf(".");
-        return originalFilename.substring(dotIndex + 1);
+        return originalFilename.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
     }
 
     /**

@@ -20,6 +20,18 @@
 export interface EpisodeResource {
 	/**
 	 *
+	 * @type {number}
+	 * @memberof EpisodeResource
+	 */
+	attachmentId?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof EpisodeResource
+	 */
+	episodeId?: number;
+	/**
+	 *
 	 * @type {string}
 	 * @memberof EpisodeResource
 	 */
@@ -42,16 +54,4 @@ export interface EpisodeResource {
 	 * @memberof EpisodeResource
 	 */
 	tags?: Set<string>;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof EpisodeResource
-	 */
-	file_id?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof EpisodeResource
-	 */
-	episode_id?: number;
 }

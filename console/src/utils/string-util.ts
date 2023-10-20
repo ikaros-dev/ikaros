@@ -9,6 +9,14 @@ export const base64Encode = (raw: string | undefined): string => {
 	return Base64.stringify(word);
 };
 
+export const base64Decode = (base64: string | undefined): string => {
+	if (base64 == undefined) {
+		return '';
+	}
+	const word = Base64.parse(base64);
+	return Utf8.stringify(word);
+};
+
 export const formatFileSize = (value): string => {
 	if (!value) {
 		return '0 Bytes';

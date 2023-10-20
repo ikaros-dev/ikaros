@@ -16,4 +16,6 @@ public interface AttachmentRepository extends R2dbcRepository<AttachmentEntity, 
         AttachmentType type, Long parentId, String name);
 
     Flux<AttachmentEntity> findAllByParentId(Long parentId);
+
+    Mono<AttachmentEntity> findByUrl(String url);
 }

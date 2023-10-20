@@ -44,12 +44,10 @@ import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
-import run.ikaros.api.core.file.File;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentService;
-import run.ikaros.server.core.file.FileEndpoint;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.utils.DataBufferUtils;
 
@@ -78,7 +76,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                             .schema(schemaBuilder().implementation(
                                 DefaultUploadRequest.class))
                         ))
-                    .response(responseBuilder().implementation(File.class))
+                    .response(responseBuilder().implementation(Attachment.class))
                     .build())
 
             .GET("/attachments/condition", this::listByCondition,
@@ -199,7 +197,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> upload(ServerRequest request) {
         return request.body(toMultipartData())
-            .map(FileEndpoint.DefaultUploadRequest::new)
+            .map(DefaultUploadRequest::new)
             // Upload file by service.
             .flatMap(uploadRequest -> attachmentService.upload(
                 AttachmentUploadCondition.builder()
@@ -336,7 +334,10 @@ public class AttachmentEndpoint implements CoreEndpoint {
         Assert.hasText(unique, "Request path var 'unique' must has text.");
 
         List<String> parentIdList = request.headers().header("PARENT-ID");
-        Long parentId = parentIdList.isEmpty() ? null : Long.parseLong(parentIdList.get(0));
+        Long parentId =
+            (parentIdList.isEmpty() || "undefined".equalsIgnoreCase(parentIdList.get(0)))
+                ? null :
+                Long.parseLong(parentIdList.get(0));
 
         return request.body(BodyExtractors.toDataBuffers())
             .publishOn(Schedulers.boundedElastic())

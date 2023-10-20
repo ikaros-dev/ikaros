@@ -6,7 +6,6 @@ import {
 	SettingIkarosRunV1alpha1ConfigmapApi,
 	V1alpha1EpisodeCollectionApi,
 	V1alpha1SubjectCollectionApi,
-	V1alpha1EpisodeFileApi,
 	V1alpha1FileApi,
 	V1alpha1FolderApi,
 	V1alpha1IndicesApi,
@@ -17,6 +16,7 @@ import {
 	V1alpha1UserApi,
 	V1alpha1SubjectRelationApi,
 	V1alpha1AttachmentApi,
+	V1alpha1AttachmentReferenceApi,
 } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
 
@@ -156,6 +156,11 @@ function setupApiClient(axios: AxiosInstance) {
 		user: new V1alpha1UserApi(undefined, baseURL, axios),
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),
 		attachment: new V1alpha1AttachmentApi(undefined, baseURL, axios),
+		attachmentRef: new V1alpha1AttachmentReferenceApi(
+			undefined,
+			baseURL,
+			axios
+		),
 		file: new V1alpha1FileApi(undefined, baseURL, axios),
 		folder: new V1alpha1FolderApi(undefined, baseURL, axios),
 		subject: new V1alpha1SubjectApi(undefined, baseURL, axios),
@@ -164,7 +169,6 @@ function setupApiClient(axios: AxiosInstance) {
 			baseURL,
 			axios
 		),
-		episodefile: new V1alpha1EpisodeFileApi(undefined, baseURL, axios),
 		indices: new V1alpha1IndicesApi(undefined, baseURL, axios),
 		task: new V1alpha1TaskApi(undefined, baseURL, axios),
 		subjectCollection: new V1alpha1SubjectCollectionApi(

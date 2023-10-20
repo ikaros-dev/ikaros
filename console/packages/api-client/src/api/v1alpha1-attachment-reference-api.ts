@@ -39,6 +39,8 @@ import {
 } from '../base';
 // @ts-ignore
 import { AttachmentReference } from '../models';
+// @ts-ignore
+import { BatchMatchingEpisodeAttachment } from '../models';
 /**
  * V1alpha1AttachmentReferenceApi - axios parameter creator
  * @export
@@ -59,10 +61,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
 		): Promise<RequestArgs> => {
 			// verify required parameter 'id' is not null or undefined
 			assertParamExists('deleteAttachmentReference', 'id', id);
-			const localVarPath = `/api/v1alpha1/attachment/reference/{id}`.replace(
-				`{${'id'}}`,
-				encodeURIComponent(String(id))
-			);
+			const localVarPath = `/api/v1alpha1/attachment/reference/id`;
 			// use dummy base URL string because the URL constructor only accepts absolute URLs.
 			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
 			let baseOptions;
@@ -85,6 +84,10 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
 			// authentication BearerAuth required
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (id !== undefined) {
+				localVarQueryParameter['id'] = id;
+			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -160,6 +163,122 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
 				...headersFromBaseOptions,
 				...options.headers,
 			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Matching attachments to episodes for single subject.
+		 * @param {BatchMatchingEpisodeAttachment} batchMatchingEpisodeAttachment batch matching episodes and attachments request value object
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		matchingAttachmentsAndSubjectEpisodes: async (
+			batchMatchingEpisodeAttachment: BatchMatchingEpisodeAttachment,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'batchMatchingEpisodeAttachment' is not null or undefined
+			assertParamExists(
+				'matchingAttachmentsAndSubjectEpisodes',
+				'batchMatchingEpisodeAttachment',
+				batchMatchingEpisodeAttachment
+			);
+			const localVarPath = `/api/v1alpha1/attachment/references/subject/episodes`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'POST',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				batchMatchingEpisodeAttachment,
+				localVarRequestOptions,
+				configuration
+			);
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
+		 * Remove by type and attachmentId and referenceId
+		 * @param {AttachmentReference} [attachmentReference]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		removeByTypeAndAttachmentIdAndReferenceId: async (
+			attachmentReference?: AttachmentReference,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			const localVarPath = `/api/v1alpha1/attachment/reference/uk`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'DELETE',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			localVarHeaderParameter['Content-Type'] = 'application/json';
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+			localVarRequestOptions.data = serializeDataIfNeeded(
+				attachmentReference,
+				localVarRequestOptions,
+				configuration
+			);
 
 			return {
 				url: toPathString(localVarUrlObj),
@@ -283,6 +402,54 @@ export const V1alpha1AttachmentReferenceApiFp = function (
 			);
 		},
 		/**
+		 * Matching attachments to episodes for single subject.
+		 * @param {BatchMatchingEpisodeAttachment} batchMatchingEpisodeAttachment batch matching episodes and attachments request value object
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async matchingAttachmentsAndSubjectEpisodes(
+			batchMatchingEpisodeAttachment: BatchMatchingEpisodeAttachment,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.matchingAttachmentsAndSubjectEpisodes(
+					batchMatchingEpisodeAttachment,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Remove by type and attachmentId and referenceId
+		 * @param {AttachmentReference} [attachmentReference]
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async removeByTypeAndAttachmentIdAndReferenceId(
+			attachmentReference?: AttachmentReference,
+			options?: AxiosRequestConfig
+		): Promise<
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.removeByTypeAndAttachmentIdAndReferenceId(
+					attachmentReference,
+					options
+				);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
 		 * Save attachment reference.
 		 * @param {AttachmentReference} [attachmentReference]
 		 * @param {*} [options] Override http request option.
@@ -353,6 +520,40 @@ export const V1alpha1AttachmentReferenceApiFactory = function (
 				.then((request) => request(axios, basePath));
 		},
 		/**
+		 * Matching attachments to episodes for single subject.
+		 * @param {V1alpha1AttachmentReferenceApiMatchingAttachmentsAndSubjectEpisodesRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		matchingAttachmentsAndSubjectEpisodes(
+			requestParameters: V1alpha1AttachmentReferenceApiMatchingAttachmentsAndSubjectEpisodesRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.matchingAttachmentsAndSubjectEpisodes(
+					requestParameters.batchMatchingEpisodeAttachment,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Remove by type and attachmentId and referenceId
+		 * @param {V1alpha1AttachmentReferenceApiRemoveByTypeAndAttachmentIdAndReferenceIdRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		removeByTypeAndAttachmentIdAndReferenceId(
+			requestParameters: V1alpha1AttachmentReferenceApiRemoveByTypeAndAttachmentIdAndReferenceIdRequest = {},
+			options?: AxiosRequestConfig
+		): AxiosPromise<void> {
+			return localVarFp
+				.removeByTypeAndAttachmentIdAndReferenceId(
+					requestParameters.attachmentReference,
+					options
+				)
+				.then((request) => request(axios, basePath));
+		},
+		/**
 		 * Save attachment reference.
 		 * @param {V1alpha1AttachmentReferenceApiSaveAttachmentReferenceRequest} requestParameters Request parameters.
 		 * @param {*} [options] Override http request option.
@@ -402,6 +603,34 @@ export interface V1alpha1AttachmentReferenceApiFindAllByTypeAndAttachmentIdReque
 	 * @memberof V1alpha1AttachmentReferenceApiFindAllByTypeAndAttachmentId
 	 */
 	readonly attachmentId: number;
+}
+
+/**
+ * Request parameters for matchingAttachmentsAndSubjectEpisodes operation in V1alpha1AttachmentReferenceApi.
+ * @export
+ * @interface V1alpha1AttachmentReferenceApiMatchingAttachmentsAndSubjectEpisodesRequest
+ */
+export interface V1alpha1AttachmentReferenceApiMatchingAttachmentsAndSubjectEpisodesRequest {
+	/**
+	 * batch matching episodes and attachments request value object
+	 * @type {BatchMatchingEpisodeAttachment}
+	 * @memberof V1alpha1AttachmentReferenceApiMatchingAttachmentsAndSubjectEpisodes
+	 */
+	readonly batchMatchingEpisodeAttachment: BatchMatchingEpisodeAttachment;
+}
+
+/**
+ * Request parameters for removeByTypeAndAttachmentIdAndReferenceId operation in V1alpha1AttachmentReferenceApi.
+ * @export
+ * @interface V1alpha1AttachmentReferenceApiRemoveByTypeAndAttachmentIdAndReferenceIdRequest
+ */
+export interface V1alpha1AttachmentReferenceApiRemoveByTypeAndAttachmentIdAndReferenceIdRequest {
+	/**
+	 *
+	 * @type {AttachmentReference}
+	 * @memberof V1alpha1AttachmentReferenceApiRemoveByTypeAndAttachmentIdAndReferenceId
+	 */
+	readonly attachmentReference?: AttachmentReference;
 }
 
 /**
@@ -456,6 +685,44 @@ export class V1alpha1AttachmentReferenceApi extends BaseAPI {
 			.findAllByTypeAndAttachmentId(
 				requestParameters.type,
 				requestParameters.attachmentId,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Matching attachments to episodes for single subject.
+	 * @param {V1alpha1AttachmentReferenceApiMatchingAttachmentsAndSubjectEpisodesRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1AttachmentReferenceApi
+	 */
+	public matchingAttachmentsAndSubjectEpisodes(
+		requestParameters: V1alpha1AttachmentReferenceApiMatchingAttachmentsAndSubjectEpisodesRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1AttachmentReferenceApiFp(this.configuration)
+			.matchingAttachmentsAndSubjectEpisodes(
+				requestParameters.batchMatchingEpisodeAttachment,
+				options
+			)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Remove by type and attachmentId and referenceId
+	 * @param {V1alpha1AttachmentReferenceApiRemoveByTypeAndAttachmentIdAndReferenceIdRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1AttachmentReferenceApi
+	 */
+	public removeByTypeAndAttachmentIdAndReferenceId(
+		requestParameters: V1alpha1AttachmentReferenceApiRemoveByTypeAndAttachmentIdAndReferenceIdRequest = {},
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1AttachmentReferenceApiFp(this.configuration)
+			.removeByTypeAndAttachmentIdAndReferenceId(
+				requestParameters.attachmentReference,
 				options
 			)
 			.then((request) => request(this.axios, this.basePath));
