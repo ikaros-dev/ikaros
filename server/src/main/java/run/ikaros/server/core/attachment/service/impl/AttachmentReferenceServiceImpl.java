@@ -10,6 +10,8 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentReference;
+import run.ikaros.api.core.attachment.exception.AttachmentRefMatchingException;
+import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.infra.exception.RegexMatchingException;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.RegexUtils;
@@ -79,9 +81,14 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
         return Flux.fromArray(attachmentIds)
             .flatMap(attachmentRepository::findById)
             .filter(entity -> FileUtils.isVideo(entity.getUrl()))
+            .switchIfEmpty(Mono.error(new AttachmentRefMatchingException(
+                "Matching fail, current attachment is not a video.")))
             .flatMap(entity -> getSeqMono(entity.getName())
                 .flatMap(seq -> episodeRepository.findBySubjectIdAndGroupAndSequence(subjectId,
-                    EpisodeGroup.MAIN, seq))
+                        EpisodeGroup.MAIN, seq)
+                    .switchIfEmpty(Mono.error(new AttachmentRefMatchingException(
+                        "Matching fail, episode not fond by seq=" + seq
+                            + " and subjectId=" + subjectId))))
                 .flatMap(episodeEntity -> repository
                     .existsByTypeAndReferenceId(EPISODE, episodeEntity.getId())
                     .filter(exists -> !exists)
@@ -112,9 +119,15 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
         int seq;
         try {
             seq = Integer.parseInt(String.valueOf(RegexUtils.parseEpisodeSeqByFileName(name)));
+            if (-1 == seq) {
+                throw new RegexMatchingException("Matching fail");
+            }
         } catch (RegexMatchingException regexMatchingException) {
             log.warn("parse episode seq by file name fail", regexMatchingException);
-            return Mono.empty();
+            return Mono.error(new AttachmentRefMatchingException(
+                "Matching fail, current attachment name seq illegal, "
+                    + "please rename you attachment name such as '[0x]' or ' 0x '",
+                regexMatchingException));
         }
         return Mono.justOrEmpty(seq);
     }
