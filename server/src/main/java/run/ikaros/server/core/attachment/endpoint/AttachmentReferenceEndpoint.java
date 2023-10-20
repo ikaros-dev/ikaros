@@ -16,6 +16,7 @@ import run.ikaros.api.core.attachment.AttachmentReference;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.server.core.attachment.service.AttachmentReferenceService;
 import run.ikaros.server.core.attachment.vo.BatchMatchingEpisodeAttachment;
+import run.ikaros.server.core.attachment.vo.BatchMatchingSubjectEpisodesAttachment;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -66,7 +67,18 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
             .POST("/attachment/references/subject/episodes",
                 this::matchingAttachmentsAndSubjectEpisodes,
                 builder -> builder.operationId("MatchingAttachmentsAndSubjectEpisodes")
-                    .tag(tag).description("Matching attachments to episodes for single subject.")
+                    .tag(tag).description("Matching attachments to episodes for single subject, "
+                        + "one episode has one attachment ref.")
+                    .requestBody(Builder.requestBodyBuilder()
+                        .required(true)
+                        .description("batch matching episodes and attachments request value object")
+                        .implementation(BatchMatchingSubjectEpisodesAttachment.class)))
+
+            .POST("/attachment/references/episode",
+                this::matchingAttachmentsForEpisode,
+                builder -> builder.operationId("MatchingAttachmentsForEpisode")
+                    .tag(tag).description("Matching attachments for single episode, "
+                        + "one episode has many attachment refs.")
                     .requestBody(Builder.requestBodyBuilder()
                         .required(true)
                         .description("batch matching episodes and attachments request value object")
@@ -116,11 +128,21 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> matchingAttachmentsAndSubjectEpisodes(ServerRequest request) {
+        return request.bodyToMono(BatchMatchingSubjectEpisodesAttachment.class)
+            .flatMap(
+                batchMatchingSubjectEpisodesAttachment ->
+                    service.matchingAttachmentsAndSubjectEpisodes(
+                        batchMatchingSubjectEpisodesAttachment.getSubjectId(),
+                        batchMatchingSubjectEpisodesAttachment.getAttachmentIds()))
+            .then(ServerResponse.ok().build());
+    }
+
+    private Mono<ServerResponse> matchingAttachmentsForEpisode(ServerRequest request) {
         return request.bodyToMono(BatchMatchingEpisodeAttachment.class)
             .flatMap(
                 batchMatchingEpisodeAttachment ->
-                    service.matchingAttachmentsAndSubjectEpisodes(
-                        batchMatchingEpisodeAttachment.getSubjectId(),
+                    service.matchingAttachmentsForEpisode(
+                        batchMatchingEpisodeAttachment.getEpisodeId(),
                         batchMatchingEpisodeAttachment.getAttachmentIds()))
             .then(ServerResponse.ok().build());
     }

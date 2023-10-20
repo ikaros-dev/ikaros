@@ -20,4 +20,7 @@ public interface AttachmentReferenceService {
 
     Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
                                                      boolean notify);
+
+    Mono<Void> matchingAttachmentsForEpisode(Long episodeId, Long[] attachmentIds);
+
 }
