@@ -10,6 +10,8 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentReference;
+import run.ikaros.api.core.attachment.exception.AttachmentExistsException;
+import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.core.attachment.exception.AttachmentRefMatchingException;
 import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.infra.exception.RegexMatchingException;
@@ -49,10 +51,13 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     @Override
     public Mono<AttachmentReference> save(AttachmentReference attachmentReference) {
         Assert.notNull(attachmentReference, "'attachmentReference' must not null.");
-        return copyProperties(attachmentReference, new AttachmentReferenceEntity())
+        return checkAttachmentRef(attachmentReference)
+            .flatMap(
+                attachmentRef -> copyProperties(attachmentRef, new AttachmentReferenceEntity()))
             .flatMap(repository::save)
             .flatMap(entity -> copyProperties(entity, attachmentReference));
     }
+
 
     @Override
     public Flux<AttachmentReference> findAllByTypeAndAttachmentId(AttachmentReferenceType type,
@@ -79,7 +84,9 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.notNull(attachmentIds, "'attachmentIds' must not null.");
         return Flux.fromArray(attachmentIds)
-            .flatMap(attachmentRepository::findById)
+            .flatMap(attId -> attachmentRepository.findById(attId)
+                .switchIfEmpty(Mono.error(new AttachmentNotFoundException(
+                    "Check fail, current attachment not found for id=" + attId))))
             .filter(entity -> FileUtils.isVideo(entity.getUrl()))
             .switchIfEmpty(Mono.error(new AttachmentRefMatchingException(
                 "Matching fail, current attachment is not a video.")))
@@ -130,5 +137,18 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                 regexMatchingException));
         }
         return Mono.justOrEmpty(seq);
+    }
+
+
+    private Mono<AttachmentReference> checkAttachmentRef(AttachmentReference attachmentReference) {
+        if (EPISODE.equals(attachmentReference.getType())) {
+            return Mono.just(attachmentReference.getAttachmentId())
+                .flatMap(attId -> attachmentRepository.findById(attId)
+                    .switchIfEmpty(Mono.error(new AttachmentNotFoundException(
+                        "Check fail, current attachment not found for id=" + attId))))
+                .map(attachmentEntity -> attachmentReference);
+        } else {
+            return Mono.just(attachmentReference);
+        }
     }
 }
