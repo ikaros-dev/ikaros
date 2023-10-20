@@ -1,6 +1,5 @@
 package run.ikaros.server.core.attachment.operator;
 
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

@@ -10,7 +10,8 @@ public class EpisodeAttachmentUpdateEvent extends ApplicationEvent {
     /**
      * Construct.
      */
-    public EpisodeAttachmentUpdateEvent(Object source, Long episodeId, Long attachmentId, Boolean notify) {
+    public EpisodeAttachmentUpdateEvent(Object source, Long episodeId,
+                                        Long attachmentId, Boolean notify) {
         super(source);
         this.episodeId = episodeId;
         this.attachmentId = attachmentId;

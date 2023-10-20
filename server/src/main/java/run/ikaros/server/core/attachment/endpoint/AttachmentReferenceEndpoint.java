@@ -2,7 +2,6 @@ package run.ikaros.server.core.attachment.endpoint;
 
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;

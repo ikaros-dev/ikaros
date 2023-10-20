@@ -1,6 +1,5 @@
 package run.ikaros.api.core.attachment;
 
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import reactor.core.publisher.Mono;
