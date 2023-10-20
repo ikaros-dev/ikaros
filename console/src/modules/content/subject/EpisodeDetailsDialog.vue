@@ -10,6 +10,9 @@ import {
 	ElPopconfirm,
 } from 'element-plus';
 import { base64Encode } from '@/utils/string-util';
+// eslint-disable-next-line no-unused-vars
+import { apiClient } from '@/utils/api-client';
+import { AttachmentReferenceTypeEnum } from '@runikaros/api-client';
 
 const props = withDefaults(
 	defineProps<{
@@ -39,36 +42,23 @@ const dialogVisible = computed({
 	},
 });
 
-// eslint-disable-next-line no-unused-vars
-const remvoeEpisodeFileBind = async () => {
-	// @ts-ignore
-	const resouce = props.episode.resources[0];
-	if (!resouce || !resouce.episode_id || !resouce.file_id) {
-		ElMessage.warning('操作无效，您当前剧集并未绑定资源文件');
-		return;
-	}
-	// todo request server api
-	// await apiClient.episodefile
-	// 	.removeEpisodeFile({
-	// 		episodeId: resouce.episode_id as number,
-	// 		fileId: resouce.file_id as number,
-	// 	})
-	// 	.then(() => {
-	// 		dialogVisible.value = false;
-	// 		emit('removeEpisodeFileBind');
-	// 	});
-};
 const removeEpisodeAttachmentRef = async () => {
 	// @ts-ignore
 	const resouce = props.episode.resources[0];
-	if (!resouce || !resouce.episode_id || !resouce.file_id) {
+	if (!resouce || !resouce.episodeId || !resouce.attachmentId) {
 		ElMessage.warning('操作无效，您当前剧集并未绑定资源文件');
 		return;
 	}
-	// const episodeId = resouce.episode_id as number;
-	// await apiClient.attachmentRef.deleteAttachmentReference({
-
-	// })
+	await apiClient.attachmentRef.removeByTypeAndAttachmentIdAndReferenceId({
+		attachmentReference: {
+			type: 'EPISODE' as AttachmentReferenceTypeEnum,
+			attachmentId: resouce.attachmentId,
+			referenceId: resouce.episodeId,
+		},
+	});
+	ElMessage.success('移除剧集和附件绑定成功');
+	dialogVisible.value = false;
+	emit('removeEpisodeFileBind');
 };
 
 const urlIsArachivePackage = (url: string | undefined): boolean => {
