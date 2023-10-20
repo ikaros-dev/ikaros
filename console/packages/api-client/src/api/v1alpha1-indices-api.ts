@@ -38,8 +38,6 @@ import {
 	RequiredError,
 } from '../base';
 // @ts-ignore
-import { FileHints } from '../models';
-// @ts-ignore
 import { SubjectHints } from '../models';
 /**
  * V1alpha1IndicesApi - axios parameter creator
@@ -49,52 +47,6 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 	configuration?: Configuration
 ) {
 	return {
-		/**
-		 * Build or rebuild file indices for full text search
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		buildFileIndices: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/indices/file`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
 		/**
 		 * Build or rebuild subject indices for full text search
 		 * @param {*} [options] Override http request option.
@@ -126,78 +78,6 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 			// authentication BearerAuth required
 			// http bearer authentication required
 			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Search files with fuzzy query
-		 * @param {string} keyword
-		 * @param {number} [limit]
-		 * @param {string} [highlightPostTag]
-		 * @param {string} [highlightPreTag]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		searchFile: async (
-			keyword: string,
-			limit?: number,
-			highlightPostTag?: string,
-			highlightPreTag?: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'keyword' is not null or undefined
-			assertParamExists('searchFile', 'keyword', keyword);
-			const localVarPath = `/api/v1alpha1/indices/file`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			if (limit !== undefined) {
-				localVarQueryParameter['limit'] = limit;
-			}
-
-			if (highlightPostTag !== undefined) {
-				localVarQueryParameter['highlightPostTag'] = highlightPostTag;
-			}
-
-			if (highlightPreTag !== undefined) {
-				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
-			}
-
-			if (keyword !== undefined) {
-				localVarQueryParameter['keyword'] = keyword;
-			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
 			let headersFromBaseOptions =
@@ -263,12 +143,12 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 				localVarQueryParameter['highlightPostTag'] = highlightPostTag;
 			}
 
-			if (highlightPreTag !== undefined) {
-				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
-			}
-
 			if (keyword !== undefined) {
 				localVarQueryParameter['keyword'] = keyword;
+			}
+
+			if (highlightPreTag !== undefined) {
+				localVarQueryParameter['highlightPreTag'] = highlightPreTag;
 			}
 
 			setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -297,25 +177,6 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
 		V1alpha1IndicesApiAxiosParamCreator(configuration);
 	return {
 		/**
-		 * Build or rebuild file indices for full text search
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async buildFileIndices(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.buildFileIndices(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
 		 * Build or rebuild subject indices for full text search
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -327,38 +188,6 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
 		> {
 			const localVarAxiosArgs =
 				await localVarAxiosParamCreator.buildSubjectIndices(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Search files with fuzzy query
-		 * @param {string} keyword
-		 * @param {number} [limit]
-		 * @param {string} [highlightPostTag]
-		 * @param {string} [highlightPreTag]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async searchFile(
-			keyword: string,
-			limit?: number,
-			highlightPostTag?: string,
-			highlightPreTag?: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FileHints>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.searchFile(
-				keyword,
-				limit,
-				highlightPostTag,
-				highlightPreTag,
-				options
-			);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -413,16 +242,6 @@ export const V1alpha1IndicesApiFactory = function (
 	const localVarFp = V1alpha1IndicesApiFp(configuration);
 	return {
 		/**
-		 * Build or rebuild file indices for full text search
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		buildFileIndices(options?: AxiosRequestConfig): AxiosPromise<void> {
-			return localVarFp
-				.buildFileIndices(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
 		 * Build or rebuild subject indices for full text search
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
@@ -430,26 +249,6 @@ export const V1alpha1IndicesApiFactory = function (
 		buildSubjectIndices(options?: AxiosRequestConfig): AxiosPromise<void> {
 			return localVarFp
 				.buildSubjectIndices(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Search files with fuzzy query
-		 * @param {V1alpha1IndicesApiSearchFileRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		searchFile(
-			requestParameters: V1alpha1IndicesApiSearchFileRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<FileHints> {
-			return localVarFp
-				.searchFile(
-					requestParameters.keyword,
-					requestParameters.limit,
-					requestParameters.highlightPostTag,
-					requestParameters.highlightPreTag,
-					options
-				)
 				.then((request) => request(axios, basePath));
 		},
 		/**
@@ -474,41 +273,6 @@ export const V1alpha1IndicesApiFactory = function (
 		},
 	};
 };
-
-/**
- * Request parameters for searchFile operation in V1alpha1IndicesApi.
- * @export
- * @interface V1alpha1IndicesApiSearchFileRequest
- */
-export interface V1alpha1IndicesApiSearchFileRequest {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchFile
-	 */
-	readonly keyword: string;
-
-	/**
-	 *
-	 * @type {number}
-	 * @memberof V1alpha1IndicesApiSearchFile
-	 */
-	readonly limit?: number;
-
-	/**
-	 *
-	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchFile
-	 */
-	readonly highlightPostTag?: string;
-
-	/**
-	 *
-	 * @type {string}
-	 * @memberof V1alpha1IndicesApiSearchFile
-	 */
-	readonly highlightPreTag?: string;
-}
 
 /**
  * Request parameters for searchSubject operation in V1alpha1IndicesApi.
@@ -553,18 +317,6 @@ export interface V1alpha1IndicesApiSearchSubjectRequest {
  */
 export class V1alpha1IndicesApi extends BaseAPI {
 	/**
-	 * Build or rebuild file indices for full text search
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1IndicesApi
-	 */
-	public buildFileIndices(options?: AxiosRequestConfig) {
-		return V1alpha1IndicesApiFp(this.configuration)
-			.buildFileIndices(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
-
-	/**
 	 * Build or rebuild subject indices for full text search
 	 * @param {*} [options] Override http request option.
 	 * @throws {RequiredError}
@@ -573,28 +325,6 @@ export class V1alpha1IndicesApi extends BaseAPI {
 	public buildSubjectIndices(options?: AxiosRequestConfig) {
 		return V1alpha1IndicesApiFp(this.configuration)
 			.buildSubjectIndices(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
-
-	/**
-	 * Search files with fuzzy query
-	 * @param {V1alpha1IndicesApiSearchFileRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1IndicesApi
-	 */
-	public searchFile(
-		requestParameters: V1alpha1IndicesApiSearchFileRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1IndicesApiFp(this.configuration)
-			.searchFile(
-				requestParameters.keyword,
-				requestParameters.limit,
-				requestParameters.highlightPostTag,
-				requestParameters.highlightPreTag,
-				options
-			)
 			.then((request) => request(this.axios, this.basePath));
 	}
 

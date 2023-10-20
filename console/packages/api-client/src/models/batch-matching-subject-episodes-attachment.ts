@@ -15,19 +15,19 @@
 /**
  *
  * @export
- * @interface BatchMatchingEpisodeAttachment
+ * @interface BatchMatchingSubjectEpisodesAttachment
  */
-export interface BatchMatchingEpisodeAttachment {
+export interface BatchMatchingSubjectEpisodesAttachment {
 	/**
-	 * episode id for subject.
+	 * subject id for episode belong.
 	 * @type {number}
-	 * @memberof BatchMatchingEpisodeAttachment
+	 * @memberof BatchMatchingSubjectEpisodesAttachment
 	 */
-	episodeId: number;
+	subjectId: number;
 	/**
 	 * attachment id array.
 	 * @type {Array<number>}
-	 * @memberof BatchMatchingEpisodeAttachment
+	 * @memberof BatchMatchingSubjectEpisodesAttachment
 	 */
 	attachmentIds: Array<number>;
 }

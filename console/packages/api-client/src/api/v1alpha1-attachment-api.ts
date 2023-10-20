@@ -839,7 +839,7 @@ export const V1alpha1AttachmentApiFp = function (
 			file: File,
 			options?: AxiosRequestConfig
 		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Attachment>
 		> {
 			const localVarAxiosArgs =
 				await localVarAxiosParamCreator.uploadAttachment(file, options);
@@ -1001,7 +1001,7 @@ export const V1alpha1AttachmentApiFactory = function (
 		uploadAttachment(
 			requestParameters: V1alpha1AttachmentApiUploadAttachmentRequest,
 			options?: AxiosRequestConfig
-		): AxiosPromise<any> {
+		): AxiosPromise<Attachment> {
 			return localVarFp
 				.uploadAttachment(requestParameters.file, options)
 				.then((request) => request(axios, basePath));
