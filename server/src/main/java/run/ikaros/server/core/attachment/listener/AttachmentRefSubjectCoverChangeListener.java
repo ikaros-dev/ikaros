@@ -5,6 +5,7 @@ import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +48,15 @@ public class AttachmentRefSubjectCoverChangeListener {
         }
         return attachmentRepository.findByUrl(cover)
             .map(attachmentEntity -> attachmentEntity.setParentId(COVER_DIRECTORY_ID))
+            // 文件名称加上 当前时间戳 - 条目原始名称 - 条目放送日期时间戳 - 封面文件原始名称
+            .map(entity -> entity.setName(
+                System.currentTimeMillis()
+                    + "-" + subjectEntity.getName()
+                    + (Objects.nonNull(subjectEntity.getAirTime())
+                    ? ("-" + subjectEntity.getAirTime()
+                    .toInstant(ZoneOffset.of("+8")).toEpochMilli())
+                    : "")
+                    + "-" + entity.getName()))
             .flatMap(attachmentRepository::save)
             .map(AttachmentEntity::getId)
             .map(attId -> AttachmentReferenceEntity.builder()
