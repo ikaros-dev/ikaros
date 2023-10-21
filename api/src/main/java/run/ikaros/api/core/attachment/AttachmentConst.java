@@ -1,6 +1,7 @@
 package run.ikaros.api.core.attachment;
 
 public interface AttachmentConst {
+    Long ROOT_DIRECTORY_PARENT_ID = 0L;
     Long ROOT_DIRECTORY_ID = 0L;
     Long COVER_DIRECTORY_ID = 1L;
     Long DOWNLOAD_DIRECTORY_ID = 2L;

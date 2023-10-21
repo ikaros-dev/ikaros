@@ -110,7 +110,18 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("Attachment ID")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class)))
+                        .implementation(Long.class))
+                    .response(responseBuilder().implementation(Attachment.class)))
+
+            .GET("/attachment/paths/{id}", this::getAttachmentPathDirsById,
+                builder -> builder.operationId("GetAttachmentPathDirsById")
+                    .tag(tag).description("Get attachment path dirs by id.")
+                    .parameter(parameterBuilder()
+                        .name("id").description("Attachment id.")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(responseBuilder().implementationArray(Attachment.class)))
 
             .DELETE("/attachment/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteAttachment").tag(tag)
@@ -255,6 +266,14 @@ public class AttachmentEndpoint implements CoreEndpoint {
                 .bodyValue("Not found for id: " + id));
     }
 
+    private Mono<ServerResponse> getAttachmentPathDirsById(ServerRequest request) {
+        String id = request.pathVariable("id");
+        return attachmentService.findAttachmentPathDirsById(Long.parseLong(id))
+            .flatMap(attachments -> ServerResponse.ok().bodyValue(attachments))
+            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
+                .bodyValue("Not found for id: " + id));
+    }
+
     private Mono<ServerResponse> deleteById(ServerRequest request) {
         String id = request.pathVariable("id");
         return attachmentService.removeById(Long.parseLong(id))
@@ -302,8 +321,8 @@ public class AttachmentEndpoint implements CoreEndpoint {
         return request.bodyToMono(Attachment.class)
             .flatMap(attachmentService::save)
             .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
-            .onErrorResume(NotFoundException.class, e -> ServerResponse
-                .status(HttpStatus.NOT_FOUND).bodyValue("Not found attachment record."));
+            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
+                .bodyValue("Not found attachment record."));
 
     }
 

@@ -29,6 +29,12 @@ export interface EpisodeResource {
 	 * @type {number}
 	 * @memberof EpisodeResource
 	 */
+	parentAttachmentId?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof EpisodeResource
+	 */
 	episodeId?: number;
 	/**
 	 *

@@ -44,6 +44,9 @@ const POSTFIX_DOCUMENTS = ['txt', 'doc', 'docx', 'ppt', 'xlsx', 'pptx', 'ass'];
 const POSTFIX_VOICES = ['mp3', 'wma', 'wav', 'ape', 'flac', 'ogg', 'aac'];
 
 export function getPostfix(name: string): string {
+	if (!name) {
+		return '';
+	}
 	return name.replace(/.+\./, '');
 }
 

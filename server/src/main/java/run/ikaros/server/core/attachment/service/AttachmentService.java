@@ -3,6 +3,7 @@ package run.ikaros.server.core.attachment.service;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
@@ -16,23 +17,22 @@ public interface AttachmentService {
 
     Mono<Attachment> save(Attachment attachment);
 
+    Mono<Attachment> upload(AttachmentUploadCondition uploadCondition);
+
     Mono<PagingWrap<AttachmentEntity>> listEntitiesByCondition(
         AttachmentSearchCondition searchCondition);
 
     Mono<PagingWrap<Attachment>> listByCondition(AttachmentSearchCondition searchCondition);
-
-    Mono<Void> removeById(Long attachmentId);
-
-    Mono<Attachment> upload(AttachmentUploadCondition uploadCondition);
 
     Mono<Attachment> findById(Long attachmentId);
 
     Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type, @Nullable Long parentId,
                                                   String name);
 
+    Mono<Void> removeById(Long attachmentId);
+
     Mono<Void> removeByTypeAndParentIdAndName(
         AttachmentType type, @Nullable Long parentId, String name);
-
 
     Mono<Void> receiveAndHandleFragmentUploadChunkFile(@NotBlank String unique,
                                                        @Nonnull Long uploadLength,
@@ -45,4 +45,5 @@ public interface AttachmentService {
 
     Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name);
 
+    Mono<List<Attachment>> findAttachmentPathDirsById(Long id);
 }

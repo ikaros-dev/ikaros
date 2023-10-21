@@ -58,12 +58,16 @@ npm publish
 选择当前目录下的更改进行`git add .`
 
 ```bash
-git commit -am "build: gen new api-client@0.10.6 and publish to npm center repo in @runikaros/api-client"
+git commit -am "build: gen new api-client@0.10.9 and publish to npm center repo in @runikaros/api-client"
 ```
 
 合成版(powershell)，升级 package.json 版本，并启动服务端后，在 api-client 路径下：
 
 ```
-pnpm gen | pnpm build | npm publish | git add .
+pnpm gen | pnpm build | git add .
 
 ```
+
+7. 更新
+
+每次更新后，需要在`console` 目录下，运行 `pnpm i` 重新安装下依赖

@@ -47,6 +47,12 @@ export interface Attachment {
 	 * @type {string}
 	 * @memberof Attachment
 	 */
+	path?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof Attachment
+	 */
 	fsPath?: string;
 	/**
 	 *

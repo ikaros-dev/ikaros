@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { ElDrawer } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import AttachmentPondUpload from '@/components/upload/AttachmentPondUpload.vue';
@@ -24,6 +24,8 @@ const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
 	// eslint-disable-next-line no-unused-vars
+	(event: 'update:parentId', parentId: number): void;
+	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 	// eslint-disable-next-line no-unused-vars
 	(event: 'fileUploadDrawerCloes', file?: any): void;
@@ -31,6 +33,14 @@ const emit = defineEmits<{
 
 const uploadVisible = ref(false);
 const drawerVisible = ref(false);
+const uploadParentId = computed({
+	get() {
+		return props.parentId;
+	},
+	set(value) {
+		emit('update:parentId', value as number);
+	},
+});
 
 const handleVisibleChange = (visible: boolean) => {
 	emit('update:visible', visible);
@@ -106,7 +116,7 @@ const uploadHandler = (file, onUploadProgress) => {
 			<div align="center">
 				<AttachmentPondUpload
 					ref="filePondUploadRef"
-					:parentId="props.parentId"
+					v-model:parentId="uploadParentId"
 					:uploadHandler="uploadHandler"
 					:enableChunkForce="true"
 					:enableChunkUploads="true"

@@ -6,9 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class BatchMatchingEpisodeAttachment {
-    @Schema(requiredMode = REQUIRED, description = "episode id for subject.")
-    private Long episodeId;
+public class BatchMatchingSubjectEpisodesAttachment {
+    @Schema(requiredMode = REQUIRED, description = "subject id for episode belong.")
+    private Long subjectId;
     @Schema(requiredMode = REQUIRED, description = "attachment id array.")
     private Long[] attachmentIds;
 }

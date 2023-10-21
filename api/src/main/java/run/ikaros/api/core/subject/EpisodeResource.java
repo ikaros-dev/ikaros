@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EpisodeResource {
     private Long attachmentId;
+    private Long parentAttachmentId;
     private Long episodeId;
     private String url;
     private boolean canRead;

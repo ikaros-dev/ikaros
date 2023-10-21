@@ -7,9 +7,6 @@ api/v1alpha1-attachment-api.ts
 api/v1alpha1-attachment-reference-api.ts
 api/v1alpha1-attachment-relation-api.ts
 api/v1alpha1-episode-collection-api.ts
-api/v1alpha1-file-api.ts
-api/v1alpha1-file-relation-api.ts
-api/v1alpha1-folder-api.ts
 api/v1alpha1-indices-api.ts
 api/v1alpha1-plugin-api.ts
 api/v1alpha1-subject-api.ts
@@ -28,18 +25,12 @@ models/attachment-relation.ts
 models/attachment.ts
 models/author.ts
 models/batch-matching-episode-attachment.ts
+models/batch-matching-subject-episodes-attachment.ts
 models/config-map.ts
 models/episode-collection.ts
 models/episode-resource.ts
 models/episode.ts
-models/file-batch-request.ts
-models/file-entity.ts
-models/file-hint.ts
-models/file-hints.ts
-models/file-relations.ts
-models/folder.ts
 models/index.ts
-models/model-file.ts
 models/paging-wrap.ts
 models/plugin-load-location-file-system.ts
 models/plugin-load-location.ts
@@ -50,7 +41,6 @@ models/subject-hints.ts
 models/subject-relation.ts
 models/subject-sync.ts
 models/subject.ts
-models/subtitle.ts
 models/task-entity.ts
 models/update-user-request.ts
 models/user-entity.ts

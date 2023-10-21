@@ -7,6 +7,7 @@ import moment from 'moment';
 import { apiClient } from '@/utils/api-client';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import AttachmentDeatilDrawer from './AttachmentDeatilDrawer.vue';
+import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
 import { useRoute } from 'vue-router';
 
 import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css';
@@ -48,8 +49,9 @@ import {
 	ElMessage,
 	ElPopconfirm,
 	ElMessageBox,
-	ElTreeSelect,
 } from 'element-plus';
+import router from '@/router';
+
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
 const route = useRoute();
@@ -75,21 +77,36 @@ const fetchAttachments = async () => {
 	attachmentCondition.value.page = data.page;
 	attachmentCondition.value.size = data.size;
 	attachmentCondition.value.total = data.total;
+	await updateBreadcrumbByParentPath();
 };
 
-const onCurrentPageChange = (val: number) => {
+const updateBreadcrumbByParentPath = async () => {
+	const { data } = await apiClient.attachment.getAttachmentPathDirsById({
+		id: attachmentCondition.value.parentId as number,
+	});
+	paths.value = data.map((att) => {
+		const path: Path = {
+			name: att.name as string,
+			id: att.id as number,
+			parentId: att.parentId as number,
+		};
+		return path;
+	});
+};
+
+const onCurrentPageChange = async (val: number) => {
 	attachmentCondition.value.page = val;
-	fetchAttachments();
+	await fetchAttachments();
 };
 
-const onSizeChange = (val: number) => {
+const onSizeChange = async (val: number) => {
 	attachmentCondition.value.size = val;
-	fetchAttachments();
+	await fetchAttachments();
 };
 
 const attachmentUploadDrawerVisible = ref(false);
-const onFileUploadDrawerClose = () => {
-	fetchAttachments();
+const onFileUploadDrawerClose = async () => {
+	await fetchAttachments();
 };
 
 interface Path {
@@ -106,18 +123,21 @@ const paths = ref<Path[]>([
 	},
 ]);
 
-const onBreadcrumbClick = (path) => {
+const onBreadcrumbClick = async (path) => {
 	// console.log('path', path);
 	var index = paths.value.indexOf(path);
 	if (index !== -1) {
 		paths.value.splice(index + 1);
 	}
 	attachmentCondition.value.parentId = path.id;
-	fetchAttachments();
+	await fetchAttachments();
+	// console.log('parentId', attachmentCondition.value.parentId);
 };
 
-const entryAttachment = (attachment) => {
+const entryAttachment = async (attachment) => {
 	// console.log('attachment', attachment);
+	// console.log('attachment id:', attachment.id);
+	// console.log('attachment name:', attachment.name);
 	if ('Directory' === attachment.type) {
 		attachmentCondition.value.parentId = attachment.id;
 		paths.value.push({
@@ -125,11 +145,12 @@ const entryAttachment = (attachment) => {
 			parentId: attachment.parentId,
 			id: attachment.id,
 		});
-		fetchAttachments();
+		await fetchAttachments();
 	} else {
 		currentSelectionAttachment.value = attachment;
 		attachmentDetailDrawerVisible.value = true;
 	}
+	// console.log('parentId', attachmentCondition.value.parentId);
 };
 
 const dateFormat = (row, column) => {
@@ -152,8 +173,9 @@ const onCreateFolderButtonClick = async () => {
 		name: base64Encode(createFolderName.value),
 	});
 	ElMessage.success('创建目录成功，目录名：' + createFolderName.value);
-	dialogFolderVisible.value = false;
+	createFolderName.value = '';
 	await fetchAttachments();
+	dialogFolderVisible.value = false;
 };
 
 const currentSelectionAttachment = ref<Attachment>();
@@ -182,6 +204,7 @@ const deleteAttachment = async (attachment: Attachment) => {
 			'】' +
 			'成功。'
 	);
+	await fetchAttachments();
 };
 
 const deleteAttachments = async () => {
@@ -287,51 +310,17 @@ const onRowContextmenu = (row, column, event) => {
 };
 
 const directorySelectDialogVisible = ref(false);
-const targetDirectoryId = ref(0);
-const props = {
-	label: 'label',
-	children: 'children',
-	isLeaf: 'isLeaf',
-};
-interface DirNode {
-	value: number;
-	label: string;
-	isLeaf?: boolean;
-}
-const loadDirectoryNodes = async (node, resolve) => {
-	console.log('node', node);
-	console.log('node.data.value', node.data.value);
-	let parentId = node.data.value;
-	if (!parentId) {
-		parentId = 0;
-	}
-	if (node.isLeaf) return resolve([]);
-	const { data } = await apiClient.attachment.listAttachmentsByCondition({
-		type: 'Directory',
-		parentId: parentId as any as string,
-	});
-	const attachments: Attachment[] = data.items;
-	const dirNodes: DirNode[] = attachments.map((attachment) => {
-		let node: DirNode = {
-			value: attachment.id as number,
-			label: attachment.name as string,
-		};
-		return node;
-	});
-	resolve(dirNodes);
-};
-const onDirectorySelectDialogButtonClick = async () => {
+const onDirSelected = async (targetDirid: number) => {
 	await selectionAttachments.value
-		.filter((attachment) => targetDirectoryId.value !== attachment.id)
+		.filter((attachment) => targetDirid !== attachment.id)
 		.forEach(async (attachment) => {
-			attachment.parentId = targetDirectoryId.value;
+			attachment.parentId = targetDirid;
 			await apiClient.attachment.updateAttachment({
 				attachment: attachment,
 			});
 		});
-	await ElMessage.success('批量移动附件成功');
-	directorySelectDialogVisible.value = false;
 	await fetchAttachments();
+	await ElMessage.success('批量移动附件成功');
 };
 
 watch(
@@ -342,10 +331,29 @@ watch(
 			attachmentCondition.value.name = base64Decode(
 				newValue.searchName as string
 			);
+			if (newValue.parentId) {
+				attachmentCondition.value.parentId = parseInt(
+					newValue.parentId as string
+				);
+			}
+			fetchAttachments();
 		}
 	},
 	{ immediate: true }
 );
+watch(attachmentCondition.value, () => {
+	// console.log('attachmentCondition.value', attachmentCondition.value);
+	const name = attachmentCondition.value.name;
+	const parentId = attachmentCondition.value.parentId;
+	const query = JSON.parse(JSON.stringify(route.query));
+	if (name !== route.query.searchName) {
+		query.searchName = base64Encode(name);
+	}
+	if (parentId !== parseInt(route.query.parentId as string)) {
+		query.parentId = parentId + '';
+	}
+	router.push({ path: route.path, query });
+});
 </script>
 
 <template>
@@ -381,30 +389,10 @@ watch(
 		</template>
 	</el-dialog>
 
-	<el-dialog
-		v-model="directorySelectDialogVisible"
-		style="width: 50%"
-		title="选择目录"
-	>
-		<el-tree-select
-			v-model="targetDirectoryId"
-			lazy
-			style="width: 100%"
-			check-strictly
-			:load="loadDirectoryNodes"
-			:props="props"
-		/>
-		<template #footer>
-			<span class="dialog-footer">
-				<el-button @click="directorySelectDialogVisible = false">{{
-					t('core.folder.createDialog.cancel')
-				}}</el-button>
-				<el-button type="primary" @click="onDirectorySelectDialogButtonClick">
-					{{ t('core.folder.createDialog.confirm') }}
-				</el-button>
-			</span>
-		</template>
-	</el-dialog>
+	<AttachmentDirectorySelectDialog
+		v-model:visible="directorySelectDialogVisible"
+		@close-with-target-dir-id="onDirSelected"
+	/>
 
 	<el-row>
 		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">

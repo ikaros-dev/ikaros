@@ -13,6 +13,7 @@ import run.ikaros.api.core.attachment.AttachmentReference;
 import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.core.attachment.exception.AttachmentRefMatchingException;
 import run.ikaros.api.infra.exception.RegexMatchingException;
+import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.RegexUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
@@ -128,6 +129,31 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                                 + "for attachmentReferenceEntity: {}", attachmentReferenceEntity);
                         }))
                 ))
+            .then();
+    }
+
+    @Override
+    public Mono<Void> matchingAttachmentsForEpisode(Long episodeId, Long[] attachmentIds) {
+        Assert.isTrue(episodeId > 0, "'episodeId' must gt 0.");
+        Assert.notNull(attachmentIds, "'attachmentIds' must not null.");
+        // check episode exists
+        return episodeRepository.existsById(episodeId)
+            .filter(exists -> exists)
+            .switchIfEmpty(
+                Mono.error(new EpisodeNotFoundException("Episode not found for id=" + episodeId)))
+            // check all attachments exists
+            .flatMapMany(exists -> Flux.fromArray(attachmentIds))
+            .flatMap(attId -> attachmentRepository.existsById(attId)
+                .filter(exists -> exists)
+                .switchIfEmpty(Mono.error(
+                    new AttachmentNotFoundException("Attachment not found for id=" + attId))))
+            .collectList()
+            // save attachment ref records.
+            .flatMapMany(attExistsList -> Flux.fromArray(attachmentIds))
+            .map(attId -> AttachmentReferenceEntity.builder()
+                .type(EPISODE).attachmentId(attId).referenceId(episodeId)
+                .build())
+            .flatMap(repository::save)
             .then();
     }
 

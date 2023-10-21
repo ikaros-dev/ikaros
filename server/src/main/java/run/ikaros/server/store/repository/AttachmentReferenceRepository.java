@@ -11,6 +11,11 @@ public interface AttachmentReferenceRepository
     Flux<AttachmentReferenceEntity> findAllByTypeAndAttachmentId(
         AttachmentReferenceType type, Long attachmentId);
 
+    Mono<Boolean> existsByTypeAndAttachmentId(
+        AttachmentReferenceType type, Long attachmentId);
+
+    Mono<Boolean> existsByAttachmentId(Long attachmentId);
+
     Mono<AttachmentReferenceEntity> findByTypeAndAttachmentIdAndReferenceId(
         AttachmentReferenceType type, Long attachmentId, Long referenceId
     );
@@ -22,5 +27,7 @@ public interface AttachmentReferenceRepository
 
     Mono<Void> deleteByTypeAndAttachmentIdAndReferenceId(
         AttachmentReferenceType type, Long attachmentId, Long referenceId);
+
+    Mono<Void> deleteAllByTypeAndReferenceId(AttachmentReferenceType type, Long referenceId);
 
 }

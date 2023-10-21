@@ -157,12 +157,28 @@ const toSubjectPut = () => {
 	}
 };
 
+const episodeHasMultiResource = ref(false);
+const initEpisodeHasMultiResource = () => {
+	if (
+		subject.value.type === 'ANIME' ||
+		subject.value.type === 'GAME' ||
+		subject.value.type === 'NOVEL'
+	) {
+		return;
+	}
+	episodeHasMultiResource.value = true;
+};
+
 const currentOperateEpisode = ref<Episode>();
-// eslint-disable-next-line no-unused-vars
 const bingResources = (episode: Episode) => {
-	console.log('episode', episode);
+	// console.log('episode', episode);
 	currentOperateEpisode.value = episode;
-	attachmentSelectDialog.value = true;
+	if (episodeHasMultiResource.value) {
+		attachmentMultiSelectDialogVisible.value = true;
+		bindMasterIsEpisodeFlag.value = true;
+	} else {
+		attachmentSelectDialog.value = true;
+	}
 };
 
 const deleteSubject = async () => {
@@ -328,31 +344,69 @@ const udpateEpisodeCollectionProgress = async (
 const fetchDatas = async () => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
-	fetchSubjectById();
-	fetchSubjectCollection();
-	fetchEpisodeCollections();
+	await fetchSubjectById();
+	await initEpisodeHasMultiResource();
+	await fetchSubjectCollection();
+	await fetchEpisodeCollections();
 };
 
-const batchMatchingButtonLoading = ref(false);
+const bindMasterIsEpisodeFlag = ref(false);
+const batchMatchingSubjectButtonLoading = ref(false);
+const batchMatchingEpisodeButtonLoading = ref(false);
 const attachmentMultiSelectDialogVisible = ref(false);
-const onCloseWIthAttachments = async (attachments: Attachment[]) => {
+const onCloseWithAttachments = async (attachments: Attachment[]) => {
 	// console.log('attachments', attachments);
-	const subjectId = subject.value.id;
-	batchMatchingButtonLoading.value = true;
 	const attIds: number[] = attachments.map((att) => att.id) as number[];
+	if (bindMasterIsEpisodeFlag.value) {
+		await delegateBatchMatchingEpisode(currentOperateEpisode.value?.id, attIds);
+	} else {
+		await delegateBatchMatchingSubject(subject.value.id, attIds);
+	}
+};
+const delegateBatchMatchingSubject = async (
+	subjectId: number | undefined,
+	attIds: number[]
+) => {
+	if (!subjectId || subjectId <= 0 || !attIds || attIds.length === 0) {
+		return;
+	}
+	batchMatchingSubjectButtonLoading.value = true;
 	await apiClient.attachmentRef
 		.matchingAttachmentsAndSubjectEpisodes({
-			batchMatchingEpisodeAttachment: {
-				subjectId: subjectId as number,
+			batchMatchingSubjectEpisodesAttachment: {
+				subjectId: subjectId,
 				attachmentIds: attIds,
 			},
 		})
 		.then(() => {
-			ElMessage.success('批量匹配剧集和资源成功');
+			ElMessage.success('批量匹配条目所有剧集和多资源成功');
 			window.location.reload();
 		})
 		.finally(() => {
-			batchMatchingButtonLoading.value = false;
+			batchMatchingSubjectButtonLoading.value = false;
+		});
+};
+const delegateBatchMatchingEpisode = async (
+	episodeId: number | undefined,
+	attIds: number[]
+) => {
+	if (!episodeId || episodeId <= 0 || !attIds || attIds.length === 0) {
+		return;
+	}
+	batchMatchingEpisodeButtonLoading.value = true;
+	await apiClient.attachmentRef
+		.matchingAttachmentsForEpisode({
+			batchMatchingEpisodeAttachment: {
+				episodeId: episodeId,
+				attachmentIds: attIds,
+			},
+		})
+		.then(() => {
+			ElMessage.success('批量匹单个剧集和多资源成功');
+			window.location.reload();
+		})
+		.finally(() => {
+			batchMatchingEpisodeButtonLoading.value = false;
 		});
 };
 
@@ -369,7 +423,7 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 			referenceId: currentOperateEpisode.value?.id as number,
 		},
 	});
-	ElMessage.success('当个剧集和附件匹配成功');
+	ElMessage.success('单个剧集和附件匹配成功');
 };
 onMounted(fetchDatas);
 </script>
@@ -377,7 +431,7 @@ onMounted(fetchDatas);
 <template>
 	<AttachmentMultiSelectDialog
 		v-model:visible="attachmentMultiSelectDialogVisible"
-		@close-with-attachments="onCloseWIthAttachments"
+		@close-with-attachments="onCloseWithAttachments"
 	/>
 	<SubjectSyncDialog
 		v-model:visible="subjectSyncDialogVisible"
@@ -543,8 +597,13 @@ onMounted(fetchDatas);
 							<template #header>
 								<el-button
 									plain
-									:loading="batchMatchingButtonLoading"
-									@click="attachmentMultiSelectDialogVisible = true"
+									:loading="batchMatchingSubjectButtonLoading"
+									@click="
+										() => {
+											attachmentMultiSelectDialogVisible = true;
+											bindMasterIsEpisodeFlag = false;
+										}
+									"
 								>
 									批量绑定资源
 								</el-button>
@@ -560,6 +619,7 @@ onMounted(fetchDatas);
 											? Check
 											: Close
 									"
+									:loading="batchMatchingEpisodeButtonLoading"
 									@click="bingResources(scoped.row)"
 								>
 									绑定
@@ -625,6 +685,7 @@ onMounted(fetchDatas);
 	<EpisodeDetailsDialog
 		v-model:visible="episodeDetailsDialogVisible"
 		v-model:episode="currentEpisode"
+		v-model:multiResource="episodeHasMultiResource"
 		@removeEpisodeFileBind="fetchSubjectById"
 	/>
 

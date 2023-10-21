@@ -29,6 +29,11 @@ export const episodeGroups = [
 	'SMALL_THEATER',
 	'COMMERCIAL_MESSAGE',
 	'LIVE',
+	'MUSIC_DIST1',
+	'MUSIC_DIST2',
+	'MUSIC_DIST3',
+	'MUSIC_DIST4',
+	'MUSIC_DIST5',
 	'OTHER',
 ];
 

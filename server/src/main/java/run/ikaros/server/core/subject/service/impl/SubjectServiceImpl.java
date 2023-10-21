@@ -115,6 +115,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                             .map(attachmentEntity -> EpisodeResource.builder()
                                 .episodeId(episode.getId())
                                 .attachmentId(attachmentEntity.getId())
+                                .parentAttachmentId(attachmentEntity.getParentId())
                                 .name(attachmentEntity.getName())
                                 .url(attachmentEntity.getUrl())
                                 .canRead(true)
@@ -304,8 +305,12 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 new SubjectRemoveEvent(this, entity)))
             // Delete subject entity
             .flatMap(entity -> subjectRepository.deleteById(id))
-            // Delete episode entities
-            .then(episodeRepository.deleteAllBySubjectId(id))
+            // Delete all episode entities and episode refs
+            .thenMany(episodeRepository.findAllBySubjectId(id))
+            .flatMap(episodeEntity ->
+                attachmentReferenceRepository.deleteAllByTypeAndReferenceId(
+                        AttachmentReferenceType.EPISODE, episodeEntity.getId())
+                    .then(episodeRepository.delete(episodeEntity)))
             // Delete subject sync entities
             .then(subjectSyncRepository.deleteAllBySubjectId(id))
             .then()
