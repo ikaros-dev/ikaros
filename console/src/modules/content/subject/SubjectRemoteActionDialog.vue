@@ -15,6 +15,7 @@ import {
 	FormRules,
 } from 'element-plus';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+// eslint-disable-next-line no-unused-vars
 import { apiClient } from '@/utils/api-client';
 
 const props = withDefaults(
@@ -63,6 +64,7 @@ const subjectRemoteArr = ref<string[]>([]);
 const { pluginModules } = usePluginModuleStore();
 
 const actionButtonLoading = ref(false);
+// eslint-disable-next-line no-unused-vars
 const onConfirm = async (formEl: FormInstance | undefined) => {
 	if (subjectRemoteArr.value.length === 0) {
 		emit('close');
@@ -75,24 +77,24 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 				actionButtonLoading.value = true;
 				if (fileRemoteAction.value.isPush) {
 					// file push to remote
-					await apiClient.file
-						.pushSubject2Remote({
-							subjectId: fileRemoteAction.value.subjectId + '',
-							remote: fileRemoteAction.value.remote,
-						})
-						.finally(() => {
-							actionButtonLoading.value = false;
-						});
+					// await apiClient.file
+					// 	.pushSubject2Remote({
+					// 		subjectId: fileRemoteAction.value.subjectId + '',
+					// 		remote: fileRemoteAction.value.remote,
+					// 	})
+					// 	.finally(() => {
+					// 		actionButtonLoading.value = false;
+					// 	});
 				} else {
 					// file pull from remote
-					await apiClient.file
-						.pullSubject4Remote({
-							subjectId: fileRemoteAction.value.subjectId + '',
-							remote: fileRemoteAction.value.remote,
-						})
-						.finally(() => {
-							actionButtonLoading.value = false;
-						});
+					// await apiClient.file
+					// 	.pullSubject4Remote({
+					// 		subjectId: fileRemoteAction.value.subjectId + '',
+					// 		remote: fileRemoteAction.value.remote,
+					// 	})
+					// 	.finally(() => {
+					// 		actionButtonLoading.value = false;
+					// 	});
 				}
 				ElMessage.success('提交成功');
 				dialogVisible.value = false;
@@ -165,11 +167,7 @@ onMounted(() => {
 		</span>
 		<template #footer>
 			<span>
-				<el-button
-					plain
-					:loading="actionButtonLoading"
-					@click="onConfirm(fileActionFormRef)"
-				>
+				<el-button plain :loading="actionButtonLoading">
 					{{
 						subjectRemoteArr.length === 0
 							? '返回'
