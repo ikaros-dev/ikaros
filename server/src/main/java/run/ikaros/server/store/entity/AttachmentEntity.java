@@ -28,6 +28,10 @@ public class AttachmentEntity {
      */
     private String url;
     /**
+     * Attachment logic path.
+     */
+    private String path;
+    /**
      * File path in file system.
      */
     @Column("fs_path")

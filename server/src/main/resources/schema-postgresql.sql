@@ -12,6 +12,7 @@ create table if not exists attachment
     parent_id   int8          null,
     type        varchar(255)  not null,
     url         varchar(5000) null,
+    path        varchar(5000) not null,
     fs_path     varchar(5000) null,
     name        varchar(255)  not null,
     size        int8          null,
@@ -20,30 +21,33 @@ create table if not exists attachment
     constraint attachment_pkey primary key (id)
 );
 -- Insert Root directory
-INSERT INTO attachment (id, type, parent_id, name, update_time)
+INSERT INTO attachment (id, type, parent_id, path, name, update_time)
 SELECT 0,
        'Directory',
        -1,
+       '/',
        '/',
        CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
                   FROM attachment
                   WHERE id = 0);
 -- Insert Covers directory
-INSERT INTO attachment (id, type, parent_id, name, update_time)
+INSERT INTO attachment (id, type, parent_id, path, name, update_time)
 SELECT 1,
        'Directory',
        0,
+       '/Covers',
        'Covers',
        CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
                   FROM attachment
                   WHERE id = 1);
 -- Insert Downloads directory
-INSERT INTO attachment (id, type, parent_id, name, update_time)
+INSERT INTO attachment (id, type, parent_id, path, name, update_time)
 SELECT 2,
        'Directory',
        0,
+       '/Downloads',
        'Downloads',
        CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
