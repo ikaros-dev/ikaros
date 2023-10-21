@@ -262,6 +262,59 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
 			};
 		},
 		/**
+		 * Get attachment path dirs by id.
+		 * @param {number} id Attachment id.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		getAttachmentPathDirsById: async (
+			id: number,
+			options: AxiosRequestConfig = {}
+		): Promise<RequestArgs> => {
+			// verify required parameter 'id' is not null or undefined
+			assertParamExists('getAttachmentPathDirsById', 'id', id);
+			const localVarPath = `/api/v1alpha1/attachment/paths/{id}`.replace(
+				`{${'id'}}`,
+				encodeURIComponent(String(id))
+			);
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = {
+				method: 'GET',
+				...baseOptions,
+				...options,
+			};
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication BasicAuth required
+			// http basic authentication required
+			setBasicAuthToObject(localVarRequestOptions, configuration);
+
+			// authentication BearerAuth required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions =
+				baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = {
+				...localVarHeaderParameter,
+				...headersFromBaseOptions,
+				...options.headers,
+			};
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
+		/**
 		 * List attachments by condition.
 		 * @param {number} [page] 第几页，从1开始, 默认为1.
 		 * @param {number} [size] 每页条数，默认为10.
@@ -701,10 +754,34 @@ export const V1alpha1AttachmentApiFp = function (
 			id: number,
 			options?: AxiosRequestConfig
 		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Attachment>
 		> {
 			const localVarAxiosArgs =
 				await localVarAxiosParamCreator.getAttachmentById(id, options);
+			return createRequestFunction(
+				localVarAxiosArgs,
+				globalAxios,
+				BASE_PATH,
+				configuration
+			);
+		},
+		/**
+		 * Get attachment path dirs by id.
+		 * @param {number} id Attachment id.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async getAttachmentPathDirsById(
+			id: number,
+			options?: AxiosRequestConfig
+		): Promise<
+			(
+				axios?: AxiosInstance,
+				basePath?: string
+			) => AxiosPromise<Array<Attachment>>
+		> {
+			const localVarAxiosArgs =
+				await localVarAxiosParamCreator.getAttachmentPathDirsById(id, options);
 			return createRequestFunction(
 				localVarAxiosArgs,
 				globalAxios,
@@ -917,9 +994,23 @@ export const V1alpha1AttachmentApiFactory = function (
 		getAttachmentById(
 			requestParameters: V1alpha1AttachmentApiGetAttachmentByIdRequest,
 			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
+		): AxiosPromise<Attachment> {
 			return localVarFp
 				.getAttachmentById(requestParameters.id, options)
+				.then((request) => request(axios, basePath));
+		},
+		/**
+		 * Get attachment path dirs by id.
+		 * @param {V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest} requestParameters Request parameters.
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		getAttachmentPathDirsById(
+			requestParameters: V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest,
+			options?: AxiosRequestConfig
+		): AxiosPromise<Array<Attachment>> {
+			return localVarFp
+				.getAttachmentPathDirsById(requestParameters.id, options)
 				.then((request) => request(axios, basePath));
 		},
 		/**
@@ -1054,6 +1145,20 @@ export interface V1alpha1AttachmentApiGetAttachmentByIdRequest {
 	 * Attachment ID
 	 * @type {number}
 	 * @memberof V1alpha1AttachmentApiGetAttachmentById
+	 */
+	readonly id: number;
+}
+
+/**
+ * Request parameters for getAttachmentPathDirsById operation in V1alpha1AttachmentApi.
+ * @export
+ * @interface V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest
+ */
+export interface V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest {
+	/**
+	 * Attachment id.
+	 * @type {number}
+	 * @memberof V1alpha1AttachmentApiGetAttachmentPathDirsById
 	 */
 	readonly id: number;
 }
@@ -1254,6 +1359,22 @@ export class V1alpha1AttachmentApi extends BaseAPI {
 	) {
 		return V1alpha1AttachmentApiFp(this.configuration)
 			.getAttachmentById(requestParameters.id, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 * Get attachment path dirs by id.
+	 * @param {V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest} requestParameters Request parameters.
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1alpha1AttachmentApi
+	 */
+	public getAttachmentPathDirsById(
+		requestParameters: V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest,
+		options?: AxiosRequestConfig
+	) {
+		return V1alpha1AttachmentApiFp(this.configuration)
+			.getAttachmentPathDirsById(requestParameters.id, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 

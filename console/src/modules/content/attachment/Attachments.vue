@@ -76,6 +76,16 @@ const fetchAttachments = async () => {
 	attachmentCondition.value.page = data.page;
 	attachmentCondition.value.size = data.size;
 	attachmentCondition.value.total = data.total;
+	await updateBreadcrumbByParentPath();
+};
+
+const updateBreadcrumbByParentPath = async () => {
+	// eslint-disable-next-line no-unused-vars
+	// const { data } = await apiClient.attachment.getAttachmentById({
+	// 	id: attachmentCondition.value.parentId as number,
+	// });
+	// let path = data.path;
+	// let paths: string[] = path?.substring(1).split('/');
 };
 
 const onCurrentPageChange = async (val: number) => {

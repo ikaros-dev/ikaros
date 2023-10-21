@@ -107,6 +107,11 @@ export const EpisodeCollectionEpGroupEnum = {
 	SmallTheater: 'SMALL_THEATER',
 	Live: 'LIVE',
 	CommercialMessage: 'COMMERCIAL_MESSAGE',
+	MusicDist1: 'MUSIC_DIST1',
+	MusicDist2: 'MUSIC_DIST2',
+	MusicDist3: 'MUSIC_DIST3',
+	MusicDist4: 'MUSIC_DIST4',
+	MusicDist5: 'MUSIC_DIST5',
 	Other: 'OTHER',
 } as const;
 
