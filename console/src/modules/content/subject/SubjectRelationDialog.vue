@@ -247,18 +247,26 @@ const onSubjectRelationDeleteDialogClose = async () => {
 };
 
 const subjectRelationDeleteDialogVisible = ref(false);
+const subjectId = computed({
+	get() {
+		return parseInt(subject.value.id + '');
+	},
+	set(val) {
+		subject.value.id = val;
+	},
+});
 onMounted(loadSubject);
 </script>
 
 <template>
 	<SubjectRelationPostDialog
 		v-model:visible="subjectRelationPostDialogVisible"
-		v-model:masterSubjectId="subject.id"
+		v-model:masterSubjectId="subjectId"
 		@close="onSubjectRelationPostDialogClose"
 	/>
 	<SubjectRelationDeleteDialog
 		v-model:visible="subjectRelationDeleteDialogVisible"
-		v-model:masterSubjectId="subject.id"
+		v-model:masterSubjectId="subjectId"
 		v-model:relationSubjects="subjectRelations"
 		@close="onSubjectRelationDeleteDialogClose"
 	/>
