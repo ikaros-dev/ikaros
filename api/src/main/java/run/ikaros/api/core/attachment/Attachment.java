@@ -22,6 +22,10 @@ public class Attachment {
      */
     private String url;
     /**
+     * Attachment logic path.
+     */
+    private String path;
+    /**
      * File path in file system.
      */
     private String fsPath;

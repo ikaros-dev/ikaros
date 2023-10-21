@@ -111,7 +111,8 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("Attachment ID")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class)))
+                        .implementation(Long.class))
+                    .response(responseBuilder().implementation(Attachment.class)))
 
             .DELETE("/attachment/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteAttachment").tag(tag)
