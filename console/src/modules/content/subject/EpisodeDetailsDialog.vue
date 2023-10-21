@@ -95,6 +95,7 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 				<div v-if="episode?.resources && episode?.resources.length > 0">
 					<div v-if="!props.multiResource" align="center">
 						<router-link
+							target="_blank"
 							:to="
 								'/attachments?searchName=' +
 								base64Encode(episode?.resources[0].name)
@@ -121,6 +122,7 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 							:span="8"
 						>
 							<router-link
+								target="_blank"
 								:to="'/attachments?searchName=' + base64Encode(res.name)"
 							>
 								<el-card shadow="hover">
@@ -129,18 +131,6 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 							</router-link>
 						</el-col>
 					</el-row>
-					<!-- <el-descriptions border :column="1">
-						<el-descriptions-item
-							v-for="res in episode?.resources"
-							:key="res.attachmentId"
-							label="附件列表"
-						>
-							<router-link
-								:to="'/attachments?searchName=' + base64Encode(res.name)"
-								>{{ res.name }}</router-link
-							>
-						</el-descriptions-item>
-					</el-descriptions> -->
 				</div>
 				<span v-else> 当前剧集暂未绑定资源文件 </span>
 			</el-descriptions-item>
