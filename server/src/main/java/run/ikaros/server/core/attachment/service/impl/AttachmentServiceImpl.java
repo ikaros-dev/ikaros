@@ -1,6 +1,7 @@
 package run.ikaros.server.core.attachment.service.impl;
 
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
+import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARENT_ID;
 import static run.ikaros.api.store.enums.AttachmentType.Directory;
 import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
@@ -16,6 +17,7 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -506,6 +508,36 @@ public class AttachmentServiceImpl implements AttachmentService {
                 .build())
             .flatMap(repository::save)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
+    }
+
+    @Override
+    public Mono<List<Attachment>> findAttachmentPathDirsById(Long id) {
+        Assert.isTrue(id > 0, "'id' must gt 0.");
+        return findPathDirs(id, new ArrayList<>())
+            .flatMap(attEntities -> repository.findById(id)
+                .filter(attachmentEntity -> Directory.equals(attachmentEntity.getType()))
+                .flatMap(entity -> {
+                    attEntities.add(attEntities.size(), entity);
+                    return Mono.just(attEntities);
+                })
+                .switchIfEmpty(Mono.just(attEntities)))
+            .flatMapMany(attEntities -> Flux.fromStream(attEntities.stream()))
+            .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()))
+            .collectList();
+    }
+
+    private Mono<List<AttachmentEntity>> findPathDirs(long id, List<AttachmentEntity> entities) {
+        if (ROOT_DIRECTORY_PARENT_ID.equals(id)) {
+            Collections.reverse(entities);
+            return Mono.just(entities);
+        }
+        return repository.findById(id)
+            .map(AttachmentEntity::getParentId)
+            .flatMap(repository::findById)
+            .flatMap(attachmentEntity -> {
+                entities.add(attachmentEntity);
+                return findPathDirs(attachmentEntity.getId(), entities);
+            });
     }
 
     private Mono<String> findPathByParentId(Long parentId, String name) {

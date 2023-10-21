@@ -3,6 +3,8 @@ package run.ikaros.server.core.attachment.service;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
+import java.util.Optional;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
@@ -44,4 +46,5 @@ public interface AttachmentService {
 
     Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name);
 
+    Mono<List<Attachment>> findAttachmentPathDirsById(Long id);
 }

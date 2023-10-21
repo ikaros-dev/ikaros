@@ -44,7 +44,6 @@ import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
-import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -113,6 +112,16 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
                     .response(responseBuilder().implementation(Attachment.class)))
+
+            .GET("/attachment/paths/{id}", this::getAttachmentPathDirsById,
+                builder -> builder.operationId("GetAttachmentPathDirsById")
+                    .tag(tag).description("Get attachment path dirs by id.")
+                    .parameter(parameterBuilder()
+                        .name("id").description("Attachment id.")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(responseBuilder().implementationArray(Attachment.class)))
 
             .DELETE("/attachment/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteAttachment").tag(tag)
@@ -253,6 +262,14 @@ public class AttachmentEndpoint implements CoreEndpoint {
         String id = request.pathVariable("id");
         return attachmentService.findById(Long.parseLong(id))
             .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
+            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
+                .bodyValue("Not found for id: " + id));
+    }
+
+    private Mono<ServerResponse> getAttachmentPathDirsById(ServerRequest request) {
+        String id = request.pathVariable("id");
+        return attachmentService.findAttachmentPathDirsById(Long.parseLong(id))
+            .flatMap(attachments -> ServerResponse.ok().bodyValue(attachments))
             .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
                 .bodyValue("Not found for id: " + id));
     }
