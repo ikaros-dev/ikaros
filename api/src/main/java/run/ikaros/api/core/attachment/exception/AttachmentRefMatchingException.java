@@ -1,6 +1,6 @@
 package run.ikaros.api.core.attachment.exception;
 
-public class AttachmentRefMatchingException extends RuntimeException {
+public class AttachmentRefMatchingException extends AttachmentException {
     public AttachmentRefMatchingException(String message) {
         super(message);
     }

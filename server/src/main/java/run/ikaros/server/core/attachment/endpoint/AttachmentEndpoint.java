@@ -44,6 +44,7 @@ import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
+import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -302,8 +303,8 @@ public class AttachmentEndpoint implements CoreEndpoint {
         return request.bodyToMono(Attachment.class)
             .flatMap(attachmentService::save)
             .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
-            .onErrorResume(NotFoundException.class, e -> ServerResponse
-                .status(HttpStatus.NOT_FOUND).bodyValue("Not found attachment record."));
+            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
+                .bodyValue("Not found attachment record."));
 
     }
 

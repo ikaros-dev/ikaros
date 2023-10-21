@@ -16,23 +16,22 @@ public interface AttachmentService {
 
     Mono<Attachment> save(Attachment attachment);
 
+    Mono<Attachment> upload(AttachmentUploadCondition uploadCondition);
+
     Mono<PagingWrap<AttachmentEntity>> listEntitiesByCondition(
         AttachmentSearchCondition searchCondition);
 
     Mono<PagingWrap<Attachment>> listByCondition(AttachmentSearchCondition searchCondition);
-
-    Mono<Void> removeById(Long attachmentId);
-
-    Mono<Attachment> upload(AttachmentUploadCondition uploadCondition);
 
     Mono<Attachment> findById(Long attachmentId);
 
     Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type, @Nullable Long parentId,
                                                   String name);
 
+    Mono<Void> removeById(Long attachmentId);
+
     Mono<Void> removeByTypeAndParentIdAndName(
         AttachmentType type, @Nullable Long parentId, String name);
-
 
     Mono<Void> receiveAndHandleFragmentUploadChunkFile(@NotBlank String unique,
                                                        @Nonnull Long uploadLength,

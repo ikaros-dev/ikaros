@@ -49,12 +49,14 @@ import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentEntity;
+import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
 @Slf4j
 @Service
 public class AttachmentServiceImpl implements AttachmentService {
     private final AttachmentRepository repository;
+    private final AttachmentReferenceRepository referenceRepository;
     private final R2dbcEntityTemplate template;
     private final IkarosProperties ikarosProperties;
 
@@ -62,8 +64,10 @@ public class AttachmentServiceImpl implements AttachmentService {
      * Construct.
      */
     public AttachmentServiceImpl(AttachmentRepository repository,
+                                 AttachmentReferenceRepository referenceRepository,
                                  R2dbcEntityTemplate template, IkarosProperties ikarosProperties) {
         this.repository = repository;
+        this.referenceRepository = referenceRepository;
         this.template = template;
         this.ikarosProperties = ikarosProperties;
     }
@@ -137,18 +141,32 @@ public class AttachmentServiceImpl implements AttachmentService {
                     pagingWrap.getTotal(), attachments)));
     }
 
-    @Override
-    public Mono<Void> removeById(Long attachmentId) {
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
-        if (AttachmentConst.COVER_DIRECTORY_ID.equals(attachmentId)) {
-            return Mono.error(new AttachmentRemoveException(
-                "Forbid remove system internal subject cover dir for attachment id="
-                    + attachmentId));
-        }
+    private Mono<AttachmentEntity> checkChildAttachmentRefNotExists(
+        AttachmentEntity attachmentEntity) {
+        return Mono.just(attachmentEntity)
+            .map(AttachmentEntity::getType)
+            .filter(Directory::equals)
+            .map(eq -> attachmentEntity.getId())
+            .flatMapMany(repository::findAllByParentId)
+            .flatMap(entity -> referenceRepository.existsByAttachmentId(entity.getId())
+                .filter(exists -> !exists)
+                .switchIfEmpty(Mono.error(new AttachmentRemoveException(
+                    "Forbid remove, attachment refs exists, "
+                        + "please remove all refs for current attachment before remove it, id="
+                        + entity.getId() + " and name=" + entity.getName()))))
+            .then(Mono.just(attachmentEntity));
+    }
+
+    private Mono<Long> checkAttachmentRefNotExists(Long attachmentId) {
         return repository.findById(attachmentId)
-            .flatMap(this::removeChildrenAttachment)
-            .map(this::removeFileSystemFile)
-            .flatMap(repository::delete);
+            .flatMap(this::checkChildAttachmentRefNotExists)
+            .flatMap(entity -> referenceRepository.existsByAttachmentId(entity.getId())
+                .filter(exists -> !exists)
+                .switchIfEmpty(Mono.error(new AttachmentRemoveException(
+                    "Forbid remove, attachment refs exists, "
+                        + "please remove all refs for current attachment before remove it, id="
+                        + entity.getId() + " and name=" + entity.getName()))))
+            .then(Mono.just(attachmentId));
     }
 
     private Mono<AttachmentEntity> removeChildrenAttachment(AttachmentEntity attachmentEntity) {
@@ -162,6 +180,37 @@ public class AttachmentServiceImpl implements AttachmentService {
             .map(this::removeFileSystemFile)
             .flatMap(repository::delete)
             .then(Mono.just(attachmentEntity));
+    }
+
+
+    @Override
+    public Mono<Void> removeById(Long attachmentId) {
+        Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
+        if (AttachmentConst.COVER_DIRECTORY_ID.equals(attachmentId)
+            || AttachmentConst.DOWNLOAD_DIRECTORY_ID.equals(attachmentId)) {
+            return Mono.error(new AttachmentRemoveException(
+                "Forbid remove system internal 'Covers' or 'Downloads' dir for attachment id="
+                    + attachmentId));
+        }
+        return checkAttachmentRefNotExists(attachmentId)
+            .flatMap(repository::findById)
+            .flatMap(this::removeChildrenAttachment)
+            .map(this::removeFileSystemFile)
+            .flatMap(repository::delete);
+    }
+
+
+    @Override
+    public Mono<Void> removeByTypeAndParentIdAndName(AttachmentType type,
+                                                     @Nullable Long parentId, String name) {
+        Assert.notNull(type, "'type' must not null.");
+        Assert.hasText(name, "'name' must has text.");
+        if (Objects.isNull(parentId)) {
+            parentId = AttachmentConst.ROOT_DIRECTORY_ID;
+        }
+        return repository.findByTypeAndParentIdAndName(type, parentId, name)
+            .map(AttachmentEntity::getId)
+            .flatMap(this::removeById);
     }
 
     @Override
@@ -224,16 +273,6 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }
 
-    @Override
-    public Mono<Void> removeByTypeAndParentIdAndName(AttachmentType type,
-                                                     @Nullable Long parentId, String name) {
-        Assert.notNull(type, "'type' must not null.");
-        Assert.hasText(name, "'name' must has text.");
-        if (Objects.isNull(parentId)) {
-            parentId = AttachmentConst.ROOT_DIRECTORY_ID;
-        }
-        return repository.removeByTypeAndParentIdAndName(type, parentId, name);
-    }
 
     private static Mono<Path> writeDataToFsPath(Flux<DataBuffer> dataBufferFlux,
                                                 Path fsPath) {
