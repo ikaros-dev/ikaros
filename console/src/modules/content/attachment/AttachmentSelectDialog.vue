@@ -137,6 +137,7 @@ onMounted(fetchAttachments);
 <template>
 	<AttachmentFragmentUploadDrawer
 		v-model:visible="attachmentUploadDrawerVisible"
+		v-model:parentId="attachmentCondition.parentId"
 		@fileUploadDrawerCloes="onFileUploadDrawerClose"
 	/>
 
