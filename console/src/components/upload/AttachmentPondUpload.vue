@@ -11,7 +11,7 @@ import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginFileRename from 'filepond-plugin-file-rename';
 import Utf8 from 'crypto-js/enc-utf8';
 import Base64 from 'crypto-js/enc-base64';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const filePondRef = ref(null);
@@ -59,24 +59,43 @@ const props = withDefaults(
 	}
 );
 
-const server = {
-	url: '/',
-	process: {
-		url: './api/v1alpha1/attachment/fragment/unique',
-		withCredentials: true,
+const emit = defineEmits<{
+	// eslint-disable-next-line no-unused-vars
+	(event: 'update:parentId', parentId: number): void;
+}>();
+
+const reqHeaderParendId = computed({
+	get() {
+		return props.parentId;
 	},
-	patch: {
-		url: './api/v1alpha1/attachment/fragment/patch/',
-		withCredentials: true,
-		headers: {
-			'PARENT-ID': props.parentId,
-		},
+	set(value) {
+		emit('update:parentId', value as number);
 	},
-	revert: {
-		url: './api/v1alpha1/attachment/fragment/revert',
-		withCredentials: true,
+});
+
+const server = computed({
+	get() {
+		return {
+			url: '/',
+			process: {
+				url: './api/v1alpha1/attachment/fragment/unique',
+				withCredentials: true,
+			},
+			patch: {
+				url: './api/v1alpha1/attachment/fragment/patch/',
+				withCredentials: true,
+				headers: {
+					'PARENT-ID': reqHeaderParendId.value,
+				},
+			},
+			revert: {
+				url: './api/v1alpha1/attachment/fragment/revert',
+				withCredentials: true,
+			},
+		};
 	},
-};
+	set() {},
+});
 
 const fileList = ref([]);
 
@@ -102,6 +121,7 @@ defineExpose({
 <template>
 	<file-pond
 		ref="filePondRef"
+		v-model:server="server"
 		style="height: 100%"
 		:accepted-file-types="props.accepts"
 		:allow-multiple="props.multiple"
@@ -112,7 +132,6 @@ defineExpose({
 		:maxFiles="100"
 		:maxParallelUploads="5"
 		:name="props.name"
-		:server="server"
 		:chunkUploads="props.enableChunkUploads"
 		:chunkSize="props.chunkSize"
 		:chunkForce="props.enableChunkForce"

@@ -115,6 +115,7 @@ const onBreadcrumbClick = async (path) => {
 	}
 	attachmentCondition.value.parentId = path.id;
 	await fetchAttachments();
+	// console.log('parentId', attachmentCondition.value.parentId);
 };
 
 const entryAttachment = async (attachment) => {
@@ -133,6 +134,7 @@ const entryAttachment = async (attachment) => {
 		currentSelectionAttachment.value = attachment;
 		attachmentDetailDrawerVisible.value = true;
 	}
+	// console.log('parentId', attachmentCondition.value.parentId);
 };
 
 const dateFormat = (row, column) => {
@@ -186,6 +188,7 @@ const deleteAttachment = async (attachment: Attachment) => {
 			'】' +
 			'成功。'
 	);
+	await fetchAttachments();
 };
 
 const deleteAttachments = async () => {
