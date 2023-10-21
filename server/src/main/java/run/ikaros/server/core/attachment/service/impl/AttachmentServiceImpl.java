@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.service.impl;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.store.enums.AttachmentType.Directory;
 import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
@@ -75,7 +76,10 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public Mono<AttachmentEntity> saveEntity(AttachmentEntity attachmentEntity) {
         Assert.notNull(attachmentEntity, "'attachmentEntity' must not be null.");
-        return repository.save(attachmentEntity.setUpdateTime(LocalDateTime.now()));
+        return findPathByParentId(attachmentEntity.getParentId(), attachmentEntity.getName())
+            .map(attachmentEntity::setPath)
+            .map(entity -> entity.setUpdateTime(LocalDateTime.now()))
+            .flatMap(repository::save);
     }
 
     @Override
@@ -240,15 +244,20 @@ public class AttachmentServiceImpl implements AttachmentService {
                     .switchIfEmpty(Mono.just(name))
                     .flatMap(n ->
                         // save attachment entity
-                        saveEntity(AttachmentEntity.builder()
-                            .parentId(parentId)
-                            .fsPath(fsPath.toString())
-                            .updateTime(LocalDateTime.now())
-                            .type(AttachmentType.File)
-                            .name(n)
-                            .url(path2url(uploadFilePath, ikarosProperties.getWorkDir().toString()))
-                            .size(findFileSize(uploadFilePath))
-                            .build()))
+                        findPathByParentId(parentId, n)
+                            .map(path -> AttachmentEntity.builder()
+                                .parentId(parentId)
+                                .fsPath(fsPath.toString())
+                                .updateTime(LocalDateTime.now())
+                                .type(AttachmentType.File)
+                                .name(n)
+                                .path(path)
+                                .url(path2url(uploadFilePath,
+                                    ikarosProperties.getWorkDir().toString()))
+                                .size(findFileSize(uploadFilePath))
+                                .build())
+                            .flatMap(this::saveEntity)
+                    )
             )
             .flatMap(attachmentEntity ->
                 copyProperties(attachmentEntity, Attachment.builder().build()));
@@ -391,15 +400,19 @@ public class AttachmentServiceImpl implements AttachmentService {
                     .switchIfEmpty(Mono.just(uploadName))
                     .flatMap(n ->
                         // save attachment entity
-                        saveEntity(AttachmentEntity.builder()
-                            .parentId(finalParentId)
-                            .fsPath(filePath)
-                            .updateTime(LocalDateTime.now())
-                            .type(AttachmentType.File)
-                            .name(n)
-                            .url(path2url(filePath, ikarosProperties.getWorkDir().toString()))
-                            .size(findFileSize(filePath))
-                            .build())).then();
+                        findPathByParentId(finalParentId, n)
+                            .map(path -> AttachmentEntity.builder()
+                                .parentId(finalParentId)
+                                .fsPath(filePath)
+                                .updateTime(LocalDateTime.now())
+                                .type(AttachmentType.File)
+                                .name(n)
+                                .path(path)
+                                .url(path2url(filePath, ikarosProperties.getWorkDir().toString()))
+                                .size(findFileSize(filePath))
+                                .build())
+                            .flatMap(this::saveEntity)
+                    ).then();
         }
         return Mono.empty();
     }
@@ -483,14 +496,25 @@ public class AttachmentServiceImpl implements AttachmentService {
             .filter(exists -> exists)
             .switchIfEmpty(Mono.error(new AttachmentParentNotFoundException(
                 "Parent attachment not found for id = " + fParentId)))
-            .map(exists -> AttachmentEntity.builder()
+            .flatMap(exists -> findPathByParentId(fParentId, name))
+            .map(path -> AttachmentEntity.builder()
                 .parentId(fParentId)
                 .name(name)
+                .path(path)
                 .updateTime(LocalDateTime.now())
                 .type(Directory)
                 .build())
             .flatMap(repository::save)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
+    }
+
+    private Mono<String> findPathByParentId(Long parentId, String name) {
+        if (ROOT_DIRECTORY_ID.equals(parentId)) {
+            return Mono.just('/' + name);
+        }
+        return repository.findById(parentId)
+            .map(AttachmentEntity::getPath)
+            .map(path -> path + '/' + name);
     }
 
     private AttachmentEntity removeFileSystemFile(AttachmentEntity attachmentEntity) {
