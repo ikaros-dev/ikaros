@@ -81,23 +81,28 @@ public class AttachmentRefSubjectCoverChangeListener {
             return Mono.empty();
         }
         return attachmentRepository.findByUrl(cover)
-            .flatMap(attachmentEntity -> attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
-                AttachmentReferenceType.SUBJECT, attachmentEntity.getId(), subjectId)
-                .flatMap(attachmentReferenceRepository::delete)
-                // 当附件没有被其它引用时，移除对应的附件记录，并删除操作系统上的文件
-                .then(attachmentReferenceRepository.existsByAttachmentId(attachmentEntity.getId()))
-                .filter(exists -> !exists)
-                .flatMap(exists -> attachmentRepository.deleteById(attachmentEntity.getId()))
-                .then(Mono.defer((Supplier<Mono<Void>>) () -> {
-                    String fsPath = attachmentEntity.getFsPath();
-                    try {
-                        Files.deleteIfExists(Path.of(fsPath));
-                    } catch (IOException e) {
-                        throw new AttachmentRemoveException(
-                            "Delete attachment fail when delete fs file by fsPath=" + fsPath, e);
-                    }
-                    return Mono.empty();
-                }))
+            .flatMap(
+                attachmentEntity ->
+                    attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
+                            AttachmentReferenceType.SUBJECT, attachmentEntity.getId(), subjectId)
+                        .flatMap(attachmentReferenceRepository::delete)
+                        // 当附件没有被其它引用时，移除对应的附件记录，并删除操作系统上的文件
+                        .then(attachmentReferenceRepository.existsByAttachmentId(
+                            attachmentEntity.getId()))
+                        .filter(exists -> !exists)
+                        .flatMap(
+                            exists -> attachmentRepository.deleteById(attachmentEntity.getId()))
+                        .then(Mono.defer((Supplier<Mono<Void>>) () -> {
+                            String fsPath = attachmentEntity.getFsPath();
+                            try {
+                                Files.deleteIfExists(Path.of(fsPath));
+                            } catch (IOException e) {
+                                throw new AttachmentRemoveException(
+                                    "Delete attachment fail when delete fs file by fsPath="
+                                        + fsPath, e);
+                            }
+                            return Mono.empty();
+                        }))
             );
     }
 }

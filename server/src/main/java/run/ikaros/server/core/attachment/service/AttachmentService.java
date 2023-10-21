@@ -4,7 +4,6 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
-import java.util.Optional;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
