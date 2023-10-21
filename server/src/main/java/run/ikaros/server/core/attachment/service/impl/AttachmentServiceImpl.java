@@ -512,7 +512,7 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public Mono<List<Attachment>> findAttachmentPathDirsById(Long id) {
-        Assert.isTrue(id > 0, "'id' must gt 0.");
+        Assert.isTrue(id >= 0, "'id' must >= 0.");
         return findPathDirs(id, new ArrayList<>())
             .flatMap(attEntities -> repository.findById(id)
                 .filter(attachmentEntity -> Directory.equals(attachmentEntity.getType()))

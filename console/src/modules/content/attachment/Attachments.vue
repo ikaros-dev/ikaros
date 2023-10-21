@@ -80,12 +80,17 @@ const fetchAttachments = async () => {
 };
 
 const updateBreadcrumbByParentPath = async () => {
-	// eslint-disable-next-line no-unused-vars
-	// const { data } = await apiClient.attachment.getAttachmentById({
-	// 	id: attachmentCondition.value.parentId as number,
-	// });
-	// let path = data.path;
-	// let paths: string[] = path?.substring(1).split('/');
+	const { data } = await apiClient.attachment.getAttachmentPathDirsById({
+		id: attachmentCondition.value.parentId as number,
+	});
+	paths.value = data.map((att) => {
+		const path: Path = {
+			name: att.name as string,
+			id: att.id as number,
+			parentId: att.parentId as number,
+		};
+		return path;
+	});
 };
 
 const onCurrentPageChange = async (val: number) => {
@@ -325,6 +330,12 @@ watch(
 			attachmentCondition.value.name = base64Decode(
 				newValue.searchName as string
 			);
+			if (newValue.parentId) {
+				attachmentCondition.value.parentId = parseInt(
+					newValue.parentId as string
+				);
+			}
+			fetchAttachments();
 		}
 	},
 	{ immediate: true }
