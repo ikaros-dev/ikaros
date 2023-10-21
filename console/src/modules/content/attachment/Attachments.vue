@@ -50,6 +50,7 @@ import {
 	ElPopconfirm,
 	ElMessageBox,
 } from 'element-plus';
+import router from '@/router';
 
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
@@ -340,6 +341,19 @@ watch(
 	},
 	{ immediate: true }
 );
+watch(attachmentCondition.value, () => {
+	// console.log('attachmentCondition.value', attachmentCondition.value);
+	const name = attachmentCondition.value.name;
+	const parentId = attachmentCondition.value.parentId;
+	const query = JSON.parse(JSON.stringify(route.query));
+	if (name !== route.query.searchName) {
+		query.searchName = base64Encode(name);
+	}
+	if (parentId !== parseInt(route.query.parentId as string)) {
+		query.parentId = parentId + '';
+	}
+	router.push({ path: route.path, query });
+});
 </script>
 
 <template>

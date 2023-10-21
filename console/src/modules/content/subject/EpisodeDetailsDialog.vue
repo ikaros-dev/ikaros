@@ -97,7 +97,9 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 						<router-link
 							target="_blank"
 							:to="
-								'/attachments?searchName=' +
+								'/attachments?parentId=' +
+								episode?.resources[0].parentAttachmentId +
+								'&searchName=' +
 								base64Encode(episode?.resources[0].name)
 							"
 							>{{ episode?.resources[0].name }}</router-link
@@ -123,7 +125,12 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 						>
 							<router-link
 								target="_blank"
-								:to="'/attachments?searchName=' + base64Encode(res.name)"
+								:to="
+									'/attachments?parentId=' +
+									res.parentAttachmentId +
+									'&searchName=' +
+									base64Encode(res.name)
+								"
 							>
 								<el-card shadow="hover">
 									{{ res.name }}
