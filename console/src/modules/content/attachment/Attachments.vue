@@ -78,19 +78,19 @@ const fetchAttachments = async () => {
 	attachmentCondition.value.total = data.total;
 };
 
-const onCurrentPageChange = (val: number) => {
+const onCurrentPageChange = async (val: number) => {
 	attachmentCondition.value.page = val;
-	fetchAttachments();
+	await fetchAttachments();
 };
 
-const onSizeChange = (val: number) => {
+const onSizeChange = async (val: number) => {
 	attachmentCondition.value.size = val;
-	fetchAttachments();
+	await fetchAttachments();
 };
 
 const attachmentUploadDrawerVisible = ref(false);
-const onFileUploadDrawerClose = () => {
-	fetchAttachments();
+const onFileUploadDrawerClose = async () => {
+	await fetchAttachments();
 };
 
 interface Path {
@@ -107,18 +107,20 @@ const paths = ref<Path[]>([
 	},
 ]);
 
-const onBreadcrumbClick = (path) => {
+const onBreadcrumbClick = async (path) => {
 	// console.log('path', path);
 	var index = paths.value.indexOf(path);
 	if (index !== -1) {
 		paths.value.splice(index + 1);
 	}
 	attachmentCondition.value.parentId = path.id;
-	fetchAttachments();
+	await fetchAttachments();
 };
 
-const entryAttachment = (attachment) => {
+const entryAttachment = async (attachment) => {
 	// console.log('attachment', attachment);
+	// console.log('attachment id:', attachment.id);
+	// console.log('attachment name:', attachment.name);
 	if ('Directory' === attachment.type) {
 		attachmentCondition.value.parentId = attachment.id;
 		paths.value.push({
@@ -126,7 +128,7 @@ const entryAttachment = (attachment) => {
 			parentId: attachment.parentId,
 			id: attachment.id,
 		});
-		fetchAttachments();
+		await fetchAttachments();
 	} else {
 		currentSelectionAttachment.value = attachment;
 		attachmentDetailDrawerVisible.value = true;
@@ -153,8 +155,9 @@ const onCreateFolderButtonClick = async () => {
 		name: base64Encode(createFolderName.value),
 	});
 	ElMessage.success('创建目录成功，目录名：' + createFolderName.value);
-	dialogFolderVisible.value = false;
+	createFolderName.value = '';
 	await fetchAttachments();
+	dialogFolderVisible.value = false;
 };
 
 const currentSelectionAttachment = ref<Attachment>();
@@ -297,8 +300,8 @@ const onDirSelected = async (targetDirid: number) => {
 				attachment: attachment,
 			});
 		});
-	await ElMessage.success('批量移动附件成功');
 	await fetchAttachments();
+	await ElMessage.success('批量移动附件成功');
 };
 
 watch(
