@@ -30,6 +30,11 @@ public enum EpisodeGroup {
      * commercial message, CM.
      */
     COMMERCIAL_MESSAGE,
+    MUSIC_DIST1,
+    MUSIC_DIST2,
+    MUSIC_DIST3,
+    MUSIC_DIST4,
+    MUSIC_DIST5,
     OTHER
 
 }
