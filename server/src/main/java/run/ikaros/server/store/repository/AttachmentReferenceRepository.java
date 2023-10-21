@@ -28,4 +28,6 @@ public interface AttachmentReferenceRepository
     Mono<Void> deleteByTypeAndAttachmentIdAndReferenceId(
         AttachmentReferenceType type, Long attachmentId, Long referenceId);
 
+    Mono<Void> deleteAllByTypeAndReferenceId(AttachmentReferenceType type, Long referenceId);
+
 }
