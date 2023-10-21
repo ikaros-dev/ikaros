@@ -115,6 +115,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                             .map(attachmentEntity -> EpisodeResource.builder()
                                 .episodeId(episode.getId())
                                 .attachmentId(attachmentEntity.getId())
+                                .parentAttachmentId(attachmentEntity.getParentId())
                                 .name(attachmentEntity.getName())
                                 .url(attachmentEntity.getUrl())
                                 .canRead(true)
