@@ -8,19 +8,25 @@ import {
 	ElDialog,
 	ElMessage,
 	ElPopconfirm,
+	ElRow,
+	ElCol,
+	ElCard,
 } from 'element-plus';
 import { base64Encode } from '@/utils/string-util';
 // eslint-disable-next-line no-unused-vars
 import { apiClient } from '@/utils/api-client';
 import { AttachmentReferenceTypeEnum } from '@runikaros/api-client';
+import { isVideo } from '@/utils/file';
 
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
 		episode: Episode | undefined;
+		multiResource?: boolean;
 	}>(),
 	{
 		visible: false,
+		multiResource: false,
 	}
 );
 
@@ -61,6 +67,7 @@ const removeEpisodeAttachmentRef = async () => {
 	emit('removeEpisodeFileBind');
 };
 
+// eslint-disable-next-line no-unused-vars
 const urlIsArachivePackage = (url: string | undefined): boolean => {
 	return !url || url.endsWith('zip') || url.endsWith('7z');
 };
@@ -85,11 +92,8 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 				{{ episode?.description }}
 			</el-descriptions-item>
 			<el-descriptions-item label="资源">
-				<div
-					v-if="episode?.resources && episode?.resources.length > 0"
-					align="center"
-				>
-					<div>
+				<div v-if="episode?.resources && episode?.resources.length > 0">
+					<div v-if="!props.multiResource" align="center">
 						<router-link
 							:to="
 								'/attachments?searchName=' +
@@ -97,25 +101,46 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 							"
 							>{{ episode?.resources[0].name }}</router-link
 						>
+						<video
+							v-if="isVideo(episode.resources[0].url as string)"
+							style="width: 100%"
+							:src="episode.resources[0].url"
+							controls
+							preload="metadata"
+						>
+							您的浏览器不支持这个格式的视频
+						</video>
+						<span v-else>
+							当前资源文件非视频文件、或者不可读取，如是视频文件且需读取，请先从远端拉取。
+						</span>
 					</div>
-					<video
-						v-if="
-							episode?.resources &&
-							episode?.resources.length > 0 &&
-							episode?.resources &&
-							!urlIsArachivePackage(episode.resources[0].url) &&
-							episode?.resources[0]?.canRead
-						"
-						style="width: 100%"
-						:src="episode.resources[0].url"
-						controls
-						preload="metadata"
-					>
-						您的浏览器不支持这个格式的视频
-					</video>
-					<span v-else>
-						当前资源文件非视频文件、或者不可读取，如是视频文件且需读取，请先从远端拉取。
-					</span>
+					<el-row :gutter="12" :span="24">
+						<el-col
+							v-for="res in episode?.resources"
+							:key="res.attachmentId"
+							:span="8"
+						>
+							<router-link
+								:to="'/attachments?searchName=' + base64Encode(res.name)"
+							>
+								<el-card shadow="hover">
+									{{ res.name }}
+								</el-card>
+							</router-link>
+						</el-col>
+					</el-row>
+					<!-- <el-descriptions border :column="1">
+						<el-descriptions-item
+							v-for="res in episode?.resources"
+							:key="res.attachmentId"
+							label="附件列表"
+						>
+							<router-link
+								:to="'/attachments?searchName=' + base64Encode(res.name)"
+								>{{ res.name }}</router-link
+							>
+						</el-descriptions-item>
+					</el-descriptions> -->
 				</div>
 				<span v-else> 当前剧集暂未绑定资源文件 </span>
 			</el-descriptions-item>
