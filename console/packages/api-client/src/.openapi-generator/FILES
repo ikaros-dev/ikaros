@@ -1,6 +1,7 @@
 .gitignore
 .npmignore
 api.ts
+api/actuator-api.ts
 api/plugin-ikaros-run-v1alpha1-plugin-api.ts
 api/setting-ikaros-run-v1alpha1-configmap-api.ts
 api/v1alpha1-attachment-api.ts
@@ -31,6 +32,7 @@ models/episode-collection.ts
 models/episode-resource.ts
 models/episode.ts
 models/index.ts
+models/link.ts
 models/paging-wrap.ts
 models/plugin-load-location-file-system.ts
 models/plugin-load-location.ts

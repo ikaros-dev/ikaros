@@ -12,6 +12,7 @@
  * Do not edit the class manually.
  */
 
+export * from './api/actuator-api';
 export * from './api/plugin-ikaros-run-v1alpha1-plugin-api';
 export * from './api/setting-ikaros-run-v1alpha1-configmap-api';
 export * from './api/v1alpha1-attachment-api';
