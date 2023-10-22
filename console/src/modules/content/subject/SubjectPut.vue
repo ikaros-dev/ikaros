@@ -216,14 +216,14 @@ onMounted(() => {
 				</el-form-item>
 
 				<el-form-item label="条目名称" prop="name">
-					<el-input v-model="subject.name" class="ik-form-item" />
+					<el-input v-model="subject.name" />
 				</el-form-item>
 
 				<el-form-item label="条目中文名">
-					<el-input v-model="subject.name_cn" class="ik-form-item" />
+					<el-input v-model="subject.name_cn" />
 				</el-form-item>
 
-				<el-form-item label="条目类型" prop="type" class="ik-form-item">
+				<el-form-item label="条目类型" prop="type">
 					<el-radio-group v-model="subject.type">
 						<el-radio
 							v-for="type in subjectTypes"
@@ -244,7 +244,6 @@ onMounted(() => {
 						rows="5"
 						show-word-limit
 						type="textarea"
-						class="ik-form-item"
 					/>
 				</el-form-item>
 
@@ -255,7 +254,6 @@ onMounted(() => {
 						rows="15"
 						show-word-limit
 						type="textarea"
-						class="ik-form-item"
 						placeholder="一行一个 key:value, 例子 中文名: 天降之物"
 					/>
 				</el-form-item>
@@ -271,11 +269,7 @@ onMounted(() => {
 				/>
 
 				<el-form-item label="剧集">
-					<el-table
-						:data="subject.episodes"
-						class="ik-form-item"
-						@row-dblclick="showEpisodeDetails"
-					>
+					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
 						<el-table-column label="分组" prop="group" width="100px">
 							<template #default="scoped">
 								{{ episodeGroupLabelMap.get(scoped.row.group) }}
