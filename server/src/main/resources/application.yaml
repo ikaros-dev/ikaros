@@ -57,7 +57,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: *
+        include: "*"
   endpoint:
     health:
       enabled: true
