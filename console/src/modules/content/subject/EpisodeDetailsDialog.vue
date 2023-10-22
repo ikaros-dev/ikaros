@@ -117,7 +117,7 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 							当前资源文件非视频文件、或者不可读取，如是视频文件且需读取，请先从远端拉取。
 						</span>
 					</div>
-					<el-row :gutter="12" :span="24">
+					<el-row v-else :gutter="12" :span="24">
 						<el-col
 							v-for="res in episode?.resources"
 							:key="res.attachmentId"
