@@ -18,11 +18,11 @@ const asideWidth = computed(() => {
 
 const globalSearchDialogVisible = ref(false);
 
-const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
+// const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
 
 const handleGlobalSearchKeybinding = (e: KeyboardEvent) => {
-	const { key, ctrlKey, metaKey } = e;
-	if (key === 'k' && ((ctrlKey && !isMac) || metaKey)) {
+	const { key } = e;
+	if (key === '/') {
 		globalSearchDialogVisible.value = true;
 		e.preventDefault();
 	}

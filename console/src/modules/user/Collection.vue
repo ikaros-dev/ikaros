@@ -11,8 +11,8 @@ import {
 	ElOption,
 	ElPagination,
 	ElForm,
-	ElCard,
 } from 'element-plus';
+import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
 
 const userStore = useUserStore();
 
@@ -105,28 +105,12 @@ onMounted(fetchCollections);
 			:lg="4"
 			:xl="4"
 		>
-			<router-link
-				:to="'/subjects/subject/details/' + subjectCollection.subject_id"
-			>
-				<el-card
-					shadow="hover"
-					class="container"
-					:body-style="{ padding: '0px' }"
-				>
-					<template #header>
-						<div class="card-header">
-							<span>{{ subjectCollection?.name }} </span>
-							<span class="grey">{{ subjectCollection?.name_cn }}</span>
-						</div>
-					</template>
-					<span>
-						<img
-							:src="subjectCollection?.cover"
-							style="width: 100%; border-radius: 5px"
-						/>
-					</span>
-				</el-card>
-			</router-link>
+			<subject-card-link
+				:id="subjectCollection.subject_id"
+				:name="subjectCollection?.name"
+				:name-cn="subjectCollection?.name_cn"
+				:cover="subjectCollection?.cover"
+			/>
 		</el-col>
 	</el-row>
 

@@ -164,11 +164,11 @@ const onCloseWithAttachment = (attachment) => {
 				</el-form-item>
 
 				<el-form-item label="条目名称" prop="name">
-					<el-input v-model="subject.name" style="max-width: 700px" />
+					<el-input v-model="subject.name" />
 				</el-form-item>
 
 				<el-form-item label="条目中文名">
-					<el-input v-model="subject.name_cn" style="max-width: 700px" />
+					<el-input v-model="subject.name_cn" />
 				</el-form-item>
 
 				<el-form-item label="条目类型" prop="type">
@@ -193,7 +193,6 @@ const onCloseWithAttachment = (attachment) => {
 						rows="2"
 						show-word-limit
 						type="textarea"
-						style="max-width: 700px"
 					/>
 				</el-form-item>
 
@@ -205,7 +204,6 @@ const onCloseWithAttachment = (attachment) => {
 						rows="2"
 						show-word-limit
 						type="textarea"
-						style="max-width: 700px"
 						placeholder="一行一个 key:value, 例子 中文名: 天降之物"
 					/>
 				</el-form-item>
@@ -216,11 +214,7 @@ const onCloseWithAttachment = (attachment) => {
 				/>
 
 				<el-form-item label="剧集">
-					<el-table
-						:data="subject.episodes"
-						style="max-width: 700px"
-						@row-dblclick="showEpisodeDetails"
-					>
+					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
 						<el-table-column label="分组" prop="group" width="100px">
 							<template #default="scoped">
 								{{ episodeGroupLabelMap.get(scoped.row.group) }}

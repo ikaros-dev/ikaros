@@ -15,6 +15,7 @@ import {
 	V1alpha1SubjectRelationApi,
 	V1alpha1AttachmentApi,
 	V1alpha1AttachmentReferenceApi,
+	ActuatorApi,
 } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
 
@@ -150,6 +151,8 @@ const apiClient = setupApiClient(axiosInstance);
 // eslint-disable-next-line no-shadow, no-unused-vars
 function setupApiClient(axios: AxiosInstance) {
 	return {
+		// actuator
+		actuator: new ActuatorApi(undefined, baseURL, axios),
 		// core endpoints
 		user: new V1alpha1UserApi(undefined, baseURL, axios),
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),

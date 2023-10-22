@@ -8,6 +8,7 @@ export * from './config-map';
 export * from './episode';
 export * from './episode-collection';
 export * from './episode-resource';
+export * from './link';
 export * from './paging-wrap';
 export * from './plugin';
 export * from './plugin-load-location';

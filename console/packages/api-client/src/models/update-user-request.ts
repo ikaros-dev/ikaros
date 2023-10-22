@@ -29,6 +29,12 @@ export interface UpdateUserRequest {
 	 * @type {string}
 	 * @memberof UpdateUserRequest
 	 */
+	avatar?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof UpdateUserRequest
+	 */
 	nickname?: string;
 	/**
 	 *

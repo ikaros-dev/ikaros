@@ -424,6 +424,7 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 		},
 	});
 	ElMessage.success('单个剧集和附件匹配成功');
+	await fetchDatas();
 };
 onMounted(fetchDatas);
 </script>

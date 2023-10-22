@@ -40,7 +40,7 @@ const targetDirectoryId = ref(0);
 
 const onDirectorySelectDialogButtonClick = async () => {
 	if (!targetDirectoryId.value) {
-		return;
+		targetDirectoryId.value = 0;
 	}
 	emit('closeWithTargetDirId', targetDirectoryId.value);
 	dialogVisible.value = false;

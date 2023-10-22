@@ -9,6 +9,7 @@ import lombok.Data;
 public class UpdateUserRequest {
     @Schema(requiredMode = REQUIRED)
     private String username;
+    private String avatar;
     private String nickname;
     private String introduce;
     private String site;

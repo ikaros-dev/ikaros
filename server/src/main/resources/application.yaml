@@ -37,6 +37,7 @@ springdoc:
     enabled: false
   swagger-ui:
     doc-expansion: none
+  show-actuator: true
 
 logging:
   file:
@@ -51,3 +52,25 @@ logging:
   charset:
     console: UTF-8
     file: UTF-8
+
+management:
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+      roles:
+        - MASTER
+    env:
+      enabled: true
+  info:
+    defaults:
+      enabled: true
+    build:
+      enabled: true
+    git:
+      enabled: true
+      mode: simple
+    os:
+      enabled: true
+    java:
+      enabled: true
