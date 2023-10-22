@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue';
 import { Subject } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
-import { base64Encode } from '@/utils/string-util';
+import { base64Decode, base64Encode } from '@/utils/string-util';
 import { useRouter, useRoute } from 'vue-router';
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
 import {
@@ -25,11 +25,13 @@ const fetchSubjectByRouterQuery = () => {
 	// console.log('route.query', route.query);
 
 	if (route.query.name !== undefined) {
-		findSubjectsCondition.value.name = route.query.name as string;
+		findSubjectsCondition.value.name = base64Decode(route.query.name as string);
 	}
 
 	if (route.query.nameCn !== undefined) {
-		findSubjectsCondition.value.nameCn = route.query.nameCn as string;
+		findSubjectsCondition.value.nameCn = base64Decode(
+			route.query.nameCn as string
+		);
 	}
 
 	if (route.query.nsfw !== undefined) {
@@ -101,6 +103,28 @@ const onSubjectSyncDialogCloseWithSubjectName = (subjectName: string) => {
 	findSubjectsCondition.value.name = subjectName;
 	fetchSubjects();
 };
+
+watch(findSubjectsCondition.value, () => {
+	// console.log('attachmentCondition.value', attachmentCondition.value);
+	const query = JSON.parse(JSON.stringify(route.query));
+	const name = findSubjectsCondition.value.name as string;
+	if (name !== route.query.searchName) {
+		query.name = base64Encode(name);
+	}
+	const nameCn = findSubjectsCondition.value.nameCn as string;
+	if (nameCn !== route.query.nameCn) {
+		query.nameCn = base64Encode(nameCn);
+	}
+	const nsfw = findSubjectsCondition.value.nsfw as unknown as boolean;
+	if (nsfw !== (route.query.nsfw as unknown as boolean)) {
+		query.nsfw = nsfw;
+	}
+	const type = findSubjectsCondition.value.type;
+	if (type !== route.query.type) {
+		query.type = type;
+	}
+	router.push({ path: route.path, query });
+});
 
 onMounted(fetchSubjectByRouterQuery);
 </script>

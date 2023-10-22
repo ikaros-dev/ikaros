@@ -37,6 +37,7 @@ import {
 	subjectTypeAliasMap,
 } from '@/modules/common/constants';
 import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
+import { base64Encode } from '@/utils/string-util';
 
 const router = useRouter();
 const route = useRoute();
@@ -104,9 +105,9 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 					ElMessage.success('更新成功条目：' + subject.value.name);
 					router.push(
 						'/subjects?name=' +
-							subject.value.name +
+							base64Encode(subject.value.name) +
 							'&nameCn=' +
-							subject.value.name_cn +
+							base64Encode(subject.value.name_cn) +
 							'&nsfw=' +
 							subject.value.nsfw +
 							'&type=' +
