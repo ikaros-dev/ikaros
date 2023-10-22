@@ -2,18 +2,13 @@ package run.ikaros.server.core.attachment.listener;
 
 import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.ZoneOffset;
 import java.util.Objects;
-import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
@@ -86,23 +81,6 @@ public class AttachmentRefSubjectCoverChangeListener {
                     attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
                             AttachmentReferenceType.SUBJECT, attachmentEntity.getId(), subjectId)
                         .flatMap(attachmentReferenceRepository::delete)
-                        // 当附件没有被其它引用时，移除对应的附件记录，并删除操作系统上的文件
-                        .then(attachmentReferenceRepository.existsByAttachmentId(
-                            attachmentEntity.getId()))
-                        .filter(exists -> !exists)
-                        .flatMap(
-                            exists -> attachmentRepository.deleteById(attachmentEntity.getId()))
-                        .then(Mono.defer((Supplier<Mono<Void>>) () -> {
-                            String fsPath = attachmentEntity.getFsPath();
-                            try {
-                                Files.deleteIfExists(Path.of(fsPath));
-                            } catch (IOException e) {
-                                throw new AttachmentRemoveException(
-                                    "Delete attachment fail when delete fs file by fsPath="
-                                        + fsPath, e);
-                            }
-                            return Mono.empty();
-                        }))
             );
     }
 }

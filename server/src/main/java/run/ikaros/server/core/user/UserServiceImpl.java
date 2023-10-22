@@ -5,6 +5,7 @@ import static run.ikaros.server.core.user.UserService.addEncodingIdPrefixIfNotEx
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Example;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,15 +24,18 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Construct.
      */
     public UserServiceImpl(UserRepository repository, RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           ApplicationEventPublisher applicationEventPublisher) {
         this.repository = repository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Override
@@ -146,6 +150,14 @@ public class UserServiceImpl implements UserService {
         }
         if (isNotBlank(updateUserRequest.getSite())) {
             userEntity.setSite(updateUserRequest.getSite());
+        }
+        if (!updateUserRequest.getAvatar().equalsIgnoreCase(userEntity.getAvatar())) {
+            String oldAvatar = userEntity.getAvatar();
+            userEntity.setAvatar(updateUserRequest.getAvatar());
+            UserAvatarUpdateEvent event =
+                new UserAvatarUpdateEvent(this, oldAvatar, updateUserRequest.getAvatar(),
+                    userEntity.getId(), userEntity.getUsername());
+            applicationEventPublisher.publishEvent(event);
         }
         return repository.save(userEntity);
     }
