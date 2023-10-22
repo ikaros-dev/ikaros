@@ -59,6 +59,7 @@ const initProfileAndUsername = async () => {
 	const userEntity = userStore.currentUser?.entity;
 	profile.value.username = userEntity?.username as string;
 	profile.value.nickname = userEntity?.nickname as string;
+	profile.value.avatar = userEntity?.avatar as string;
 	profile.value.introduce = userEntity?.introduce as string;
 	profile.value.site = userEntity?.site as string;
 	passwordReq.value.username = userEntity?.username as string;
@@ -90,7 +91,7 @@ onMounted(initProfileAndUsername);
 	>
 		<el-tabs>
 			<el-tab-pane label="基本信息">
-				<ElRow>
+				<ElRow :gutter="12">
 					<ElCol :xs="24" :sm="24" :md="24" :lg="16" :xl="16">
 						<el-form-item label="昵称">
 							<el-input v-model="profile.nickname" clearable />

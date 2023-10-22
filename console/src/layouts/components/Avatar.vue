@@ -13,12 +13,20 @@ import {
 	ElDropdownMenu,
 	ElAvatar,
 } from 'element-plus';
+import { computed } from 'vue';
 
 const layoutStore = useLayoutStore();
 const { t } = useI18n();
 const userStore = useUserStore();
 
-const avatarSrcUrl = 'https://docs.ikaros.run/img/favicon.ico';
+const avatarSrcUrl = computed({
+	get() {
+		return userStore.currentUser?.entity?.avatar
+			? userStore.currentUser?.entity?.avatar
+			: 'https://docs.ikaros.run/img/favicon.ico';
+	},
+	set() {},
+});
 
 const router = useRouter();
 const toUserProfile = () => {
