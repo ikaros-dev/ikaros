@@ -107,13 +107,13 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
 		},
 		/**
 		 *
-		 * @param {'SUBJECT' | 'EPISODE'} type AttachmentReference type
+		 * @param {'SUBJECT' | 'EPISODE' | 'USER_AVATAR'} type AttachmentReference type
 		 * @param {number} attachmentId Attachment id
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		findAllByTypeAndAttachmentId: async (
-			type: 'SUBJECT' | 'EPISODE',
+			type: 'SUBJECT' | 'EPISODE' | 'USER_AVATAR',
 			attachmentId: number,
 			options: AxiosRequestConfig = {}
 		): Promise<RequestArgs> => {
@@ -439,13 +439,13 @@ export const V1alpha1AttachmentReferenceApiFp = function (
 		},
 		/**
 		 *
-		 * @param {'SUBJECT' | 'EPISODE'} type AttachmentReference type
+		 * @param {'SUBJECT' | 'EPISODE' | 'USER_AVATAR'} type AttachmentReference type
 		 * @param {number} attachmentId Attachment id
 		 * @param {*} [options] Override http request option.
 		 * @throws {RequiredError}
 		 */
 		async findAllByTypeAndAttachmentId(
-			type: 'SUBJECT' | 'EPISODE',
+			type: 'SUBJECT' | 'EPISODE' | 'USER_AVATAR',
 			attachmentId: number,
 			options?: AxiosRequestConfig
 		): Promise<
@@ -696,10 +696,10 @@ export interface V1alpha1AttachmentReferenceApiDeleteAttachmentReferenceRequest 
 export interface V1alpha1AttachmentReferenceApiFindAllByTypeAndAttachmentIdRequest {
 	/**
 	 * AttachmentReference type
-	 * @type {'SUBJECT' | 'EPISODE'}
+	 * @type {'SUBJECT' | 'EPISODE' | 'USER_AVATAR'}
 	 * @memberof V1alpha1AttachmentReferenceApiFindAllByTypeAndAttachmentId
 	 */
-	readonly type: 'SUBJECT' | 'EPISODE';
+	readonly type: 'SUBJECT' | 'EPISODE' | 'USER_AVATAR';
 
 	/**
 	 * Attachment id
