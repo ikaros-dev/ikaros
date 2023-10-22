@@ -39,8 +39,3 @@ springdoc:
   swagger-ui:
     enabled: true
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"

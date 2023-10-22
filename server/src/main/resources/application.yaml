@@ -54,6 +54,10 @@ logging:
     file: UTF-8
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: *
   endpoint:
     health:
       enabled: true
