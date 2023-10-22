@@ -226,6 +226,10 @@ public class AttachmentEndpoint implements CoreEndpoint {
 
     }
 
+    private Mono<ServerResponse> getAttachmentTotal(ServerRequest request) {
+        return Mono.empty();
+    }
+
     private Mono<ServerResponse> listByCondition(ServerRequest request) {
         Optional<String> pageOp = request.queryParam("page");
         if (pageOp.isEmpty()) {

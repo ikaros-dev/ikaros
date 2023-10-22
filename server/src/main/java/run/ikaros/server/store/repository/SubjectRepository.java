@@ -93,4 +93,6 @@ public interface SubjectRepository extends R2dbcRepository<SubjectEntity, Long> 
 
     Mono<Long> countAllByNsfwAndNameLikeAndNameCnLikeAndType(Boolean nsfw, String name,
                                                              String nameCn, SubjectType type);
+
+    Mono<Long> countByType(SubjectType type);
 }
