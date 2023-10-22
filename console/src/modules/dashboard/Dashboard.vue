@@ -2,7 +2,7 @@
 import { apiClient } from '@/utils/api-client';
 import { onMounted } from 'vue';
 import { ref } from 'vue';
-import { Files, Tickets, Postcard, User } from '@element-plus/icons-vue';
+import { Files, Tickets, Star, View } from '@element-plus/icons-vue';
 import { ElRow, ElCol, ElCard, ElIcon } from 'element-plus';
 
 const actuatorInfo = ref();
@@ -64,7 +64,7 @@ onMounted(fetchActuatorInfo);
 			<el-card shadow="hover">
 				<el-row>
 					<el-col :span="6">
-						<el-icon size="50"><Postcard /></el-icon>
+						<el-icon size="50"><Star /></el-icon>
 					</el-col>
 					<el-col :span="18">
 						<el-row>
@@ -74,7 +74,7 @@ onMounted(fetchActuatorInfo);
 							<br />
 							<el-col :span="24">
 								<span style="font-size: xx-large; font-weight: 600">
-									{{ actuatorInfo?.character?.total }}
+									{{ actuatorInfo?.subjectCollection?.total }}
 								</span>
 							</el-col>
 						</el-row>
@@ -86,7 +86,7 @@ onMounted(fetchActuatorInfo);
 			<el-card shadow="hover">
 				<el-row>
 					<el-col :span="6">
-						<el-icon size="50"><User /></el-icon>
+						<el-icon size="50"><View /></el-icon>
 					</el-col>
 					<el-col :span="18">
 						<el-row>
@@ -96,7 +96,7 @@ onMounted(fetchActuatorInfo);
 							<br />
 							<el-col :span="24">
 								<span style="font-size: xx-large; font-weight: 600">
-									{{ actuatorInfo?.person?.total }}
+									{{ actuatorInfo?.subjectCollection?.doing }}
 								</span>
 							</el-col>
 						</el-row>
