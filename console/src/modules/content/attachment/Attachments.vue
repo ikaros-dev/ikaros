@@ -31,6 +31,7 @@ import {
 	Pointer,
 	Delete,
 	Position,
+	CopyDocument,
 } from '@element-plus/icons-vue';
 import {
 	ElRow,
@@ -266,10 +267,20 @@ const onRowContextmenu = (row, column, event) => {
 		items: [
 			{
 				label: '详情',
-				divided: 'down',
+				// divided: 'down',
 				icon: h(Pointer, { style: 'height: 14px' }),
 				onClick: () => {
 					entryAttachment(currentSelectionAttachment.value);
+				},
+			},
+			{
+				label: '复制名称',
+				divided: 'down',
+				icon: h(CopyDocument, { style: 'height: 14px' }),
+				onClick: () => {
+					const name = currentSelectionAttachment.value?.name as string;
+					navigator.clipboard.writeText(name);
+					ElMessage.success('已复制复制名称到剪贴板');
 				},
 			},
 			{
