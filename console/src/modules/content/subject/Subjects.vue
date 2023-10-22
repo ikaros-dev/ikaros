@@ -216,9 +216,16 @@ onMounted(fetchSubjectByRouterQuery);
 			:lg="4"
 			:xl="4"
 		>
-			<SubjectCardLink :subject="subject" />
+			<SubjectCardLink
+				:id="subject.id"
+				:name="subject.name"
+				:name-cn="subject.name_cn"
+				:cover="subject.cover"
+			/>
 		</el-col>
 	</el-row>
+
+	<br />
 
 	<el-row>
 		<el-col

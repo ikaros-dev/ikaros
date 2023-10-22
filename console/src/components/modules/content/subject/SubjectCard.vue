@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { Subject } from '@runikaros/api-client';
 import { ElCard } from 'element-plus';
 
 const props = withDefaults(
 	defineProps<{
-		subject: Subject;
+		name: string;
+		nameCn?: string;
+		cover: string;
 	}>(),
 	{
-		subject: undefined,
+		name: '',
+		nameCn: '',
+		cover: '',
 	}
 );
 </script>
@@ -16,28 +19,40 @@ const props = withDefaults(
 	<el-card shadow="hover" class="container" :body-style="{ padding: '0px' }">
 		<template #header>
 			<div class="card-header">
-				<span>{{ props.subject?.name }} </span>
-				<span class="grey">{{ props.subject?.name_cn }}</span>
+				<span>{{ props.name }} </span>
+				<span class="grey">{{ props.nameCn }}</span>
 			</div>
 		</template>
-		<span>
-			<img
-				:src="props.subject?.cover"
-				style="width: 100%; border-radius: 5px"
-			/>
+		<span class="card-body">
+			<img :src="props.cover" />
 		</span>
 	</el-card>
 </template>
 
 <style lang="scss" scoped>
-.card-header {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	height: 15px;
-	.grey {
-		font-size: 10px;
-		color: #999;
+.container {
+	// overflow: hidden;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 24/39;
+	.card-header {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		height: 15px;
+		.grey {
+			font-size: 10px;
+			color: #999;
+		}
+	}
+
+	.card-body {
+		img {
+			width: 100%;
+			height: auto;
+			border-radius: 5px;
+			object-fit: contain;
+		}
 	}
 }
 </style>

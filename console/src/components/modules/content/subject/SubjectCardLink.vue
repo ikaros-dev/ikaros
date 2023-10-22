@@ -1,20 +1,29 @@
 <script setup lang="ts">
-import { Subject } from '@runikaros/api-client';
 import SubjectCard from './SubjectCard.vue';
 
 const props = withDefaults(
 	defineProps<{
-		subject: Subject;
+		id: number;
+		name: string;
+		nameCn?: string;
+		cover: string;
 	}>(),
 	{
-		subject: undefined,
+		id: -1,
+		name: '',
+		nameCn: '',
+		cover: '',
 	}
 );
 </script>
 
 <template>
-	<router-link :to="'/subjects/subject/details/' + props.subject.id">
-		<SubjectCard :subject="props.subject" />
+	<router-link :to="'/subjects/subject/details/' + props.id">
+		<SubjectCard
+			:name="props.name"
+			:name-cn="props.nameCn"
+			:cover="props.cover"
+		/>
 	</router-link>
 </template>
 
