@@ -319,8 +319,8 @@ const onDirSelected = async (targetDirid: number) => {
 				attachment: attachment,
 			});
 		});
-	await fetchAttachments();
 	await ElMessage.success('批量移动附件成功');
+	window.location.reload();
 };
 
 watch(
