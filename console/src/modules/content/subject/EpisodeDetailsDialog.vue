@@ -99,8 +99,8 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 							:to="
 								'/attachments?parentId=' +
 								episode?.resources[0].parentAttachmentId +
-								'&searchName=' +
-								base64Encode(episode?.resources[0].name)
+								'&name=' +
+								base64Encode(encodeURI(episode?.resources[0].name as string))
 							"
 							>{{ episode?.resources[0].name }}</router-link
 						>
@@ -128,8 +128,8 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 								:to="
 									'/attachments?parentId=' +
 									res.parentAttachmentId +
-									'&searchName=' +
-									base64Encode(res.name)
+									'&name=' +
+									base64Encode(encodeURI(res.name as string))
 								"
 							>
 								<el-card shadow="hover">

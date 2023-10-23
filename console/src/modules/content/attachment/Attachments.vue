@@ -360,8 +360,8 @@ watch(
 	(newValue) => {
 		// console.log(newValue);
 		if (newValue) {
-			attachmentCondition.value.name = base64Decode(
-				newValue.searchName as string
+			attachmentCondition.value.name = decodeURI(
+				base64Decode(newValue.name as string)
 			);
 			if (newValue.parentId) {
 				attachmentCondition.value.parentId = parseInt(

@@ -51,7 +51,7 @@ const fetchSubjectByRouterQuery = () => {
 			| 'OTHER';
 	}
 
-	console.log('findSubjectsCondition', findSubjectsCondition.value);
+	// console.log('findSubjectsCondition', findSubjectsCondition.value);
 	fetchSubjects();
 };
 
