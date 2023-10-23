@@ -7,9 +7,6 @@ import {
 } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { useRoute } from 'vue-router';
-// eslint-disable-next-line no-unused-vars
-import SubjectCard from '@/components/modules/content/subject/SubjectCard.vue';
-// eslint-disable-next-line no-unused-vars
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
 import {
 	ElDialog,
@@ -330,7 +327,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="anime" />
+						<SubjectCardLink
+							:id="anime.id"
+							:cover="anime.cover"
+							:name="anime.name"
+							:name-cn="anime.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -345,7 +347,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="comic" />
+						<SubjectCardLink
+							:id="comic.id"
+							:cover="comic.cover"
+							:name="comic.name"
+							:name-cn="comic.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -360,7 +367,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="game" />
+						<SubjectCardLink
+							:id="game.id"
+							:cover="game.cover"
+							:name="game.name"
+							:name-cn="game.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -375,7 +387,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="music" />
+						<SubjectCardLink
+							:id="music.id"
+							:cover="music.cover"
+							:name="music.name"
+							:name-cn="music.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -390,7 +407,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="novel" />
+						<SubjectCardLink
+							:id="novel.id"
+							:cover="novel.cover"
+							:name="novel.name"
+							:name-cn="novel.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -405,7 +427,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="real" />
+						<SubjectCardLink
+							:id="real.id"
+							:cover="real.cover"
+							:name="real.name"
+							:name-cn="real.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -423,7 +450,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="before" />
+						<SubjectCardLink
+							:id="before.id"
+							:cover="before.cover"
+							:name="before.name"
+							:name-cn="before.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -438,7 +470,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="after" />
+						<SubjectCardLink
+							:id="after.id"
+							:cover="after.cover"
+							:name="after.name"
+							:name-cn="after.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -456,7 +493,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="sw" />
+						<SubjectCardLink
+							:id="sw.id"
+							:cover="sw.cover"
+							:name="sw.name"
+							:name-cn="sw.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -474,7 +516,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="ost" />
+						<SubjectCardLink
+							:id="ost.id"
+							:cover="ost.cover"
+							:name="ost.name"
+							:name-cn="ost.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
@@ -489,7 +536,12 @@ onMounted(loadSubject);
 						:lg="4"
 						:xl="4"
 					>
-						<SubjectCardLink :subject="other" />
+						<SubjectCardLink
+							:id="other.id"
+							:cover="other.cover"
+							:name="other.name"
+							:name-cn="other.name_cn"
+						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>

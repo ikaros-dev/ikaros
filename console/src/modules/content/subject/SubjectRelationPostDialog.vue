@@ -59,6 +59,9 @@ const onSelectionsChange = (set) => {
 const reqCreateRelactionBtnLoading = ref(false);
 const reqCreateRelaction = async () => {
 	if (slaveSubjectIdsStr.value === '[]') {
+		ElMessage.warning(
+			'提交取消，请检查是否有必要项缺失，必要项：【副条目】【类型】。'
+		);
 		return;
 	}
 	reqCreateRelactionBtnLoading.value = true;
