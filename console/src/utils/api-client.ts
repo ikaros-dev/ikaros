@@ -109,21 +109,22 @@ axiosInstance.interceptors.response.use(
 			// 	i18n.global.t('core.common.exception.not_found') + ': ' + msg
 			// );
 		} else if (status === 500) {
-			console.error(
-				i18n.global.t(
-					'core.common.exception.server_internal_error_with_title'
-				) +
-					': ' +
-					msg,
-				error
-			);
-			ElMessage.error(
-				i18n.global.t(
-					'core.common.exception.server_internal_error_with_title'
-				) +
-					': ' +
-					msg
-			);
+			return Promise.reject(error);
+			// console.error(
+			// 	i18n.global.t(
+			// 		'core.common.exception.server_internal_error_with_title'
+			// 	) +
+			// 		': ' +
+			// 		msg,
+			// 	error
+			// );
+			// ElMessage.error(
+			// 	i18n.global.t(
+			// 		'core.common.exception.server_internal_error_with_title'
+			// 	) +
+			// 		': ' +
+			// 		msg
+			// );
 		} else {
 			console.error(
 				i18n.global.t('core.common.exception.unknown_error_with_title', {

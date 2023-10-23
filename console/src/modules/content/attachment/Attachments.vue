@@ -194,17 +194,38 @@ const onSelectionChange = (selections) => {
 };
 
 const deleteAttachment = async (attachment: Attachment) => {
-	await apiClient.attachment.deleteAttachment({
-		id: attachment?.id as number,
-	});
-	ElMessage.success(
-		'删除' +
-			(attachment.type === 'Directory' ? '目录' : '文件') +
-			'【' +
-			attachment.name +
-			'】' +
-			'成功。'
-	);
+	await apiClient.attachment
+		.deleteAttachment({
+			id: attachment?.id as number,
+		})
+		.then(() => {
+			ElMessage.success(
+				'删除' +
+					(attachment.type === 'Directory' ? '目录' : '文件') +
+					'【' +
+					attachment.name +
+					'】' +
+					'成功。'
+			);
+		})
+		.catch((e) => {
+			// @ts-ignore
+			let msg = e?.response?.data?.message;
+			if (!msg) {
+				msg = e.message;
+			}
+			console.log('error', msg, e);
+			ElMessage.error(
+				'删除' +
+					(attachment.type === 'Directory' ? '目录' : '文件') +
+					'【' +
+					attachment.name +
+					'】' +
+					'失败：' +
+					msg
+			);
+		});
+
 	await fetchAttachments();
 };
 
