@@ -25,12 +25,14 @@ const fetchSubjectByRouterQuery = () => {
 	// console.log('route.query', route.query);
 
 	if (route.query.name !== undefined) {
-		findSubjectsCondition.value.name = base64Decode(route.query.name as string);
+		findSubjectsCondition.value.name = decodeURI(
+			base64Decode(route.query.name as string)
+		);
 	}
 
 	if (route.query.nameCn !== undefined) {
-		findSubjectsCondition.value.nameCn = base64Decode(
-			route.query.nameCn as string
+		findSubjectsCondition.value.nameCn = decodeURI(
+			base64Decode(route.query.nameCn as string)
 		);
 	}
 
@@ -49,7 +51,7 @@ const fetchSubjectByRouterQuery = () => {
 			| 'OTHER';
 	}
 
-	// console.log('findSubjectsCondition', findSubjectsCondition.value);
+	console.log('findSubjectsCondition', findSubjectsCondition.value);
 	fetchSubjects();
 };
 

@@ -31,6 +31,7 @@ import {
 	subjectTypeAliasMap,
 } from '@/modules/common/constants';
 import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
+import { base64Encode } from '@/utils/string-util';
 
 const router = useRouter();
 
@@ -78,7 +79,16 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 					subject: subject.value,
 				})
 				.then(() => {
-					router.push('/subjects');
+					router.push(
+						'/subjects?name=' +
+							base64Encode(encodeURI(subject.value.name)) +
+							'&nameCn=' +
+							base64Encode(encodeURI(subject.value.name_cn as string)) +
+							'&nsfw=' +
+							subject.value.nsfw +
+							'&type=' +
+							subject.value.type
+					);
 				});
 		} else {
 			console.log('error submit!', fields);
