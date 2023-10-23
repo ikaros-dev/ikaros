@@ -13,6 +13,9 @@ import { Tickets } from '@element-plus/icons-vue';
 import SubjectRelactionDeleteDrawer from './SubjectRelactionDeleteDrawer.vue';
 import { SubjectRelation } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
+import { useSubjectStore } from '@/stores/subject';
+
+const subjectStore = useSubjectStore();
 
 const props = withDefaults(
 	defineProps<{
@@ -71,6 +74,9 @@ const onSelectionsChange = (subjectRels) => {
 const reqRemoveRelactionBtnLoading = ref(false);
 const reqRemoveRelaction = async () => {
 	if (!subjectRelations.value || subjectRelations.value.length === 0) {
+		ElMessage.warning(
+			'提交取消，请检查是否有必要项缺失，必要项：【副条目】【类型】。'
+		);
 		return;
 	}
 	reqRemoveRelactionBtnLoading.value = true;
@@ -85,6 +91,7 @@ const reqRemoveRelaction = async () => {
 			relationType: subRel.relation_type,
 			relationSubjects: JSON.stringify(ids),
 		});
+		subjectStore.clearSubjectCacheById(subRel.subject);
 	});
 	ElMessage.success('移除条目关系成功');
 	reqRemoveRelactionBtnLoading.value = false;

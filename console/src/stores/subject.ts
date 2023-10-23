@@ -28,6 +28,9 @@ export const useSubjectStore = defineStore('subject', {
 			}
 			return sub;
 		},
+		async clearSubjectCacheById(id: number) {
+			this.cacheMap.delete(id);
+		},
 		clearCacheMap() {
 			this.cacheMap.clear();
 		},

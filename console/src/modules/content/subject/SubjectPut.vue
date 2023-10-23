@@ -105,9 +105,9 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 					ElMessage.success('更新成功条目：' + subject.value.name);
 					router.push(
 						'/subjects?name=' +
-							base64Encode(subject.value.name) +
+							base64Encode(encodeURI(subject.value.name)) +
 							'&nameCn=' +
-							base64Encode(subject.value.name_cn) +
+							base64Encode(encodeURI(subject.value.name_cn as string)) +
 							'&nsfw=' +
 							subject.value.nsfw +
 							'&type=' +
