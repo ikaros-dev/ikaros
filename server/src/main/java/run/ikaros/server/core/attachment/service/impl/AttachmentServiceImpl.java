@@ -89,8 +89,12 @@ public class AttachmentServiceImpl implements AttachmentService {
         Assert.notNull(attachment, "'attachment' must not be null.");
         attachment.setParentId(Optional.ofNullable(attachment.getParentId())
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID));
-        return repository.findById(attachment.getId())
-            .flatMap(attachmentEntity -> copyProperties(attachment, attachmentEntity))
+        Mono<AttachmentEntity> attachmentEntityMono =
+            Objects.isNull(attachment.getId())
+                ? copyProperties(attachment, new AttachmentEntity())
+                : repository.findById(attachment.getId())
+                .flatMap(attachmentEntity -> copyProperties(attachment, attachmentEntity));
+        return attachmentEntityMono
             .flatMap(this::saveEntity)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, attachment));
     }
@@ -524,6 +528,27 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMapMany(attEntities -> Flux.fromStream(attEntities.stream()))
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()))
             .collectList();
+    }
+
+    @Override
+    public Mono<Boolean> existsByParentIdAndName(@Nullable Long parentId, String name) {
+        Assert.hasText(name, "'name' must has text.");
+        if (Objects.isNull(parentId)) {
+            parentId = AttachmentConst.ROOT_DIRECTORY_ID;
+        }
+        return repository.existsByParentIdAndName(parentId, name);
+    }
+
+    @Override
+    public Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
+                                                        @Nullable Long parentId,
+                                                        String name) {
+        Assert.notNull(type, "'type' must not null.");
+        Assert.hasText(name, "'name' must has text.");
+        if (Objects.isNull(parentId)) {
+            parentId = AttachmentConst.ROOT_DIRECTORY_ID;
+        }
+        return repository.existsByTypeAndParentIdAndName(type, parentId, name);
     }
 
     private Mono<List<AttachmentEntity>> findPathDirs(long id, List<AttachmentEntity> entities) {

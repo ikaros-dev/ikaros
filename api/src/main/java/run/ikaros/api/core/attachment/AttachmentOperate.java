@@ -27,4 +27,9 @@ public interface AttachmentOperate extends AllowPluginOperate {
 
 
     Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name);
+
+    Mono<Boolean> existsByParentIdAndName(@Nullable Long parentId, String name);
+
+    Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
+                                                 @Nullable Long parentId, String name);
 }

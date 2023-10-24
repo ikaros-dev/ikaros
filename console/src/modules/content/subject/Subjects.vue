@@ -110,12 +110,12 @@ watch(findSubjectsCondition.value, () => {
 	// console.log('attachmentCondition.value', attachmentCondition.value);
 	const query = JSON.parse(JSON.stringify(route.query));
 	const name = findSubjectsCondition.value.name as string;
-	if (name !== route.query.searchName) {
-		query.name = base64Encode(name);
+	if (name !== route.query.name) {
+		query.name = base64Encode(encodeURI(name));
 	}
 	const nameCn = findSubjectsCondition.value.nameCn as string;
 	if (nameCn !== route.query.nameCn) {
-		query.nameCn = base64Encode(nameCn);
+		query.nameCn = base64Encode(encodeURI(nameCn));
 	}
 	const nsfw = findSubjectsCondition.value.nsfw as unknown as boolean;
 	if (nsfw !== (route.query.nsfw as unknown as boolean)) {

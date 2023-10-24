@@ -75,7 +75,7 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 	});
 };
 
-const formLabelWidth = '85px';
+const formLabelWidth = '110px';
 
 const episodeRuleFormRules = reactive<FormRules>({
 	sequence: [

@@ -104,6 +104,7 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 							"
 							>{{ episode?.resources[0].name }}</router-link
 						>
+						<br />
 						<video
 							v-if="isVideo(episode.resources[0].url as string)"
 							style="width: 100%"

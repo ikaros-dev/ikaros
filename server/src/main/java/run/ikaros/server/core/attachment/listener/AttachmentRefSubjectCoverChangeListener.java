@@ -52,7 +52,7 @@ public class AttachmentRefSubjectCoverChangeListener {
                     ? ("-" + subjectEntity.getAirTime()
                     .toInstant(ZoneOffset.of("+8")).toEpochMilli())
                     : "")
-                    + "-" + entity.getName()))
+                    + "-" + entity.getName().substring(entity.getName().lastIndexOf("-") + 1)))
             .flatMap(attachmentRepository::save)
             .map(AttachmentEntity::getId)
             .map(attId -> AttachmentReferenceEntity.builder()
