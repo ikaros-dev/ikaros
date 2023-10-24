@@ -46,4 +46,9 @@ public interface AttachmentService {
     Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name);
 
     Mono<List<Attachment>> findAttachmentPathDirsById(Long id);
+
+    Mono<Boolean> existsByParentIdAndName(@Nullable Long parentId, String name);
+
+    Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
+                                                 @Nullable Long parentId, String name);
 }

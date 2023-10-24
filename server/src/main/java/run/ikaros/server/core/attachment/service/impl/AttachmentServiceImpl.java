@@ -530,6 +530,27 @@ public class AttachmentServiceImpl implements AttachmentService {
             .collectList();
     }
 
+    @Override
+    public Mono<Boolean> existsByParentIdAndName(@Nullable Long parentId, String name) {
+        Assert.hasText(name, "'name' must has text.");
+        if (Objects.isNull(parentId)) {
+            parentId = AttachmentConst.ROOT_DIRECTORY_ID;
+        }
+        return repository.existsByParentIdAndName(parentId, name);
+    }
+
+    @Override
+    public Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
+                                                        @Nullable Long parentId,
+                                                        String name) {
+        Assert.notNull(type, "'type' must not null.");
+        Assert.hasText(name, "'name' must has text.");
+        if (Objects.isNull(parentId)) {
+            parentId = AttachmentConst.ROOT_DIRECTORY_ID;
+        }
+        return repository.existsByTypeAndParentIdAndName(type, parentId, name);
+    }
+
     private Mono<List<AttachmentEntity>> findPathDirs(long id, List<AttachmentEntity> entities) {
         if (ROOT_DIRECTORY_PARENT_ID.equals(id)) {
             Collections.reverse(entities);

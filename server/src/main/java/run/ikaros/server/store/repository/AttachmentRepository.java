@@ -9,6 +9,8 @@ import run.ikaros.server.store.entity.AttachmentEntity;
 public interface AttachmentRepository extends R2dbcRepository<AttachmentEntity, Long> {
     Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type, Long parentId, String name);
 
+    Mono<Boolean> existsByParentIdAndName(Long parentId, String name);
+
     Mono<Void> removeByTypeAndParentIdAndName(
         AttachmentType type, Long parentId, String name);
 

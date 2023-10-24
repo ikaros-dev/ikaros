@@ -62,4 +62,15 @@ public class AttachmentOperator implements AttachmentOperate {
     public Mono<Attachment> createDirectory(@Nullable Long parentId, String name) {
         return service.createDirectory(parentId, name);
     }
+
+    @Override
+    public Mono<Boolean> existsByParentIdAndName(@Nullable Long parentId, String name) {
+        return service.existsByParentIdAndName(parentId, name);
+    }
+
+    @Override
+    public Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
+                                                        @Nullable Long parentId, String name) {
+        return service.existsByTypeAndParentIdAndName(type, parentId, name);
+    }
 }
