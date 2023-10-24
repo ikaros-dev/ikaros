@@ -378,8 +378,8 @@ watch(attachmentCondition.value, () => {
 	const name = attachmentCondition.value.name;
 	const parentId = attachmentCondition.value.parentId;
 	const query = JSON.parse(JSON.stringify(route.query));
-	if (name !== route.query.searchName) {
-		query.searchName = base64Encode(name);
+	if (name !== route.query.name) {
+		query.name = base64Encode(encodeURI(name));
 	}
 	if (parentId !== parseInt(route.query.parentId as string)) {
 		query.parentId = parentId + '';
