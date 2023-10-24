@@ -581,7 +581,12 @@ onMounted(fetchDatas);
 			<el-row>
 				<el-col :span="24">
 					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
-						<el-table-column label="分组" prop="group" width="100px">
+						<el-table-column
+							label="分组"
+							prop="group"
+							width="110px"
+							show-overflow-tooltip
+						>
 							<template #default="scoped">
 								{{ episodeGroupLabelMap.get(scoped.row.group) }}
 							</template>

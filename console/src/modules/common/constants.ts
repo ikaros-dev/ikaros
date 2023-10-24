@@ -47,6 +47,11 @@ export const episodeGroupLabelMap = new Map([
 	['COMMERCIAL_MESSAGE', '广告(CM)'],
 	['LIVE', '直播(Live)'],
 	['OTHER', '其它(Other)'],
+	['MUSIC_DIST1', '音乐列表一(MUSIC_DIST1)'],
+	['MUSIC_DIST2', '音乐列表二(MUSIC_DIST2)'],
+	['MUSIC_DIST3', '音乐列表三(MUSIC_DIST3)'],
+	['MUSIC_DIST4', '音乐列表四(MUSIC_DIST4)'],
+	['MUSIC_DIST5', '音乐列表五(MUSIC_DIST5)'],
 ]);
 
 export const subjectTypes = [

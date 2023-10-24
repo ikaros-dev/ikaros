@@ -270,7 +270,12 @@ onMounted(() => {
 
 				<el-form-item label="剧集">
 					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
-						<el-table-column label="分组" prop="group" width="100px">
+						<el-table-column
+							label="分组"
+							prop="group"
+							width="110px"
+							show-overflow-tooltip
+						>
 							<template #default="scoped">
 								{{ episodeGroupLabelMap.get(scoped.row.group) }}
 							</template>

@@ -112,7 +112,13 @@ const episodeElFormRef = ref<FormInstance>();
 					placeholder="请选择一天"
 				/>
 			</el-form-item>
-			<el-form-item label="剧集分组" prop="group" :label-width="formLabelWidth">
+			<el-form-item
+				label="剧集分组"
+				prop="group"
+				:label-width="formLabelWidth"
+				width="110px"
+				show-overflow-tooltip
+			>
 				<el-select v-model="episode.group" clearable placeholder="请选择分组">
 					<el-option
 						v-for="item in episodeGroups"
