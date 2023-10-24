@@ -2,9 +2,10 @@ package run.ikaros.api.core.attachment;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.plugin.AllowPluginOperate;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 
-public interface AttachmentReferenceOperate {
+public interface AttachmentReferenceOperate extends AllowPluginOperate {
     Mono<AttachmentReference> save(AttachmentReference attachmentReference);
 
     Flux<AttachmentReference> findAllByTypeAndAttachmentId(
