@@ -1,9 +1,12 @@
 package run.ikaros.server.config;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.core.AuthenticationException;
@@ -17,6 +20,7 @@ import run.ikaros.api.infra.exception.IkarosException;
 import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.api.infra.exception.IkarosPluginException;
 import run.ikaros.api.infra.model.ResponseResult;
+import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.infra.utils.JsonUtils;
 
 @Slf4j
@@ -26,6 +30,8 @@ public class GlobalExceptionWebFilterConfig implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         return chain.filter(exchange)
+            .switchIfEmpty(Mono.error(new IkarosNotFoundException(
+                "Data not found for Url: " + exchange.getRequest().getURI())))
             .onErrorResume(IkarosNotFoundException.class,
                 e1 -> writeResponse(exchange.getResponse(), e1,
                     ResponseResult.notFound(e1.getMessage(), e1)))
@@ -53,7 +59,10 @@ public class GlobalExceptionWebFilterConfig implements WebFilter {
 
     private static Mono<Void> writeResponse(ServerHttpResponse response, Throwable e, Object data) {
         log.error("[{}] {}", e.getClass().getSimpleName(), e.getLocalizedMessage(), e);
-        response.getHeaders().add("Content-Type", "application/json");
+        List<String> contextTypeList = response.getHeaders().get(HttpHeaders.CONTENT_TYPE);
+        if (Objects.isNull(contextTypeList)) {
+            response.getHeaders().add("Content-Type", "application/json");
+        }
         response.setStatusCode(HttpStatus.OK);
         String rspResult = JsonUtils.obj2Json(data);
         assert rspResult != null;

@@ -1,15 +1,17 @@
 package run.ikaros.server.core.subject;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
-import org.assertj.core.api.Assertions;
+import org.assertj.core.matcher.AssertionMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,8 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.infra.model.ResponseCode;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.core.subject.service.SubjectService;
@@ -64,7 +68,14 @@ class SubjectEndpointTest {
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()
-            .expectStatus().isNotFound();
+            .expectBody(ResponseResult.class)
+            .value(new AssertionMatcher<>() {
+                @Override
+                public void assertion(ResponseResult actual) throws AssertionError {
+                    assertThat(actual).isNotNull();
+                    assertThat(actual.getCode()).isEqualTo(ResponseCode.NOT_FOUND.getCode());
+                }
+            });
     }
 
     @Test
@@ -84,8 +95,18 @@ class SubjectEndpointTest {
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()
-            .expectStatus().isOk()
-            .expectBody(Subject.class);
+            .expectBody(ResponseResult.class)
+            .value(new AssertionMatcher<>() {
+                @Override
+                public void assertion(ResponseResult actual) throws AssertionError {
+                    assertThat(actual).isNotNull();
+                    List body = actual.getBody();
+                    assertThat(body).isNotEmpty();
+                    Object subject =
+                        JsonUtils.json2obj(JsonUtils.obj2Json(body.get(0)), Subject.class);
+                    assertThat(subject).isOfAnyClassIn(Subject.class);
+                }
+            });
     }
 
 
@@ -119,7 +140,14 @@ class SubjectEndpointTest {
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()
-            .expectStatus().isNotFound();
+            .expectBody(ResponseResult.class)
+            .value(new AssertionMatcher<ResponseResult>() {
+                @Override
+                public void assertion(ResponseResult actual) throws AssertionError {
+                    assertThat(actual).isNotNull();
+                    assertThat(actual.getCode()).isEqualTo(ResponseCode.NOT_FOUND.getCode());
+                }
+            });
     }
 
     @Test
@@ -145,8 +173,8 @@ class SubjectEndpointTest {
                                 Objects.requireNonNull(entityExchangeResult.getResponseBody()),
                                 StandardCharsets.UTF_8),
                             Subject.class);
-                    Assertions.assertThat(subject1).isNotNull();
-                    Assertions.assertThat(subject1.getId()).isNotZero();
+                    assertThat(subject1).isNotNull();
+                    assertThat(subject1.getId()).isNotZero();
                     subject.setId(subject1.getId());
                 });
 
@@ -163,17 +191,17 @@ class SubjectEndpointTest {
                             Objects.requireNonNull(entityExchangeResult.getResponseBody()),
                             StandardCharsets.UTF_8),
                         Map.class);
-                    Assertions.assertThat(pagingWrapMap).isNotNull();
+                    assertThat(pagingWrapMap).isNotNull();
                     Object itemsJsonObj = pagingWrapMap.get("items");
                     Subject[] subjects =
                         JsonUtils.json2ObjArr(JsonUtils.obj2Json(itemsJsonObj),
                             new TypeReference<>() {
                             });
-                    Assertions.assertThat(subjects).isNotNull();
-                    Assertions.assertThat(subjects.length).isGreaterThan(0);
+                    assertThat(subjects).isNotNull();
+                    assertThat(subjects.length).isGreaterThan(0);
                     Subject subject1 = subjects[0];
-                    Assertions.assertThat(subject1).isNotNull();
-                    Assertions.assertThat(subject1.getId()).isEqualTo(subject.getId());
+                    assertThat(subject1).isNotNull();
+                    assertThat(subject1.getId()).isEqualTo(subject.getId());
                 });
 
         } finally {
@@ -200,13 +228,18 @@ class SubjectEndpointTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .consumeWith(entityExchangeResult -> {
+                    ResponseResult responseResult
+                        = JsonUtils.json2obj(new String(
+                            Objects.requireNonNull(entityExchangeResult.getResponseBody()),
+                            StandardCharsets.UTF_8),
+                        ResponseResult.class);
+                    assertThat(responseResult).isNotNull();
+                    List body = responseResult.getBody();
+                    assertThat(body).isNotEmpty();
                     Subject subject1 =
-                        JsonUtils.json2obj(new String(
-                                Objects.requireNonNull(entityExchangeResult.getResponseBody()),
-                                StandardCharsets.UTF_8),
-                            Subject.class);
-                    Assertions.assertThat(subject1).isNotNull();
-                    Assertions.assertThat(subject1.getId()).isNotZero();
+                        JsonUtils.json2obj(JsonUtils.obj2Json(body.get(0)), Subject.class);
+                    assertThat(subject1).isNotNull();
+                    assertThat(subject1.getId()).isNotZero();
                     subject.setId(subject1.getId());
                 });
         } finally {
@@ -233,13 +266,18 @@ class SubjectEndpointTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .consumeWith(entityExchangeResult -> {
+                    ResponseResult responseResult
+                        = JsonUtils.json2obj(new String(
+                            Objects.requireNonNull(entityExchangeResult.getResponseBody()),
+                            StandardCharsets.UTF_8),
+                        ResponseResult.class);
+                    assertThat(responseResult).isNotNull();
+                    List body = responseResult.getBody();
+                    assertThat(body).isNotEmpty();
                     Subject subject1 =
-                        JsonUtils.json2obj(new String(
-                                Objects.requireNonNull(entityExchangeResult.getResponseBody()),
-                                StandardCharsets.UTF_8),
-                            Subject.class);
-                    Assertions.assertThat(subject1).isNotNull();
-                    Assertions.assertThat(subject1.getId()).isNotZero();
+                        JsonUtils.json2obj(JsonUtils.obj2Json(body.get(0)), Subject.class);
+                    assertThat(subject1).isNotNull();
+                    assertThat(subject1.getId()).isNotZero();
                     subject.setId(subject1.getId());
                 });
         } finally {
@@ -249,7 +287,14 @@ class SubjectEndpointTest {
                     .header(HttpHeaders.AUTHORIZATION, "Basic "
                         + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
                     .exchange()
-                    .expectStatus().isOk();
+                    .expectBody(ResponseResult.class)
+                    .value(new AssertionMatcher<ResponseResult>() {
+                        @Override
+                        public void assertion(ResponseResult actual) throws AssertionError {
+                            assertThat(actual).isNotNull();
+                            assertThat(actual.getCode()).isEqualTo(ResponseCode.SUCCESS.getCode());
+                        }
+                    });
             }
         }
     }

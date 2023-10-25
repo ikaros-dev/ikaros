@@ -1,28 +1,25 @@
 package run.ikaros.api.infra.exception.custom;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import run.ikaros.api.infra.exception.IkarosException;
 
 public class CustomException extends IkarosException {
+    public CustomException() {
+    }
+
     public CustomException(String message) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR, message);
+        super(message);
     }
 
     public CustomException(String message, Throwable cause) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR, message, cause);
+        super(message, cause);
     }
 
-    public CustomException(HttpStatusCode status, String reason) {
-        super(status, reason);
+    public CustomException(Throwable cause) {
+        super(cause);
     }
 
-    public CustomException(int rawStatusCode, String reason, Throwable cause) {
-        super(rawStatusCode, reason, cause);
-    }
-
-    public CustomException(HttpStatusCode status, String reason, Throwable cause,
-                           String messageDetailCode, Object[] messageDetailArguments) {
-        super(status, reason, cause, messageDetailCode, messageDetailArguments);
+    public CustomException(String message, Throwable cause, boolean enableSuppression,
+                           boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

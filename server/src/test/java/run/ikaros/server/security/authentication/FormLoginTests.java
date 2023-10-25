@@ -1,7 +1,10 @@
 package run.ikaros.server.security.authentication;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
+import org.assertj.core.api.Assertions;
+import org.assertj.core.matcher.AssertionMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -13,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.test.StepVerifier;
+import run.ikaros.api.infra.model.ResponseCode;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.server.security.MasterInitializer;
 import run.ikaros.server.security.SecurityProperties;
 
@@ -81,7 +86,14 @@ public class FormLoginTests {
             .body(BodyInserters.fromFormData("username", notExistsUsername)
                 .with("password", "password"))
             .exchange()
-            .expectStatus().is4xxClientError();
+            .expectBody(ResponseResult.class)
+            .value(new AssertionMatcher<ResponseResult>() {
+                @Override
+                public void assertion(ResponseResult actual) throws AssertionError {
+                    assertThat(actual).isNotNull();
+                    assertThat(actual.getCode()).isEqualTo(ResponseCode.NOT_ACCESS.getCode());
+                }
+            });
     }
 
     @Test
@@ -93,7 +105,14 @@ public class FormLoginTests {
             .body(BodyInserters.fromFormData("username", username)
                 .with("password", "password-incorrect"))
             .exchange()
-            .expectStatus().is4xxClientError();
+            .expectBody(ResponseResult.class)
+            .value(new AssertionMatcher<ResponseResult>() {
+                @Override
+                public void assertion(ResponseResult actual) throws AssertionError {
+                    assertThat(actual).isNotNull();
+                    assertThat(actual.getCode()).isEqualTo(ResponseCode.NOT_ACCESS.getCode());
+                }
+            });
     }
 
     @Test

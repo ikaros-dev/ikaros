@@ -50,10 +50,9 @@ public class ResponseResult<T extends Object> {
     /**
      * Response not found.
      */
-    public static <T> ResponseResult<T> notFound(String message, T... bodies) {
+    public static <T> ResponseResult<T> notFound(String message, Throwable throwable) {
         return ResponseResult.<T>builder()
             .code(ResponseCode.NOT_FOUND.getCode())
-            .body(Arrays.asList(bodies))
             .message("[" + ResponseCode.NOT_FOUND.name() + "] " + message)
             .build();
     }
