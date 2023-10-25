@@ -18,6 +18,7 @@ import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.RegexUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.EpisodeGroup;
+import run.ikaros.server.core.attachment.event.AttachmentReferenceSaveEvent;
 import run.ikaros.server.core.attachment.event.EpisodeAttachmentUpdateEvent;
 import run.ikaros.server.core.attachment.service.AttachmentReferenceService;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
@@ -51,9 +52,16 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     public Mono<AttachmentReference> save(AttachmentReference attachmentReference) {
         Assert.notNull(attachmentReference, "'attachmentReference' must not null.");
         return checkAttachmentRef(attachmentReference)
-            .flatMap(
-                attachmentRef -> copyProperties(attachmentRef, new AttachmentReferenceEntity()))
-            .flatMap(repository::save)
+            .flatMap(attachmentRef ->
+                copyProperties(attachmentRef, new AttachmentReferenceEntity()))
+            .flatMap(attachmentReferenceEntity -> repository.save(attachmentReferenceEntity)
+                .doOnSuccess(entity -> {
+                    AttachmentReferenceSaveEvent event =
+                        new AttachmentReferenceSaveEvent(this, entity);
+                    applicationEventPublisher.publishEvent(event);
+                    log.debug("publish AttachmentReferenceSaveEvent "
+                        + "for attachment reference entity: [{}]", entity);
+                }))
             .flatMap(entity -> copyProperties(entity, attachmentReference));
     }
 
@@ -153,7 +161,19 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
             .map(attId -> AttachmentReferenceEntity.builder()
                 .type(EPISODE).attachmentId(attId).referenceId(episodeId)
                 .build())
-            .flatMap(repository::save)
+            .flatMap(attachmentReferenceEntity -> repository.save(attachmentReferenceEntity)
+                .doOnSuccess(entity -> {
+                    log.info("save episode file matching "
+                            + "for attId:[{}] and episodeId:[{}]. ",
+                        entity.getAttachmentId(), entity.getReferenceId());
+                    EpisodeAttachmentUpdateEvent event =
+                        new EpisodeAttachmentUpdateEvent(this,
+                            entity.getReferenceId(),
+                            entity.getId(), false);
+                    applicationEventPublisher.publishEvent(event);
+                    log.debug("publish event EpisodeAttachmentUpdateEvent "
+                        + "for attachmentReferenceEntity: {}", attachmentReferenceEntity);
+                }))
             .then();
     }
 
