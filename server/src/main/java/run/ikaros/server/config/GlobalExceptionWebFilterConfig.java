@@ -20,7 +20,6 @@ import run.ikaros.api.infra.exception.IkarosException;
 import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.api.infra.exception.IkarosPluginException;
 import run.ikaros.api.infra.model.ResponseResult;
-import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.infra.utils.JsonUtils;
 
 @Slf4j
