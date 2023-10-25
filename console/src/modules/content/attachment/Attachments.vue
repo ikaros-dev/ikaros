@@ -343,16 +343,16 @@ const onRowContextmenu = (row, column, event) => {
 
 const directorySelectDialogVisible = ref(false);
 const onDirSelected = async (targetDirid: number) => {
-	await selectionAttachments.value
-		.filter((attachment) => targetDirid !== attachment.id)
-		.forEach(async (attachment) => {
-			attachment.parentId = targetDirid;
-			await apiClient.attachment.updateAttachment({
-				attachment: attachment,
-			});
+	for (const attachment of selectionAttachments.value.filter(
+		(attachment) => targetDirid !== attachment.id
+	)) {
+		attachment.parentId = targetDirid;
+		await apiClient.attachment.updateAttachment({
+			attachment: attachment,
 		});
+	}
 	await ElMessage.success('批量移动附件成功');
-	window.location.reload();
+	await fetchAttachments();
 };
 
 watch(
