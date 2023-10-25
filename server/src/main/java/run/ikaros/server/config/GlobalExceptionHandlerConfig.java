@@ -60,7 +60,7 @@ public class GlobalExceptionHandlerConfig implements WebFilter {
                 response.getHeaders()
                     .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
             } catch (UnsupportedOperationException e2) {
-                log.warn("add http header context type fail", e2);
+                // log.warn("add http header context type fail", e2);
             }
         }
         response.setStatusCode(httpStatus);
