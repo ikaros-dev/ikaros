@@ -8,6 +8,8 @@ import run.ikaros.server.store.entity.AttachmentRelationEntity;
 
 public interface AttachmentRelationRepository
     extends R2dbcRepository<AttachmentRelationEntity, Long> {
+    Flux<AttachmentRelationEntity> findAllByAttachmentId(Long attachmentId);
+
     Flux<AttachmentRelationEntity> findAllByTypeAndAttachmentId(AttachmentRelationType type,
                                                                 Long attachmentId);
 
