@@ -276,6 +276,22 @@ const onDeleteButtonClick = async () => {
 	}
 };
 
+const copyValue = async (val: string) => {
+	if (navigator.clipboard && window.isSecureContext) {
+		return navigator.clipboard.writeText(val);
+	} else {
+		const textArea = document.createElement('textarea');
+		textArea.value = val;
+		document.body.appendChild(textArea);
+		textArea.focus();
+		textArea.select();
+		return new Promise((res, rej) => {
+			document.execCommand('copy') ? res(val) : rej();
+			textArea.remove();
+		});
+	}
+};
+
 const attachmentDetailDrawerVisible = ref(false);
 
 const onRowContextmenu = (row, column, event) => {
@@ -298,10 +314,10 @@ const onRowContextmenu = (row, column, event) => {
 				label: '复制名称',
 				divided: 'down',
 				icon: h(CopyDocument, { style: 'height: 14px' }),
-				onClick: () => {
+				onClick: async () => {
 					const name = currentSelectionAttachment.value?.name as string;
-					navigator.clipboard.writeText(name);
-					ElMessage.success('已复制复制名称到剪贴板');
+					await copyValue(name);
+					ElMessage.success('已复制复制名称【' + name + '】到剪贴板');
 				},
 			},
 			{
@@ -343,16 +359,16 @@ const onRowContextmenu = (row, column, event) => {
 
 const directorySelectDialogVisible = ref(false);
 const onDirSelected = async (targetDirid: number) => {
-	await selectionAttachments.value
-		.filter((attachment) => targetDirid !== attachment.id)
-		.forEach(async (attachment) => {
-			attachment.parentId = targetDirid;
-			await apiClient.attachment.updateAttachment({
-				attachment: attachment,
-			});
+	for (const attachment of selectionAttachments.value.filter(
+		(attachment) => targetDirid !== attachment.id
+	)) {
+		attachment.parentId = targetDirid;
+		await apiClient.attachment.updateAttachment({
+			attachment: attachment,
 		});
+	}
 	await ElMessage.success('批量移动附件成功');
-	window.location.reload();
+	await fetchAttachments();
 };
 
 watch(
