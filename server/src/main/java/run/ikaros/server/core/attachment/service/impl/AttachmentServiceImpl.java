@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.data.domain.PageRequest;
@@ -50,6 +51,7 @@ import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.SystemVarUtils;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.attachment.event.AttachmentRemoveEvent;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
@@ -62,17 +64,20 @@ public class AttachmentServiceImpl implements AttachmentService {
     private final AttachmentReferenceRepository referenceRepository;
     private final R2dbcEntityTemplate template;
     private final IkarosProperties ikarosProperties;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Construct.
      */
     public AttachmentServiceImpl(AttachmentRepository repository,
                                  AttachmentReferenceRepository referenceRepository,
-                                 R2dbcEntityTemplate template, IkarosProperties ikarosProperties) {
+                                 R2dbcEntityTemplate template, IkarosProperties ikarosProperties,
+                                 ApplicationEventPublisher applicationEventPublisher) {
         this.repository = repository;
         this.referenceRepository = referenceRepository;
         this.template = template;
         this.ikarosProperties = ikarosProperties;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Override
@@ -206,7 +211,13 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(repository::findById)
             .flatMap(this::removeChildrenAttachment)
             .map(this::removeFileSystemFile)
-            .flatMap(repository::delete);
+            .flatMap(attachmentEntity -> repository.delete(attachmentEntity)
+                .doOnSuccess(unused -> {
+                    AttachmentRemoveEvent event = new AttachmentRemoveEvent(this, attachmentEntity);
+                    applicationEventPublisher.publishEvent(event);
+                    log.debug("publish AttachmentRemoveEvent for attachment entity: [{}]",
+                        attachmentEntity);
+                }));
     }
 
 

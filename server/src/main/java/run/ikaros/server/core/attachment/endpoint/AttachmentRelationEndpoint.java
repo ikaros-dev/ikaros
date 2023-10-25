@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.AttachmentRelation;
+import run.ikaros.api.core.attachment.VideoSubtitle;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.core.attachment.service.AttachmentRelationService;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -48,7 +49,26 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
                         .implementation(AttachmentRelationType.class))
                     .response(responseBuilder().implementationArray(AttachmentRelation.class)))
 
+            .GET("/attachment/relation/videoSubtitle/subtitles/{attachmentId}",
+                this::findAttachmentVideoSubtitles,
+                builder -> builder.tag(tag).operationId("FindAttachmentVideoSubtitles")
+                    .parameter(parameterBuilder()
+                        .name("attachmentId")
+                        .description("Attachment ID")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(responseBuilder()
+                        .implementationArray(VideoSubtitle.class)))
+
             .build();
+    }
+
+    Mono<ServerResponse> findAttachmentVideoSubtitles(ServerRequest request) {
+        Long attachmentId = Long.parseLong(request.pathVariable("attachmentId"));
+        return attachmentRelationService.findAttachmentVideoSubtitles(attachmentId)
+            .collectList()
+            .flatMap(videoSubtitles -> ServerResponse.ok().bodyValue(videoSubtitles));
     }
 
     Mono<ServerResponse> findAttachmentRelations(ServerRequest request) {
