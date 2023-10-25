@@ -1,6 +1,8 @@
 package run.ikaros.api.infra.exception.subject;
 
-public class NoAvailableSubjectPlatformSynchronizerException extends RuntimeException {
+import run.ikaros.api.infra.exception.IkarosException;
+
+public class NoAvailableSubjectPlatformSynchronizerException extends IkarosException {
     public NoAvailableSubjectPlatformSynchronizerException(String message) {
         super(message);
     }

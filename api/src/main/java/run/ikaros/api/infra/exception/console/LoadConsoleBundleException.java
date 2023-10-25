@@ -1,6 +1,8 @@
 package run.ikaros.api.infra.exception.console;
 
-public class LoadConsoleBundleException extends RuntimeException {
+import run.ikaros.api.infra.exception.IkarosException;
+
+public class LoadConsoleBundleException extends IkarosException {
 
     public LoadConsoleBundleException(String message, Throwable cause) {
         super(message, cause);

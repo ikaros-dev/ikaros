@@ -1,8 +1,8 @@
 package run.ikaros.api.infra.exception.security;
 
-import org.springframework.security.core.AuthenticationException;
+import run.ikaros.api.infra.exception.IkarosAuthenticationException;
 
-public class PasswordNotMatchingException extends AuthenticationException {
+public class PasswordNotMatchingException extends IkarosAuthenticationException {
     public PasswordNotMatchingException(String msg) {
         super(msg);
     }

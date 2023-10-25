@@ -1,8 +1,8 @@
 package run.ikaros.api.infra.exception.plugin;
 
-import org.pf4j.PluginRuntimeException;
+import run.ikaros.api.infra.exception.IkarosPluginException;
 
-public class PluginInstallException extends PluginRuntimeException {
+public class PluginInstallException extends IkarosPluginException {
     public PluginInstallException() {
     }
 

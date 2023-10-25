@@ -1,11 +1,7 @@
-package run.ikaros.api.core.attachment.exception;
+package run.ikaros.api.infra.exception.attachment.exception;
 
 import run.ikaros.api.infra.exception.IkarosException;
 
-/**
- * Please use {@link run.ikaros.api.infra.exception.attachment.exception.AttachmentException}.
- */
-@Deprecated
 public class AttachmentException extends IkarosException {
 
 

@@ -2,9 +2,9 @@ package run.ikaros.api.custom.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.web.server.ResponseStatusException;
+import run.ikaros.api.infra.exception.IkarosException;
 
-public class CustomException extends ResponseStatusException {
+public class CustomException extends IkarosException {
     public CustomException(String message) {
         super(HttpStatus.INTERNAL_SERVER_ERROR, message);
     }
