@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.api.plugin.custom.Plugin;
 import run.ikaros.server.plugin.IkarosPluginManager;
 import run.ikaros.server.plugin.PluginProperties;
@@ -97,7 +97,7 @@ public class PluginPropertiesEnablesInitListener {
                 }
             })
             .flatMap(plugin -> reactiveCustomClient.delete(ConfigMap.class, plugin.getName())
-                .onErrorResume(NotFoundException.class, e -> Mono.empty()))
+                .onErrorResume(IkarosNotFoundException.class, e -> Mono.empty()))
             .checkpoint("RemoveDatabasePluginThatManagerNone.")
 
             .thenMany(reactiveCustomClient.findAll(Plugin.class, null))

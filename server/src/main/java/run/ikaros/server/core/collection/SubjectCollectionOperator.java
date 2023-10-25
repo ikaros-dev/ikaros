@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.collection.SubjectCollection;
 import run.ikaros.api.core.collection.SubjectCollectionOperate;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.api.store.enums.CollectionType;
-import run.ikaros.api.wrap.PagingWrap;
 
 @Slf4j
 @Component

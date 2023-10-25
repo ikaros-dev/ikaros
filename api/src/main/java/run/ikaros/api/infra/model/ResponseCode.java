@@ -1,4 +1,4 @@
-package run.ikaros.api.wrap;
+package run.ikaros.api.infra.model;
 
 import lombok.Getter;
 
@@ -14,6 +14,10 @@ public enum ResponseCode {
      */
     BAD_REQUEST(400),
     /**
+     * 无权访问.
+     */
+    NOT_ACCESS(403),
+    /**
      * 数据没有找到.
      */
     NOT_FOUND(404),
@@ -22,15 +26,19 @@ public enum ResponseCode {
      */
     UNKNOWN(500),
 
-    // 业务的状态码 五位数，其中第三位和 HTTP状态码第一位含义类似
+    // 业务的状态码 五位数0
+    /**
+     * 操作失败.
+     */
+    OPERATE_FAIL(10001),
     /**
      * 数据已经存在.
      */
-    RECORD_EXISTS(10401),
+    RECORD_EXISTS(10002),
     /**
      * 数据的引用存在.
      */
-    REFERENCE_EXISTS(10402),
+    REFERENCE_EXISTS(10003),
 
     ;
     private final int code;

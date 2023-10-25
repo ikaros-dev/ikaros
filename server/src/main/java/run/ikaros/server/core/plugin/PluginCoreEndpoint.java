@@ -6,12 +6,12 @@ import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuil
 import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
 import static org.springframework.web.reactive.function.BodyExtractors.toMultipartData;
 import static org.springframework.web.reactive.function.server.RequestPredicates.contentType;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import org.pf4j.PluginState;
 import org.springdoc.core.fn.builders.parameter.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.codec.multipart.Part;
@@ -23,7 +23,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Component
@@ -55,7 +55,9 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             //             .description(
             //                 "Response true is operate success,
             //                 false is request or operate fail.")
-            //             .implementation(Boolean.class)))
+            //             .implementation(Boolean.class))
+            //                    .response(responseBuilder()
+            //                        .implementation(ResponseResult.class)))
 
             .PUT("/plugin/{name}/state", this::operatePluginStateById,
                 builder -> builder.operationId("OperatePluginStateById")
@@ -71,9 +73,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                         .description("Operate of plugin state.")
                         .implementation(PluginStateOperate.class))
                     .response(responseBuilder()
-                        .responseCode("200")
-                        .description("Plugin state after operated.")
-                        .implementation(PluginState.class)))
+                        .implementation(ResponseResult.class)))
 
             .PUT("/plugin/{name}/state/start", this::startPluginById,
                 builder -> builder.operationId("StartPluginById")
@@ -83,10 +83,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                         .name("name").in(ParameterIn.PATH)
                         .description("Name of plugin, this is id also."))
                     .response(responseBuilder()
-                        .responseCode("200")
-                        .description(
-                            "Response true is start success, false is request or start fail.")
-                        .implementation(Boolean.class)))
+                        .implementation(ResponseResult.class)))
 
             .PUT("/plugin/{name}/state/stop", this::stopPluginById,
                 builder -> builder.operationId("StopPluginById")
@@ -96,10 +93,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                         .name("name").in(ParameterIn.PATH)
                         .description("Name of plugin, this is id also."))
                     .response(responseBuilder()
-                        .responseCode("200")
-                        .description("Response true is stop success, "
-                            + "false is request or stop fail.")
-                        .implementation(Boolean.class)))
+                        .implementation(ResponseResult.class)))
 
             .PUT("/plugin/{name}/state/reload", this::reloadPluginById,
                 builder -> builder.operationId("ReloadPluginById")
@@ -109,10 +103,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                         .name("name").in(ParameterIn.PATH)
                         .description("Name of plugin, this is id also."))
                     .response(responseBuilder()
-                        .responseCode("200")
-                        .description("Response true is reload success, "
-                            + "false is request or reload fail.")
-                        .implementation(Boolean.class)))
+                        .implementation(ResponseResult.class)))
 
             .POST("/plugin/install/file",
                 contentType(MediaType.MULTIPART_FORM_DATA),
@@ -129,8 +120,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                                 .implementation(UploadRequest.class))
                         ))
                     .response(responseBuilder()
-                        .responseCode("200")
-                        .description("Install plugin by jar file success.")))
+                        .implementation(ResponseResult.class)))
 
             .POST("/plugin/upgrade/file/{pluginId}",
                 contentType(MediaType.MULTIPART_FORM_DATA),
@@ -152,8 +142,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
                                 .implementation(UploadRequest.class))
                         ))
                     .response(responseBuilder()
-                        .responseCode("200")
-                        .description("Upgrade plugin by jar file success.")))
+                        .implementation(ResponseResult.class)))
 
             .build();
 
@@ -184,7 +173,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .map(DefaultUploadRequest::new)
             .map(DefaultUploadRequest::getFile)
             .flatMap(pluginService::install)
-            .then(ServerResponse.ok().build());
+            .then(ok().bodyValue(success()));
     }
 
     Mono<ServerResponse> upgradePlugin(ServerRequest request) {
@@ -195,7 +184,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .map(DefaultUploadRequest::new)
             .map(DefaultUploadRequest::getFile)
             .flatMap(filePart -> pluginService.upgrade(pluginId, filePart))
-            .then(ServerResponse.ok().build());
+            .then(ok().bodyValue(success()));
     }
 
     Mono<ServerResponse> operatePluginStateById(ServerRequest request) {
@@ -204,49 +193,33 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .map(PluginStateOperate::valueOf)
             .flatMap(pluginStateOperate ->
                 pluginService.operateState(pluginName, pluginStateOperate))
-            .flatMap(pluginState -> ServerResponse.ok()
+            .flatMap(pluginState -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(pluginState))
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                .bodyValue(success(pluginState)));
     }
 
 
     Mono<ServerResponse> startPluginById(ServerRequest request) {
         String pluginName = request.pathVariable("name");
         return pluginService.start(pluginName)
-            .flatMap(isSuccess -> ServerResponse.ok()
+            .flatMap(isSuccess -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(isSuccess))
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                .bodyValue(success(isSuccess)));
     }
 
     Mono<ServerResponse> stopPluginById(ServerRequest request) {
         String pluginName = request.pathVariable("name");
         return pluginService.stop(pluginName)
-            .flatMap(isSuccess -> ServerResponse.ok()
+            .flatMap(isSuccess -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(isSuccess))
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                .bodyValue(success(isSuccess)));
     }
 
     Mono<ServerResponse> reloadPluginById(ServerRequest request) {
         String pluginName = request.pathVariable("name");
         return pluginService.reload(pluginName)
-            .flatMap(isSuccess -> ServerResponse.ok()
+            .flatMap(isSuccess -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(isSuccess))
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                .bodyValue(success(isSuccess)));
     }
 }

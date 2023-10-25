@@ -1,7 +1,7 @@
 package run.ikaros.server.core.task;
 
 import reactor.core.publisher.Mono;
-import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.server.store.entity.TaskEntity;
 
 public interface TaskService {

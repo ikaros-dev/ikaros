@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import run.ikaros.api.custom.Custom;
 import run.ikaros.api.custom.Name;
-import run.ikaros.api.custom.exception.CustomConvertException;
+import run.ikaros.api.infra.exception.custom.CustomConvertException;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 import run.ikaros.server.test.TestConst;

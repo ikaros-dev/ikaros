@@ -14,12 +14,12 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.collection.SubjectCollection;
-import run.ikaros.api.infra.exception.NotFoundException;
-import run.ikaros.api.infra.exception.subject.SubjectNotFoundException;
-import run.ikaros.api.infra.exception.user.UserNotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
+import run.ikaros.api.infra.exception.subject.SubjectIkarosNotFoundException;
+import run.ikaros.api.infra.exception.user.UserIkarosNotFoundException;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.store.enums.EpisodeGroup;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeCollectionEntity;
 import run.ikaros.server.store.entity.SubjectCollectionEntity;
@@ -59,14 +59,15 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
         return userRepository.existsById(userId)
             .filter(exists -> exists)
             .switchIfEmpty(
-                Mono.error(new UserNotFoundException("User not found for id=" + userId)));
+                Mono.error(new UserIkarosNotFoundException("User not found for id=" + userId)));
     }
 
     private Mono<Boolean> checkSubjectIdExists(Long subjectId) {
         return subjectRepository.existsById(subjectId)
             .filter(exists -> exists)
             .switchIfEmpty(
-                Mono.error(new SubjectNotFoundException("Subject not found for id=" + subjectId)));
+                Mono.error(
+                    new SubjectIkarosNotFoundException("Subject not found for id=" + subjectId)));
     }
 
     @Override
@@ -150,7 +151,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
         return checkUserIdExists(userId)
             .then(subjectRepository.findById(subjectId))
             .switchIfEmpty(Mono.error(
-                new SubjectNotFoundException("Subject not found for id: " + subjectId)))
+                new SubjectIkarosNotFoundException("Subject not found for id: " + subjectId)))
             .flatMap(subjectEntity -> copyProperties(subjectEntity, new SubjectCollection()))
             .flatMap(subjectCollection ->
                 subjectCollectionRepository.findByUserIdAndSubjectId(userId, subjectId)
@@ -214,7 +215,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
         return checkUserIdExists(userId)
             .then(checkSubjectIdExists(subjectId))
             .then(subjectCollectionRepository.findByUserIdAndSubjectId(userId, subjectId))
-            .switchIfEmpty(Mono.error(new NotFoundException(
+            .switchIfEmpty(Mono.error(new IkarosNotFoundException(
                 "Subject collection not found for userId=" + userId + " subjectId=" + subjectId)))
             .map(entity -> entity.setMainEpisodeProgress(progress))
             .flatMap(subjectCollectionRepository::save)

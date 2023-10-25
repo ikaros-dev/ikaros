@@ -12,9 +12,9 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.custom.exception.CustomException;
 import run.ikaros.api.custom.scheme.CustomScheme;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
+import run.ikaros.api.infra.exception.custom.CustomException;
 import run.ikaros.server.custom.CustomConverter;
 import run.ikaros.server.custom.event.CustomCreateEvent;
 
@@ -47,7 +47,7 @@ public class CustomCreateHandler implements CustomRouterFunctionFactory.CreateHa
                 .created(URI.create(pathPattern() + "/" + getNameFieldValue(custom)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(custom))
-            .onErrorResume(NotFoundException.class,
+            .onErrorResume(IkarosNotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(e.getMessage()));

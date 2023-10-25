@@ -7,12 +7,14 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
 import static org.springframework.web.reactive.function.BodyExtractors.toMultipartData;
 import static org.springframework.web.reactive.function.server.RequestPredicates.contentType;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+import static run.ikaros.api.infra.model.ResponseResult.recordExists;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -22,8 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.codec.multipart.Part;
@@ -31,7 +31,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -43,10 +42,9 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
-import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.model.PagingWrap;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.api.store.enums.AttachmentType;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.utils.DataBufferUtils;
@@ -76,8 +74,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                             .schema(schemaBuilder().implementation(
                                 DefaultUploadRequest.class))
                         ))
-                    .response(responseBuilder().implementation(Attachment.class))
-                    .build())
+                    .response(responseBuilder().implementation(ResponseResult.class)))
 
             .GET("/attachments/condition", this::listByCondition,
                 builder -> builder.operationId("ListAttachmentsByCondition")
@@ -101,7 +98,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder()
                         .name("parentId")
                         .description("附件的父附件ID，父附件一般时目录类型。"))
-                    .response(responseBuilder().implementation(PagingWrap.class))
+                    .response(responseBuilder().implementation(ResponseResult.class))
             )
 
             .GET("/attachment/{id}", this::getById,
@@ -111,7 +108,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .required(true)
                         .implementation(Long.class))
-                    .response(responseBuilder().implementation(Attachment.class)))
+                    .response(responseBuilder().implementation(ResponseResult.class)))
 
             .GET("/attachment/paths/{id}", this::getAttachmentPathDirsById,
                 builder -> builder.operationId("GetAttachmentPathDirsById")
@@ -121,7 +118,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .required(true)
                         .implementation(Long.class))
-                    .response(responseBuilder().implementationArray(Attachment.class)))
+                    .response(responseBuilder().implementation(ResponseResult.class)))
 
             .DELETE("/attachment/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteAttachment").tag(tag)
@@ -129,7 +126,8 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("Attachment ID")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class)))
+                        .implementation(Long.class))
+                    .response(responseBuilder().implementation(ResponseResult.class)))
 
             .POST("/attachment/directory", this::createDirectory,
                 builder -> builder.operationId("CreateDirectory")
@@ -141,13 +139,13 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder()
                         .name("parentId")
                         .description("附件的父附件ID，父附件一般时目录类型。"))
-                    .response(responseBuilder().implementationArray(Attachment.class)))
+                    .response(responseBuilder().implementation(ResponseResult.class)))
 
             .PUT("/attachment/update", this::update,
                 builder -> builder.operationId("UpdateAttachment")
                     .tag(tag).description("Update attachment.")
                     .requestBody(Builder.requestBodyBuilder().implementation(Attachment.class))
-            )
+                    .response(responseBuilder().implementation(ResponseResult.class)))
 
             // Large multipart attachment fragment upload support
             .POST("/attachment/fragment/unique", this::generateFragmentUploadAttachmentUniqueId,
@@ -155,7 +153,8 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .tag(tag).description("Generate fragment upload attachment unique id.")
                     .response(responseBuilder()
                         .description("Random uuid.")
-                        .implementation(String.class)))
+                        .implementation(String.class))
+                    .response(responseBuilder().implementation(ResponseResult.class)))
             .PATCH("/attachment/fragment/patch/{unique}",
                 this::receiveFragmentUploadChunkAttachment,
                 builder -> builder.operationId("ReceiveFragmentUploadChunkAttachment")
@@ -174,13 +173,15 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("Upload chunk attachment offset."))
                     .parameter(parameterBuilder().in(ParameterIn.HEADER)
                         .name("Upload-Name").required(true)
-                        .description("Upload chunk attachment file name.")))
+                        .description("Upload chunk attachment file name."))
+                    .response(responseBuilder().implementation(ResponseResult.class)))
             .DELETE("/attachment/fragment/revert", this::revertFragmentUploadAttachmentByUnique,
                 builder -> builder.operationId("RevertFragmentUploadAttachmentByUnique")
                     .tag(tag).description("Revert fragment upload attachment by unique id.")
                     .requestBody(Builder.requestBodyBuilder()
                         .description("Unique id.")
-                        .implementation(String.class)))
+                        .implementation(String.class))
+                    .response(responseBuilder().implementation(ResponseResult.class)))
 
 
             .build();
@@ -217,18 +218,12 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .build()
             ))
             // Response upload file data
-            .flatMap(file -> ServerResponse.ok()
+            .flatMap(attachment -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(file))
-            .onErrorResume(NotFoundException.class, e -> ServerResponse.from(
-                ErrorResponse.builder(e, HttpStatusCode.valueOf(404), e.getMessage())
-                    .type(URI.create(e.getClass().getSimpleName())).build()));
+                .bodyValue(success(attachment)));
 
     }
 
-    private Mono<ServerResponse> getAttachmentTotal(ServerRequest request) {
-        return Mono.empty();
-    }
 
     private Mono<ServerResponse> listByCondition(ServerRequest request) {
         Optional<String> pageOp = request.queryParam("page");
@@ -259,30 +254,28 @@ public class AttachmentEndpoint implements CoreEndpoint {
                 .name(name).parentId(parentId)
                 .build())
             .flatMap(attachmentService::listEntitiesByCondition)
-            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
+            .flatMap(pagingWrap ->
+                ok().bodyValue(ResponseResult.<PagingWrap<?>>success(pagingWrap)));
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {
         String id = request.pathVariable("id");
         return attachmentService.findById(Long.parseLong(id))
-            .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
-            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
-                .bodyValue("Not found for id: " + id));
+            .flatMap(attachment ->
+                ok().bodyValue(success(attachment)));
     }
 
     private Mono<ServerResponse> getAttachmentPathDirsById(ServerRequest request) {
         String id = request.pathVariable("id");
         return attachmentService.findAttachmentPathDirsById(Long.parseLong(id))
-            .flatMap(attachments -> ServerResponse.ok().bodyValue(attachments))
-            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
-                .bodyValue("Not found for id: " + id));
+            .flatMap(attachments ->
+                ok().bodyValue(success(attachments)));
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
         String id = request.pathVariable("id");
         return attachmentService.removeById(Long.parseLong(id))
-            .then(ServerResponse.ok()
-                .bodyValue("Delete success"));
+            .then(ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> createDirectory(ServerRequest request) {
@@ -295,12 +288,10 @@ public class AttachmentEndpoint implements CoreEndpoint {
         Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
 
         return attachmentService.createDirectory(parentId, name)
-            .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
-            .onErrorResume(AttachmentParentNotFoundException.class,
-                e -> ServerResponse.status(HttpStatus.NOT_FOUND).bodyValue(e.getMessage()))
-            .onErrorResume(DuplicateKeyException.class, e ->
-                ServerResponse.status(HttpStatus.BAD_REQUEST)
-                    .bodyValue("Duplicate directory for name: " + name));
+            .flatMap(attachment ->
+                ok().bodyValue(success(attachment)))
+            .onErrorResume(DuplicateKeyException.class,
+                e -> ok().bodyValue(recordExists("Duplicate directory for name: " + name, e)));
     }
 
     private Mono<ServerResponse> listDirectory(ServerRequest request) {
@@ -313,20 +304,16 @@ public class AttachmentEndpoint implements CoreEndpoint {
         Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
 
         return attachmentService.createDirectory(parentId, name)
-            .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
-            .onErrorResume(AttachmentParentNotFoundException.class,
-                e -> ServerResponse.status(HttpStatus.NOT_FOUND).bodyValue(e.getMessage()))
-            .onErrorResume(DuplicateKeyException.class, e ->
-                ServerResponse.status(HttpStatus.BAD_REQUEST)
-                    .bodyValue("Duplicate directory for name: " + name));
+            .flatMap(attachment ->
+                ok().bodyValue(success(attachment)))
+            .onErrorResume(DuplicateKeyException.class,
+                e -> ok().bodyValue(recordExists("Duplicate directory for name: " + name, e)));
     }
 
     private Mono<ServerResponse> update(ServerRequest request) {
         return request.bodyToMono(Attachment.class)
             .flatMap(attachmentService::save)
-            .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
-            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
-                .bodyValue("Not found attachment record."));
+            .flatMap(attachment -> ok().bodyValue(ok().bodyValue(attachment)));
 
     }
 
@@ -334,7 +321,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
         return Mono.justOrEmpty(UUID.randomUUID())
             .map(UUID::toString)
             .map(uuid -> uuid.replaceAll("-", ""))
-            .flatMap(uuid -> ServerResponse.ok().bodyValue(uuid));
+            .flatMap(uuid -> ok().bodyValue(uuid));
     }
 
     private Mono<ServerResponse> receiveFragmentUploadChunkAttachment(ServerRequest request) {
@@ -380,12 +367,12 @@ public class AttachmentEndpoint implements CoreEndpoint {
             .flatMap(bytes -> attachmentService.receiveAndHandleFragmentUploadChunkFile(
                 unique, uploadLength, uploadOffset, uploadName, bytes, parentId
             ))
-            .then(ServerResponse.ok().bodyValue("SUCCESS"));
+            .then(ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> revertFragmentUploadAttachmentByUnique(ServerRequest request) {
         return request.bodyToMono(String.class)
             .flatMap(attachmentService::revertFragmentUploadFile)
-            .then(ServerResponse.ok().bodyValue("SUCCESS"));
+            .then(ok().bodyValue(success()));
     }
 }

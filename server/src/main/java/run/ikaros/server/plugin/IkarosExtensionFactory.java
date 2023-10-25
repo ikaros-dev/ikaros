@@ -13,7 +13,7 @@ import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.util.Assert;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.api.plugin.BasePlugin;
 
 /**
@@ -58,7 +58,7 @@ public class IkarosExtensionFactory implements ExtensionFactory {
             // fix issue https://github.com/ikaros-dev/ikaros/issues/332
             Map<String, T> beansOfType = pluginApplicationContext.getBeansOfType(extensionClass);
             return beansOfType.values().stream().findFirst().orElseThrow(
-                (Supplier<RuntimeException>) () -> new NotFoundException(
+                (Supplier<RuntimeException>) () -> new IkarosNotFoundException(
                     "Not found Bean in plugin application "
                         + "context for type: " + extensionClass)
             );

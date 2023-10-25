@@ -1,4 +1,4 @@
-package run.ikaros.api.custom.exception;
+package run.ikaros.api.infra.exception.custom;
 
 import org.springframework.http.HttpStatus;
 import run.ikaros.api.custom.GroupVersionKind;

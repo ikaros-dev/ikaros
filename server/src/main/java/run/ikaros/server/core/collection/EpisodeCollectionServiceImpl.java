@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.core.collection.EpisodeCollection;
-import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
+import run.ikaros.api.infra.exception.subject.EpisodeIkarosNotFoundException;
 import run.ikaros.server.store.entity.EpisodeCollectionEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.EpisodeCollectionRepository;
@@ -38,7 +38,8 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
             .switchIfEmpty(
                 episodeRepository.findById(episodeId)
                     .switchIfEmpty(Mono.error(
-                        new EpisodeNotFoundException("episode not found for id: " + episodeId)))
+                        new EpisodeIkarosNotFoundException(
+                            "episode not found for id: " + episodeId)))
                     .map(EpisodeEntity::getSubjectId)
                     .flatMap(subjectId -> episodeCollectionRepository
                         .save(EpisodeCollectionEntity.builder()
@@ -144,7 +145,8 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
                                                                            Long duration) {
         return episodeRepository.findById(episodeId)
             .switchIfEmpty(
-                Mono.error(new EpisodeNotFoundException("Episode not found for id: " + episodeId)))
+                Mono.error(
+                    new EpisodeIkarosNotFoundException("Episode not found for id: " + episodeId)))
             .map(EpisodeEntity::getSubjectId)
             .flatMap(subjectId ->
                 episodeCollectionRepository.save(EpisodeCollectionEntity.builder()
@@ -163,7 +165,8 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
         Long episodeId, EpisodeCollectionEntity episodeCollectionEntity) {
         return episodeRepository.findById(episodeId)
             .switchIfEmpty(
-                Mono.error(new EpisodeNotFoundException("Episode not found for id: " + episodeId)))
+                Mono.error(
+                    new EpisodeIkarosNotFoundException("Episode not found for id: " + episodeId)))
             .map(EpisodeEntity::getSubjectId)
             .map(episodeCollectionEntity::setSubjectId);
     }

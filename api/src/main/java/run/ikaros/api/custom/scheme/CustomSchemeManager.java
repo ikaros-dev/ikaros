@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.springframework.lang.NonNull;
 import run.ikaros.api.custom.GroupVersionKind;
-import run.ikaros.api.custom.exception.CustomSchemeNotFoundException;
+import run.ikaros.api.infra.exception.custom.CustomSchemeNotFoundException;
 
 public interface CustomSchemeManager {
 

@@ -13,7 +13,7 @@ import org.springframework.security.web.server.authentication.ServerAuthenticati
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.AppConst;
-import run.ikaros.server.infra.model.CommonResult;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.server.infra.utils.JsonUtils;
 
 public class FormLoginFailureHandler implements ServerAuthenticationFailureHandler {
@@ -24,11 +24,14 @@ public class FormLoginFailureHandler implements ServerAuthenticationFailureHandl
     public Mono<Void> onAuthenticationFailure(WebFilterExchange webFilterExchange,
                                               AuthenticationException ex) {
         ServerHttpResponse response = webFilterExchange.getExchange().getResponse();
-        response.setStatusCode(HttpStatus.UNAUTHORIZED);
+        response.setStatusCode(HttpStatus.OK);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        CommonResult result = new CommonResult();
-        result.setMessage("[" + ex.getClass().getSimpleName() + "] " + ex.getMessage());
-        String resultJson = JsonUtils.obj2Json(result);
+        //CommonResult result = new CommonResult();
+        //result.setMessage("[" + ex.getClass().getSimpleName() + "] " + ex.getMessage());
+        String resultJson = JsonUtils.obj2Json(
+            ResponseResult.notAccess("[" + ex.getClass().getSimpleName() + "] " + ex.getMessage(),
+                ex)
+        );
         if (StringUtils.isBlank(resultJson)) {
             resultJson = "Obj to json fail.";
         }

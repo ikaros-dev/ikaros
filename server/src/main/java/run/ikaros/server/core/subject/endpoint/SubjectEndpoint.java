@@ -4,6 +4,8 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.content.Builder.contentBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +15,6 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -23,9 +24,9 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Subject;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.model.PagingWrap;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.api.store.enums.SubjectType;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.vo.FindSubjectCondition;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -60,8 +61,8 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
                     .response(responseBuilder()
-                        .implementation(PagingWrap.class))
-            )
+                        .implementation(ResponseResult.class)))
+
             .GET("/subject/{id}", this::getById,
                 builder -> builder
                     .operationId("SearchSubjectById")
@@ -73,8 +74,8 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
                     .description("Search single subject by id.")
-                    .response(responseBuilder().implementation(Subject.class))
-            )
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .GET("/subjects/condition", this::listByCondition,
                 builder -> builder.operationId("ListSubjectsByCondition")
@@ -115,8 +116,8 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .name("airTimeDesc")
                         .implementation(Boolean.class)
                         .description("是否根据放送时间倒序，新番在列表前面。默认为 true."))
-                    .response(responseBuilder().implementation(PagingWrap.class))
-            )
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .POST("/subject", this::create,
                 builder -> builder.operationId("CreateSubject")
@@ -128,7 +129,8 @@ public class SubjectEndpoint implements CoreEndpoint {
                             .mediaType(MediaType.APPLICATION_JSON_VALUE)
                             .schema(schemaBuilder().implementation(Subject.class))
                         ))
-                    .response(responseBuilder().implementation(Subject.class)))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .PUT("/subject", this::update,
                 builder -> builder.operationId("UpdateSubject")
@@ -139,7 +141,9 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .content(contentBuilder()
                             .mediaType(MediaType.APPLICATION_JSON_VALUE)
                             .schema(schemaBuilder().implementation(Subject.class))
-                        )))
+                        ))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .DELETE("/subject/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteSubjectById")
@@ -150,7 +154,9 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .required(true)
                         .in(ParameterIn.PATH)
                         .description("Subject id")
-                        .implementation(Long.class)))
+                        .implementation(Long.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
             .build();
     }
 
@@ -201,7 +207,8 @@ public class SubjectEndpoint implements CoreEndpoint {
             // .year(year).month(month)
             .airTimeDesc(airTimeDesc).build();
         return subjectService.listEntitiesByCondition(findSubjectCondition)
-            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
+            .flatMap(pagingWrap ->
+                ok().bodyValue(ResponseResult.<PagingWrap<?>>success(pagingWrap)));
     }
 
     private Mono<ServerResponse> list(ServerRequest request) {
@@ -215,12 +222,9 @@ public class SubjectEndpoint implements CoreEndpoint {
                 return subjectService.findAllByPageable(pagingWrap);
             })
             .filter(pagingWrap -> !pagingWrap.isEmpty())
-            .flatMap(pagingWrap -> ServerResponse.ok()
+            .flatMap(pagingWrap -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(pagingWrap))
-            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("[]"));
+                .bodyValue(ResponseResult.<PagingWrap<?>>success(pagingWrap)));
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {
@@ -228,37 +232,30 @@ public class SubjectEndpoint implements CoreEndpoint {
         return Mono.just(id)
             .map(Long::valueOf)
             .flatMap(subjectService::findById)
-            .flatMap(subject -> ServerResponse.ok()
+            .flatMap(subject -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(subject))
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()))
-            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("Not found for id: " + id));
+                .bodyValue(success(subject)));
     }
 
     private Mono<ServerResponse> create(ServerRequest request) {
         return request.bodyToMono(Subject.class)
             .flatMap(subjectService::create)
-            .flatMap(subject -> ServerResponse.ok()
+            .flatMap(subject -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(subject));
+                .bodyValue(success(subject)));
     }
 
     private Mono<ServerResponse> update(ServerRequest request) {
         return request.bodyToMono(Subject.class)
             .flatMap(subjectService::update)
-            .then(ServerResponse.ok().build());
+            .then(ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
         return Mono.just(request.pathVariable("id"))
             .map(Long::valueOf)
             .flatMap(subjectService::deleteById)
-            .then(ServerResponse.ok().build());
+            .then(ok().bodyValue(success()));
     }
 
 }

@@ -15,10 +15,10 @@ import run.ikaros.api.constant.FileConst;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.store.enums.AttachmentType;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
 @SpringBootTest
@@ -53,15 +53,15 @@ class AttachmentServiceTest {
             FileUtils.convertToDataBufferFlux(classPathResource.getFile());
 
         StepVerifier.create(attachmentService.upload(
-            AttachmentUploadCondition.builder()
-                .dataBufferFlux(dataBufferFlux)
-                .name(name)
-            .build()))
+                AttachmentUploadCondition.builder()
+                    .dataBufferFlux(dataBufferFlux)
+                    .name(name)
+                    .build()))
             .expectNextMatches(attachment -> StringUtils.hasText(attachment.getFsPath()))
             .verifyComplete();
 
         StepVerifier.create(attachmentService.findByTypeAndParentIdAndName(AttachmentType.File,
-            null, name).map(Attachment::getName))
+                null, name).map(Attachment::getName))
             .expectNext(name)
             .verifyComplete();
 

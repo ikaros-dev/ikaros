@@ -1,12 +1,13 @@
 package run.ikaros.server.core.subject.endpoint;
 
+import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.apiresponse.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -16,7 +17,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Subject;
-import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.subject.enums.SubjectSyncAction;
 import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
@@ -67,7 +68,9 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
                         .implementation(SubjectSyncAction.class))
                     .response(Builder.responseBuilder()
                         .implementation(Subject.class))
-            )
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
+
             .build();
     }
 
@@ -96,12 +99,6 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
             .build();
 
         return service.sync(condition)
-            .flatMap(subject -> ServerResponse.ok().bodyValue(subject))
-            .onErrorResume(NoAvailableSubjectPlatformSynchronizerException.class,
-                err -> ServerResponse.status(HttpStatus.SERVICE_UNAVAILABLE)
-                    .bodyValue("Subject platform sync fail for subjectId="
-                        + subjectId + ", platform=" + platform.name()
-                        + ", platformId=" + platformId
-                        + ", exception message=" + err.getMessage()));
+            .flatMap(subject -> ServerResponse.ok().bodyValue(success(subject)));
     }
 }

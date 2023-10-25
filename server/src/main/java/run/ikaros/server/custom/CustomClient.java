@@ -5,7 +5,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.function.Predicate;
-import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.api.infra.model.PagingWrap;
 
 @Deprecated
 public interface CustomClient {

@@ -2,6 +2,8 @@ package run.ikaros.server.core.collection;
 
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Optional;
@@ -15,10 +17,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.core.collection.SubjectCollection;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.api.store.enums.CollectionType;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -69,8 +69,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .implementation(Boolean.class)
                         .description("Collection is private, default is null."))
                     .response(responseBuilder()
-                        .implementation(PagingWrap.class))
-            )
+                        .implementation(ResponseResult.class)))
 
             .GET("/subject/collection/{userId}/{subjectId}", this::findSubjectCollection,
                 builder -> builder.operationId("FindSubjectCollection")
@@ -89,9 +88,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .implementation(Long.class)
                         .description("Subject id."))
                     .response(responseBuilder()
-                        .implementation(SubjectCollection.class))
-
-            )
+                        .implementation(ResponseResult.class)))
 
 
             .POST("/subject/collection/collect", this::collectSubject,
@@ -122,7 +119,8 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .in(ParameterIn.QUERY)
                         .implementation(Boolean.class)
                         .description("Is private, default is false."))
-            )
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .DELETE("/subject/collection/collect", this::unCollectSubject,
                 builder -> builder.operationId("RemoveSubjectCollect.")
@@ -140,7 +138,8 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .in(ParameterIn.QUERY)
                         .implementation(Long.class)
                         .description("Subject id."))
-            )
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .PUT("/subject/collection/mainEpisodeProgress/{userId}/{subjectId}/{progress}",
                 this::updateSubjectCollectionMainEpProgress,
@@ -164,7 +163,8 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .implementation(Integer.class)
                         .description("Main episode progress id."))
-            )
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
 
             .build();
@@ -187,10 +187,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
         Optional<String> isPrivateOp = serverRequest.queryParam("is_private");
         Boolean isPrivate = isPrivateOp.map(Boolean::valueOf).orElse(null);
         return subjectCollectionService.findCollections(uid, page, size, type, isPrivate)
-            .flatMap(pagingWarp -> ServerResponse.ok().bodyValue(pagingWarp))
-            .switchIfEmpty(ServerResponse.notFound().build())
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+            .flatMap(pagingWarp -> ok().bodyValue(success(pagingWarp)));
     }
 
     private Mono<ServerResponse> findSubjectCollection(ServerRequest serverRequest) {
@@ -202,10 +199,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
         Long subjectId = Long.valueOf(subjectIdStr);
 
         return subjectCollectionService.findCollection(userId, subjectId)
-            .flatMap(subjectCollection -> ServerResponse.ok().bodyValue(subjectCollection))
-            .switchIfEmpty(ServerResponse.notFound().build())
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+            .flatMap(subjectCollection -> ok().bodyValue(success(subjectCollection)));
     }
 
     private Mono<ServerResponse> collectSubject(ServerRequest serverRequest) {
@@ -221,9 +215,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
         Optional<String> isPrivateOp = serverRequest.queryParam("isPrivate");
         Boolean isPrivate = Boolean.valueOf(isPrivateOp.orElse(Boolean.FALSE.toString()));
         return subjectCollectionService.collect(userId, subjectId, type, isPrivate)
-            .then(ServerResponse.ok().build())
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+            .then(ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> unCollectSubject(ServerRequest serverRequest) {
@@ -234,9 +226,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
         Assert.isTrue(subjectIdOp.isPresent(), "'subjectId' must has value.");
         Long subjectId = Long.parseLong(subjectIdOp.get());
         return subjectCollectionService.unCollect(userId, subjectId)
-            .then(ServerResponse.ok().build())
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+            .then(ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> updateSubjectCollectionMainEpProgress(ServerRequest request) {
@@ -250,9 +240,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
         Assert.hasText(progressStr, "'progress' must has text.");
         Integer progress = Integer.valueOf(progressStr);
         return subjectCollectionService.updateMainEpisodeProgress(userId, subjectId, progress)
-            .then(Mono.defer(() -> ServerResponse.ok().build()))
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+            .then(Mono.defer(() -> ok().bodyValue(success())));
     }
 
 }

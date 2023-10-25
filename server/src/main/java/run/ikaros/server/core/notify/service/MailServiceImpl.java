@@ -18,7 +18,7 @@ import org.thymeleaf.context.Context;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.server.core.notify.MailService;
 import run.ikaros.server.core.notify.model.MailConfig;
 import run.ikaros.server.core.notify.model.MailProtocol;
@@ -52,7 +52,7 @@ public class MailServiceImpl implements MailService {
     public Mono<Void> updateConfig() {
         return reactiveCustomClient.findOne(ConfigMap.class,
                 SystemSettingInitListener.getConfigMapName())
-            .onErrorResume(NotFoundException.class, e -> Mono.empty())
+            .onErrorResume(IkarosNotFoundException.class, e -> Mono.empty())
             .map(ConfigMap::getData)
             .map(map -> {
                 Object mailEnable = map.get("MAIL_ENABLE");

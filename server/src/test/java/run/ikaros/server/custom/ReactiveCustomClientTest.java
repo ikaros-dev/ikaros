@@ -10,8 +10,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.infra.exception.NotFoundException;
-import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
+import run.ikaros.api.infra.model.PagingWrap;
 
 @SpringBootTest
 class ReactiveCustomClientTest {
@@ -43,7 +43,7 @@ class ReactiveCustomClientTest {
             .setUser(new DemoCustom.User().setUsername("user"));
 
         StepVerifier.create(reactiveCustomClient.findOne(DemoCustom.class, title))
-            .expectError(NotFoundException.class)
+            .expectError(IkarosNotFoundException.class)
             .verify();
 
         StepVerifier.create(reactiveCustomClient.create(demoCustom)
@@ -177,13 +177,13 @@ class ReactiveCustomClientTest {
             .verify();
 
         StepVerifier.create(findOneResult)
-            .expectError(NotFoundException.class)
+            .expectError(IkarosNotFoundException.class)
             .verify();
 
         demoCustom.setTitle("newTitle");
 
         StepVerifier.create(reactiveCustomClient.update(demoCustom))
-            .expectError(NotFoundException.class)
+            .expectError(IkarosNotFoundException.class)
             .verify();
 
     }

@@ -1,8 +1,8 @@
 package run.ikaros.api.core.collection;
 
 import reactor.core.publisher.Mono;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.api.store.enums.CollectionType;
-import run.ikaros.api.wrap.PagingWrap;
 
 public interface SubjectCollectionOperate extends CollectionOperate {
 

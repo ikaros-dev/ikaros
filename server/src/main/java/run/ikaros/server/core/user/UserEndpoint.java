@@ -2,13 +2,13 @@ package run.ikaros.server.core.user;
 
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.parameter.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
@@ -22,7 +22,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -43,7 +43,9 @@ public class UserEndpoint implements CoreEndpoint {
                     .tag(tag)
                     .description("Get current user detail.")
                     .response(responseBuilder()
-                        .implementation(User.class)))
+                        .implementation(User.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .PUT("/user", this::putUser,
                 builder -> builder.operationId("UpdateUser")
@@ -52,10 +54,8 @@ public class UserEndpoint implements CoreEndpoint {
                     .requestBody(requestBodyBuilder()
                         .required(true).implementation(UpdateUserRequest.class)
                         .description("User update info."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
-                        .responseCode("200")
-                        .description("Update user information success.")
-                        .implementation(User.class)))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .PUT("/user/{username}/role", this::changeRole,
                 builder -> builder.operationId("ChangeUserRole")
@@ -68,10 +68,8 @@ public class UserEndpoint implements CoreEndpoint {
                         .in(ParameterIn.DEFAULT)
                         .name("roleId").implementation(Long.class)
                         .required(true).description("Id for role."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
-                        .responseCode("200")
-                        .description("Change user role success.")
-                        .implementation(Void.class)))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .PUT("/user/{username}/password", this::changeUserPassword,
                 builder -> builder.operationId("ChangeUserPassword")
@@ -88,10 +86,8 @@ public class UserEndpoint implements CoreEndpoint {
                         .in(ParameterIn.DEFAULT)
                         .name("newPassword").implementation(String.class)
                         .required(true).description("New password for user."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
-                        .responseCode("200")
-                        .description("Update user password success.")
-                        .implementation(Void.class)))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .PUT("/user/{username}/email", this::bindEmail,
                 builder -> builder.operationId("BindEmail")
@@ -109,10 +105,8 @@ public class UserEndpoint implements CoreEndpoint {
                         .in(ParameterIn.DEFAULT)
                         .name("verificationCode").implementation(String.class)
                         .required(true).description("Verification code once."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
-                        .responseCode("200")
-                        .description("Bind user and email success.")
-                        .implementation(Void.class)))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .PUT("/user/{username}/telephone", this::bindTelephone,
                 builder -> builder.operationId("BindTelephone")
@@ -130,10 +124,8 @@ public class UserEndpoint implements CoreEndpoint {
                         .in(ParameterIn.DEFAULT)
                         .name("verificationCode").implementation(String.class)
                         .required(true).description("Verification code once."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
-                        .responseCode("200")
-                        .description("Bind user and telephone success.")
-                        .implementation(Void.class)))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
             .build();
     }
 
@@ -148,21 +140,14 @@ public class UserEndpoint implements CoreEndpoint {
             .flatMap(userService::getUserByUsername)
             .flatMap(user -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(user));
+                .bodyValue(success(user)));
     }
 
     private Mono<ServerResponse> putUser(ServerRequest request) {
         return request.bodyToMono(UpdateUserRequest.class)
             .flatMap(userService::update)
             .flatMap(user -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(user))
-            .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()))
-            .onErrorResume(IllegalArgumentException.class,
-                e -> ServerResponse.badRequest()
-                    .bodyValue("No user id. exception msg:" + e.getMessage()));
+                .bodyValue(success(user)));
     }
 
     private Mono<ServerResponse> changeRole(ServerRequest request) {
@@ -170,7 +155,7 @@ public class UserEndpoint implements CoreEndpoint {
         return Mono.justOrEmpty(request.queryParam("roleId"))
             .map(Long::valueOf)
             .flatMap(roleId -> userService.changeRole(username, roleId))
-            .then(ServerResponse.ok().build());
+            .then(ServerResponse.ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> changeUserPassword(ServerRequest request) {
@@ -180,7 +165,7 @@ public class UserEndpoint implements CoreEndpoint {
         Assert.isTrue(oldPassword.isPresent(), "'oldPassword' must not blank.");
         Assert.isTrue(newPassword.isPresent(), "'newPassword' must not blank.");
         return userService.updatePassword(username, oldPassword.get(), newPassword.get())
-            .then(ServerResponse.ok().build());
+            .then(ServerResponse.ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> bindEmail(ServerRequest request) {
@@ -190,7 +175,7 @@ public class UserEndpoint implements CoreEndpoint {
         Assert.isTrue(emailOptional.isPresent(), "'email' must not blank.");
         Assert.isTrue(verificationCodeOptional.isPresent(), "'verificationCode' must not blank.");
         return userService.bindEmail(username, emailOptional.get(), verificationCodeOptional.get())
-            .then(ServerResponse.ok().build());
+            .then(ServerResponse.ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> bindTelephone(ServerRequest request) {
@@ -201,6 +186,6 @@ public class UserEndpoint implements CoreEndpoint {
         Assert.isTrue(verificationCodeOptional.isPresent(), "'verificationCode' must not blank.");
         return userService.bindTelephone(username, telephoneOp.get(),
                 verificationCodeOptional.get())
-            .then(ServerResponse.ok().build());
+            .then(ServerResponse.ok().bodyValue(success()));
     }
 }

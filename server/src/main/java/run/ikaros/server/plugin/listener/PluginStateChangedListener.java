@@ -10,7 +10,7 @@ import org.pf4j.PluginStateListener;
 import org.pf4j.PluginWrapper;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.api.plugin.custom.Plugin;
 import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.plugin.IkarosPluginManager;
@@ -48,12 +48,12 @@ public class PluginStateChangedListener implements PluginStateListener {
             )
 
             .then(reactiveCustomClient.findOne(Plugin.class, pluginId))
-            .onErrorResume(NotFoundException.class, e -> Mono.empty())
+            .onErrorResume(IkarosNotFoundException.class, e -> Mono.empty())
             .flatMap(plugin -> reactiveCustomClient.updateOneMeta(Plugin.class, pluginId, "state",
                     JsonUtils.obj2Bytes(state))
                 .doOnSuccess(unused ->
                     log.debug("Update plugin [{}] state to [{}]", pluginId, state))
-                .onErrorResume(NotFoundException.class, e -> {
+                .onErrorResume(IkarosNotFoundException.class, e -> {
                     log.warn("Skip first update plugin [{}] state.", pluginId);
                     return Mono.empty();
                 }))

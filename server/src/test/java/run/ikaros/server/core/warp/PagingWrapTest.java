@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.api.infra.model.PagingWrap;
 
 class PagingWrapTest {
 

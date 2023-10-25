@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.theme.ThemeService;
 

@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.server.custom.scheme.SchemeInitializedEvent;
 import run.ikaros.server.infra.constants.SettingKeyConst;
 import run.ikaros.server.infra.constants.ThemeConst;
@@ -64,7 +64,7 @@ public class SystemSettingInitListener {
         settingConfigMap.putDataItem(SettingKeyConst.THEME_SELECT, ThemeConst.DEFAULT);
 
         return reactiveCustomClient.findOne(ConfigMap.class, configMapName)
-            .onErrorResume(NotFoundException.class, e ->
+            .onErrorResume(IkarosNotFoundException.class, e ->
                 reactiveCustomClient.create(settingConfigMap)
                     .doOnSuccess(cm -> log.debug("Create init setting config map: {}", cm)))
             .flatMap(configMap -> {

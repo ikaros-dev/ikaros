@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.function.Predicate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.api.infra.model.PagingWrap;
 
 
 public interface ReactiveCustomClient {

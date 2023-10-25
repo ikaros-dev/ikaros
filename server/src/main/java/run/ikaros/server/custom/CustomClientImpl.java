@@ -20,8 +20,8 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.custom.Custom;
-import run.ikaros.api.infra.exception.NotFoundException;
-import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 import run.ikaros.server.store.repository.CustomMetadataRepository;
@@ -87,7 +87,8 @@ public class CustomClientImpl implements CustomClient {
         CustomEntity customEntity =
             findCustomEntityOne(custom.getClass(), getNameFieldValue(custom));
         if (customEntity == null) {
-            throw new NotFoundException("custom not found for name=" + getNameFieldValue(custom));
+            throw new IkarosNotFoundException(
+                "custom not found for name=" + getNameFieldValue(custom));
         }
         Long customEntityId = customEntity.getId();
         CustomDto customDto = CustomConverter.convertTo(custom);
@@ -158,7 +159,7 @@ public class CustomClientImpl implements CustomClient {
             metadataRepository.findByCustomIdAndKey(customEntityId, metaName)
                 .block(BLOCK_TIMEOUT);
         if (customMetadata == null) {
-            throw new NotFoundException("Not found metadata for class: " + clazz
+            throw new IkarosNotFoundException("Not found metadata for class: " + clazz
                 + ", name: " + name + ", metaName: " + metaName);
         }
         return customMetadata.getValue();
@@ -196,7 +197,7 @@ public class CustomClientImpl implements CustomClient {
         Assert.hasText(name, "'name' must has text.");
         CustomEntity customEntity = findCustomEntityOne(type, name);
         if (customEntity == null) {
-            throw new NotFoundException("custom not found for name=" + name);
+            throw new IkarosNotFoundException("custom not found for name=" + name);
         }
         Long customEntityId = customEntity.getId();
         List<CustomMetadataEntity> customMetadataEntities =

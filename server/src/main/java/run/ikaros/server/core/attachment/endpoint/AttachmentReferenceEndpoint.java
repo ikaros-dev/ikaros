@@ -1,6 +1,9 @@
 package run.ikaros.server.core.attachment.endpoint;
 
+import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +16,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.AttachmentReference;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.server.core.attachment.service.AttachmentReferenceService;
 import run.ikaros.server.core.attachment.vo.BatchMatchingEpisodeAttachment;
@@ -36,7 +40,9 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                 builder -> builder.operationId("SaveAttachmentReference")
                     .tag(tag).description("Save attachment reference.")
                     .requestBody(Builder.requestBodyBuilder()
-                        .implementation(AttachmentReference.class)))
+                        .implementation(AttachmentReference.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .DELETE("/attachment/reference/id", this::deleteById,
                 builder -> builder.tag(tag)
@@ -44,13 +50,17 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder().name("id")
                         .description("AttachmentReference ID")
                         .required(true)
-                        .implementation(Long.class)))
+                        .implementation(Long.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .DELETE("/attachment/reference/uk", this::removeByTypeAndAttachmentIdAndReferenceId,
                 builder -> builder.operationId("RemoveByTypeAndAttachmentIdAndReferenceId")
                     .tag(tag).description("Remove by type and attachmentId and referenceId")
                     .requestBody(Builder.requestBodyBuilder()
-                        .implementation(AttachmentReference.class)))
+                        .implementation(AttachmentReference.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .GET("/attachment/references", this::findAllByTypeAndAttachmentId,
                 builder -> builder.tag(tag)
@@ -62,7 +72,9 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder()
                         .required(true)
                         .name("attachmentId").implementation(Long.class)
-                        .description("Attachment id")))
+                        .description("Attachment id"))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .POST("/attachment/references/subject/episodes",
                 this::matchingAttachmentsAndSubjectEpisodes,
@@ -72,7 +84,9 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                     .requestBody(Builder.requestBodyBuilder()
                         .required(true)
                         .description("batch matching episodes and attachments request value object")
-                        .implementation(BatchMatchingSubjectEpisodesAttachment.class)))
+                        .implementation(BatchMatchingSubjectEpisodesAttachment.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .POST("/attachment/references/episode",
                 this::matchingAttachmentsForEpisode,
@@ -82,7 +96,9 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                     .requestBody(Builder.requestBodyBuilder()
                         .required(true)
                         .description("batch matching episodes and attachments request value object")
-                        .implementation(BatchMatchingEpisodeAttachment.class)))
+                        .implementation(BatchMatchingEpisodeAttachment.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .build();
     }
@@ -90,14 +106,13 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> save(ServerRequest request) {
         return request.bodyToMono(AttachmentReference.class)
             .flatMap(service::save)
-            .flatMap(attachmentReference -> ServerResponse.ok().bodyValue(attachmentReference));
+            .flatMap(attachmentReference -> ok().bodyValue(success(attachmentReference)));
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
         String id = request.queryParam("id").orElse("-1");
         return service.removeById(Long.parseLong(id))
-            .then(ServerResponse.ok()
-                .bodyValue("Delete success"));
+            .then(ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> removeByTypeAndAttachmentIdAndReferenceId(ServerRequest request) {
@@ -105,7 +120,7 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
             .flatMap(attachmentReference -> service.removeByTypeAndAttachmentIdAndReferenceId(
                 attachmentReference.getType(), attachmentReference.getAttachmentId(),
                 attachmentReference.getReferenceId()))
-            .then(ServerResponse.ok().bodyValue("Delete success."));
+            .then(ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> findAllByTypeAndAttachmentId(ServerRequest request) {
@@ -123,8 +138,7 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
 
         return service.findAllByTypeAndAttachmentId(type, attachmentId)
             .collectList()
-            .flatMap(attachmentReferences -> ServerResponse.ok().bodyValue(attachmentReferences))
-            .switchIfEmpty(ServerResponse.notFound().build());
+            .flatMap(attachmentReferences -> ok().bodyValue(success(attachmentReferences)));
     }
 
     private Mono<ServerResponse> matchingAttachmentsAndSubjectEpisodes(ServerRequest request) {
@@ -134,7 +148,7 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                     service.matchingAttachmentsAndSubjectEpisodes(
                         batchMatchingSubjectEpisodesAttachment.getSubjectId(),
                         batchMatchingSubjectEpisodesAttachment.getAttachmentIds()))
-            .then(ServerResponse.ok().build());
+            .then(ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> matchingAttachmentsForEpisode(ServerRequest request) {
@@ -144,6 +158,6 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                     service.matchingAttachmentsForEpisode(
                         batchMatchingEpisodeAttachment.getEpisodeId(),
                         batchMatchingEpisodeAttachment.getAttachmentIds()))
-            .then(ServerResponse.ok().build());
+            .then(ok().bodyValue(success()));
     }
 }

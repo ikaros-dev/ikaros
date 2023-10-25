@@ -10,10 +10,10 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentReference;
-import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
-import run.ikaros.api.core.attachment.exception.AttachmentRefMatchingException;
 import run.ikaros.api.infra.exception.RegexMatchingException;
-import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
+import run.ikaros.api.infra.exception.attachment.exception.AttachmentNotFoundException;
+import run.ikaros.api.infra.exception.attachment.exception.AttachmentRefMatchingException;
+import run.ikaros.api.infra.exception.subject.EpisodeIkarosNotFoundException;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.RegexUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
@@ -140,7 +140,8 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
         return episodeRepository.existsById(episodeId)
             .filter(exists -> exists)
             .switchIfEmpty(
-                Mono.error(new EpisodeNotFoundException("Episode not found for id=" + episodeId)))
+                Mono.error(
+                    new EpisodeIkarosNotFoundException("Episode not found for id=" + episodeId)))
             // check all attachments exists
             .flatMapMany(exists -> Flux.fromArray(attachmentIds))
             .flatMap(attId -> attachmentRepository.existsById(attId)

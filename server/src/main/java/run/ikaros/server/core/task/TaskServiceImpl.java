@@ -13,8 +13,8 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.api.store.enums.TaskStatus;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.TaskRepository;
 

@@ -8,8 +8,8 @@ import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentOperate;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.api.store.enums.AttachmentType;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 
 @Slf4j

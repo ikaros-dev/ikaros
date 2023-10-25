@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.api.infra.exception.plugin.PluginInstallException;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.plugin.IkarosPluginManager;
@@ -68,7 +68,7 @@ public class PluginServiceImpl implements PluginService {
         Assert.hasText(pluginId, "'pluginId' must has text");
         PluginWrapper pluginWrapper = pluginManager.getPlugin(pluginId);
         if (pluginWrapper == null) {
-            return Mono.error(new NotFoundException("Not found plugin for id: " + pluginId));
+            return Mono.error(new IkarosNotFoundException("Not found plugin for id: " + pluginId));
         }
         PluginState pluginState = pluginManager.startPlugin(pluginId);
         return Mono.just(pluginState);
@@ -79,7 +79,7 @@ public class PluginServiceImpl implements PluginService {
         Assert.hasText(pluginId, "'pluginId' must has text");
         PluginWrapper pluginWrapper = pluginManager.getPlugin(pluginId);
         if (pluginWrapper == null) {
-            return Mono.error(new NotFoundException("Not found plugin for id: " + pluginId));
+            return Mono.error(new IkarosNotFoundException("Not found plugin for id: " + pluginId));
         }
         PluginState pluginState = pluginManager.stopPlugin(pluginId);
         return Mono.just(pluginState);
@@ -90,7 +90,7 @@ public class PluginServiceImpl implements PluginService {
         Assert.hasText(pluginId, "'pluginId' must has text");
         PluginWrapper pluginWrapper = pluginManager.getPlugin(pluginId);
         if (pluginWrapper == null) {
-            return Mono.error(new NotFoundException("Not found plugin for id: " + pluginId));
+            return Mono.error(new IkarosNotFoundException("Not found plugin for id: " + pluginId));
         }
         PluginState pluginState = pluginManager.reloadPlugin(pluginId);
         return Mono.just(pluginState);

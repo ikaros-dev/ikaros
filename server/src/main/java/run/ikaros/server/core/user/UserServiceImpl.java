@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.api.infra.exception.security.PasswordNotMatchingException;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.RoleRepository;
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
         Assert.hasText(username, "'username' must has text.");
         return repository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
             .switchIfEmpty(
-                Mono.error(new NotFoundException("User not found for username=" + username)))
+                Mono.error(new IkarosNotFoundException("User not found for username=" + username)))
             .flatMap(userEntity -> updateEntity(userEntity, updateUserRequest))
             .map(User::new);
     }
@@ -127,10 +127,10 @@ public class UserServiceImpl implements UserService {
         Assert.isTrue(roleId != null && roleId > 0, "'roleId' must not null and must gt 0.");
         return repository.existsByUsername(username)
             .flatMap(r -> r ? roleRepository.existsById(roleId) :
-                Mono.error(new NotFoundException("User not exists for username=" + username)))
+                Mono.error(new IkarosNotFoundException("User not exists for username=" + username)))
             .flatMap(r ->
                 r ? repository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
-                    : Mono.error(new NotFoundException("Role not exists for id=" + roleId)))
+                    : Mono.error(new IkarosNotFoundException("Role not exists for id=" + roleId)))
             .map(userEntity -> userEntity.setRoleId(roleId))
             .flatMap(repository::save)
             .then();

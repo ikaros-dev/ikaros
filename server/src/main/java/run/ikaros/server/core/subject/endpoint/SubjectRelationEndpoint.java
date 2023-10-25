@@ -1,7 +1,9 @@
 package run.ikaros.server.core.subject.endpoint;
 
+import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -11,7 +13,6 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -21,6 +22,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.SubjectRelation;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.server.core.subject.service.SubjectRelationService;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -48,7 +50,10 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("Subject id")
                         .implementation(Long.class)
-                        .required(true)))
+                        .required(true))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
+
             .GET("/subject/relation/{subjectId}/{relationType}", this::findBySubjectIdAndType,
                 builder -> builder
                     .tag(tag)
@@ -64,7 +69,10 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("Subject relation type")
                         .implementation(SubjectRelationType.class)
-                        .required(true)))
+                        .required(true))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
+
             .POST("/subject/relation", this::createSubjectRelation,
                 builder -> builder
                     .tag(tag)
@@ -73,7 +81,10 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                     .requestBody(requestBodyBuilder()
                         .required(true)
                         .description("SubjectRelation")
-                        .implementation(SubjectRelation.class)))
+                        .implementation(SubjectRelation.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
+
             .DELETE("/subject/relation", this::removeSubjectRelation,
                 builder -> builder
                     .tag(tag)
@@ -97,7 +108,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .name("relation_subjects")
                         .description("Relation subjects")
                         .implementation(String.class))
-            ).build();
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
+            .build();
     }
 
     private Mono<ServerResponse> findAllBySubjectId(ServerRequest request) {
@@ -109,10 +122,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
             .filter(subjectRelations -> !subjectRelations.isEmpty())
             .flatMap(subjectRelations -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(subjectRelations))
-            .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue("Not found for subject id: " + subjectId));
+                .bodyValue(success(subjectRelations)));
 
     }
 
@@ -126,8 +136,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
             .filter(subjectRelation -> !subjectRelation.getRelationSubjects().isEmpty())
             .flatMap(subjectRelation -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(subjectRelation))
-            .switchIfEmpty(ServerResponse.notFound().build());
+                .bodyValue(success(subjectRelation)));
     }
 
     private Mono<ServerResponse> createSubjectRelation(ServerRequest request) {
@@ -136,8 +145,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
             .filter(subjectRelation -> !subjectRelation.getRelationSubjects().isEmpty())
             .flatMap(subjectRelation -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(subjectRelation))
-            .switchIfEmpty(ServerResponse.notFound().build());
+                .bodyValue(success(subjectRelation)));
     }
 
 
@@ -168,6 +176,6 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
             .flatMap(subjectRelationService::removeSubjectRelation)
             .flatMap(subjectRelation1 -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(subjectRelation1));
+                .bodyValue(success(subjectRelation1)));
     }
 }

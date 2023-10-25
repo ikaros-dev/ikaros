@@ -12,7 +12,7 @@ import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomScheme;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.server.custom.CustomConverter;
 import run.ikaros.server.custom.event.CustomUpdateEvent;
 
@@ -45,9 +45,10 @@ public class CustomUpdateHandler implements CustomRouterFunctionFactory.UpdateHa
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updated))
-            .onErrorResume(NotFoundException.class, e -> ServerResponse.status(HttpStatus.NOT_FOUND)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(e.getMessage()));
+            .onErrorResume(IkarosNotFoundException.class,
+                e -> ServerResponse.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(e.getMessage()));
     }
 
     @Override

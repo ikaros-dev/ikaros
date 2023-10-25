@@ -2,6 +2,8 @@ package run.ikaros.server.core.attachment.endpoint;
 
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +15,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.core.attachment.AttachmentRelation;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.core.attachment.service.AttachmentRelationService;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -46,7 +48,7 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
                         .in(ParameterIn.QUERY)
                         .required(true)
                         .implementation(AttachmentRelationType.class))
-                    .response(responseBuilder().implementationArray(AttachmentRelation.class)))
+                    .response(responseBuilder().implementation(ResponseResult.class)))
 
             .build();
     }
@@ -67,7 +69,7 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
         }
         return attachmentRelationService.findAllByTypeAndAttachmentId(relationTypeE, attachmentIdL)
             .collectList()
-            .flatMap(attachmentRelations -> ServerResponse.ok().bodyValue(attachmentRelations))
+            .flatMap(attachmentRelations -> ok().bodyValue(success(attachmentRelations)))
             .switchIfEmpty(ServerResponse.notFound().build());
     }
 

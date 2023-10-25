@@ -19,7 +19,7 @@ import org.springframework.util.StringUtils;
 import run.ikaros.api.custom.Custom;
 import run.ikaros.api.custom.GroupVersionKind;
 import run.ikaros.api.custom.Name;
-import run.ikaros.api.custom.exception.CustomConvertException;
+import run.ikaros.api.infra.exception.custom.CustomConvertException;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 

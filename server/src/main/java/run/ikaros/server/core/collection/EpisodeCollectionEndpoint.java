@@ -2,6 +2,8 @@ package run.ikaros.server.core.collection;
 
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Optional;
@@ -13,7 +15,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.core.collection.EpisodeCollection;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -45,7 +47,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
                     .response(responseBuilder()
-                        .implementation(EpisodeCollection.class)))
+                        .implementation(ResponseResult.class)))
 
             .GET("/episode/collections/subjectId/{userId}/{subjectId}",
                 this::findEpisodeCollectionsByUserIdAndSubjectId,
@@ -64,7 +66,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
                     .response(responseBuilder()
-                        .implementationArray(EpisodeCollection.class)))
+                        .implementation(ResponseResult.class)))
 
             .PUT("/episode/collection/{userId}/{episodeId}",
                 this::updateEpisodeCollection,
@@ -94,7 +96,8 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .in(ParameterIn.QUERY)
                         .required(false)
                         .implementation(Long.class))
-            )
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .PUT("/episode/collection/finish/{userId}/{episodeId}/{finish}",
                 this::updateEpisodeCollectionFinish,
@@ -117,7 +120,9 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .description("Episode collection finish.")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Boolean.class)))
+                        .implementation(Boolean.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .POST("/episode/collection/{userId}/{episodeId}", this::create,
                 builder -> builder.operationId("SaveEpisodeCollection")
@@ -135,8 +140,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
                     .response(responseBuilder()
-                        .implementation(EpisodeCollection.class))
-            )
+                        .implementation(ResponseResult.class)))
 
             .DELETE("/episode/collection/{userId}/{episodeId}", this::remove,
                 builder -> builder.operationId("DeleteEpisodeCollection")
@@ -154,8 +158,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
                     .response(responseBuilder()
-                        .implementation(EpisodeCollection.class))
-            )
+                        .implementation(ResponseResult.class)))
 
             .build();
     }
@@ -165,9 +168,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
         String episodeId = serverRequest.pathVariable("episodeId");
         return episodeCollectionService
             .findByUserIdAndEpisodeId(Long.valueOf(userId), Long.valueOf(episodeId))
-            .flatMap(episodeCollection -> ServerResponse.ok()
-                .bodyValue(episodeCollection))
-            .switchIfEmpty(ServerResponse.notFound().build());
+            .flatMap(episodeCollection -> ok().bodyValue(success(episodeCollection)));
     }
 
     private Mono<ServerResponse> findEpisodeCollectionsByUserIdAndSubjectId(
@@ -177,9 +178,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
         return episodeCollectionService
             .findAllByUserIdAndSubjectId(Long.valueOf(userId), Long.valueOf(subjectId))
             .collectList()
-            .flatMap(episodeCollections -> ServerResponse.ok()
-                .bodyValue(episodeCollections))
-            .switchIfEmpty(ServerResponse.notFound().build());
+            .flatMap(episodeCollections -> ok().bodyValue(success(episodeCollections)));
     }
 
     private Mono<ServerResponse> updateEpisodeCollection(ServerRequest serverRequest) {
@@ -194,9 +193,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                 Long.valueOf(userId),
                 Long.valueOf(episodeId),
                 progress, duration)
-            .then(ServerResponse.ok().build())
-            .onErrorResume(IllegalArgumentException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+            .then(ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> updateEpisodeCollectionFinish(ServerRequest serverRequest) {
@@ -208,21 +205,21 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                 Long.valueOf(userId),
                 Long.valueOf(episodeId),
                 Boolean.valueOf(finish))
-            .then(ServerResponse.ok().build());
+            .then(ok().bodyValue(success()));
     }
 
     private Mono<ServerResponse> create(ServerRequest serverRequest) {
         String userId = serverRequest.pathVariable("userId");
         String episodeId = serverRequest.pathVariable("episodeId");
         return episodeCollectionService.create(Long.valueOf(userId), Long.valueOf(episodeId))
-            .flatMap(episodeCollection -> ServerResponse.ok().bodyValue(episodeCollection));
+            .flatMap(episodeCollection -> ok().bodyValue(episodeCollection));
     }
 
     private Mono<ServerResponse> remove(ServerRequest serverRequest) {
         String userId = serverRequest.pathVariable("userId");
         String episodeId = serverRequest.pathVariable("episodeId");
         return episodeCollectionService.remove(Long.valueOf(userId), Long.valueOf(episodeId))
-            .flatMap(episodeCollection -> ServerResponse.ok().bodyValue(episodeCollection));
+            .flatMap(episodeCollection -> ok().bodyValue(episodeCollection));
     }
 
 

@@ -33,12 +33,12 @@ import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectMeta;
 import run.ikaros.api.core.subject.SubjectSync;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
@@ -102,7 +102,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.findById(id)
             .switchIfEmpty(
-                Mono.error(new NotFoundException("Not found subject record by id: " + id)))
+                Mono.error(new IkarosNotFoundException("Not found subject record by id: " + id)))
             .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject()))
             .checkpoint("FindSubjectEntityById")
 
@@ -168,7 +168,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .map(SubjectSyncEntity::getSubjectId)
             .flatMap(this::findById)
             .switchIfEmpty(
-                Mono.error(new NotFoundException("Not found subject by bgmtv_id: " + bgmtvId)));
+                Mono.error(
+                    new IkarosNotFoundException("Not found subject by bgmtv_id: " + bgmtvId)));
     }
 
     @Override
@@ -182,7 +183,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .map(SubjectSyncEntity::getSubjectId)
             .flatMap(this::findById)
             .switchIfEmpty(
-                Mono.error(new NotFoundException(
+                Mono.error(new IkarosNotFoundException(
                     "Not found subject by sync platform and platformId: "
                         + subjectSyncPlatform + "-" + platformId)))
             .flatMap(subjectEntity -> findById(subjectEntity.getId()));

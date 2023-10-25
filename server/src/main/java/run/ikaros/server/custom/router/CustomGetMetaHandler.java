@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.custom.scheme.CustomScheme;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
 
 @Slf4j
 public class CustomGetMetaHandler implements CustomRouterFunctionFactory.GetMetaHandler {
@@ -29,7 +29,7 @@ public class CustomGetMetaHandler implements CustomRouterFunctionFactory.GetMeta
         return customClient.fetchOneMeta(scheme.type(), customName, metaName)
             .flatMap(metaVal -> ServerResponse.ok()
                 .bodyValue(metaVal))
-            .onErrorResume(NotFoundException.class,
+            .onErrorResume(IkarosNotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(e.getMessage()));

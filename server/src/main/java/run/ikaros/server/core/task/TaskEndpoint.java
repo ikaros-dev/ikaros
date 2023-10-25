@@ -2,6 +2,8 @@ package run.ikaros.server.core.task;
 
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+import static run.ikaros.api.infra.model.ResponseResult.success;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.nio.charset.StandardCharsets;
@@ -17,8 +19,9 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.infra.model.PagingWrap;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.api.store.enums.TaskStatus;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.store.entity.TaskEntity;
 
@@ -44,7 +47,9 @@ public class TaskEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH))
                     .response(responseBuilder()
                         .description("Task entity.")
-                        .implementation(TaskEntity.class)))
+                        .implementation(TaskEntity.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
             .GET("/task/process/{id}", this::getProcess,
                 builder -> builder
@@ -55,7 +60,9 @@ public class TaskEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH))
                     .response(responseBuilder()
                         .description("Process percentage. from 0 to 100.")
-                        .implementation(Long.class)))
+                        .implementation(Long.class))
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
 
             .GET("/tasks/condition", this::listByCondition,
@@ -77,8 +84,8 @@ public class TaskEndpoint implements CoreEndpoint {
                         .name("status")
                         .description("任务状态，精准匹配.")
                         .implementation(TaskStatus.class))
-                    .response(responseBuilder().implementation(PagingWrap.class))
-            )
+                    .response(responseBuilder()
+                        .implementation(ResponseResult.class)))
 
 
             .build();
@@ -111,25 +118,24 @@ public class TaskEndpoint implements CoreEndpoint {
                 .page(page).size(size).name(name).status(status)
                 .build())
             .flatMap(taskService::listEntitiesByCondition)
-            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
+            .flatMap(pagingWrap ->
+                ok().bodyValue(ResponseResult.<PagingWrap<?>>success(pagingWrap)));
     }
 
     private Mono<ServerResponse> getProcess(ServerRequest request) {
         return Mono.justOrEmpty(request.pathVariable("id"))
             .map(Long::parseLong)
             .flatMap(taskService::getProcess)
-            .flatMap(process -> ServerResponse.ok().bodyValue(process))
-            .switchIfEmpty(ServerResponse.notFound().build());
+            .flatMap(process -> ok().bodyValue(success(process)));
     }
 
     private Mono<ServerResponse> findById(ServerRequest request) {
         return Mono.justOrEmpty(request.pathVariable("id"))
             .map(Long::parseLong)
             .flatMap(taskService::findById)
-            .flatMap(taskEntity -> ServerResponse.ok()
+            .flatMap(taskEntity -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(taskEntity))
-            .switchIfEmpty(ServerResponse.notFound().build());
+                .bodyValue(success(taskEntity)));
     }
 
 }

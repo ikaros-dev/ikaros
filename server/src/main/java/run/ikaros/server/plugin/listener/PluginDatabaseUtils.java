@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.plugin.custom.Plugin;
 import run.ikaros.server.plugin.IkarosPluginDescriptor;
@@ -54,7 +54,7 @@ public class PluginDatabaseUtils {
         }
 
         return customClient.findOne(Plugin.class, pluginId)
-            .onErrorResume(NotFoundException.class, e -> customClient.create(plugin)
+            .onErrorResume(IkarosNotFoundException.class, e -> customClient.create(plugin)
                 .doOnSuccess(p -> log.debug("Create new plugin record for name: [{}].", pluginId)));
     }
 
@@ -123,7 +123,7 @@ public class PluginDatabaseUtils {
         }
 
         return customClient.findOne(ConfigMap.class, pluginId)
-            .onErrorResume(NotFoundException.class, e -> customClient.create(configMap)
+            .onErrorResume(IkarosNotFoundException.class, e -> customClient.create(configMap)
                 .doOnSuccess(cm -> log.info("save plugin:[{}] config map:[{}].", pluginId, cm)))
             .then();
     }

@@ -8,8 +8,8 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectMeta;
 import run.ikaros.api.core.subject.SubjectOperate;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
 

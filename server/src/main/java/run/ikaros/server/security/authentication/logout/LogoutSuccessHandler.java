@@ -11,7 +11,7 @@ import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.infra.model.CommonResult;
+import run.ikaros.api.infra.model.ResponseResult;
 import run.ikaros.server.infra.utils.JsonUtils;
 
 public class LogoutSuccessHandler implements ServerLogoutSuccessHandler {
@@ -22,9 +22,11 @@ public class LogoutSuccessHandler implements ServerLogoutSuccessHandler {
         ServerHttpResponse response = exchange.getExchange().getResponse();
         response.setStatusCode(HttpStatus.OK);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        CommonResult result = new CommonResult();
-        result.setMessage("LOGOUT SUCCESS");
-        String resultJson = JsonUtils.obj2Json(result);
+        //CommonResult result = new CommonResult();
+        //result.setMessage("LOGOUT SUCCESS");
+        String resultJson = JsonUtils.obj2Json(
+            ResponseResult.success(authentication)
+        );
         if (StringUtils.isBlank(resultJson)) {
             resultJson = "Obj to json fail.";
         }

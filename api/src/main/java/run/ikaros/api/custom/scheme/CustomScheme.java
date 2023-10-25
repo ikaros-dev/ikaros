@@ -8,7 +8,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import run.ikaros.api.custom.Custom;
 import run.ikaros.api.custom.GroupVersionKind;
-import run.ikaros.api.custom.exception.CustomException;
+import run.ikaros.api.infra.exception.custom.CustomException;
 
 /**
  * This class represents scheme of a Custom.

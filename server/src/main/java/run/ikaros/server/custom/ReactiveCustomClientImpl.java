@@ -20,8 +20,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.Custom;
 import run.ikaros.api.custom.ReactiveCustomClient;
-import run.ikaros.api.infra.exception.NotFoundException;
-import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.api.infra.exception.IkarosNotFoundException;
+import run.ikaros.api.infra.model.PagingWrap;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 import run.ikaros.server.store.repository.CustomMetadataRepository;
@@ -72,7 +72,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'custom' must not null")))
             .flatMap(obj -> findCustomEntityOne(custom.getClass(), getNameFieldValue(custom)))
             .switchIfEmpty(Mono.error(
-                new NotFoundException("custom not found for name=" + getNameFieldValue(custom))))
+                new IkarosNotFoundException(
+                    "custom not found for name=" + getNameFieldValue(custom))))
             .flatMap(customEntity -> Mono.just(custom)
                 .map(CustomConverter::convertTo)
                 .flatMap(customDto -> Mono.just(customDto)
@@ -132,8 +133,9 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
         return findCustomEntityOne(clazz, name)
             .map(CustomEntity::getId)
             .flatMap(customId -> metadataRepository.findByCustomIdAndKey(customId, metaName))
-            .switchIfEmpty(Mono.error(new NotFoundException("Not found metadata for class: " + clazz
-                + ", name: " + name + ", metaName: " + metaName)))
+            .switchIfEmpty(
+                Mono.error(new IkarosNotFoundException("Not found metadata for class: " + clazz
+                    + ", name: " + name + ", metaName: " + metaName)))
             .map(CustomMetadataEntity::getValue);
     }
 
@@ -162,7 +164,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .filter(StringUtils::hasText)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'name' must has text")))
             .flatMap(n -> findOne(clazz, n))
-            .onErrorResume(NotFoundException.class, e -> Mono.empty())
+            .onErrorResume(IkarosNotFoundException.class, e -> Mono.empty())
             .flatMap(this::delete);
     }
 
@@ -197,7 +199,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .filter(StringUtils::hasText)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'name' must has text")))
             .flatMap(obj -> findCustomEntityOne(type, name))
-            .switchIfEmpty(Mono.error(new NotFoundException("custom not found for name=" + name)))
+            .switchIfEmpty(
+                Mono.error(new IkarosNotFoundException("custom not found for name=" + name)))
             .flatMap(customEntity -> metadataRepository.findAll(
                     Example.of(CustomMetadataEntity.builder()
                         .customId(customEntity.getId())
