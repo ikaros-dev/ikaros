@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, h } from 'vue';
+import { ref, watch, onMounted, h, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Attachment } from '@runikaros/api-client';
 import { isImage, isVideo, isVoice } from '@/utils/file';
@@ -168,6 +168,7 @@ onMounted(fetchAttachments);
 
 const dialogFolderVisible = ref(false);
 const createFolderName = ref('');
+const createFolderInputRef = ref();
 const onCreateFolderButtonClick = async () => {
 	await apiClient.attachment.createDirectory({
 		parentId: attachmentCondition.value.parentId as any as string,
@@ -177,6 +178,11 @@ const onCreateFolderButtonClick = async () => {
 	createFolderName.value = '';
 	await fetchAttachments();
 	dialogFolderVisible.value = false;
+};
+const onCreateFolderDialogOpen = () => {
+	nextTick(() => {
+		createFolderInputRef.value.focus();
+	});
 };
 
 const currentSelectionAttachment = ref<Attachment>();
@@ -417,8 +423,13 @@ watch(attachmentCondition.value, () => {
 		@delete="fetchAttachments"
 	/>
 
-	<el-dialog v-model="dialogFolderVisible" title="新建目录">
+	<el-dialog
+		v-model="dialogFolderVisible"
+		title="新建目录"
+		@open="onCreateFolderDialogOpen"
+	>
 		<el-input
+			ref="createFolderInputRef"
 			v-model="createFolderName"
 			autocomplete="off"
 			size="large"
