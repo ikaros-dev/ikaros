@@ -83,6 +83,7 @@ onMounted(fetchCollections);
 							background
 							:total="findSubjectCollection.total"
 							layout="total, sizes, prev, pager, next, jumper"
+							:page-sizes="[6, 12, 24, 48, 96, 192]"
 							@current-change="fetchCollections"
 							@size-change="fetchCollections"
 						/>
@@ -124,6 +125,7 @@ onMounted(fetchCollections);
 				background
 				:total="findSubjectCollection.total"
 				layout="total, sizes, prev, pager, next, jumper"
+				:page-sizes="[6, 12, 24, 48, 96, 192]"
 				@current-change="fetchCollections"
 				@size-change="fetchCollections"
 			/>

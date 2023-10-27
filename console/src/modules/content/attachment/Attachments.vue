@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, h } from 'vue';
+import { ref, watch, onMounted, h, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Attachment } from '@runikaros/api-client';
 import { isImage, isVideo, isVoice } from '@/utils/file';
@@ -168,6 +168,7 @@ onMounted(fetchAttachments);
 
 const dialogFolderVisible = ref(false);
 const createFolderName = ref('');
+const createFolderInputRef = ref();
 const onCreateFolderButtonClick = async () => {
 	await apiClient.attachment.createDirectory({
 		parentId: attachmentCondition.value.parentId as any as string,
@@ -177,6 +178,11 @@ const onCreateFolderButtonClick = async () => {
 	createFolderName.value = '';
 	await fetchAttachments();
 	dialogFolderVisible.value = false;
+};
+const onCreateFolderDialogOpen = () => {
+	nextTick(() => {
+		createFolderInputRef.value.focus();
+	});
 };
 
 const currentSelectionAttachment = ref<Attachment>();
@@ -417,8 +423,13 @@ watch(attachmentCondition.value, () => {
 		@delete="fetchAttachments"
 	/>
 
-	<el-dialog v-model="dialogFolderVisible" title="新建目录">
+	<el-dialog
+		v-model="dialogFolderVisible"
+		title="新建目录"
+		@open="onCreateFolderDialogOpen"
+	>
 		<el-input
+			ref="createFolderInputRef"
 			v-model="createFolderName"
 			autocomplete="off"
 			size="large"
@@ -476,7 +487,7 @@ watch(attachmentCondition.value, () => {
 		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
 			<el-input
 				v-model="attachmentCondition.name"
-				placeholder="搜索附件，模糊匹配，回车搜查"
+				placeholder="搜索当前目录下的所有附件，模糊匹配，空格多个关键词，回车搜查"
 				clearable
 				@change="fetchAttachments"
 			>
@@ -489,7 +500,7 @@ watch(attachmentCondition.value, () => {
 
 	<br />
 
-	<el-row v-if="attachmentCondition.total > 10">
+	<el-row v-if="attachmentCondition.total > 10 || attachmentCondition.page > 1">
 		<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
 			<el-pagination
 				v-model:page-size="attachmentCondition.size"

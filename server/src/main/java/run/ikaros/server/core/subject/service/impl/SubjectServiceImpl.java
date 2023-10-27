@@ -348,13 +348,17 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         String nameCn = condition.getNameCn();
         String nameCnLike = "%" + nameCn + "%";
         Boolean nsfw = condition.getNsfw();
-        SubjectType type = condition.getType();
+        final SubjectType type = condition.getType();
         final Boolean airTimeDesc = condition.getAirTimeDesc();
 
         final PageRequest pageRequest = PageRequest.of(page - 1, size);
 
-        Criteria criteria =
-            Criteria.where("nsfw").is(nsfw);
+        Criteria criteria = Criteria.empty();
+
+        if (Objects.nonNull(nsfw)) {
+            criteria =
+                Criteria.where("nsfw").is(nsfw);
+        }
 
         if (StringUtils.isNotBlank(name)) {
             criteria = criteria.and("name").like(nameLike);

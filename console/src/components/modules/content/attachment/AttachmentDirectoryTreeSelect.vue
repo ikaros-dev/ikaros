@@ -15,7 +15,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
-	(event: 'update:targetDirid', targetDirid: number): void;
+	(event: 'update:targetDirid', targetDirid: number | undefined): void;
 }>();
 
 const targetDirectoryId = computed({
@@ -47,6 +47,8 @@ const loadDirectoryNodes = async (node, resolve) => {
 	const { data } = await apiClient.attachment.listAttachmentsByCondition({
 		type: 'Directory',
 		parentId: parentId as any as string,
+		page: 1,
+		size: 999999,
 	});
 	const attachments: Attachment[] = data.items;
 	const dirNodes: DirNode[] = attachments.map((attachment) => {
@@ -60,7 +62,7 @@ const loadDirectoryNodes = async (node, resolve) => {
 };
 
 const onClear = () => {
-	emit('update:targetDirid', 0);
+	emit('update:targetDirid', undefined);
 };
 </script>
 

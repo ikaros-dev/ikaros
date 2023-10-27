@@ -112,9 +112,9 @@ public class AttachmentServiceImpl implements AttachmentService {
         final int page = Optional.ofNullable(searchCondition.getPage()).orElse(1);
         final int size = Optional.ofNullable(searchCondition.getSize()).orElse(10);
 
-        final String name = StringUtils.hasText(searchCondition.getName())
-            ? searchCondition.getName() : "";
-        final String nameLike = "%" + name + "%";
+        String[] nameKeyWords = StringUtils.hasText(searchCondition.getName())
+            ? searchCondition.getName().split(" ")
+            : new String[] {};
         final AttachmentType type = searchCondition.getType();
         final Long parentId = searchCondition.getParentId();
         final PageRequest pageRequest = PageRequest.of(page - 1, size);
@@ -129,8 +129,12 @@ public class AttachmentServiceImpl implements AttachmentService {
             criteria = criteria.and("type").is(type);
         }
 
-        if (StringUtils.hasText(name)) {
-            criteria = criteria.and("name").like(nameLike);
+        for (String nameKeyWord : nameKeyWords) {
+            if (!StringUtils.hasText(nameKeyWord)) {
+                continue;
+            }
+            String nameKeyWordLike = "%" + nameKeyWord + "%";
+            criteria = criteria.and("name").like(nameKeyWordLike);
         }
 
         Query query = Query.query(criteria)
