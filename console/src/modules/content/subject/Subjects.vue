@@ -71,8 +71,8 @@ interface SubjectsCondition {
 
 const findSubjectsCondition = ref<SubjectsCondition>({
 	page: 1,
-	size: 10,
-	total: 10,
+	size: 12,
+	total: 0,
 	name: '',
 	nameCn: '',
 	nsfw: undefined,
@@ -230,16 +230,18 @@ onMounted(fetchSubjectByRouterQuery);
 	<br />
 
 	<el-row>
-		<el-col
-			><el-pagination
+		<el-col>
+			<el-pagination
 				v-model:page-size="findSubjectsCondition.size"
 				v-model:current-page="findSubjectsCondition.page"
 				background
 				:total="findSubjectsCondition.total"
 				layout="total, sizes, prev, pager, next, jumper"
+				:page-sizes="[6, 12, 24, 48, 96, 192]"
 				@current-change="fetchSubjects"
 				@size-change="fetchSubjects"
-		/></el-col>
+			/>
+		</el-col>
 	</el-row>
 </template>
 
