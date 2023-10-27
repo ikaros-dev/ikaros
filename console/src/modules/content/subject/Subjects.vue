@@ -65,7 +65,7 @@ interface SubjectsCondition {
 	total: number;
 	name: string;
 	nameCn: string;
-	nsfw: boolean;
+	nsfw: boolean | undefined;
 	type?: 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER';
 }
 
@@ -75,7 +75,7 @@ const findSubjectsCondition = ref<SubjectsCondition>({
 	total: 10,
 	name: '',
 	nameCn: '',
-	nsfw: false,
+	nsfw: undefined,
 	type: undefined,
 });
 

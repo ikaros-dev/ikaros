@@ -15,7 +15,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
-	(event: 'update:targetDirid', targetDirid: number): void;
+	(event: 'update:targetDirid', targetDirid: number | undefined): void;
 }>();
 
 const targetDirectoryId = computed({
@@ -62,7 +62,7 @@ const loadDirectoryNodes = async (node, resolve) => {
 };
 
 const onClear = () => {
-	emit('update:targetDirid', 0);
+	emit('update:targetDirid', undefined);
 };
 </script>
 

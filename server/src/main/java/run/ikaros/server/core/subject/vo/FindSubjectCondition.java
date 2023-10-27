@@ -19,9 +19,6 @@ public class FindSubjectCondition {
     private Integer size;
     private String name;
     private String nameCn;
-    /**
-     * default is false.
-     */
     private Boolean nsfw;
     private SubjectType type;
     private Integer year;
@@ -45,9 +42,6 @@ public class FindSubjectCondition {
         }
         if (Objects.isNull(size)) {
             page = 10;
-        }
-        if (Objects.isNull(nsfw)) {
-            nsfw = false;
         }
         if (Objects.isNull(airTimeDesc)) {
             airTimeDesc = true;

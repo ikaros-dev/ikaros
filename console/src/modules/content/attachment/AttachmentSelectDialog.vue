@@ -125,9 +125,13 @@ const onConfirm = () => {
 const onParentDirSelected = async (val) => {
 	console.log('val', val);
 	if (!val || val === '') {
-		val = 0;
 		attachmentCondition.value.parentId = undefined;
 	}
+	attachmentCondition.value.page = 1;
+	await fetchAttachments();
+};
+const onSearchNameChange = async () => {
+	attachmentCondition.value.page = 1;
 	await fetchAttachments();
 };
 
@@ -173,7 +177,7 @@ onMounted(fetchAttachments);
 					v-model="attachmentCondition.name"
 					placeholder="搜索附件，模糊匹配，回车搜查"
 					clearable
-					@change="fetchAttachments"
+					@change="onSearchNameChange"
 				>
 					<template #append>
 						<el-button :icon="Search" @click="fetchAttachments" />
@@ -184,7 +188,9 @@ onMounted(fetchAttachments);
 
 		<br />
 
-		<el-row v-if="attachmentCondition.total > 10">
+		<el-row
+			v-if="attachmentCondition.total > 10 || attachmentCondition.page > 1"
+		>
 			<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
 				<el-pagination
 					v-model:page-size="attachmentCondition.size"

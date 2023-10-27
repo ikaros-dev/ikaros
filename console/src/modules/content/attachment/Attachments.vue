@@ -487,7 +487,7 @@ watch(attachmentCondition.value, () => {
 		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
 			<el-input
 				v-model="attachmentCondition.name"
-				placeholder="搜索附件，模糊匹配，回车搜查"
+				placeholder="搜索当前目录下的所有附件，模糊匹配，空格多个关键词，回车搜查"
 				clearable
 				@change="fetchAttachments"
 			>
@@ -500,7 +500,7 @@ watch(attachmentCondition.value, () => {
 
 	<br />
 
-	<el-row v-if="attachmentCondition.total > 10">
+	<el-row v-if="attachmentCondition.total > 10 || attachmentCondition.page > 1">
 		<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
 			<el-pagination
 				v-model:page-size="attachmentCondition.size"
