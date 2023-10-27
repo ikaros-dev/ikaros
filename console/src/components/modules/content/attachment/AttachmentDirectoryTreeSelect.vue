@@ -47,6 +47,8 @@ const loadDirectoryNodes = async (node, resolve) => {
 	const { data } = await apiClient.attachment.listAttachmentsByCondition({
 		type: 'Directory',
 		parentId: parentId as any as string,
+		page: 1,
+		size: 999999,
 	});
 	const attachments: Attachment[] = data.items;
 	const dirNodes: DirNode[] = attachments.map((attachment) => {
