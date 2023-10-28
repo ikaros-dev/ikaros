@@ -47,4 +47,13 @@ class RegexUtilsTest {
                 .contains("file name tag episode seq matching exception");
         }
     }
+
+    @Test
+    void getEpFileNameIntegrallySeq() {
+        String str =
+            "Clannad 2007 EP01 [BluRay 1920x1080p 23.976fps x264-Hi10P FLACx2] - mawen1250.mkv";
+
+        Long seq = RegexUtils.getEpFileNameIntegrallySeq(str);
+        Assertions.assertThat(seq).isEqualTo(1);
+    }
 }

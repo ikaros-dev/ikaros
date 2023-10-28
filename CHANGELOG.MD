@@ -4,7 +4,13 @@
 
 # 0.11.5
 
-## 控制台优化
+## 优化
+
+### 服务端
+
+- 批量匹配条目剧集和附件功能，新增 ` EPXX ` 的格式：[RegexUtils#parseEpisodeSeqByFileName](https://github.com/ikaros-dev/ikaros/blob/eded95b007f7b8290aba27055a00880d2f794f74/api/src/main/java/run/ikaros/api/infra/utils/RegexUtils.java#L243)
+
+### 控制台
 
 - 附件选择器的表格显示附件的路径
 - 附件选择器表格列添加可排序
