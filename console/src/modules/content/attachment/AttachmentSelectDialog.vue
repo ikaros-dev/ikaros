@@ -217,7 +217,12 @@ onMounted(fetchAttachments);
 				>
 					<!-- <el-table-column type="selection" width="60" /> -->
 					<!-- <el-table-column prop="id" label="ID" width="60" /> -->
-					<el-table-column prop="name" label="名称" show-overflow-tooltip>
+					<el-table-column
+						prop="name"
+						label="名称"
+						show-overflow-tooltip
+						sortable
+					>
 						<template #default="scoped">
 							<el-icon
 								size="25"
@@ -237,13 +242,15 @@ onMounted(fetchAttachments);
 							</span>
 						</template>
 					</el-table-column>
+					<el-table-column prop="path" label="路径" show-overflow-tooltip />
 					<el-table-column
 						prop="updateTime"
 						label="更新时间"
+						sortable
 						width="160"
 						:formatter="dateFormat"
 					/>
-					<el-table-column prop="size" label="大小" width="130">
+					<el-table-column prop="size" label="大小" width="130" sortable>
 						<template #default="scoped">
 							<span v-if="scoped.row.type === 'File'">
 								{{ formatFileSize(scoped.row.size) }}

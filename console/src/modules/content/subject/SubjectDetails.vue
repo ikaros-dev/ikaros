@@ -586,17 +586,24 @@ onMounted(fetchDatas);
 							prop="group"
 							width="110px"
 							show-overflow-tooltip
+							sortable
 						>
 							<template #default="scoped">
 								{{ episodeGroupLabelMap.get(scoped.row.group) }}
 							</template>
 						</el-table-column>
-						<el-table-column label="序号" prop="sequence" width="80px" />
+						<el-table-column
+							label="序号"
+							prop="sequence"
+							width="80px"
+							sortable
+						/>
 						<el-table-column label="原始名称" prop="name" />
 						<el-table-column label="中文名称" prop="name_cn" />
 						<el-table-column
 							label="发布日期"
 							prop="air_time"
+							sortable
 							:formatter="airTimeDateFormatter"
 						/>
 						<el-table-column label="操作" width="320">
