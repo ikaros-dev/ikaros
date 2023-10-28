@@ -2,6 +2,7 @@
 import { usePluginModuleStore } from '@/stores/plugin';
 import { apiClient } from '@/utils/api-client';
 import { PluginModule } from '@runikaros/shared';
+import { Subject } from '@runikaros/api-client';
 import { ElMessage, FormInstance, FormRules } from 'element-plus';
 import { computed, onMounted, reactive, ref } from 'vue';
 import {
@@ -35,7 +36,7 @@ const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 	// eslint-disable-next-line no-unused-vars
-	(event: 'closeWithSubjectName', subjectName: string): void;
+	(event: 'closeWithSubjectName', subject: Subject): void;
 }>();
 
 const dialogVisible = computed({
@@ -91,7 +92,7 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 						syncButtonLoading.value = false;
 					});
 				dialogVisible.value = false;
-				emit('closeWithSubjectName', data.name);
+				emit('closeWithSubjectName', data);
 			} else {
 				console.log('error submit!', fields);
 				ElMessage.error('请检查所填内容是否有必要项缺失。');

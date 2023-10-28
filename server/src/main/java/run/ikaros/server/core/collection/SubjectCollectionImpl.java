@@ -4,6 +4,7 @@ import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
@@ -14,6 +15,9 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.collection.SubjectCollection;
+import run.ikaros.api.core.collection.event.EpisodeCollectionFinishChangeEvent;
+import run.ikaros.api.core.collection.event.SubjectCollectEvent;
+import run.ikaros.api.core.collection.event.SubjectUnCollectEvent;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.subject.SubjectNotFoundException;
 import run.ikaros.api.infra.exception.user.UserNotFoundException;
@@ -38,6 +42,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
     private final R2dbcEntityTemplate template;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Construct.
@@ -46,13 +51,15 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                                  EpisodeCollectionRepository episodeCollectionRepository,
                                  EpisodeRepository episodeRepository,
                                  SubjectRepository subjectRepository,
-                                 UserRepository userRepository, R2dbcEntityTemplate template) {
+                                 UserRepository userRepository, R2dbcEntityTemplate template,
+                                 ApplicationEventPublisher applicationEventPublisher) {
         this.subjectCollectionRepository = subjectCollectionRepository;
         this.episodeCollectionRepository = episodeCollectionRepository;
         this.episodeRepository = episodeRepository;
         this.subjectRepository = subjectRepository;
         this.userRepository = userRepository;
         this.template = template;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     private Mono<Boolean> checkUserIdExists(Long userId) {
@@ -91,7 +98,20 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                         userId, subjectId)))
             .map(subjectCollectionEntity -> subjectCollectionEntity
                 .setType(type).setIsPrivate(isPrivate))
-            .flatMap(subjectCollectionRepository::save)
+            .flatMap(entity -> subjectCollectionRepository.save(entity)
+                .doOnSuccess(ent -> {
+                    SubjectCollectEvent event =
+                        new SubjectCollectEvent(this, SubjectCollection.builder()
+                            .userId(ent.getUserId())
+                            .subjectId(ent.getSubjectId())
+                            .isPrivate(ent.getIsPrivate())
+                            .type(ent.getType())
+                            .build());
+                    log.debug("Publish SubjectCollectEvent after collect subject"
+                        + "for userId=[{}] and subjectId=[{}]", userId, subjectId);
+                    applicationEventPublisher.publishEvent(event);
+                }))
+
             .map(SubjectCollectionEntity::getSubjectId)
             .flatMapMany(episodeRepository::findAllBySubjectId)
             .map(BaseEntity::getId)
@@ -127,9 +147,21 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                 subjectCollectionRepository.findByUserIdAndSubjectId(userId, subjectId))
             .flatMap(subjectCollectionEntity ->
                 subjectCollectionRepository.delete(subjectCollectionEntity)
-                    .doOnSuccess(unused -> log.info("Delete exists subject collection "
-                            + "for userId is [{}] and subjectId is [{}]",
-                        userId, subjectId)))
+                    .doOnSuccess(unused -> {
+                        log.debug("Delete exists subject collection "
+                                + "for userId is [{}] and subjectId is [{}]",
+                            userId, subjectId);
+                        SubjectUnCollectEvent event =
+                            new SubjectUnCollectEvent(this, SubjectCollection.builder()
+                                .userId(subjectCollectionEntity.getUserId())
+                                .subjectId(subjectCollectionEntity.getSubjectId())
+                                .isPrivate(subjectCollectionEntity.getIsPrivate())
+                                .type(subjectCollectionEntity.getType())
+                                .build());
+                        log.debug("Publish SubjectUnCollectEvent after uncollect subject"
+                                + "for userId=[{}] and subjectId=[{}]", userId, subjectId);
+                        applicationEventPublisher.publishEvent(event);
+                    }))
             // not delete user episode collection record for retain watch progress.
             // .thenMany(episodeRepository.findAllBySubjectId(subjectId))
             // .map(BaseEntity::getId)
@@ -226,9 +258,19 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                 episodeId))
             .map(entity -> entity.setFinish(true))
             .flatMap(entity -> episodeCollectionRepository.save(entity)
-                .doOnSuccess(e -> log.info(
-                    "Mark episode collection finish is true for userId={} and episode={}",
-                    userId, entity.getEpisodeId())))
+                .doOnSuccess(e -> {
+                    log.debug(
+                        "Mark episode collection finish is true for userId={} and episode={}",
+                        userId, entity.getEpisodeId());
+                    EpisodeCollectionFinishChangeEvent event =
+                        new EpisodeCollectionFinishChangeEvent(this, userId,
+                            e.getEpisodeId(), true);
+                    event.setSubjectId(e.getSubjectId());
+                    log.debug("Publish EpisodeCollectionFinishChangeEvent "
+                            + "for userId=[{}] and episodeId=[{}] and finish=[{}]",
+                        userId, e.getEpisodeId(), true);
+                    applicationEventPublisher.publishEvent(event);
+                }))
             .then();
     }
 }

@@ -215,6 +215,9 @@ const handleClose = (done: () => void) => {
 					>
 						{{ file.updateTime }}
 					</el-descriptions-item>
+					<el-descriptions-item v-if="file.path" label="路径">
+						{{ file.path }}
+					</el-descriptions-item>
 					<el-descriptions-item v-if="file.url" label="URL">
 						<a :href="file.url" target="_blank">{{ file.url }}</a>
 					</el-descriptions-item>

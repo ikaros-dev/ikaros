@@ -12,7 +12,11 @@ public interface SubjectCollectionService {
     Mono<Void> collect(Long userId, Long subjectId,
                        CollectionType type, Boolean isPrivate);
 
-    @Transactional
+    /**
+     * collect.
+     *
+     * @see #collect(Long, Long, CollectionType, Boolean)
+     */
     Mono<Void> collect(Long userId, Long subjectId, CollectionType type);
 
     @Transactional
