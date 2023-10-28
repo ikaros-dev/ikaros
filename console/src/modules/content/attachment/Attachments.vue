@@ -32,6 +32,7 @@ import {
 	Delete,
 	Position,
 	CopyDocument,
+	Download,
 } from '@element-plus/icons-vue';
 import {
 	ElRow,
@@ -260,7 +261,7 @@ const onDeleteButtonClick = async () => {
 
 	if (hasDir) {
 		ElMessageBox.confirm(
-			'您当前删除的附件包括目录类型，系统默认会删除目录里的所有内容，您确定要删除吗？',
+			'伊卡洛斯检测到您当前待删除的附件（选中的）包含目录类型，系统默认会删除目录里的所有内容，您确定要删除吗？',
 			'警告',
 			{
 				confirmButtonText: '确认',
@@ -309,21 +310,55 @@ const onRowContextmenu = (row, column, event) => {
 		minWidth: 320,
 		items: [
 			{
-				label: '详情',
-				// divided: 'down',
+				label:
+					currentSelectionAttachment.value?.type === 'Directory'
+						? '进入'
+						: '详情',
+				divided: 'down',
 				icon: h(Pointer, { style: 'height: 14px' }),
 				onClick: () => {
 					entryAttachment(currentSelectionAttachment.value);
 				},
 			},
 			{
-				label: '复制名称',
-				divided: 'down',
+				label: '复制简短名称',
+				icon: h(CopyDocument, { style: 'height: 14px' }),
+				onClick: async () => {
+					const name = currentSelectionAttachment.value?.name as string;
+					var simpleName = name.replace(/\[.*?\]/g, '');
+					simpleName = simpleName.substring(0, simpleName.lastIndexOf('.'));
+					await copyValue(simpleName);
+					ElMessage.success('已复制附件【' + name + '】的简短名称到剪贴板');
+				},
+			},
+			{
+				label: '复制完整名称',
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
 					const name = currentSelectionAttachment.value?.name as string;
 					await copyValue(name);
-					ElMessage.success('已复制复制名称【' + name + '】到剪贴板');
+					ElMessage.success('已复制附件【' + name + '】的完整名称到剪贴板');
+				},
+			},
+			{
+				label: '复制URL',
+				divided: 'down',
+				disabled: currentSelectionAttachment.value?.type !== 'File',
+				icon: h(CopyDocument, { style: 'height: 14px' }),
+				onClick: async () => {
+					const name = currentSelectionAttachment.value?.name as string;
+					const url = currentSelectionAttachment.value?.url as string;
+					await copyValue(url);
+					ElMessage.success('已复制附件【' + name + '】的URL到剪贴板');
+				},
+			},
+			{
+				label: '下载',
+				disabled: currentSelectionAttachment.value?.type !== 'File',
+				icon: h(Download, { style: 'height: 14px' }),
+				onClick: async () => {
+					const url = currentSelectionAttachment.value?.url as string;
+					window.open(url);
 				},
 			},
 			{
@@ -332,7 +367,9 @@ const onRowContextmenu = (row, column, event) => {
 				onClick: async () => {
 					if (currentSelectionAttachment.value?.type === 'Directory') {
 						await ElMessageBox.confirm(
-							'您当前删除的附件为目录类型，系统默认会删除目录里的所有内容，您确定要删除吗？',
+							'您当前删除的附件【' +
+								currentSelectionAttachment.value.name +
+								'】为目录类型，系统默认会删除目录里的所有内容，您确定要删除吗？',
 							'警告',
 							{
 								confirmButtonText: '确认',
@@ -352,9 +389,31 @@ const onRowContextmenu = (row, column, event) => {
 								});
 							});
 					} else {
-						await deleteAttachment(
-							currentSelectionAttachment.value as Attachment
-						);
+						await ElMessageBox.confirm(
+							'您当前待删除的附件为【' +
+								currentSelectionAttachment.value?.name +
+								'】您确定要删除吗？',
+							'警告',
+							{
+								confirmButtonText: '确认',
+								cancelButtonText: '取消',
+								type: 'warning',
+							}
+						)
+							.then(async () => {
+								await deleteAttachment(
+									currentSelectionAttachment.value as Attachment
+								);
+							})
+							.catch(() => {
+								ElMessage({
+									type: 'info',
+									message:
+										'删除目录【' +
+										currentSelectionAttachment.value?.name +
+										'】取消',
+								});
+							});
 					}
 					await fetchAttachments();
 				},

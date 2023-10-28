@@ -75,7 +75,7 @@ const findSubjectsCondition = ref<SubjectsCondition>({
 	total: 0,
 	name: '',
 	nameCn: '',
-	nsfw: undefined,
+	nsfw: false,
 	type: undefined,
 });
 
@@ -101,8 +101,11 @@ const fetchSubjects = async () => {
 };
 
 const subjectSyncDialogVisible = ref(false);
-const onSubjectSyncDialogCloseWithSubjectName = (subjectName: string) => {
-	findSubjectsCondition.value.name = subjectName;
+const onSubjectSyncDialogCloseWithSubjectName = (subject: Subject) => {
+	findSubjectsCondition.value.name = subject.name;
+	findSubjectsCondition.value.nsfw = subject.nsfw;
+	findSubjectsCondition.value.nameCn = subject.name_cn as string;
+	findSubjectsCondition.value.type = subject.type;
 	fetchSubjects();
 };
 
