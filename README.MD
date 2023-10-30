@@ -84,6 +84,9 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
 # 感谢
 
+<img width=100 src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo.">
+
 - Intellij 的开源许可
 - 项目中用到的所有开源项目
 - 参考的所有开源项目
+
