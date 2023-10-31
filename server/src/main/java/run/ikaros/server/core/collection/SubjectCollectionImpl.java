@@ -15,8 +15,8 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.collection.SubjectCollection;
-import run.ikaros.api.core.collection.event.EpisodeCollectionFinishChangeEvent;
 import run.ikaros.api.core.collection.event.SubjectCollectEvent;
+import run.ikaros.api.core.collection.event.SubjectCollectProgressChangeEvent;
 import run.ikaros.api.core.collection.event.SubjectUnCollectEvent;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.subject.SubjectNotFoundException;
@@ -159,7 +159,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                                 .type(subjectCollectionEntity.getType())
                                 .build());
                         log.debug("Publish SubjectUnCollectEvent after uncollect subject"
-                                + "for userId=[{}] and subjectId=[{}]", userId, subjectId);
+                            + "for userId=[{}] and subjectId=[{}]", userId, subjectId);
                         applicationEventPublisher.publishEvent(event);
                     }))
             // not delete user episode collection record for retain watch progress.
@@ -248,7 +248,23 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
             .then(subjectCollectionRepository.findByUserIdAndSubjectId(userId, subjectId))
             .switchIfEmpty(Mono.error(new NotFoundException(
                 "Subject collection not found for userId=" + userId + " subjectId=" + subjectId)))
-            .map(entity -> entity.setMainEpisodeProgress(progress))
+            .map(entity -> {
+                Integer oldProgress = entity.getMainEpisodeProgress();
+                entity.setMainEpisodeProgress(progress);
+
+                log.debug("Mark user subject collection progress from [{}] to [{}] "
+                        + "for userId[{}] and subjectId[{}]",
+                    oldProgress, progress, userId, subjectId);
+                SubjectCollectProgressChangeEvent event
+                    = new SubjectCollectProgressChangeEvent(
+                    this, userId, subjectId, oldProgress, progress
+                );
+                log.debug("Publish SubjectCollectProgressChangeEvent "
+                        + "for userId[{}] and subjectId[{}] and progress=[{}]",
+                    userId, subjectId, progress);
+                applicationEventPublisher.publishEvent(event);
+                return entity;
+            })
             .flatMap(subjectCollectionRepository::save)
             .flatMapMany(entity -> episodeRepository.findAllBySubjectId(subjectId))
             .filter(episodeEntity -> episodeEntity.getGroup() == EpisodeGroup.MAIN)
@@ -257,20 +273,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
             .flatMap(episodeId -> episodeCollectionRepository.findByUserIdAndEpisodeId(userId,
                 episodeId))
             .map(entity -> entity.setFinish(true))
-            .flatMap(entity -> episodeCollectionRepository.save(entity)
-                .doOnSuccess(e -> {
-                    log.debug(
-                        "Mark episode collection finish is true for userId={} and episode={}",
-                        userId, entity.getEpisodeId());
-                    EpisodeCollectionFinishChangeEvent event =
-                        new EpisodeCollectionFinishChangeEvent(this, userId,
-                            e.getEpisodeId(), true);
-                    event.setSubjectId(e.getSubjectId());
-                    log.debug("Publish EpisodeCollectionFinishChangeEvent "
-                            + "for userId=[{}] and episodeId=[{}] and finish=[{}]",
-                        userId, e.getEpisodeId(), true);
-                    applicationEventPublisher.publishEvent(event);
-                }))
+            .flatMap(episodeCollectionRepository::save)
             .then();
     }
 }

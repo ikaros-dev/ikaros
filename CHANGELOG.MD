@@ -9,6 +9,7 @@
 ### 服务端
 
 - 批量匹配条目剧集和附件功能，新增 ` EPXX ` 的格式：[RegexUtils#parseEpisodeSeqByFileName](https://github.com/ikaros-dev/ikaros/blob/eded95b007f7b8290aba27055a00880d2f794f74/api/src/main/java/run/ikaros/api/infra/utils/RegexUtils.java#L243)
+- 条目进度更新单独发布事件，不再循环发布剧集完成状态更新事件
 
 ### 控制台
 
