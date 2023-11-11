@@ -5,6 +5,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.security.Principal;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -19,15 +20,18 @@ import run.ikaros.api.core.tag.SubjectTag;
 import run.ikaros.api.core.tag.Tag;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.TagType;
+import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
 @Component
 public class TagEndpoint implements CoreEndpoint {
     private final TagService tagService;
+    private final UserService userService;
 
-    public TagEndpoint(TagService tagService) {
+    public TagEndpoint(TagService tagService, UserService userService) {
         this.tagService = tagService;
+        this.userService = userService;
     }
 
     @Override
@@ -127,6 +131,11 @@ public class TagEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> create(ServerRequest request) {
         return request.bodyToMono(Tag.class)
+            .flatMap(tag -> request.principal()
+                .map(Principal::getName)
+                .flatMap(userService::getUserByUsername)
+                .map(user -> user.entity().getId())
+                .map(tag::setUserId))
             .flatMap(tagService::create)
             .flatMap(tag -> ServerResponse.ok().bodyValue(tag));
     }
