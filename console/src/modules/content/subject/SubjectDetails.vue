@@ -28,6 +28,7 @@ import {
 	ElSelect,
 	ElOption,
 	ElInput,
+	ElTag,
 } from 'element-plus';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import { useSettingStore } from '@/stores/setting';
@@ -426,6 +427,10 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 	ElMessage.success('单个剧集和附件匹配成功');
 	await fetchDatas();
 };
+
+// eslint-disable-next-line no-unused-vars
+const tags = ref([]);
+
 onMounted(fetchDatas);
 </script>
 
@@ -517,8 +522,24 @@ onMounted(fetchDatas);
 					>
 						<el-descriptions-item label="同步平台">
 							<span v-for="(sync, index) in subject.syncs" :key="index">
-								{{ sync.platform }} : {{ sync.platformId }}
+								{{ sync.platform }} :
+								<span v-if="sync.platform === 'BGM_TV'">
+									<a
+										:href="'https://bgm.tv/subject/' + sync.platformId"
+										target="_blank"
+									>
+										{{ sync.platformId }}
+									</a>
+								</span>
+								<span v-else>
+									{{ sync.platformId }}
+								</span>
 							</span>
+						</el-descriptions-item>
+					</el-descriptions>
+					<el-descriptions size="large" border>
+						<el-descriptions-item label="标签">
+							<el-tag closable>Tag1</el-tag>
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions size="large" border>
