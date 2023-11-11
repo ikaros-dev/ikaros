@@ -7,7 +7,12 @@ import {
 } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
-import { Episode, Subject, SubjectTypeEnum } from '@runikaros/api-client';
+import {
+	Episode,
+	Subject,
+	SubjectTypeEnum,
+	SubjectTag,
+} from '@runikaros/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import router from '@/router';
 import { Check, Close } from '@element-plus/icons-vue';
@@ -28,6 +33,7 @@ import {
 	ElSelect,
 	ElOption,
 	ElInput,
+	ElTag,
 } from 'element-plus';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import { useSettingStore } from '@/stores/setting';
@@ -345,6 +351,7 @@ const fetchDatas = async () => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
 	await fetchSubjectById();
+	await fetchTags();
 	await initEpisodeHasMultiResource();
 	await fetchSubjectCollection();
 	await fetchEpisodeCollections();
@@ -426,6 +433,58 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 	ElMessage.success('单个剧集和附件匹配成功');
 	await fetchDatas();
 };
+
+const tags = ref<SubjectTag[]>([]);
+const fetchTags = async () => {
+	var subjectId = subject.value.id;
+	if (!subjectId) return;
+	const { data } = await apiClient.tag.listSubjectTagsBySubjectId({
+		subjectId: subjectId,
+	});
+	tags.value = data as SubjectTag[];
+};
+const onTagRemove = async (tag: SubjectTag) => {
+	await apiClient.tag.removeTagByCondition({
+		type: 'SUBJECT',
+		masterId: tag.subjectId,
+		name: tag.name,
+	});
+	ElMessage.success('移除标签【' + tag.name + '】成功');
+	await fetchTags();
+};
+const newTagInputVisible = ref(false);
+const newTagInputRef = ref();
+const showNewTagInput = () => {
+	newTagInputVisible.value = true;
+	nextTick(() => {
+		newTagInputRef.value!.input!.focus();
+	});
+};
+const newTag = ref<SubjectTag>({});
+const onNewTagNameChange = async () => {
+	var tagName = newTag.value.name;
+	if (
+		!tagName ||
+		tagName === '' ||
+		tags.value.filter((t) => tagName === t.name).length > 0
+	) {
+		ElMessage.warning('标签名为空或者重复，跳过创建标签操作。');
+		newTagInputVisible.value = false;
+		return;
+	}
+	await apiClient.tag.createTag({
+		tag: {
+			type: 'SUBJECT',
+			masterId: subject.value.id,
+			name: newTag.value.name,
+		},
+	});
+	ElMessage.success('新建标签【' + newTag.value.name + '】成功');
+	await fetchTags();
+	newTagInputVisible.value = false;
+	newTagInputRef.value!.input!.value = '';
+};
+
 onMounted(fetchDatas);
 </script>
 
@@ -517,8 +576,44 @@ onMounted(fetchDatas);
 					>
 						<el-descriptions-item label="同步平台">
 							<span v-for="(sync, index) in subject.syncs" :key="index">
-								{{ sync.platform }} : {{ sync.platformId }}
+								{{ sync.platform }} :
+								<span v-if="sync.platform === 'BGM_TV'">
+									<a
+										:href="'https://bgm.tv/subject/' + sync.platformId"
+										target="_blank"
+									>
+										{{ sync.platformId }}
+									</a>
+								</span>
+								<span v-else>
+									{{ sync.platformId }}
+								</span>
 							</span>
+						</el-descriptions-item>
+					</el-descriptions>
+					<el-descriptions size="large" border>
+						<el-descriptions-item label="标签">
+							<el-tag
+								v-for="tag in tags"
+								:key="tag.id"
+								closable
+								style="margin-right: 5px"
+								:disable-transitions="false"
+								@close="onTagRemove(tag)"
+							>
+								{{ tag.name }}
+							</el-tag>
+							<el-input
+								v-if="newTagInputVisible"
+								ref="newTagInputRef"
+								v-model="newTag.name"
+								size="small"
+								style="max-width: 80px"
+								@blur="onNewTagNameChange"
+							/>
+							<el-button v-else size="small" @click="showNewTagInput">
+								新增标签
+							</el-button>
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions size="large" border>
