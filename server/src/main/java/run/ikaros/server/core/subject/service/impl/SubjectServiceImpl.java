@@ -6,7 +6,6 @@ import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,9 +105,12 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject()))
             .checkpoint("FindSubjectEntityById")
 
-            .flatMap(subject -> episodeRepository.findAllBySubjectId(subject.getId())
+            .flatMap(subject -> episodeRepository
+                .findAllBySubjectIdOrderByGroupDescSequenceAscAirTimeAscCreateTimeAsc(
+                    subject.getId())
                 .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
-                .flatMap(episode -> attachmentReferenceRepository.findAllByTypeAndReferenceId(
+                .flatMap(episode -> attachmentReferenceRepository
+                    .findAllByTypeAndReferenceIdOrderByTypeAscAttachmentIdAsc(
                         AttachmentReferenceType.EPISODE, episode.getId())
                     .flatMap(attachmentReferenceEntity ->
                         attachmentRepository.findById(attachmentReferenceEntity.getAttachmentId())
@@ -122,7 +124,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                                 .build())
                     ).collectList()
                     .map(episode::setResources))
-                .sort(Comparator.comparingDouble(Episode::getSequence))
                 .collectList()
                 .map(episodes -> subject
                     .setTotalEpisodes((long) episodes.size())
@@ -374,6 +375,9 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .sort(Sort.by(airTimeDesc
                 ? Sort.Order.desc("air_time")
                 : Sort.Order.asc("air_time")))
+            .sort(Sort.by(Sort.Order.asc("name")))
+            .sort(Sort.by(Sort.Order.asc("type")))
+            .sort(Sort.by(Sort.Order.asc("nsfw")))
             .with(pageRequest);
 
         Flux<SubjectEntity> subjectEntityFlux = template.select(query, SubjectEntity.class);

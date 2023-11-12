@@ -138,7 +138,10 @@ public class AttachmentServiceImpl implements AttachmentService {
         }
 
         Query query = Query.query(criteria)
-            .sort(Sort.by(Sort.Order.by("type")))
+            .sort(Sort.by(Sort.Order.asc("type")))
+            .sort(Sort.by(Sort.Order.asc("name")))
+            .sort(Sort.by(Sort.Order.asc("size")))
+            .sort(Sort.by(Sort.Order.asc("update_time")))
             .with(pageRequest);
 
         Flux<AttachmentEntity> attachmentEntityFlux =
