@@ -111,5 +111,18 @@ java -jar ./ikaros-server.jar
 java -jar ikaros-server.jar --spring.profiles.active=win 
 ```
 
+# 提交PR后
+
+更新本地主分支
+```
+git checkout master | git pull upstream master | git push origin master | git remote prune origin
+```
+
+查看本地分支，并删除工作分支
+```
+git branch
+git branch -D {you_branch_name}
+```
+
 # 更多
 <https://docs.ikaros.run>
