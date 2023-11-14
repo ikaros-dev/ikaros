@@ -40,7 +40,7 @@
     "@vueuse/core": "^9.6.0",
     "@vueuse/router": "^9.6.0",
     "@vueuse/shared": "^9.6.0",
-    "axios": "^0.27.2",
+    "axios": "^1.6.1",
     "crypto-js": "^4.2.0",
     "element-plus": "^2.3.5",
     "filepond": "^4.30.4",
