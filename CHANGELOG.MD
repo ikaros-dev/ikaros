@@ -19,6 +19,10 @@
 - console crypto-js: [crypto-js PBKDF2 1,000 times weaker than specified in 1993 and 1.3M times weaker than current standard #18](https://github.com/ikaros-dev/ikaros/security/dependabot/18)
 - console axios: [Axios Cross-Site Request Forgery Vulnerability #21](https://github.com/ikaros-dev/ikaros/security/dependabot/21)
 
+### 容器镜像
+
+- 支持GitHub官方的镜像仓库`ghcr.io`
+
 # 0.11.6
 
 ## 新特性
