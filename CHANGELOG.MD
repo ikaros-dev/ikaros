@@ -6,7 +6,7 @@
 
 ## 优化
 
-- [WIP] 条目收藏形式优化，一次性提交收藏类型和标签
+- 条目收藏形式优化，一次性提交收藏类型和标签
 
 ## 插件
 
@@ -14,7 +14,7 @@
 
 - [WIP] 拉取条目时，转换对应的标签
 
-### 安全修复
+## 安全修复
 
 - console crypto-js: [crypto-js PBKDF2 1,000 times weaker than specified in 1993 and 1.3M times weaker than current standard #18](https://github.com/ikaros-dev/ikaros/security/dependabot/18)
 - console axios: [Axios Cross-Site Request Forgery Vulnerability #21](https://github.com/ikaros-dev/ikaros/security/dependabot/21)
