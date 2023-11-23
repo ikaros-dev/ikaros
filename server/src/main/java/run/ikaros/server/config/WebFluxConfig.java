@@ -4,6 +4,7 @@ import static org.springframework.util.ResourceUtils.FILE_URL_PREFIX;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
+import java.io.File;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -127,9 +128,12 @@ public class WebFluxConfig implements WebFluxConfigurer {
             .addResolver(new EncodedResourceResolver())
             .addResolver(new PathResourceResolver());
 
-        // Add thymeleaf static resource
+        // Add user and thymeleaf static resource
         registry.addResourceHandler("/static/**")
-            .addResourceLocations("classpath:/templates/static/");
+            .addResourceLocations(
+                "file:" + ikarosProperties.getWorkDir().resolve("statics") + File.separatorChar,
+                "classpath:/static/",
+                "classpath:/templates/static/");
 
         // Register theme static files path
         // /theme/{name}/static => classpath:/templates/theme/{name}/static/
