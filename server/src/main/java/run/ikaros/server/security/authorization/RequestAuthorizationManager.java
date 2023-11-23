@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.server.authorization.AuthorizationContext;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.constant.SecurityConst;
 
 @Slf4j
@@ -15,6 +16,12 @@ public class RequestAuthorizationManager
     @Override
     public Mono<AuthorizationDecision> check(Mono<Authentication> authentication,
                                              AuthorizationContext object) {
+        boolean urlStartWithApiStatic =
+            object.getExchange().getRequest().getURI().getPath()
+                .startsWith("/api/" + OpenApiConst.CORE_VERSION + "/static/");
+        if (urlStartWithApiStatic) {
+            return authentication.map(auth -> new AuthorizationDecision(true));
+        }
         return authentication.map(auth -> new AuthorizationDecision(
             auth.getAuthorities()
                 .contains(new SimpleGrantedAuthority(

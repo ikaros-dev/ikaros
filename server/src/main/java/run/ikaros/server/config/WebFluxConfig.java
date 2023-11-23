@@ -3,6 +3,7 @@ package run.ikaros.server.config;
 import static org.springframework.util.ResourceUtils.FILE_URL_PREFIX;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import static run.ikaros.api.constant.AppConst.STATIC_DIR_NAME;
 
 import java.io.File;
 import java.net.URI;
@@ -15,6 +16,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.codec.CodecConfigurer;
 import org.springframework.http.codec.HttpMessageWriter;
 import org.springframework.lang.NonNull;
+import org.springframework.web.reactive.config.PathMatchConfigurer;
 import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -131,7 +133,8 @@ public class WebFluxConfig implements WebFluxConfigurer {
         // Add user and thymeleaf static resource
         registry.addResourceHandler("/static/**")
             .addResourceLocations(
-                "file:" + ikarosProperties.getWorkDir().resolve("statics") + File.separatorChar,
+                "file:" + ikarosProperties.getWorkDir().resolve(STATIC_DIR_NAME)
+                    + File.separatorChar,
                 "classpath:/static/",
                 "classpath:/templates/static/");
 
