@@ -1,14 +1,19 @@
 package run.ikaros.server.config;
 
+import static java.io.File.separatorChar;
 import static org.springframework.util.ResourceUtils.FILE_URL_PREFIX;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static run.ikaros.api.constant.AppConst.STATIC_DIR_NAME;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +32,7 @@ import org.springframework.web.reactive.resource.PathResourceResolver;
 import org.springframework.web.reactive.result.view.ViewResolutionResultHandler;
 import org.springframework.web.reactive.result.view.ViewResolver;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.constant.FileConst;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.server.console.ConsoleProperties;
@@ -133,27 +139,33 @@ public class WebFluxConfig implements WebFluxConfigurer {
         registry.addResourceHandler("/static/**")
             .addResourceLocations(
                 "file:" + ikarosProperties.getWorkDir().resolve(STATIC_DIR_NAME)
-                    + File.separatorChar,
+                    + separatorChar,
                 "classpath:/static/",
                 "classpath:/templates/static/");
 
-        // Register theme static files path
-        // /theme/{name}/static => classpath:/templates/theme/{name}/static/
-        // try {
-        //     InputStream resourceAsStream = Thread.currentThread().getContextClassLoader()
-        //         .getResourceAsStream("classpath:templates/theme");
-        //     File themeRootDir = ResourceUtils.getFile("classpath:templates/theme");
-        //     for (File themeDir : Objects.requireNonNull(themeRootDir.listFiles())) {
-        //         String theme = themeDir.getName();
-        //         registry.addResourceHandler("/theme/" + theme + "/static/**")
-        //             .addResourceLocations("classpath:/templates/theme/" + theme + "/static/");
-        //     }
-        // } catch (FileNotFoundException e) {
-        //     throw new RuntimeException("Not exists theme dir in classpath.", e);
-        // }
         // /theme/simple/static => classpath:/templates/theme/simple/static/
+        // Register classpath default theme static file mapping
         registry.addResourceHandler("/theme/simple/static/**")
             .addResourceLocations("classpath:/templates/theme/simple/static/");
-
+        // Register user themes dir all theme static file mapping
+        Path themesDirPath = ikarosProperties.getWorkDir().resolve(AppConst.THEME_DIR_NAME);
+        if (Files.notExists(themesDirPath)) {
+            try {
+                Files.createDirectory(themesDirPath);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        File[] themeDirs = themesDirPath.toFile().listFiles();
+        if (Objects.nonNull(themeDirs)) {
+            for (File themeDir : themeDirs) {
+                if (themeDir.isFile()) {
+                    continue;
+                }
+                registry.addResourceHandler("/theme/" + themeDir.getName() + "/static/**")
+                    .addResourceLocations(
+                        "file:" + themeDir + separatorChar + "static" + separatorChar);
+            }
+        }
     }
 }

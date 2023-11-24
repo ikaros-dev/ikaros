@@ -15,6 +15,7 @@ public interface AppConst {
     String CACHE_DIR_NAME = "caches";
     String STATIC_DIR_NAME = "statics";
     String STATIC_FONT_DIR_NAME = "fonts";
+    String THEME_DIR_NAME = "themes";
 
     /**
      * currentTime / TotalTime .
