@@ -13,6 +13,8 @@ public interface AppConst {
     String LOGOUT_SUCCESS_LOCATION = "/console/?logout";
     Duration BLOCK_TIMEOUT = Duration.ofMillis(2000L);
     String CACHE_DIR_NAME = "caches";
+    String STATIC_DIR_NAME = "statics";
+    String STATIC_FONT_DIR_NAME = "fonts";
 
     /**
      * currentTime / TotalTime .

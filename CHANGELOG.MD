@@ -4,8 +4,16 @@
 
 # 0.11.7
 
+## 新特性
+
+- 新增`StaticEndpoint`支持获取所有字体URL的接口，所有字体放在用户工作目录下的字体目录`statics/fonts`里
+
 ## 优化
 
+- 静态文件加载逻辑，通过URL访问`/static/**`，支持在下列三种目录加载静态文件：
+  1. 用户工作目录下的静态目录`statics`目录下
+  2. `ClassPath`的`static`目录下
+  3. `ClassPath`的`templates/static`目录下
 - [WIP] 条目收藏形式优化，一次性提交收藏类型和标签
 
 ## 插件
@@ -14,7 +22,7 @@
 
 - [WIP] 拉取条目时，转换对应的标签
 
-### 安全修复
+## 安全修复
 
 - console crypto-js: [crypto-js PBKDF2 1,000 times weaker than specified in 1993 and 1.3M times weaker than current standard #18](https://github.com/ikaros-dev/ikaros/security/dependabot/18)
 - console axios: [Axios Cross-Site Request Forgery Vulnerability #21](https://github.com/ikaros-dev/ikaros/security/dependabot/21)
