@@ -1,3 +1,3 @@
-[submodule "server/src/main/resources/templates/theme/simple"]
-	path = server/src/main/resources/templates/theme/simple
+[submodule "server/src/main/resources/templates/simple"]
+	path = server/src/main/resources/templates/simple
 	url = https://github.com/ikaros-dev/ikaros-theme-simple.git
