@@ -38,7 +38,7 @@ public class SubjectController {
         return subjectService.findAllByPageable(new PagingWrap<>(page, size, 0, null))
             .map(pagingWarp -> model.addAttribute("pagingWarp", pagingWarp))
             .then(themeService.getCurrentTheme())
-            .map(theme -> "/theme/" + theme + "/" + "subjects");
+            .map(theme ->  theme + "/" + "subjects");
     }
 
     /**
@@ -49,6 +49,6 @@ public class SubjectController {
         return subjectService.findById(id)
             .map(subject -> model.addAttribute("subject", subject))
             .then(themeService.getCurrentTheme())
-            .map(theme -> "/theme/" + theme + "/" + "subject-details");
+            .map(theme ->  theme + "/" + "subject-details");
     }
 }
