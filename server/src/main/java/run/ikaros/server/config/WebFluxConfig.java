@@ -146,7 +146,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
         // /theme/simple/static => classpath:/templates/theme/simple/static/
         // Register classpath default theme static file mapping
         registry.addResourceHandler("/theme/simple/static/**")
-            .addResourceLocations("classpath:/templates/theme/simple/static/");
+            .addResourceLocations("classpath:/templates/simple/static/");
         // Register user themes dir all theme static file mapping
         Path themesDirPath = ikarosProperties.getWorkDir().resolve(AppConst.THEME_DIR_NAME);
         if (Files.notExists(themesDirPath)) {
