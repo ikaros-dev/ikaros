@@ -17,6 +17,7 @@ import {
 import { useI18n } from 'vue-i18n';
 import { isImage, isVideo, isVoice } from '@/utils/file';
 import { Edit } from '@element-plus/icons-vue';
+import Artplayer from '@/components/video/Artplayer.vue';
 
 const { t } = useI18n();
 
@@ -152,15 +153,19 @@ const handleClose = (done: () => void) => {
 							loading="lazy"
 						/>
 					</a>
-					<video
+					<artplayer
 						v-else-if="isVideo(file.url as string)"
+						v-model:attachment="file"
 						style="width: 100%"
+					/>
+					<!-- <video
+						
 						:src="getCompleteFileUrl(file.url)"
 						controls
 						preload="metadata"
 					>
 						{{ t('core.fileDetail.message.hint.videoFormat') }}
-					</video>
+					</video> -->
 					<audio
 						v-else-if="isVoice(file.url as string)"
 						controls

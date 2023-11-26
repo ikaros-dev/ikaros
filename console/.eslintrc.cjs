@@ -40,6 +40,7 @@ module.exports = {
 		},
 		'import/extensions': ['.js', '.jsx', '.ts', '.tsx', '.mjs'],
 	},
+	"ignorePatterns": ["*.js"],
 	rules: {
 		'vue/multi-word-component-names': 0,
 		'import/no-extraneous-dependencies': 0,

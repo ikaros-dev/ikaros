@@ -17,6 +17,7 @@ import {
 	V1alpha1AttachmentReferenceApi,
 	ActuatorApi,
 	V1alpha1TagApi,
+	V1alpha1AttachmentRelationApi,
 } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
 
@@ -160,6 +161,11 @@ function setupApiClient(axios: AxiosInstance) {
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),
 		attachment: new V1alpha1AttachmentApi(undefined, baseURL, axios),
 		attachmentRef: new V1alpha1AttachmentReferenceApi(
+			undefined,
+			baseURL,
+			axios
+		),
+		attachmentRelation: new V1alpha1AttachmentRelationApi(
 			undefined,
 			baseURL,
 			axios

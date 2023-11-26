@@ -38,9 +38,11 @@ import {
 } from '@/modules/common/constants';
 import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
 import { base64Encode } from '@/utils/string-util';
+import { useSubjectStore } from '@/stores/subject';
 
 const router = useRouter();
 const route = useRoute();
+const subjectStore = useSubjectStore();
 
 watch(route, () => {
 	//@ts-ignore
@@ -113,6 +115,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 							'&type=' +
 							subject.value.type
 					);
+					subjectStore.clearSubjectCacheById(subject.value.id as number);
 				});
 		} else {
 			console.log('error submit!', fields);

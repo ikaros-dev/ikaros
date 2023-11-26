@@ -21,6 +21,7 @@ export * from './api/v1alpha1-attachment-relation-api';
 export * from './api/v1alpha1-episode-collection-api';
 export * from './api/v1alpha1-indices-api';
 export * from './api/v1alpha1-plugin-api';
+export * from './api/v1alpha1-static-api';
 export * from './api/v1alpha1-subject-api';
 export * from './api/v1alpha1-subject-collection-api';
 export * from './api/v1alpha1-subject-relation-api';
