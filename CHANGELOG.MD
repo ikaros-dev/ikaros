@@ -11,6 +11,7 @@
 ## 新特性
 
 - 新增`StaticEndpoint`支持获取所有字体URL的接口，所有字体放在用户工作目录下的字体目录`statics/fonts`里
+- web console 视频预览引入artplayer #520
 
 ## 优化
 
