@@ -18,6 +18,7 @@ import {
 	ActuatorApi,
 	V1alpha1TagApi,
 	V1alpha1AttachmentRelationApi,
+	V1alpha1StaticApi,
 } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
 
@@ -190,6 +191,7 @@ function setupApiClient(axios: AxiosInstance) {
 			axios
 		),
 		tag: new V1alpha1TagApi(undefined, baseURL, axios),
+		staticRes: new V1alpha1StaticApi(undefined, baseURL, axios),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
 		configmap: new SettingIkarosRunV1alpha1ConfigmapApi(

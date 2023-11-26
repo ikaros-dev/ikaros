@@ -73,3 +73,10 @@ export const subjectTypeAliasMap = new Map([
 	['REAL', '三次元'],
 	['OTHER', '其它'],
 ]);
+
+export const subtitleNameChineseMap = new Map([
+	['SC', '简体中文'],
+	['sc', '简体中文'],
+	['TC', '繁体中文'],
+	['tc', '简体中文'],
+]);
