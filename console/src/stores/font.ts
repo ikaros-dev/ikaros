@@ -22,9 +22,10 @@ export const useFontStore = defineStore('font', {
 			return this.data;
 		},
 		async getStaticFonts(): Promise<string[]> {
-			if (this.data.length === 0) {
-				await this.fetchStaticFonts();
-			}
+			// if (this.data.length === 0) {
+			// 	await this.fetchStaticFonts();
+			// }
+			await this.fetchStaticFonts();
 			return this.data;
 		},
 	},

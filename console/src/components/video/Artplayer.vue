@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 import Artplayer from 'artplayer';
-import SubtitlesOctopus from '@/assets/js/JavascriptSubtitlesOctopus/subtitles-octopus';
+import SubtitlesOctopus from '@/libs/JavascriptSubtitlesOctopus/subtitles-octopus.js';
 import { useFontStore } from '@/stores/font';
 import { Attachment } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
@@ -10,8 +10,7 @@ import { subtitleNameChineseMap } from '@/modules/common/constants';
 
 const beseUrl = import.meta.env.BASE_URL;
 const subtitlesOctopusWorkJsPath =
-	beseUrl +
-	'src/assets/js/JavascriptSubtitlesOctopus/subtitles-octopus-worker.js';
+	beseUrl + 'js/JavascriptSubtitlesOctopus/subtitles-octopus-worker.js';
 
 const fontStore = useFontStore();
 
