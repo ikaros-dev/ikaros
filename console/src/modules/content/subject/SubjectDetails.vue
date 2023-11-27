@@ -44,6 +44,7 @@ import { useSubjectStore } from '@/stores/subject';
 import { nextTick } from 'vue';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 import AttachmentSelectDialog from '@/modules/content/attachment/AttachmentSelectDialog.vue';
+import SubjectCollectDialog from '@/components/modules/content/subject/SubjectCollectDialog.vue';
 
 const route = useRoute();
 const settingStore = useSettingStore();
@@ -268,6 +269,8 @@ const updateSubjectCollectionProgress = async () => {
 	ElMessage.success('更新条目正片观看进度成功');
 	await fetchDatas();
 };
+
+const subjectCollectDialogVisible = ref(false);
 const changeSubjectCollectState = async () => {
 	var isUnCollect = subjectCollection.value && subjectCollection.value.type;
 	console.log('isUnCollect', isUnCollect);
@@ -280,12 +283,7 @@ const changeSubjectCollectState = async () => {
 		ElMessage.success('取消收藏成功');
 	} else {
 		// collect
-		await apiClient.subjectCollection.collectSubject({
-			userId: userStore.currentUser?.entity?.id as number,
-			subjectId: subject.value.id as number,
-			type: 'WISH',
-		});
-		ElMessage.success('收藏成功');
+		subjectCollectDialogVisible.value = true;
 	}
 	fetchSubjectCollection();
 };
@@ -510,6 +508,12 @@ onMounted(fetchDatas);
 	<SubjectRelationDialog
 		v-if="refreshSubjectRelactionDialog"
 		v-model:visible="subjectRelationDialogVisible"
+	/>
+
+	<SubjectCollectDialog
+		v-model:visible="subjectCollectDialogVisible"
+		v-model:subjectId="subject.id"
+		@close="fetchSubjectCollection"
 	/>
 
 	<el-row>

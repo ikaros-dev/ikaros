@@ -1,0 +1,77 @@
+<script setup lang="ts">
+import { SubjectCollectionTypeEnum } from '@runikaros/api-client';
+import { computed, ref } from 'vue';
+import { subjectCollectTypeAliasMap } from '@/modules/common/constants';
+import { ElMessage } from 'element-plus';
+import { apiClient } from '@/utils/api-client';
+import { useUserStore } from '@/stores/user';
+import { ElDialog, ElRadioGroup, ElRadioButton, ElButton } from 'element-plus';
+
+const userStore = useUserStore();
+
+const props = withDefaults(
+	defineProps<{
+		visible: boolean;
+		subjectId: number;
+	}>(),
+	{
+		visible: false,
+		subjectId: undefined,
+	}
+);
+
+const emit = defineEmits<{
+	// eslint-disable-next-line no-unused-vars
+	(event: 'update:visible', visible: boolean): void;
+}>();
+
+const dialogVisible = computed({
+	get() {
+		return props.visible;
+	},
+	set(value) {
+		emit('update:visible', value);
+	},
+});
+
+// const collect = ref<SubjectCollection>();
+const collectType = ref<SubjectCollectionTypeEnum>();
+
+const onSubjectCollectionSubmit = async () => {
+	await apiClient.subjectCollection.collectSubject({
+		userId: userStore.currentUser?.entity?.id as number,
+		subjectId: props.subjectId as number,
+		type: collectType.value as 'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD',
+	});
+	ElMessage.success('收藏成功');
+	dialogVisible.value = false;
+};
+</script>
+
+<template>
+	<el-dialog v-model="dialogVisible" title="条目收藏盒子" width="30%">
+		<el-radio-group v-model="collectType">
+			<!-- <el-radio-button label="WISH" />
+			<el-radio-button label="DOING" />
+			<el-radio-button label="DONE" />
+			<el-radio-button label="SHELVE" />
+			<el-radio-button label="DISCARD" /> -->
+			<el-radio-button
+				v-for="type in Object.values(SubjectCollectionTypeEnum)"
+				:key="type"
+				:label="type"
+				border
+			>
+				{{ subjectCollectTypeAliasMap.get(type) }}
+			</el-radio-button>
+		</el-radio-group>
+		<template #footer>
+			<el-button @click="dialogVisible = false">返回</el-button>
+			<el-button type="primary" @click="onSubjectCollectionSubmit">
+				提交
+			</el-button>
+		</template>
+	</el-dialog>
+</template>
+
+<style lang="scss" scoped></style>
