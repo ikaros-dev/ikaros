@@ -74,6 +74,14 @@ export const subjectTypeAliasMap = new Map([
 	['OTHER', '其它'],
 ]);
 
+export const subjectCollectTypeAliasMap = new Map([
+	['WISH', '想看'],
+	['DOING', '在看'],
+	['DONE', '看完'],
+	['SHELVE', '搁置'],
+	['DISCARD', '抛弃'],
+]);
+
 export const subtitleNameChineseMap = new Map([
 	['SC', '简体中文'],
 	['sc', '简体中文'],
