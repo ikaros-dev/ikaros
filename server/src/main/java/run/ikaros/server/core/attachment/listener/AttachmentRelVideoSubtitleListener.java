@@ -62,7 +62,6 @@ public class AttachmentRelVideoSubtitleListener {
 
     private Mono<Void> findAttachmentSubtitlesAndSaveRelationIfNotExists(Long attachmentId) {
         return attachmentRepository.findById(attachmentId)
-            .map(AttachmentEntity::getName)
             .flatMapMany(this::findAllAttachmentSubtitles)
             .map(VideoSubtitle::getAttachmentId)
             .flatMap(relationAttId -> attachmentRelationRepository
@@ -83,15 +82,17 @@ public class AttachmentRelVideoSubtitleListener {
             .then();
     }
 
-    private Flux<VideoSubtitle> findAllAttachmentSubtitles(String attachmentName) {
+    private Flux<VideoSubtitle> findAllAttachmentSubtitles(AttachmentEntity attachmentEntity) {
+        String attachmentName = attachmentEntity.getName();
         String postfix = FileUtils.parseFilePostfix(attachmentName);
         attachmentName = attachmentName.substring(0, attachmentName.indexOf(postfix));
         return attachmentRepository.findAllByTypeAndNameLike(File, attachmentName + "%")
-            .filter(attachmentEntity -> attachmentEntity.getName().endsWith("ass"))
-            .map(attachmentEntity -> VideoSubtitle.builder()
-                .attachmentId(attachmentEntity.getId())
-                .name(attachmentEntity.getName())
-                .url(attachmentEntity.getUrl())
+            .filter(entity -> entity.getName().endsWith("ass"))
+            .map(entity -> VideoSubtitle.builder()
+                .masterAttachmentId(attachmentEntity.getId())
+                .attachmentId(entity.getId())
+                .name(entity.getName())
+                .url(entity.getUrl())
                 .build());
     }
 

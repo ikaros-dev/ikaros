@@ -137,7 +137,7 @@ const handleClose = (done: () => void) => {
 		:title="t('core.fileDetail.title')"
 		direction="rtl"
 		:before-close="handleClose"
-		size="40%"
+		size="88%"
 	>
 		<el-row>
 			<el-col :lg="24" :md="24" :sm="24" :xl="24" :xs="24">
