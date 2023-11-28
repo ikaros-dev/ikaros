@@ -46,6 +46,7 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
             .map(AttachmentRelationEntity::getRelationAttachmentId)
             .flatMap(attachmentRepository::findById)
             .map(attachmentEntity -> VideoSubtitle.builder()
+                .masterAttachmentId(attachmentId)
                 .attachmentId(attachmentEntity.getId())
                 .name(attachmentEntity.getName())
                 .url(attachmentEntity.getUrl())

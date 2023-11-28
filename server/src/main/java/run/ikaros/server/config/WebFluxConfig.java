@@ -141,12 +141,16 @@ public class WebFluxConfig implements WebFluxConfigurer {
                 "file:" + ikarosProperties.getWorkDir().resolve(STATIC_DIR_NAME)
                     + separatorChar,
                 "classpath:/static/",
-                "classpath:/templates/static/");
+                "classpath:/templates/static/")
+            .setCacheControl(cacheControl)
+            .setUseLastModified(true);
 
         // /theme/simple/static => classpath:/templates/theme/simple/static/
         // Register classpath default theme static file mapping
         registry.addResourceHandler("/theme/simple/static/**")
-            .addResourceLocations("classpath:/templates/simple/static/");
+            .addResourceLocations("classpath:/templates/simple/static/")
+            .setCacheControl(cacheControl)
+            .setUseLastModified(true);
         // Register user themes dir all theme static file mapping
         Path themesDirPath = ikarosProperties.getWorkDir().resolve(AppConst.THEME_DIR_NAME);
         if (Files.notExists(themesDirPath)) {
@@ -164,7 +168,9 @@ public class WebFluxConfig implements WebFluxConfigurer {
                 }
                 registry.addResourceHandler("/theme/" + themeDir.getName() + "/static/**")
                     .addResourceLocations(
-                        "file:" + themeDir + separatorChar + "static" + separatorChar);
+                        "file:" + themeDir + separatorChar + "static" + separatorChar)
+                    .setCacheControl(cacheControl)
+                    .setUseLastModified(true);
             }
         }
     }

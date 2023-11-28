@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VideoSubtitle {
+    @JsonProperty("master_attachment_id")
+    private Long masterAttachmentId;
     @JsonProperty("attachment_id")
     private Long attachmentId;
     private String name;
