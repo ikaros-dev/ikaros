@@ -270,6 +270,9 @@ core:
       title: 条目详情
     relaction:
       title: 条目关系
+    comic:
+      details:
+        title: 漫画条目详情
   plugin:
     title: 插件
     details:

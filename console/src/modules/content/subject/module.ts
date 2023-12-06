@@ -4,6 +4,7 @@ import Subjects from './Subjects.vue';
 import SubjectPut from './SubjectPut.vue';
 import SubjectPost from './SubjectPost.vue';
 import SubjectDetails from './SubjectDetails.vue';
+import ComicSubjectDetails from './ComicSubjectDetails.vue';
 import { markRaw } from 'vue';
 
 export default definePlugin({
@@ -47,6 +48,18 @@ export default definePlugin({
 				component: SubjectDetails,
 				meta: {
 					title: 'core.subject.details.title',
+					hidden: true,
+				},
+			},
+		},
+		{
+			parentName: 'Root',
+			route: {
+				path: '/subjects/subject/comic/details/:id',
+				name: 'ComicSubjectDetails',
+				component: ComicSubjectDetails,
+				meta: {
+					title: 'core.subject.comic.details.title',
 					hidden: true,
 				},
 			},

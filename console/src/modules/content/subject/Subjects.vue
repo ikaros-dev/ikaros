@@ -224,6 +224,7 @@ onMounted(fetchSubjectByRouterQuery);
 			<SubjectCardLink
 				:id="subject.id"
 				:name="subject.name"
+				:type="subject.type"
 				:name-cn="subject.name_cn"
 				:cover="subject.cover"
 			/>

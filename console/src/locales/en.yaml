@@ -276,6 +276,9 @@ core:
       title: Subject Details
     relaction:
       title: Subject Relactions
+    comic:
+      details:
+        title: Comic Subject Details
   plugin:
     title: Plugins
     details:
