@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "packagesBuild": "pnpm --filter ./packages/shared install && pnpm --filter ./packages/shared build && pnpm --filter ./packages/api-client install && pnpm --filter ./packages/api-client build",
     "dev": "vite",
     "preview": "vite preview",
     "build": "vue-tsc && vite build --mode production",
