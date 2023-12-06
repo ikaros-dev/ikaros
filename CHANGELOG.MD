@@ -4,6 +4,10 @@
 
 # 0.12.0
 
+## 问题修复
+
+- 启动console，找不到`@runikaros/api-client`和`@runikaros/shared`
+  [#527](https://github.com/ikaros-dev/ikaros/issues/527)
 
 ## 插件
 
