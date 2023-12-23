@@ -36,7 +36,7 @@ const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 	// eslint-disable-next-line no-unused-vars
-	(event: 'removeEpisodeFileBind'): void;
+	(event: 'removeEpisodeFilesBind'): void;
 }>();
 
 const dialogVisible = computed({
@@ -50,21 +50,26 @@ const dialogVisible = computed({
 
 const removeEpisodeAttachmentRef = async () => {
 	// @ts-ignore
-	const resouce = props.episode.resources[0];
-	if (!resouce || !resouce.episodeId || !resouce.attachmentId) {
+	if (
+		!props.episode ||
+		!props.episode.resources ||
+		props.episode.resources.length === 0
+	) {
 		ElMessage.warning('操作无效，您当前剧集并未绑定资源文件');
 		return;
 	}
-	await apiClient.attachmentRef.removeByTypeAndAttachmentIdAndReferenceId({
-		attachmentReference: {
-			type: 'EPISODE' as AttachmentReferenceTypeEnum,
-			attachmentId: resouce.attachmentId,
-			referenceId: resouce.episodeId,
-		},
+	await props.episode.resources.forEach(async (resouce) => {
+		await apiClient.attachmentRef.removeByTypeAndAttachmentIdAndReferenceId({
+			attachmentReference: {
+				type: 'EPISODE' as AttachmentReferenceTypeEnum,
+				attachmentId: resouce.attachmentId,
+				referenceId: resouce.episodeId,
+			},
+		});
 	});
-	ElMessage.success('移除剧集和附件绑定成功');
+	ElMessage.success('移除剧集所有附件绑定成功');
 	dialogVisible.value = false;
-	emit('removeEpisodeFileBind');
+	emit('removeEpisodeFilesBind');
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -145,13 +150,14 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 		</el-descriptions>
 
 		<template #footer>
+			<el-button plain>添加资源绑定</el-button>
 			<el-popconfirm
-				title="确定移除绑定吗？"
-				width="180"
+				title="此操作会移除当前剧集所有资源绑定，确定移除绑定吗？"
+				width="280"
 				@confirm="removeEpisodeAttachmentRef"
 			>
 				<template #reference>
-					<el-button plain type="danger"> 移除资源绑定</el-button>
+					<el-button plain type="danger">移除所有绑定</el-button>
 				</template>
 			</el-popconfirm>
 		</template>

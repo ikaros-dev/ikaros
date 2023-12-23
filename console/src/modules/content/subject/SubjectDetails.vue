@@ -798,7 +798,7 @@ onMounted(fetchDatas);
 		v-model:visible="episodeDetailsDialogVisible"
 		v-model:episode="currentEpisode"
 		v-model:multiResource="episodeHasMultiResource"
-		@removeEpisodeFileBind="fetchSubjectById"
+		@removeEpisodeFilesBind="fetchSubjectById"
 	/>
 
 	<AttachmentSelectDialog
