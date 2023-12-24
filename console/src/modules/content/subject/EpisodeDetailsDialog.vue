@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Attachment, Episode } from '@runikaros/api-client';
+import { Attachment, Episode, EpisodeResource } from '@runikaros/api-client';
 import { computed, ref, watch } from 'vue';
 import {
 	ElButton,
@@ -17,7 +17,7 @@ import { base64Encode } from '@/utils/string-util';
 import { apiClient } from '@/utils/api-client';
 import { AttachmentReferenceTypeEnum } from '@runikaros/api-client';
 import { isVideo } from '@/utils/file';
-import { Plus } from '@element-plus/icons-vue';
+import { Close, Plus } from '@element-plus/icons-vue';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 
 const props = withDefaults(
@@ -39,6 +39,9 @@ const episode = ref<Episode>({});
 watch(props, (newVal) => {
 	// console.log(newVal);
 	episode.value = newVal.ep as Episode;
+	if (episode.value?.resources) {
+		episode.value.resources?.sort(compareFun);
+	}
 });
 
 const emit = defineEmits<{
@@ -59,7 +62,7 @@ const dialogVisible = computed({
 	},
 });
 
-const removeEpisodeAttachmentRef = async () => {
+const removeEpisodeAllAttachmentRefs = async () => {
 	// @ts-ignore
 	if (
 		!episode.value ||
@@ -81,6 +84,20 @@ const removeEpisodeAttachmentRef = async () => {
 	ElMessage.success('移除剧集所有附件绑定成功');
 	dialogVisible.value = false;
 	emit('removeEpisodeFilesBind');
+};
+
+const removeEpisodeAttachmentRef = async (attachmentId) => {
+	if (!attachmentId || !episode.value.id) return;
+
+	await apiClient.attachmentRef.removeByTypeAndAttachmentIdAndReferenceId({
+		attachmentReference: {
+			type: 'EPISODE' as AttachmentReferenceTypeEnum,
+			attachmentId: attachmentId,
+			referenceId: episode.value.id,
+		},
+	});
+	ElMessage.success('移除剧集单个附件绑定成功');
+	await fetchEpisodeResources();
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -150,6 +167,19 @@ const fetchEpisodeResources = async () => {
 	});
 	episode.value.resources = data;
 };
+
+const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
+	const name1 = r1.name;
+	const name2 = r2.name;
+	if (!name1 || !name2) return 0;
+	if (name1 < name2) {
+		return -1;
+	}
+	if (name1 > name2) {
+		return 1;
+	}
+	return 0;
+};
 </script>
 
 <template>
@@ -207,19 +237,32 @@ const fetchEpisodeResources = async () => {
 							:key="res.attachmentId"
 							:span="8"
 						>
-							<router-link
-								target="_blank"
-								:to="
+							<el-card shadow="hover">
+								<router-link
+									target="_blank"
+									:to="
 									'/attachments?parentId=' +
 									res.parentAttachmentId +
 									'&name=' +
 									base64Encode(encodeURI(res.name as string))
 								"
-							>
-								<el-card shadow="hover">
-									{{ res.name }}
-								</el-card>
-							</router-link>
+								>
+									<span>
+										{{ res.name }}
+									</span>
+								</router-link>
+								<span style="float: right">
+									<el-popconfirm
+										title="确定移除绑定吗？"
+										width="150"
+										@confirm="removeEpisodeAttachmentRef(res.attachmentId)"
+									>
+										<template #reference>
+											<el-button plain type="danger" :icon="Close" />
+										</template>
+									</el-popconfirm>
+								</span>
+							</el-card>
 						</el-col>
 					</el-row>
 				</div>
@@ -239,10 +282,10 @@ const fetchEpisodeResources = async () => {
 			<el-popconfirm
 				title="此操作会移除当前剧集所有资源绑定，确定移除绑定吗？"
 				width="280"
-				@confirm="removeEpisodeAttachmentRef"
+				@confirm="removeEpisodeAllAttachmentRefs"
 			>
 				<template #reference>
-					<el-button plain type="danger">移除所有绑定</el-button>
+					<el-button plain type="danger" :icon="Close">移除所有绑定</el-button>
 				</template>
 			</el-popconfirm>
 		</template>
