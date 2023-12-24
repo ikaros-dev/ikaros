@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Episode } from '@runikaros/api-client';
-import { computed } from 'vue';
+import { Attachment, Episode } from '@runikaros/api-client';
+import { computed, ref, watch, onMounted } from 'vue';
 import {
 	ElButton,
 	ElDescriptions,
@@ -17,11 +17,16 @@ import { base64Encode } from '@/utils/string-util';
 import { apiClient } from '@/utils/api-client';
 import { AttachmentReferenceTypeEnum } from '@runikaros/api-client';
 import { isVideo } from '@/utils/file';
+import { Plus } from '@element-plus/icons-vue';
+import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
+import AttachmentSelectDialog from '@/modules/content/attachment/AttachmentSelectDialog.vue';
 
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		episode: Episode | undefined;
+		subjectId: number | undefined;
+		// episode
+		ep: Episode | undefined;
 		multiResource?: boolean;
 	}>(),
 	{
@@ -29,6 +34,13 @@ const props = withDefaults(
 		multiResource: false,
 	}
 );
+
+const episode = ref<Episode>({});
+
+watch(props, (newVal) => {
+	// console.log(newVal);
+	episode.value = newVal.ep as Episode;
+});
 
 const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
@@ -51,14 +63,14 @@ const dialogVisible = computed({
 const removeEpisodeAttachmentRef = async () => {
 	// @ts-ignore
 	if (
-		!props.episode ||
-		!props.episode.resources ||
-		props.episode.resources.length === 0
+		!episode.value ||
+		!episode.value.resources ||
+		episode.value.resources.length === 0
 	) {
 		ElMessage.warning('操作无效，您当前剧集并未绑定资源文件');
 		return;
 	}
-	await props.episode.resources.forEach(async (resouce) => {
+	await episode.value.resources.forEach(async (resouce) => {
 		await apiClient.attachmentRef.removeByTypeAndAttachmentIdAndReferenceId({
 			attachmentReference: {
 				type: 'EPISODE' as AttachmentReferenceTypeEnum,
@@ -76,9 +88,121 @@ const removeEpisodeAttachmentRef = async () => {
 const urlIsArachivePackage = (url: string | undefined): boolean => {
 	return !url || url.endsWith('zip') || url.endsWith('7z');
 };
+
+const episodeHasMultiResource = ref(false);
+const initEpisodeHasMultiResource = () => {
+	if (episode.value?.resources?.length && episode.value?.resources?.length > 1)
+		episodeHasMultiResource.value = true;
+};
+
+const batchMatchingEpisodeButtonLoading = ref(false);
+const batchMatchingSubjectButtonLoading = ref(false);
+const currentOperateEpisode = ref<Episode>();
+const attachmentMultiSelectDialogVisible = ref(false);
+const bindMasterIsEpisodeFlag = ref(false);
+const bingResources = (episode: Episode) => {
+	// console.log('episode', episode);
+	currentOperateEpisode.value = episode;
+	if (episodeHasMultiResource.value) {
+		attachmentMultiSelectDialogVisible.value = true;
+		bindMasterIsEpisodeFlag.value = true;
+	} else {
+		attachmentSelectDialog.value = true;
+	}
+};
+
+const attachmentSelectDialog = ref(false);
+// eslint-disable-next-line no-unused-vars
+const onCloseWithAttachmentForAttachmentSelectDialog = async (
+	attachment: Attachment
+) => {
+	console.log('attachment', attachment);
+	console.log('currentOperateEpisode', currentOperateEpisode.value);
+	await apiClient.attachmentRef.saveAttachmentReference({
+		attachmentReference: {
+			type: 'EPISODE' as AttachmentReferenceTypeEnum,
+			attachmentId: attachment.id as number,
+			referenceId: currentOperateEpisode.value?.id as number,
+		},
+	});
+	ElMessage.success('单个剧集和附件匹配成功');
+	// await fetchDatas();
+};
+const onCloseWithAttachments = async (attachments: Attachment[]) => {
+	// console.log('attachments', attachments);
+	const attIds: number[] = attachments.map((att) => att.id) as number[];
+	if (bindMasterIsEpisodeFlag.value) {
+		await delegateBatchMatchingEpisode(currentOperateEpisode.value?.id, attIds);
+	} else {
+		if (!props.subjectId) {
+			ElMessage.error('操作失败，当前剧集所属条目ID未指定');
+			return;
+		}
+		await delegateBatchMatchingSubject(props.subjectId, attIds);
+	}
+};
+
+const delegateBatchMatchingSubject = async (
+	subjectId: number | undefined,
+	attIds: number[]
+) => {
+	if (!subjectId || subjectId <= 0 || !attIds || attIds.length === 0) {
+		return;
+	}
+	batchMatchingSubjectButtonLoading.value = true;
+	await apiClient.attachmentRef
+		.matchingAttachmentsAndSubjectEpisodes({
+			batchMatchingSubjectEpisodesAttachment: {
+				subjectId: subjectId,
+				attachmentIds: attIds,
+			},
+		})
+		.then(() => {
+			ElMessage.success('批量匹配条目所有剧集和多资源成功');
+			window.location.reload();
+		})
+		.finally(() => {
+			batchMatchingSubjectButtonLoading.value = false;
+		});
+};
+
+const delegateBatchMatchingEpisode = async (
+	episodeId: number | undefined,
+	attIds: number[]
+) => {
+	if (!episodeId || episodeId <= 0 || !attIds || attIds.length === 0) {
+		return;
+	}
+	batchMatchingEpisodeButtonLoading.value = true;
+	await apiClient.attachmentRef
+		.matchingAttachmentsForEpisode({
+			batchMatchingEpisodeAttachment: {
+				episodeId: episodeId,
+				attachmentIds: attIds,
+			},
+		})
+		.then(() => {
+			ElMessage.success('批量匹单个剧集和多资源成功');
+			window.location.reload();
+		})
+		.finally(() => {
+			batchMatchingEpisodeButtonLoading.value = false;
+		});
+};
+
+onMounted(initEpisodeHasMultiResource);
 </script>
 
 <template>
+	<AttachmentSelectDialog
+		v-model:visible="attachmentSelectDialog"
+		@close-with-attachment="onCloseWithAttachmentForAttachmentSelectDialog"
+	/>
+
+	<AttachmentMultiSelectDialog
+		v-model:visible="attachmentMultiSelectDialogVisible"
+		@close-with-attachments="onCloseWithAttachments"
+	/>
 	<el-dialog v-model="dialogVisible" title="剧集详情" width="70%">
 		<el-descriptions border :column="1">
 			<el-descriptions-item label="原始名称">
@@ -150,7 +274,14 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 		</el-descriptions>
 
 		<template #footer>
-			<el-button plain>添加资源绑定</el-button>
+			<el-button
+				plain
+				:icon="Plus"
+				:loading="batchMatchingEpisodeButtonLoading"
+				@click="bingResources(episode)"
+			>
+				添加绑定
+			</el-button>
 			<el-popconfirm
 				title="此操作会移除当前剧集所有资源绑定，确定移除绑定吗？"
 				width="280"

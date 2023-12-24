@@ -795,8 +795,9 @@ onMounted(fetchDatas);
 		</el-col>
 	</el-row>
 	<EpisodeDetailsDialog
+		v-model:subjectId="subject.id"
 		v-model:visible="episodeDetailsDialogVisible"
-		v-model:episode="currentEpisode"
+		v-model:ep="currentEpisode"
 		v-model:multiResource="episodeHasMultiResource"
 		@removeEpisodeFilesBind="fetchSubjectById"
 	/>
