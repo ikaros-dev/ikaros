@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Attachment, Episode } from '@runikaros/api-client';
-import { computed, ref, watch, onMounted } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
 	ElButton,
 	ElDescriptions,
@@ -19,7 +19,6 @@ import { AttachmentReferenceTypeEnum } from '@runikaros/api-client';
 import { isVideo } from '@/utils/file';
 import { Plus } from '@element-plus/icons-vue';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
-import AttachmentSelectDialog from '@/modules/content/attachment/AttachmentSelectDialog.vue';
 
 const props = withDefaults(
 	defineProps<{
@@ -89,29 +88,15 @@ const urlIsArachivePackage = (url: string | undefined): boolean => {
 	return !url || url.endsWith('zip') || url.endsWith('7z');
 };
 
-const episodeHasMultiResource = ref(false);
-const initEpisodeHasMultiResource = () => {
-	if (episode.value?.resources?.length && episode.value?.resources?.length > 1)
-		episodeHasMultiResource.value = true;
-};
-
 const batchMatchingEpisodeButtonLoading = ref(false);
-const batchMatchingSubjectButtonLoading = ref(false);
 const currentOperateEpisode = ref<Episode>();
 const attachmentMultiSelectDialogVisible = ref(false);
-const bindMasterIsEpisodeFlag = ref(false);
 const bingResources = (episode: Episode) => {
 	// console.log('episode', episode);
 	currentOperateEpisode.value = episode;
-	if (episodeHasMultiResource.value) {
-		attachmentMultiSelectDialogVisible.value = true;
-		bindMasterIsEpisodeFlag.value = true;
-	} else {
-		attachmentSelectDialog.value = true;
-	}
+	attachmentMultiSelectDialogVisible.value = true;
 };
 
-const attachmentSelectDialog = ref(false);
 // eslint-disable-next-line no-unused-vars
 const onCloseWithAttachmentForAttachmentSelectDialog = async (
 	attachment: Attachment
@@ -126,44 +111,13 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 		},
 	});
 	ElMessage.success('单个剧集和附件匹配成功');
-	// await fetchDatas();
+	await fetchEpisodeResources();
 };
 const onCloseWithAttachments = async (attachments: Attachment[]) => {
 	// console.log('attachments', attachments);
 	const attIds: number[] = attachments.map((att) => att.id) as number[];
-	if (bindMasterIsEpisodeFlag.value) {
-		await delegateBatchMatchingEpisode(currentOperateEpisode.value?.id, attIds);
-	} else {
-		if (!props.subjectId) {
-			ElMessage.error('操作失败，当前剧集所属条目ID未指定');
-			return;
-		}
-		await delegateBatchMatchingSubject(props.subjectId, attIds);
-	}
-};
-
-const delegateBatchMatchingSubject = async (
-	subjectId: number | undefined,
-	attIds: number[]
-) => {
-	if (!subjectId || subjectId <= 0 || !attIds || attIds.length === 0) {
-		return;
-	}
-	batchMatchingSubjectButtonLoading.value = true;
-	await apiClient.attachmentRef
-		.matchingAttachmentsAndSubjectEpisodes({
-			batchMatchingSubjectEpisodesAttachment: {
-				subjectId: subjectId,
-				attachmentIds: attIds,
-			},
-		})
-		.then(() => {
-			ElMessage.success('批量匹配条目所有剧集和多资源成功');
-			window.location.reload();
-		})
-		.finally(() => {
-			batchMatchingSubjectButtonLoading.value = false;
-		});
+	await delegateBatchMatchingEpisode(currentOperateEpisode.value?.id, attIds);
+	await fetchEpisodeResources();
 };
 
 const delegateBatchMatchingEpisode = async (
@@ -183,22 +137,22 @@ const delegateBatchMatchingEpisode = async (
 		})
 		.then(() => {
 			ElMessage.success('批量匹单个剧集和多资源成功');
-			window.location.reload();
 		})
 		.finally(() => {
 			batchMatchingEpisodeButtonLoading.value = false;
 		});
 };
 
-onMounted(initEpisodeHasMultiResource);
+const fetchEpisodeResources = async () => {
+	if (!episode.value.id) return;
+	const { data } = await apiClient.episode.findEpisodeAttachmentRefsById({
+		id: episode.value.id as number,
+	});
+	episode.value.resources = data;
+};
 </script>
 
 <template>
-	<AttachmentSelectDialog
-		v-model:visible="attachmentSelectDialog"
-		@close-with-attachment="onCloseWithAttachmentForAttachmentSelectDialog"
-	/>
-
 	<AttachmentMultiSelectDialog
 		v-model:visible="attachmentMultiSelectDialogVisible"
 		@close-with-attachments="onCloseWithAttachments"

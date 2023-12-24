@@ -177,16 +177,16 @@ const initEpisodeHasMultiResource = () => {
 };
 
 const currentOperateEpisode = ref<Episode>();
-const bingResources = (episode: Episode) => {
-	// console.log('episode', episode);
-	currentOperateEpisode.value = episode;
-	if (episodeHasMultiResource.value) {
-		attachmentMultiSelectDialogVisible.value = true;
-		bindMasterIsEpisodeFlag.value = true;
-	} else {
-		attachmentSelectDialog.value = true;
-	}
-};
+// const bingResources = (episode: Episode) => {
+// 	// console.log('episode', episode);
+// 	currentOperateEpisode.value = episode;
+// 	if (episodeHasMultiResource.value) {
+// 		attachmentMultiSelectDialogVisible.value = true;
+// 		bindMasterIsEpisodeFlag.value = true;
+// 	} else {
+// 		attachmentSelectDialog.value = true;
+// 	}
+// };
 
 const deleteSubject = async () => {
 	if (!subject.value.id) {
@@ -724,18 +724,7 @@ onMounted(fetchDatas);
 								<el-button plain @click="showEpisodeDetails(scoped.row)">
 									详情
 								</el-button>
-								<el-button
-									plain
-									:icon="
-										scoped.row.resources && scoped.row.resources.length > 0
-											? Check
-											: Close
-									"
-									:loading="batchMatchingEpisodeButtonLoading"
-									@click="bingResources(scoped.row)"
-								>
-									绑定
-								</el-button>
+
 								<el-button
 									plain
 									:icon="
