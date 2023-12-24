@@ -339,7 +339,8 @@ onMounted(() => {
 	</el-row>
 	<EpisodeDetailsDialog
 		v-model:visible="episodeDetailsDialogVisible"
-		v-model:episode="currentEpisode"
+		v-model:ep="currentEpisode"
+		v-model:subjectId="subject.id"
 	/>
 </template>
 

@@ -288,7 +288,8 @@ const onCloseWithAttachment = (attachment) => {
 	</el-row>
 	<EpisodeDetailsDialog
 		v-model:visible="episodeDetailsDialogVisible"
-		v-model:episode="currentEpisode"
+		v-model:subjectId="subject.id"
+		v-model:ep="currentEpisode"
 	/>
 </template>
 
