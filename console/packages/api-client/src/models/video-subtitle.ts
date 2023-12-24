@@ -35,5 +35,11 @@ export interface VideoSubtitle {
 	 * @type {number}
 	 * @memberof VideoSubtitle
 	 */
+	master_attachment_id?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof VideoSubtitle
+	 */
 	attachment_id?: number;
 }

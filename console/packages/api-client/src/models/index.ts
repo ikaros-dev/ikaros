@@ -7,6 +7,7 @@ export * from './batch-matching-subject-episodes-attachment';
 export * from './config-map';
 export * from './episode';
 export * from './episode-collection';
+export * from './episode-meta';
 export * from './episode-resource';
 export * from './link';
 export * from './paging-wrap';
