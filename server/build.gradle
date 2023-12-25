@@ -66,6 +66,9 @@ dependencies {
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
     implementation 'org.json:json:20230227'
 
+    // 针对logback.xml if 不工作的支持
+//    implementation 'org.codehaus.janino:janino:3.1.11'
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

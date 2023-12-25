@@ -40,8 +40,6 @@ springdoc:
   show-actuator: true
 
 logging:
-  file:
-    name: ${ikaros.work-dir}/logs/ikaros.log
   logback:
     rollingpolicy:
       max-file-size: 10MB
