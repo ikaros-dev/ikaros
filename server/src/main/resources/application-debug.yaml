@@ -1,0 +1,9 @@
+logging:
+  level:
+    run.ikaros.server: DEBUG
+    run.ikaros.plugin: DEBUG
+    org.pf4j: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
+    org.springframework.r2dbc.core.DefaultDatabaseClient: DEBUG
+

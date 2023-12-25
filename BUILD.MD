@@ -76,7 +76,7 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 最后OK保存
 
 ## 本地开发
-在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win`
+在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win,debug`
 
 ## IDEA格式化配置
 
