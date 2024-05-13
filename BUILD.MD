@@ -72,11 +72,19 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 => `Scheme` 选择 `Project`
 
 选择右边设置，导入checkstyle文件
+(如没有该项，则需要先安装checkstyle-idea插件)
 
 最后OK保存
 
 ## 本地开发
 在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win,debug`
+
+### Console编译
+需要先运行任务进行Console的前端文件编译：
+
+```text
+./gradlew buildFrontend -x test
+```
 
 ## IDEA格式化配置
 
