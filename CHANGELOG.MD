@@ -20,6 +20,7 @@
 
 - 启动console，找不到`@runikaros/api-client`和`@runikaros/shared`
   [#527](https://github.com/ikaros-dev/ikaros/issues/527)
+- 修复附件移动时，子附件的`path`属性没有及时更新的问题
 
 
 # 0.11.7
