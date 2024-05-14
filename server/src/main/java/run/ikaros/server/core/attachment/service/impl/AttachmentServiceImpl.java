@@ -65,6 +65,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     private final R2dbcEntityTemplate template;
     private final IkarosProperties ikarosProperties;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final AttachmentRepository attachmentRepository;
 
     /**
      * Construct.
@@ -72,12 +73,14 @@ public class AttachmentServiceImpl implements AttachmentService {
     public AttachmentServiceImpl(AttachmentRepository repository,
                                  AttachmentReferenceRepository referenceRepository,
                                  R2dbcEntityTemplate template, IkarosProperties ikarosProperties,
-                                 ApplicationEventPublisher applicationEventPublisher) {
+                                 ApplicationEventPublisher applicationEventPublisher,
+                                 AttachmentRepository attachmentRepository) {
         this.repository = repository;
         this.referenceRepository = referenceRepository;
         this.template = template;
         this.ikarosProperties = ikarosProperties;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.attachmentRepository = attachmentRepository;
     }
 
     @Override
@@ -94,14 +97,30 @@ public class AttachmentServiceImpl implements AttachmentService {
         Assert.notNull(attachment, "'attachment' must not be null.");
         attachment.setParentId(Optional.ofNullable(attachment.getParentId())
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID));
+        final Long newParentId = attachment.getParentId();
         Mono<AttachmentEntity> attachmentEntityMono =
             Objects.isNull(attachment.getId())
                 ? copyProperties(attachment, new AttachmentEntity())
                 : repository.findById(attachment.getId())
-                .flatMap(attachmentEntity -> copyProperties(attachment, attachmentEntity));
+                .flatMap(attachmentEntity ->
+                    copyProperties(attachment, attachmentEntity, "parentId"));
+
         return attachmentEntityMono
+            .flatMap(attachmentEntity -> updatePathWhenNewParentId(attachmentEntity, newParentId))
             .flatMap(this::saveEntity)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, attachment));
+    }
+
+    private Mono<AttachmentEntity> updatePathWhenNewParentId(AttachmentEntity attachmentEntity,
+                                                             Long newParentId) {
+        if (Objects.equals(newParentId, attachmentEntity.getParentId())) {
+            return Mono.just(attachmentEntity);
+        }
+
+        String name = attachmentEntity.getName();
+        return findPathByParentId(newParentId, name)
+            .map(attachmentEntity::setPath)
+            .map(attEntity -> attEntity.setParentId(newParentId));
     }
 
     @Override
@@ -148,7 +167,13 @@ public class AttachmentServiceImpl implements AttachmentService {
             template.select(query, AttachmentEntity.class);
         Mono<Long> countMono = template.count(query, AttachmentEntity.class);
 
-        return countMono.flatMap(total -> attachmentEntityFlux.collectList()
+        return countMono.flatMap(total -> attachmentEntityFlux
+            .flatMap(attEntity -> findPathByParentId(attEntity.getParentId(), attEntity.getName())
+                .filter(newPath -> !newPath.equals(attEntity.getPath()))
+                .map(attEntity::setPath)
+                .flatMap(attachmentRepository::save)
+                .switchIfEmpty(Mono.just(attEntity)))
+            .collectList()
             .map(attachmentEntities -> new PagingWrap<>(page, size, total, attachmentEntities)));
     }
 
