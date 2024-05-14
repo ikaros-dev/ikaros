@@ -102,7 +102,8 @@ public class AttachmentServiceImpl implements AttachmentService {
             Objects.isNull(attachment.getId())
                 ? copyProperties(attachment, new AttachmentEntity())
                 : repository.findById(attachment.getId())
-                .flatMap(attachmentEntity -> copyProperties(attachment, attachmentEntity, "parentId"));
+                .flatMap(attachmentEntity ->
+                    copyProperties(attachment, attachmentEntity, "parentId"));
 
         return attachmentEntityMono
             .flatMap(attachmentEntity -> updatePathWhenNewParentId(attachmentEntity, newParentId))
@@ -110,7 +111,8 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, attachment));
     }
 
-    private Mono<AttachmentEntity> updatePathWhenNewParentId(AttachmentEntity attachmentEntity, Long newParentId) {
+    private Mono<AttachmentEntity> updatePathWhenNewParentId(AttachmentEntity attachmentEntity,
+                                                             Long newParentId) {
         if (Objects.equals(newParentId, attachmentEntity.getParentId())) {
             return Mono.just(attachmentEntity);
         }
