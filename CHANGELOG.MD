@@ -19,8 +19,9 @@
 ## 问题修复
 
 - 启动console，找不到`@runikaros/api-client`和`@runikaros/shared`
-  [#527](https://github.com/ikaros-dev/ikaros/issues/527)
-- 修复附件移动时，子附件的`path`属性没有及时更新的问题
+  [#527](https://github.com/ikaros-dev/ikaros/issues/527)。
+- 修复附件移动时，子附件的`path`属性没有及时更新的问题。
+- 修复服务端WebConsole,附件预览视频文件时，类似`xxx.jpsc.ass`无法正常显示是否简体繁体，同时如果再遇到无法识别的情况，在字幕选择列表直接显示比如`jpsc`。
 
 
 # 0.11.7

@@ -132,5 +132,17 @@ git branch
 git branch -D {you_branch_name}
 ```
 
+上游PR合并后，更新本地主分支
+
+如已添加上游仓库可跳过此命令
+```text
+git remote add upstream https://github.com/ikaros-dev/ikaros.git
+```
+
+```text
+git checkout master
+git pull upstream master
+```
+
 # 更多
 <https://docs.ikaros.run>
