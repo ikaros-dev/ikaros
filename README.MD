@@ -55,6 +55,7 @@ Ikaros 的作用是为了辅助对资源进行管理，类似于是 C/S 架构�
 # 社区汇总
 
 - GitHub: [Ikaros project github offical repo](https://github.com/ikaros-dev/ikaros)
+- QQ交流群: [Ikaros Project QQ Chat Group](https://qm.qq.com/q/ogGuO2wmcw)
 - 微信公众号：见下方[微信公众号](#微信公众号)
 - TG 群组：https://t.me/run_ikaros
 - TG 频道：https://t.me/run_ikaros_channel
