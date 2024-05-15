@@ -41,7 +41,7 @@
     "@vueuse/core": "^9.6.0",
     "@vueuse/router": "^9.6.0",
     "@vueuse/shared": "^9.6.0",
-    "artplayer": "^5.0.9",
+    "artplayer": "^5.1.1",
     "axios": "^1.6.1",
     "crypto-js": "^4.2.0",
     "element-plus": "^2.3.5",

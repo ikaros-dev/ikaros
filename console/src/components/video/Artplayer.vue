@@ -44,12 +44,13 @@ const getSubtitleSimpleNameByAttachmentName = (name: string): string => {
 	var str = name.substring(0, name.lastIndexOf('.'));
 	str = str.substring(str.lastIndexOf('.') + 1);
 	str = str.toLocaleUpperCase();
-	// console.log('subtitle simple name', name, str);
+	console.log('subtitle simple name', name, str);
 	return str;
 };
 
 const getSubtitleChineseSimpleNameBySimpleName = (name: string): string => {
-	return subtitleNameChineseMap.get(name) as string;
+	const cnName = subtitleNameChineseMap.get(name) as string;
+	return (cnName != null && cnName != undefined && cnName != '') ? cnName : name;
 };
 
 const artSubtitles = ref<ArtSubtitle[]>([]);
@@ -64,7 +65,7 @@ const getVideoSubtitles = async () => {
 			data![index].name as string
 		);
 		var artSubtitle: ArtSubtitle = {
-			default: simpleName === 'SC' || simpleName === 'sc',
+			default: simpleName === 'SC' || simpleName === 'sc' || simpleName == 'JPSC',
 			html: getSubtitleChineseSimpleNameBySimpleName(simpleName),
 			url: data![index].url as string,
 		};
