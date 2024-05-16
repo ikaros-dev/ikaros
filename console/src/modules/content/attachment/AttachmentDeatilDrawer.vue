@@ -18,6 +18,7 @@ import { useI18n } from 'vue-i18n';
 import { isImage, isVideo, isVoice } from '@/utils/file';
 import { Edit } from '@element-plus/icons-vue';
 import Artplayer from '@/components/video/Artplayer.vue';
+import AttachmentRelationsDialog from './AttachmentRelationsDialog.vue';
 
 const { t } = useI18n();
 
@@ -129,6 +130,8 @@ const handleClose = (done: () => void) => {
 	done();
 	drawerVisible.value = false;
 };
+
+const attachmentRelationsDialogVisible = ref(false);
 </script>
 
 <template>
@@ -237,6 +240,7 @@ const handleClose = (done: () => void) => {
 		</el-row>
 
 		<template #footer>
+			<el-button @click="attachmentRelationsDialogVisible = true">关联</el-button>
 			<el-popconfirm
 				title="你确定要删除该文件？"
 				confirm-button-text="确定"
@@ -249,6 +253,9 @@ const handleClose = (done: () => void) => {
 				</template>
 			</el-popconfirm>
 		</template>
+
+		<AttachmentRelationsDialog v-model:visible="attachmentRelationsDialogVisible" :attachmentId="file.id"/>
+
 	</el-drawer>
 </template>
 
