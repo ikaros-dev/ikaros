@@ -43,6 +43,8 @@ const emit = defineEmits<{
 	(event: 'update:defineFile', file: Attachment): void;
 	// eslint-disable-next-line no-unused-vars
 	(event: 'delete', file: Attachment): void;
+	// eslint-disable-next-line no-unused-vars
+	(event: 'close'): void;
 }>();
 
 const drawerVisible = computed({
@@ -132,6 +134,23 @@ const handleClose = (done: () => void) => {
 };
 
 const attachmentRelationsDialogVisible = ref(false);
+const onAttachmentRelationsDialogClose = async ()=>{
+	// artplayerRef.value.getVideoSubtitles();
+	// artplayerRef.value.reloadArtplayer();
+	window.location.reload();
+}
+const onClose = async()=>{
+	drawerVisible.value = false;
+	emit('close');
+}
+
+const artplayer = ref<Artplayer>();
+const artplayerRef = ref();
+const getArtplayerInstance = (art: Artplayer) => {
+	artplayer.value = art;
+}
+
+
 </script>
 
 <template>
@@ -141,6 +160,7 @@ const attachmentRelationsDialogVisible = ref(false);
 		direction="rtl"
 		:before-close="handleClose"
 		size="88%"
+		@close="onClose"
 	>
 		<el-row>
 			<el-col :lg="24" :md="24" :sm="24" :xl="24" :xs="24">
@@ -158,8 +178,10 @@ const attachmentRelationsDialogVisible = ref(false);
 					</a>
 					<artplayer
 						v-else-if="isVideo(file.url as string)"
+						ref="artplayerRef"
 						v-model:attachment="file"
 						style="width: 100%"
+						@getInstance="getArtplayerInstance"
 					/>
 					<!-- <video
 						
@@ -254,7 +276,7 @@ const attachmentRelationsDialogVisible = ref(false);
 			</el-popconfirm>
 		</template>
 
-		<AttachmentRelationsDialog v-model:visible="attachmentRelationsDialogVisible" :attachmentId="file.id"/>
+		<AttachmentRelationsDialog v-model:visible="attachmentRelationsDialogVisible" :attachmentId="file.id" @close="onAttachmentRelationsDialogClose"/>
 
 	</el-drawer>
 </template>

@@ -55,6 +55,7 @@ const getSubtitleChineseSimpleNameBySimpleName = (name: string): string => {
 
 const artSubtitles = ref<ArtSubtitle[]>([]);
 const getVideoSubtitles = async () => {
+	artSubtitles.value = [];
 	const { data } =
 		await apiClient.attachmentRelation.findAttachmentVideoSubtitles({
 			attachmentId: props.attachment.id as number,

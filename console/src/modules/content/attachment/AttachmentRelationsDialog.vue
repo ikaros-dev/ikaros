@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { ElButton, ElDialog, ElRow, ElCol, ElTable, ElTableColumn } from 'element-plus';
+import { ElButton, ElDialog, ElRow, ElCol, ElTable, ElTableColumn, ElMessage,ElPopconfirm } from 'element-plus';
 import { Attachment, AttachmentRelation } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { base64Encode } from '@/utils/string-util';
@@ -67,6 +67,7 @@ const fetchRelations = async () => {
 		attachmentId: masterAttachmentId.value,
 		relationType: 'VIDEO_SUBTITLE'
 	})
+	attachmentTableDatas.value = []
 	attachmentRelations.value = data;
 	attachmentRelations.value.forEach(async (attRel) => {
 		var relationAtt:Attachment = await fetchAttComplexPathById(attRel.relation_attachment_id);
@@ -90,7 +91,33 @@ const fetchAttComplexPathById = async(id:number | undefined)=>{
 
 const attachmentMultiSelectDialogVisible = ref(false);
 const onAttMultiSelectDialogClose = async (attachments: Attachment[])=>{
-	console.debug("onAttMultiSelectDialogClose attachments", attachments)
+	// console.debug("onAttMultiSelectDialogClose attachments", attachments);
+	var relationIds:number[] = [];
+	attachments.forEach(att => {
+		relationIds.push(att.id as number);
+	});
+	await apiClient.attachmentRelation.postAttachmentRelations({
+		postAttachmentRelationsParam: {
+			masterId: masterAttachmentId.value,
+			type: 'VIDEO_SUBTITLE',
+			relationIds: relationIds
+		}
+	})
+	ElMessage.success('新增附件关系成功');
+	await fetchRelations();
+}
+
+const relationBtnDeleting = ref(false);
+const onAttRelationDelateBtnConfirm = async(attRelation:AttachmentTableColumn)=> {
+	// console.debug('onAttRelationDelateBtnConfirm attRelation', attRelation);
+	await apiClient.attachmentRelation.deleteAttachmentRelation({
+		masterAttachmentId: attRelation.masterId as number,
+		relAttachmentId: attRelation.relationAtt.id as number,
+		type: attRelation.type as "VIDEO_SUBTITLE"
+	})
+	ElMessage.success('删除附件关系成功');
+
+	await fetchRelations();
 }
 </script>
 
@@ -126,6 +153,21 @@ const onAttMultiSelectDialogClose = async (attachments: Attachment[])=>{
 						"
 						>{{ scoped.row.relationAtt.name }}</router-link
 					>
+				</template>
+			</el-table-column>
+			<el-table-column fixed="right" label="操作" width="120">
+				<template #default="scoped">
+					<el-popconfirm
+						title="你确定要删除该附件关系吗？"
+						confirm-button-text="确定"
+						cancel-button-text="取消"
+						confirm-button-type="danger"
+						@confirm="onAttRelationDelateBtnConfirm(scoped.row)"
+					>
+						<template #reference>
+							<el-button type="danger" :loading="relationBtnDeleting">删除</el-button>
+						</template>
+					</el-popconfirm>
 				</template>
 			</el-table-column>
 		
