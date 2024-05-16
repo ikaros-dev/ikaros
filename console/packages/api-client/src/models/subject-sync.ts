@@ -18,41 +18,41 @@
  * @interface SubjectSync
  */
 export interface SubjectSync {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectSync
-	 */
-	subjectId?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectSync
-	 */
-	platform?: SubjectSyncPlatformEnum;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectSync
-	 */
-	platformId?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectSync
-	 */
-	syncTime?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectSync
+   */
+  subjectId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectSync
+   */
+  platform?: SubjectSyncPlatformEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectSync
+   */
+  platformId?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectSync
+   */
+  syncTime?: string;
 }
 
 export const SubjectSyncPlatformEnum = {
-	BgmTv: 'BGM_TV',
-	Tmdb: 'TMDB',
-	AniDb: 'AniDB',
-	Tvdb: 'TVDB',
-	Vndb: 'VNDB',
-	DouBan: 'DOU_BAN',
-	Other: 'OTHER',
+  BgmTv: "BGM_TV",
+  Tmdb: "TMDB",
+  AniDb: "AniDB",
+  Tvdb: "TVDB",
+  Vndb: "VNDB",
+  DouBan: "DOU_BAN",
+  Other: "OTHER",
 } as const;
 
 export type SubjectSyncPlatformEnum =
-	(typeof SubjectSyncPlatformEnum)[keyof typeof SubjectSyncPlatformEnum];
+  (typeof SubjectSyncPlatformEnum)[keyof typeof SubjectSyncPlatformEnum];

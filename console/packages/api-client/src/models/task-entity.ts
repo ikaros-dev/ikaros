@@ -18,69 +18,69 @@
  * @interface TaskEntity
  */
 export interface TaskEntity {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof TaskEntity
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof TaskEntity
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof TaskEntity
-	 */
-	status?: TaskEntityStatusEnum;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof TaskEntity
-	 */
-	createTime?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof TaskEntity
-	 */
-	startTime?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof TaskEntity
-	 */
-	endTime?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof TaskEntity
-	 */
-	total?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof TaskEntity
-	 */
-	index?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof TaskEntity
-	 */
-	failMessage?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof TaskEntity
+   */
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof TaskEntity
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof TaskEntity
+   */
+  status?: TaskEntityStatusEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof TaskEntity
+   */
+  createTime?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof TaskEntity
+   */
+  startTime?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof TaskEntity
+   */
+  endTime?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof TaskEntity
+   */
+  total?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof TaskEntity
+   */
+  index?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof TaskEntity
+   */
+  failMessage?: string;
 }
 
 export const TaskEntityStatusEnum = {
-	Create: 'CREATE',
-	Running: 'RUNNING',
-	Finish: 'FINISH',
-	Cancel: 'CANCEL',
-	Fail: 'FAIL',
+  Create: "CREATE",
+  Running: "RUNNING",
+  Finish: "FINISH",
+  Cancel: "CANCEL",
+  Fail: "FAIL",
 } as const;
 
 export type TaskEntityStatusEnum =
-	(typeof TaskEntityStatusEnum)[keyof typeof TaskEntityStatusEnum];
+  (typeof TaskEntityStatusEnum)[keyof typeof TaskEntityStatusEnum];

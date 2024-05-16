@@ -14,7 +14,7 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import { UserEntity } from './user-entity';
+import { UserEntity } from "./user-entity";
 
 /**
  *
@@ -22,10 +22,10 @@ import { UserEntity } from './user-entity';
  * @interface User
  */
 export interface User {
-	/**
-	 *
-	 * @type {UserEntity}
-	 * @memberof User
-	 */
-	entity?: UserEntity;
+  /**
+   *
+   * @type {UserEntity}
+   * @memberof User
+   */
+  entity?: UserEntity;
 }

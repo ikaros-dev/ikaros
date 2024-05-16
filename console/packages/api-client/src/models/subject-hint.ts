@@ -18,65 +18,65 @@
  * @interface SubjectHint
  */
 export interface SubjectHint {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectHint
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectHint
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectHint
-	 */
-	nameCn?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectHint
-	 */
-	infobox?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectHint
-	 */
-	summary?: string;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof SubjectHint
-	 */
-	nsfw?: boolean;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectHint
-	 */
-	type?: SubjectHintTypeEnum;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectHint
-	 */
-	airTime?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectHint
+   */
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectHint
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectHint
+   */
+  nameCn?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectHint
+   */
+  infobox?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectHint
+   */
+  summary?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof SubjectHint
+   */
+  nsfw?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectHint
+   */
+  type?: SubjectHintTypeEnum;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectHint
+   */
+  airTime?: number;
 }
 
 export const SubjectHintTypeEnum = {
-	Anime: 'ANIME',
-	Comic: 'COMIC',
-	Game: 'GAME',
-	Music: 'MUSIC',
-	Novel: 'NOVEL',
-	Real: 'REAL',
-	Other: 'OTHER',
+  Anime: "ANIME",
+  Comic: "COMIC",
+  Game: "GAME",
+  Music: "MUSIC",
+  Novel: "NOVEL",
+  Real: "REAL",
+  Other: "OTHER",
 } as const;
 
 export type SubjectHintTypeEnum =
-	(typeof SubjectHintTypeEnum)[keyof typeof SubjectHintTypeEnum];
+  (typeof SubjectHintTypeEnum)[keyof typeof SubjectHintTypeEnum];

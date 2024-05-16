@@ -18,40 +18,40 @@
  * @interface PluginLoadLocationFileSystem
  */
 export interface PluginLoadLocationFileSystem {
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof PluginLoadLocationFileSystem
-	 */
-	open?: boolean;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof PluginLoadLocationFileSystem
-	 */
-	readOnly?: boolean;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof PluginLoadLocationFileSystem
-	 */
-	separator?: string;
-	/**
-	 *
-	 * @type {object}
-	 * @memberof PluginLoadLocationFileSystem
-	 */
-	rootDirectories?: object;
-	/**
-	 *
-	 * @type {object}
-	 * @memberof PluginLoadLocationFileSystem
-	 */
-	fileStores?: object;
-	/**
-	 *
-	 * @type {object}
-	 * @memberof PluginLoadLocationFileSystem
-	 */
-	userPrincipalLookupService?: object;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PluginLoadLocationFileSystem
+   */
+  open?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PluginLoadLocationFileSystem
+   */
+  readOnly?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof PluginLoadLocationFileSystem
+   */
+  separator?: string;
+  /**
+   *
+   * @type {object}
+   * @memberof PluginLoadLocationFileSystem
+   */
+  rootDirectories?: object;
+  /**
+   *
+   * @type {object}
+   * @memberof PluginLoadLocationFileSystem
+   */
+  fileStores?: object;
+  /**
+   *
+   * @type {object}
+   * @memberof PluginLoadLocationFileSystem
+   */
+  userPrincipalLookupService?: object;
 }

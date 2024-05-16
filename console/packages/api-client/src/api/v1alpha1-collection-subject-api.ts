@@ -12,390 +12,390 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from '../common';
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
 import {
-	BASE_PATH,
-	COLLECTION_FORMATS,
-	RequestArgs,
-	BaseAPI,
-	RequiredError,
-} from '../base';
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  RequestArgs,
+  BaseAPI,
+  RequiredError,
+} from "../base";
 // @ts-ignore
-import { PagingWrap } from '../models';
+import { PagingWrap } from "../models";
 // @ts-ignore
-import { SubjectCollection } from '../models';
+import { SubjectCollection } from "../models";
 /**
  * V1alpha1CollectionSubjectApi - axios parameter creator
  * @export
  */
 export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	return {
-		/**
-		 * Collect subject by user.
-		 * @param {number} userId User id.
-		 * @param {number} subjectId Subject id.
-		 * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} type Collection type.
-		 * @param {boolean} [isPrivate] Is private, default is false.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		collectSubject: async (
-			userId: number,
-			subjectId: number,
-			type: 'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD',
-			isPrivate?: boolean,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'userId' is not null or undefined
-			assertParamExists('collectSubject', 'userId', userId);
-			// verify required parameter 'subjectId' is not null or undefined
-			assertParamExists('collectSubject', 'subjectId', subjectId);
-			// verify required parameter 'type' is not null or undefined
-			assertParamExists('collectSubject', 'type', type);
-			const localVarPath = `/api/v1alpha1/collection/subject/collect`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+  return {
+    /**
+     * Collect subject by user.
+     * @param {number} userId User id.
+     * @param {number} subjectId Subject id.
+     * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} type Collection type.
+     * @param {boolean} [isPrivate] Is private, default is false.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    collectSubject: async (
+      userId: number,
+      subjectId: number,
+      type: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD",
+      isPrivate?: boolean,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'userId' is not null or undefined
+      assertParamExists("collectSubject", "userId", userId);
+      // verify required parameter 'subjectId' is not null or undefined
+      assertParamExists("collectSubject", "subjectId", subjectId);
+      // verify required parameter 'type' is not null or undefined
+      assertParamExists("collectSubject", "type", type);
+      const localVarPath = `/api/v1alpha1/collection/subject/collect`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (userId !== undefined) {
-				localVarQueryParameter['userId'] = userId;
-			}
+      if (userId !== undefined) {
+        localVarQueryParameter["userId"] = userId;
+      }
 
-			if (subjectId !== undefined) {
-				localVarQueryParameter['subjectId'] = subjectId;
-			}
+      if (subjectId !== undefined) {
+        localVarQueryParameter["subjectId"] = subjectId;
+      }
 
-			if (type !== undefined) {
-				localVarQueryParameter['type'] = type;
-			}
+      if (type !== undefined) {
+        localVarQueryParameter["type"] = type;
+      }
 
-			if (isPrivate !== undefined) {
-				localVarQueryParameter['isPrivate'] = isPrivate;
-			}
+      if (isPrivate !== undefined) {
+        localVarQueryParameter["isPrivate"] = isPrivate;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Find user subject collection.
-		 * @param {number} userId User id.
-		 * @param {number} subjectId Subject id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findSubjectCollection: async (
-			userId: number,
-			subjectId: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'userId' is not null or undefined
-			assertParamExists('findSubjectCollection', 'userId', userId);
-			// verify required parameter 'subjectId' is not null or undefined
-			assertParamExists('findSubjectCollection', 'subjectId', subjectId);
-			const localVarPath =
-				`/api/v1alpha1/collection/subject/{userId}/{subjectId}`
-					.replace(`{${'userId'}}`, encodeURIComponent(String(userId)))
-					.replace(`{${'subjectId'}}`, encodeURIComponent(String(subjectId)));
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Find user subject collection.
+     * @param {number} userId User id.
+     * @param {number} subjectId Subject id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findSubjectCollection: async (
+      userId: number,
+      subjectId: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'userId' is not null or undefined
+      assertParamExists("findSubjectCollection", "userId", userId);
+      // verify required parameter 'subjectId' is not null or undefined
+      assertParamExists("findSubjectCollection", "subjectId", subjectId);
+      const localVarPath =
+        `/api/v1alpha1/collection/subject/{userId}/{subjectId}`
+          .replace(`{${"userId"}}`, encodeURIComponent(String(userId)))
+          .replace(`{${"subjectId"}}`, encodeURIComponent(String(subjectId)));
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Find user subject collections.
-		 * @param {number} userId User id.
-		 * @param {number} [page] Current page, default is 1.
-		 * @param {number} [size] Page size, default is 12.
-		 * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} [type] Collection type, default is null.
-		 * @param {boolean} [isPrivate] Collection is private, default is null.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findSubjectCollections: async (
-			userId: number,
-			page?: number,
-			size?: number,
-			type?: 'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD',
-			isPrivate?: boolean,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'userId' is not null or undefined
-			assertParamExists('findSubjectCollections', 'userId', userId);
-			const localVarPath = `/api/v1alpha1/collection/subject/{userId}`.replace(
-				`{${'userId'}}`,
-				encodeURIComponent(String(userId))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Find user subject collections.
+     * @param {number} userId User id.
+     * @param {number} [page] Current page, default is 1.
+     * @param {number} [size] Page size, default is 12.
+     * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} [type] Collection type, default is null.
+     * @param {boolean} [isPrivate] Collection is private, default is null.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findSubjectCollections: async (
+      userId: number,
+      page?: number,
+      size?: number,
+      type?: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD",
+      isPrivate?: boolean,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'userId' is not null or undefined
+      assertParamExists("findSubjectCollections", "userId", userId);
+      const localVarPath = `/api/v1alpha1/collection/subject/{userId}`.replace(
+        `{${"userId"}}`,
+        encodeURIComponent(String(userId))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (page !== undefined) {
-				localVarQueryParameter['page'] = page;
-			}
+      if (page !== undefined) {
+        localVarQueryParameter["page"] = page;
+      }
 
-			if (size !== undefined) {
-				localVarQueryParameter['size'] = size;
-			}
+      if (size !== undefined) {
+        localVarQueryParameter["size"] = size;
+      }
 
-			if (type !== undefined) {
-				localVarQueryParameter['type'] = type;
-			}
+      if (type !== undefined) {
+        localVarQueryParameter["type"] = type;
+      }
 
-			if (isPrivate !== undefined) {
-				localVarQueryParameter['is_private'] = isPrivate;
-			}
+      if (isPrivate !== undefined) {
+        localVarQueryParameter["is_private"] = isPrivate;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Remove subject collect.
-		 * @param {number} userId User id.
-		 * @param {number} subjectId Subject id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		removeSubjectCollect: async (
-			userId: number,
-			subjectId: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'userId' is not null or undefined
-			assertParamExists('removeSubjectCollect', 'userId', userId);
-			// verify required parameter 'subjectId' is not null or undefined
-			assertParamExists('removeSubjectCollect', 'subjectId', subjectId);
-			const localVarPath = `/api/v1alpha1/collection/subject/collect`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Remove subject collect.
+     * @param {number} userId User id.
+     * @param {number} subjectId Subject id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    removeSubjectCollect: async (
+      userId: number,
+      subjectId: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'userId' is not null or undefined
+      assertParamExists("removeSubjectCollect", "userId", userId);
+      // verify required parameter 'subjectId' is not null or undefined
+      assertParamExists("removeSubjectCollect", "subjectId", subjectId);
+      const localVarPath = `/api/v1alpha1/collection/subject/collect`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'DELETE',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (userId !== undefined) {
-				localVarQueryParameter['userId'] = userId;
-			}
+      if (userId !== undefined) {
+        localVarQueryParameter["userId"] = userId;
+      }
 
-			if (subjectId !== undefined) {
-				localVarQueryParameter['subjectId'] = subjectId;
-			}
+      if (subjectId !== undefined) {
+        localVarQueryParameter["subjectId"] = subjectId;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Update subject collection main episode progress.
-		 * @param {number} userId User id.
-		 * @param {number} subjectId Subject id.
-		 * @param {number} progress Main episode progress id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updateSubjectCollectionMainEpProgress: async (
-			userId: number,
-			subjectId: number,
-			progress: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'userId' is not null or undefined
-			assertParamExists(
-				'updateSubjectCollectionMainEpProgress',
-				'userId',
-				userId
-			);
-			// verify required parameter 'subjectId' is not null or undefined
-			assertParamExists(
-				'updateSubjectCollectionMainEpProgress',
-				'subjectId',
-				subjectId
-			);
-			// verify required parameter 'progress' is not null or undefined
-			assertParamExists(
-				'updateSubjectCollectionMainEpProgress',
-				'progress',
-				progress
-			);
-			const localVarPath =
-				`/api/v1alpha1/collection/subject/mainEpisodeProgress/{userId}/{subjectId}/{progress}`
-					.replace(`{${'userId'}}`, encodeURIComponent(String(userId)))
-					.replace(`{${'subjectId'}}`, encodeURIComponent(String(subjectId)))
-					.replace(`{${'progress'}}`, encodeURIComponent(String(progress)));
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Update subject collection main episode progress.
+     * @param {number} userId User id.
+     * @param {number} subjectId Subject id.
+     * @param {number} progress Main episode progress id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateSubjectCollectionMainEpProgress: async (
+      userId: number,
+      subjectId: number,
+      progress: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'userId' is not null or undefined
+      assertParamExists(
+        "updateSubjectCollectionMainEpProgress",
+        "userId",
+        userId
+      );
+      // verify required parameter 'subjectId' is not null or undefined
+      assertParamExists(
+        "updateSubjectCollectionMainEpProgress",
+        "subjectId",
+        subjectId
+      );
+      // verify required parameter 'progress' is not null or undefined
+      assertParamExists(
+        "updateSubjectCollectionMainEpProgress",
+        "progress",
+        progress
+      );
+      const localVarPath =
+        `/api/v1alpha1/collection/subject/mainEpisodeProgress/{userId}/{subjectId}/{progress}`
+          .replace(`{${"userId"}}`, encodeURIComponent(String(userId)))
+          .replace(`{${"subjectId"}}`, encodeURIComponent(String(subjectId)))
+          .replace(`{${"progress"}}`, encodeURIComponent(String(progress)));
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-	};
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
@@ -403,167 +403,167 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1CollectionSubjectApiFp = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	const localVarAxiosParamCreator =
-		V1alpha1CollectionSubjectApiAxiosParamCreator(configuration);
-	return {
-		/**
-		 * Collect subject by user.
-		 * @param {number} userId User id.
-		 * @param {number} subjectId Subject id.
-		 * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} type Collection type.
-		 * @param {boolean} [isPrivate] Is private, default is false.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async collectSubject(
-			userId: number,
-			subjectId: number,
-			type: 'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD',
-			isPrivate?: boolean,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.collectSubject(
-				userId,
-				subjectId,
-				type,
-				isPrivate,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Find user subject collection.
-		 * @param {number} userId User id.
-		 * @param {number} subjectId Subject id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async findSubjectCollection(
-			userId: number,
-			subjectId: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(
-				axios?: AxiosInstance,
-				basePath?: string
-			) => AxiosPromise<SubjectCollection>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.findSubjectCollection(
-					userId,
-					subjectId,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Find user subject collections.
-		 * @param {number} userId User id.
-		 * @param {number} [page] Current page, default is 1.
-		 * @param {number} [size] Page size, default is 12.
-		 * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} [type] Collection type, default is null.
-		 * @param {boolean} [isPrivate] Collection is private, default is null.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async findSubjectCollections(
-			userId: number,
-			page?: number,
-			size?: number,
-			type?: 'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD',
-			isPrivate?: boolean,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.findSubjectCollections(
-					userId,
-					page,
-					size,
-					type,
-					isPrivate,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Remove subject collect.
-		 * @param {number} userId User id.
-		 * @param {number} subjectId Subject id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async removeSubjectCollect(
-			userId: number,
-			subjectId: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.removeSubjectCollect(
-					userId,
-					subjectId,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Update subject collection main episode progress.
-		 * @param {number} userId User id.
-		 * @param {number} subjectId Subject id.
-		 * @param {number} progress Main episode progress id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async updateSubjectCollectionMainEpProgress(
-			userId: number,
-			subjectId: number,
-			progress: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.updateSubjectCollectionMainEpProgress(
-					userId,
-					subjectId,
-					progress,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-	};
+  const localVarAxiosParamCreator =
+    V1alpha1CollectionSubjectApiAxiosParamCreator(configuration);
+  return {
+    /**
+     * Collect subject by user.
+     * @param {number} userId User id.
+     * @param {number} subjectId Subject id.
+     * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} type Collection type.
+     * @param {boolean} [isPrivate] Is private, default is false.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async collectSubject(
+      userId: number,
+      subjectId: number,
+      type: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD",
+      isPrivate?: boolean,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.collectSubject(
+        userId,
+        subjectId,
+        type,
+        isPrivate,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Find user subject collection.
+     * @param {number} userId User id.
+     * @param {number} subjectId Subject id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async findSubjectCollection(
+      userId: number,
+      subjectId: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<SubjectCollection>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.findSubjectCollection(
+          userId,
+          subjectId,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Find user subject collections.
+     * @param {number} userId User id.
+     * @param {number} [page] Current page, default is 1.
+     * @param {number} [size] Page size, default is 12.
+     * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} [type] Collection type, default is null.
+     * @param {boolean} [isPrivate] Collection is private, default is null.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async findSubjectCollections(
+      userId: number,
+      page?: number,
+      size?: number,
+      type?: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD",
+      isPrivate?: boolean,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.findSubjectCollections(
+          userId,
+          page,
+          size,
+          type,
+          isPrivate,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Remove subject collect.
+     * @param {number} userId User id.
+     * @param {number} subjectId Subject id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async removeSubjectCollect(
+      userId: number,
+      subjectId: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.removeSubjectCollect(
+          userId,
+          subjectId,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Update subject collection main episode progress.
+     * @param {number} userId User id.
+     * @param {number} subjectId Subject id.
+     * @param {number} progress Main episode progress id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updateSubjectCollectionMainEpProgress(
+      userId: number,
+      subjectId: number,
+      progress: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.updateSubjectCollectionMainEpProgress(
+          userId,
+          subjectId,
+          progress,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+  };
 };
 
 /**
@@ -571,109 +571,109 @@ export const V1alpha1CollectionSubjectApiFp = function (
  * @export
  */
 export const V1alpha1CollectionSubjectApiFactory = function (
-	configuration?: Configuration,
-	basePath?: string,
-	axios?: AxiosInstance
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
 ) {
-	const localVarFp = V1alpha1CollectionSubjectApiFp(configuration);
-	return {
-		/**
-		 * Collect subject by user.
-		 * @param {V1alpha1CollectionSubjectApiCollectSubjectRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		collectSubject(
-			requestParameters: V1alpha1CollectionSubjectApiCollectSubjectRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.collectSubject(
-					requestParameters.userId,
-					requestParameters.subjectId,
-					requestParameters.type,
-					requestParameters.isPrivate,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Find user subject collection.
-		 * @param {V1alpha1CollectionSubjectApiFindSubjectCollectionRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findSubjectCollection(
-			requestParameters: V1alpha1CollectionSubjectApiFindSubjectCollectionRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<SubjectCollection> {
-			return localVarFp
-				.findSubjectCollection(
-					requestParameters.userId,
-					requestParameters.subjectId,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Find user subject collections.
-		 * @param {V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findSubjectCollections(
-			requestParameters: V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<PagingWrap> {
-			return localVarFp
-				.findSubjectCollections(
-					requestParameters.userId,
-					requestParameters.page,
-					requestParameters.size,
-					requestParameters.type,
-					requestParameters.isPrivate,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Remove subject collect.
-		 * @param {V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		removeSubjectCollect(
-			requestParameters: V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.removeSubjectCollect(
-					requestParameters.userId,
-					requestParameters.subjectId,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Update subject collection main episode progress.
-		 * @param {V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgressRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updateSubjectCollectionMainEpProgress(
-			requestParameters: V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgressRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.updateSubjectCollectionMainEpProgress(
-					requestParameters.userId,
-					requestParameters.subjectId,
-					requestParameters.progress,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-	};
+  const localVarFp = V1alpha1CollectionSubjectApiFp(configuration);
+  return {
+    /**
+     * Collect subject by user.
+     * @param {V1alpha1CollectionSubjectApiCollectSubjectRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    collectSubject(
+      requestParameters: V1alpha1CollectionSubjectApiCollectSubjectRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .collectSubject(
+          requestParameters.userId,
+          requestParameters.subjectId,
+          requestParameters.type,
+          requestParameters.isPrivate,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Find user subject collection.
+     * @param {V1alpha1CollectionSubjectApiFindSubjectCollectionRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findSubjectCollection(
+      requestParameters: V1alpha1CollectionSubjectApiFindSubjectCollectionRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<SubjectCollection> {
+      return localVarFp
+        .findSubjectCollection(
+          requestParameters.userId,
+          requestParameters.subjectId,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Find user subject collections.
+     * @param {V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findSubjectCollections(
+      requestParameters: V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<PagingWrap> {
+      return localVarFp
+        .findSubjectCollections(
+          requestParameters.userId,
+          requestParameters.page,
+          requestParameters.size,
+          requestParameters.type,
+          requestParameters.isPrivate,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Remove subject collect.
+     * @param {V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    removeSubjectCollect(
+      requestParameters: V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .removeSubjectCollect(
+          requestParameters.userId,
+          requestParameters.subjectId,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Update subject collection main episode progress.
+     * @param {V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgressRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateSubjectCollectionMainEpProgress(
+      requestParameters: V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgressRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .updateSubjectCollectionMainEpProgress(
+          requestParameters.userId,
+          requestParameters.subjectId,
+          requestParameters.progress,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -682,33 +682,33 @@ export const V1alpha1CollectionSubjectApiFactory = function (
  * @interface V1alpha1CollectionSubjectApiCollectSubjectRequest
  */
 export interface V1alpha1CollectionSubjectApiCollectSubjectRequest {
-	/**
-	 * User id.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiCollectSubject
-	 */
-	readonly userId: number;
+  /**
+   * User id.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiCollectSubject
+   */
+  readonly userId: number;
 
-	/**
-	 * Subject id.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiCollectSubject
-	 */
-	readonly subjectId: number;
+  /**
+   * Subject id.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiCollectSubject
+   */
+  readonly subjectId: number;
 
-	/**
-	 * Collection type.
-	 * @type {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'}
-	 * @memberof V1alpha1CollectionSubjectApiCollectSubject
-	 */
-	readonly type: 'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD';
+  /**
+   * Collection type.
+   * @type {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'}
+   * @memberof V1alpha1CollectionSubjectApiCollectSubject
+   */
+  readonly type: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD";
 
-	/**
-	 * Is private, default is false.
-	 * @type {boolean}
-	 * @memberof V1alpha1CollectionSubjectApiCollectSubject
-	 */
-	readonly isPrivate?: boolean;
+  /**
+   * Is private, default is false.
+   * @type {boolean}
+   * @memberof V1alpha1CollectionSubjectApiCollectSubject
+   */
+  readonly isPrivate?: boolean;
 }
 
 /**
@@ -717,19 +717,19 @@ export interface V1alpha1CollectionSubjectApiCollectSubjectRequest {
  * @interface V1alpha1CollectionSubjectApiFindSubjectCollectionRequest
  */
 export interface V1alpha1CollectionSubjectApiFindSubjectCollectionRequest {
-	/**
-	 * User id.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiFindSubjectCollection
-	 */
-	readonly userId: number;
+  /**
+   * User id.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiFindSubjectCollection
+   */
+  readonly userId: number;
 
-	/**
-	 * Subject id.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiFindSubjectCollection
-	 */
-	readonly subjectId: number;
+  /**
+   * Subject id.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiFindSubjectCollection
+   */
+  readonly subjectId: number;
 }
 
 /**
@@ -738,40 +738,40 @@ export interface V1alpha1CollectionSubjectApiFindSubjectCollectionRequest {
  * @interface V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest
  */
 export interface V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest {
-	/**
-	 * User id.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiFindSubjectCollections
-	 */
-	readonly userId: number;
+  /**
+   * User id.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiFindSubjectCollections
+   */
+  readonly userId: number;
 
-	/**
-	 * Current page, default is 1.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiFindSubjectCollections
-	 */
-	readonly page?: number;
+  /**
+   * Current page, default is 1.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiFindSubjectCollections
+   */
+  readonly page?: number;
 
-	/**
-	 * Page size, default is 12.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiFindSubjectCollections
-	 */
-	readonly size?: number;
+  /**
+   * Page size, default is 12.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiFindSubjectCollections
+   */
+  readonly size?: number;
 
-	/**
-	 * Collection type, default is null.
-	 * @type {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'}
-	 * @memberof V1alpha1CollectionSubjectApiFindSubjectCollections
-	 */
-	readonly type?: 'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD';
+  /**
+   * Collection type, default is null.
+   * @type {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'}
+   * @memberof V1alpha1CollectionSubjectApiFindSubjectCollections
+   */
+  readonly type?: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD";
 
-	/**
-	 * Collection is private, default is null.
-	 * @type {boolean}
-	 * @memberof V1alpha1CollectionSubjectApiFindSubjectCollections
-	 */
-	readonly isPrivate?: boolean;
+  /**
+   * Collection is private, default is null.
+   * @type {boolean}
+   * @memberof V1alpha1CollectionSubjectApiFindSubjectCollections
+   */
+  readonly isPrivate?: boolean;
 }
 
 /**
@@ -780,19 +780,19 @@ export interface V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest {
  * @interface V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest
  */
 export interface V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest {
-	/**
-	 * User id.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiRemoveSubjectCollect
-	 */
-	readonly userId: number;
+  /**
+   * User id.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiRemoveSubjectCollect
+   */
+  readonly userId: number;
 
-	/**
-	 * Subject id.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiRemoveSubjectCollect
-	 */
-	readonly subjectId: number;
+  /**
+   * Subject id.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiRemoveSubjectCollect
+   */
+  readonly subjectId: number;
 }
 
 /**
@@ -801,26 +801,26 @@ export interface V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest {
  * @interface V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgressRequest
  */
 export interface V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgressRequest {
-	/**
-	 * User id.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgress
-	 */
-	readonly userId: number;
+  /**
+   * User id.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgress
+   */
+  readonly userId: number;
 
-	/**
-	 * Subject id.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgress
-	 */
-	readonly subjectId: number;
+  /**
+   * Subject id.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgress
+   */
+  readonly subjectId: number;
 
-	/**
-	 * Main episode progress id.
-	 * @type {number}
-	 * @memberof V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgress
-	 */
-	readonly progress: number;
+  /**
+   * Main episode progress id.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgress
+   */
+  readonly progress: number;
 }
 
 /**
@@ -830,109 +830,109 @@ export interface V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgre
  * @extends {BaseAPI}
  */
 export class V1alpha1CollectionSubjectApi extends BaseAPI {
-	/**
-	 * Collect subject by user.
-	 * @param {V1alpha1CollectionSubjectApiCollectSubjectRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1CollectionSubjectApi
-	 */
-	public collectSubject(
-		requestParameters: V1alpha1CollectionSubjectApiCollectSubjectRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1CollectionSubjectApiFp(this.configuration)
-			.collectSubject(
-				requestParameters.userId,
-				requestParameters.subjectId,
-				requestParameters.type,
-				requestParameters.isPrivate,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Collect subject by user.
+   * @param {V1alpha1CollectionSubjectApiCollectSubjectRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1CollectionSubjectApi
+   */
+  public collectSubject(
+    requestParameters: V1alpha1CollectionSubjectApiCollectSubjectRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1CollectionSubjectApiFp(this.configuration)
+      .collectSubject(
+        requestParameters.userId,
+        requestParameters.subjectId,
+        requestParameters.type,
+        requestParameters.isPrivate,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Find user subject collection.
-	 * @param {V1alpha1CollectionSubjectApiFindSubjectCollectionRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1CollectionSubjectApi
-	 */
-	public findSubjectCollection(
-		requestParameters: V1alpha1CollectionSubjectApiFindSubjectCollectionRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1CollectionSubjectApiFp(this.configuration)
-			.findSubjectCollection(
-				requestParameters.userId,
-				requestParameters.subjectId,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Find user subject collection.
+   * @param {V1alpha1CollectionSubjectApiFindSubjectCollectionRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1CollectionSubjectApi
+   */
+  public findSubjectCollection(
+    requestParameters: V1alpha1CollectionSubjectApiFindSubjectCollectionRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1CollectionSubjectApiFp(this.configuration)
+      .findSubjectCollection(
+        requestParameters.userId,
+        requestParameters.subjectId,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Find user subject collections.
-	 * @param {V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1CollectionSubjectApi
-	 */
-	public findSubjectCollections(
-		requestParameters: V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1CollectionSubjectApiFp(this.configuration)
-			.findSubjectCollections(
-				requestParameters.userId,
-				requestParameters.page,
-				requestParameters.size,
-				requestParameters.type,
-				requestParameters.isPrivate,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Find user subject collections.
+   * @param {V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1CollectionSubjectApi
+   */
+  public findSubjectCollections(
+    requestParameters: V1alpha1CollectionSubjectApiFindSubjectCollectionsRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1CollectionSubjectApiFp(this.configuration)
+      .findSubjectCollections(
+        requestParameters.userId,
+        requestParameters.page,
+        requestParameters.size,
+        requestParameters.type,
+        requestParameters.isPrivate,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Remove subject collect.
-	 * @param {V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1CollectionSubjectApi
-	 */
-	public removeSubjectCollect(
-		requestParameters: V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1CollectionSubjectApiFp(this.configuration)
-			.removeSubjectCollect(
-				requestParameters.userId,
-				requestParameters.subjectId,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Remove subject collect.
+   * @param {V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1CollectionSubjectApi
+   */
+  public removeSubjectCollect(
+    requestParameters: V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1CollectionSubjectApiFp(this.configuration)
+      .removeSubjectCollect(
+        requestParameters.userId,
+        requestParameters.subjectId,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Update subject collection main episode progress.
-	 * @param {V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgressRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1CollectionSubjectApi
-	 */
-	public updateSubjectCollectionMainEpProgress(
-		requestParameters: V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgressRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1CollectionSubjectApiFp(this.configuration)
-			.updateSubjectCollectionMainEpProgress(
-				requestParameters.userId,
-				requestParameters.subjectId,
-				requestParameters.progress,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Update subject collection main episode progress.
+   * @param {V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgressRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1CollectionSubjectApi
+   */
+  public updateSubjectCollectionMainEpProgress(
+    requestParameters: V1alpha1CollectionSubjectApiUpdateSubjectCollectionMainEpProgressRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1CollectionSubjectApiFp(this.configuration)
+      .updateSubjectCollectionMainEpProgress(
+        requestParameters.userId,
+        requestParameters.subjectId,
+        requestParameters.progress,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 }

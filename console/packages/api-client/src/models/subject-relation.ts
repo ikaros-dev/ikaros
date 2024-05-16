@@ -18,39 +18,39 @@
  * @interface SubjectRelation
  */
 export interface SubjectRelation {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectRelation
-	 */
-	subject: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectRelation
-	 */
-	relation_type: SubjectRelationRelationTypeEnum;
-	/**
-	 *
-	 * @type {Set<number>}
-	 * @memberof SubjectRelation
-	 */
-	relation_subjects: Set<number>;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectRelation
+   */
+  subject: number;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectRelation
+   */
+  relation_type: SubjectRelationRelationTypeEnum;
+  /**
+   *
+   * @type {Set<number>}
+   * @memberof SubjectRelation
+   */
+  relation_subjects: Set<number>;
 }
 
 export const SubjectRelationRelationTypeEnum = {
-	Other: 'OTHER',
-	Anime: 'ANIME',
-	Comic: 'COMIC',
-	Game: 'GAME',
-	Music: 'MUSIC',
-	Novel: 'NOVEL',
-	Real: 'REAL',
-	Before: 'BEFORE',
-	After: 'AFTER',
-	SameWorldview: 'SAME_WORLDVIEW',
-	OriginalSoundTrack: 'ORIGINAL_SOUND_TRACK',
+  Other: "OTHER",
+  Anime: "ANIME",
+  Comic: "COMIC",
+  Game: "GAME",
+  Music: "MUSIC",
+  Novel: "NOVEL",
+  Real: "REAL",
+  Before: "BEFORE",
+  After: "AFTER",
+  SameWorldview: "SAME_WORLDVIEW",
+  OriginalSoundTrack: "ORIGINAL_SOUND_TRACK",
 } as const;
 
 export type SubjectRelationRelationTypeEnum =
-	(typeof SubjectRelationRelationTypeEnum)[keyof typeof SubjectRelationRelationTypeEnum];
+  (typeof SubjectRelationRelationTypeEnum)[keyof typeof SubjectRelationRelationTypeEnum];

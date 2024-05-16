@@ -14,10 +14,10 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import { Author } from './author';
+import { Author } from "./author";
 // May contain unused imports in some cases
 // @ts-ignore
-import { PluginLoadLocation } from './plugin-load-location';
+import { PluginLoadLocation } from "./plugin-load-location";
 
 /**
  *
@@ -25,112 +25,112 @@ import { PluginLoadLocation } from './plugin-load-location';
  * @interface Plugin
  */
 export interface Plugin {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	clazz?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	version: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	requires?: string;
-	/**
-	 *
-	 * @type {Author}
-	 * @memberof Plugin
-	 */
-	author?: Author;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	logo?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	homepage?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	displayName?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	description?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	license?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	state?: PluginStateEnum;
-	/**
-	 *
-	 * @type {{ [key: string]: string; }}
-	 * @memberof Plugin
-	 */
-	dependencies?: { [key: string]: string };
-	/**
-	 *
-	 * @type {PluginLoadLocation}
-	 * @memberof Plugin
-	 */
-	loadLocation?: PluginLoadLocation;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	entry?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	stylesheet?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Plugin
-	 */
-	configMapSchemas?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  clazz?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  version: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  requires?: string;
+  /**
+   *
+   * @type {Author}
+   * @memberof Plugin
+   */
+  author?: Author;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  logo?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  homepage?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  displayName?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  description?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  license?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  state?: PluginStateEnum;
+  /**
+   *
+   * @type {{ [key: string]: string; }}
+   * @memberof Plugin
+   */
+  dependencies?: { [key: string]: string };
+  /**
+   *
+   * @type {PluginLoadLocation}
+   * @memberof Plugin
+   */
+  loadLocation?: PluginLoadLocation;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  entry?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  stylesheet?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Plugin
+   */
+  configMapSchemas?: string;
 }
 
 export const PluginStateEnum = {
-	Created: 'CREATED',
-	Disabled: 'DISABLED',
-	Resolved: 'RESOLVED',
-	Started: 'STARTED',
-	Stopped: 'STOPPED',
-	Failed: 'FAILED',
+  Created: "CREATED",
+  Disabled: "DISABLED",
+  Resolved: "RESOLVED",
+  Started: "STARTED",
+  Stopped: "STOPPED",
+  Failed: "FAILED",
 } as const;
 
 export type PluginStateEnum =
-	(typeof PluginStateEnum)[keyof typeof PluginStateEnum];
+  (typeof PluginStateEnum)[keyof typeof PluginStateEnum];

@@ -18,22 +18,22 @@
  * @interface Subtitle
  */
 export interface Subtitle {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Subtitle
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Subtitle
-	 */
-	url?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Subtitle
-	 */
-	file_id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Subtitle
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Subtitle
+   */
+  url?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Subtitle
+   */
+  file_id?: number;
 }

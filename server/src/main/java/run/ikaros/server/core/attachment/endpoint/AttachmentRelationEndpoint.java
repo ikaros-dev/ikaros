@@ -5,6 +5,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -17,6 +18,7 @@ import run.ikaros.api.core.attachment.AttachmentRelation;
 import run.ikaros.api.core.attachment.VideoSubtitle;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.core.attachment.service.AttachmentRelationService;
+import run.ikaros.server.core.attachment.vo.PostAttachmentRelationsParam;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -32,6 +34,70 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
     public RouterFunction<ServerResponse> endpoint() {
         var tag = OpenApiConst.CORE_VERSION + "/attachment/relation";
         return SpringdocRouteBuilder.route()
+            .PUT("/attachment/relation/{masterAttachmentId}", this::putAttachmentRelation,
+                builder -> builder
+                    .operationId("PutAttachmentRelation")
+                    .tag(tag)
+                    .parameter(parameterBuilder()
+                        .name("masterAttachmentId")
+                        .description("Master attachment id")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .parameter(parameterBuilder()
+                        .name("relAttachmentId")
+                        .description("Related attachment id")
+                        .in(ParameterIn.QUERY)
+                        .required(true)
+                        .implementation(Long.class))
+                    .parameter(parameterBuilder()
+                        .name("type")
+                        .description("Type of attachment")
+                        .in(ParameterIn.QUERY)
+                        .required(true)
+                        .implementation(AttachmentRelationType.class))
+                    .response(responseBuilder()
+                        .description("Attachment Relation.")
+                        .implementation(AttachmentRelation.class)))
+
+            .POST("/attachment/relations", this::postAttachmentRelations,
+                builder -> builder
+                    .operationId("PostAttachmentRelations")
+                    .tag(tag)
+                    .requestBody(Builder.requestBodyBuilder()
+                        .description("Post attachment relations request body.")
+                        .implementation(PostAttachmentRelationsParam.class)
+                        .required(true))
+                    .response(responseBuilder()
+                        .description("Attachment Relation List.")
+                        .implementationArray(AttachmentRelation.class)))
+
+            .DELETE("/attachment/relation/{masterAttachmentId}", this::deleteAttachmentRelation,
+                builder -> builder
+                    .operationId("DeleteAttachmentRelation")
+                    .tag(tag)
+                    .parameter(parameterBuilder()
+                        .name("masterAttachmentId")
+                        .description("Master attachment id")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .parameter(parameterBuilder()
+                        .name("relAttachmentId")
+                        .description("Related attachment id")
+                        .in(ParameterIn.QUERY)
+                        .required(true)
+                        .implementation(Long.class))
+                    .parameter(parameterBuilder()
+                        .name("type")
+                        .description("Type of attachment")
+                        .in(ParameterIn.QUERY)
+                        .required(true)
+                        .implementation(AttachmentRelationType.class))
+                    .response(responseBuilder()
+                        .description("Attachment Relation.")
+                        .implementation(AttachmentRelation.class)))
+
             .GET("/attachment/relations", this::findAttachmentRelations,
                 builder -> builder
                     .operationId("FindAttachmentRelations")
@@ -62,6 +128,50 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
                         .implementationArray(VideoSubtitle.class)))
 
             .build();
+    }
+
+    Mono<ServerResponse> putAttachmentRelation(ServerRequest request) {
+        String masterAttachmentIdStr = request.pathVariable("masterAttachmentId");
+        String relAttachmentIdStr = request.queryParam("relAttachmentId").orElse("");
+        String typeStr =
+            request.queryParam("type")
+                .orElse(AttachmentRelationType.VIDEO_SUBTITLE.name());
+        Long masterAttachmentId = Long.valueOf(masterAttachmentIdStr);
+        Long relAttachmentId = Long.valueOf(relAttachmentIdStr);
+        AttachmentRelationType type = AttachmentRelationType.valueOf(typeStr);
+        AttachmentRelation attachmentRelation = AttachmentRelation.builder()
+            .attachmentId(masterAttachmentId)
+            .type(type)
+            .relationAttachmentId(relAttachmentId)
+            .build();
+        return attachmentRelationService.putAttachmentRelation(attachmentRelation)
+            .flatMap(attRel -> ServerResponse.ok().bodyValue(attRel));
+    }
+
+    Mono<ServerResponse> deleteAttachmentRelation(ServerRequest request) {
+        String masterAttachmentIdStr = request.pathVariable("masterAttachmentId");
+        String relAttachmentIdStr = request.queryParam("relAttachmentId").orElse("");
+        String typeStr =
+            request.queryParam("type")
+                .orElse(AttachmentRelationType.VIDEO_SUBTITLE.name());
+        Long masterAttachmentId = Long.valueOf(masterAttachmentIdStr);
+        Long relAttachmentId = Long.valueOf(relAttachmentIdStr);
+        AttachmentRelationType type = AttachmentRelationType.valueOf(typeStr);
+        AttachmentRelation attachmentRelation = AttachmentRelation.builder()
+            .attachmentId(masterAttachmentId)
+            .type(type)
+            .relationAttachmentId(relAttachmentId)
+            .build();
+        return attachmentRelationService.deleteAttachmentRelation(attachmentRelation)
+            .flatMap(attRel -> ServerResponse.ok().bodyValue(attRel));
+    }
+
+    Mono<ServerResponse> postAttachmentRelations(ServerRequest request) {
+        return request.bodyToMono(PostAttachmentRelationsParam.class)
+            .flatMap(postAttachmentRelationsParam ->
+                attachmentRelationService.putAttachmentRelations(postAttachmentRelationsParam)
+                    .collectList())
+            .flatMap(attachmentRels -> ServerResponse.ok().bodyValue(attachmentRels));
     }
 
     Mono<ServerResponse> findAttachmentVideoSubtitles(ServerRequest request) {

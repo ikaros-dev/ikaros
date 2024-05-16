@@ -18,16 +18,16 @@
  * @interface FileBatchRequest
  */
 export interface FileBatchRequest {
-	/**
-	 * 文件ID数组
-	 * @type {Array<number>}
-	 * @memberof FileBatchRequest
-	 */
-	fileIds: Array<number>;
-	/**
-	 * 远端
-	 * @type {string}
-	 * @memberof FileBatchRequest
-	 */
-	remote: string;
+  /**
+   * 文件ID数组
+   * @type {Array<number>}
+   * @memberof FileBatchRequest
+   */
+  fileIds: Array<number>;
+  /**
+   * 远端
+   * @type {string}
+   * @memberof FileBatchRequest
+   */
+  remote: string;
 }

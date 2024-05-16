@@ -18,58 +18,58 @@
  * @interface PagingWrap
  */
 export interface PagingWrap {
-	/**
-	 * Page number, starts from 1. If not set or equal to 0, it means no pagination.
-	 * @type {number}
-	 * @memberof PagingWrap
-	 */
-	page: number;
-	/**
-	 * Size of each page. If not set or equal to 0, it means no pagination.
-	 * @type {number}
-	 * @memberof PagingWrap
-	 */
-	size: number;
-	/**
-	 * Total elements.
-	 * @type {number}
-	 * @memberof PagingWrap
-	 */
-	total: number;
-	/**
-	 * A chunk of items.
-	 * @type {Array<object>}
-	 * @memberof PagingWrap
-	 */
-	items: Array<object>;
-	/**
-	 * Indicates whether current page is the first page.
-	 * @type {boolean}
-	 * @memberof PagingWrap
-	 */
-	firstPage: boolean;
-	/**
-	 * Indicates whether current page is the last page.
-	 * @type {boolean}
-	 * @memberof PagingWrap
-	 */
-	lastPage: boolean;
-	/**
-	 * Indicates whether current page has previous page.
-	 * @type {boolean}
-	 * @memberof PagingWrap
-	 */
-	hasNext: boolean;
-	/**
-	 * Indicates whether current page has previous page.
-	 * @type {boolean}
-	 * @memberof PagingWrap
-	 */
-	hasPrevious: boolean;
-	/**
-	 * Indicates total pages.
-	 * @type {number}
-	 * @memberof PagingWrap
-	 */
-	totalPages: number;
+  /**
+   * Page number, starts from 1. If not set or equal to 0, it means no pagination.
+   * @type {number}
+   * @memberof PagingWrap
+   */
+  page: number;
+  /**
+   * Size of each page. If not set or equal to 0, it means no pagination.
+   * @type {number}
+   * @memberof PagingWrap
+   */
+  size: number;
+  /**
+   * Total elements.
+   * @type {number}
+   * @memberof PagingWrap
+   */
+  total: number;
+  /**
+   * A chunk of items.
+   * @type {Array<object>}
+   * @memberof PagingWrap
+   */
+  items: Array<object>;
+  /**
+   * Indicates whether current page is the first page.
+   * @type {boolean}
+   * @memberof PagingWrap
+   */
+  firstPage: boolean;
+  /**
+   * Indicates whether current page is the last page.
+   * @type {boolean}
+   * @memberof PagingWrap
+   */
+  lastPage: boolean;
+  /**
+   * Indicates whether current page has previous page.
+   * @type {boolean}
+   * @memberof PagingWrap
+   */
+  hasNext: boolean;
+  /**
+   * Indicates whether current page has previous page.
+   * @type {boolean}
+   * @memberof PagingWrap
+   */
+  hasPrevious: boolean;
+  /**
+   * Indicates total pages.
+   * @type {number}
+   * @memberof PagingWrap
+   */
+  totalPages: number;
 }

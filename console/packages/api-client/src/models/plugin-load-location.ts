@@ -14,7 +14,7 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import { PluginLoadLocationFileSystem } from './plugin-load-location-file-system';
+import { PluginLoadLocationFileSystem } from "./plugin-load-location-file-system";
 
 /**
  *
@@ -22,22 +22,22 @@ import { PluginLoadLocationFileSystem } from './plugin-load-location-file-system
  * @interface PluginLoadLocation
  */
 export interface PluginLoadLocation {
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof PluginLoadLocation
-	 */
-	absolute?: boolean;
-	/**
-	 *
-	 * @type {PluginLoadLocationFileSystem}
-	 * @memberof PluginLoadLocation
-	 */
-	fileSystem?: PluginLoadLocationFileSystem;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof PluginLoadLocation
-	 */
-	nameCount?: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PluginLoadLocation
+   */
+  absolute?: boolean;
+  /**
+   *
+   * @type {PluginLoadLocationFileSystem}
+   * @memberof PluginLoadLocation
+   */
+  fileSystem?: PluginLoadLocationFileSystem;
+  /**
+   *
+   * @type {number}
+   * @memberof PluginLoadLocation
+   */
+  nameCount?: number;
 }

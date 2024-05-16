@@ -18,51 +18,51 @@
  * @interface FindFileCondition
  */
 export interface FindFileCondition {
-	/**
-	 * 第几页，从1开始, 默认为1.
-	 * @type {number}
-	 * @memberof FindFileCondition
-	 */
-	page: number;
-	/**
-	 * 每页条数，默认为10.
-	 * @type {number}
-	 * @memberof FindFileCondition
-	 */
-	size: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FindFileCondition
-	 * @deprecated
-	 */
-	fileName?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FindFileCondition
-	 * @deprecated
-	 */
-	keywords?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FindFileCondition
-	 * @deprecated
-	 */
-	place?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FindFileCondition
-	 * @deprecated
-	 */
-	folderName?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FindFileCondition
-	 * @deprecated
-	 */
-	md5?: string;
+  /**
+   * 第几页，从1开始, 默认为1.
+   * @type {number}
+   * @memberof FindFileCondition
+   */
+  page: number;
+  /**
+   * 每页条数，默认为10.
+   * @type {number}
+   * @memberof FindFileCondition
+   */
+  size: number;
+  /**
+   *
+   * @type {string}
+   * @memberof FindFileCondition
+   * @deprecated
+   */
+  fileName?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FindFileCondition
+   * @deprecated
+   */
+  keywords?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FindFileCondition
+   * @deprecated
+   */
+  place?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FindFileCondition
+   * @deprecated
+   */
+  folderName?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FindFileCondition
+   * @deprecated
+   */
+  md5?: string;
 }

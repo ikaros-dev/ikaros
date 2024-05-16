@@ -8,6 +8,9 @@ import run.ikaros.server.store.entity.AttachmentRelationEntity;
 
 public interface AttachmentRelationRepository
     extends R2dbcRepository<AttachmentRelationEntity, Long> {
+    Mono<AttachmentRelationEntity> findByTypeAndAttachmentIdAndRelationAttachmentId(
+        AttachmentRelationType type, Long attachmentId, Long relationId);
+
     Flux<AttachmentRelationEntity> findAllByAttachmentId(Long attachmentId);
 
     Flux<AttachmentRelationEntity> findAllByTypeAndAttachmentId(AttachmentRelationType type,
@@ -16,5 +19,9 @@ public interface AttachmentRelationRepository
     Mono<Boolean> existsByTypeAndAttachmentIdAndRelationAttachmentId(AttachmentRelationType type,
                                                                      Long attachmentId,
                                                                      Long relationAttachmentId);
+
+    Mono<Void> deleteByTypeAndAttachmentIdAndRelationAttachmentId(AttachmentRelationType type,
+                                                                  Long attachmentId,
+                                                                  Long relationAttachmentId);
 
 }

@@ -18,35 +18,35 @@
  * @interface AttachmentRelation
  */
 export interface AttachmentRelation {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof AttachmentRelation
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof AttachmentRelation
-	 */
-	type?: AttachmentRelationTypeEnum;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof AttachmentRelation
-	 */
-	attachment_id?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof AttachmentRelation
-	 */
-	relation_attachment_id?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AttachmentRelation
+   */
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof AttachmentRelation
+   */
+  type?: AttachmentRelationTypeEnum;
+  /**
+   *
+   * @type {number}
+   * @memberof AttachmentRelation
+   */
+  attachment_id?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AttachmentRelation
+   */
+  relation_attachment_id?: number;
 }
 
 export const AttachmentRelationTypeEnum = {
-	VideoSubtitle: 'VIDEO_SUBTITLE',
+  VideoSubtitle: "VIDEO_SUBTITLE",
 } as const;
 
 export type AttachmentRelationTypeEnum =
-	(typeof AttachmentRelationTypeEnum)[keyof typeof AttachmentRelationTypeEnum];
+  (typeof AttachmentRelationTypeEnum)[keyof typeof AttachmentRelationTypeEnum];

@@ -41,6 +41,7 @@ models/paging-wrap.ts
 models/plugin-load-location-file-system.ts
 models/plugin-load-location.ts
 models/plugin.ts
+models/post-attachment-relations-param.ts
 models/subject-collection.ts
 models/subject-hint.ts
 models/subject-hints.ts

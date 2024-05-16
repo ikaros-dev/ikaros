@@ -12,1313 +12,1268 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from '../common';
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
 import {
-	BASE_PATH,
-	COLLECTION_FORMATS,
-	RequestArgs,
-	BaseAPI,
-	RequiredError,
-} from '../base';
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  RequestArgs,
+  BaseAPI,
+  RequiredError,
+} from "../base";
 // @ts-ignore
-import { Link } from '../models';
+import { Link } from "../models";
 /**
  * ActuatorApi - axios parameter creator
  * @export
  */
 export const ActuatorApiAxiosParamCreator = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	return {
-		/**
-		 *
-		 * @summary Actuator web endpoint \'beans\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		beans: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/beans`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		caches: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/caches`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		caches2: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/caches`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'DELETE',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches-cache\'
-		 * @param {string} cache
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		cachesCache: async (
-			cache: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'cache' is not null or undefined
-			assertParamExists('cachesCache', 'cache', cache);
-			const localVarPath = `/actuator/caches/{cache}`.replace(
-				`{${'cache'}}`,
-				encodeURIComponent(String(cache))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches-cache\'
-		 * @param {string} cache
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		cachesCache2: async (
-			cache: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'cache' is not null or undefined
-			assertParamExists('cachesCache2', 'cache', cache);
-			const localVarPath = `/actuator/caches/{cache}`.replace(
-				`{${'cache'}}`,
-				encodeURIComponent(String(cache))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'DELETE',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'conditions\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		conditions: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/conditions`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'configprops\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		configprops: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/configprops`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'configprops-prefix\'
-		 * @param {string} prefix
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		configpropsPrefix: async (
-			prefix: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'prefix' is not null or undefined
-			assertParamExists('configpropsPrefix', 'prefix', prefix);
-			const localVarPath = `/actuator/configprops/{prefix}`.replace(
-				`{${'prefix'}}`,
-				encodeURIComponent(String(prefix))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'env\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		env: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/env`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'env-toMatch\'
-		 * @param {string} toMatch
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		envToMatch: async (
-			toMatch: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'toMatch' is not null or undefined
-			assertParamExists('envToMatch', 'toMatch', toMatch);
-			const localVarPath = `/actuator/env/{toMatch}`.replace(
-				`{${'toMatch'}}`,
-				encodeURIComponent(String(toMatch))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'health\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		health: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/health`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'health-path\'
-		 * @param {string} path
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		healthPath: async (
-			path: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'path' is not null or undefined
-			assertParamExists('healthPath', 'path', path);
-			const localVarPath = `/actuator/health/{*path}`.replace(
-				`{${'*path'}}`,
-				encodeURIComponent(String(path))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'heapdump\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		heapdump: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/heapdump`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'info\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		info: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/info`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'integrationgraph\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		integrationgraph: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/integrationgraph`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'integrationgraph\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		integrationgraph2: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/integrationgraph`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator root web endpoint
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		links: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-			const localVarPath = `/actuator`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'logfile\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		logfile: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/logfile`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'loggers\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		loggers: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/loggers`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'loggers-name\'
-		 * @param {string} name
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		loggersName: async (
-			name: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('loggersName', 'name', name);
-			const localVarPath = `/actuator/loggers/{name}`.replace(
-				`{${'name'}}`,
-				encodeURIComponent(String(name))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'loggers-name\'
-		 * @param {string} name
-		 * @param {string} [body]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		loggersName2: async (
-			name: string,
-			body?: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('loggersName2', 'name', name);
-			const localVarPath = `/actuator/loggers/{name}`.replace(
-				`{${'name'}}`,
-				encodeURIComponent(String(name))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			localVarHeaderParameter['Content-Type'] = 'application/json';
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				body,
-				localVarRequestOptions,
-				configuration
-			);
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'mappings\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		mappings: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/mappings`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'metrics\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		metrics: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/metrics`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'metrics-requiredMetricName\'
-		 * @param {string} requiredMetricName
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		metricsRequiredMetricName: async (
-			requiredMetricName: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'requiredMetricName' is not null or undefined
-			assertParamExists(
-				'metricsRequiredMetricName',
-				'requiredMetricName',
-				requiredMetricName
-			);
-			const localVarPath = `/actuator/metrics/{requiredMetricName}`.replace(
-				`{${'requiredMetricName'}}`,
-				encodeURIComponent(String(requiredMetricName))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'scheduledtasks\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		scheduledtasks: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/scheduledtasks`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'threaddump\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		threaddump: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/actuator/threaddump`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-	};
+  return {
+    /**
+     *
+     * @summary Actuator web endpoint \'beans\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    beans: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/beans`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    caches: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/caches`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    caches2: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/caches`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches-cache\'
+     * @param {string} cache
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    cachesCache: async (
+      cache: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'cache' is not null or undefined
+      assertParamExists("cachesCache", "cache", cache);
+      const localVarPath = `/actuator/caches/{cache}`.replace(
+        `{${"cache"}}`,
+        encodeURIComponent(String(cache))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches-cache\'
+     * @param {string} cache
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    cachesCache2: async (
+      cache: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'cache' is not null or undefined
+      assertParamExists("cachesCache2", "cache", cache);
+      const localVarPath = `/actuator/caches/{cache}`.replace(
+        `{${"cache"}}`,
+        encodeURIComponent(String(cache))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'conditions\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    conditions: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/conditions`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'configprops\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    configprops: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/configprops`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'configprops-prefix\'
+     * @param {string} prefix
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    configpropsPrefix: async (
+      prefix: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'prefix' is not null or undefined
+      assertParamExists("configpropsPrefix", "prefix", prefix);
+      const localVarPath = `/actuator/configprops/{prefix}`.replace(
+        `{${"prefix"}}`,
+        encodeURIComponent(String(prefix))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'env\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    env: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/env`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'env-toMatch\'
+     * @param {string} toMatch
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    envToMatch: async (
+      toMatch: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'toMatch' is not null or undefined
+      assertParamExists("envToMatch", "toMatch", toMatch);
+      const localVarPath = `/actuator/env/{toMatch}`.replace(
+        `{${"toMatch"}}`,
+        encodeURIComponent(String(toMatch))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'health\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    health: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/health`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'health-path\'
+     * @param {string} path
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    healthPath: async (
+      path: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'path' is not null or undefined
+      assertParamExists("healthPath", "path", path);
+      const localVarPath = `/actuator/health/{*path}`.replace(
+        `{${"*path"}}`,
+        encodeURIComponent(String(path))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'heapdump\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    heapdump: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/heapdump`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'info\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    info: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/info`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'integrationgraph\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    integrationgraph: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/integrationgraph`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'integrationgraph\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    integrationgraph2: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/integrationgraph`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator root web endpoint
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    links: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/actuator`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'loggers\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    loggers: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/loggers`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'loggers-name\'
+     * @param {string} name
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    loggersName: async (
+      name: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("loggersName", "name", name);
+      const localVarPath = `/actuator/loggers/{name}`.replace(
+        `{${"name"}}`,
+        encodeURIComponent(String(name))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'loggers-name\'
+     * @param {string} name
+     * @param {string} [body]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    loggersName2: async (
+      name: string,
+      body?: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("loggersName2", "name", name);
+      const localVarPath = `/actuator/loggers/{name}`.replace(
+        `{${"name"}}`,
+        encodeURIComponent(String(name))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        body,
+        localVarRequestOptions,
+        configuration
+      );
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'mappings\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    mappings: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/mappings`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'metrics\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    metrics: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/metrics`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'metrics-requiredMetricName\'
+     * @param {string} requiredMetricName
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    metricsRequiredMetricName: async (
+      requiredMetricName: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'requiredMetricName' is not null or undefined
+      assertParamExists(
+        "metricsRequiredMetricName",
+        "requiredMetricName",
+        requiredMetricName
+      );
+      const localVarPath = `/actuator/metrics/{requiredMetricName}`.replace(
+        `{${"requiredMetricName"}}`,
+        encodeURIComponent(String(requiredMetricName))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'scheduledtasks\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    scheduledtasks: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/scheduledtasks`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'threaddump\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    threaddump: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/threaddump`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
@@ -1326,570 +1281,549 @@ export const ActuatorApiAxiosParamCreator = function (
  * @export
  */
 export const ActuatorApiFp = function (configuration?: Configuration) {
-	const localVarAxiosParamCreator = ActuatorApiAxiosParamCreator(configuration);
-	return {
-		/**
-		 *
-		 * @summary Actuator web endpoint \'beans\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async beans(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.beans(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async caches(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.caches(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async caches2(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.caches2(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches-cache\'
-		 * @param {string} cache
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async cachesCache(
-			cache: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.cachesCache(
-				cache,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches-cache\'
-		 * @param {string} cache
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async cachesCache2(
-			cache: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.cachesCache2(
-				cache,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'conditions\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async conditions(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.conditions(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'configprops\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async configprops(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.configprops(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'configprops-prefix\'
-		 * @param {string} prefix
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async configpropsPrefix(
-			prefix: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.configpropsPrefix(prefix, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'env\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async env(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.env(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'env-toMatch\'
-		 * @param {string} toMatch
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async envToMatch(
-			toMatch: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.envToMatch(
-				toMatch,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'health\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async health(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.health(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'health-path\'
-		 * @param {string} path
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async healthPath(
-			path: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.healthPath(
-				path,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'heapdump\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async heapdump(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.heapdump(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'info\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async info(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.info(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'integrationgraph\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async integrationgraph(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.integrationgraph(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'integrationgraph\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async integrationgraph2(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.integrationgraph2(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator root web endpoint
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async links(
-			options?: AxiosRequestConfig
-		): Promise<
-			(
-				axios?: AxiosInstance,
-				basePath?: string
-			) => AxiosPromise<{ [key: string]: { [key: string]: Link } }>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.links(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'logfile\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async logfile(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.logfile(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'loggers\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async loggers(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.loggers(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'loggers-name\'
-		 * @param {string} name
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async loggersName(
-			name: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.loggersName(
-				name,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'loggers-name\'
-		 * @param {string} name
-		 * @param {string} [body]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async loggersName2(
-			name: string,
-			body?: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.loggersName2(
-				name,
-				body,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'mappings\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async mappings(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.mappings(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'metrics\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async metrics(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.metrics(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'metrics-requiredMetricName\'
-		 * @param {string} requiredMetricName
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async metricsRequiredMetricName(
-			requiredMetricName: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.metricsRequiredMetricName(
-					requiredMetricName,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'scheduledtasks\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async scheduledtasks(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.scheduledtasks(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'threaddump\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async threaddump(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.threaddump(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-	};
+  const localVarAxiosParamCreator = ActuatorApiAxiosParamCreator(configuration);
+  return {
+    /**
+     *
+     * @summary Actuator web endpoint \'beans\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async beans(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.beans(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async caches(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.caches(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async caches2(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.caches2(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches-cache\'
+     * @param {string} cache
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async cachesCache(
+      cache: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.cachesCache(
+        cache,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches-cache\'
+     * @param {string} cache
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async cachesCache2(
+      cache: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.cachesCache2(
+        cache,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'conditions\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async conditions(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.conditions(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'configprops\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async configprops(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.configprops(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'configprops-prefix\'
+     * @param {string} prefix
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async configpropsPrefix(
+      prefix: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.configpropsPrefix(prefix, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'env\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async env(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.env(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'env-toMatch\'
+     * @param {string} toMatch
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async envToMatch(
+      toMatch: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.envToMatch(
+        toMatch,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'health\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async health(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.health(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'health-path\'
+     * @param {string} path
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async healthPath(
+      path: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.healthPath(
+        path,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'heapdump\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async heapdump(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.heapdump(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'info\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async info(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.info(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'integrationgraph\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async integrationgraph(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.integrationgraph(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'integrationgraph\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async integrationgraph2(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.integrationgraph2(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator root web endpoint
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async links(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<{ [key: string]: { [key: string]: Link } }>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.links(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'loggers\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async loggers(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.loggers(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'loggers-name\'
+     * @param {string} name
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async loggersName(
+      name: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.loggersName(
+        name,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'loggers-name\'
+     * @param {string} name
+     * @param {string} [body]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async loggersName2(
+      name: string,
+      body?: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.loggersName2(
+        name,
+        body,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'mappings\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async mappings(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.mappings(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'metrics\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async metrics(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.metrics(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'metrics-requiredMetricName\'
+     * @param {string} requiredMetricName
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async metricsRequiredMetricName(
+      requiredMetricName: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.metricsRequiredMetricName(
+          requiredMetricName,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'scheduledtasks\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async scheduledtasks(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.scheduledtasks(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'threaddump\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async threaddump(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.threaddump(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+  };
 };
 
 /**
@@ -1897,336 +1831,325 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
  * @export
  */
 export const ActuatorApiFactory = function (
-	configuration?: Configuration,
-	basePath?: string,
-	axios?: AxiosInstance
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
 ) {
-	const localVarFp = ActuatorApiFp(configuration);
-	return {
-		/**
-		 *
-		 * @summary Actuator web endpoint \'beans\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		beans(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.beans(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		caches(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.caches(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		caches2(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.caches2(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches-cache\'
-		 * @param {ActuatorApiCachesCacheRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		cachesCache(
-			requestParameters: ActuatorApiCachesCacheRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<object> {
-			return localVarFp
-				.cachesCache(requestParameters.cache, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'caches-cache\'
-		 * @param {ActuatorApiCachesCache2Request} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		cachesCache2(
-			requestParameters: ActuatorApiCachesCache2Request,
-			options?: AxiosRequestConfig
-		): AxiosPromise<object> {
-			return localVarFp
-				.cachesCache2(requestParameters.cache, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'conditions\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		conditions(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.conditions(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'configprops\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		configprops(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.configprops(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'configprops-prefix\'
-		 * @param {ActuatorApiConfigpropsPrefixRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		configpropsPrefix(
-			requestParameters: ActuatorApiConfigpropsPrefixRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<object> {
-			return localVarFp
-				.configpropsPrefix(requestParameters.prefix, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'env\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		env(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.env(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'env-toMatch\'
-		 * @param {ActuatorApiEnvToMatchRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		envToMatch(
-			requestParameters: ActuatorApiEnvToMatchRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<object> {
-			return localVarFp
-				.envToMatch(requestParameters.toMatch, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'health\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		health(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.health(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'health-path\'
-		 * @param {ActuatorApiHealthPathRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		healthPath(
-			requestParameters: ActuatorApiHealthPathRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<object> {
-			return localVarFp
-				.healthPath(requestParameters.path, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'heapdump\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		heapdump(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.heapdump(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'info\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		info(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.info(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'integrationgraph\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		integrationgraph(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.integrationgraph(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'integrationgraph\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		integrationgraph2(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.integrationgraph2(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator root web endpoint
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		links(
-			options?: AxiosRequestConfig
-		): AxiosPromise<{ [key: string]: { [key: string]: Link } }> {
-			return localVarFp
-				.links(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'logfile\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		logfile(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.logfile(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'loggers\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		loggers(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.loggers(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'loggers-name\'
-		 * @param {ActuatorApiLoggersNameRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		loggersName(
-			requestParameters: ActuatorApiLoggersNameRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<object> {
-			return localVarFp
-				.loggersName(requestParameters.name, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'loggers-name\'
-		 * @param {ActuatorApiLoggersName2Request} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		loggersName2(
-			requestParameters: ActuatorApiLoggersName2Request,
-			options?: AxiosRequestConfig
-		): AxiosPromise<object> {
-			return localVarFp
-				.loggersName2(requestParameters.name, requestParameters.body, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'mappings\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		mappings(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.mappings(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'metrics\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		metrics(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.metrics(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'metrics-requiredMetricName\'
-		 * @param {ActuatorApiMetricsRequiredMetricNameRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		metricsRequiredMetricName(
-			requestParameters: ActuatorApiMetricsRequiredMetricNameRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<object> {
-			return localVarFp
-				.metricsRequiredMetricName(
-					requestParameters.requiredMetricName,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'scheduledtasks\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		scheduledtasks(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.scheduledtasks(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @summary Actuator web endpoint \'threaddump\'
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		threaddump(options?: AxiosRequestConfig): AxiosPromise<object> {
-			return localVarFp
-				.threaddump(options)
-				.then((request) => request(axios, basePath));
-		},
-	};
+  const localVarFp = ActuatorApiFp(configuration);
+  return {
+    /**
+     *
+     * @summary Actuator web endpoint \'beans\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    beans(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .beans(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    caches(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .caches(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    caches2(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .caches2(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches-cache\'
+     * @param {ActuatorApiCachesCacheRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    cachesCache(
+      requestParameters: ActuatorApiCachesCacheRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<object> {
+      return localVarFp
+        .cachesCache(requestParameters.cache, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'caches-cache\'
+     * @param {ActuatorApiCachesCache2Request} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    cachesCache2(
+      requestParameters: ActuatorApiCachesCache2Request,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<object> {
+      return localVarFp
+        .cachesCache2(requestParameters.cache, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'conditions\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    conditions(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .conditions(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'configprops\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    configprops(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .configprops(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'configprops-prefix\'
+     * @param {ActuatorApiConfigpropsPrefixRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    configpropsPrefix(
+      requestParameters: ActuatorApiConfigpropsPrefixRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<object> {
+      return localVarFp
+        .configpropsPrefix(requestParameters.prefix, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'env\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    env(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .env(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'env-toMatch\'
+     * @param {ActuatorApiEnvToMatchRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    envToMatch(
+      requestParameters: ActuatorApiEnvToMatchRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<object> {
+      return localVarFp
+        .envToMatch(requestParameters.toMatch, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'health\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    health(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .health(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'health-path\'
+     * @param {ActuatorApiHealthPathRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    healthPath(
+      requestParameters: ActuatorApiHealthPathRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<object> {
+      return localVarFp
+        .healthPath(requestParameters.path, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'heapdump\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    heapdump(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .heapdump(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'info\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    info(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .info(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'integrationgraph\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    integrationgraph(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .integrationgraph(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'integrationgraph\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    integrationgraph2(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .integrationgraph2(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator root web endpoint
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    links(
+      options?: AxiosRequestConfig
+    ): AxiosPromise<{ [key: string]: { [key: string]: Link } }> {
+      return localVarFp
+        .links(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'loggers\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    loggers(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .loggers(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'loggers-name\'
+     * @param {ActuatorApiLoggersNameRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    loggersName(
+      requestParameters: ActuatorApiLoggersNameRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<object> {
+      return localVarFp
+        .loggersName(requestParameters.name, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'loggers-name\'
+     * @param {ActuatorApiLoggersName2Request} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    loggersName2(
+      requestParameters: ActuatorApiLoggersName2Request,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<object> {
+      return localVarFp
+        .loggersName2(requestParameters.name, requestParameters.body, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'mappings\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    mappings(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .mappings(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'metrics\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    metrics(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .metrics(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'metrics-requiredMetricName\'
+     * @param {ActuatorApiMetricsRequiredMetricNameRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    metricsRequiredMetricName(
+      requestParameters: ActuatorApiMetricsRequiredMetricNameRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<object> {
+      return localVarFp
+        .metricsRequiredMetricName(
+          requestParameters.requiredMetricName,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'scheduledtasks\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    scheduledtasks(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .scheduledtasks(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @summary Actuator web endpoint \'threaddump\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    threaddump(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .threaddump(options)
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -2235,12 +2158,12 @@ export const ActuatorApiFactory = function (
  * @interface ActuatorApiCachesCacheRequest
  */
 export interface ActuatorApiCachesCacheRequest {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ActuatorApiCachesCache
-	 */
-	readonly cache: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ActuatorApiCachesCache
+   */
+  readonly cache: string;
 }
 
 /**
@@ -2249,12 +2172,12 @@ export interface ActuatorApiCachesCacheRequest {
  * @interface ActuatorApiCachesCache2Request
  */
 export interface ActuatorApiCachesCache2Request {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ActuatorApiCachesCache2
-	 */
-	readonly cache: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ActuatorApiCachesCache2
+   */
+  readonly cache: string;
 }
 
 /**
@@ -2263,12 +2186,12 @@ export interface ActuatorApiCachesCache2Request {
  * @interface ActuatorApiConfigpropsPrefixRequest
  */
 export interface ActuatorApiConfigpropsPrefixRequest {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ActuatorApiConfigpropsPrefix
-	 */
-	readonly prefix: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ActuatorApiConfigpropsPrefix
+   */
+  readonly prefix: string;
 }
 
 /**
@@ -2277,12 +2200,12 @@ export interface ActuatorApiConfigpropsPrefixRequest {
  * @interface ActuatorApiEnvToMatchRequest
  */
 export interface ActuatorApiEnvToMatchRequest {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ActuatorApiEnvToMatch
-	 */
-	readonly toMatch: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ActuatorApiEnvToMatch
+   */
+  readonly toMatch: string;
 }
 
 /**
@@ -2291,12 +2214,12 @@ export interface ActuatorApiEnvToMatchRequest {
  * @interface ActuatorApiHealthPathRequest
  */
 export interface ActuatorApiHealthPathRequest {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ActuatorApiHealthPath
-	 */
-	readonly path: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ActuatorApiHealthPath
+   */
+  readonly path: string;
 }
 
 /**
@@ -2305,12 +2228,12 @@ export interface ActuatorApiHealthPathRequest {
  * @interface ActuatorApiLoggersNameRequest
  */
 export interface ActuatorApiLoggersNameRequest {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ActuatorApiLoggersName
-	 */
-	readonly name: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ActuatorApiLoggersName
+   */
+  readonly name: string;
 }
 
 /**
@@ -2319,19 +2242,19 @@ export interface ActuatorApiLoggersNameRequest {
  * @interface ActuatorApiLoggersName2Request
  */
 export interface ActuatorApiLoggersName2Request {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ActuatorApiLoggersName2
-	 */
-	readonly name: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ActuatorApiLoggersName2
+   */
+  readonly name: string;
 
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ActuatorApiLoggersName2
-	 */
-	readonly body?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ActuatorApiLoggersName2
+   */
+  readonly body?: string;
 }
 
 /**
@@ -2340,12 +2263,12 @@ export interface ActuatorApiLoggersName2Request {
  * @interface ActuatorApiMetricsRequiredMetricNameRequest
  */
 export interface ActuatorApiMetricsRequiredMetricNameRequest {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ActuatorApiMetricsRequiredMetricName
-	 */
-	readonly requiredMetricName: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ActuatorApiMetricsRequiredMetricName
+   */
+  readonly requiredMetricName: string;
 }
 
 /**
@@ -2355,373 +2278,360 @@ export interface ActuatorApiMetricsRequiredMetricNameRequest {
  * @extends {BaseAPI}
  */
 export class ActuatorApi extends BaseAPI {
-	/**
-	 *
-	 * @summary Actuator web endpoint \'beans\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public beans(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.beans(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'beans\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public beans(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .beans(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'caches\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public caches(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.caches(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'caches\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public caches(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .caches(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'caches\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public caches2(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.caches2(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'caches\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public caches2(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .caches2(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'caches-cache\'
-	 * @param {ActuatorApiCachesCacheRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public cachesCache(
-		requestParameters: ActuatorApiCachesCacheRequest,
-		options?: AxiosRequestConfig
-	) {
-		return ActuatorApiFp(this.configuration)
-			.cachesCache(requestParameters.cache, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'caches-cache\'
+   * @param {ActuatorApiCachesCacheRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public cachesCache(
+    requestParameters: ActuatorApiCachesCacheRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return ActuatorApiFp(this.configuration)
+      .cachesCache(requestParameters.cache, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'caches-cache\'
-	 * @param {ActuatorApiCachesCache2Request} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public cachesCache2(
-		requestParameters: ActuatorApiCachesCache2Request,
-		options?: AxiosRequestConfig
-	) {
-		return ActuatorApiFp(this.configuration)
-			.cachesCache2(requestParameters.cache, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'caches-cache\'
+   * @param {ActuatorApiCachesCache2Request} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public cachesCache2(
+    requestParameters: ActuatorApiCachesCache2Request,
+    options?: AxiosRequestConfig
+  ) {
+    return ActuatorApiFp(this.configuration)
+      .cachesCache2(requestParameters.cache, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'conditions\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public conditions(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.conditions(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'conditions\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public conditions(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .conditions(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'configprops\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public configprops(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.configprops(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'configprops\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public configprops(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .configprops(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'configprops-prefix\'
-	 * @param {ActuatorApiConfigpropsPrefixRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public configpropsPrefix(
-		requestParameters: ActuatorApiConfigpropsPrefixRequest,
-		options?: AxiosRequestConfig
-	) {
-		return ActuatorApiFp(this.configuration)
-			.configpropsPrefix(requestParameters.prefix, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'configprops-prefix\'
+   * @param {ActuatorApiConfigpropsPrefixRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public configpropsPrefix(
+    requestParameters: ActuatorApiConfigpropsPrefixRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return ActuatorApiFp(this.configuration)
+      .configpropsPrefix(requestParameters.prefix, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'env\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public env(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.env(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'env\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public env(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .env(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'env-toMatch\'
-	 * @param {ActuatorApiEnvToMatchRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public envToMatch(
-		requestParameters: ActuatorApiEnvToMatchRequest,
-		options?: AxiosRequestConfig
-	) {
-		return ActuatorApiFp(this.configuration)
-			.envToMatch(requestParameters.toMatch, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'env-toMatch\'
+   * @param {ActuatorApiEnvToMatchRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public envToMatch(
+    requestParameters: ActuatorApiEnvToMatchRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return ActuatorApiFp(this.configuration)
+      .envToMatch(requestParameters.toMatch, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'health\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public health(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.health(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'health\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public health(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .health(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'health-path\'
-	 * @param {ActuatorApiHealthPathRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public healthPath(
-		requestParameters: ActuatorApiHealthPathRequest,
-		options?: AxiosRequestConfig
-	) {
-		return ActuatorApiFp(this.configuration)
-			.healthPath(requestParameters.path, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'health-path\'
+   * @param {ActuatorApiHealthPathRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public healthPath(
+    requestParameters: ActuatorApiHealthPathRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return ActuatorApiFp(this.configuration)
+      .healthPath(requestParameters.path, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'heapdump\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public heapdump(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.heapdump(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'heapdump\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public heapdump(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .heapdump(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'info\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public info(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.info(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'info\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public info(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .info(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'integrationgraph\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public integrationgraph(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.integrationgraph(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'integrationgraph\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public integrationgraph(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .integrationgraph(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'integrationgraph\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public integrationgraph2(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.integrationgraph2(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'integrationgraph\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public integrationgraph2(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .integrationgraph2(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator root web endpoint
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public links(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.links(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator root web endpoint
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public links(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .links(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'logfile\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public logfile(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.logfile(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'loggers\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public loggers(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .loggers(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'loggers\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public loggers(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.loggers(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'loggers-name\'
+   * @param {ActuatorApiLoggersNameRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public loggersName(
+    requestParameters: ActuatorApiLoggersNameRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return ActuatorApiFp(this.configuration)
+      .loggersName(requestParameters.name, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'loggers-name\'
-	 * @param {ActuatorApiLoggersNameRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public loggersName(
-		requestParameters: ActuatorApiLoggersNameRequest,
-		options?: AxiosRequestConfig
-	) {
-		return ActuatorApiFp(this.configuration)
-			.loggersName(requestParameters.name, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'loggers-name\'
+   * @param {ActuatorApiLoggersName2Request} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public loggersName2(
+    requestParameters: ActuatorApiLoggersName2Request,
+    options?: AxiosRequestConfig
+  ) {
+    return ActuatorApiFp(this.configuration)
+      .loggersName2(requestParameters.name, requestParameters.body, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'loggers-name\'
-	 * @param {ActuatorApiLoggersName2Request} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public loggersName2(
-		requestParameters: ActuatorApiLoggersName2Request,
-		options?: AxiosRequestConfig
-	) {
-		return ActuatorApiFp(this.configuration)
-			.loggersName2(requestParameters.name, requestParameters.body, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'mappings\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public mappings(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .mappings(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'mappings\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public mappings(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.mappings(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'metrics\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public metrics(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .metrics(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'metrics\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public metrics(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.metrics(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'metrics-requiredMetricName\'
+   * @param {ActuatorApiMetricsRequiredMetricNameRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public metricsRequiredMetricName(
+    requestParameters: ActuatorApiMetricsRequiredMetricNameRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return ActuatorApiFp(this.configuration)
+      .metricsRequiredMetricName(requestParameters.requiredMetricName, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'metrics-requiredMetricName\'
-	 * @param {ActuatorApiMetricsRequiredMetricNameRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public metricsRequiredMetricName(
-		requestParameters: ActuatorApiMetricsRequiredMetricNameRequest,
-		options?: AxiosRequestConfig
-	) {
-		return ActuatorApiFp(this.configuration)
-			.metricsRequiredMetricName(requestParameters.requiredMetricName, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'scheduledtasks\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public scheduledtasks(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .scheduledtasks(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @summary Actuator web endpoint \'scheduledtasks\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public scheduledtasks(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.scheduledtasks(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
-
-	/**
-	 *
-	 * @summary Actuator web endpoint \'threaddump\'
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof ActuatorApi
-	 */
-	public threaddump(options?: AxiosRequestConfig) {
-		return ActuatorApiFp(this.configuration)
-			.threaddump(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @summary Actuator web endpoint \'threaddump\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public threaddump(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .threaddump(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 }

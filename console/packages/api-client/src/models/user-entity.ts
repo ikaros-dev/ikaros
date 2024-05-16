@@ -18,124 +18,124 @@
  * @interface UserEntity
  */
 export interface UserEntity {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof UserEntity
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof UserEntity
-	 */
-	deleteStatus?: boolean;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof UserEntity
-	 */
-	createUid?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	createTime?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof UserEntity
-	 */
-	updateUid?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	updateTime?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof UserEntity
-	 */
-	optimisticLockVersion?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof UserEntity
-	 */
-	roleId?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	username?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	password?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	nickname?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	introduce?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	telephone?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	site?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	email?: string;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof UserEntity
-	 */
-	enable?: boolean;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof UserEntity
-	 */
-	nonLocked?: boolean;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	avatar?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	lastLoginIp?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UserEntity
-	 */
-	lastLoginTime?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof UserEntity
+   */
+  id?: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof UserEntity
+   */
+  deleteStatus?: boolean;
+  /**
+   *
+   * @type {number}
+   * @memberof UserEntity
+   */
+  createUid?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  createTime?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof UserEntity
+   */
+  updateUid?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  updateTime?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof UserEntity
+   */
+  optimisticLockVersion?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof UserEntity
+   */
+  roleId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  username?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  password?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  nickname?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  introduce?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  telephone?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  site?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  email?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof UserEntity
+   */
+  enable?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof UserEntity
+   */
+  nonLocked?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  avatar?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  lastLoginIp?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  lastLoginTime?: string;
 }

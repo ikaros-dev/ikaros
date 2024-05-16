@@ -12,572 +12,572 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from '../common';
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
 import {
-	BASE_PATH,
-	COLLECTION_FORMATS,
-	RequestArgs,
-	BaseAPI,
-	RequiredError,
-} from '../base';
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  RequestArgs,
+  BaseAPI,
+  RequiredError,
+} from "../base";
 // @ts-ignore
-import { Folder } from '../models';
+import { Folder } from "../models";
 /**
  * V1alpha1FolderApi - axios parameter creator
  * @export
  */
 export const V1alpha1FolderApiAxiosParamCreator = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	return {
-		/**
-		 * Create folder
-		 * @param {string} name Folder name, encode by base64.
-		 * @param {number} [parentId] Parent folder id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		createFolder: async (
-			name: string,
-			parentId?: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('createFolder', 'name', name);
-			const localVarPath = `/api/v1alpha1/folder`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+  return {
+    /**
+     * Create folder
+     * @param {string} name Folder name, encode by base64.
+     * @param {number} [parentId] Parent folder id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createFolder: async (
+      name: string,
+      parentId?: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("createFolder", "name", name);
+      const localVarPath = `/api/v1alpha1/folder`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (parentId !== undefined) {
-				localVarQueryParameter['parentId'] = parentId;
-			}
+      if (parentId !== undefined) {
+        localVarQueryParameter["parentId"] = parentId;
+      }
 
-			if (name !== undefined) {
-				localVarQueryParameter['name'] = name;
-			}
+      if (name !== undefined) {
+        localVarQueryParameter["name"] = name;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Delete folder
-		 * @param {number} id Folder id.
-		 * @param {boolean} [allowDeleteWhenChildExists] Allow delete when children exists, when it is true, will delete folder and all children folders and files, when it is false, delete folder only on no children folders or files.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		deleteFolder: async (
-			id: number,
-			allowDeleteWhenChildExists?: boolean,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'id' is not null or undefined
-			assertParamExists('deleteFolder', 'id', id);
-			const localVarPath = `/api/v1alpha1/folder`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Delete folder
+     * @param {number} id Folder id.
+     * @param {boolean} [allowDeleteWhenChildExists] Allow delete when children exists, when it is true, will delete folder and all children folders and files, when it is false, delete folder only on no children folders or files.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteFolder: async (
+      id: number,
+      allowDeleteWhenChildExists?: boolean,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("deleteFolder", "id", id);
+      const localVarPath = `/api/v1alpha1/folder`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'DELETE',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (id !== undefined) {
-				localVarQueryParameter['id'] = id;
-			}
+      if (id !== undefined) {
+        localVarQueryParameter["id"] = id;
+      }
 
-			if (allowDeleteWhenChildExists !== undefined) {
-				localVarQueryParameter['allowDeleteWhenChildExists'] =
-					allowDeleteWhenChildExists;
-			}
+      if (allowDeleteWhenChildExists !== undefined) {
+        localVarQueryParameter["allowDeleteWhenChildExists"] =
+          allowDeleteWhenChildExists;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Find folder by id.
-		 * @param {number} id Folder id
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findById: async (
-			id: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'id' is not null or undefined
-			assertParamExists('findById', 'id', id);
-			const localVarPath = `/api/v1alpha1/folder/id/{id}`.replace(
-				`{${'id'}}`,
-				encodeURIComponent(String(id))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Find folder by id.
+     * @param {number} id Folder id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findById: async (
+      id: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("findById", "id", id);
+      const localVarPath = `/api/v1alpha1/folder/id/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Find by parent id and name
-		 * @param {number} [parentId] Parent folder id
-		 * @param {string} [name] Folder name, encode by base64.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findByParentIdAndName: async (
-			parentId?: number,
-			name?: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/folder/name`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Find by parent id and name
+     * @param {number} [parentId] Parent folder id
+     * @param {string} [name] Folder name, encode by base64.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findByParentIdAndName: async (
+      parentId?: number,
+      name?: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/folder/name`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (parentId !== undefined) {
-				localVarQueryParameter['parentId'] = parentId;
-			}
+      if (parentId !== undefined) {
+        localVarQueryParameter["parentId"] = parentId;
+      }
 
-			if (name !== undefined) {
-				localVarQueryParameter['name'] = name;
-			}
+      if (name !== undefined) {
+        localVarQueryParameter["name"] = name;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Find by parent id and name like
-		 * @param {number} [parentId] Parent folder id
-		 * @param {string} [name] Folder name keyword, encode by base64.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findByParentIdAndNameLike: async (
-			parentId?: number,
-			name?: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/folder/name/like`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Find by parent id and name like
+     * @param {number} [parentId] Parent folder id
+     * @param {string} [name] Folder name keyword, encode by base64.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findByParentIdAndNameLike: async (
+      parentId?: number,
+      name?: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/folder/name/like`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (parentId !== undefined) {
-				localVarQueryParameter['parentId'] = parentId;
-			}
+      if (parentId !== undefined) {
+        localVarQueryParameter["parentId"] = parentId;
+      }
 
-			if (name !== undefined) {
-				localVarQueryParameter['name'] = name;
-			}
+      if (name !== undefined) {
+        localVarQueryParameter["name"] = name;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Move folder, update parent id.
-		 * @param {number} [id] Folder id
-		 * @param {number} [newParentId] Parent folder id
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		moveFolder: async (
-			id?: number,
-			newParentId?: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/folder/parent`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Move folder, update parent id.
+     * @param {number} [id] Folder id
+     * @param {number} [newParentId] Parent folder id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    moveFolder: async (
+      id?: number,
+      newParentId?: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/folder/parent`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (id !== undefined) {
-				localVarQueryParameter['id'] = id;
-			}
+      if (id !== undefined) {
+        localVarQueryParameter["id"] = id;
+      }
 
-			if (newParentId !== undefined) {
-				localVarQueryParameter['newParentId'] = newParentId;
-			}
+      if (newParentId !== undefined) {
+        localVarQueryParameter["newParentId"] = newParentId;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Pull folders from remote.
-		 * @param {string} id Folder id.
-		 * @param {string} remote Remote
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		pullFolder4Remote: async (
-			id: string,
-			remote: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'id' is not null or undefined
-			assertParamExists('pullFolder4Remote', 'id', id);
-			// verify required parameter 'remote' is not null or undefined
-			assertParamExists('pullFolder4Remote', 'remote', remote);
-			const localVarPath = `/api/v1alpha1/folder/remote/pull`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Pull folders from remote.
+     * @param {string} id Folder id.
+     * @param {string} remote Remote
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    pullFolder4Remote: async (
+      id: string,
+      remote: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("pullFolder4Remote", "id", id);
+      // verify required parameter 'remote' is not null or undefined
+      assertParamExists("pullFolder4Remote", "remote", remote);
+      const localVarPath = `/api/v1alpha1/folder/remote/pull`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (id !== undefined) {
-				localVarQueryParameter['id'] = id;
-			}
+      if (id !== undefined) {
+        localVarQueryParameter["id"] = id;
+      }
 
-			if (remote !== undefined) {
-				localVarQueryParameter['remote'] = remote;
-			}
+      if (remote !== undefined) {
+        localVarQueryParameter["remote"] = remote;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Push folder to remote.
-		 * @param {string} id Folder id.
-		 * @param {string} remote Remote
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		pushFolder2Remote: async (
-			id: string,
-			remote: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'id' is not null or undefined
-			assertParamExists('pushFolder2Remote', 'id', id);
-			// verify required parameter 'remote' is not null or undefined
-			assertParamExists('pushFolder2Remote', 'remote', remote);
-			const localVarPath = `/api/v1alpha1/folder/remote/push`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Push folder to remote.
+     * @param {string} id Folder id.
+     * @param {string} remote Remote
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    pushFolder2Remote: async (
+      id: string,
+      remote: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("pushFolder2Remote", "id", id);
+      // verify required parameter 'remote' is not null or undefined
+      assertParamExists("pushFolder2Remote", "remote", remote);
+      const localVarPath = `/api/v1alpha1/folder/remote/push`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (id !== undefined) {
-				localVarQueryParameter['id'] = id;
-			}
+      if (id !== undefined) {
+        localVarQueryParameter["id"] = id;
+      }
 
-			if (remote !== undefined) {
-				localVarQueryParameter['remote'] = remote;
-			}
+      if (remote !== undefined) {
+        localVarQueryParameter["remote"] = remote;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Update folder name by id and new name.
-		 * @param {number} [id] Folder id
-		 * @param {string} [newName] Folder new name. encode by base 64.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updateFolderName: async (
-			id?: number,
-			newName?: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/folder/name`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Update folder name by id and new name.
+     * @param {number} [id] Folder id
+     * @param {string} [newName] Folder new name. encode by base 64.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateFolderName: async (
+      id?: number,
+      newName?: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/folder/name`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (id !== undefined) {
-				localVarQueryParameter['id'] = id;
-			}
+      if (id !== undefined) {
+        localVarQueryParameter["id"] = id;
+      }
 
-			if (newName !== undefined) {
-				localVarQueryParameter['newName'] = newName;
-			}
+      if (newName !== undefined) {
+        localVarQueryParameter["newName"] = newName;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-	};
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
@@ -585,234 +585,234 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
-	const localVarAxiosParamCreator =
-		V1alpha1FolderApiAxiosParamCreator(configuration);
-	return {
-		/**
-		 * Create folder
-		 * @param {string} name Folder name, encode by base64.
-		 * @param {number} [parentId] Parent folder id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async createFolder(
-			name: string,
-			parentId?: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.createFolder(
-				name,
-				parentId,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Delete folder
-		 * @param {number} id Folder id.
-		 * @param {boolean} [allowDeleteWhenChildExists] Allow delete when children exists, when it is true, will delete folder and all children folders and files, when it is false, delete folder only on no children folders or files.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async deleteFolder(
-			id: number,
-			allowDeleteWhenChildExists?: boolean,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.deleteFolder(
-				id,
-				allowDeleteWhenChildExists,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Find folder by id.
-		 * @param {number} id Folder id
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async findById(
-			id: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.findById(
-				id,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Find by parent id and name
-		 * @param {number} [parentId] Parent folder id
-		 * @param {string} [name] Folder name, encode by base64.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async findByParentIdAndName(
-			parentId?: number,
-			name?: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.findByParentIdAndName(
-					parentId,
-					name,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Find by parent id and name like
-		 * @param {number} [parentId] Parent folder id
-		 * @param {string} [name] Folder name keyword, encode by base64.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async findByParentIdAndNameLike(
-			parentId?: number,
-			name?: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.findByParentIdAndNameLike(
-					parentId,
-					name,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Move folder, update parent id.
-		 * @param {number} [id] Folder id
-		 * @param {number} [newParentId] Parent folder id
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async moveFolder(
-			id?: number,
-			newParentId?: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.moveFolder(
-				id,
-				newParentId,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Pull folders from remote.
-		 * @param {string} id Folder id.
-		 * @param {string} remote Remote
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async pullFolder4Remote(
-			id: string,
-			remote: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.pullFolder4Remote(id, remote, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Push folder to remote.
-		 * @param {string} id Folder id.
-		 * @param {string} remote Remote
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async pushFolder2Remote(
-			id: string,
-			remote: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.pushFolder2Remote(id, remote, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Update folder name by id and new name.
-		 * @param {number} [id] Folder id
-		 * @param {string} [newName] Folder new name. encode by base 64.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async updateFolderName(
-			id?: number,
-			newName?: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.updateFolderName(id, newName, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-	};
+  const localVarAxiosParamCreator =
+    V1alpha1FolderApiAxiosParamCreator(configuration);
+  return {
+    /**
+     * Create folder
+     * @param {string} name Folder name, encode by base64.
+     * @param {number} [parentId] Parent folder id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async createFolder(
+      name: string,
+      parentId?: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.createFolder(
+        name,
+        parentId,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Delete folder
+     * @param {number} id Folder id.
+     * @param {boolean} [allowDeleteWhenChildExists] Allow delete when children exists, when it is true, will delete folder and all children folders and files, when it is false, delete folder only on no children folders or files.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async deleteFolder(
+      id: number,
+      allowDeleteWhenChildExists?: boolean,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.deleteFolder(
+        id,
+        allowDeleteWhenChildExists,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Find folder by id.
+     * @param {number} id Folder id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async findById(
+      id: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.findById(
+        id,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Find by parent id and name
+     * @param {number} [parentId] Parent folder id
+     * @param {string} [name] Folder name, encode by base64.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async findByParentIdAndName(
+      parentId?: number,
+      name?: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.findByParentIdAndName(
+          parentId,
+          name,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Find by parent id and name like
+     * @param {number} [parentId] Parent folder id
+     * @param {string} [name] Folder name keyword, encode by base64.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async findByParentIdAndNameLike(
+      parentId?: number,
+      name?: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.findByParentIdAndNameLike(
+          parentId,
+          name,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Move folder, update parent id.
+     * @param {number} [id] Folder id
+     * @param {number} [newParentId] Parent folder id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async moveFolder(
+      id?: number,
+      newParentId?: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.moveFolder(
+        id,
+        newParentId,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Pull folders from remote.
+     * @param {string} id Folder id.
+     * @param {string} remote Remote
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async pullFolder4Remote(
+      id: string,
+      remote: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.pullFolder4Remote(id, remote, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Push folder to remote.
+     * @param {string} id Folder id.
+     * @param {string} remote Remote
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async pushFolder2Remote(
+      id: string,
+      remote: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.pushFolder2Remote(id, remote, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Update folder name by id and new name.
+     * @param {number} [id] Folder id
+     * @param {string} [newName] Folder new name. encode by base 64.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updateFolderName(
+      id?: number,
+      newName?: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.updateFolderName(id, newName, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+  };
 };
 
 /**
@@ -820,171 +820,171 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
  * @export
  */
 export const V1alpha1FolderApiFactory = function (
-	configuration?: Configuration,
-	basePath?: string,
-	axios?: AxiosInstance
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
 ) {
-	const localVarFp = V1alpha1FolderApiFp(configuration);
-	return {
-		/**
-		 * Create folder
-		 * @param {V1alpha1FolderApiCreateFolderRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		createFolder(
-			requestParameters: V1alpha1FolderApiCreateFolderRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<Folder> {
-			return localVarFp
-				.createFolder(
-					requestParameters.name,
-					requestParameters.parentId,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Delete folder
-		 * @param {V1alpha1FolderApiDeleteFolderRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		deleteFolder(
-			requestParameters: V1alpha1FolderApiDeleteFolderRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.deleteFolder(
-					requestParameters.id,
-					requestParameters.allowDeleteWhenChildExists,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Find folder by id.
-		 * @param {V1alpha1FolderApiFindByIdRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findById(
-			requestParameters: V1alpha1FolderApiFindByIdRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<Folder> {
-			return localVarFp
-				.findById(requestParameters.id, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Find by parent id and name
-		 * @param {V1alpha1FolderApiFindByParentIdAndNameRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findByParentIdAndName(
-			requestParameters: V1alpha1FolderApiFindByParentIdAndNameRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<Folder> {
-			return localVarFp
-				.findByParentIdAndName(
-					requestParameters.parentId,
-					requestParameters.name,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Find by parent id and name like
-		 * @param {V1alpha1FolderApiFindByParentIdAndNameLikeRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findByParentIdAndNameLike(
-			requestParameters: V1alpha1FolderApiFindByParentIdAndNameLikeRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<Folder> {
-			return localVarFp
-				.findByParentIdAndNameLike(
-					requestParameters.parentId,
-					requestParameters.name,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Move folder, update parent id.
-		 * @param {V1alpha1FolderApiMoveFolderRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		moveFolder(
-			requestParameters: V1alpha1FolderApiMoveFolderRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<Folder> {
-			return localVarFp
-				.moveFolder(
-					requestParameters.id,
-					requestParameters.newParentId,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Pull folders from remote.
-		 * @param {V1alpha1FolderApiPullFolder4RemoteRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		pullFolder4Remote(
-			requestParameters: V1alpha1FolderApiPullFolder4RemoteRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.pullFolder4Remote(
-					requestParameters.id,
-					requestParameters.remote,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Push folder to remote.
-		 * @param {V1alpha1FolderApiPushFolder2RemoteRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		pushFolder2Remote(
-			requestParameters: V1alpha1FolderApiPushFolder2RemoteRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.pushFolder2Remote(
-					requestParameters.id,
-					requestParameters.remote,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Update folder name by id and new name.
-		 * @param {V1alpha1FolderApiUpdateFolderNameRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updateFolderName(
-			requestParameters: V1alpha1FolderApiUpdateFolderNameRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<Folder> {
-			return localVarFp
-				.updateFolderName(
-					requestParameters.id,
-					requestParameters.newName,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-	};
+  const localVarFp = V1alpha1FolderApiFp(configuration);
+  return {
+    /**
+     * Create folder
+     * @param {V1alpha1FolderApiCreateFolderRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createFolder(
+      requestParameters: V1alpha1FolderApiCreateFolderRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Folder> {
+      return localVarFp
+        .createFolder(
+          requestParameters.name,
+          requestParameters.parentId,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Delete folder
+     * @param {V1alpha1FolderApiDeleteFolderRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteFolder(
+      requestParameters: V1alpha1FolderApiDeleteFolderRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .deleteFolder(
+          requestParameters.id,
+          requestParameters.allowDeleteWhenChildExists,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Find folder by id.
+     * @param {V1alpha1FolderApiFindByIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findById(
+      requestParameters: V1alpha1FolderApiFindByIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Folder> {
+      return localVarFp
+        .findById(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Find by parent id and name
+     * @param {V1alpha1FolderApiFindByParentIdAndNameRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findByParentIdAndName(
+      requestParameters: V1alpha1FolderApiFindByParentIdAndNameRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Folder> {
+      return localVarFp
+        .findByParentIdAndName(
+          requestParameters.parentId,
+          requestParameters.name,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Find by parent id and name like
+     * @param {V1alpha1FolderApiFindByParentIdAndNameLikeRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findByParentIdAndNameLike(
+      requestParameters: V1alpha1FolderApiFindByParentIdAndNameLikeRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Folder> {
+      return localVarFp
+        .findByParentIdAndNameLike(
+          requestParameters.parentId,
+          requestParameters.name,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Move folder, update parent id.
+     * @param {V1alpha1FolderApiMoveFolderRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    moveFolder(
+      requestParameters: V1alpha1FolderApiMoveFolderRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Folder> {
+      return localVarFp
+        .moveFolder(
+          requestParameters.id,
+          requestParameters.newParentId,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Pull folders from remote.
+     * @param {V1alpha1FolderApiPullFolder4RemoteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    pullFolder4Remote(
+      requestParameters: V1alpha1FolderApiPullFolder4RemoteRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .pullFolder4Remote(
+          requestParameters.id,
+          requestParameters.remote,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Push folder to remote.
+     * @param {V1alpha1FolderApiPushFolder2RemoteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    pushFolder2Remote(
+      requestParameters: V1alpha1FolderApiPushFolder2RemoteRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .pushFolder2Remote(
+          requestParameters.id,
+          requestParameters.remote,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Update folder name by id and new name.
+     * @param {V1alpha1FolderApiUpdateFolderNameRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateFolderName(
+      requestParameters: V1alpha1FolderApiUpdateFolderNameRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Folder> {
+      return localVarFp
+        .updateFolderName(
+          requestParameters.id,
+          requestParameters.newName,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -993,19 +993,19 @@ export const V1alpha1FolderApiFactory = function (
  * @interface V1alpha1FolderApiCreateFolderRequest
  */
 export interface V1alpha1FolderApiCreateFolderRequest {
-	/**
-	 * Folder name, encode by base64.
-	 * @type {string}
-	 * @memberof V1alpha1FolderApiCreateFolder
-	 */
-	readonly name: string;
+  /**
+   * Folder name, encode by base64.
+   * @type {string}
+   * @memberof V1alpha1FolderApiCreateFolder
+   */
+  readonly name: string;
 
-	/**
-	 * Parent folder id.
-	 * @type {number}
-	 * @memberof V1alpha1FolderApiCreateFolder
-	 */
-	readonly parentId?: number;
+  /**
+   * Parent folder id.
+   * @type {number}
+   * @memberof V1alpha1FolderApiCreateFolder
+   */
+  readonly parentId?: number;
 }
 
 /**
@@ -1014,19 +1014,19 @@ export interface V1alpha1FolderApiCreateFolderRequest {
  * @interface V1alpha1FolderApiDeleteFolderRequest
  */
 export interface V1alpha1FolderApiDeleteFolderRequest {
-	/**
-	 * Folder id.
-	 * @type {number}
-	 * @memberof V1alpha1FolderApiDeleteFolder
-	 */
-	readonly id: number;
+  /**
+   * Folder id.
+   * @type {number}
+   * @memberof V1alpha1FolderApiDeleteFolder
+   */
+  readonly id: number;
 
-	/**
-	 * Allow delete when children exists, when it is true, will delete folder and all children folders and files, when it is false, delete folder only on no children folders or files.
-	 * @type {boolean}
-	 * @memberof V1alpha1FolderApiDeleteFolder
-	 */
-	readonly allowDeleteWhenChildExists?: boolean;
+  /**
+   * Allow delete when children exists, when it is true, will delete folder and all children folders and files, when it is false, delete folder only on no children folders or files.
+   * @type {boolean}
+   * @memberof V1alpha1FolderApiDeleteFolder
+   */
+  readonly allowDeleteWhenChildExists?: boolean;
 }
 
 /**
@@ -1035,12 +1035,12 @@ export interface V1alpha1FolderApiDeleteFolderRequest {
  * @interface V1alpha1FolderApiFindByIdRequest
  */
 export interface V1alpha1FolderApiFindByIdRequest {
-	/**
-	 * Folder id
-	 * @type {number}
-	 * @memberof V1alpha1FolderApiFindById
-	 */
-	readonly id: number;
+  /**
+   * Folder id
+   * @type {number}
+   * @memberof V1alpha1FolderApiFindById
+   */
+  readonly id: number;
 }
 
 /**
@@ -1049,19 +1049,19 @@ export interface V1alpha1FolderApiFindByIdRequest {
  * @interface V1alpha1FolderApiFindByParentIdAndNameRequest
  */
 export interface V1alpha1FolderApiFindByParentIdAndNameRequest {
-	/**
-	 * Parent folder id
-	 * @type {number}
-	 * @memberof V1alpha1FolderApiFindByParentIdAndName
-	 */
-	readonly parentId?: number;
+  /**
+   * Parent folder id
+   * @type {number}
+   * @memberof V1alpha1FolderApiFindByParentIdAndName
+   */
+  readonly parentId?: number;
 
-	/**
-	 * Folder name, encode by base64.
-	 * @type {string}
-	 * @memberof V1alpha1FolderApiFindByParentIdAndName
-	 */
-	readonly name?: string;
+  /**
+   * Folder name, encode by base64.
+   * @type {string}
+   * @memberof V1alpha1FolderApiFindByParentIdAndName
+   */
+  readonly name?: string;
 }
 
 /**
@@ -1070,19 +1070,19 @@ export interface V1alpha1FolderApiFindByParentIdAndNameRequest {
  * @interface V1alpha1FolderApiFindByParentIdAndNameLikeRequest
  */
 export interface V1alpha1FolderApiFindByParentIdAndNameLikeRequest {
-	/**
-	 * Parent folder id
-	 * @type {number}
-	 * @memberof V1alpha1FolderApiFindByParentIdAndNameLike
-	 */
-	readonly parentId?: number;
+  /**
+   * Parent folder id
+   * @type {number}
+   * @memberof V1alpha1FolderApiFindByParentIdAndNameLike
+   */
+  readonly parentId?: number;
 
-	/**
-	 * Folder name keyword, encode by base64.
-	 * @type {string}
-	 * @memberof V1alpha1FolderApiFindByParentIdAndNameLike
-	 */
-	readonly name?: string;
+  /**
+   * Folder name keyword, encode by base64.
+   * @type {string}
+   * @memberof V1alpha1FolderApiFindByParentIdAndNameLike
+   */
+  readonly name?: string;
 }
 
 /**
@@ -1091,19 +1091,19 @@ export interface V1alpha1FolderApiFindByParentIdAndNameLikeRequest {
  * @interface V1alpha1FolderApiMoveFolderRequest
  */
 export interface V1alpha1FolderApiMoveFolderRequest {
-	/**
-	 * Folder id
-	 * @type {number}
-	 * @memberof V1alpha1FolderApiMoveFolder
-	 */
-	readonly id?: number;
+  /**
+   * Folder id
+   * @type {number}
+   * @memberof V1alpha1FolderApiMoveFolder
+   */
+  readonly id?: number;
 
-	/**
-	 * Parent folder id
-	 * @type {number}
-	 * @memberof V1alpha1FolderApiMoveFolder
-	 */
-	readonly newParentId?: number;
+  /**
+   * Parent folder id
+   * @type {number}
+   * @memberof V1alpha1FolderApiMoveFolder
+   */
+  readonly newParentId?: number;
 }
 
 /**
@@ -1112,19 +1112,19 @@ export interface V1alpha1FolderApiMoveFolderRequest {
  * @interface V1alpha1FolderApiPullFolder4RemoteRequest
  */
 export interface V1alpha1FolderApiPullFolder4RemoteRequest {
-	/**
-	 * Folder id.
-	 * @type {string}
-	 * @memberof V1alpha1FolderApiPullFolder4Remote
-	 */
-	readonly id: string;
+  /**
+   * Folder id.
+   * @type {string}
+   * @memberof V1alpha1FolderApiPullFolder4Remote
+   */
+  readonly id: string;
 
-	/**
-	 * Remote
-	 * @type {string}
-	 * @memberof V1alpha1FolderApiPullFolder4Remote
-	 */
-	readonly remote: string;
+  /**
+   * Remote
+   * @type {string}
+   * @memberof V1alpha1FolderApiPullFolder4Remote
+   */
+  readonly remote: string;
 }
 
 /**
@@ -1133,19 +1133,19 @@ export interface V1alpha1FolderApiPullFolder4RemoteRequest {
  * @interface V1alpha1FolderApiPushFolder2RemoteRequest
  */
 export interface V1alpha1FolderApiPushFolder2RemoteRequest {
-	/**
-	 * Folder id.
-	 * @type {string}
-	 * @memberof V1alpha1FolderApiPushFolder2Remote
-	 */
-	readonly id: string;
+  /**
+   * Folder id.
+   * @type {string}
+   * @memberof V1alpha1FolderApiPushFolder2Remote
+   */
+  readonly id: string;
 
-	/**
-	 * Remote
-	 * @type {string}
-	 * @memberof V1alpha1FolderApiPushFolder2Remote
-	 */
-	readonly remote: string;
+  /**
+   * Remote
+   * @type {string}
+   * @memberof V1alpha1FolderApiPushFolder2Remote
+   */
+  readonly remote: string;
 }
 
 /**
@@ -1154,19 +1154,19 @@ export interface V1alpha1FolderApiPushFolder2RemoteRequest {
  * @interface V1alpha1FolderApiUpdateFolderNameRequest
  */
 export interface V1alpha1FolderApiUpdateFolderNameRequest {
-	/**
-	 * Folder id
-	 * @type {number}
-	 * @memberof V1alpha1FolderApiUpdateFolderName
-	 */
-	readonly id?: number;
+  /**
+   * Folder id
+   * @type {number}
+   * @memberof V1alpha1FolderApiUpdateFolderName
+   */
+  readonly id?: number;
 
-	/**
-	 * Folder new name. encode by base 64.
-	 * @type {string}
-	 * @memberof V1alpha1FolderApiUpdateFolderName
-	 */
-	readonly newName?: string;
+  /**
+   * Folder new name. encode by base 64.
+   * @type {string}
+   * @memberof V1alpha1FolderApiUpdateFolderName
+   */
+  readonly newName?: string;
 }
 
 /**
@@ -1176,171 +1176,171 @@ export interface V1alpha1FolderApiUpdateFolderNameRequest {
  * @extends {BaseAPI}
  */
 export class V1alpha1FolderApi extends BaseAPI {
-	/**
-	 * Create folder
-	 * @param {V1alpha1FolderApiCreateFolderRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1FolderApi
-	 */
-	public createFolder(
-		requestParameters: V1alpha1FolderApiCreateFolderRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1FolderApiFp(this.configuration)
-			.createFolder(requestParameters.name, requestParameters.parentId, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Create folder
+   * @param {V1alpha1FolderApiCreateFolderRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1FolderApi
+   */
+  public createFolder(
+    requestParameters: V1alpha1FolderApiCreateFolderRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1FolderApiFp(this.configuration)
+      .createFolder(requestParameters.name, requestParameters.parentId, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Delete folder
-	 * @param {V1alpha1FolderApiDeleteFolderRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1FolderApi
-	 */
-	public deleteFolder(
-		requestParameters: V1alpha1FolderApiDeleteFolderRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1FolderApiFp(this.configuration)
-			.deleteFolder(
-				requestParameters.id,
-				requestParameters.allowDeleteWhenChildExists,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Delete folder
+   * @param {V1alpha1FolderApiDeleteFolderRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1FolderApi
+   */
+  public deleteFolder(
+    requestParameters: V1alpha1FolderApiDeleteFolderRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1FolderApiFp(this.configuration)
+      .deleteFolder(
+        requestParameters.id,
+        requestParameters.allowDeleteWhenChildExists,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Find folder by id.
-	 * @param {V1alpha1FolderApiFindByIdRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1FolderApi
-	 */
-	public findById(
-		requestParameters: V1alpha1FolderApiFindByIdRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1FolderApiFp(this.configuration)
-			.findById(requestParameters.id, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Find folder by id.
+   * @param {V1alpha1FolderApiFindByIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1FolderApi
+   */
+  public findById(
+    requestParameters: V1alpha1FolderApiFindByIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1FolderApiFp(this.configuration)
+      .findById(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Find by parent id and name
-	 * @param {V1alpha1FolderApiFindByParentIdAndNameRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1FolderApi
-	 */
-	public findByParentIdAndName(
-		requestParameters: V1alpha1FolderApiFindByParentIdAndNameRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1FolderApiFp(this.configuration)
-			.findByParentIdAndName(
-				requestParameters.parentId,
-				requestParameters.name,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Find by parent id and name
+   * @param {V1alpha1FolderApiFindByParentIdAndNameRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1FolderApi
+   */
+  public findByParentIdAndName(
+    requestParameters: V1alpha1FolderApiFindByParentIdAndNameRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1FolderApiFp(this.configuration)
+      .findByParentIdAndName(
+        requestParameters.parentId,
+        requestParameters.name,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Find by parent id and name like
-	 * @param {V1alpha1FolderApiFindByParentIdAndNameLikeRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1FolderApi
-	 */
-	public findByParentIdAndNameLike(
-		requestParameters: V1alpha1FolderApiFindByParentIdAndNameLikeRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1FolderApiFp(this.configuration)
-			.findByParentIdAndNameLike(
-				requestParameters.parentId,
-				requestParameters.name,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Find by parent id and name like
+   * @param {V1alpha1FolderApiFindByParentIdAndNameLikeRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1FolderApi
+   */
+  public findByParentIdAndNameLike(
+    requestParameters: V1alpha1FolderApiFindByParentIdAndNameLikeRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1FolderApiFp(this.configuration)
+      .findByParentIdAndNameLike(
+        requestParameters.parentId,
+        requestParameters.name,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Move folder, update parent id.
-	 * @param {V1alpha1FolderApiMoveFolderRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1FolderApi
-	 */
-	public moveFolder(
-		requestParameters: V1alpha1FolderApiMoveFolderRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1FolderApiFp(this.configuration)
-			.moveFolder(requestParameters.id, requestParameters.newParentId, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Move folder, update parent id.
+   * @param {V1alpha1FolderApiMoveFolderRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1FolderApi
+   */
+  public moveFolder(
+    requestParameters: V1alpha1FolderApiMoveFolderRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1FolderApiFp(this.configuration)
+      .moveFolder(requestParameters.id, requestParameters.newParentId, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Pull folders from remote.
-	 * @param {V1alpha1FolderApiPullFolder4RemoteRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1FolderApi
-	 */
-	public pullFolder4Remote(
-		requestParameters: V1alpha1FolderApiPullFolder4RemoteRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1FolderApiFp(this.configuration)
-			.pullFolder4Remote(
-				requestParameters.id,
-				requestParameters.remote,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Pull folders from remote.
+   * @param {V1alpha1FolderApiPullFolder4RemoteRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1FolderApi
+   */
+  public pullFolder4Remote(
+    requestParameters: V1alpha1FolderApiPullFolder4RemoteRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1FolderApiFp(this.configuration)
+      .pullFolder4Remote(
+        requestParameters.id,
+        requestParameters.remote,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Push folder to remote.
-	 * @param {V1alpha1FolderApiPushFolder2RemoteRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1FolderApi
-	 */
-	public pushFolder2Remote(
-		requestParameters: V1alpha1FolderApiPushFolder2RemoteRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1FolderApiFp(this.configuration)
-			.pushFolder2Remote(
-				requestParameters.id,
-				requestParameters.remote,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Push folder to remote.
+   * @param {V1alpha1FolderApiPushFolder2RemoteRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1FolderApi
+   */
+  public pushFolder2Remote(
+    requestParameters: V1alpha1FolderApiPushFolder2RemoteRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1FolderApiFp(this.configuration)
+      .pushFolder2Remote(
+        requestParameters.id,
+        requestParameters.remote,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Update folder name by id and new name.
-	 * @param {V1alpha1FolderApiUpdateFolderNameRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1FolderApi
-	 */
-	public updateFolderName(
-		requestParameters: V1alpha1FolderApiUpdateFolderNameRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1FolderApiFp(this.configuration)
-			.updateFolderName(
-				requestParameters.id,
-				requestParameters.newName,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Update folder name by id and new name.
+   * @param {V1alpha1FolderApiUpdateFolderNameRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1FolderApi
+   */
+  public updateFolderName(
+    requestParameters: V1alpha1FolderApiUpdateFolderNameRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1FolderApiFp(this.configuration)
+      .updateFolderName(
+        requestParameters.id,
+        requestParameters.newName,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 }

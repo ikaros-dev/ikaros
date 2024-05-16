@@ -18,34 +18,34 @@
  * @interface UpdateUserRequest
  */
 export interface UpdateUserRequest {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UpdateUserRequest
-	 */
-	username: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UpdateUserRequest
-	 */
-	avatar?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UpdateUserRequest
-	 */
-	nickname?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UpdateUserRequest
-	 */
-	introduce?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof UpdateUserRequest
-	 */
-	site?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateUserRequest
+   */
+  username: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateUserRequest
+   */
+  avatar?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateUserRequest
+   */
+  nickname?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateUserRequest
+   */
+  introduce?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateUserRequest
+   */
+  site?: string;
 }

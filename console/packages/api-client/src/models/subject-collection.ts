@@ -18,111 +18,111 @@
  * @interface SubjectCollection
  */
 export interface SubjectCollection {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectCollection
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectCollection
-	 */
-	type?: SubjectCollectionTypeEnum;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectCollection
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectCollection
-	 */
-	infobox?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectCollection
-	 */
-	summary?: string;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof SubjectCollection
-	 */
-	nsfw?: boolean;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectCollection
-	 */
-	cover?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectCollection
-	 */
-	user_id?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectCollection
-	 */
-	subject_id?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectCollection
-	 */
-	main_ep_progress?: number;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof SubjectCollection
-	 */
-	is_private?: boolean;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectCollection
-	 */
-	subject_type?: SubjectCollectionSubjectTypeEnum;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectCollection
-	 */
-	name_cn?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectCollection
-	 */
-	air_time?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectCollection
+   */
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectCollection
+   */
+  type?: SubjectCollectionTypeEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectCollection
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectCollection
+   */
+  infobox?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectCollection
+   */
+  summary?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof SubjectCollection
+   */
+  nsfw?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectCollection
+   */
+  cover?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectCollection
+   */
+  user_id?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectCollection
+   */
+  subject_id?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectCollection
+   */
+  main_ep_progress?: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof SubjectCollection
+   */
+  is_private?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectCollection
+   */
+  subject_type?: SubjectCollectionSubjectTypeEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectCollection
+   */
+  name_cn?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectCollection
+   */
+  air_time?: string;
 }
 
 export const SubjectCollectionTypeEnum = {
-	Wish: 'WISH',
-	Doing: 'DOING',
-	Done: 'DONE',
-	Shelve: 'SHELVE',
-	Discard: 'DISCARD',
+  Wish: "WISH",
+  Doing: "DOING",
+  Done: "DONE",
+  Shelve: "SHELVE",
+  Discard: "DISCARD",
 } as const;
 
 export type SubjectCollectionTypeEnum =
-	(typeof SubjectCollectionTypeEnum)[keyof typeof SubjectCollectionTypeEnum];
+  (typeof SubjectCollectionTypeEnum)[keyof typeof SubjectCollectionTypeEnum];
 export const SubjectCollectionSubjectTypeEnum = {
-	Anime: 'ANIME',
-	Comic: 'COMIC',
-	Game: 'GAME',
-	Music: 'MUSIC',
-	Novel: 'NOVEL',
-	Real: 'REAL',
-	Other: 'OTHER',
+  Anime: "ANIME",
+  Comic: "COMIC",
+  Game: "GAME",
+  Music: "MUSIC",
+  Novel: "NOVEL",
+  Real: "REAL",
+  Other: "OTHER",
 } as const;
 
 export type SubjectCollectionSubjectTypeEnum =
-	(typeof SubjectCollectionSubjectTypeEnum)[keyof typeof SubjectCollectionSubjectTypeEnum];
+  (typeof SubjectCollectionSubjectTypeEnum)[keyof typeof SubjectCollectionSubjectTypeEnum];

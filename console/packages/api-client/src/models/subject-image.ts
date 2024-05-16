@@ -18,40 +18,40 @@
  * @interface SubjectImage
  */
 export interface SubjectImage {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectImage
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectImage
-	 */
-	large?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectImage
-	 */
-	common?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectImage
-	 */
-	medium?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectImage
-	 */
-	small?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectImage
-	 */
-	grid?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectImage
+   */
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectImage
+   */
+  large?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectImage
+   */
+  common?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectImage
+   */
+  medium?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectImage
+   */
+  small?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectImage
+   */
+  grid?: string;
 }

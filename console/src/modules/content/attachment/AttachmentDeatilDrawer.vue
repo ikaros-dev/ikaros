@@ -18,6 +18,7 @@ import { useI18n } from 'vue-i18n';
 import { isImage, isVideo, isVoice } from '@/utils/file';
 import { Edit } from '@element-plus/icons-vue';
 import Artplayer from '@/components/video/Artplayer.vue';
+import AttachmentRelationsDialog from './AttachmentRelationsDialog.vue';
 
 const { t } = useI18n();
 
@@ -42,6 +43,8 @@ const emit = defineEmits<{
 	(event: 'update:defineFile', file: Attachment): void;
 	// eslint-disable-next-line no-unused-vars
 	(event: 'delete', file: Attachment): void;
+	// eslint-disable-next-line no-unused-vars
+	(event: 'close'): void;
 }>();
 
 const drawerVisible = computed({
@@ -129,6 +132,25 @@ const handleClose = (done: () => void) => {
 	done();
 	drawerVisible.value = false;
 };
+
+const attachmentRelationsDialogVisible = ref(false);
+const onAttachmentRelationsDialogClose = async ()=>{
+	// artplayerRef.value.getVideoSubtitles();
+	// artplayerRef.value.reloadArtplayer();
+	window.location.reload();
+}
+const onClose = async()=>{
+	drawerVisible.value = false;
+	emit('close');
+}
+
+const artplayer = ref<Artplayer>();
+const artplayerRef = ref();
+const getArtplayerInstance = (art: Artplayer) => {
+	artplayer.value = art;
+}
+
+
 </script>
 
 <template>
@@ -138,6 +160,7 @@ const handleClose = (done: () => void) => {
 		direction="rtl"
 		:before-close="handleClose"
 		size="88%"
+		@close="onClose"
 	>
 		<el-row>
 			<el-col :lg="24" :md="24" :sm="24" :xl="24" :xs="24">
@@ -155,8 +178,10 @@ const handleClose = (done: () => void) => {
 					</a>
 					<artplayer
 						v-else-if="isVideo(file.url as string)"
+						ref="artplayerRef"
 						v-model:attachment="file"
 						style="width: 100%"
+						@getInstance="getArtplayerInstance"
 					/>
 					<!-- <video
 						
@@ -237,6 +262,7 @@ const handleClose = (done: () => void) => {
 		</el-row>
 
 		<template #footer>
+			<el-button @click="attachmentRelationsDialogVisible = true">关联</el-button>
 			<el-popconfirm
 				title="你确定要删除该文件？"
 				confirm-button-text="确定"
@@ -249,6 +275,9 @@ const handleClose = (done: () => void) => {
 				</template>
 			</el-popconfirm>
 		</template>
+
+		<AttachmentRelationsDialog v-model:visible="attachmentRelationsDialogVisible" :attachmentId="file.id" @close="onAttachmentRelationsDialogClose"/>
+
 	</el-drawer>
 </template>
 

@@ -467,6 +467,9 @@ watch(attachmentCondition.value, () => {
 	}
 	router.push({ path: route.path, query });
 });
+const onAttachmentDetailDrawerClose = () =>{
+	window.location.reload();
+}
 </script>
 
 <template>
@@ -480,6 +483,7 @@ watch(attachmentCondition.value, () => {
 		v-model:visible="attachmentDetailDrawerVisible"
 		v-model:define-file="currentSelectionAttachment"
 		@delete="fetchAttachments"
+		@close="onAttachmentDetailDrawerClose"
 	/>
 
 	<el-dialog

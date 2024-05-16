@@ -18,28 +18,28 @@
  * @interface VideoSubtitle
  */
 export interface VideoSubtitle {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof VideoSubtitle
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof VideoSubtitle
-	 */
-	url?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof VideoSubtitle
-	 */
-	master_attachment_id?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof VideoSubtitle
-	 */
-	attachment_id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof VideoSubtitle
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof VideoSubtitle
+   */
+  url?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof VideoSubtitle
+   */
+  master_attachment_id?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof VideoSubtitle
+   */
+  attachment_id?: number;
 }

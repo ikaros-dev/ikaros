@@ -18,16 +18,16 @@
  * @interface StarterCustom
  */
 export interface StarterCustom {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof StarterCustom
-	 */
-	title?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof StarterCustom
-	 */
-	number?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof StarterCustom
+   */
+  title?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof StarterCustom
+   */
+  number?: number;
 }
