@@ -15,7 +15,8 @@ public interface AttachmentRelationService {
 
     Mono<AttachmentRelation> putAttachmentRelation(AttachmentRelation attachmentRelation);
 
-    Flux<AttachmentRelation> putAttachmentRelations(PostAttachmentRelationsParam postAttachmentRelationsParam);
+    Flux<AttachmentRelation> putAttachmentRelations(
+        PostAttachmentRelationsParam postAttachmentRelationsParam);
 
     Mono<AttachmentRelation> deleteAttachmentRelation(AttachmentRelation attachmentRelation);
 }
