@@ -18,66 +18,66 @@
  * @interface Attachment
  */
 export interface Attachment {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Attachment
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Attachment
-	 */
-	parentId?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Attachment
-	 */
-	type?: AttachmentTypeEnum;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Attachment
-	 */
-	url?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Attachment
-	 */
-	path?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Attachment
-	 */
-	fsPath?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Attachment
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Attachment
-	 */
-	size?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Attachment
-	 */
-	updateTime?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Attachment
+   */
+  id?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Attachment
+   */
+  parentId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Attachment
+   */
+  type?: AttachmentTypeEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof Attachment
+   */
+  url?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Attachment
+   */
+  path?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Attachment
+   */
+  fsPath?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Attachment
+   */
+  name?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Attachment
+   */
+  size?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Attachment
+   */
+  updateTime?: string;
 }
 
 export const AttachmentTypeEnum = {
-	File: 'File',
-	Directory: 'Directory',
+  File: "File",
+  Directory: "Directory",
 } as const;
 
 export type AttachmentTypeEnum =
-	(typeof AttachmentTypeEnum)[keyof typeof AttachmentTypeEnum];
+  (typeof AttachmentTypeEnum)[keyof typeof AttachmentTypeEnum];

@@ -14,7 +14,7 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import { SubjectHint } from './subject-hint';
+import { SubjectHint } from "./subject-hint";
 
 /**
  *
@@ -22,34 +22,34 @@ import { SubjectHint } from './subject-hint';
  * @interface SubjectHints
  */
 export interface SubjectHints {
-	/**
-	 *
-	 * @type {Array<SubjectHint>}
-	 * @memberof SubjectHints
-	 */
-	hits?: Array<SubjectHint>;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectHints
-	 */
-	keyword?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectHints
-	 */
-	total?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectHints
-	 */
-	limit?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectHints
-	 */
-	processingTimeMillis?: number;
+  /**
+   *
+   * @type {Array<SubjectHint>}
+   * @memberof SubjectHints
+   */
+  hits?: Array<SubjectHint>;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectHints
+   */
+  keyword?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectHints
+   */
+  total?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectHints
+   */
+  limit?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectHints
+   */
+  processingTimeMillis?: number;
 }

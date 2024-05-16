@@ -18,47 +18,47 @@
  * @interface Tag
  */
 export interface Tag {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Tag
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Tag
-	 */
-	type?: TagTypeEnum;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Tag
-	 */
-	masterId?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Tag
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Tag
-	 */
-	userId?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Tag
-	 */
-	createTime?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Tag
+   */
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Tag
+   */
+  type?: TagTypeEnum;
+  /**
+   *
+   * @type {number}
+   * @memberof Tag
+   */
+  masterId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Tag
+   */
+  name?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Tag
+   */
+  userId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Tag
+   */
+  createTime?: string;
 }
 
 export const TagTypeEnum = {
-	Subject: 'SUBJECT',
-	Episode: 'EPISODE',
+  Subject: "SUBJECT",
+  Episode: "EPISODE",
 } as const;
 
 export type TagTypeEnum = (typeof TagTypeEnum)[keyof typeof TagTypeEnum];

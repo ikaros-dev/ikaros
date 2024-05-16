@@ -12,498 +12,498 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from '../common';
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
 import {
-	BASE_PATH,
-	COLLECTION_FORMATS,
-	RequestArgs,
-	BaseAPI,
-	RequiredError,
-} from '../base';
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  RequestArgs,
+  BaseAPI,
+  RequiredError,
+} from "../base";
 // @ts-ignore
-import { ConfigMap } from '../models';
+import { ConfigMap } from "../models";
 // @ts-ignore
-import { PagingWrap } from '../models';
+import { PagingWrap } from "../models";
 /**
  * SettingIkarosRunV1alpha1ConfigMapApi - axios parameter creator
  * @export
  */
 export const SettingIkarosRunV1alpha1ConfigMapApiAxiosParamCreator = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	return {
-		/**
-		 * Create configmap
-		 * @param {ConfigMap} [configMap] Fresh ConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		createConfigmap: async (
-			configMap?: ConfigMap,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/apis/setting.ikaros.run/v1alpha1/configmap`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+  return {
+    /**
+     * Create configmap
+     * @param {ConfigMap} [configMap] Fresh ConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createConfigmap: async (
+      configMap?: ConfigMap,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/apis/setting.ikaros.run/v1alpha1/configmap`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			localVarHeaderParameter['Content-Type'] = 'application/json';
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				configMap,
-				localVarRequestOptions,
-				configuration
-			);
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        configMap,
+        localVarRequestOptions,
+        configuration
+      );
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Delete configmap
-		 * @param {string} name Name of ConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		deleteConfigmap: async (
-			name: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('deleteConfigmap', 'name', name);
-			const localVarPath =
-				`/apis/setting.ikaros.run/v1alpha1/configmap/{name}`.replace(
-					`{${'name'}}`,
-					encodeURIComponent(String(name))
-				);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Delete configmap
+     * @param {string} name Name of ConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteConfigmap: async (
+      name: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("deleteConfigmap", "name", name);
+      const localVarPath =
+        `/apis/setting.ikaros.run/v1alpha1/configmap/{name}`.replace(
+          `{${"name"}}`,
+          encodeURIComponent(String(name))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'DELETE',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Get configmap By Name.
-		 * @param {string} name Name of ConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getConfigmap: async (
-			name: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('getConfigmap', 'name', name);
-			const localVarPath =
-				`/apis/setting.ikaros.run/v1alpha1/configmap/{name}`.replace(
-					`{${'name'}}`,
-					encodeURIComponent(String(name))
-				);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get configmap By Name.
+     * @param {string} name Name of ConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getConfigmap: async (
+      name: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("getConfigmap", "name", name);
+      const localVarPath =
+        `/apis/setting.ikaros.run/v1alpha1/configmap/{name}`.replace(
+          `{${"name"}}`,
+          encodeURIComponent(String(name))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Get configmap meta value by name and metaName.
-		 * @param {string} name Name of ConfigMap
-		 * @param {string} metaName MetaName of ConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getConfigmapMeta: async (
-			name: string,
-			metaName: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('getConfigmapMeta', 'name', name);
-			// verify required parameter 'metaName' is not null or undefined
-			assertParamExists('getConfigmapMeta', 'metaName', metaName);
-			const localVarPath =
-				`/apis/setting.ikaros.run/v1alpha1/configmap/{name}/{metaName}`
-					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
-					.replace(`{${'metaName'}}`, encodeURIComponent(String(metaName)));
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get configmap meta value by name and metaName.
+     * @param {string} name Name of ConfigMap
+     * @param {string} metaName MetaName of ConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getConfigmapMeta: async (
+      name: string,
+      metaName: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("getConfigmapMeta", "name", name);
+      // verify required parameter 'metaName' is not null or undefined
+      assertParamExists("getConfigmapMeta", "metaName", metaName);
+      const localVarPath =
+        `/apis/setting.ikaros.run/v1alpha1/configmap/{name}/{metaName}`
+          .replace(`{${"name"}}`, encodeURIComponent(String(name)))
+          .replace(`{${"metaName"}}`, encodeURIComponent(String(metaName)));
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Get configmaps by paging.
-		 * @param {string} page Page of ConfigMap
-		 * @param {string} size Size ofConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getConfigmapsByPaging: async (
-			page: string,
-			size: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'page' is not null or undefined
-			assertParamExists('getConfigmapsByPaging', 'page', page);
-			// verify required parameter 'size' is not null or undefined
-			assertParamExists('getConfigmapsByPaging', 'size', size);
-			const localVarPath =
-				`/apis/setting.ikaros.run/v1alpha1/configmaps/{page}/{size}`
-					.replace(`{${'page'}}`, encodeURIComponent(String(page)))
-					.replace(`{${'size'}}`, encodeURIComponent(String(size)));
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get configmaps by paging.
+     * @param {string} page Page of ConfigMap
+     * @param {string} size Size ofConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getConfigmapsByPaging: async (
+      page: string,
+      size: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'page' is not null or undefined
+      assertParamExists("getConfigmapsByPaging", "page", page);
+      // verify required parameter 'size' is not null or undefined
+      assertParamExists("getConfigmapsByPaging", "size", size);
+      const localVarPath =
+        `/apis/setting.ikaros.run/v1alpha1/configmaps/{page}/{size}`
+          .replace(`{${"page"}}`, encodeURIComponent(String(page)))
+          .replace(`{${"size"}}`, encodeURIComponent(String(size)));
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * List configmaps
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		listConfigmaps: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/apis/setting.ikaros.run/v1alpha1/configmaps`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * List configmaps
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listConfigmaps: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/apis/setting.ikaros.run/v1alpha1/configmaps`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Update configmap
-		 * @param {string} name Name of configmap
-		 * @param {ConfigMap} [configMap] Updated ConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updateConfigmap: async (
-			name: string,
-			configMap?: ConfigMap,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('updateConfigmap', 'name', name);
-			const localVarPath =
-				`/apis/setting.ikaros.run/v1alpha1/configmap`.replace(
-					`{${'name'}}`,
-					encodeURIComponent(String(name))
-				);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Update configmap
+     * @param {string} name Name of configmap
+     * @param {ConfigMap} [configMap] Updated ConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateConfigmap: async (
+      name: string,
+      configMap?: ConfigMap,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("updateConfigmap", "name", name);
+      const localVarPath =
+        `/apis/setting.ikaros.run/v1alpha1/configmap`.replace(
+          `{${"name"}}`,
+          encodeURIComponent(String(name))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			localVarHeaderParameter['Content-Type'] = 'application/json';
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				configMap,
-				localVarRequestOptions,
-				configuration
-			);
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        configMap,
+        localVarRequestOptions,
+        configuration
+      );
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Update configmap metadata value.
-		 * @param {string} name Name of configmap
-		 * @param {string} metaName MetaName of configmap
-		 * @param {string} body Updated Configmap Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updateConfigmapMeta: async (
-			name: string,
-			metaName: string,
-			body: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('updateConfigmapMeta', 'name', name);
-			// verify required parameter 'metaName' is not null or undefined
-			assertParamExists('updateConfigmapMeta', 'metaName', metaName);
-			// verify required parameter 'body' is not null or undefined
-			assertParamExists('updateConfigmapMeta', 'body', body);
-			const localVarPath =
-				`/apis/setting.ikaros.run/v1alpha1/configmap/{name}/{metaName}`
-					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
-					.replace(`{${'metaName'}}`, encodeURIComponent(String(metaName)));
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Update configmap metadata value.
+     * @param {string} name Name of configmap
+     * @param {string} metaName MetaName of configmap
+     * @param {string} body Updated Configmap Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateConfigmapMeta: async (
+      name: string,
+      metaName: string,
+      body: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("updateConfigmapMeta", "name", name);
+      // verify required parameter 'metaName' is not null or undefined
+      assertParamExists("updateConfigmapMeta", "metaName", metaName);
+      // verify required parameter 'body' is not null or undefined
+      assertParamExists("updateConfigmapMeta", "body", body);
+      const localVarPath =
+        `/apis/setting.ikaros.run/v1alpha1/configmap/{name}/{metaName}`
+          .replace(`{${"name"}}`, encodeURIComponent(String(name)))
+          .replace(`{${"metaName"}}`, encodeURIComponent(String(metaName)));
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			localVarHeaderParameter['Content-Type'] = 'application/json';
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				body,
-				localVarRequestOptions,
-				configuration
-			);
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        body,
+        localVarRequestOptions,
+        configuration
+      );
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-	};
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
@@ -511,211 +511,211 @@ export const SettingIkarosRunV1alpha1ConfigMapApiAxiosParamCreator = function (
  * @export
  */
 export const SettingIkarosRunV1alpha1ConfigMapApiFp = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	const localVarAxiosParamCreator =
-		SettingIkarosRunV1alpha1ConfigMapApiAxiosParamCreator(configuration);
-	return {
-		/**
-		 * Create configmap
-		 * @param {ConfigMap} [configMap] Fresh ConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async createConfigmap(
-			configMap?: ConfigMap,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.createConfigmap(
-				configMap,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Delete configmap
-		 * @param {string} name Name of ConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async deleteConfigmap(
-			name: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.deleteConfigmap(
-				name,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Get configmap By Name.
-		 * @param {string} name Name of ConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async getConfigmap(
-			name: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.getConfigmap(
-				name,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Get configmap meta value by name and metaName.
-		 * @param {string} name Name of ConfigMap
-		 * @param {string} metaName MetaName of ConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async getConfigmapMeta(
-			name: string,
-			metaName: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.getConfigmapMeta(
-					name,
-					metaName,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Get configmaps by paging.
-		 * @param {string} page Page of ConfigMap
-		 * @param {string} size Size ofConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async getConfigmapsByPaging(
-			page: string,
-			size: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.getConfigmapsByPaging(
-					page,
-					size,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * List configmaps
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async listConfigmaps(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.listConfigmaps(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Update configmap
-		 * @param {string} name Name of configmap
-		 * @param {ConfigMap} [configMap] Updated ConfigMap
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async updateConfigmap(
-			name: string,
-			configMap?: ConfigMap,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.updateConfigmap(
-				name,
-				configMap,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Update configmap metadata value.
-		 * @param {string} name Name of configmap
-		 * @param {string} metaName MetaName of configmap
-		 * @param {string} body Updated Configmap Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async updateConfigmapMeta(
-			name: string,
-			metaName: string,
-			body: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.updateConfigmapMeta(
-					name,
-					metaName,
-					body,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-	};
+  const localVarAxiosParamCreator =
+    SettingIkarosRunV1alpha1ConfigMapApiAxiosParamCreator(configuration);
+  return {
+    /**
+     * Create configmap
+     * @param {ConfigMap} [configMap] Fresh ConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async createConfigmap(
+      configMap?: ConfigMap,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.createConfigmap(
+        configMap,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Delete configmap
+     * @param {string} name Name of ConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async deleteConfigmap(
+      name: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.deleteConfigmap(
+        name,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Get configmap By Name.
+     * @param {string} name Name of ConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getConfigmap(
+      name: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getConfigmap(
+        name,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Get configmap meta value by name and metaName.
+     * @param {string} name Name of ConfigMap
+     * @param {string} metaName MetaName of ConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getConfigmapMeta(
+      name: string,
+      metaName: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.getConfigmapMeta(
+          name,
+          metaName,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Get configmaps by paging.
+     * @param {string} page Page of ConfigMap
+     * @param {string} size Size ofConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getConfigmapsByPaging(
+      page: string,
+      size: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.getConfigmapsByPaging(
+          page,
+          size,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * List configmaps
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listConfigmaps(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.listConfigmaps(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Update configmap
+     * @param {string} name Name of configmap
+     * @param {ConfigMap} [configMap] Updated ConfigMap
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updateConfigmap(
+      name: string,
+      configMap?: ConfigMap,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.updateConfigmap(
+        name,
+        configMap,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Update configmap metadata value.
+     * @param {string} name Name of configmap
+     * @param {string} metaName MetaName of configmap
+     * @param {string} body Updated Configmap Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updateConfigmapMeta(
+      name: string,
+      metaName: string,
+      body: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.updateConfigmapMeta(
+          name,
+          metaName,
+          body,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+  };
 };
 
 /**
@@ -723,138 +723,138 @@ export const SettingIkarosRunV1alpha1ConfigMapApiFp = function (
  * @export
  */
 export const SettingIkarosRunV1alpha1ConfigMapApiFactory = function (
-	configuration?: Configuration,
-	basePath?: string,
-	axios?: AxiosInstance
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
 ) {
-	const localVarFp = SettingIkarosRunV1alpha1ConfigMapApiFp(configuration);
-	return {
-		/**
-		 * Create configmap
-		 * @param {SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		createConfigmap(
-			requestParameters: SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<ConfigMap> {
-			return localVarFp
-				.createConfigmap(requestParameters.configMap, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Delete configmap
-		 * @param {SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		deleteConfigmap(
-			requestParameters: SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.deleteConfigmap(requestParameters.name, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Get configmap By Name.
-		 * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getConfigmap(
-			requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<ConfigMap> {
-			return localVarFp
-				.getConfigmap(requestParameters.name, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Get configmap meta value by name and metaName.
-		 * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getConfigmapMeta(
-			requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.getConfigmapMeta(
-					requestParameters.name,
-					requestParameters.metaName,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Get configmaps by paging.
-		 * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getConfigmapsByPaging(
-			requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<PagingWrap> {
-			return localVarFp
-				.getConfigmapsByPaging(
-					requestParameters.page,
-					requestParameters.size,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * List configmaps
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		listConfigmaps(options?: AxiosRequestConfig): AxiosPromise<ConfigMap> {
-			return localVarFp
-				.listConfigmaps(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Update configmap
-		 * @param {SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updateConfigmap(
-			requestParameters: SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<ConfigMap> {
-			return localVarFp
-				.updateConfigmap(
-					requestParameters.name,
-					requestParameters.configMap,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Update configmap metadata value.
-		 * @param {SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updateConfigmapMeta(
-			requestParameters: SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<ConfigMap> {
-			return localVarFp
-				.updateConfigmapMeta(
-					requestParameters.name,
-					requestParameters.metaName,
-					requestParameters.body,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-	};
+  const localVarFp = SettingIkarosRunV1alpha1ConfigMapApiFp(configuration);
+  return {
+    /**
+     * Create configmap
+     * @param {SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createConfigmap(
+      requestParameters: SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<ConfigMap> {
+      return localVarFp
+        .createConfigmap(requestParameters.configMap, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Delete configmap
+     * @param {SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteConfigmap(
+      requestParameters: SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .deleteConfigmap(requestParameters.name, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get configmap By Name.
+     * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getConfigmap(
+      requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<ConfigMap> {
+      return localVarFp
+        .getConfigmap(requestParameters.name, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get configmap meta value by name and metaName.
+     * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getConfigmapMeta(
+      requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .getConfigmapMeta(
+          requestParameters.name,
+          requestParameters.metaName,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get configmaps by paging.
+     * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getConfigmapsByPaging(
+      requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<PagingWrap> {
+      return localVarFp
+        .getConfigmapsByPaging(
+          requestParameters.page,
+          requestParameters.size,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * List configmaps
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listConfigmaps(options?: AxiosRequestConfig): AxiosPromise<ConfigMap> {
+      return localVarFp
+        .listConfigmaps(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Update configmap
+     * @param {SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateConfigmap(
+      requestParameters: SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<ConfigMap> {
+      return localVarFp
+        .updateConfigmap(
+          requestParameters.name,
+          requestParameters.configMap,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Update configmap metadata value.
+     * @param {SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateConfigmapMeta(
+      requestParameters: SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<ConfigMap> {
+      return localVarFp
+        .updateConfigmapMeta(
+          requestParameters.name,
+          requestParameters.metaName,
+          requestParameters.body,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -863,12 +863,12 @@ export const SettingIkarosRunV1alpha1ConfigMapApiFactory = function (
  * @interface SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest
  */
 export interface SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest {
-	/**
-	 * Fresh ConfigMap
-	 * @type {ConfigMap}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmap
-	 */
-	readonly configMap?: ConfigMap;
+  /**
+   * Fresh ConfigMap
+   * @type {ConfigMap}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmap
+   */
+  readonly configMap?: ConfigMap;
 }
 
 /**
@@ -877,12 +877,12 @@ export interface SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest {
  * @interface SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest
  */
 export interface SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest {
-	/**
-	 * Name of ConfigMap
-	 * @type {string}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmap
-	 */
-	readonly name: string;
+  /**
+   * Name of ConfigMap
+   * @type {string}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmap
+   */
+  readonly name: string;
 }
 
 /**
@@ -891,12 +891,12 @@ export interface SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest {
  * @interface SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest
  */
 export interface SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest {
-	/**
-	 * Name of ConfigMap
-	 * @type {string}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiGetConfigmap
-	 */
-	readonly name: string;
+  /**
+   * Name of ConfigMap
+   * @type {string}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiGetConfigmap
+   */
+  readonly name: string;
 }
 
 /**
@@ -905,19 +905,19 @@ export interface SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest {
  * @interface SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest
  */
 export interface SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest {
-	/**
-	 * Name of ConfigMap
-	 * @type {string}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMeta
-	 */
-	readonly name: string;
+  /**
+   * Name of ConfigMap
+   * @type {string}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMeta
+   */
+  readonly name: string;
 
-	/**
-	 * MetaName of ConfigMap
-	 * @type {string}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMeta
-	 */
-	readonly metaName: string;
+  /**
+   * MetaName of ConfigMap
+   * @type {string}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMeta
+   */
+  readonly metaName: string;
 }
 
 /**
@@ -926,19 +926,19 @@ export interface SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest {
  * @interface SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingRequest
  */
 export interface SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingRequest {
-	/**
-	 * Page of ConfigMap
-	 * @type {string}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPaging
-	 */
-	readonly page: string;
+  /**
+   * Page of ConfigMap
+   * @type {string}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPaging
+   */
+  readonly page: string;
 
-	/**
-	 * Size ofConfigMap
-	 * @type {string}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPaging
-	 */
-	readonly size: string;
+  /**
+   * Size ofConfigMap
+   * @type {string}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPaging
+   */
+  readonly size: string;
 }
 
 /**
@@ -947,19 +947,19 @@ export interface SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingReques
  * @interface SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest
  */
 export interface SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest {
-	/**
-	 * Name of configmap
-	 * @type {string}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmap
-	 */
-	readonly name: string;
+  /**
+   * Name of configmap
+   * @type {string}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmap
+   */
+  readonly name: string;
 
-	/**
-	 * Updated ConfigMap
-	 * @type {ConfigMap}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmap
-	 */
-	readonly configMap?: ConfigMap;
+  /**
+   * Updated ConfigMap
+   * @type {ConfigMap}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmap
+   */
+  readonly configMap?: ConfigMap;
 }
 
 /**
@@ -968,26 +968,26 @@ export interface SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest {
  * @interface SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest
  */
 export interface SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest {
-	/**
-	 * Name of configmap
-	 * @type {string}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMeta
-	 */
-	readonly name: string;
+  /**
+   * Name of configmap
+   * @type {string}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMeta
+   */
+  readonly name: string;
 
-	/**
-	 * MetaName of configmap
-	 * @type {string}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMeta
-	 */
-	readonly metaName: string;
+  /**
+   * MetaName of configmap
+   * @type {string}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMeta
+   */
+  readonly metaName: string;
 
-	/**
-	 * Updated Configmap Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
-	 * @type {string}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMeta
-	 */
-	readonly body: string;
+  /**
+   * Updated Configmap Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+   * @type {string}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMeta
+   */
+  readonly body: string;
 }
 
 /**
@@ -997,144 +997,144 @@ export interface SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest 
  * @extends {BaseAPI}
  */
 export class SettingIkarosRunV1alpha1ConfigMapApi extends BaseAPI {
-	/**
-	 * Create configmap
-	 * @param {SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApi
-	 */
-	public createConfigmap(
-		requestParameters: SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
-			.createConfigmap(requestParameters.configMap, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Create configmap
+   * @param {SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApi
+   */
+  public createConfigmap(
+    requestParameters: SettingIkarosRunV1alpha1ConfigMapApiCreateConfigmapRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
+      .createConfigmap(requestParameters.configMap, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Delete configmap
-	 * @param {SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApi
-	 */
-	public deleteConfigmap(
-		requestParameters: SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest,
-		options?: AxiosRequestConfig
-	) {
-		return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
-			.deleteConfigmap(requestParameters.name, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Delete configmap
+   * @param {SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApi
+   */
+  public deleteConfigmap(
+    requestParameters: SettingIkarosRunV1alpha1ConfigMapApiDeleteConfigmapRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
+      .deleteConfigmap(requestParameters.name, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Get configmap By Name.
-	 * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApi
-	 */
-	public getConfigmap(
-		requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest,
-		options?: AxiosRequestConfig
-	) {
-		return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
-			.getConfigmap(requestParameters.name, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Get configmap By Name.
+   * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApi
+   */
+  public getConfigmap(
+    requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
+      .getConfigmap(requestParameters.name, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Get configmap meta value by name and metaName.
-	 * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApi
-	 */
-	public getConfigmapMeta(
-		requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest,
-		options?: AxiosRequestConfig
-	) {
-		return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
-			.getConfigmapMeta(
-				requestParameters.name,
-				requestParameters.metaName,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Get configmap meta value by name and metaName.
+   * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApi
+   */
+  public getConfigmapMeta(
+    requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapMetaRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
+      .getConfigmapMeta(
+        requestParameters.name,
+        requestParameters.metaName,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Get configmaps by paging.
-	 * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApi
-	 */
-	public getConfigmapsByPaging(
-		requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingRequest,
-		options?: AxiosRequestConfig
-	) {
-		return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
-			.getConfigmapsByPaging(
-				requestParameters.page,
-				requestParameters.size,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Get configmaps by paging.
+   * @param {SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApi
+   */
+  public getConfigmapsByPaging(
+    requestParameters: SettingIkarosRunV1alpha1ConfigMapApiGetConfigmapsByPagingRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
+      .getConfigmapsByPaging(
+        requestParameters.page,
+        requestParameters.size,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * List configmaps
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApi
-	 */
-	public listConfigmaps(options?: AxiosRequestConfig) {
-		return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
-			.listConfigmaps(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * List configmaps
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApi
+   */
+  public listConfigmaps(options?: AxiosRequestConfig) {
+    return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
+      .listConfigmaps(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Update configmap
-	 * @param {SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApi
-	 */
-	public updateConfigmap(
-		requestParameters: SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest,
-		options?: AxiosRequestConfig
-	) {
-		return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
-			.updateConfigmap(
-				requestParameters.name,
-				requestParameters.configMap,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Update configmap
+   * @param {SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApi
+   */
+  public updateConfigmap(
+    requestParameters: SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
+      .updateConfigmap(
+        requestParameters.name,
+        requestParameters.configMap,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Update configmap metadata value.
-	 * @param {SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof SettingIkarosRunV1alpha1ConfigMapApi
-	 */
-	public updateConfigmapMeta(
-		requestParameters: SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest,
-		options?: AxiosRequestConfig
-	) {
-		return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
-			.updateConfigmapMeta(
-				requestParameters.name,
-				requestParameters.metaName,
-				requestParameters.body,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Update configmap metadata value.
+   * @param {SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof SettingIkarosRunV1alpha1ConfigMapApi
+   */
+  public updateConfigmapMeta(
+    requestParameters: SettingIkarosRunV1alpha1ConfigMapApiUpdateConfigmapMetaRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return SettingIkarosRunV1alpha1ConfigMapApiFp(this.configuration)
+      .updateConfigmapMeta(
+        requestParameters.name,
+        requestParameters.metaName,
+        requestParameters.body,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 }

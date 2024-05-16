@@ -12,172 +12,391 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from '../common';
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
 import {
-	BASE_PATH,
-	COLLECTION_FORMATS,
-	RequestArgs,
-	BaseAPI,
-	RequiredError,
-} from '../base';
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  RequestArgs,
+  BaseAPI,
+  RequiredError,
+} from "../base";
 // @ts-ignore
-import { AttachmentRelation } from '../models';
+import { AttachmentRelation } from "../models";
 // @ts-ignore
-import { VideoSubtitle } from '../models';
+import { PostAttachmentRelationsParam } from "../models";
+// @ts-ignore
+import { VideoSubtitle } from "../models";
 /**
  * V1alpha1AttachmentRelationApi - axios parameter creator
  * @export
  */
 export const V1alpha1AttachmentRelationApiAxiosParamCreator = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	return {
-		/**
-		 *
-		 * @param {number} attachmentId Attachment ID
-		 * @param {'VIDEO_SUBTITLE'} relationType Relation type
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findAttachmentRelations: async (
-			attachmentId: number,
-			relationType: 'VIDEO_SUBTITLE',
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'attachmentId' is not null or undefined
-			assertParamExists(
-				'findAttachmentRelations',
-				'attachmentId',
-				attachmentId
-			);
-			// verify required parameter 'relationType' is not null or undefined
-			assertParamExists(
-				'findAttachmentRelations',
-				'relationType',
-				relationType
-			);
-			const localVarPath = `/api/v1alpha1/attachment/relations`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+  return {
+    /**
+     *
+     * @param {number} masterAttachmentId Master attachment id
+     * @param {number} relAttachmentId Related attachment id
+     * @param {'VIDEO_SUBTITLE'} type Type of attachment
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteAttachmentRelation: async (
+      masterAttachmentId: number,
+      relAttachmentId: number,
+      type: "VIDEO_SUBTITLE",
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'masterAttachmentId' is not null or undefined
+      assertParamExists(
+        "deleteAttachmentRelation",
+        "masterAttachmentId",
+        masterAttachmentId
+      );
+      // verify required parameter 'relAttachmentId' is not null or undefined
+      assertParamExists(
+        "deleteAttachmentRelation",
+        "relAttachmentId",
+        relAttachmentId
+      );
+      // verify required parameter 'type' is not null or undefined
+      assertParamExists("deleteAttachmentRelation", "type", type);
+      const localVarPath =
+        `/api/v1alpha1/attachment/relation/{masterAttachmentId}`.replace(
+          `{${"masterAttachmentId"}}`,
+          encodeURIComponent(String(masterAttachmentId))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (attachmentId !== undefined) {
-				localVarQueryParameter['attachmentId'] = attachmentId;
-			}
+      if (relAttachmentId !== undefined) {
+        localVarQueryParameter["relAttachmentId"] = relAttachmentId;
+      }
 
-			if (relationType !== undefined) {
-				localVarQueryParameter['relationType'] = relationType;
-			}
+      if (type !== undefined) {
+        localVarQueryParameter["type"] = type;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @param {number} attachmentId Attachment ID
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findAttachmentVideoSubtitles: async (
-			attachmentId: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'attachmentId' is not null or undefined
-			assertParamExists(
-				'findAttachmentVideoSubtitles',
-				'attachmentId',
-				attachmentId
-			);
-			const localVarPath =
-				`/api/v1alpha1/attachment/relation/videoSubtitle/subtitles/{attachmentId}`.replace(
-					`{${'attachmentId'}}`,
-					encodeURIComponent(String(attachmentId))
-				);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @param {number} attachmentId Attachment ID
+     * @param {'VIDEO_SUBTITLE'} relationType Relation type
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findAttachmentRelations: async (
+      attachmentId: number,
+      relationType: "VIDEO_SUBTITLE",
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'attachmentId' is not null or undefined
+      assertParamExists(
+        "findAttachmentRelations",
+        "attachmentId",
+        attachmentId
+      );
+      // verify required parameter 'relationType' is not null or undefined
+      assertParamExists(
+        "findAttachmentRelations",
+        "relationType",
+        relationType
+      );
+      const localVarPath = `/api/v1alpha1/attachment/relations`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      if (attachmentId !== undefined) {
+        localVarQueryParameter["attachmentId"] = attachmentId;
+      }
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-	};
+      if (relationType !== undefined) {
+        localVarQueryParameter["relationType"] = relationType;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @param {number} attachmentId Attachment ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findAttachmentVideoSubtitles: async (
+      attachmentId: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'attachmentId' is not null or undefined
+      assertParamExists(
+        "findAttachmentVideoSubtitles",
+        "attachmentId",
+        attachmentId
+      );
+      const localVarPath =
+        `/api/v1alpha1/attachment/relation/videoSubtitle/subtitles/{attachmentId}`.replace(
+          `{${"attachmentId"}}`,
+          encodeURIComponent(String(attachmentId))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @param {PostAttachmentRelationsParam} postAttachmentRelationsParam Post attachment relations request body.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    postAttachmentRelations: async (
+      postAttachmentRelationsParam: PostAttachmentRelationsParam,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'postAttachmentRelationsParam' is not null or undefined
+      assertParamExists(
+        "postAttachmentRelations",
+        "postAttachmentRelationsParam",
+        postAttachmentRelationsParam
+      );
+      const localVarPath = `/api/v1alpha1/attachment/relations`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        postAttachmentRelationsParam,
+        localVarRequestOptions,
+        configuration
+      );
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @param {number} masterAttachmentId Master attachment id
+     * @param {number} relAttachmentId Related attachment id
+     * @param {'VIDEO_SUBTITLE'} type Type of attachment
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    putAttachmentRelation: async (
+      masterAttachmentId: number,
+      relAttachmentId: number,
+      type: "VIDEO_SUBTITLE",
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'masterAttachmentId' is not null or undefined
+      assertParamExists(
+        "putAttachmentRelation",
+        "masterAttachmentId",
+        masterAttachmentId
+      );
+      // verify required parameter 'relAttachmentId' is not null or undefined
+      assertParamExists(
+        "putAttachmentRelation",
+        "relAttachmentId",
+        relAttachmentId
+      );
+      // verify required parameter 'type' is not null or undefined
+      assertParamExists("putAttachmentRelation", "type", type);
+      const localVarPath =
+        `/api/v1alpha1/attachment/relation/{masterAttachmentId}`.replace(
+          `{${"masterAttachmentId"}}`,
+          encodeURIComponent(String(masterAttachmentId))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (relAttachmentId !== undefined) {
+        localVarQueryParameter["relAttachmentId"] = relAttachmentId;
+      }
+
+      if (type !== undefined) {
+        localVarQueryParameter["type"] = type;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
@@ -185,69 +404,162 @@ export const V1alpha1AttachmentRelationApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1AttachmentRelationApiFp = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	const localVarAxiosParamCreator =
-		V1alpha1AttachmentRelationApiAxiosParamCreator(configuration);
-	return {
-		/**
-		 *
-		 * @param {number} attachmentId Attachment ID
-		 * @param {'VIDEO_SUBTITLE'} relationType Relation type
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async findAttachmentRelations(
-			attachmentId: number,
-			relationType: 'VIDEO_SUBTITLE',
-			options?: AxiosRequestConfig
-		): Promise<
-			(
-				axios?: AxiosInstance,
-				basePath?: string
-			) => AxiosPromise<Array<AttachmentRelation>>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.findAttachmentRelations(
-					attachmentId,
-					relationType,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @param {number} attachmentId Attachment ID
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async findAttachmentVideoSubtitles(
-			attachmentId: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(
-				axios?: AxiosInstance,
-				basePath?: string
-			) => AxiosPromise<Array<VideoSubtitle>>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.findAttachmentVideoSubtitles(
-					attachmentId,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-	};
+  const localVarAxiosParamCreator =
+    V1alpha1AttachmentRelationApiAxiosParamCreator(configuration);
+  return {
+    /**
+     *
+     * @param {number} masterAttachmentId Master attachment id
+     * @param {number} relAttachmentId Related attachment id
+     * @param {'VIDEO_SUBTITLE'} type Type of attachment
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async deleteAttachmentRelation(
+      masterAttachmentId: number,
+      relAttachmentId: number,
+      type: "VIDEO_SUBTITLE",
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<AttachmentRelation>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.deleteAttachmentRelation(
+          masterAttachmentId,
+          relAttachmentId,
+          type,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @param {number} attachmentId Attachment ID
+     * @param {'VIDEO_SUBTITLE'} relationType Relation type
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async findAttachmentRelations(
+      attachmentId: number,
+      relationType: "VIDEO_SUBTITLE",
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<AttachmentRelation>>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.findAttachmentRelations(
+          attachmentId,
+          relationType,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @param {number} attachmentId Attachment ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async findAttachmentVideoSubtitles(
+      attachmentId: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<VideoSubtitle>>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.findAttachmentVideoSubtitles(
+          attachmentId,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @param {PostAttachmentRelationsParam} postAttachmentRelationsParam Post attachment relations request body.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async postAttachmentRelations(
+      postAttachmentRelationsParam: PostAttachmentRelationsParam,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<AttachmentRelation>>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.postAttachmentRelations(
+          postAttachmentRelationsParam,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @param {number} masterAttachmentId Master attachment id
+     * @param {number} relAttachmentId Related attachment id
+     * @param {'VIDEO_SUBTITLE'} type Type of attachment
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async putAttachmentRelation(
+      masterAttachmentId: number,
+      relAttachmentId: number,
+      type: "VIDEO_SUBTITLE",
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<AttachmentRelation>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.putAttachmentRelation(
+          masterAttachmentId,
+          relAttachmentId,
+          type,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+  };
 };
 
 /**
@@ -255,46 +567,129 @@ export const V1alpha1AttachmentRelationApiFp = function (
  * @export
  */
 export const V1alpha1AttachmentRelationApiFactory = function (
-	configuration?: Configuration,
-	basePath?: string,
-	axios?: AxiosInstance
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
 ) {
-	const localVarFp = V1alpha1AttachmentRelationApiFp(configuration);
-	return {
-		/**
-		 *
-		 * @param {V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findAttachmentRelations(
-			requestParameters: V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<Array<AttachmentRelation>> {
-			return localVarFp
-				.findAttachmentRelations(
-					requestParameters.attachmentId,
-					requestParameters.relationType,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @param {V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findAttachmentVideoSubtitles(
-			requestParameters: V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<Array<VideoSubtitle>> {
-			return localVarFp
-				.findAttachmentVideoSubtitles(requestParameters.attachmentId, options)
-				.then((request) => request(axios, basePath));
-		},
-	};
+  const localVarFp = V1alpha1AttachmentRelationApiFp(configuration);
+  return {
+    /**
+     *
+     * @param {V1alpha1AttachmentRelationApiDeleteAttachmentRelationRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteAttachmentRelation(
+      requestParameters: V1alpha1AttachmentRelationApiDeleteAttachmentRelationRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<AttachmentRelation> {
+      return localVarFp
+        .deleteAttachmentRelation(
+          requestParameters.masterAttachmentId,
+          requestParameters.relAttachmentId,
+          requestParameters.type,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @param {V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findAttachmentRelations(
+      requestParameters: V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<AttachmentRelation>> {
+      return localVarFp
+        .findAttachmentRelations(
+          requestParameters.attachmentId,
+          requestParameters.relationType,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @param {V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findAttachmentVideoSubtitles(
+      requestParameters: V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<VideoSubtitle>> {
+      return localVarFp
+        .findAttachmentVideoSubtitles(requestParameters.attachmentId, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @param {V1alpha1AttachmentRelationApiPostAttachmentRelationsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    postAttachmentRelations(
+      requestParameters: V1alpha1AttachmentRelationApiPostAttachmentRelationsRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<AttachmentRelation>> {
+      return localVarFp
+        .postAttachmentRelations(
+          requestParameters.postAttachmentRelationsParam,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @param {V1alpha1AttachmentRelationApiPutAttachmentRelationRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    putAttachmentRelation(
+      requestParameters: V1alpha1AttachmentRelationApiPutAttachmentRelationRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<AttachmentRelation> {
+      return localVarFp
+        .putAttachmentRelation(
+          requestParameters.masterAttachmentId,
+          requestParameters.relAttachmentId,
+          requestParameters.type,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
+
+/**
+ * Request parameters for deleteAttachmentRelation operation in V1alpha1AttachmentRelationApi.
+ * @export
+ * @interface V1alpha1AttachmentRelationApiDeleteAttachmentRelationRequest
+ */
+export interface V1alpha1AttachmentRelationApiDeleteAttachmentRelationRequest {
+  /**
+   * Master attachment id
+   * @type {number}
+   * @memberof V1alpha1AttachmentRelationApiDeleteAttachmentRelation
+   */
+  readonly masterAttachmentId: number;
+
+  /**
+   * Related attachment id
+   * @type {number}
+   * @memberof V1alpha1AttachmentRelationApiDeleteAttachmentRelation
+   */
+  readonly relAttachmentId: number;
+
+  /**
+   * Type of attachment
+   * @type {'VIDEO_SUBTITLE'}
+   * @memberof V1alpha1AttachmentRelationApiDeleteAttachmentRelation
+   */
+  readonly type: "VIDEO_SUBTITLE";
+}
 
 /**
  * Request parameters for findAttachmentRelations operation in V1alpha1AttachmentRelationApi.
@@ -302,19 +697,19 @@ export const V1alpha1AttachmentRelationApiFactory = function (
  * @interface V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest
  */
 export interface V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest {
-	/**
-	 * Attachment ID
-	 * @type {number}
-	 * @memberof V1alpha1AttachmentRelationApiFindAttachmentRelations
-	 */
-	readonly attachmentId: number;
+  /**
+   * Attachment ID
+   * @type {number}
+   * @memberof V1alpha1AttachmentRelationApiFindAttachmentRelations
+   */
+  readonly attachmentId: number;
 
-	/**
-	 * Relation type
-	 * @type {'VIDEO_SUBTITLE'}
-	 * @memberof V1alpha1AttachmentRelationApiFindAttachmentRelations
-	 */
-	readonly relationType: 'VIDEO_SUBTITLE';
+  /**
+   * Relation type
+   * @type {'VIDEO_SUBTITLE'}
+   * @memberof V1alpha1AttachmentRelationApiFindAttachmentRelations
+   */
+  readonly relationType: "VIDEO_SUBTITLE";
 }
 
 /**
@@ -323,12 +718,54 @@ export interface V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest {
  * @interface V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest
  */
 export interface V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest {
-	/**
-	 * Attachment ID
-	 * @type {number}
-	 * @memberof V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitles
-	 */
-	readonly attachmentId: number;
+  /**
+   * Attachment ID
+   * @type {number}
+   * @memberof V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitles
+   */
+  readonly attachmentId: number;
+}
+
+/**
+ * Request parameters for postAttachmentRelations operation in V1alpha1AttachmentRelationApi.
+ * @export
+ * @interface V1alpha1AttachmentRelationApiPostAttachmentRelationsRequest
+ */
+export interface V1alpha1AttachmentRelationApiPostAttachmentRelationsRequest {
+  /**
+   * Post attachment relations request body.
+   * @type {PostAttachmentRelationsParam}
+   * @memberof V1alpha1AttachmentRelationApiPostAttachmentRelations
+   */
+  readonly postAttachmentRelationsParam: PostAttachmentRelationsParam;
+}
+
+/**
+ * Request parameters for putAttachmentRelation operation in V1alpha1AttachmentRelationApi.
+ * @export
+ * @interface V1alpha1AttachmentRelationApiPutAttachmentRelationRequest
+ */
+export interface V1alpha1AttachmentRelationApiPutAttachmentRelationRequest {
+  /**
+   * Master attachment id
+   * @type {number}
+   * @memberof V1alpha1AttachmentRelationApiPutAttachmentRelation
+   */
+  readonly masterAttachmentId: number;
+
+  /**
+   * Related attachment id
+   * @type {number}
+   * @memberof V1alpha1AttachmentRelationApiPutAttachmentRelation
+   */
+  readonly relAttachmentId: number;
+
+  /**
+   * Type of attachment
+   * @type {'VIDEO_SUBTITLE'}
+   * @memberof V1alpha1AttachmentRelationApiPutAttachmentRelation
+   */
+  readonly type: "VIDEO_SUBTITLE";
 }
 
 /**
@@ -338,39 +775,100 @@ export interface V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesReques
  * @extends {BaseAPI}
  */
 export class V1alpha1AttachmentRelationApi extends BaseAPI {
-	/**
-	 *
-	 * @param {V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentRelationApi
-	 */
-	public findAttachmentRelations(
-		requestParameters: V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentRelationApiFp(this.configuration)
-			.findAttachmentRelations(
-				requestParameters.attachmentId,
-				requestParameters.relationType,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @param {V1alpha1AttachmentRelationApiDeleteAttachmentRelationRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentRelationApi
+   */
+  public deleteAttachmentRelation(
+    requestParameters: V1alpha1AttachmentRelationApiDeleteAttachmentRelationRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentRelationApiFp(this.configuration)
+      .deleteAttachmentRelation(
+        requestParameters.masterAttachmentId,
+        requestParameters.relAttachmentId,
+        requestParameters.type,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @param {V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentRelationApi
-	 */
-	public findAttachmentVideoSubtitles(
-		requestParameters: V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentRelationApiFp(this.configuration)
-			.findAttachmentVideoSubtitles(requestParameters.attachmentId, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @param {V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentRelationApi
+   */
+  public findAttachmentRelations(
+    requestParameters: V1alpha1AttachmentRelationApiFindAttachmentRelationsRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentRelationApiFp(this.configuration)
+      .findAttachmentRelations(
+        requestParameters.attachmentId,
+        requestParameters.relationType,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   *
+   * @param {V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentRelationApi
+   */
+  public findAttachmentVideoSubtitles(
+    requestParameters: V1alpha1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentRelationApiFp(this.configuration)
+      .findAttachmentVideoSubtitles(requestParameters.attachmentId, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   *
+   * @param {V1alpha1AttachmentRelationApiPostAttachmentRelationsRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentRelationApi
+   */
+  public postAttachmentRelations(
+    requestParameters: V1alpha1AttachmentRelationApiPostAttachmentRelationsRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentRelationApiFp(this.configuration)
+      .postAttachmentRelations(
+        requestParameters.postAttachmentRelationsParam,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   *
+   * @param {V1alpha1AttachmentRelationApiPutAttachmentRelationRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentRelationApi
+   */
+  public putAttachmentRelation(
+    requestParameters: V1alpha1AttachmentRelationApiPutAttachmentRelationRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentRelationApiFp(this.configuration)
+      .putAttachmentRelation(
+        requestParameters.masterAttachmentId,
+        requestParameters.relAttachmentId,
+        requestParameters.type,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 }

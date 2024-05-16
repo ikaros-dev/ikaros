@@ -18,35 +18,35 @@
  * @interface FileRelations
  */
 export interface FileRelations {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileRelations
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileRelations
-	 */
-	file_id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileRelations
-	 */
-	relation_type?: FileRelationsRelationTypeEnum;
-	/**
-	 *
-	 * @type {Array<number>}
-	 * @memberof FileRelations
-	 */
-	relation_file_ids?: Array<number>;
+  /**
+   *
+   * @type {number}
+   * @memberof FileRelations
+   */
+  id?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof FileRelations
+   */
+  file_id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof FileRelations
+   */
+  relation_type?: FileRelationsRelationTypeEnum;
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof FileRelations
+   */
+  relation_file_ids?: Array<number>;
 }
 
 export const FileRelationsRelationTypeEnum = {
-	VideoSubtitle: 'VIDEO_SUBTITLE',
+  VideoSubtitle: "VIDEO_SUBTITLE",
 } as const;
 
 export type FileRelationsRelationTypeEnum =
-	(typeof FileRelationsRelationTypeEnum)[keyof typeof FileRelationsRelationTypeEnum];
+  (typeof FileRelationsRelationTypeEnum)[keyof typeof FileRelationsRelationTypeEnum];

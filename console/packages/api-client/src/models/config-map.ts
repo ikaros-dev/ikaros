@@ -18,16 +18,16 @@
  * @interface ConfigMap
  */
 export interface ConfigMap {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof ConfigMap
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {{ [key: string]: string; }}
-	 * @memberof ConfigMap
-	 */
-	data?: { [key: string]: string };
+  /**
+   *
+   * @type {string}
+   * @memberof ConfigMap
+   */
+  name?: string;
+  /**
+   *
+   * @type {{ [key: string]: string; }}
+   * @memberof ConfigMap
+   */
+  data?: { [key: string]: string };
 }

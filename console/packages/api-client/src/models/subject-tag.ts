@@ -18,34 +18,34 @@
  * @interface SubjectTag
  */
 export interface SubjectTag {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectTag
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectTag
-	 */
-	subjectId?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectTag
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SubjectTag
-	 */
-	userId?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof SubjectTag
-	 */
-	createTime?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectTag
+   */
+  id?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectTag
+   */
+  subjectId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectTag
+   */
+  name?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectTag
+   */
+  userId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectTag
+   */
+  createTime?: string;
 }

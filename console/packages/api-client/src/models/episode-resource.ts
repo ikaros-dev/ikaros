@@ -18,46 +18,46 @@
  * @interface EpisodeResource
  */
 export interface EpisodeResource {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof EpisodeResource
-	 */
-	attachmentId?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof EpisodeResource
-	 */
-	parentAttachmentId?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof EpisodeResource
-	 */
-	episodeId?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof EpisodeResource
-	 */
-	url?: string;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof EpisodeResource
-	 */
-	canRead?: boolean;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof EpisodeResource
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {Set<string>}
-	 * @memberof EpisodeResource
-	 */
-	tags?: Set<string>;
+  /**
+   *
+   * @type {number}
+   * @memberof EpisodeResource
+   */
+  attachmentId?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof EpisodeResource
+   */
+  parentAttachmentId?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof EpisodeResource
+   */
+  episodeId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof EpisodeResource
+   */
+  url?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof EpisodeResource
+   */
+  canRead?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof EpisodeResource
+   */
+  name?: string;
+  /**
+   *
+   * @type {Set<string>}
+   * @memberof EpisodeResource
+   */
+  tags?: Set<string>;
 }

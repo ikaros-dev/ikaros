@@ -12,655 +12,655 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from '../common';
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
 import {
-	BASE_PATH,
-	COLLECTION_FORMATS,
-	RequestArgs,
-	BaseAPI,
-	RequiredError,
-} from '../base';
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  RequestArgs,
+  BaseAPI,
+  RequiredError,
+} from "../base";
 // @ts-ignore
-import { Attachment } from '../models';
+import { Attachment } from "../models";
 // @ts-ignore
-import { PagingWrap } from '../models';
+import { PagingWrap } from "../models";
 /**
  * V1alpha1AttachmentApi - axios parameter creator
  * @export
  */
 export const V1alpha1AttachmentApiAxiosParamCreator = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	return {
-		/**
-		 * Create directory
-		 * @param {string} name 经过Basic64编码的附件名称，附件名称字段模糊查询。
-		 * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		createDirectory: async (
-			name: string,
-			parentId?: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('createDirectory', 'name', name);
-			const localVarPath = `/api/v1alpha1/attachment/directory`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			if (name !== undefined) {
-				localVarQueryParameter['name'] = name;
-			}
-
-			if (parentId !== undefined) {
-				localVarQueryParameter['parentId'] = parentId;
-			}
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @param {number} id Attachment ID
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		deleteAttachment: async (
-			id: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'id' is not null or undefined
-			assertParamExists('deleteAttachment', 'id', id);
-			const localVarPath = `/api/v1alpha1/attachment/{id}`.replace(
-				`{${'id'}}`,
-				encodeURIComponent(String(id))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'DELETE',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Generate fragment upload attachment unique id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		generateFragmentUploadAttachmentUniqueId: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/attachment/fragment/unique`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @param {number} id Attachment ID
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getAttachmentById: async (
-			id: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'id' is not null or undefined
-			assertParamExists('getAttachmentById', 'id', id);
-			const localVarPath = `/api/v1alpha1/attachment/{id}`.replace(
-				`{${'id'}}`,
-				encodeURIComponent(String(id))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Get attachment path dirs by id.
-		 * @param {number} id Attachment id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getAttachmentPathDirsById: async (
-			id: number,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'id' is not null or undefined
-			assertParamExists('getAttachmentPathDirsById', 'id', id);
-			const localVarPath = `/api/v1alpha1/attachment/paths/{id}`.replace(
-				`{${'id'}}`,
-				encodeURIComponent(String(id))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * List attachments by condition.
-		 * @param {number} [page] 第几页，从1开始, 默认为1.
-		 * @param {number} [size] 每页条数，默认为10.
-		 * @param {'File' | 'Directory'} [type] 附件类型。
-		 * @param {string} [name] 经过Basic64编码的附件名称，附件名称字段模糊查询。
-		 * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		listAttachmentsByCondition: async (
-			page?: number,
-			size?: number,
-			type?: 'File' | 'Directory',
-			name?: string,
-			parentId?: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/attachments/condition`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			if (page !== undefined) {
-				localVarQueryParameter['page'] = page;
-			}
-
-			if (size !== undefined) {
-				localVarQueryParameter['size'] = size;
-			}
-
-			if (type !== undefined) {
-				localVarQueryParameter['type'] = type;
-			}
-
-			if (name !== undefined) {
-				localVarQueryParameter['name'] = name;
-			}
-
-			if (parentId !== undefined) {
-				localVarQueryParameter['parentId'] = parentId;
-			}
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Receive fragment upload chunk attachment.
-		 * @param {string} unique Chunk attachment unique id.
-		 * @param {string} uploadLength Upload chunk attachment length.
-		 * @param {string} uploadOffset Upload chunk attachment offset.
-		 * @param {string} uploadName Upload chunk attachment file name.
-		 * @param {string} [pARENTID] 附件的父附件ID，父附件一般时目录类型。
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		receiveFragmentUploadChunkAttachment: async (
-			unique: string,
-			uploadLength: string,
-			uploadOffset: string,
-			uploadName: string,
-			pARENTID?: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'unique' is not null or undefined
-			assertParamExists(
-				'receiveFragmentUploadChunkAttachment',
-				'unique',
-				unique
-			);
-			// verify required parameter 'uploadLength' is not null or undefined
-			assertParamExists(
-				'receiveFragmentUploadChunkAttachment',
-				'uploadLength',
-				uploadLength
-			);
-			// verify required parameter 'uploadOffset' is not null or undefined
-			assertParamExists(
-				'receiveFragmentUploadChunkAttachment',
-				'uploadOffset',
-				uploadOffset
-			);
-			// verify required parameter 'uploadName' is not null or undefined
-			assertParamExists(
-				'receiveFragmentUploadChunkAttachment',
-				'uploadName',
-				uploadName
-			);
-			const localVarPath =
-				`/api/v1alpha1/attachment/fragment/patch/{unique}`.replace(
-					`{${'unique'}}`,
-					encodeURIComponent(String(unique))
-				);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'PATCH',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			if (pARENTID != null) {
-				localVarHeaderParameter['PARENT-ID'] = String(pARENTID);
-			}
-
-			if (uploadLength != null) {
-				localVarHeaderParameter['Upload-Length'] = String(uploadLength);
-			}
-
-			if (uploadOffset != null) {
-				localVarHeaderParameter['Upload-Offset'] = String(uploadOffset);
-			}
-
-			if (uploadName != null) {
-				localVarHeaderParameter['Upload-Name'] = String(uploadName);
-			}
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Revert fragment upload attachment by unique id.
-		 * @param {string} [body] Unique id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		revertFragmentUploadAttachmentByUnique: async (
-			body?: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/attachment/fragment/revert`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'DELETE',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			localVarHeaderParameter['Content-Type'] = 'application/json';
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				body,
-				localVarRequestOptions,
-				configuration
-			);
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Update attachment.
-		 * @param {Attachment} [attachment]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updateAttachment: async (
-			attachment?: Attachment,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/attachment/update`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			localVarHeaderParameter['Content-Type'] = 'application/json';
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				attachment,
-				localVarRequestOptions,
-				configuration
-			);
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @param {File} file
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		uploadAttachment: async (
-			file: File,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'file' is not null or undefined
-			assertParamExists('uploadAttachment', 'file', file);
-			const localVarPath = `/api/v1alpha1/attachment/upload`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
-
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-			const localVarFormParams = new ((configuration &&
-				configuration.formDataCtor) ||
-				FormData)();
-
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
-
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-			if (file !== undefined) {
-				localVarFormParams.append('file', file as any);
-			}
-
-			localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
-
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = localVarFormParams;
-
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-	};
+  return {
+    /**
+     * Create directory
+     * @param {string} name 经过Basic64编码的附件名称，附件名称字段模糊查询。
+     * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createDirectory: async (
+      name: string,
+      parentId?: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("createDirectory", "name", name);
+      const localVarPath = `/api/v1alpha1/attachment/directory`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (name !== undefined) {
+        localVarQueryParameter["name"] = name;
+      }
+
+      if (parentId !== undefined) {
+        localVarQueryParameter["parentId"] = parentId;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @param {number} id Attachment ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteAttachment: async (
+      id: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("deleteAttachment", "id", id);
+      const localVarPath = `/api/v1alpha1/attachment/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Generate fragment upload attachment unique id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    generateFragmentUploadAttachmentUniqueId: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/attachment/fragment/unique`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @param {number} id Attachment ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getAttachmentById: async (
+      id: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("getAttachmentById", "id", id);
+      const localVarPath = `/api/v1alpha1/attachment/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get attachment path dirs by id.
+     * @param {number} id Attachment id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getAttachmentPathDirsById: async (
+      id: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("getAttachmentPathDirsById", "id", id);
+      const localVarPath = `/api/v1alpha1/attachment/paths/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * List attachments by condition.
+     * @param {number} [page] 第几页，从1开始, 默认为1.
+     * @param {number} [size] 每页条数，默认为10.
+     * @param {'File' | 'Directory'} [type] 附件类型。
+     * @param {string} [name] 经过Basic64编码的附件名称，附件名称字段模糊查询。
+     * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listAttachmentsByCondition: async (
+      page?: number,
+      size?: number,
+      type?: "File" | "Directory",
+      name?: string,
+      parentId?: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/attachments/condition`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (page !== undefined) {
+        localVarQueryParameter["page"] = page;
+      }
+
+      if (size !== undefined) {
+        localVarQueryParameter["size"] = size;
+      }
+
+      if (type !== undefined) {
+        localVarQueryParameter["type"] = type;
+      }
+
+      if (name !== undefined) {
+        localVarQueryParameter["name"] = name;
+      }
+
+      if (parentId !== undefined) {
+        localVarQueryParameter["parentId"] = parentId;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Receive fragment upload chunk attachment.
+     * @param {string} unique Chunk attachment unique id.
+     * @param {string} uploadLength Upload chunk attachment length.
+     * @param {string} uploadOffset Upload chunk attachment offset.
+     * @param {string} uploadName Upload chunk attachment file name.
+     * @param {string} [pARENTID] 附件的父附件ID，父附件一般时目录类型。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    receiveFragmentUploadChunkAttachment: async (
+      unique: string,
+      uploadLength: string,
+      uploadOffset: string,
+      uploadName: string,
+      pARENTID?: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'unique' is not null or undefined
+      assertParamExists(
+        "receiveFragmentUploadChunkAttachment",
+        "unique",
+        unique
+      );
+      // verify required parameter 'uploadLength' is not null or undefined
+      assertParamExists(
+        "receiveFragmentUploadChunkAttachment",
+        "uploadLength",
+        uploadLength
+      );
+      // verify required parameter 'uploadOffset' is not null or undefined
+      assertParamExists(
+        "receiveFragmentUploadChunkAttachment",
+        "uploadOffset",
+        uploadOffset
+      );
+      // verify required parameter 'uploadName' is not null or undefined
+      assertParamExists(
+        "receiveFragmentUploadChunkAttachment",
+        "uploadName",
+        uploadName
+      );
+      const localVarPath =
+        `/api/v1alpha1/attachment/fragment/patch/{unique}`.replace(
+          `{${"unique"}}`,
+          encodeURIComponent(String(unique))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "PATCH",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (pARENTID != null) {
+        localVarHeaderParameter["PARENT-ID"] = String(pARENTID);
+      }
+
+      if (uploadLength != null) {
+        localVarHeaderParameter["Upload-Length"] = String(uploadLength);
+      }
+
+      if (uploadOffset != null) {
+        localVarHeaderParameter["Upload-Offset"] = String(uploadOffset);
+      }
+
+      if (uploadName != null) {
+        localVarHeaderParameter["Upload-Name"] = String(uploadName);
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Revert fragment upload attachment by unique id.
+     * @param {string} [body] Unique id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    revertFragmentUploadAttachmentByUnique: async (
+      body?: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/attachment/fragment/revert`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        body,
+        localVarRequestOptions,
+        configuration
+      );
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Update attachment.
+     * @param {Attachment} [attachment]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateAttachment: async (
+      attachment?: Attachment,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/attachment/update`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        attachment,
+        localVarRequestOptions,
+        configuration
+      );
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @param {File} file
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    uploadAttachment: async (
+      file: File,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'file' is not null or undefined
+      assertParamExists("uploadAttachment", "file", file);
+      const localVarPath = `/api/v1alpha1/attachment/upload`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+      const localVarFormParams = new ((configuration &&
+        configuration.formDataCtor) ||
+        FormData)();
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (file !== undefined) {
+        localVarFormParams.append("file", file as any);
+      }
+
+      localVarHeaderParameter["Content-Type"] = "multipart/form-data";
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = localVarFormParams;
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
@@ -668,266 +668,266 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1AttachmentApiFp = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	const localVarAxiosParamCreator =
-		V1alpha1AttachmentApiAxiosParamCreator(configuration);
-	return {
-		/**
-		 * Create directory
-		 * @param {string} name 经过Basic64编码的附件名称，附件名称字段模糊查询。
-		 * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async createDirectory(
-			name: string,
-			parentId?: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(
-				axios?: AxiosInstance,
-				basePath?: string
-			) => AxiosPromise<Array<Attachment>>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.createDirectory(
-				name,
-				parentId,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @param {number} id Attachment ID
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async deleteAttachment(
-			id: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.deleteAttachment(id, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Generate fragment upload attachment unique id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async generateFragmentUploadAttachmentUniqueId(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.generateFragmentUploadAttachmentUniqueId(
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @param {number} id Attachment ID
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async getAttachmentById(
-			id: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Attachment>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.getAttachmentById(id, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Get attachment path dirs by id.
-		 * @param {number} id Attachment id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async getAttachmentPathDirsById(
-			id: number,
-			options?: AxiosRequestConfig
-		): Promise<
-			(
-				axios?: AxiosInstance,
-				basePath?: string
-			) => AxiosPromise<Array<Attachment>>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.getAttachmentPathDirsById(id, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * List attachments by condition.
-		 * @param {number} [page] 第几页，从1开始, 默认为1.
-		 * @param {number} [size] 每页条数，默认为10.
-		 * @param {'File' | 'Directory'} [type] 附件类型。
-		 * @param {string} [name] 经过Basic64编码的附件名称，附件名称字段模糊查询。
-		 * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async listAttachmentsByCondition(
-			page?: number,
-			size?: number,
-			type?: 'File' | 'Directory',
-			name?: string,
-			parentId?: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.listAttachmentsByCondition(
-					page,
-					size,
-					type,
-					name,
-					parentId,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Receive fragment upload chunk attachment.
-		 * @param {string} unique Chunk attachment unique id.
-		 * @param {string} uploadLength Upload chunk attachment length.
-		 * @param {string} uploadOffset Upload chunk attachment offset.
-		 * @param {string} uploadName Upload chunk attachment file name.
-		 * @param {string} [pARENTID] 附件的父附件ID，父附件一般时目录类型。
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async receiveFragmentUploadChunkAttachment(
-			unique: string,
-			uploadLength: string,
-			uploadOffset: string,
-			uploadName: string,
-			pARENTID?: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.receiveFragmentUploadChunkAttachment(
-					unique,
-					uploadLength,
-					uploadOffset,
-					uploadName,
-					pARENTID,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Revert fragment upload attachment by unique id.
-		 * @param {string} [body] Unique id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async revertFragmentUploadAttachmentByUnique(
-			body?: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.revertFragmentUploadAttachmentByUnique(
-					body,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Update attachment.
-		 * @param {Attachment} [attachment]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async updateAttachment(
-			attachment?: Attachment,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.updateAttachment(attachment, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @param {File} file
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async uploadAttachment(
-			file: File,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Attachment>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.uploadAttachment(file, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-	};
+  const localVarAxiosParamCreator =
+    V1alpha1AttachmentApiAxiosParamCreator(configuration);
+  return {
+    /**
+     * Create directory
+     * @param {string} name 经过Basic64编码的附件名称，附件名称字段模糊查询。
+     * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async createDirectory(
+      name: string,
+      parentId?: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<Attachment>>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.createDirectory(
+        name,
+        parentId,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @param {number} id Attachment ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async deleteAttachment(
+      id: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.deleteAttachment(id, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Generate fragment upload attachment unique id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async generateFragmentUploadAttachmentUniqueId(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.generateFragmentUploadAttachmentUniqueId(
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @param {number} id Attachment ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getAttachmentById(
+      id: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Attachment>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.getAttachmentById(id, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Get attachment path dirs by id.
+     * @param {number} id Attachment id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getAttachmentPathDirsById(
+      id: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<Attachment>>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.getAttachmentPathDirsById(id, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * List attachments by condition.
+     * @param {number} [page] 第几页，从1开始, 默认为1.
+     * @param {number} [size] 每页条数，默认为10.
+     * @param {'File' | 'Directory'} [type] 附件类型。
+     * @param {string} [name] 经过Basic64编码的附件名称，附件名称字段模糊查询。
+     * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listAttachmentsByCondition(
+      page?: number,
+      size?: number,
+      type?: "File" | "Directory",
+      name?: string,
+      parentId?: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listAttachmentsByCondition(
+          page,
+          size,
+          type,
+          name,
+          parentId,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Receive fragment upload chunk attachment.
+     * @param {string} unique Chunk attachment unique id.
+     * @param {string} uploadLength Upload chunk attachment length.
+     * @param {string} uploadOffset Upload chunk attachment offset.
+     * @param {string} uploadName Upload chunk attachment file name.
+     * @param {string} [pARENTID] 附件的父附件ID，父附件一般时目录类型。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async receiveFragmentUploadChunkAttachment(
+      unique: string,
+      uploadLength: string,
+      uploadOffset: string,
+      uploadName: string,
+      pARENTID?: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.receiveFragmentUploadChunkAttachment(
+          unique,
+          uploadLength,
+          uploadOffset,
+          uploadName,
+          pARENTID,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Revert fragment upload attachment by unique id.
+     * @param {string} [body] Unique id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async revertFragmentUploadAttachmentByUnique(
+      body?: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.revertFragmentUploadAttachmentByUnique(
+          body,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Update attachment.
+     * @param {Attachment} [attachment]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updateAttachment(
+      attachment?: Attachment,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.updateAttachment(attachment, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @param {File} file
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async uploadAttachment(
+      file: File,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Attachment>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.uploadAttachment(file, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+  };
 };
 
 /**
@@ -935,169 +935,169 @@ export const V1alpha1AttachmentApiFp = function (
  * @export
  */
 export const V1alpha1AttachmentApiFactory = function (
-	configuration?: Configuration,
-	basePath?: string,
-	axios?: AxiosInstance
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
 ) {
-	const localVarFp = V1alpha1AttachmentApiFp(configuration);
-	return {
-		/**
-		 * Create directory
-		 * @param {V1alpha1AttachmentApiCreateDirectoryRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		createDirectory(
-			requestParameters: V1alpha1AttachmentApiCreateDirectoryRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<Array<Attachment>> {
-			return localVarFp
-				.createDirectory(
-					requestParameters.name,
-					requestParameters.parentId,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @param {V1alpha1AttachmentApiDeleteAttachmentRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		deleteAttachment(
-			requestParameters: V1alpha1AttachmentApiDeleteAttachmentRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.deleteAttachment(requestParameters.id, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Generate fragment upload attachment unique id.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		generateFragmentUploadAttachmentUniqueId(
-			options?: AxiosRequestConfig
-		): AxiosPromise<string> {
-			return localVarFp
-				.generateFragmentUploadAttachmentUniqueId(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @param {V1alpha1AttachmentApiGetAttachmentByIdRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getAttachmentById(
-			requestParameters: V1alpha1AttachmentApiGetAttachmentByIdRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<Attachment> {
-			return localVarFp
-				.getAttachmentById(requestParameters.id, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Get attachment path dirs by id.
-		 * @param {V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getAttachmentPathDirsById(
-			requestParameters: V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<Array<Attachment>> {
-			return localVarFp
-				.getAttachmentPathDirsById(requestParameters.id, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * List attachments by condition.
-		 * @param {V1alpha1AttachmentApiListAttachmentsByConditionRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		listAttachmentsByCondition(
-			requestParameters: V1alpha1AttachmentApiListAttachmentsByConditionRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<PagingWrap> {
-			return localVarFp
-				.listAttachmentsByCondition(
-					requestParameters.page,
-					requestParameters.size,
-					requestParameters.type,
-					requestParameters.name,
-					requestParameters.parentId,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Receive fragment upload chunk attachment.
-		 * @param {V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		receiveFragmentUploadChunkAttachment(
-			requestParameters: V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.receiveFragmentUploadChunkAttachment(
-					requestParameters.unique,
-					requestParameters.uploadLength,
-					requestParameters.uploadOffset,
-					requestParameters.uploadName,
-					requestParameters.pARENTID,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Revert fragment upload attachment by unique id.
-		 * @param {V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		revertFragmentUploadAttachmentByUnique(
-			requestParameters: V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.revertFragmentUploadAttachmentByUnique(requestParameters.body, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Update attachment.
-		 * @param {V1alpha1AttachmentApiUpdateAttachmentRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updateAttachment(
-			requestParameters: V1alpha1AttachmentApiUpdateAttachmentRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.updateAttachment(requestParameters.attachment, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @param {V1alpha1AttachmentApiUploadAttachmentRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		uploadAttachment(
-			requestParameters: V1alpha1AttachmentApiUploadAttachmentRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<Attachment> {
-			return localVarFp
-				.uploadAttachment(requestParameters.file, options)
-				.then((request) => request(axios, basePath));
-		},
-	};
+  const localVarFp = V1alpha1AttachmentApiFp(configuration);
+  return {
+    /**
+     * Create directory
+     * @param {V1alpha1AttachmentApiCreateDirectoryRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createDirectory(
+      requestParameters: V1alpha1AttachmentApiCreateDirectoryRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<Attachment>> {
+      return localVarFp
+        .createDirectory(
+          requestParameters.name,
+          requestParameters.parentId,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @param {V1alpha1AttachmentApiDeleteAttachmentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteAttachment(
+      requestParameters: V1alpha1AttachmentApiDeleteAttachmentRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .deleteAttachment(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Generate fragment upload attachment unique id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    generateFragmentUploadAttachmentUniqueId(
+      options?: AxiosRequestConfig
+    ): AxiosPromise<string> {
+      return localVarFp
+        .generateFragmentUploadAttachmentUniqueId(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @param {V1alpha1AttachmentApiGetAttachmentByIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getAttachmentById(
+      requestParameters: V1alpha1AttachmentApiGetAttachmentByIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Attachment> {
+      return localVarFp
+        .getAttachmentById(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get attachment path dirs by id.
+     * @param {V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getAttachmentPathDirsById(
+      requestParameters: V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<Attachment>> {
+      return localVarFp
+        .getAttachmentPathDirsById(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * List attachments by condition.
+     * @param {V1alpha1AttachmentApiListAttachmentsByConditionRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listAttachmentsByCondition(
+      requestParameters: V1alpha1AttachmentApiListAttachmentsByConditionRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<PagingWrap> {
+      return localVarFp
+        .listAttachmentsByCondition(
+          requestParameters.page,
+          requestParameters.size,
+          requestParameters.type,
+          requestParameters.name,
+          requestParameters.parentId,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Receive fragment upload chunk attachment.
+     * @param {V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    receiveFragmentUploadChunkAttachment(
+      requestParameters: V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .receiveFragmentUploadChunkAttachment(
+          requestParameters.unique,
+          requestParameters.uploadLength,
+          requestParameters.uploadOffset,
+          requestParameters.uploadName,
+          requestParameters.pARENTID,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Revert fragment upload attachment by unique id.
+     * @param {V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    revertFragmentUploadAttachmentByUnique(
+      requestParameters: V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .revertFragmentUploadAttachmentByUnique(requestParameters.body, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Update attachment.
+     * @param {V1alpha1AttachmentApiUpdateAttachmentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateAttachment(
+      requestParameters: V1alpha1AttachmentApiUpdateAttachmentRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .updateAttachment(requestParameters.attachment, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @param {V1alpha1AttachmentApiUploadAttachmentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    uploadAttachment(
+      requestParameters: V1alpha1AttachmentApiUploadAttachmentRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Attachment> {
+      return localVarFp
+        .uploadAttachment(requestParameters.file, options)
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -1106,19 +1106,19 @@ export const V1alpha1AttachmentApiFactory = function (
  * @interface V1alpha1AttachmentApiCreateDirectoryRequest
  */
 export interface V1alpha1AttachmentApiCreateDirectoryRequest {
-	/**
-	 * 经过Basic64编码的附件名称，附件名称字段模糊查询。
-	 * @type {string}
-	 * @memberof V1alpha1AttachmentApiCreateDirectory
-	 */
-	readonly name: string;
+  /**
+   * 经过Basic64编码的附件名称，附件名称字段模糊查询。
+   * @type {string}
+   * @memberof V1alpha1AttachmentApiCreateDirectory
+   */
+  readonly name: string;
 
-	/**
-	 * 附件的父附件ID，父附件一般时目录类型。
-	 * @type {string}
-	 * @memberof V1alpha1AttachmentApiCreateDirectory
-	 */
-	readonly parentId?: string;
+  /**
+   * 附件的父附件ID，父附件一般时目录类型。
+   * @type {string}
+   * @memberof V1alpha1AttachmentApiCreateDirectory
+   */
+  readonly parentId?: string;
 }
 
 /**
@@ -1127,12 +1127,12 @@ export interface V1alpha1AttachmentApiCreateDirectoryRequest {
  * @interface V1alpha1AttachmentApiDeleteAttachmentRequest
  */
 export interface V1alpha1AttachmentApiDeleteAttachmentRequest {
-	/**
-	 * Attachment ID
-	 * @type {number}
-	 * @memberof V1alpha1AttachmentApiDeleteAttachment
-	 */
-	readonly id: number;
+  /**
+   * Attachment ID
+   * @type {number}
+   * @memberof V1alpha1AttachmentApiDeleteAttachment
+   */
+  readonly id: number;
 }
 
 /**
@@ -1141,12 +1141,12 @@ export interface V1alpha1AttachmentApiDeleteAttachmentRequest {
  * @interface V1alpha1AttachmentApiGetAttachmentByIdRequest
  */
 export interface V1alpha1AttachmentApiGetAttachmentByIdRequest {
-	/**
-	 * Attachment ID
-	 * @type {number}
-	 * @memberof V1alpha1AttachmentApiGetAttachmentById
-	 */
-	readonly id: number;
+  /**
+   * Attachment ID
+   * @type {number}
+   * @memberof V1alpha1AttachmentApiGetAttachmentById
+   */
+  readonly id: number;
 }
 
 /**
@@ -1155,12 +1155,12 @@ export interface V1alpha1AttachmentApiGetAttachmentByIdRequest {
  * @interface V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest
  */
 export interface V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest {
-	/**
-	 * Attachment id.
-	 * @type {number}
-	 * @memberof V1alpha1AttachmentApiGetAttachmentPathDirsById
-	 */
-	readonly id: number;
+  /**
+   * Attachment id.
+   * @type {number}
+   * @memberof V1alpha1AttachmentApiGetAttachmentPathDirsById
+   */
+  readonly id: number;
 }
 
 /**
@@ -1169,40 +1169,40 @@ export interface V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest {
  * @interface V1alpha1AttachmentApiListAttachmentsByConditionRequest
  */
 export interface V1alpha1AttachmentApiListAttachmentsByConditionRequest {
-	/**
-	 * 第几页，从1开始, 默认为1.
-	 * @type {number}
-	 * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
-	 */
-	readonly page?: number;
+  /**
+   * 第几页，从1开始, 默认为1.
+   * @type {number}
+   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+   */
+  readonly page?: number;
 
-	/**
-	 * 每页条数，默认为10.
-	 * @type {number}
-	 * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
-	 */
-	readonly size?: number;
+  /**
+   * 每页条数，默认为10.
+   * @type {number}
+   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+   */
+  readonly size?: number;
 
-	/**
-	 * 附件类型。
-	 * @type {'File' | 'Directory'}
-	 * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
-	 */
-	readonly type?: 'File' | 'Directory';
+  /**
+   * 附件类型。
+   * @type {'File' | 'Directory'}
+   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+   */
+  readonly type?: "File" | "Directory";
 
-	/**
-	 * 经过Basic64编码的附件名称，附件名称字段模糊查询。
-	 * @type {string}
-	 * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
-	 */
-	readonly name?: string;
+  /**
+   * 经过Basic64编码的附件名称，附件名称字段模糊查询。
+   * @type {string}
+   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+   */
+  readonly name?: string;
 
-	/**
-	 * 附件的父附件ID，父附件一般时目录类型。
-	 * @type {string}
-	 * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
-	 */
-	readonly parentId?: string;
+  /**
+   * 附件的父附件ID，父附件一般时目录类型。
+   * @type {string}
+   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+   */
+  readonly parentId?: string;
 }
 
 /**
@@ -1211,40 +1211,40 @@ export interface V1alpha1AttachmentApiListAttachmentsByConditionRequest {
  * @interface V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentRequest
  */
 export interface V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentRequest {
-	/**
-	 * Chunk attachment unique id.
-	 * @type {string}
-	 * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
-	 */
-	readonly unique: string;
+  /**
+   * Chunk attachment unique id.
+   * @type {string}
+   * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
+   */
+  readonly unique: string;
 
-	/**
-	 * Upload chunk attachment length.
-	 * @type {string}
-	 * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
-	 */
-	readonly uploadLength: string;
+  /**
+   * Upload chunk attachment length.
+   * @type {string}
+   * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
+   */
+  readonly uploadLength: string;
 
-	/**
-	 * Upload chunk attachment offset.
-	 * @type {string}
-	 * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
-	 */
-	readonly uploadOffset: string;
+  /**
+   * Upload chunk attachment offset.
+   * @type {string}
+   * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
+   */
+  readonly uploadOffset: string;
 
-	/**
-	 * Upload chunk attachment file name.
-	 * @type {string}
-	 * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
-	 */
-	readonly uploadName: string;
+  /**
+   * Upload chunk attachment file name.
+   * @type {string}
+   * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
+   */
+  readonly uploadName: string;
 
-	/**
-	 * 附件的父附件ID，父附件一般时目录类型。
-	 * @type {string}
-	 * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
-	 */
-	readonly pARENTID?: string;
+  /**
+   * 附件的父附件ID，父附件一般时目录类型。
+   * @type {string}
+   * @memberof V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachment
+   */
+  readonly pARENTID?: string;
 }
 
 /**
@@ -1253,12 +1253,12 @@ export interface V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentReques
  * @interface V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequest
  */
 export interface V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequest {
-	/**
-	 * Unique id.
-	 * @type {string}
-	 * @memberof V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUnique
-	 */
-	readonly body?: string;
+  /**
+   * Unique id.
+   * @type {string}
+   * @memberof V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUnique
+   */
+  readonly body?: string;
 }
 
 /**
@@ -1267,12 +1267,12 @@ export interface V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequ
  * @interface V1alpha1AttachmentApiUpdateAttachmentRequest
  */
 export interface V1alpha1AttachmentApiUpdateAttachmentRequest {
-	/**
-	 *
-	 * @type {Attachment}
-	 * @memberof V1alpha1AttachmentApiUpdateAttachment
-	 */
-	readonly attachment?: Attachment;
+  /**
+   *
+   * @type {Attachment}
+   * @memberof V1alpha1AttachmentApiUpdateAttachment
+   */
+  readonly attachment?: Attachment;
 }
 
 /**
@@ -1281,12 +1281,12 @@ export interface V1alpha1AttachmentApiUpdateAttachmentRequest {
  * @interface V1alpha1AttachmentApiUploadAttachmentRequest
  */
 export interface V1alpha1AttachmentApiUploadAttachmentRequest {
-	/**
-	 *
-	 * @type {File}
-	 * @memberof V1alpha1AttachmentApiUploadAttachment
-	 */
-	readonly file: File;
+  /**
+   *
+   * @type {File}
+   * @memberof V1alpha1AttachmentApiUploadAttachment
+   */
+  readonly file: File;
 }
 
 /**
@@ -1296,179 +1296,179 @@ export interface V1alpha1AttachmentApiUploadAttachmentRequest {
  * @extends {BaseAPI}
  */
 export class V1alpha1AttachmentApi extends BaseAPI {
-	/**
-	 * Create directory
-	 * @param {V1alpha1AttachmentApiCreateDirectoryRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentApi
-	 */
-	public createDirectory(
-		requestParameters: V1alpha1AttachmentApiCreateDirectoryRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentApiFp(this.configuration)
-			.createDirectory(
-				requestParameters.name,
-				requestParameters.parentId,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Create directory
+   * @param {V1alpha1AttachmentApiCreateDirectoryRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public createDirectory(
+    requestParameters: V1alpha1AttachmentApiCreateDirectoryRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .createDirectory(
+        requestParameters.name,
+        requestParameters.parentId,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @param {V1alpha1AttachmentApiDeleteAttachmentRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentApi
-	 */
-	public deleteAttachment(
-		requestParameters: V1alpha1AttachmentApiDeleteAttachmentRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentApiFp(this.configuration)
-			.deleteAttachment(requestParameters.id, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @param {V1alpha1AttachmentApiDeleteAttachmentRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public deleteAttachment(
+    requestParameters: V1alpha1AttachmentApiDeleteAttachmentRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .deleteAttachment(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Generate fragment upload attachment unique id.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentApi
-	 */
-	public generateFragmentUploadAttachmentUniqueId(
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentApiFp(this.configuration)
-			.generateFragmentUploadAttachmentUniqueId(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Generate fragment upload attachment unique id.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public generateFragmentUploadAttachmentUniqueId(
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .generateFragmentUploadAttachmentUniqueId(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @param {V1alpha1AttachmentApiGetAttachmentByIdRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentApi
-	 */
-	public getAttachmentById(
-		requestParameters: V1alpha1AttachmentApiGetAttachmentByIdRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentApiFp(this.configuration)
-			.getAttachmentById(requestParameters.id, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @param {V1alpha1AttachmentApiGetAttachmentByIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public getAttachmentById(
+    requestParameters: V1alpha1AttachmentApiGetAttachmentByIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .getAttachmentById(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Get attachment path dirs by id.
-	 * @param {V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentApi
-	 */
-	public getAttachmentPathDirsById(
-		requestParameters: V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentApiFp(this.configuration)
-			.getAttachmentPathDirsById(requestParameters.id, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Get attachment path dirs by id.
+   * @param {V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public getAttachmentPathDirsById(
+    requestParameters: V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .getAttachmentPathDirsById(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * List attachments by condition.
-	 * @param {V1alpha1AttachmentApiListAttachmentsByConditionRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentApi
-	 */
-	public listAttachmentsByCondition(
-		requestParameters: V1alpha1AttachmentApiListAttachmentsByConditionRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentApiFp(this.configuration)
-			.listAttachmentsByCondition(
-				requestParameters.page,
-				requestParameters.size,
-				requestParameters.type,
-				requestParameters.name,
-				requestParameters.parentId,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * List attachments by condition.
+   * @param {V1alpha1AttachmentApiListAttachmentsByConditionRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public listAttachmentsByCondition(
+    requestParameters: V1alpha1AttachmentApiListAttachmentsByConditionRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .listAttachmentsByCondition(
+        requestParameters.page,
+        requestParameters.size,
+        requestParameters.type,
+        requestParameters.name,
+        requestParameters.parentId,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Receive fragment upload chunk attachment.
-	 * @param {V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentApi
-	 */
-	public receiveFragmentUploadChunkAttachment(
-		requestParameters: V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentApiFp(this.configuration)
-			.receiveFragmentUploadChunkAttachment(
-				requestParameters.unique,
-				requestParameters.uploadLength,
-				requestParameters.uploadOffset,
-				requestParameters.uploadName,
-				requestParameters.pARENTID,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Receive fragment upload chunk attachment.
+   * @param {V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public receiveFragmentUploadChunkAttachment(
+    requestParameters: V1alpha1AttachmentApiReceiveFragmentUploadChunkAttachmentRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .receiveFragmentUploadChunkAttachment(
+        requestParameters.unique,
+        requestParameters.uploadLength,
+        requestParameters.uploadOffset,
+        requestParameters.uploadName,
+        requestParameters.pARENTID,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Revert fragment upload attachment by unique id.
-	 * @param {V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentApi
-	 */
-	public revertFragmentUploadAttachmentByUnique(
-		requestParameters: V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentApiFp(this.configuration)
-			.revertFragmentUploadAttachmentByUnique(requestParameters.body, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Revert fragment upload attachment by unique id.
+   * @param {V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public revertFragmentUploadAttachmentByUnique(
+    requestParameters: V1alpha1AttachmentApiRevertFragmentUploadAttachmentByUniqueRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .revertFragmentUploadAttachmentByUnique(requestParameters.body, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Update attachment.
-	 * @param {V1alpha1AttachmentApiUpdateAttachmentRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentApi
-	 */
-	public updateAttachment(
-		requestParameters: V1alpha1AttachmentApiUpdateAttachmentRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentApiFp(this.configuration)
-			.updateAttachment(requestParameters.attachment, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Update attachment.
+   * @param {V1alpha1AttachmentApiUpdateAttachmentRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public updateAttachment(
+    requestParameters: V1alpha1AttachmentApiUpdateAttachmentRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .updateAttachment(requestParameters.attachment, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @param {V1alpha1AttachmentApiUploadAttachmentRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1AttachmentApi
-	 */
-	public uploadAttachment(
-		requestParameters: V1alpha1AttachmentApiUploadAttachmentRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1AttachmentApiFp(this.configuration)
-			.uploadAttachment(requestParameters.file, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @param {V1alpha1AttachmentApiUploadAttachmentRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public uploadAttachment(
+    requestParameters: V1alpha1AttachmentApiUploadAttachmentRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .uploadAttachment(requestParameters.file, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 }

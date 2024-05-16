@@ -18,81 +18,81 @@
  * @interface FileEntity
  */
 export interface FileEntity {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileEntity
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileEntity
-	 */
-	folderId?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	url?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	fsPath?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	md5?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	aesKey?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileEntity
-	 */
-	size?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	type?: FileEntityTypeEnum;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof FileEntity
-	 */
-	canRead?: boolean;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileEntity
-	 */
-	updateTime?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof FileEntity
+   */
+  id?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof FileEntity
+   */
+  folderId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof FileEntity
+   */
+  url?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FileEntity
+   */
+  fsPath?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FileEntity
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FileEntity
+   */
+  md5?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FileEntity
+   */
+  aesKey?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof FileEntity
+   */
+  size?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof FileEntity
+   */
+  type?: FileEntityTypeEnum;
+  /**
+   *
+   * @type {boolean}
+   * @memberof FileEntity
+   */
+  canRead?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof FileEntity
+   */
+  updateTime?: string;
 }
 
 export const FileEntityTypeEnum = {
-	Image: 'IMAGE',
-	Video: 'VIDEO',
-	Document: 'DOCUMENT',
-	Voice: 'VOICE',
-	Unknown: 'UNKNOWN',
+  Image: "IMAGE",
+  Video: "VIDEO",
+  Document: "DOCUMENT",
+  Voice: "VOICE",
+  Unknown: "UNKNOWN",
 } as const;
 
 export type FileEntityTypeEnum =
-	(typeof FileEntityTypeEnum)[keyof typeof FileEntityTypeEnum];
+  (typeof FileEntityTypeEnum)[keyof typeof FileEntityTypeEnum];

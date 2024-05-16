@@ -18,52 +18,52 @@
  * @interface Folder
  */
 export interface Folder {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Folder
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Folder
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {Array<any>}
-	 * @memberof Folder
-	 */
-	files?: Array<any>;
-	/**
-	 *
-	 * @type {Array<Folder>}
-	 * @memberof Folder
-	 */
-	folders?: Array<Folder>;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof Folder
-	 */
-	canRead?: boolean;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Folder
-	 */
-	parent_id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Folder
-	 */
-	parent_name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Folder
-	 */
-	update_time?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Folder
+   */
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Folder
+   */
+  name?: string;
+  /**
+   *
+   * @type {Array<any>}
+   * @memberof Folder
+   */
+  files?: Array<any>;
+  /**
+   *
+   * @type {Array<Folder>}
+   * @memberof Folder
+   */
+  folders?: Array<Folder>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof Folder
+   */
+  canRead?: boolean;
+  /**
+   *
+   * @type {number}
+   * @memberof Folder
+   */
+  parent_id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Folder
+   */
+  parent_name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Folder
+   */
+  update_time?: string;
 }

@@ -18,16 +18,16 @@
  * @interface Link
  */
 export interface Link {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Link
-	 */
-	href?: string;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof Link
-	 */
-	templated?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof Link
+   */
+  href?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof Link
+   */
+  templated?: boolean;
 }

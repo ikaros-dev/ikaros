@@ -18,10 +18,10 @@
  * @interface FileSetting
  */
 export interface FileSetting {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileSetting
-	 */
-	policy?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FileSetting
+   */
+  policy?: string;
 }

@@ -18,16 +18,16 @@
  * @interface Author
  */
 export interface Author {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Author
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Author
-	 */
-	website?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Author
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Author
+   */
+  website?: string;
 }

@@ -18,16 +18,16 @@
  * @interface BatchMatchingEpisodeAttachment
  */
 export interface BatchMatchingEpisodeAttachment {
-	/**
-	 * episode id for subject.
-	 * @type {number}
-	 * @memberof BatchMatchingEpisodeAttachment
-	 */
-	episodeId: number;
-	/**
-	 * attachment id array.
-	 * @type {Array<number>}
-	 * @memberof BatchMatchingEpisodeAttachment
-	 */
-	attachmentIds: Array<number>;
+  /**
+   * episode id for subject.
+   * @type {number}
+   * @memberof BatchMatchingEpisodeAttachment
+   */
+  episodeId: number;
+  /**
+   * attachment id array.
+   * @type {Array<number>}
+   * @memberof BatchMatchingEpisodeAttachment
+   */
+  attachmentIds: Array<number>;
 }

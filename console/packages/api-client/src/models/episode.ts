@@ -14,7 +14,7 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import { EpisodeResource } from './episode-resource';
+import { EpisodeResource } from "./episode-resource";
 
 /**
  *
@@ -22,78 +22,78 @@ import { EpisodeResource } from './episode-resource';
  * @interface Episode
  */
 export interface Episode {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Episode
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Episode
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Episode
-	 */
-	description?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Episode
-	 */
-	sequence?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Episode
-	 */
-	group?: EpisodeGroupEnum;
-	/**
-	 *
-	 * @type {Array<EpisodeResource>}
-	 * @memberof Episode
-	 */
-	resources?: Array<EpisodeResource>;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof Episode
-	 */
-	subject_id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Episode
-	 */
-	name_cn?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Episode
-	 */
-	air_time?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Episode
+   */
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Episode
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Episode
+   */
+  description?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Episode
+   */
+  sequence?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Episode
+   */
+  group?: EpisodeGroupEnum;
+  /**
+   *
+   * @type {Array<EpisodeResource>}
+   * @memberof Episode
+   */
+  resources?: Array<EpisodeResource>;
+  /**
+   *
+   * @type {number}
+   * @memberof Episode
+   */
+  subject_id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Episode
+   */
+  name_cn?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Episode
+   */
+  air_time?: string;
 }
 
 export const EpisodeGroupEnum = {
-	Main: 'MAIN',
-	PromotionVideo: 'PROMOTION_VIDEO',
-	OpeningSong: 'OPENING_SONG',
-	EndingSong: 'ENDING_SONG',
-	SpecialPromotion: 'SPECIAL_PROMOTION',
-	SmallTheater: 'SMALL_THEATER',
-	Live: 'LIVE',
-	CommercialMessage: 'COMMERCIAL_MESSAGE',
-	MusicDist1: 'MUSIC_DIST1',
-	MusicDist2: 'MUSIC_DIST2',
-	MusicDist3: 'MUSIC_DIST3',
-	MusicDist4: 'MUSIC_DIST4',
-	MusicDist5: 'MUSIC_DIST5',
-	Other: 'OTHER',
+  Main: "MAIN",
+  PromotionVideo: "PROMOTION_VIDEO",
+  OpeningSong: "OPENING_SONG",
+  EndingSong: "ENDING_SONG",
+  SpecialPromotion: "SPECIAL_PROMOTION",
+  SmallTheater: "SMALL_THEATER",
+  Live: "LIVE",
+  CommercialMessage: "COMMERCIAL_MESSAGE",
+  MusicDist1: "MUSIC_DIST1",
+  MusicDist2: "MUSIC_DIST2",
+  MusicDist3: "MUSIC_DIST3",
+  MusicDist4: "MUSIC_DIST4",
+  MusicDist5: "MUSIC_DIST5",
+  Other: "OTHER",
 } as const;
 
 export type EpisodeGroupEnum =
-	(typeof EpisodeGroupEnum)[keyof typeof EpisodeGroupEnum];
+  (typeof EpisodeGroupEnum)[keyof typeof EpisodeGroupEnum];

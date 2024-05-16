@@ -14,7 +14,7 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import { FileHint } from './file-hint';
+import { FileHint } from "./file-hint";
 
 /**
  *
@@ -22,34 +22,34 @@ import { FileHint } from './file-hint';
  * @interface FileHints
  */
 export interface FileHints {
-	/**
-	 *
-	 * @type {Array<FileHint>}
-	 * @memberof FileHints
-	 */
-	hits?: Array<FileHint>;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileHints
-	 */
-	keyword?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileHints
-	 */
-	total?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileHints
-	 */
-	limit?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileHints
-	 */
-	processingTimeMillis?: number;
+  /**
+   *
+   * @type {Array<FileHint>}
+   * @memberof FileHints
+   */
+  hits?: Array<FileHint>;
+  /**
+   *
+   * @type {string}
+   * @memberof FileHints
+   */
+  keyword?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof FileHints
+   */
+  total?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof FileHints
+   */
+  limit?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof FileHints
+   */
+  processingTimeMillis?: number;
 }

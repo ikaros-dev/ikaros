@@ -12,251 +12,251 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from '../common';
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
 import {
-	BASE_PATH,
-	COLLECTION_FORMATS,
-	RequestArgs,
-	BaseAPI,
-	RequiredError,
-} from '../base';
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  RequestArgs,
+  BaseAPI,
+  RequiredError,
+} from "../base";
 // @ts-ignore
-import { StarterCustom } from '../models';
+import { StarterCustom } from "../models";
 /**
  * PluginIkarosRunV1alpha1StaterApi - axios parameter creator
  * @export
  */
 export const PluginIkarosRunV1alpha1StaterApiAxiosParamCreator = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	return {
-		/**
-		 * Delete one starter by path name.
-		 * @param {string} name Starter unit name.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		deleteByName: async (
-			name: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('deleteByName', 'name', name);
-			const localVarPath =
-				`/apis/plugin.ikaros.run/v1alpha1/Stater/{name}`.replace(
-					`{${'name'}}`,
-					encodeURIComponent(String(name))
-				);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+  return {
+    /**
+     * Delete one starter by path name.
+     * @param {string} name Starter unit name.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteByName: async (
+      name: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("deleteByName", "name", name);
+      const localVarPath =
+        `/apis/plugin.ikaros.run/v1alpha1/Stater/{name}`.replace(
+          `{${"name"}}`,
+          encodeURIComponent(String(name))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'DELETE',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 *
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findAllStarter: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/Stater/findAll`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findAllStarter: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/Stater/findAll`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Find one starter by path name.
-		 * @param {string} name Starter unit name.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findOneStarter: async (
-			name: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('findOneStarter', 'name', name);
-			const localVarPath =
-				`/apis/plugin.ikaros.run/v1alpha1/Stater/findOne/{name}`.replace(
-					`{${'name'}}`,
-					encodeURIComponent(String(name))
-				);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Find one starter by path name.
+     * @param {string} name Starter unit name.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findOneStarter: async (
+      name: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("findOneStarter", "name", name);
+      const localVarPath =
+        `/apis/plugin.ikaros.run/v1alpha1/Stater/findOne/{name}`.replace(
+          `{${"name"}}`,
+          encodeURIComponent(String(name))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Save a starter obj.
-		 * @param {StarterCustom} [starterCustom] StarterCustom
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		save: async (
-			starterCustom?: StarterCustom,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/Stater`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Save a starter obj.
+     * @param {StarterCustom} [starterCustom] StarterCustom
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    save: async (
+      starterCustom?: StarterCustom,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/Stater`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			localVarHeaderParameter['Content-Type'] = 'application/json';
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				starterCustom,
-				localVarRequestOptions,
-				configuration
-			);
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        starterCustom,
+        localVarRequestOptions,
+        configuration
+      );
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-	};
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
@@ -264,104 +264,104 @@ export const PluginIkarosRunV1alpha1StaterApiAxiosParamCreator = function (
  * @export
  */
 export const PluginIkarosRunV1alpha1StaterApiFp = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	const localVarAxiosParamCreator =
-		PluginIkarosRunV1alpha1StaterApiAxiosParamCreator(configuration);
-	return {
-		/**
-		 * Delete one starter by path name.
-		 * @param {string} name Starter unit name.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async deleteByName(
-			name: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.deleteByName(
-				name,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 *
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async findAllStarter(
-			options?: AxiosRequestConfig
-		): Promise<
-			(
-				axios?: AxiosInstance,
-				basePath?: string
-			) => AxiosPromise<Array<StarterCustom>>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.findAllStarter(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Find one starter by path name.
-		 * @param {string} name Starter unit name.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async findOneStarter(
-			name: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StarterCustom>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.findOneStarter(
-				name,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Save a starter obj.
-		 * @param {StarterCustom} [starterCustom] StarterCustom
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async save(
-			starterCustom?: StarterCustom,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.save(
-				starterCustom,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-	};
+  const localVarAxiosParamCreator =
+    PluginIkarosRunV1alpha1StaterApiAxiosParamCreator(configuration);
+  return {
+    /**
+     * Delete one starter by path name.
+     * @param {string} name Starter unit name.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async deleteByName(
+      name: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.deleteByName(
+        name,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async findAllStarter(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<StarterCustom>>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.findAllStarter(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Find one starter by path name.
+     * @param {string} name Starter unit name.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async findOneStarter(
+      name: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<StarterCustom>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.findOneStarter(
+        name,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Save a starter obj.
+     * @param {StarterCustom} [starterCustom] StarterCustom
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async save(
+      starterCustom?: StarterCustom,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.save(
+        starterCustom,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+  };
 };
 
 /**
@@ -369,67 +369,67 @@ export const PluginIkarosRunV1alpha1StaterApiFp = function (
  * @export
  */
 export const PluginIkarosRunV1alpha1StaterApiFactory = function (
-	configuration?: Configuration,
-	basePath?: string,
-	axios?: AxiosInstance
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
 ) {
-	const localVarFp = PluginIkarosRunV1alpha1StaterApiFp(configuration);
-	return {
-		/**
-		 * Delete one starter by path name.
-		 * @param {PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		deleteByName(
-			requestParameters: PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.deleteByName(requestParameters.name, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 *
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findAllStarter(
-			options?: AxiosRequestConfig
-		): AxiosPromise<Array<StarterCustom>> {
-			return localVarFp
-				.findAllStarter(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Find one starter by path name.
-		 * @param {PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		findOneStarter(
-			requestParameters: PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<StarterCustom> {
-			return localVarFp
-				.findOneStarter(requestParameters.name, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Save a starter obj.
-		 * @param {PluginIkarosRunV1alpha1StaterApiSaveRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		save(
-			requestParameters: PluginIkarosRunV1alpha1StaterApiSaveRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.save(requestParameters.starterCustom, options)
-				.then((request) => request(axios, basePath));
-		},
-	};
+  const localVarFp = PluginIkarosRunV1alpha1StaterApiFp(configuration);
+  return {
+    /**
+     * Delete one starter by path name.
+     * @param {PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteByName(
+      requestParameters: PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .deleteByName(requestParameters.name, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findAllStarter(
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<StarterCustom>> {
+      return localVarFp
+        .findAllStarter(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Find one starter by path name.
+     * @param {PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    findOneStarter(
+      requestParameters: PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<StarterCustom> {
+      return localVarFp
+        .findOneStarter(requestParameters.name, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Save a starter obj.
+     * @param {PluginIkarosRunV1alpha1StaterApiSaveRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    save(
+      requestParameters: PluginIkarosRunV1alpha1StaterApiSaveRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .save(requestParameters.starterCustom, options)
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -438,12 +438,12 @@ export const PluginIkarosRunV1alpha1StaterApiFactory = function (
  * @interface PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest
  */
 export interface PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest {
-	/**
-	 * Starter unit name.
-	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1StaterApiDeleteByName
-	 */
-	readonly name: string;
+  /**
+   * Starter unit name.
+   * @type {string}
+   * @memberof PluginIkarosRunV1alpha1StaterApiDeleteByName
+   */
+  readonly name: string;
 }
 
 /**
@@ -452,12 +452,12 @@ export interface PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest {
  * @interface PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest
  */
 export interface PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest {
-	/**
-	 * Starter unit name.
-	 * @type {string}
-	 * @memberof PluginIkarosRunV1alpha1StaterApiFindOneStarter
-	 */
-	readonly name: string;
+  /**
+   * Starter unit name.
+   * @type {string}
+   * @memberof PluginIkarosRunV1alpha1StaterApiFindOneStarter
+   */
+  readonly name: string;
 }
 
 /**
@@ -466,12 +466,12 @@ export interface PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest {
  * @interface PluginIkarosRunV1alpha1StaterApiSaveRequest
  */
 export interface PluginIkarosRunV1alpha1StaterApiSaveRequest {
-	/**
-	 * StarterCustom
-	 * @type {StarterCustom}
-	 * @memberof PluginIkarosRunV1alpha1StaterApiSave
-	 */
-	readonly starterCustom?: StarterCustom;
+  /**
+   * StarterCustom
+   * @type {StarterCustom}
+   * @memberof PluginIkarosRunV1alpha1StaterApiSave
+   */
+  readonly starterCustom?: StarterCustom;
 }
 
 /**
@@ -481,63 +481,63 @@ export interface PluginIkarosRunV1alpha1StaterApiSaveRequest {
  * @extends {BaseAPI}
  */
 export class PluginIkarosRunV1alpha1StaterApi extends BaseAPI {
-	/**
-	 * Delete one starter by path name.
-	 * @param {PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof PluginIkarosRunV1alpha1StaterApi
-	 */
-	public deleteByName(
-		requestParameters: PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest,
-		options?: AxiosRequestConfig
-	) {
-		return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
-			.deleteByName(requestParameters.name, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Delete one starter by path name.
+   * @param {PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof PluginIkarosRunV1alpha1StaterApi
+   */
+  public deleteByName(
+    requestParameters: PluginIkarosRunV1alpha1StaterApiDeleteByNameRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
+      .deleteByName(requestParameters.name, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 *
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof PluginIkarosRunV1alpha1StaterApi
-	 */
-	public findAllStarter(options?: AxiosRequestConfig) {
-		return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
-			.findAllStarter(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   *
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof PluginIkarosRunV1alpha1StaterApi
+   */
+  public findAllStarter(options?: AxiosRequestConfig) {
+    return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
+      .findAllStarter(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Find one starter by path name.
-	 * @param {PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof PluginIkarosRunV1alpha1StaterApi
-	 */
-	public findOneStarter(
-		requestParameters: PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest,
-		options?: AxiosRequestConfig
-	) {
-		return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
-			.findOneStarter(requestParameters.name, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Find one starter by path name.
+   * @param {PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof PluginIkarosRunV1alpha1StaterApi
+   */
+  public findOneStarter(
+    requestParameters: PluginIkarosRunV1alpha1StaterApiFindOneStarterRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
+      .findOneStarter(requestParameters.name, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Save a starter obj.
-	 * @param {PluginIkarosRunV1alpha1StaterApiSaveRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof PluginIkarosRunV1alpha1StaterApi
-	 */
-	public save(
-		requestParameters: PluginIkarosRunV1alpha1StaterApiSaveRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
-			.save(requestParameters.starterCustom, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Save a starter obj.
+   * @param {PluginIkarosRunV1alpha1StaterApiSaveRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof PluginIkarosRunV1alpha1StaterApi
+   */
+  public save(
+    requestParameters: PluginIkarosRunV1alpha1StaterApiSaveRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return PluginIkarosRunV1alpha1StaterApiFp(this.configuration)
+      .save(requestParameters.starterCustom, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 }

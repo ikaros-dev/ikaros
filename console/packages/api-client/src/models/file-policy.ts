@@ -18,10 +18,10 @@
  * @interface FilePolicy
  */
 export interface FilePolicy {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FilePolicy
-	 */
-	name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FilePolicy
+   */
+  name?: string;
 }

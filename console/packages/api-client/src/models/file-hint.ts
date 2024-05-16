@@ -18,51 +18,51 @@
  * @interface FileHint
  */
 export interface FileHint {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof FileHint
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileHint
-	 */
-	name?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileHint
-	 */
-	originalPath?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileHint
-	 */
-	url?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileHint
-	 */
-	type?: FileHintTypeEnum;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof FileHint
-	 */
-	originalName?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof FileHint
+   */
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof FileHint
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FileHint
+   */
+  originalPath?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FileHint
+   */
+  url?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof FileHint
+   */
+  type?: FileHintTypeEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof FileHint
+   */
+  originalName?: string;
 }
 
 export const FileHintTypeEnum = {
-	Image: 'IMAGE',
-	Video: 'VIDEO',
-	Document: 'DOCUMENT',
-	Voice: 'VOICE',
-	Unknown: 'UNKNOWN',
+  Image: "IMAGE",
+  Video: "VIDEO",
+  Document: "DOCUMENT",
+  Voice: "VOICE",
+  Unknown: "UNKNOWN",
 } as const;
 
 export type FileHintTypeEnum =
-	(typeof FileHintTypeEnum)[keyof typeof FileHintTypeEnum];
+  (typeof FileHintTypeEnum)[keyof typeof FileHintTypeEnum];

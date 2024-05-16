@@ -12,497 +12,497 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from '../common';
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
 import {
-	BASE_PATH,
-	COLLECTION_FORMATS,
-	RequestArgs,
-	BaseAPI,
-	RequiredError,
-} from '../base';
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  RequestArgs,
+  BaseAPI,
+  RequiredError,
+} from "../base";
 // @ts-ignore
-import { FilePolicy } from '../models';
+import { FilePolicy } from "../models";
 // @ts-ignore
-import { PagingWrap } from '../models';
+import { PagingWrap } from "../models";
 /**
  * FileIkarosRunV1alpha1FilePolicyApi - axios parameter creator
  * @export
  */
 export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	return {
-		/**
-		 * Create policy
-		 * @param {FilePolicy} [filePolicy] Fresh FilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		createPolicy: async (
-			filePolicy?: FilePolicy,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/apis/file.ikaros.run/v1alpha1/policy`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+  return {
+    /**
+     * Create policy
+     * @param {FilePolicy} [filePolicy] Fresh FilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createPolicy: async (
+      filePolicy?: FilePolicy,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/apis/file.ikaros.run/v1alpha1/policy`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			localVarHeaderParameter['Content-Type'] = 'application/json';
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				filePolicy,
-				localVarRequestOptions,
-				configuration
-			);
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        filePolicy,
+        localVarRequestOptions,
+        configuration
+      );
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Delete policy
-		 * @param {string} name Name of FilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		deletePolicy: async (
-			name: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('deletePolicy', 'name', name);
-			const localVarPath =
-				`/apis/file.ikaros.run/v1alpha1/policy/{name}`.replace(
-					`{${'name'}}`,
-					encodeURIComponent(String(name))
-				);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Delete policy
+     * @param {string} name Name of FilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deletePolicy: async (
+      name: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("deletePolicy", "name", name);
+      const localVarPath =
+        `/apis/file.ikaros.run/v1alpha1/policy/{name}`.replace(
+          `{${"name"}}`,
+          encodeURIComponent(String(name))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'DELETE',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Get policies by paging.
-		 * @param {string} page Page of FilePolicy
-		 * @param {string} size Size ofFilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getPoliciesByPaging: async (
-			page: string,
-			size: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'page' is not null or undefined
-			assertParamExists('getPoliciesByPaging', 'page', page);
-			// verify required parameter 'size' is not null or undefined
-			assertParamExists('getPoliciesByPaging', 'size', size);
-			const localVarPath =
-				`/apis/file.ikaros.run/v1alpha1/policies/{page}/{size}`
-					.replace(`{${'page'}}`, encodeURIComponent(String(page)))
-					.replace(`{${'size'}}`, encodeURIComponent(String(size)));
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get policies by paging.
+     * @param {string} page Page of FilePolicy
+     * @param {string} size Size ofFilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getPoliciesByPaging: async (
+      page: string,
+      size: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'page' is not null or undefined
+      assertParamExists("getPoliciesByPaging", "page", page);
+      // verify required parameter 'size' is not null or undefined
+      assertParamExists("getPoliciesByPaging", "size", size);
+      const localVarPath =
+        `/apis/file.ikaros.run/v1alpha1/policies/{page}/{size}`
+          .replace(`{${"page"}}`, encodeURIComponent(String(page)))
+          .replace(`{${"size"}}`, encodeURIComponent(String(size)));
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Get policy By Name.
-		 * @param {string} name Name of FilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getPolicy: async (
-			name: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('getPolicy', 'name', name);
-			const localVarPath =
-				`/apis/file.ikaros.run/v1alpha1/policy/{name}`.replace(
-					`{${'name'}}`,
-					encodeURIComponent(String(name))
-				);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get policy By Name.
+     * @param {string} name Name of FilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getPolicy: async (
+      name: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("getPolicy", "name", name);
+      const localVarPath =
+        `/apis/file.ikaros.run/v1alpha1/policy/{name}`.replace(
+          `{${"name"}}`,
+          encodeURIComponent(String(name))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Get policy meta value by name and metaName.
-		 * @param {string} name Name of FilePolicy
-		 * @param {string} metaName MetaName of FilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getPolicyMeta: async (
-			name: string,
-			metaName: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('getPolicyMeta', 'name', name);
-			// verify required parameter 'metaName' is not null or undefined
-			assertParamExists('getPolicyMeta', 'metaName', metaName);
-			const localVarPath =
-				`/apis/file.ikaros.run/v1alpha1/policy/{name}/{metaName}`
-					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
-					.replace(`{${'metaName'}}`, encodeURIComponent(String(metaName)));
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get policy meta value by name and metaName.
+     * @param {string} name Name of FilePolicy
+     * @param {string} metaName MetaName of FilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getPolicyMeta: async (
+      name: string,
+      metaName: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("getPolicyMeta", "name", name);
+      // verify required parameter 'metaName' is not null or undefined
+      assertParamExists("getPolicyMeta", "metaName", metaName);
+      const localVarPath =
+        `/apis/file.ikaros.run/v1alpha1/policy/{name}/{metaName}`
+          .replace(`{${"name"}}`, encodeURIComponent(String(name)))
+          .replace(`{${"metaName"}}`, encodeURIComponent(String(metaName)));
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * List policies
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		listPolicies: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/apis/file.ikaros.run/v1alpha1/policies`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * List policies
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listPolicies: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/apis/file.ikaros.run/v1alpha1/policies`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Update policy
-		 * @param {string} name Name of policy
-		 * @param {FilePolicy} [filePolicy] Updated FilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updatePolicy: async (
-			name: string,
-			filePolicy?: FilePolicy,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('updatePolicy', 'name', name);
-			const localVarPath = `/apis/file.ikaros.run/v1alpha1/policy`.replace(
-				`{${'name'}}`,
-				encodeURIComponent(String(name))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Update policy
+     * @param {string} name Name of policy
+     * @param {FilePolicy} [filePolicy] Updated FilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updatePolicy: async (
+      name: string,
+      filePolicy?: FilePolicy,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("updatePolicy", "name", name);
+      const localVarPath = `/apis/file.ikaros.run/v1alpha1/policy`.replace(
+        `{${"name"}}`,
+        encodeURIComponent(String(name))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			localVarHeaderParameter['Content-Type'] = 'application/json';
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				filePolicy,
-				localVarRequestOptions,
-				configuration
-			);
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        filePolicy,
+        localVarRequestOptions,
+        configuration
+      );
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Update policy metadata value.
-		 * @param {string} name Name of policy
-		 * @param {string} metaName MetaName of policy
-		 * @param {string} body Updated Policy Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updatePolicyMeta: async (
-			name: string,
-			metaName: string,
-			body: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('updatePolicyMeta', 'name', name);
-			// verify required parameter 'metaName' is not null or undefined
-			assertParamExists('updatePolicyMeta', 'metaName', metaName);
-			// verify required parameter 'body' is not null or undefined
-			assertParamExists('updatePolicyMeta', 'body', body);
-			const localVarPath =
-				`/apis/file.ikaros.run/v1alpha1/policy/{name}/{metaName}`
-					.replace(`{${'name'}}`, encodeURIComponent(String(name)))
-					.replace(`{${'metaName'}}`, encodeURIComponent(String(metaName)));
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Update policy metadata value.
+     * @param {string} name Name of policy
+     * @param {string} metaName MetaName of policy
+     * @param {string} body Updated Policy Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updatePolicyMeta: async (
+      name: string,
+      metaName: string,
+      body: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("updatePolicyMeta", "name", name);
+      // verify required parameter 'metaName' is not null or undefined
+      assertParamExists("updatePolicyMeta", "metaName", metaName);
+      // verify required parameter 'body' is not null or undefined
+      assertParamExists("updatePolicyMeta", "body", body);
+      const localVarPath =
+        `/apis/file.ikaros.run/v1alpha1/policy/{name}/{metaName}`
+          .replace(`{${"name"}}`, encodeURIComponent(String(name)))
+          .replace(`{${"metaName"}}`, encodeURIComponent(String(metaName)));
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			localVarHeaderParameter['Content-Type'] = 'application/json';
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = serializeDataIfNeeded(
-				body,
-				localVarRequestOptions,
-				configuration
-			);
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        body,
+        localVarRequestOptions,
+        configuration
+      );
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-	};
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
@@ -510,210 +510,210 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
  * @export
  */
 export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	const localVarAxiosParamCreator =
-		FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator(configuration);
-	return {
-		/**
-		 * Create policy
-		 * @param {FilePolicy} [filePolicy] Fresh FilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async createPolicy(
-			filePolicy?: FilePolicy,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.createPolicy(
-				filePolicy,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Delete policy
-		 * @param {string} name Name of FilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async deletePolicy(
-			name: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.deletePolicy(
-				name,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Get policies by paging.
-		 * @param {string} page Page of FilePolicy
-		 * @param {string} size Size ofFilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async getPoliciesByPaging(
-			page: string,
-			size: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.getPoliciesByPaging(
-					page,
-					size,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Get policy By Name.
-		 * @param {string} name Name of FilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async getPolicy(
-			name: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.getPolicy(
-				name,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Get policy meta value by name and metaName.
-		 * @param {string} name Name of FilePolicy
-		 * @param {string} metaName MetaName of FilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async getPolicyMeta(
-			name: string,
-			metaName: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.getPolicyMeta(
-				name,
-				metaName,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * List policies
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async listPolicies(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.listPolicies(
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Update policy
-		 * @param {string} name Name of policy
-		 * @param {FilePolicy} [filePolicy] Updated FilePolicy
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async updatePolicy(
-			name: string,
-			filePolicy?: FilePolicy,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.updatePolicy(
-				name,
-				filePolicy,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Update policy metadata value.
-		 * @param {string} name Name of policy
-		 * @param {string} metaName MetaName of policy
-		 * @param {string} body Updated Policy Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async updatePolicyMeta(
-			name: string,
-			metaName: string,
-			body: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.updatePolicyMeta(
-					name,
-					metaName,
-					body,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-	};
+  const localVarAxiosParamCreator =
+    FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator(configuration);
+  return {
+    /**
+     * Create policy
+     * @param {FilePolicy} [filePolicy] Fresh FilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async createPolicy(
+      filePolicy?: FilePolicy,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.createPolicy(
+        filePolicy,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Delete policy
+     * @param {string} name Name of FilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async deletePolicy(
+      name: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.deletePolicy(
+        name,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Get policies by paging.
+     * @param {string} page Page of FilePolicy
+     * @param {string} size Size ofFilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getPoliciesByPaging(
+      page: string,
+      size: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.getPoliciesByPaging(
+          page,
+          size,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Get policy By Name.
+     * @param {string} name Name of FilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getPolicy(
+      name: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getPolicy(
+        name,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Get policy meta value by name and metaName.
+     * @param {string} name Name of FilePolicy
+     * @param {string} metaName MetaName of FilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getPolicyMeta(
+      name: string,
+      metaName: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getPolicyMeta(
+        name,
+        metaName,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * List policies
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listPolicies(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.listPolicies(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Update policy
+     * @param {string} name Name of policy
+     * @param {FilePolicy} [filePolicy] Updated FilePolicy
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updatePolicy(
+      name: string,
+      filePolicy?: FilePolicy,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.updatePolicy(
+        name,
+        filePolicy,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Update policy metadata value.
+     * @param {string} name Name of policy
+     * @param {string} metaName MetaName of policy
+     * @param {string} body Updated Policy Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updatePolicyMeta(
+      name: string,
+      metaName: string,
+      body: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.updatePolicyMeta(
+          name,
+          metaName,
+          body,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+  };
 };
 
 /**
@@ -721,138 +721,138 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
  * @export
  */
 export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
-	configuration?: Configuration,
-	basePath?: string,
-	axios?: AxiosInstance
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
 ) {
-	const localVarFp = FileIkarosRunV1alpha1FilePolicyApiFp(configuration);
-	return {
-		/**
-		 * Create policy
-		 * @param {FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		createPolicy(
-			requestParameters: FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<FilePolicy> {
-			return localVarFp
-				.createPolicy(requestParameters.filePolicy, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Delete policy
-		 * @param {FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		deletePolicy(
-			requestParameters: FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.deletePolicy(requestParameters.name, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Get policies by paging.
-		 * @param {FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getPoliciesByPaging(
-			requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<PagingWrap> {
-			return localVarFp
-				.getPoliciesByPaging(
-					requestParameters.page,
-					requestParameters.size,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Get policy By Name.
-		 * @param {FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getPolicy(
-			requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<FilePolicy> {
-			return localVarFp
-				.getPolicy(requestParameters.name, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Get policy meta value by name and metaName.
-		 * @param {FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		getPolicyMeta(
-			requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.getPolicyMeta(
-					requestParameters.name,
-					requestParameters.metaName,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * List policies
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		listPolicies(options?: AxiosRequestConfig): AxiosPromise<FilePolicy> {
-			return localVarFp
-				.listPolicies(options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Update policy
-		 * @param {FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updatePolicy(
-			requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<FilePolicy> {
-			return localVarFp
-				.updatePolicy(
-					requestParameters.name,
-					requestParameters.filePolicy,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Update policy metadata value.
-		 * @param {FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		updatePolicyMeta(
-			requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<FilePolicy> {
-			return localVarFp
-				.updatePolicyMeta(
-					requestParameters.name,
-					requestParameters.metaName,
-					requestParameters.body,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-	};
+  const localVarFp = FileIkarosRunV1alpha1FilePolicyApiFp(configuration);
+  return {
+    /**
+     * Create policy
+     * @param {FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createPolicy(
+      requestParameters: FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<FilePolicy> {
+      return localVarFp
+        .createPolicy(requestParameters.filePolicy, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Delete policy
+     * @param {FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deletePolicy(
+      requestParameters: FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .deletePolicy(requestParameters.name, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get policies by paging.
+     * @param {FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getPoliciesByPaging(
+      requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<PagingWrap> {
+      return localVarFp
+        .getPoliciesByPaging(
+          requestParameters.page,
+          requestParameters.size,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get policy By Name.
+     * @param {FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getPolicy(
+      requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<FilePolicy> {
+      return localVarFp
+        .getPolicy(requestParameters.name, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get policy meta value by name and metaName.
+     * @param {FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getPolicyMeta(
+      requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .getPolicyMeta(
+          requestParameters.name,
+          requestParameters.metaName,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * List policies
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listPolicies(options?: AxiosRequestConfig): AxiosPromise<FilePolicy> {
+      return localVarFp
+        .listPolicies(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Update policy
+     * @param {FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updatePolicy(
+      requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<FilePolicy> {
+      return localVarFp
+        .updatePolicy(
+          requestParameters.name,
+          requestParameters.filePolicy,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Update policy metadata value.
+     * @param {FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updatePolicyMeta(
+      requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<FilePolicy> {
+      return localVarFp
+        .updatePolicyMeta(
+          requestParameters.name,
+          requestParameters.metaName,
+          requestParameters.body,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -861,12 +861,12 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
  * @interface FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest
  */
 export interface FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest {
-	/**
-	 * Fresh FilePolicy
-	 * @type {FilePolicy}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiCreatePolicy
-	 */
-	readonly filePolicy?: FilePolicy;
+  /**
+   * Fresh FilePolicy
+   * @type {FilePolicy}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiCreatePolicy
+   */
+  readonly filePolicy?: FilePolicy;
 }
 
 /**
@@ -875,12 +875,12 @@ export interface FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest {
  * @interface FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest
  */
 export interface FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest {
-	/**
-	 * Name of FilePolicy
-	 * @type {string}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiDeletePolicy
-	 */
-	readonly name: string;
+  /**
+   * Name of FilePolicy
+   * @type {string}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiDeletePolicy
+   */
+  readonly name: string;
 }
 
 /**
@@ -889,19 +889,19 @@ export interface FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest {
  * @interface FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest
  */
 export interface FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest {
-	/**
-	 * Page of FilePolicy
-	 * @type {string}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPaging
-	 */
-	readonly page: string;
+  /**
+   * Page of FilePolicy
+   * @type {string}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPaging
+   */
+  readonly page: string;
 
-	/**
-	 * Size ofFilePolicy
-	 * @type {string}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPaging
-	 */
-	readonly size: string;
+  /**
+   * Size ofFilePolicy
+   * @type {string}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPaging
+   */
+  readonly size: string;
 }
 
 /**
@@ -910,12 +910,12 @@ export interface FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest {
  * @interface FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest
  */
 export interface FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest {
-	/**
-	 * Name of FilePolicy
-	 * @type {string}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiGetPolicy
-	 */
-	readonly name: string;
+  /**
+   * Name of FilePolicy
+   * @type {string}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiGetPolicy
+   */
+  readonly name: string;
 }
 
 /**
@@ -924,19 +924,19 @@ export interface FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest {
  * @interface FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest
  */
 export interface FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest {
-	/**
-	 * Name of FilePolicy
-	 * @type {string}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiGetPolicyMeta
-	 */
-	readonly name: string;
+  /**
+   * Name of FilePolicy
+   * @type {string}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiGetPolicyMeta
+   */
+  readonly name: string;
 
-	/**
-	 * MetaName of FilePolicy
-	 * @type {string}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiGetPolicyMeta
-	 */
-	readonly metaName: string;
+  /**
+   * MetaName of FilePolicy
+   * @type {string}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiGetPolicyMeta
+   */
+  readonly metaName: string;
 }
 
 /**
@@ -945,19 +945,19 @@ export interface FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest {
  * @interface FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest
  */
 export interface FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest {
-	/**
-	 * Name of policy
-	 * @type {string}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatePolicy
-	 */
-	readonly name: string;
+  /**
+   * Name of policy
+   * @type {string}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatePolicy
+   */
+  readonly name: string;
 
-	/**
-	 * Updated FilePolicy
-	 * @type {FilePolicy}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatePolicy
-	 */
-	readonly filePolicy?: FilePolicy;
+  /**
+   * Updated FilePolicy
+   * @type {FilePolicy}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatePolicy
+   */
+  readonly filePolicy?: FilePolicy;
 }
 
 /**
@@ -966,26 +966,26 @@ export interface FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest {
  * @interface FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest
  */
 export interface FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest {
-	/**
-	 * Name of policy
-	 * @type {string}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMeta
-	 */
-	readonly name: string;
+  /**
+   * Name of policy
+   * @type {string}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMeta
+   */
+  readonly name: string;
 
-	/**
-	 * MetaName of policy
-	 * @type {string}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMeta
-	 */
-	readonly metaName: string;
+  /**
+   * MetaName of policy
+   * @type {string}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMeta
+   */
+  readonly metaName: string;
 
-	/**
-	 * Updated Policy Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
-	 * @type {string}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMeta
-	 */
-	readonly body: string;
+  /**
+   * Updated Policy Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+   * @type {string}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMeta
+   */
+  readonly body: string;
 }
 
 /**
@@ -995,144 +995,144 @@ export interface FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest {
  * @extends {BaseAPI}
  */
 export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
-	/**
-	 * Create policy
-	 * @param {FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApi
-	 */
-	public createPolicy(
-		requestParameters: FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
-			.createPolicy(requestParameters.filePolicy, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Create policy
+   * @param {FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApi
+   */
+  public createPolicy(
+    requestParameters: FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
+      .createPolicy(requestParameters.filePolicy, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Delete policy
-	 * @param {FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApi
-	 */
-	public deletePolicy(
-		requestParameters: FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest,
-		options?: AxiosRequestConfig
-	) {
-		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
-			.deletePolicy(requestParameters.name, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Delete policy
+   * @param {FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApi
+   */
+  public deletePolicy(
+    requestParameters: FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
+      .deletePolicy(requestParameters.name, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Get policies by paging.
-	 * @param {FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApi
-	 */
-	public getPoliciesByPaging(
-		requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest,
-		options?: AxiosRequestConfig
-	) {
-		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
-			.getPoliciesByPaging(
-				requestParameters.page,
-				requestParameters.size,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Get policies by paging.
+   * @param {FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApi
+   */
+  public getPoliciesByPaging(
+    requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
+      .getPoliciesByPaging(
+        requestParameters.page,
+        requestParameters.size,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Get policy By Name.
-	 * @param {FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApi
-	 */
-	public getPolicy(
-		requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest,
-		options?: AxiosRequestConfig
-	) {
-		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
-			.getPolicy(requestParameters.name, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Get policy By Name.
+   * @param {FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApi
+   */
+  public getPolicy(
+    requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
+      .getPolicy(requestParameters.name, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Get policy meta value by name and metaName.
-	 * @param {FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApi
-	 */
-	public getPolicyMeta(
-		requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest,
-		options?: AxiosRequestConfig
-	) {
-		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
-			.getPolicyMeta(
-				requestParameters.name,
-				requestParameters.metaName,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Get policy meta value by name and metaName.
+   * @param {FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApi
+   */
+  public getPolicyMeta(
+    requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
+      .getPolicyMeta(
+        requestParameters.name,
+        requestParameters.metaName,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * List policies
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApi
-	 */
-	public listPolicies(options?: AxiosRequestConfig) {
-		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
-			.listPolicies(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * List policies
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApi
+   */
+  public listPolicies(options?: AxiosRequestConfig) {
+    return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
+      .listPolicies(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Update policy
-	 * @param {FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApi
-	 */
-	public updatePolicy(
-		requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest,
-		options?: AxiosRequestConfig
-	) {
-		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
-			.updatePolicy(
-				requestParameters.name,
-				requestParameters.filePolicy,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Update policy
+   * @param {FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApi
+   */
+  public updatePolicy(
+    requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
+      .updatePolicy(
+        requestParameters.name,
+        requestParameters.filePolicy,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Update policy metadata value.
-	 * @param {FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof FileIkarosRunV1alpha1FilePolicyApi
-	 */
-	public updatePolicyMeta(
-		requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest,
-		options?: AxiosRequestConfig
-	) {
-		return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
-			.updatePolicyMeta(
-				requestParameters.name,
-				requestParameters.metaName,
-				requestParameters.body,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Update policy metadata value.
+   * @param {FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof FileIkarosRunV1alpha1FilePolicyApi
+   */
+  public updatePolicyMeta(
+    requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
+      .updatePolicyMeta(
+        requestParameters.name,
+        requestParameters.metaName,
+        requestParameters.body,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 }

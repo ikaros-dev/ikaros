@@ -12,86 +12,86 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from '../common';
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
 import {
-	BASE_PATH,
-	COLLECTION_FORMATS,
-	RequestArgs,
-	BaseAPI,
-	RequiredError,
-} from '../base';
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  RequestArgs,
+  BaseAPI,
+  RequiredError,
+} from "../base";
 /**
  * V1alpha1StaticApi - axios parameter creator
  * @export
  */
 export const V1alpha1StaticApiAxiosParamCreator = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	return {
-		/**
-		 * List font dir all fonts in work statics dir.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		listStaticsFonts: async (
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/static/fonts`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+  return {
+    /**
+     * List font dir all fonts in work statics dir.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listStaticsFonts: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/static/fonts`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'GET',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-	};
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
@@ -99,29 +99,29 @@ export const V1alpha1StaticApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1StaticApiFp = function (configuration?: Configuration) {
-	const localVarAxiosParamCreator =
-		V1alpha1StaticApiAxiosParamCreator(configuration);
-	return {
-		/**
-		 * List font dir all fonts in work statics dir.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async listStaticsFonts(
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.listStaticsFonts(options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-	};
+  const localVarAxiosParamCreator =
+    V1alpha1StaticApiAxiosParamCreator(configuration);
+  return {
+    /**
+     * List font dir all fonts in work statics dir.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listStaticsFonts(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listStaticsFonts(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+  };
 };
 
 /**
@@ -129,25 +129,25 @@ export const V1alpha1StaticApiFp = function (configuration?: Configuration) {
  * @export
  */
 export const V1alpha1StaticApiFactory = function (
-	configuration?: Configuration,
-	basePath?: string,
-	axios?: AxiosInstance
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
 ) {
-	const localVarFp = V1alpha1StaticApiFp(configuration);
-	return {
-		/**
-		 * List font dir all fonts in work statics dir.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		listStaticsFonts(
-			options?: AxiosRequestConfig
-		): AxiosPromise<Array<string>> {
-			return localVarFp
-				.listStaticsFonts(options)
-				.then((request) => request(axios, basePath));
-		},
-	};
+  const localVarFp = V1alpha1StaticApiFp(configuration);
+  return {
+    /**
+     * List font dir all fonts in work statics dir.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listStaticsFonts(
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<string>> {
+      return localVarFp
+        .listStaticsFonts(options)
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -157,15 +157,15 @@ export const V1alpha1StaticApiFactory = function (
  * @extends {BaseAPI}
  */
 export class V1alpha1StaticApi extends BaseAPI {
-	/**
-	 * List font dir all fonts in work statics dir.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1StaticApi
-	 */
-	public listStaticsFonts(options?: AxiosRequestConfig) {
-		return V1alpha1StaticApiFp(this.configuration)
-			.listStaticsFonts(options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * List font dir all fonts in work statics dir.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1StaticApi
+   */
+  public listStaticsFonts(options?: AxiosRequestConfig) {
+    return V1alpha1StaticApiFp(this.configuration)
+      .listStaticsFonts(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 }

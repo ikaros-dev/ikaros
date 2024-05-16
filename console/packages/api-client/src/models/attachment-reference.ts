@@ -18,37 +18,37 @@
  * @interface AttachmentReference
  */
 export interface AttachmentReference {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof AttachmentReference
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof AttachmentReference
-	 */
-	type?: AttachmentReferenceTypeEnum;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof AttachmentReference
-	 */
-	attachmentId?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof AttachmentReference
-	 */
-	referenceId?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AttachmentReference
+   */
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof AttachmentReference
+   */
+  type?: AttachmentReferenceTypeEnum;
+  /**
+   *
+   * @type {number}
+   * @memberof AttachmentReference
+   */
+  attachmentId?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AttachmentReference
+   */
+  referenceId?: number;
 }
 
 export const AttachmentReferenceTypeEnum = {
-	Subject: 'SUBJECT',
-	Episode: 'EPISODE',
-	UserAvatar: 'USER_AVATAR',
+  Subject: "SUBJECT",
+  Episode: "EPISODE",
+  UserAvatar: "USER_AVATAR",
 } as const;
 
 export type AttachmentReferenceTypeEnum =
-	(typeof AttachmentReferenceTypeEnum)[keyof typeof AttachmentReferenceTypeEnum];
+  (typeof AttachmentReferenceTypeEnum)[keyof typeof AttachmentReferenceTypeEnum];

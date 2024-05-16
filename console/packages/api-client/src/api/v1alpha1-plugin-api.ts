@@ -12,395 +12,395 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from '../configuration';
-import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from "../configuration";
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from "axios";
+import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from '../common';
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction,
+} from "../common";
 // @ts-ignore
 import {
-	BASE_PATH,
-	COLLECTION_FORMATS,
-	RequestArgs,
-	BaseAPI,
-	RequiredError,
-} from '../base';
+  BASE_PATH,
+  COLLECTION_FORMATS,
+  RequestArgs,
+  BaseAPI,
+  RequiredError,
+} from "../base";
 /**
  * V1alpha1PluginApi - axios parameter creator
  * @export
  */
 export const V1alpha1PluginApiAxiosParamCreator = function (
-	configuration?: Configuration
+  configuration?: Configuration
 ) {
-	return {
-		/**
-		 * Install plugin by upload jar file.
-		 * @param {File} [file]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		installPluginByFile: async (
-			file?: File,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			const localVarPath = `/api/v1alpha1/plugin/install/file`;
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+  return {
+    /**
+     * Install plugin by upload jar file.
+     * @param {File} [file]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    installPluginByFile: async (
+      file?: File,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/plugin/install/file`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-			const localVarFormParams = new ((configuration &&
-				configuration.formDataCtor) ||
-				FormData)();
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+      const localVarFormParams = new ((configuration &&
+        configuration.formDataCtor) ||
+        FormData)();
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (file !== undefined) {
-				localVarFormParams.append('file', file as any);
-			}
+      if (file !== undefined) {
+        localVarFormParams.append("file", file as any);
+      }
 
-			localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+      localVarHeaderParameter["Content-Type"] = "multipart/form-data";
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = localVarFormParams;
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = localVarFormParams;
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Operate plugin state by id(name).
-		 * @param {string} name Name of plugin, this is id also. if operate all plugins, please set value is [ALL].
-		 * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'} operate Operate of plugin state.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		operatePluginStateById: async (
-			name: string,
-			operate:
-				| 'START'
-				| 'STOP'
-				| 'ENABLE'
-				| 'DISABLE'
-				| 'LOAD'
-				| 'LOAD_ALL'
-				| 'RELOAD'
-				| 'RELOAD_ALL'
-				| 'RELOAD_ALL_STARTED'
-				| 'DELETE'
-				| 'UNLOAD',
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('operatePluginStateById', 'name', name);
-			// verify required parameter 'operate' is not null or undefined
-			assertParamExists('operatePluginStateById', 'operate', operate);
-			const localVarPath = `/api/v1alpha1/plugin/{name}/state`.replace(
-				`{${'name'}}`,
-				encodeURIComponent(String(name))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Operate plugin state by id(name).
+     * @param {string} name Name of plugin, this is id also. if operate all plugins, please set value is [ALL].
+     * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'} operate Operate of plugin state.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    operatePluginStateById: async (
+      name: string,
+      operate:
+        | "START"
+        | "STOP"
+        | "ENABLE"
+        | "DISABLE"
+        | "LOAD"
+        | "LOAD_ALL"
+        | "RELOAD"
+        | "RELOAD_ALL"
+        | "RELOAD_ALL_STARTED"
+        | "DELETE"
+        | "UNLOAD",
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("operatePluginStateById", "name", name);
+      // verify required parameter 'operate' is not null or undefined
+      assertParamExists("operatePluginStateById", "operate", operate);
+      const localVarPath = `/api/v1alpha1/plugin/{name}/state`.replace(
+        `{${"name"}}`,
+        encodeURIComponent(String(name))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (operate !== undefined) {
-				localVarQueryParameter['operate'] = operate;
-			}
+      if (operate !== undefined) {
+        localVarQueryParameter["operate"] = operate;
+      }
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Reload plugin by id(name).
-		 * @param {string} name Name of plugin, this is id also.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		reloadPluginById: async (
-			name: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('reloadPluginById', 'name', name);
-			const localVarPath = `/api/v1alpha1/plugin/{name}/state/reload`.replace(
-				`{${'name'}}`,
-				encodeURIComponent(String(name))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Reload plugin by id(name).
+     * @param {string} name Name of plugin, this is id also.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    reloadPluginById: async (
+      name: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("reloadPluginById", "name", name);
+      const localVarPath = `/api/v1alpha1/plugin/{name}/state/reload`.replace(
+        `{${"name"}}`,
+        encodeURIComponent(String(name))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Start plugin by id(name).
-		 * @param {string} name Name of plugin, this is id also.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		startPluginById: async (
-			name: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('startPluginById', 'name', name);
-			const localVarPath = `/api/v1alpha1/plugin/{name}/state/start`.replace(
-				`{${'name'}}`,
-				encodeURIComponent(String(name))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Start plugin by id(name).
+     * @param {string} name Name of plugin, this is id also.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    startPluginById: async (
+      name: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("startPluginById", "name", name);
+      const localVarPath = `/api/v1alpha1/plugin/{name}/state/start`.replace(
+        `{${"name"}}`,
+        encodeURIComponent(String(name))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Stop plugin by id(name).
-		 * @param {string} name Name of plugin, this is id also.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		stopPluginById: async (
-			name: string,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'name' is not null or undefined
-			assertParamExists('stopPluginById', 'name', name);
-			const localVarPath = `/api/v1alpha1/plugin/{name}/state/stop`.replace(
-				`{${'name'}}`,
-				encodeURIComponent(String(name))
-			);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Stop plugin by id(name).
+     * @param {string} name Name of plugin, this is id also.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    stopPluginById: async (
+      name: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("stopPluginById", "name", name);
+      const localVarPath = `/api/v1alpha1/plugin/{name}/state/stop`.replace(
+        `{${"name"}}`,
+        encodeURIComponent(String(name))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'PUT',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-		/**
-		 * Upgrade plugin by upload jar file.
-		 * @param {string} pluginId Plugin id(name).
-		 * @param {File} [file]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		upgradePluginByFile: async (
-			pluginId: string,
-			file?: File,
-			options: AxiosRequestConfig = {}
-		): Promise<RequestArgs> => {
-			// verify required parameter 'pluginId' is not null or undefined
-			assertParamExists('upgradePluginByFile', 'pluginId', pluginId);
-			const localVarPath =
-				`/api/v1alpha1/plugin/upgrade/file/{pluginId}`.replace(
-					`{${'pluginId'}}`,
-					encodeURIComponent(String(pluginId))
-				);
-			// use dummy base URL string because the URL constructor only accepts absolute URLs.
-			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-			let baseOptions;
-			if (configuration) {
-				baseOptions = configuration.baseOptions;
-			}
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Upgrade plugin by upload jar file.
+     * @param {string} pluginId Plugin id(name).
+     * @param {File} [file]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    upgradePluginByFile: async (
+      pluginId: string,
+      file?: File,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'pluginId' is not null or undefined
+      assertParamExists("upgradePluginByFile", "pluginId", pluginId);
+      const localVarPath =
+        `/api/v1alpha1/plugin/upgrade/file/{pluginId}`.replace(
+          `{${"pluginId"}}`,
+          encodeURIComponent(String(pluginId))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
 
-			const localVarRequestOptions = {
-				method: 'POST',
-				...baseOptions,
-				...options,
-			};
-			const localVarHeaderParameter = {} as any;
-			const localVarQueryParameter = {} as any;
-			const localVarFormParams = new ((configuration &&
-				configuration.formDataCtor) ||
-				FormData)();
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+      const localVarFormParams = new ((configuration &&
+        configuration.formDataCtor) ||
+        FormData)();
 
-			// authentication BasicAuth required
-			// http basic authentication required
-			setBasicAuthToObject(localVarRequestOptions, configuration);
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
 
-			// authentication BearerAuth required
-			// http bearer authentication required
-			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-			if (file !== undefined) {
-				localVarFormParams.append('file', file as any);
-			}
+      if (file !== undefined) {
+        localVarFormParams.append("file", file as any);
+      }
 
-			localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+      localVarHeaderParameter["Content-Type"] = "multipart/form-data";
 
-			setSearchParams(localVarUrlObj, localVarQueryParameter);
-			let headersFromBaseOptions =
-				baseOptions && baseOptions.headers ? baseOptions.headers : {};
-			localVarRequestOptions.headers = {
-				...localVarHeaderParameter,
-				...headersFromBaseOptions,
-				...options.headers,
-			};
-			localVarRequestOptions.data = localVarFormParams;
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = localVarFormParams;
 
-			return {
-				url: toPathString(localVarUrlObj),
-				options: localVarRequestOptions,
-			};
-		},
-	};
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
 };
 
 /**
@@ -408,163 +408,163 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
-	const localVarAxiosParamCreator =
-		V1alpha1PluginApiAxiosParamCreator(configuration);
-	return {
-		/**
-		 * Install plugin by upload jar file.
-		 * @param {File} [file]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async installPluginByFile(
-			file?: File,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.installPluginByFile(file, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Operate plugin state by id(name).
-		 * @param {string} name Name of plugin, this is id also. if operate all plugins, please set value is [ALL].
-		 * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'} operate Operate of plugin state.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async operatePluginStateById(
-			name: string,
-			operate:
-				| 'START'
-				| 'STOP'
-				| 'ENABLE'
-				| 'DISABLE'
-				| 'LOAD'
-				| 'LOAD_ALL'
-				| 'RELOAD'
-				| 'RELOAD_ALL'
-				| 'RELOAD_ALL_STARTED'
-				| 'DELETE'
-				| 'UNLOAD',
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.operatePluginStateById(
-					name,
-					operate,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Reload plugin by id(name).
-		 * @param {string} name Name of plugin, this is id also.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async reloadPluginById(
-			name: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.reloadPluginById(name, options);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Start plugin by id(name).
-		 * @param {string} name Name of plugin, this is id also.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async startPluginById(
-			name: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.startPluginById(
-				name,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Stop plugin by id(name).
-		 * @param {string} name Name of plugin, this is id also.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async stopPluginById(
-			name: string,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
-		> {
-			const localVarAxiosArgs = await localVarAxiosParamCreator.stopPluginById(
-				name,
-				options
-			);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-		/**
-		 * Upgrade plugin by upload jar file.
-		 * @param {string} pluginId Plugin id(name).
-		 * @param {File} [file]
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		async upgradePluginByFile(
-			pluginId: string,
-			file?: File,
-			options?: AxiosRequestConfig
-		): Promise<
-			(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
-		> {
-			const localVarAxiosArgs =
-				await localVarAxiosParamCreator.upgradePluginByFile(
-					pluginId,
-					file,
-					options
-				);
-			return createRequestFunction(
-				localVarAxiosArgs,
-				globalAxios,
-				BASE_PATH,
-				configuration
-			);
-		},
-	};
+  const localVarAxiosParamCreator =
+    V1alpha1PluginApiAxiosParamCreator(configuration);
+  return {
+    /**
+     * Install plugin by upload jar file.
+     * @param {File} [file]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async installPluginByFile(
+      file?: File,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.installPluginByFile(file, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Operate plugin state by id(name).
+     * @param {string} name Name of plugin, this is id also. if operate all plugins, please set value is [ALL].
+     * @param {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'} operate Operate of plugin state.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async operatePluginStateById(
+      name: string,
+      operate:
+        | "START"
+        | "STOP"
+        | "ENABLE"
+        | "DISABLE"
+        | "LOAD"
+        | "LOAD_ALL"
+        | "RELOAD"
+        | "RELOAD_ALL"
+        | "RELOAD_ALL_STARTED"
+        | "DELETE"
+        | "UNLOAD",
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.operatePluginStateById(
+          name,
+          operate,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Reload plugin by id(name).
+     * @param {string} name Name of plugin, this is id also.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async reloadPluginById(
+      name: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.reloadPluginById(name, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Start plugin by id(name).
+     * @param {string} name Name of plugin, this is id also.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async startPluginById(
+      name: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.startPluginById(
+        name,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Stop plugin by id(name).
+     * @param {string} name Name of plugin, this is id also.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async stopPluginById(
+      name: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.stopPluginById(
+        name,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Upgrade plugin by upload jar file.
+     * @param {string} pluginId Plugin id(name).
+     * @param {File} [file]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async upgradePluginByFile(
+      pluginId: string,
+      file?: File,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.upgradePluginByFile(
+          pluginId,
+          file,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+  };
 };
 
 /**
@@ -572,105 +572,105 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
  * @export
  */
 export const V1alpha1PluginApiFactory = function (
-	configuration?: Configuration,
-	basePath?: string,
-	axios?: AxiosInstance
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
 ) {
-	const localVarFp = V1alpha1PluginApiFp(configuration);
-	return {
-		/**
-		 * Install plugin by upload jar file.
-		 * @param {V1alpha1PluginApiInstallPluginByFileRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		installPluginByFile(
-			requestParameters: V1alpha1PluginApiInstallPluginByFileRequest = {},
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.installPluginByFile(requestParameters.file, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Operate plugin state by id(name).
-		 * @param {V1alpha1PluginApiOperatePluginStateByIdRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		operatePluginStateById(
-			requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<string> {
-			return localVarFp
-				.operatePluginStateById(
-					requestParameters.name,
-					requestParameters.operate,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Reload plugin by id(name).
-		 * @param {V1alpha1PluginApiReloadPluginByIdRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		reloadPluginById(
-			requestParameters: V1alpha1PluginApiReloadPluginByIdRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<boolean> {
-			return localVarFp
-				.reloadPluginById(requestParameters.name, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Start plugin by id(name).
-		 * @param {V1alpha1PluginApiStartPluginByIdRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		startPluginById(
-			requestParameters: V1alpha1PluginApiStartPluginByIdRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<boolean> {
-			return localVarFp
-				.startPluginById(requestParameters.name, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Stop plugin by id(name).
-		 * @param {V1alpha1PluginApiStopPluginByIdRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		stopPluginById(
-			requestParameters: V1alpha1PluginApiStopPluginByIdRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<boolean> {
-			return localVarFp
-				.stopPluginById(requestParameters.name, options)
-				.then((request) => request(axios, basePath));
-		},
-		/**
-		 * Upgrade plugin by upload jar file.
-		 * @param {V1alpha1PluginApiUpgradePluginByFileRequest} requestParameters Request parameters.
-		 * @param {*} [options] Override http request option.
-		 * @throws {RequiredError}
-		 */
-		upgradePluginByFile(
-			requestParameters: V1alpha1PluginApiUpgradePluginByFileRequest,
-			options?: AxiosRequestConfig
-		): AxiosPromise<void> {
-			return localVarFp
-				.upgradePluginByFile(
-					requestParameters.pluginId,
-					requestParameters.file,
-					options
-				)
-				.then((request) => request(axios, basePath));
-		},
-	};
+  const localVarFp = V1alpha1PluginApiFp(configuration);
+  return {
+    /**
+     * Install plugin by upload jar file.
+     * @param {V1alpha1PluginApiInstallPluginByFileRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    installPluginByFile(
+      requestParameters: V1alpha1PluginApiInstallPluginByFileRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .installPluginByFile(requestParameters.file, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Operate plugin state by id(name).
+     * @param {V1alpha1PluginApiOperatePluginStateByIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    operatePluginStateById(
+      requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<string> {
+      return localVarFp
+        .operatePluginStateById(
+          requestParameters.name,
+          requestParameters.operate,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Reload plugin by id(name).
+     * @param {V1alpha1PluginApiReloadPluginByIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    reloadPluginById(
+      requestParameters: V1alpha1PluginApiReloadPluginByIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<boolean> {
+      return localVarFp
+        .reloadPluginById(requestParameters.name, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Start plugin by id(name).
+     * @param {V1alpha1PluginApiStartPluginByIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    startPluginById(
+      requestParameters: V1alpha1PluginApiStartPluginByIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<boolean> {
+      return localVarFp
+        .startPluginById(requestParameters.name, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Stop plugin by id(name).
+     * @param {V1alpha1PluginApiStopPluginByIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    stopPluginById(
+      requestParameters: V1alpha1PluginApiStopPluginByIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<boolean> {
+      return localVarFp
+        .stopPluginById(requestParameters.name, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Upgrade plugin by upload jar file.
+     * @param {V1alpha1PluginApiUpgradePluginByFileRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    upgradePluginByFile(
+      requestParameters: V1alpha1PluginApiUpgradePluginByFileRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .upgradePluginByFile(
+          requestParameters.pluginId,
+          requestParameters.file,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+  };
 };
 
 /**
@@ -679,12 +679,12 @@ export const V1alpha1PluginApiFactory = function (
  * @interface V1alpha1PluginApiInstallPluginByFileRequest
  */
 export interface V1alpha1PluginApiInstallPluginByFileRequest {
-	/**
-	 *
-	 * @type {File}
-	 * @memberof V1alpha1PluginApiInstallPluginByFile
-	 */
-	readonly file?: File;
+  /**
+   *
+   * @type {File}
+   * @memberof V1alpha1PluginApiInstallPluginByFile
+   */
+  readonly file?: File;
 }
 
 /**
@@ -693,30 +693,30 @@ export interface V1alpha1PluginApiInstallPluginByFileRequest {
  * @interface V1alpha1PluginApiOperatePluginStateByIdRequest
  */
 export interface V1alpha1PluginApiOperatePluginStateByIdRequest {
-	/**
-	 * Name of plugin, this is id also. if operate all plugins, please set value is [ALL].
-	 * @type {string}
-	 * @memberof V1alpha1PluginApiOperatePluginStateById
-	 */
-	readonly name: string;
+  /**
+   * Name of plugin, this is id also. if operate all plugins, please set value is [ALL].
+   * @type {string}
+   * @memberof V1alpha1PluginApiOperatePluginStateById
+   */
+  readonly name: string;
 
-	/**
-	 * Operate of plugin state.
-	 * @type {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'}
-	 * @memberof V1alpha1PluginApiOperatePluginStateById
-	 */
-	readonly operate:
-		| 'START'
-		| 'STOP'
-		| 'ENABLE'
-		| 'DISABLE'
-		| 'LOAD'
-		| 'LOAD_ALL'
-		| 'RELOAD'
-		| 'RELOAD_ALL'
-		| 'RELOAD_ALL_STARTED'
-		| 'DELETE'
-		| 'UNLOAD';
+  /**
+   * Operate of plugin state.
+   * @type {'START' | 'STOP' | 'ENABLE' | 'DISABLE' | 'LOAD' | 'LOAD_ALL' | 'RELOAD' | 'RELOAD_ALL' | 'RELOAD_ALL_STARTED' | 'DELETE' | 'UNLOAD'}
+   * @memberof V1alpha1PluginApiOperatePluginStateById
+   */
+  readonly operate:
+    | "START"
+    | "STOP"
+    | "ENABLE"
+    | "DISABLE"
+    | "LOAD"
+    | "LOAD_ALL"
+    | "RELOAD"
+    | "RELOAD_ALL"
+    | "RELOAD_ALL_STARTED"
+    | "DELETE"
+    | "UNLOAD";
 }
 
 /**
@@ -725,12 +725,12 @@ export interface V1alpha1PluginApiOperatePluginStateByIdRequest {
  * @interface V1alpha1PluginApiReloadPluginByIdRequest
  */
 export interface V1alpha1PluginApiReloadPluginByIdRequest {
-	/**
-	 * Name of plugin, this is id also.
-	 * @type {string}
-	 * @memberof V1alpha1PluginApiReloadPluginById
-	 */
-	readonly name: string;
+  /**
+   * Name of plugin, this is id also.
+   * @type {string}
+   * @memberof V1alpha1PluginApiReloadPluginById
+   */
+  readonly name: string;
 }
 
 /**
@@ -739,12 +739,12 @@ export interface V1alpha1PluginApiReloadPluginByIdRequest {
  * @interface V1alpha1PluginApiStartPluginByIdRequest
  */
 export interface V1alpha1PluginApiStartPluginByIdRequest {
-	/**
-	 * Name of plugin, this is id also.
-	 * @type {string}
-	 * @memberof V1alpha1PluginApiStartPluginById
-	 */
-	readonly name: string;
+  /**
+   * Name of plugin, this is id also.
+   * @type {string}
+   * @memberof V1alpha1PluginApiStartPluginById
+   */
+  readonly name: string;
 }
 
 /**
@@ -753,12 +753,12 @@ export interface V1alpha1PluginApiStartPluginByIdRequest {
  * @interface V1alpha1PluginApiStopPluginByIdRequest
  */
 export interface V1alpha1PluginApiStopPluginByIdRequest {
-	/**
-	 * Name of plugin, this is id also.
-	 * @type {string}
-	 * @memberof V1alpha1PluginApiStopPluginById
-	 */
-	readonly name: string;
+  /**
+   * Name of plugin, this is id also.
+   * @type {string}
+   * @memberof V1alpha1PluginApiStopPluginById
+   */
+  readonly name: string;
 }
 
 /**
@@ -767,19 +767,19 @@ export interface V1alpha1PluginApiStopPluginByIdRequest {
  * @interface V1alpha1PluginApiUpgradePluginByFileRequest
  */
 export interface V1alpha1PluginApiUpgradePluginByFileRequest {
-	/**
-	 * Plugin id(name).
-	 * @type {string}
-	 * @memberof V1alpha1PluginApiUpgradePluginByFile
-	 */
-	readonly pluginId: string;
+  /**
+   * Plugin id(name).
+   * @type {string}
+   * @memberof V1alpha1PluginApiUpgradePluginByFile
+   */
+  readonly pluginId: string;
 
-	/**
-	 *
-	 * @type {File}
-	 * @memberof V1alpha1PluginApiUpgradePluginByFile
-	 */
-	readonly file?: File;
+  /**
+   *
+   * @type {File}
+   * @memberof V1alpha1PluginApiUpgradePluginByFile
+   */
+  readonly file?: File;
 }
 
 /**
@@ -789,107 +789,107 @@ export interface V1alpha1PluginApiUpgradePluginByFileRequest {
  * @extends {BaseAPI}
  */
 export class V1alpha1PluginApi extends BaseAPI {
-	/**
-	 * Install plugin by upload jar file.
-	 * @param {V1alpha1PluginApiInstallPluginByFileRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1PluginApi
-	 */
-	public installPluginByFile(
-		requestParameters: V1alpha1PluginApiInstallPluginByFileRequest = {},
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1PluginApiFp(this.configuration)
-			.installPluginByFile(requestParameters.file, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Install plugin by upload jar file.
+   * @param {V1alpha1PluginApiInstallPluginByFileRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1PluginApi
+   */
+  public installPluginByFile(
+    requestParameters: V1alpha1PluginApiInstallPluginByFileRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1PluginApiFp(this.configuration)
+      .installPluginByFile(requestParameters.file, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Operate plugin state by id(name).
-	 * @param {V1alpha1PluginApiOperatePluginStateByIdRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1PluginApi
-	 */
-	public operatePluginStateById(
-		requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1PluginApiFp(this.configuration)
-			.operatePluginStateById(
-				requestParameters.name,
-				requestParameters.operate,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Operate plugin state by id(name).
+   * @param {V1alpha1PluginApiOperatePluginStateByIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1PluginApi
+   */
+  public operatePluginStateById(
+    requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1PluginApiFp(this.configuration)
+      .operatePluginStateById(
+        requestParameters.name,
+        requestParameters.operate,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Reload plugin by id(name).
-	 * @param {V1alpha1PluginApiReloadPluginByIdRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1PluginApi
-	 */
-	public reloadPluginById(
-		requestParameters: V1alpha1PluginApiReloadPluginByIdRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1PluginApiFp(this.configuration)
-			.reloadPluginById(requestParameters.name, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Reload plugin by id(name).
+   * @param {V1alpha1PluginApiReloadPluginByIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1PluginApi
+   */
+  public reloadPluginById(
+    requestParameters: V1alpha1PluginApiReloadPluginByIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1PluginApiFp(this.configuration)
+      .reloadPluginById(requestParameters.name, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Start plugin by id(name).
-	 * @param {V1alpha1PluginApiStartPluginByIdRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1PluginApi
-	 */
-	public startPluginById(
-		requestParameters: V1alpha1PluginApiStartPluginByIdRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1PluginApiFp(this.configuration)
-			.startPluginById(requestParameters.name, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Start plugin by id(name).
+   * @param {V1alpha1PluginApiStartPluginByIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1PluginApi
+   */
+  public startPluginById(
+    requestParameters: V1alpha1PluginApiStartPluginByIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1PluginApiFp(this.configuration)
+      .startPluginById(requestParameters.name, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Stop plugin by id(name).
-	 * @param {V1alpha1PluginApiStopPluginByIdRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1PluginApi
-	 */
-	public stopPluginById(
-		requestParameters: V1alpha1PluginApiStopPluginByIdRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1PluginApiFp(this.configuration)
-			.stopPluginById(requestParameters.name, options)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Stop plugin by id(name).
+   * @param {V1alpha1PluginApiStopPluginByIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1PluginApi
+   */
+  public stopPluginById(
+    requestParameters: V1alpha1PluginApiStopPluginByIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1PluginApiFp(this.configuration)
+      .stopPluginById(requestParameters.name, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
 
-	/**
-	 * Upgrade plugin by upload jar file.
-	 * @param {V1alpha1PluginApiUpgradePluginByFileRequest} requestParameters Request parameters.
-	 * @param {*} [options] Override http request option.
-	 * @throws {RequiredError}
-	 * @memberof V1alpha1PluginApi
-	 */
-	public upgradePluginByFile(
-		requestParameters: V1alpha1PluginApiUpgradePluginByFileRequest,
-		options?: AxiosRequestConfig
-	) {
-		return V1alpha1PluginApiFp(this.configuration)
-			.upgradePluginByFile(
-				requestParameters.pluginId,
-				requestParameters.file,
-				options
-			)
-			.then((request) => request(this.axios, this.basePath));
-	}
+  /**
+   * Upgrade plugin by upload jar file.
+   * @param {V1alpha1PluginApiUpgradePluginByFileRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1PluginApi
+   */
+  public upgradePluginByFile(
+    requestParameters: V1alpha1PluginApiUpgradePluginByFileRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1PluginApiFp(this.configuration)
+      .upgradePluginByFile(
+        requestParameters.pluginId,
+        requestParameters.file,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
 }
