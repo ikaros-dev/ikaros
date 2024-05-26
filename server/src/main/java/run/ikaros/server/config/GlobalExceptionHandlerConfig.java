@@ -29,8 +29,8 @@ public class GlobalExceptionHandlerConfig implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         return chain.filter(exchange)
-            .switchIfEmpty(Mono.error(new NotFoundException(
-                "Data not found for Url: " + exchange.getRequest().getURI())))
+            // .switchIfEmpty(Mono.error(new NotFoundException(
+            //     "Data not found for Url: " + exchange.getRequest().getURI())))
             .onErrorResume(NotFoundException.class,
                 e1 -> writeResponse(exchange.getResponse(), e1, HttpStatus.NOT_FOUND))
             .onErrorResume(RuntimeException.class,

@@ -47,6 +47,9 @@ export function getPostfix(name: string): string {
 	if (!name) {
 		return '';
 	}
+	if (name.indexOf('?') > 0) {
+		name = name.substring(0, name.indexOf('?'))
+	}
 	return name.replace(/.+\./, '');
 }
 
