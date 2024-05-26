@@ -52,7 +52,7 @@ public class SubjectController {
             size = 8;
         }
         return subjectService.listEntitiesByCondition(FindSubjectCondition.builder()
-                .page(page).size(size).type(type)
+                .page(page).size(size).type(type).nsfw(false)
                 .build())
             .map(pagingWarp -> model.addAttribute("pagingWarp", pagingWarp))
             .then(themeService.getCurrentTheme())
