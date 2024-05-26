@@ -1,4 +1,5 @@
 ikaros:
+  show-theme: false
   plugin:
     runtime-mode: development
     fixed-plugin-path:

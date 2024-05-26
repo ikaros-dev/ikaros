@@ -20,4 +20,5 @@ public class IkarosProperties {
     private Path workDir;
     @NotNull
     private URI externalUrl;
+    private Boolean showTheme;
 }
