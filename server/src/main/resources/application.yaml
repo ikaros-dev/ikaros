@@ -1,6 +1,7 @@
 ikaros:
   external-url: "http://${server.address:localhost}:${server.port}"
   work-dir: ${user.home}/.ikaros
+  show-theme: false
 
   plugin:
     runtime-mode: deployment
