@@ -183,6 +183,9 @@ public class FileUtils {
      */
     public static String parseFilePostfix(String originalFilename) {
         Assert.hasText(originalFilename, "originalFilename");
+        if (originalFilename.indexOf("?") > 0) {
+            originalFilename = originalFilename.substring(0, originalFilename.indexOf("?"));
+        }
         int dotIndex = originalFilename.lastIndexOf(".");
         return originalFilename.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
     }
