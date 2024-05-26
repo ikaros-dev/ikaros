@@ -17,6 +17,9 @@ public class IndexController {
         this.ikarosProperties = ikarosProperties;
     }
 
+    /**
+     * Default index path.
+     */
     @RequestMapping("/")
     public Mono<String> index(Model model) {
         if (ikarosProperties.getShowTheme()) {
