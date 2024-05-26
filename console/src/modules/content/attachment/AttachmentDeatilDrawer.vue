@@ -125,7 +125,7 @@ const getCompleteFileUrl = (reactiveUrl: string | undefined): string => {
 	var curPageUrl = window.location.href;
 	var pathName = window.location.pathname;
 	var localhostPath = curPageUrl.substring(0, curPageUrl.indexOf(pathName));
-	return localhostPath + reactiveUrl;
+	return reactiveUrl?.startsWith('http') ? reactiveUrl : localhostPath + reactiveUrl;
 };
 
 const handleClose = (done: () => void) => {
