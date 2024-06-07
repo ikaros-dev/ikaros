@@ -4,6 +4,8 @@ import { createI18n } from 'vue-i18n';
 import en from './en.yaml';
 // @ts-ignore
 import zhCN from './zh-CN.yaml';
+// @ts-ignore
+import zhTW from './zh-TW.yaml';
 
 export const locales = [
 	{
@@ -20,6 +22,11 @@ export const locales = [
 		name: '简体中文',
 		code: 'zh-CN',
 		package: zhCN,
+	},
+	{
+		name: '正體中文',
+		code: 'zh-TW',
+		package: zhTW,
 	},
 	{
 		code: 'zh',
