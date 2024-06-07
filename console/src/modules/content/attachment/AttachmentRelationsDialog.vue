@@ -6,6 +6,9 @@ import { apiClient } from '@/utils/api-client';
 import { base64Encode } from '@/utils/string-util';
 import { Plus } from '@element-plus/icons-vue';
 import AttachmentMultiSelectDialog from './AttachmentMultiSelectDialog.vue';
+import { useI18n } from 'vue-i18n';
+
+const {t} = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -103,7 +106,7 @@ const onAttMultiSelectDialogClose = async (attachments: Attachment[])=>{
 			relationIds: relationIds
 		}
 	})
-	ElMessage.success('新增附件关系成功');
+	ElMessage.success(t('module.attachment.dialog.relation.message.create-success'));
 	await fetchRelations();
 }
 
@@ -115,7 +118,7 @@ const onAttRelationDelateBtnConfirm = async(attRelation:AttachmentTableColumn)=>
 		relAttachmentId: attRelation.relationAtt.id as number,
 		type: attRelation.type as "VIDEO_SUBTITLE"
 	})
-	ElMessage.success('删除附件关系成功');
+	ElMessage.success(t('module.attachment.dialog.relation.message.delete-success'));
 
 	await fetchRelations();
 }
@@ -125,7 +128,7 @@ const onAttRelationDelateBtnConfirm = async(attRelation:AttachmentTableColumn)=>
 	<el-dialog
 		v-model="dialogVisible"
 		style="width: 80%"
-		title="附件关系"
+		:title="t('module.attachment.dialog.relation.title')"
 		@open="fetchRelations"
 		@close="onClose"
 	>
@@ -138,8 +141,8 @@ const onAttRelationDelateBtnConfirm = async(attRelation:AttachmentTableColumn)=>
 				stripe
 			>
 			<el-table-column prop="id" label="ID" width="60" />
-			<el-table-column prop="type" label="类型" width="150" />
-			<el-table-column prop="relationAtt" label="相关附件"  >
+			<el-table-column prop="type" :label="t('module.attachment.dialog.relation.label.type')" width="150" />
+			<el-table-column prop="relationAtt" :label="t('module.attachment.dialog.relation.label.relationAtt')"  >
 				<template #default="scoped">
 					
 					<!-- {{ scoped.row.relationAtt }} -->
@@ -155,17 +158,20 @@ const onAttRelationDelateBtnConfirm = async(attRelation:AttachmentTableColumn)=>
 					>
 				</template>
 			</el-table-column>
-			<el-table-column fixed="right" label="操作" width="120">
+			<el-table-column fixed="right" :label="t('module.attachment.dialog.relation.label.operate')" width="120">
 				<template #default="scoped">
 					<el-popconfirm
-						title="你确定要删除该附件关系吗？"
-						confirm-button-text="确定"
-						cancel-button-text="取消"
+						:title="t('module.attachment.dialog.relation.popconfirm.title')"
+						:confirm-button-text="t('module.attachment.dialog.relation.popconfirm.confirm')"
+						:cancel-button-text="t('module.attachment.dialog.relation.popconfirm.cancel')"
 						confirm-button-type="danger"
+						width="350px"
 						@confirm="onAttRelationDelateBtnConfirm(scoped.row)"
 					>
 						<template #reference>
-							<el-button type="danger" :loading="relationBtnDeleting">删除</el-button>
+							<el-button type="danger" :loading="relationBtnDeleting">
+								{{ t('module.attachment.dialog.relation.popconfirm.submit') }}
+							</el-button>
 						</template>
 					</el-popconfirm>
 				</template>
@@ -177,8 +183,12 @@ const onAttRelationDelateBtnConfirm = async(attRelation:AttachmentTableColumn)=>
 
 		<template #footer>
 			<span class="dialog-footer">
-				<el-button type="primary" :icon="Plus" @click="attachmentMultiSelectDialogVisible = true">添加</el-button>
-				<el-button @click="onClose">返回</el-button>
+				<el-button type="primary" :icon="Plus" @click="attachmentMultiSelectDialogVisible = true">
+					{{ t('module.attachment.dialog.relation.footer.add') }}
+				</el-button>
+				<el-button @click="onClose">
+					{{ t('module.attachment.dialog.relation.footer.cancel') }}
+				</el-button>
 			</span>
 		</template>
 

@@ -2,6 +2,9 @@
 import { ref, computed } from 'vue';
 import { ElButton, ElDialog } from 'element-plus';
 import AttachmentDirectoryTreeSelect from '@/components/modules/content/attachment/AttachmentDirectoryTreeSelect.vue';
+import { useI18n } from 'vue-i18n';
+
+const {t} = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -51,15 +54,17 @@ const onDirectorySelectDialogButtonClick = async () => {
 	<el-dialog
 		v-model="dialogVisible"
 		style="width: 50%"
-		title="选择目录"
+		:title="t('module.attachment.dialog.directory-select.title')"
 		@close="onClose"
 	>
 		<AttachmentDirectoryTreeSelect v-model:target-dirid="targetDirectoryId" />
 		<template #footer>
 			<span class="dialog-footer">
-				<el-button @click="onClose">返回</el-button>
+				<el-button @click="onClose">
+					{{ t('module.attachment.dialog.directory-select.footer.button.cancel') }}
+				</el-button>
 				<el-button type="primary" @click="onDirectorySelectDialogButtonClick">
-					提交
+					{{ t('module.attachment.dialog.directory-select.footer.button.submit') }}
 				</el-button>
 			</span>
 		</template>

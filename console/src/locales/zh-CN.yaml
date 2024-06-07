@@ -14,6 +14,9 @@ common:
     title: 禁止访问
   notFound:
     title: 没有找到
+  button:
+    confirm: 确认
+    cancel: 返回
 
 # router
 router:
@@ -48,7 +51,18 @@ router:
 
   
 
-# components
+# component
+component:
+  upload:
+    file-pond-upload:
+      mainLabel: 点击选择文件或将文件拖拽到此处
+      uploadding: 上传中
+      cancelUpload: 取消上传
+      uploadFinish: 上传完成
+      uploadException: 上传异常
+      notSupportFileFormat: 不支持的文件格式
+      clickCancel: 点击取消
+      clickRetry: 点击重试
 
 # view
 view:
@@ -170,6 +184,57 @@ module:
         btn:
           confirm: 创建
           cancel: 返回
+      directory-select:
+        title: 选择目录
+        footer:
+          button:
+            cancel: 返回
+            submit: 提交
+      multi-select:
+        title: 附件选择器
+        operate:
+          upload: 上传附件
+        parent-dir: 父目录
+        search:
+          placeholder: 搜索附件，模糊匹配，回车搜查
+        table:
+          colum:
+            label:
+              name: 名称
+              path: 路径
+              update-time: 更新时间
+              size: 大小
+      select:
+        title: 选择单个附件
+        operate:
+          upload: 上传附件
+        parent-dir: 父目录
+        search:
+          placeholder: 搜索附件，模糊匹配，回车搜查
+        table:
+          colum:
+            label:
+              name: 名称
+              path: 路径
+              update-time: 更新时间
+              size: 大小
+      relation:
+        title: 附件关系
+        label:
+          type: 类型
+          relationAtt: 相关附件
+          operate: 操作
+        message:
+          create-success: 新增附件关系成功
+          delete-success: 删除附件关系成功
+        popconfirm:
+          title: 你确定要删除该附件关系吗？
+          confirm: 确定
+          cancel: 取消
+          submit: 删除
+        footer:
+          add: 添加
+          cancel: 返回
     btn:
       upload: 上传附件
       mkdir: 新建目录
@@ -187,6 +252,44 @@ module:
           name: 名称
           update_time: 更新时间
           size: 大小
+    drawer:
+      fragment-upload:
+        title: 上传文件
+        confirm:
+          message: 退出上传页时，如有文件还未上传完毕，下次需要从零开始上传，您确定要退出当前上传页吗？
+          title: 温馨提示
+          confirm: 退出
+          cancel: 不退出
+          hintMsg: 已取消退出。 
+    details:
+      title: 文件详情
+      descTitle: 文件详情
+      descItemLabel:
+        name: 名称（双击值进行重命名）
+        type: 类型
+        size: 大小
+        updateTime: 更新时间
+        path: 路径
+        fsPath: 文件系统路径
+      button:
+        relation: 关联
+        delete: 删除
+      popconfirm:
+        title: 你确定要删除该文件？
+        confirm: 确定
+        cancel: 取消
+      message:
+        hint:
+          name: 文件名称不能为空！
+          videoFormat: 您的浏览器不支持这个格式的视频
+          audioFormat: 您的浏览器不支持这个格式的音频
+          preview: 此文件不支持预览
+          needPull: 文件不可读取，需要从远端拉取下来。
+        event:
+          delete: 删除文件成功
+          updateName: 更新文件名称成功
+
+
 
   subject:
     title: 条目

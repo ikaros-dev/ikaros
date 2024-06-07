@@ -14,6 +14,9 @@ common:
     title: Forbidden
   notFound:
     title: NotFound
+  button:
+    confirm: Confirm
+    cancel: Cancel
 
 # router
 router:
@@ -50,6 +53,18 @@ router:
   
 
 # component
+component:
+  upload:
+    file-pond-upload:
+      mainLabel: Click Select File or drag the file here
+      uploadding: Uploadding
+      cancelUpload: Cancel upload
+      uploadFinish: Uplaod finish
+      uploadException: Uplaod exception
+      notSupportFileFormat: Not support file format
+      clickCancel: Click cancel
+      clickRetry: Click retry
+
 
 # view
 view:
@@ -171,6 +186,59 @@ module:
         btn:
           confirm: Confirm
           cancel: Cancel
+      directory-select:
+        title: Select Directory
+        footer:
+          button:
+            cancel: Cancel
+            submit: Submit
+      multi-select:
+        title: Select Multi Attachments
+        operate:
+          upload: Uplaod
+        parent-dir: Parent Attachment
+        search:
+          placeholder: Search for attachments, fuzzy match, enter search
+        table:
+          colum:
+            label:
+              name: Name
+              path: Path
+              update-time: UpdateTime
+              size: Size
+      select:
+        title: Select Single Attachments
+        operate:
+          upload: Uplaod
+        parent-dir: Parent Attachment
+        search:
+          placeholder: Search for attachments, fuzzy match, enter search
+        table:
+          colum:
+            label:
+              name: Name
+              path: Path
+              update-time: UpdateTime
+              size: Size
+
+      relation:
+        title: Attachment Relations
+        label:
+          type: Type
+          relationAtt: Relation Attachments 
+          operate: Operate
+        message:
+          create-success: The attachment relation is added success
+          delete-success: The attachment relation is deleted success
+        popconfirm:
+          title: Are you sure you want to delete the attachment relation?
+          confirm: Confirm
+          cancel: Cancel
+          submit: Delete
+        footer:
+          add: Add
+          cancel: Cancel
+      
     btn:
       upload: Upload
       mkdir: Crate
@@ -188,6 +256,42 @@ module:
           name: Name
           update_time: Update Time
           size: Size
+    drawer:
+      fragment-upload:
+        title: Upload Files
+        confirm:
+          message: When exiting the upload page, if a file has not been uploaded, the next time you need to upload from scratch, are you sure you want to exit the current upload page?
+          title: kind reminder
+          confirm: Exit
+          cancel: Not Exit
+          hintMsg: Exit has been cancelled.
+    details:
+      title: File details
+      descTitle: File Details
+      descItemLabel:
+        name: Name (Double-click the value to rename it)
+        type: Type
+        size: Size
+        updateTime: Update Time
+        path: Path
+        fsPath: File System Path
+      button:
+        relation: Relation
+        delete: Delete
+      popconfirm:
+        title: Are you sure you want to delete this attachment?
+        confirm: Confirm
+        cancel: Cancel
+      message:
+        hint:
+          name: File name must not empty
+          videoFormat: Your browser does not support video in this format
+          audioFormat: Your browser does not support audio in this format
+          preview: This file does not support preview
+          needPull: The file is unreadable and needs to be pulled from the remote end.
+        event:
+          delete: Delete file successful
+          updateName: Update file name successful
 
   subject:
     title: Subjects
@@ -215,7 +319,7 @@ module:
         upgrade: Upgade plugin
         install: Install plugin
 
-  settings:
+  setting:
     title: Settings
     sidebar: Settings
 
