@@ -1,19 +1,25 @@
 <script setup lang="ts">
 import { ElConfigProvider } from 'element-plus';
 
-import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
-import { getBrowserLanguage } from './locales';
+// import { getBrowserLanguage } from './locales';
 import en from 'element-plus/dist/locale/en.mjs';
-import ja from 'element-plus/dist/locale/ja.mjs';
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import { useLayoutStore } from './stores/layout';
 
-const language = getBrowserLanguage();
+
+// const language = getBrowserLanguage();
+
+const layoutStore = useLayoutStore();
+const i18nCode = layoutStore.i18nCode;
 
 let locale = zhCn;
-if ('en' === language) {
+console.debug('app i18n code', i18nCode)
+if ('en-US' === i18nCode || 'en' == i18nCode) {
 	locale = en;
-} else if ('jp' === language) {
-	locale = ja;
-}
+} else if ('zhCn' === i18nCode || 'zh' === i18nCode) {
+	locale = zhCn;
+} 
+
 </script>
 
 <template>

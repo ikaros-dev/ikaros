@@ -175,7 +175,7 @@ const onCreateFolderButtonClick = async () => {
 		parentId: attachmentCondition.value.parentId as any as string,
 		name: base64Encode(createFolderName.value),
 	});
-	ElMessage.success('创建目录成功，目录名：' + createFolderName.value);
+	ElMessage.success(t('module.attachment.message.operate.create_att_dir', {name: createFolderName.value}));
 	createFolderName.value = '';
 	await fetchAttachments();
 	dialogFolderVisible.value = false;
@@ -207,13 +207,17 @@ const deleteAttachment = async (attachment: Attachment) => {
 		})
 		.then(() => {
 			ElMessage.success(
-				'删除' +
-					(attachment.type === 'Directory' ? '目录' : '文件') +
-					'【' +
-					attachment.name +
-					'】' +
-					'成功。'
-			);
+				t('module.attachment.message.operate.delete_att.success',
+					{
+						type: (
+							attachment.type === 'Directory' 
+							? t('module.attachment.message.directory')
+							: t('module.attachment.message.file')
+						),
+						name: attachment.name
+					}
+				)
+			)
 		})
 		.catch((e) => {
 			// @ts-ignore
@@ -223,14 +227,17 @@ const deleteAttachment = async (attachment: Attachment) => {
 			}
 			console.log('error', msg, e);
 			ElMessage.error(
-				'删除' +
-					(attachment.type === 'Directory' ? '目录' : '文件') +
-					'【' +
-					attachment.name +
-					'】' +
-					'失败：' +
-					msg
-			);
+				t('module.attachment.message.operate.delete_att.fail',
+					{
+						type: (
+							attachment.type === 'Directory' 
+							? t('module.attachment.message.directory')
+							: t('module.attachment.message.file')
+						),
+						name: attachment.name
+					}
+				)
+			)
 		});
 
 	await fetchAttachments();
@@ -241,7 +248,6 @@ const deleteAttachments = async () => {
 	await selectionAttachments.value.forEach(async (a) => {
 		await deleteAttachment(a);
 	});
-	// ElMessage.success('批量删除目录成功。');
 	await fetchAttachments();
 };
 
@@ -261,11 +267,11 @@ const onDeleteButtonClick = async () => {
 
 	if (hasDir) {
 		ElMessageBox.confirm(
-			'伊卡洛斯检测到您当前待删除的附件（选中的）包含目录类型，系统默认会删除目录里的所有内容，您确定要删除吗？',
-			'警告',
+			t('module.attachment.confirm.content'),
+			t('module.attachment.confirm.warning'),
 			{
-				confirmButtonText: '确认',
-				cancelButtonText: '取消',
+				confirmButtonText: t('module.attachment.confirm.btn.confirm'),
+				cancelButtonText: t('module.attachment.confirm.btn.cancel'),
 				type: 'warning',
 			}
 		)
@@ -275,7 +281,7 @@ const onDeleteButtonClick = async () => {
 			.catch(() => {
 				ElMessage({
 					type: 'info',
-					message: '批量删除目录取消',
+					message: t('module.attachment.message.operate.delete_atts.cancel'),
 				});
 			});
 	} else {
@@ -312,8 +318,8 @@ const onRowContextmenu = (row, column, event) => {
 			{
 				label:
 					currentSelectionAttachment.value?.type === 'Directory'
-						? '进入'
-						: '详情',
+						? t('module.attachment.contextmenu.entry')
+						: t('module.attachment.contextmenu.details'),
 				divided: 'down',
 				icon: h(Pointer, { style: 'height: 14px' }),
 				onClick: () => {
@@ -321,27 +327,35 @@ const onRowContextmenu = (row, column, event) => {
 				},
 			},
 			{
-				label: '复制简短名称',
+				label: t('module.attachment.contextmenu.copy_short_name'),
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
 					const name = currentSelectionAttachment.value?.name as string;
 					var simpleName = name.replace(/\[.*?\]/g, '');
 					simpleName = simpleName.substring(0, simpleName.lastIndexOf('.'));
 					await copyValue(simpleName);
-					ElMessage.success('已复制附件【' + name + '】的简短名称到剪贴板');
+					ElMessage.success(
+						t('module.attachment.message.operate.copy_short_name',
+							{name: name}
+						)
+					)
 				},
 			},
 			{
-				label: '复制完整名称',
+				label: t('module.attachment.contextmenu.copy_integrally_name'),
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
 					const name = currentSelectionAttachment.value?.name as string;
 					await copyValue(name);
-					ElMessage.success('已复制附件【' + name + '】的完整名称到剪贴板');
+					ElMessage.success(
+						t('module.attachment.message.operate.copy_integrally_name',
+							{name: name}
+						)
+					)
 				},
 			},
 			{
-				label: '复制URL',
+				label: t('module.attachment.contextmenu.copy_url'),
 				divided: 'down',
 				disabled: currentSelectionAttachment.value?.type !== 'File',
 				icon: h(CopyDocument, { style: 'height: 14px' }),
@@ -349,11 +363,15 @@ const onRowContextmenu = (row, column, event) => {
 					const name = currentSelectionAttachment.value?.name as string;
 					const url = currentSelectionAttachment.value?.url as string;
 					await copyValue(url);
-					ElMessage.success('已复制附件【' + name + '】的URL到剪贴板');
+					ElMessage.success(
+						t('module.attachment.message.operate.copy_url',
+							{name: name}
+						)
+					)
 				},
 			},
 			{
-				label: '下载',
+				label: t('module.attachment.contextmenu.download'),
 				disabled: currentSelectionAttachment.value?.type !== 'File',
 				icon: h(Download, { style: 'height: 14px' }),
 				onClick: async () => {
@@ -362,18 +380,18 @@ const onRowContextmenu = (row, column, event) => {
 				},
 			},
 			{
-				label: '删除',
+				label: t('module.attachment.contextmenu.delete.value'),
 				icon: h(Delete, { style: 'height: 14px; color: red;' }),
 				onClick: async () => {
 					if (currentSelectionAttachment.value?.type === 'Directory') {
 						await ElMessageBox.confirm(
-							'您当前删除的附件【' +
-								currentSelectionAttachment.value.name +
-								'】为目录类型，系统默认会删除目录里的所有内容，您确定要删除吗？',
-							'警告',
+							t('module.attachment.contextmenu.delete.confirm',
+								{name: currentSelectionAttachment.value.name}
+							),
+							t('module.attachment.confirm.warning'),
 							{
-								confirmButtonText: '确认',
-								cancelButtonText: '取消',
+								confirmButtonText: t('module.attachment.confirm.btn.confirm'),
+								cancelButtonText: t('module.attachment.confirm.btn.cancel'),
 								type: 'warning',
 							}
 						)
@@ -385,18 +403,18 @@ const onRowContextmenu = (row, column, event) => {
 							.catch(() => {
 								ElMessage({
 									type: 'info',
-									message: '批量删除目录取消',
+									message: t('module.attachment.message.operate.delete_atts.cancel'),
 								});
 							});
 					} else {
 						await ElMessageBox.confirm(
-							'您当前待删除的附件为【' +
-								currentSelectionAttachment.value?.name +
-								'】您确定要删除吗？',
-							'警告',
+							t('module.attachment.contextmenu.delete.confirm',
+								{name: currentSelectionAttachment.value?.name}
+							),
+							t('module.attachment.confirm.warning'),
 							{
-								confirmButtonText: '确认',
-								cancelButtonText: '取消',
+								confirmButtonText: t('module.attachment.confirm.btn.confirm'),
+								cancelButtonText: t('module.attachment.confirm.btn.cancel'),
 								type: 'warning',
 							}
 						)
@@ -409,9 +427,7 @@ const onRowContextmenu = (row, column, event) => {
 								ElMessage({
 									type: 'info',
 									message:
-										'删除目录【' +
-										currentSelectionAttachment.value?.name +
-										'】取消',
+										t('module.attachment.message.operate.delete_att.cancel', {name: currentSelectionAttachment.value?.name}),
 								});
 							});
 					}
@@ -432,7 +448,7 @@ const onDirSelected = async (targetDirid: number) => {
 			attachment: attachment,
 		});
 	}
-	await ElMessage.success('批量移动附件成功');
+	await ElMessage.success(t('module.attachment.message.operate.move_atts'));
 	await fetchAttachments();
 };
 
@@ -488,7 +504,7 @@ const onAttachmentDetailDrawerClose = () =>{
 
 	<el-dialog
 		v-model="dialogFolderVisible"
-		title="新建目录"
+		:title="t('module.attachment.dialog.mkdir.title')"
 		@open="onCreateFolderDialogOpen"
 	>
 		<el-input
@@ -496,16 +512,16 @@ const onAttachmentDetailDrawerClose = () =>{
 			v-model="createFolderName"
 			autocomplete="off"
 			size="large"
-			placeholder="请输入目录名称，提交后会在当前目录创造子目录。"
+			:placeholder="t('module.attachment.dialog.mkdir.placeholder')"
 			@keydown.enter="onCreateFolderButtonClick"
 		/>
 		<template #footer>
 			<span class="dialog-footer">
-				<el-button @click="dialogFolderVisible = false">{{
-					t('core.folder.createDialog.cancel')
-				}}</el-button>
+				<el-button @click="dialogFolderVisible = false">
+					{{t('module.attachment.dialog.mkdir.btn.cancel') }}
+				</el-button>
 				<el-button type="primary" @click="onCreateFolderButtonClick">
-					{{ t('core.folder.createDialog.confirm') }}
+					{{ t('module.attachment.dialog.mkdir.btn.confirm') }}
 				</el-button>
 			</span>
 		</template>
@@ -522,10 +538,10 @@ const onAttachmentDetailDrawerClose = () =>{
 				<el-icon>
 					<Upload />
 				</el-icon>
-				上传附件
+				{{t('module.attachment.btn.upload')}}
 			</el-button>
 			<el-button :icon="FolderAdd" @click="dialogFolderVisible = true">
-				新建目录
+				{{t('module.attachment.btn.mkdir')}}
 			</el-button>
 
 			<el-button
@@ -533,24 +549,24 @@ const onAttachmentDetailDrawerClose = () =>{
 				:icon="Position"
 				@click="directorySelectDialogVisible = true"
 			>
-				批量移动
+				{{t('module.attachment.btn.move_atts')}}
 			</el-button>
 
 			<el-popconfirm
 				v-if="selectionAttachments && selectionAttachments.length > 0"
-				:title="'您确定批量删除附件吗？'"
+				:title="t('module.attachment.popconfirm.title')"
 				width="300"
 				@confirm="onDeleteButtonClick"
 			>
 				<template #reference>
-					<el-button :icon="FolderDelete" type="danger"> 批量删除 </el-button>
+					<el-button :icon="FolderDelete" type="danger"> {{t('module.attachment.popconfirm.btn')}} </el-button>
 				</template>
 			</el-popconfirm>
 		</el-col>
 		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
 			<el-input
 				v-model="attachmentCondition.name"
-				placeholder="搜索当前目录下的所有附件，模糊匹配，空格多个关键词，回车搜查"
+				:placeholder="t('module.attachment.search_input.placeholder')"
 				clearable
 				@change="fetchAttachments"
 			>
@@ -583,7 +599,7 @@ const onAttachmentDetailDrawerClose = () =>{
 	<el-row>
 		<el-col :span="24">
 			<el-form :inline="true">
-				<el-form-item label="路径" style="width: 100%">
+				<el-form-item :label="t('module.attachment.breadcrumb.label')" style="width: 100%">
 					<el-breadcrumb separator=">">
 						<el-breadcrumb-item v-for="path in paths" :key="path.id">
 							<el-button @click="onBreadcrumbClick(path)">
@@ -609,7 +625,7 @@ const onAttachmentDetailDrawerClose = () =>{
 			>
 				<el-table-column type="selection" width="60" />
 				<!-- <el-table-column prop="id" label="ID" width="60" /> -->
-				<el-table-column prop="name" label="名称" show-overflow-tooltip>
+				<el-table-column prop="name" :label="t('module.attachment.table.colum.label.name')" show-overflow-tooltip>
 					<template #default="scoped">
 						<el-icon
 							size="25"
@@ -631,11 +647,11 @@ const onAttachmentDetailDrawerClose = () =>{
 				</el-table-column>
 				<el-table-column
 					prop="updateTime"
-					label="更新时间"
+					:label="t('module.attachment.table.colum.label.update_time')"
 					width="160"
 					:formatter="dateFormat"
 				/>
-				<el-table-column prop="size" label="大小" width="130">
+				<el-table-column prop="size" :label="t('module.attachment.table.colum.label.size')" width="130">
 					<template #default="scoped">
 						<span v-if="scoped.row.type === 'File'">
 							{{ formatFileSize(scoped.row.size) }}
@@ -653,7 +669,4 @@ const onAttachmentDetailDrawerClose = () =>{
 	cursor: pointer;
 }
 
-// .ik-attachment-breadcrumb-item:hover {
-// 	border: 1px red solid;
-// }
 </style>

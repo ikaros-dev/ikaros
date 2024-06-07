@@ -1,273 +1,197 @@
 Root: Root
-components:
-  upload:
-    file-pond-upload:
-      mainLabel: Click Select File or drag the file here
-      uploadding: Uploadding
-      cancelUpload: Cancel upload
-      uploadFinish: Uplaod finish
-      uploadException: Uplaod exception
-      notSupportFileFormat: Not support file format
-      clickCancel: Click cancel
-      clickRetry: Click retry
-
-core:
-  common:
-    exception:
-      title: Application exception
-      network_error: API network error
-      request_parameter_error: Request parameters error
-      unauthorized: 401 Unauthorized
-      forbidden: 403 Forbidden
-      not_found: 404 Not found
-      server_internal_error_with_title: Server internal error with title
-      unknown_error_with_title: Unknow error with title
+# common
+common:
+  exception:
+    title: Application exception
+    network_error: API network error
+    request_parameter_error: Request parameters error
+    unauthorized: 401 Unauthorized
+    forbidden: 403 Forbidden
+    not_found: 404 Not found
+    server_internal_error_with_title: Server internal error with title
+    unknown_error_with_title: Unknow error with title
   forbidden:
     title: Forbidden
   notFound:
     title: NotFound
-  login:
-    title: Login
-    fields:
-      username:
-        placeholder: Username
-        rule: Please input username
-      password:
-        placeholder: Password
-        rule: Please input password
-    operations:
-      submit:
-        toast_success: Login successful
-        toast_failed: Login failed, incorrect username or password
-        toast_csrf: CSRF Token expired, please try again
-      signup:
-        label: No account
-        button: Sign up
-      return_login:
-        label: Already have an account
-        button: Sign in
-    button: Login
-    modal:
-      title: Re-login
-  signup:
-    title: Sign up
-    fields:
-      username:
-        placeholder: Username
-      display_name:
-        placeholder: Display name
-      password:
-        placeholder: Password
-      password_confirm:
-        placeholder: Confirm password
-    operations:
-      submit:
-        button: Sign up
-        toast_success: Sign up successfully
-  binding:
-    title: Account binding
-    common:
-      toast:
-        mounted: >-
-          The current login method is not bound to an account, Please bind or
-          sign up a new account first
-    operations:
-      login_and_bind:
-        button: Login and Bind
-      signup_and_bind:
-        button: Signup and Bind
-      bind:
-        toast_success: Binding successfully
-        toast_failed: Binding failed, no enabled login method found
+
+# router
+router:
+  title:
+    notfound: NotFound
+    forbidden: Forbidden
   sidebar:
-    search:
-      placeholder: Search
-    menu:
-      groups:
-        content: Content
-        user: User
-        interface: Interface
-        system: System
-        tool: Tool
-      items:
-        dashboard: Dashboard
-        profile: Profile
-        files: Files
-        subjects: Subjects
-        plugins: Plugins
-        users: Users
-        settings: Settings
-        actuator: Actuator
-        anime: Animes
-        comic: Comics
-        game: Games
-        music: Musics
-        novel: Novels
-        tasks: Tasks
-        folders: Folders
-        collection: Collection
-        attachment: Attachment
-    operations:
-      profile:
-        button: Profile
-      visit_homepage:
-        title: Visit homepage
+    group:
+      content: Content
+      user: User
+      interface: Interface
+      system: System
+      tool: Tool
+    item:
+      dashboard: Dashboard
+      profile: Profile
+      files: Files
+      subjects: Subjects
+      plugins: Plugins
+      users: Users
+      settings: Settings
+      actuator: Actuator
+      anime: Animes
+      comic: Comics
+      game: Games
+      music: Musics
+      novel: Novels
+      tasks: Tasks
+      folders: Folders
+      collection: Collection
+      attachment: Attachment
+
+
+  
+
+# component
+
+# view
+view:
+  exception:
+    exception:
+      title: Application exception
+      back: Back
+      dashboard: Dashboard
+    forbidden:
+      message: 403 Forbidden
+    notfound:
+      message: 404 Not Found
+
+# module
+module:
   dashboard:
     title: Dashboard
-  profile:
-    title: Profile
-  attachment:
-    title: Attachment
-  file:
-    title: Files
-    type:
-      image: Image
-      video: Video
-      document: Document
-      voice: Voice
-      unknown: Unknown
-    form:
-      item:
-        label:
-          search:
-            type: File Type
-            name: File Name
-            namePlaceHolder: Fuzzy matching carriage return search
-    button:
+    sidebar: Dashboard
+    label:
+      attachment: Attachments
+      subject: Subjects
+      collection: Collections
+      doing: Doings
+
+  user:
+    title: User
+    sidebar: User
+    login:
+      title: Login
+      field:
+        username:
+          placeholder: Username
+          rule: Please input username
+        password:
+          placeholder: Password
+          rule: Please input password
+      operations:
+        submit:
+          toast_success: Login successful
+          toast_failed: Login failed, incorrect username or password
+          toast_csrf: CSRF Token expired, please try again
+        signup:
+          label: No account
+          button: Sign up
+        return_login:
+          label: Already have an account
+          button: Sign in
+      button: Login
+      modal:
+        title: Re-login
+    profile:
+      title: Profile
       label:
-        upload: Upload Files
+        basic_info: Basic Info
+        nickname: Nickname
+        avatar: Avatar
+        site: Site
+        introduce: Introduce
+        update_password: Update Password
+        old_password: Old Password
+        new_password: New Password
+        btn_save: Save
+      message:
+        update:
+          all: Update Basic Info Success
+          password: Update Password Success
+
+    collection:
+      title: Collections
+      sidebar: Collections
+      label:
+        private: Private
+        type:
+          value: Type
+          wish: Wish
+          doing: Doing
+          done: Done
+          shelve: Shelve
+          discard: Discard
+
+  attachment:
+    title: Attachments
+    sidebar: Attachments
+    message:
+      directory: Directory
+      file: File
+      operate:
+        create_att_dir: Mkdir success, name[{name}]
+        delete_att:
+          success: Delete {type} [{name}] success.
+          fail: Delete {type} [{name}] fail.
+          cancel: Delete [{name}] cancel.
+        delete_atts: 
+          cancel: Deleting directories in batch is cancelled.
+        copy_short_name: Copy short name of attachment [{name}] to clipboard.
+        copy_integrally_name: Full name of attachment [{name}] has been copied to the clipboard.
+        copy_url: Copy the URL of attachment [{name}] to the clipboard.
+        move_atts: Succeeded in batch moving attachments.
+    confirm:
+      content: Are you sure to delete it?It is detected that the attachment you want to delete (selected) contains a directory type. By default, the system will delete all contents in the directory.
+      warning: Warning
+      btn:
+        confirm: Confirm
+        cancel: Cancel
+    contextmenu:
+      entry: Entry
+      details: Details
+      copy_short_name: Copy short name
+      copy_integrally_name: Copy integrally name
+      copy_url: Copy url
+      download: Download
+      delete: 
+        value: Delete
+        confirm: The attachment you are deleting [{name}] is a directory type. By default, the system deletes all contents in the directory. Are you sure you want to delete it?
+    dialog:
+      mkdir:
+        title: Crate new directory
+        placeholder: Please enter a directory name, subdirectories will be created in the current directory after sub attachment.
+        btn:
+          confirm: Confirm
+          cancel: Cancel
+    btn:
+      upload: Upload
+      mkdir: Crate
+      move_atts: Batch move
+    popconfirm:
+      title: Are you sure to delete attachments in bulk?
+      btn: Batch delete
+    search_input:
+      placeholder: Search all attachments in the current directory, fuzzy match, space multiple keywords, enter search.
+    breadcrumb:
+      label: Path
     table:
-      column:
+      colum:
         label:
-          id: ID
           name: Name
-          updateTime: Update Time
+          update_time: Update Time
           size: Size
-          operators: Operators
-        operations:
-          details: Details
-          push: Push
-          pull: Pull
-          delete:
-            button: Delete
-            popconfirm:
-              title: Are you sure you want to delete this file?
-              confirm: Confirm
-              cancel: Cancel
-    message:
-      delete:
-        success: Delete file successful for
-        fail: Delete file fail for
-      update:
-        success: Update file successful for
-    drawer:
-      upload:
-        title: Upload Files
-        closeConfirm:
-          message: When exiting the upload page, if a file has not been uploaded, the next time you need to upload from scratch, are you sure you want to exit the current upload page?
-          title: kind reminder
-          confirm: Exit
-          cancel: Not Exit
-          hintMsg: Exit has been cancelled.
-
-  fileDetail:
-    title: File details
-    descTitle: File Details
-    descItemLabel:
-      name: Name
-      type: Type
-      size: Size
-      updateTime: Update Time
-      fsPath: File System Path
-    message:
-      hint:
-        name: File name must not empty
-        videoFormat: Your browser does not support video in this format
-        audioFormat: Your browser does not support audio in this format
-        preview: This file does not support preview
-        needPull: The file is unreadable and needs to be pulled from the remote end.
-      event:
-        delete: Delete file successful
-        updateName: Update file name successful
-
-  folder:
-    title: Folders
-    button:
-      confirm: Confirm
-      cancel: Cancel
-      newFile: New file
-      newFolder: New folder
-      deleteFolder: Delete
-      push: Push
-      pull: Pull
-      paste: Paste
-    folderTable:
-      column:
-        name: Folder name
-        updateTime: Updated time
-    fileTable:
-      column:
-        name: File name
-        updateTime: Updated time
-        size: Size
-    createDialog:
-      title: New folder
-      parentId: Parent ID
-      parentName: Parent name
-      name: Name
-      confirm: Confirm
-      cancel: Cancel
-    message:
-      deleteRecursivelyHint: Detected that there are files or directories inside the selected directory. Are you sure you want to delete them all together (recursively)? This might take some time.
-      deleteFolderHint: Are you sure you want to delete the selected directory?
-      event:
-        create: Create folder successful
-        move: Move folder successful
-        delete: Delete folder successful
-        deleteCancel: Delete cancel
-        paste: Paste successful
-
-  fileRemoteAction:
-    title: File remote operate
-    alert:
-      title: The larger the file, the longer the operation time. Please wait until the operation is complete.
-    formItemLabel:
-      remote: Remote
-      fileId: File ID
-    button:
-      cancel: Cancel
-      push: Push
-      pull: PUll
-    message:
-      hint:
-        submitFail: Please check if any necessary items are missing.
-        selectRemote: Please select remote
-        noStartPlugin: If there is no remote end available, please open the relevant plugin and start it, such as the plugin of Baidu web disk.
-  folderRemoteAction:
-    title: Remote directory operation
-    alert:
-      title: The more files the directory contains, the larger the file and the longer the operation time. Please wait until the operation is complete.
-    formItemLabel:
-      remote: Remote
-      folderId: Folder ID
-    button:
-      cancel: Cancel
-      push: Push
-      pull: Pull
-    message:
-      hint:
-        pushSuccess:
-          prefix: The request to push the directory to the remote end succeeds. The directory =
-          postfix: remote=
-        pullSuccess:
-          prefix: The request succeeds in retrieving the directory from the remote end. Directory =
-          postfix: remote=
-        submitFail: Please check if any necessary items are missing.
-        selectRemote: Please select remote
-        noStartPlugin: If there is no remote end available, please open the relevant plugin and start it, such as the plugin of Baidu web disk.
 
   subject:
     title: Subjects
+    sidebar: Subjects
     put:
       title: Subject Edit
     post:
@@ -276,8 +200,10 @@ core:
       title: Subject Details
     relaction:
       title: Subject Relactions
+
   plugin:
     title: Plugins
+    sidebar: Plugins
     details:
       title: Plugin Details
     loader:
@@ -288,13 +214,8 @@ core:
       titles:
         upgrade: Upgade plugin
         install: Install plugin
+
   settings:
     title: Settings
-  tasks:
-    title: Tasks
-    details:
-      title: Task Details
-  collection:
-    title: Collection
-    details:
-      title: Collection
+    sidebar: Settings
+

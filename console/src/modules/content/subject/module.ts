@@ -17,9 +17,9 @@ export default definePlugin({
 				name: 'Subjects',
 				component: Subjects,
 				meta: {
-					title: 'core.subject.title',
+					title: 'module.subject.title',
 					menu: {
-						name: 'core.sidebar.menu.items.subjects',
+						name: 'module.subject.sidebar',
 						group: 'content',
 						icon: markRaw(Tickets),
 						priority: 1,
@@ -34,7 +34,7 @@ export default definePlugin({
 				name: 'SubjectPut',
 				component: SubjectPut,
 				meta: {
-					title: 'core.subject.put.title',
+					title: 'module.subject.put.title',
 					hidden: true,
 				},
 			},
@@ -46,7 +46,7 @@ export default definePlugin({
 				name: 'SubjectDetails',
 				component: SubjectDetails,
 				meta: {
-					title: 'core.subject.details.title',
+					title: 'module.subject.details.title',
 					hidden: true,
 				},
 			},
@@ -58,7 +58,7 @@ export default definePlugin({
 				name: 'SubjectPost',
 				component: SubjectPost,
 				meta: {
-					title: 'core.subject.post.title',
+					title: 'module.subject.post.title',
 					hidden: true,
 				},
 			},

@@ -4,7 +4,9 @@ import { onMounted } from 'vue';
 import { ref } from 'vue';
 import { Files, Tickets, Star, View } from '@element-plus/icons-vue';
 import { ElRow, ElCol, ElCard, ElIcon } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const actuatorInfo = ref();
 const fetchActuatorInfo = async () => {
 	const { data } = await apiClient.actuator.info();
@@ -25,7 +27,7 @@ onMounted(fetchActuatorInfo);
 					<el-col :span="18">
 						<el-row>
 							<el-col :span="24">
-								<span style="font-size: x-small; color: gray">附件</span>
+								<span style="font-size: x-small; color: gray">{{t('module.dashboard.label.attachment')}}</span>
 							</el-col>
 							<br />
 							<el-col :span="24">
@@ -47,7 +49,7 @@ onMounted(fetchActuatorInfo);
 					<el-col :span="18">
 						<el-row>
 							<el-col :span="24">
-								<span style="font-size: x-small; color: gray">条目</span>
+								<span style="font-size: x-small; color: gray">{{t('module.dashboard.label.subject')}}</span>
 							</el-col>
 							<br />
 							<el-col :span="24">
@@ -69,7 +71,7 @@ onMounted(fetchActuatorInfo);
 					<el-col :span="18">
 						<el-row>
 							<el-col :span="24">
-								<span style="font-size: x-small; color: gray">收藏</span>
+								<span style="font-size: x-small; color: gray">{{t('module.dashboard.label.collection')}}</span>
 							</el-col>
 							<br />
 							<el-col :span="24">
@@ -91,7 +93,7 @@ onMounted(fetchActuatorInfo);
 					<el-col :span="18">
 						<el-row>
 							<el-col :span="24">
-								<span style="font-size: x-small; color: gray">在看</span>
+								<span style="font-size: x-small; color: gray">{{t('module.dashboard.label.doing')}}</span>
 							</el-col>
 							<br />
 							<el-col :span="24">

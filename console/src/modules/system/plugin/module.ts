@@ -15,9 +15,9 @@ export default definePlugin({
 				name: 'Plugins',
 				component: Plugin,
 				meta: {
-					title: 'core.plugin.title',
+					title: 'module.plugin.title',
 					menu: {
-						name: 'core.sidebar.menu.items.plugins',
+						name: 'module.plugin.sidebar',
 						group: 'system',
 						icon: markRaw(Connection),
 						priority: 0,
@@ -32,7 +32,7 @@ export default definePlugin({
 				name: 'PluginDetails',
 				component: PluginDetail,
 				meta: {
-					title: 'core.plugin.details.title',
+					title: 'module.plugin.details.title',
 					hidden: true,
 				},
 			},

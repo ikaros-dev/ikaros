@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useRouter } from 'vue-router';
 import { i18n } from '@/locales';
+import { ElButton } from 'element-plus';
 
 withDefaults(
 	defineProps<{
@@ -9,7 +10,7 @@ withDefaults(
 		message?: string;
 	}>(),
 	{
-		title: i18n.global.t('core.common.exception.title'),
+		title: i18n.global.t('views.exception.exception.title'),
 		message: undefined,
 	}
 );
@@ -23,18 +24,21 @@ const toDashboard = () => {
 <template>
 	<div>
 		<h1>
-			{{ code }}
+			Code: {{ code }}
 		</h1>
+		<br/>
 
 		<p>
-			{{ title }}
+			Title: {{ title }}
 		</p>
+		<br/>
 
-		<p>{{ message }}</p>
+		<p>Message: {{ message }}</p>
+		<br/>
 
 		<div>
-			<ElButton @click="router.back()"> Back </ElButton>
-			<ElButton @click="toDashboard"> Dashboard </ElButton>
+			<ElButton @click="router.back()"> {{ i18n.global.t('views.exception.exception.back') }} </ElButton>
+			<ElButton @click="toDashboard"> {{ i18n.global.t('views.exception.exception.dashboard') }} </ElButton>
 		</div>
 	</div>
 </template>

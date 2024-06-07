@@ -9,7 +9,7 @@ export const routes: Array<RouteRecordRaw> = [
 		children: [
 			{
 				path: '',
-				name: 'core.notFound.title',
+				name: 'router.title.notfound',
 				component: () => import('@/views/exception/NotFound.vue'),
 			},
 		],
@@ -21,7 +21,7 @@ export const routes: Array<RouteRecordRaw> = [
 		children: [
 			{
 				path: '',
-				name: 'core.forbidden.title',
+				name: 'router.title.forbidden',
 				component: () => import('@/views/exception/Forbidden.vue'),
 			},
 		],
@@ -46,27 +46,27 @@ export const coreMenuGroups: MenuGroupType[] = [
 	},
 	{
 		id: 'content',
-		name: 'core.sidebar.menu.groups.content',
+		name: 'router.sidebar.group.content',
 		priority: 1,
 	},
 	{
 		id: 'user',
-		name: 'core.sidebar.menu.groups.user',
+		name: 'router.sidebar.group.user',
 		priority: 2,
 	},
 	{
 		id: 'interface',
-		name: 'core.sidebar.menu.groups.interface',
+		name: 'router.sidebar.group.interface',
 		priority: 3,
 	},
 	{
 		id: 'system',
-		name: 'core.sidebar.menu.groups.system',
+		name: 'router.sidebar.group.system',
 		priority: 4,
 	},
 	{
 		id: 'tool',
-		name: 'core.sidebar.menu.groups.tool',
+		name: 'router.sidebar.group.tool',
 		priority: 5,
 	},
 ];
