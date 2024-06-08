@@ -138,7 +138,7 @@ const episodeElFormRef = ref<FormInstance>();
 			<el-form-item :label="t('module.subject.episode.put.label.name_cn')" :label-width="formLabelWidth">
 				<el-input v-model="episode.name_cn" />
 			</el-form-item>
-			<el-form-item :error="t('module.subject.episode.put.label.sequence')" prop="sequence" :label-width="formLabelWidth">
+			<el-form-item :label="t('module.subject.episode.put.label.sequence')" prop="sequence" :label-width="formLabelWidth">
 				<el-input v-model.number="episode.sequence" type="text" />
 			</el-form-item>
 			<el-form-item :label="t('module.subject.episode.put.label.description')" :label-width="formLabelWidth">

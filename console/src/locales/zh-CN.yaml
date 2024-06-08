@@ -286,6 +286,48 @@ module:
       title: 条目编辑
     post:
       title: 条目新增
+      text:
+        button:
+          episode:
+            add: 添加剧集
+            details: 剧集详情
+            remove: 删除剧集
+          subject:
+            create: 创建
+      message:
+        form-rule:
+          name:
+            required: 请输入条目原始名称
+            length: 长度应该在 1 到 100 之间
+          summary:
+            required: 请输入条目介绍
+            length: 长度应该大于5
+          type:
+            required: 请选择一个条目类型
+          air_time:
+            type: 请选择一个时间
+          validate-fail: 请检查所填内容是否有必要项缺失。
+      label:
+        air_time: 发布时间
+        cover: 条目封面
+        name: 名称
+        name_cn: 中文名称
+        type: 条目类型
+        summary: 介绍
+        infobox: 信息盒子
+        episodes: 剧集
+        episode-table:
+          group: 分组
+          sequence: 序号
+          name: 原始名称
+          name_cn: 中文名称
+          air_time: 发布日期
+          description: 描述
+      date-picker:
+        placeholder: 请选择一天
+      infobox-input:
+        placeholder: '一行一个 key:value, 例子 中文名: 天降之物'
+      
     details:
       title: 条目详情
       text:

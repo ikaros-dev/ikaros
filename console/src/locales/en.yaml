@@ -299,6 +299,47 @@ module:
       title: Subject Edit
     post:
       title: Subject Post
+      message:
+        form-rule:
+          name:
+            required: Please input original subject name
+            length: The length should be between 1 and 100
+          summary:
+            required: Please enter subject summary
+            length: The length should be greater than 5
+          type:
+            required: Please select an subject type
+          air_time:
+            type: Please select a time
+          validate-fail: Please check if any necessary items are missing.
+      label:
+        air_time: Air Time
+        cover: Cover
+        name: Name
+        name_cn: NameCN
+        type: Type
+        summary: Summary
+        infobox: Infobox
+        episodes: Episodes
+        episode-table:
+          group: Group
+          sequence: Sequence
+          name: Original Name
+          name_cn: Chinese Name
+          air_time: Air Time
+          description: Description
+      date-picker:
+        placeholder: Select a date
+      infobox-input:
+        placeholder: 'A line of key:value, example name: things from heaven'
+      text:
+        button:
+          episode:
+            add: New Episode
+            details: Details
+            remove: Delete
+          subject:
+            create: Create
     details:
       title: Subject Details
       message:
@@ -417,8 +458,8 @@ module:
         label:
           air_time: Air Time
           group: Group
-          name: Episode Name
-          name_cn: Chinese Name
+          name: Name
+          name_cn: NameCN
           sequence: Sequence
           description: Description
         date-picker:
@@ -446,8 +487,8 @@ module:
         label:
           air_time: Air Time
           group: Group
-          name: Episode Name
-          name_cn: Chinese Name
+          name: Name
+          name_cn: NameCN
           sequence: Sequence
           description: Description
         date-picker:
