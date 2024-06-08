@@ -562,6 +562,56 @@ module:
                 episode. Are you sure you want to remove the bindings?
               button:
                 remove-all-binds: Remove All Bindings
+      remote-action:
+        message:
+          operate:
+            request-remote:
+              success: Submit success
+              validate-fail: Please check if any necessary items are missing
+          form-hint-nouse: >-
+            If the remote end is not available, please open the relevant plugin
+            and start it, such as the plugin.
+        form-rule:
+          remote:
+            required:
+              message: Select the name of the remote end
+        title: Subject Remote Operate
+        alert:
+          title: >-
+            The more episodes, the larger the episode file, and the longer the
+            operation time, please wait patiently for the operation to complete.
+        form-label:
+          remote: Remote
+          subject-id: SubjectID
+        button:
+          cancel: Cancel
+          push: Push
+          pull: Pull
+      sync:
+        message:
+          validate-fail: Please check if any necessary items are missing.
+          form-rule:
+            platform:
+              required: Please select the platform for sync
+            platform-id:
+              required: Please enter the subject ID of the sync platform
+              length: The length should be between 1 and 10
+        title:
+          update: Subject Update
+          pull: Subject Pull
+        label:
+          platform: Platform
+          subject-platform-id: Platform ID
+        placeholder:
+          platform-id: Please enter the subject ID of the sync platform
+        text:
+          platform-no-available-hint-msg: >-
+            There is no sync platform available, please open the relevant plugin
+            and start, such as the plugin of plugin-bgmtv
+        footer:
+          button:
+            cancel: Cancel
+            confirm: Sync
     episode:
       post:
         message:
@@ -649,6 +699,56 @@ module:
           create: New tag [{name}] success
         hint:
           rename-when-repetition: The tag name is empty or duplicate. Creating the tag  is skipped
+    label:
+      name: Name
+      name_cn: NameCN
+      type: Type
+    placeholder:
+      name: Original name fuzzy match
+      name_cn: Chinese name fuzzy match
+    select:
+      nsfw-true: 'True'
+      nsfw-false: 'False'
+    type:
+      anime: Anime
+      comic: Comic
+      game: Game
+      music: Music
+      novel: Novel
+      real: Real
+      other: Other
+    text:
+      button:
+        rapid-addition: RapidAdd
+        new-subject: NewSubject
+    drawer:
+      select:
+        title: Subject Select
+        text:
+          subject-select: Subject Select
+        label:
+          name: Name
+          name_cn: NameCN
+          type: Type
+        placeholder:
+          name: Original name fuzzy match
+          name_cn: Chinese name fuzzy match
+        optin:
+          nsfw-true: 'True'
+          nsfw-false: 'False'
+        type:
+          anime: Anime
+          comic: Comic
+          game: Game
+          music: Music
+          novel: Novel
+          real: Real
+          other: Other
+        table:
+          label:
+            name: Name
+            name_cn: NameCN
+            type: Type
   plugin:
     title: Plugins
     sidebar: Plugins

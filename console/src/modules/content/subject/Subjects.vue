@@ -17,9 +17,11 @@ import {
 	ElButton,
 	ElPagination,
 } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const route = useRoute();
+const {t} = useI18n();
 
 const fetchSubjectByRouterQuery = () => {
 	// console.log('route.query', route.query);
@@ -144,20 +146,20 @@ onMounted(fetchSubjectByRouterQuery);
 			<el-form :inline="true" :model="findSubjectsCondition">
 				<el-row :gutter="1">
 					<el-col :xs="24" :sm="24" :md="24" :lg="7" :xl="7">
-						<el-form-item label="原始名称" style="width: 95%">
+						<el-form-item :label="t('module.subject.label.name')" style="width: 95%">
 							<el-input
 								v-model="findSubjectsCondition.name"
-								placeholder="原始名称模糊匹配"
+								:placeholder="t('module.subject.placeholder.name')"
 								clearable
 								@change="fetchSubjects"
 							/>
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="7" :xl="7">
-						<el-form-item label="中文名称" style="width: 95%">
+						<el-form-item :label="t('module.subject.label.name_cn')" style="width: 95%">
 							<el-input
 								v-model="findSubjectsCondition.nameCn"
-								placeholder="中文名称模糊匹配"
+								:placeholder="t('module.subject.placeholder.name_cn')"
 								clearable
 								@change="fetchSubjects"
 							/>
@@ -170,25 +172,25 @@ onMounted(fetchSubjectByRouterQuery);
 								clearable
 								@change="fetchSubjects"
 							>
-								<el-option label="是" :value="true" />
-								<el-option label="非" :value="false" />
+								<el-option :label="t('module.subject.select.nsfw-true')" :value="true" />
+								<el-option :label="t('module.subject.select.nsfw-false')"  :value="false" />
 							</el-select>
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="5" :xl="5">
-						<el-form-item label="所属类型" style="width: 95%">
+						<el-form-item :label="t('module.subject.label.type')" style="width: 95%">
 							<el-select
 								v-model="findSubjectsCondition.type"
 								clearable
 								@change="fetchSubjects"
 							>
-								<el-option label="动漫" value="ANIME" />
-								<el-option label="漫画" value="COMIC" />
-								<el-option label="游戏" value="GAME" />
-								<el-option label="音声" value="MUSIC" />
-								<el-option label="小说" value="NOVEL" />
-								<el-option label="三次元" value="REAL" />
-								<el-option label="其它" value="OTHER" />
+								<el-option :label="t('module.subject.type.anime')" value="ANIME" />
+								<el-option :label="t('module.subject.type.comic')" value="COMIC" />
+								<el-option :label="t('module.subject.type.game')" value="GAME" />
+								<el-option :label="t('module.subject.type.music')" value="MUSIC" />
+								<el-option :label="t('module.subject.type.novel')" value="NOVEL" />
+								<el-option :label="t('module.subject.type.real')" value="REAL" />
+								<el-option :label="t('module.subject.type.other')" value="OTHER" />
 							</el-select>
 						</el-form-item>
 					</el-col>
@@ -205,9 +207,11 @@ onMounted(fetchSubjectByRouterQuery);
 			style="text-align: right"
 		>
 			<el-button plain @click="subjectSyncDialogVisible = true">
-				快速新增
+				{{ t('module.subject.text.button.rapid-addition') }}
 			</el-button>
-			<el-button plain @click="toSubjectPost"> 新建条目 </el-button>
+			<el-button plain @click="toSubjectPost"> 
+				{{ t('module.subject.text.button.new-subject') }}	
+			</el-button>
 		</el-col>
 	</el-row>
 

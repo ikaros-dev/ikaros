@@ -17,6 +17,9 @@ import {
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 // eslint-disable-next-line no-unused-vars
 import { apiClient } from '@/utils/api-client';
+import { useI18n } from 'vue-i18n';
+
+const {t} = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -96,12 +99,12 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 					// 		actionButtonLoading.value = false;
 					// 	});
 				}
-				ElMessage.success('提交成功');
+				ElMessage.success(t('module.subject.dialog.remote-action.message.operate.request-remote.success'));
 				dialogVisible.value = false;
 				emit('close');
 			} else {
 				console.log('error submit!', fields);
-				ElMessage.error('请检查所填内容是否有必要项缺失。');
+				ElMessage.error(t('module.subject.dialog.remote-action.message.operate.request-remote.validate-fail'));
 			}
 		});
 	}
@@ -112,7 +115,7 @@ const fileActionFormRules = reactive<FormRules>({
 	remote: [
 		{
 			required: true,
-			message: '请选择远端的名称',
+			message: t('module.subject.dialog.remote-action.form-rule.remote.required.message'),
 			trigger: 'change',
 		},
 	],
@@ -131,9 +134,9 @@ onMounted(() => {
 </script>
 
 <template>
-	<el-dialog v-model="dialogVisible" title="条目远端操作">
+	<el-dialog v-model="dialogVisible" :title="t('module.subject.dialog.remote-action.title')">
 		<el-alert
-			title="条目剧集越多，剧集文件越大，操作时间越长，请耐心等待操作完成。"
+			:title="t('module.subject.dialog.remote-action.alert.title')"
 			type="warning"
 			show-icon
 			:closable="false"
@@ -148,7 +151,7 @@ onMounted(() => {
 			:model="fileRemoteAction"
 			label-width="120px"
 		>
-			<el-form-item label="远端" prop="remote">
+			<el-form-item :label="t('module.subject.dialog.remote-action.form-label.remote')" prop="remote">
 				<el-select v-model="fileRemoteAction.remote">
 					<el-option
 						v-for="remote in subjectRemoteArr"
@@ -158,22 +161,22 @@ onMounted(() => {
 					/>
 				</el-select>
 			</el-form-item>
-			<el-form-item label="条目ID">
+			<el-form-item :label="t('module.subject.dialog.remote-action.form-label.subject-id')">
 				<el-input v-model="fileRemoteAction.subjectId" disabled />
 			</el-form-item>
 		</el-form>
 		<span v-else>
-			暂无可用的远端，请开启相关的插件并启动，比如百度网盘的插件。
+			{{t('module.subject.dialog.remote-action.message.form-hint-nouse')}}
 		</span>
 		<template #footer>
 			<span>
 				<el-button plain :loading="actionButtonLoading">
 					{{
 						subjectRemoteArr.length === 0
-							? '返回'
+							? t('module.subject.dialog.remote-action.button.cancel')
 							: props.isPush
-							? '推送'
-							: '拉取'
+							? t('module.subject.dialog.remote-action.button.push')
+							: t('module.subject.dialog.remote-action.button.pull')
 					}}
 				</el-button>
 			</span>

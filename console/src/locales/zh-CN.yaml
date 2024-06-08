@@ -282,6 +282,56 @@ module:
   subject:
     title: 条目
     sidebar: 条目
+    label:
+      name: 原始名称
+      name_cn: 中文名称
+      type: 所属类型
+    placeholder:
+      name: 原始名称模糊匹配
+      name_cn: 中文名称模糊匹配
+    select:
+      nsfw-true: 是
+      nsfw-false: 否
+    type:
+      anime: 动漫
+      comic: 漫画
+      game: 游戏
+      music: 音声
+      novel: 小说
+      real: 三次元
+      other: 其它
+    text:
+      button:
+        rapid-addition: 快速添加
+        new-subject: 新建条目
+    drawer:
+      select:
+        optin:
+          nsfw-true: 是
+          nsfw-false: 否
+        title: 条目选择
+        text:
+          subject-select: 条目选择
+        label:
+          name: 原始名称
+          name_cn: 中文名称
+          type: 所属类型
+        placeholder:
+          name: 原始名称模糊匹配
+          name_cn: 中文名称模糊匹配
+        type:
+          anime: 动漫
+          comic: 漫画
+          game: 游戏
+          music: 音声
+          novel: 小说
+          real: 三次元
+          other: 其它
+        table:
+          label:
+            name: 名称
+            name_cn: 中文名称
+            type: 类型
     put:
       title: 条目编辑
       text:
@@ -519,8 +569,6 @@ module:
           button:
             cancel: 取消
             confirm: 关联
-
-
     dialog:
       episode:
         details:
@@ -557,6 +605,50 @@ module:
               title: 此操作会移除当前剧集所有资源绑定，确定移除绑定吗？
               button:
                 remove-all-binds: 移除所有绑定
+      remote-action:
+        title: 条目远端操作
+        form-label:
+          remote: 远端
+          subject-id: 条目ID
+        button:
+          cancel: 返回
+          push: 推送
+          pull: 拉取
+        alert:
+          title: 条目剧集越多，剧集文件越大，操作时间越长，请耐心等待操作完成。
+        form-rule:
+          remote:
+            required:
+              message: 请选择远端的名称
+        message:
+          form-hint-nouse: 暂无可用的远端，请开启相关的插件并启动，比如百度网盘的插件。
+          operate:
+            request-remote: 
+              success: 提交成功
+              validate-fail: 请检查所填内容是否有必要项缺失。
+      sync:
+        title:
+          update: 条目更新
+          pull: 条目拉取
+        label:
+          platform: 平台
+          subject-platform-id: 对应的平台ID
+        text:
+          platform-no-available-hint-msg: 暂无可用的同步平台，请开启相关的插件并启动，比如番组计划的插件。
+        footer:
+          button:
+            cancel: 返回
+            confirm: 同步
+        placeholder:
+          platform-id: 请输入同步平台的条目ID
+        message:
+          validate-fail: 请检查所填内容是否有必要项缺失。
+          form-rule:
+            platform: 
+              required: 请选择同步的平台
+            platform-id:
+              required: 请输入同步平台的条目ID
+              length: 长度应该在 1 到 10 字符之间
     episode:
       post:
         title: 新增剧集
