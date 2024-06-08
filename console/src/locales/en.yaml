@@ -287,6 +287,11 @@ module:
         event:
           delete: Delete file successful
           updateName: Update file name successful
+    reference:
+      message:
+        operate:
+          batch-match-subject-episodes-atts: Batch match entries for all episodes and multiple resources success
+          batch-match-episode-atts: Batch match single episode and multi-attachments success
   subject:
     title: Subjects
     sidebar: Subjects
@@ -296,6 +301,57 @@ module:
       title: Subject Post
     details:
       title: Subject Details
+      message:
+        operate:
+          delete:
+            success: Delete subject {name} succsss
+          update:
+            success: Request to update entry information succeeded
+          cancel:
+            success: Cancel Subject Collect Success
+      text:
+        collect:
+          not: Not Collect
+          click: Click Collect
+          cancel: Cancel Collect
+          done: Collected
+        button:
+          edit: Edit
+          update: Update
+          delete: Delete
+          relaction: Relaction
+          add-tag: New Tag
+      dele-popconfirm:
+        title: Are you sure you want to delete this subject?
+      label:
+        name: Name
+        name_cn: Chinese Name
+        air_time: Air Time
+        type: Type
+        summary: Summary
+        sync-platform: Sync Platform
+        tag: Tag
+        collect-status: Collect Status
+      cancel-collect-popconfirm:
+        title-prefix: Are you sure
+        title-postfix: this subject?
+        cancel-collect: cancel collect
+        collect: collect
+      episode:
+        label:
+          group: Group
+          sequence: Sequence
+          name: Original Name
+          name_cn: Chinese Name
+          air_time: Air Time
+          operate: Operate
+          button:
+            batch-resources: Batch Match Attachments
+            details: Details
+            reset: Reset
+            done: Done
+            push: Push
+            pull: Pull
     relaction:
       title: Subject Relactions
     dialog:
@@ -401,6 +457,34 @@ module:
         footer:
           button:
             confirm: Confirm
+      collect:
+        message:
+          operate:
+            mark-finish: Mark episode is finished success
+    collect:
+      message:
+        operate:
+          update:
+            success: Update Subject Collect Success
+          update-progress:
+            success: Update Subject Collect Progress Success
+      type:
+        wish: WISH
+        doing: DOING
+        done: DONE
+        shelve: SHELVE
+        discard: DISCARD
+      progress:
+        text: Collect Progress
+        update-input:
+          placeholder: Enter the viewing progress and press Enter to update
+    tag:
+      message:
+        operate:
+          remove: Remove tag [{name}] success
+          create: New tag [{name}] success
+        hint:
+          rename-when-repetition: The tag name is empty or duplicate. Creating the tag  is skipped
   plugin:
     title: Plugins
     sidebar: Plugins
