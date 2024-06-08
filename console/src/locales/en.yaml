@@ -372,6 +372,35 @@ module:
         footer:
           button:
             confirm: Confirm
+      put:
+        title: Update Episode
+        message:
+          hint:
+            validate: Please check if any necessary items are missing
+          episode:
+            form-rule:
+              sequence:
+                required: Please specify the serial number of the episode
+                type: The serial number must be a number
+              air_time:
+                required: Please select a time
+              name:
+                required: Please enter the original episode name
+                length: The length should be between 1 and 100
+        label:
+          air_time: Air Time
+          group: Group
+          name: Episode Name
+          name_cn: Chinese Name
+          sequence: Sequence
+          description: Description
+        date-picker:
+          placeholder: Please select date
+        select:
+          placeholder: Please select group
+        footer:
+          button:
+            confirm: Confirm
   plugin:
     title: Plugins
     sidebar: Plugins
