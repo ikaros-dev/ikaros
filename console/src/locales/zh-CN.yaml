@@ -338,6 +338,36 @@ module:
               title: 此操作会移除当前剧集所有资源绑定，确定移除绑定吗？
               button:
                 remove-all-binds: 移除所有绑定
+    episode:
+      post:
+        title: 新增剧集
+        label:
+          air_time: 发布时间
+          group: 剧集分组
+          name: 剧集名称
+          name_cn: 中文名称
+          sequence: 序号
+          description: 描述
+        date-picker:
+          placeholder: 请选择一天
+        select:
+          placeholder: 请选择分组
+        footer:
+          button:
+            confirm: 确认
+        message:
+          hint:
+            validate: 请检查所填内容是否有必要项缺失
+          episode:
+            form-rule:
+              sequence:
+                required: 请指定剧集的序列号
+                type: 序列号必须是一个数字
+              air_time:
+                required: 请选择一个时间
+              name:
+                required: 请输入剧集原始名称
+                length: 长度应该在 1 到 100 之间
 
   plugin:
     title: 插件

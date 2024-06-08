@@ -1,5 +1,4 @@
 Root: Root
-# common
 common:
   exception:
     title: Application exception
@@ -17,8 +16,6 @@ common:
   button:
     confirm: Confirm
     cancel: Cancel
-
-# router
 router:
   title:
     notfound: NotFound
@@ -48,11 +45,6 @@ router:
       folders: Folders
       collection: Collection
       attachment: Attachment
-
-
-  
-
-# component
 component:
   upload:
     file-pond-upload:
@@ -64,9 +56,6 @@ component:
       notSupportFileFormat: Not support file format
       clickCancel: Click cancel
       clickRetry: Click retry
-
-
-# view
 view:
   exception:
     exception:
@@ -77,8 +66,6 @@ view:
       message: 403 Forbidden
     notfound:
       message: 404 Not Found
-
-# module
 module:
   dashboard:
     title: Dashboard
@@ -88,7 +75,6 @@ module:
       subject: Subjects
       collection: Collections
       doing: Doings
-
   user:
     title: User
     sidebar: User
@@ -131,7 +117,6 @@ module:
         update:
           all: Update Basic Info Success
           password: Update Password Success
-
     collection:
       title: Collections
       sidebar: Collections
@@ -144,7 +129,6 @@ module:
           done: Done
           shelve: Shelve
           discard: Discard
-
   attachment:
     title: Attachments
     sidebar: Attachments
@@ -157,14 +141,17 @@ module:
           success: Delete {type} [{name}] success.
           fail: Delete {type} [{name}] fail.
           cancel: Delete [{name}] cancel.
-        delete_atts: 
+        delete_atts:
           cancel: Deleting directories in batch is cancelled.
         copy_short_name: Copy short name of attachment [{name}] to clipboard.
         copy_integrally_name: Full name of attachment [{name}] has been copied to the clipboard.
         copy_url: Copy the URL of attachment [{name}] to the clipboard.
         move_atts: Succeeded in batch moving attachments.
     confirm:
-      content: Are you sure to delete it?It is detected that the attachment you want to delete (selected) contains a directory type. By default, the system will delete all contents in the directory.
+      content: >-
+        Are you sure to delete it?It is detected that the attachment you want to
+        delete (selected) contains a directory type. By default, the system will
+        delete all contents in the directory.
       warning: Warning
       btn:
         confirm: Confirm
@@ -176,13 +163,18 @@ module:
       copy_integrally_name: Copy integrally name
       copy_url: Copy url
       download: Download
-      delete: 
+      delete:
         value: Delete
-        confirm: The attachment you are deleting [{name}] is a directory type. By default, the system deletes all contents in the directory. Are you sure you want to delete it?
+        confirm: >-
+          The attachment you are deleting [{name}] is a directory type. By
+          default, the system deletes all contents in the directory. Are you
+          sure you want to delete it?
     dialog:
       mkdir:
         title: Crate new directory
-        placeholder: Please enter a directory name, subdirectories will be created in the current directory after sub attachment.
+        placeholder: >-
+          Please enter a directory name, subdirectories will be created in the
+          current directory after sub attachment.
         btn:
           confirm: Confirm
           cancel: Cancel
@@ -220,12 +212,11 @@ module:
               path: Path
               update-time: UpdateTime
               size: Size
-
       relation:
         title: Attachment Relations
         label:
           type: Type
-          relationAtt: Relation Attachments 
+          relationAtt: Relation Attachments
           operate: Operate
         message:
           create-success: The attachment relation is added success
@@ -238,7 +229,6 @@ module:
         footer:
           add: Add
           cancel: Cancel
-      
     btn:
       upload: Upload
       mkdir: Crate
@@ -247,7 +237,9 @@ module:
       title: Are you sure to delete attachments in bulk?
       btn: Batch delete
     search_input:
-      placeholder: Search all attachments in the current directory, fuzzy match, space multiple keywords, enter search.
+      placeholder: >-
+        Search all attachments in the current directory, fuzzy match, space
+        multiple keywords, enter search.
     breadcrumb:
       label: Path
     table:
@@ -260,7 +252,10 @@ module:
       fragment-upload:
         title: Upload Files
         confirm:
-          message: When exiting the upload page, if a file has not been uploaded, the next time you need to upload from scratch, are you sure you want to exit the current upload page?
+          message: >-
+            When exiting the upload page, if a file has not been uploaded, the
+            next time you need to upload from scratch, are you sure you want to
+            exit the current upload page?
           title: kind reminder
           confirm: Exit
           cancel: Not Exit
@@ -292,7 +287,6 @@ module:
         event:
           delete: Delete file successful
           updateName: Update file name successful
-
   subject:
     title: Subjects
     sidebar: Subjects
@@ -311,16 +305,22 @@ module:
           message:
             operate:
               remove-episode-all-att-refs:
-                waring: Invalid operation, the current episode is not bound to any resource files
+                waring: >-
+                  Invalid operation, the current episode is not bound to any
+                  resource files
                 success: Successfully removed all attachment bindings of the episode
               remove-episode-att-ref:
-                success: Successfully removed a single attachment binding of the episode
+                success: >-
+                  Successfully removed a single attachment binding of the
+                  episode
               match-single-episode-attachment:
                 success: Successfully matched a single episode with an attachment
               batch-match-episode-atts:
-                success: Successfully batch matched a single episode with multiple resources
+                success: >-
+                  Successfully batch matched a single episode with multiple
+                  resources
           hint:
-            video: 
+            video:
               unsuport: Your browser does not support this video format
               not_video: The current resource file is not a video file or is unreadable
             no_bind: The current episode is not bound to any resource files
@@ -337,11 +337,41 @@ module:
             button:
               add-bind: Add Binding
             popconfirm:
-              title: This operation will remove all resource bindings of the current episode. Are you sure you want to remove the bindings?
+              title: >-
+                This operation will remove all resource bindings of the current
+                episode. Are you sure you want to remove the bindings?
               button:
                 remove-all-binds: Remove All Bindings
-
-
+    episode:
+      post:
+        message:
+          hint:
+            validate: Please check if any necessary items are missing
+          episode:
+            form-rule:
+              sequence:
+                required: Please specify the serial number of the episode
+                type: The serial number must be a number
+              air_time:
+                required: Please select a time
+              name:
+                required: Please enter the original episode name
+                length: The length should be between 1 and 100
+        title: Add Episode
+        label:
+          air_time: Air Time
+          group: Group
+          name: Episode Name
+          name_cn: Chinese Name
+          sequence: Sequence
+          description: Description
+        date-picker:
+          placeholder: Please select date
+        select:
+          placeholder: Please select group
+        footer:
+          button:
+            confirm: Confirm
   plugin:
     title: Plugins
     sidebar: Plugins
@@ -349,14 +379,12 @@ module:
       title: Plugin Details
     loader:
       message:
-        entry_load_failed: "{name}: Failed to load plugin entry file"
-        style_load_failed: "{name}: Failed to load plugin stylesheet file"
+        entry_load_failed: '{name}: Failed to load plugin entry file'
+        style_load_failed: '{name}: Failed to load plugin stylesheet file'
     upload_modal:
       titles:
         upgrade: Upgade plugin
         install: Install plugin
-
   setting:
     title: Settings
     sidebar: Settings
-
