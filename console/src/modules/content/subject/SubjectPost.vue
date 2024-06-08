@@ -246,7 +246,7 @@ const onCloseWithAttachment = (attachment) => {
 							:formatter="airTimeDateFormatter"
 						/>
 						<!-- <el-table-column :label="t('module.subject.post.label.episode-table.description')" prop="description" /> -->
-						<el-table-column align="right">
+						<el-table-column align="right" width="350">
 							<template #header>
 								<el-button plain @click="episodePostDialogVisible = true">
 									{{t('module.subject.post.text.button.episode.add')}}

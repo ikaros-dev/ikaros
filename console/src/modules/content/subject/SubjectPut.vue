@@ -39,10 +39,12 @@ import {
 import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
 import { base64Encode } from '@/utils/string-util';
 import { useSubjectStore } from '@/stores/subject';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const route = useRoute();
 const subjectStore = useSubjectStore();
+const {t} = useI18n();
 
 watch(route, () => {
 	//@ts-ignore
@@ -70,17 +72,17 @@ const subject = ref<Subject>({
 
 const subjectRuleFormRules = reactive<FormRules>({
 	name: [
-		{ required: true, message: '请输入条目原始名称', trigger: 'blur' },
-		{ min: 1, max: 100, message: '长度应该在 1 到 100 之间', trigger: 'blur' },
+		{ required: true, message: t('module.subject.put.message.form-rule.name.required'), trigger: 'blur' },
+		{ min: 1, max: 100, message: t('module.subject.put.message.form-rule.name.length'), trigger: 'blur' },
 	],
 	summary: [
-		{ required: true, message: '请输入条目介绍', trigger: 'blur' },
-		{ min: 5, message: '长度应该大于5', trigger: 'blur' },
+		{ required: true, message: t('module.subject.put.message.form-rule.summary.required'), trigger: 'blur' },
+		{ min: 5, message: t('module.subject.put.message.form-rule.summary.length'), trigger: 'blur' },
 	],
 	type: [
 		{
 			required: true,
-			message: '请选择一个条目类型',
+			message: t('module.subject.put.message.form-rule.type.required'),
 			trigger: 'change',
 		},
 	],
@@ -88,7 +90,7 @@ const subjectRuleFormRules = reactive<FormRules>({
 		{
 			type: 'date',
 			required: true,
-			message: '请选择一个时间',
+			message: t('module.subject.put.message.form-rule.air_time.type'),
 			trigger: 'change',
 		},
 	],
@@ -104,7 +106,11 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 					subject: subject.value,
 				})
 				.then(() => {
-					ElMessage.success('更新成功条目：' + subject.value.name);
+					ElMessage.success(
+						t('module.subject.put.message.form-rule.update-success',
+							{name: subject.value.name}
+						)
+					)
 					router.push(
 						'/subjects?name=' +
 							base64Encode(encodeURI(subject.value.name)) +
@@ -119,7 +125,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 				});
 		} else {
 			console.log('error submit!', fields);
-			ElMessage.error('请检查所填内容是否有必要项缺失。');
+			ElMessage.error(t('module.subject.put.message.form-rule.validate-fail'));
 		}
 	});
 };
@@ -195,18 +201,18 @@ onMounted(() => {
 							</el-form-item>
 						</el-col>
 						<el-col :span="16">
-							<el-form-item label="发布时间" prop="airTime">
+							<el-form-item :label="t('module.subject.put.label.air_time')" prop="airTime">
 								<el-date-picker
 									v-model="subject.airTime"
 									type="date"
-									placeholder="请选择一天"
+									:placeholder="t('module.subject.put.date-picker.placeholder')"
 								/>
 							</el-form-item>
 						</el-col>
 					</el-row>
 				</el-form-item>
 
-				<el-form-item label="条目封面">
+				<el-form-item :label="t('module.subject.put.label.cover')">
 					<el-input v-model="subject.cover" clearable>
 						<template #prepend>
 							<el-button
@@ -218,15 +224,15 @@ onMounted(() => {
 					</el-input>
 				</el-form-item>
 
-				<el-form-item label="条目名称" prop="name">
+				<el-form-item :label="t('module.subject.put.label.name')" prop="name">
 					<el-input v-model="subject.name" />
 				</el-form-item>
 
-				<el-form-item label="条目中文名">
+				<el-form-item :label="t('module.subject.put.label.name_cn')">
 					<el-input v-model="subject.name_cn" />
 				</el-form-item>
 
-				<el-form-item label="条目类型" prop="type">
+				<el-form-item :label="t('module.subject.put.label.type')" prop="type">
 					<el-radio-group v-model="subject.type">
 						<el-radio
 							v-for="type in subjectTypes"
@@ -240,7 +246,7 @@ onMounted(() => {
 					</el-radio-group>
 				</el-form-item>
 
-				<el-form-item label="介绍" prop="summary">
+				<el-form-item :label="t('module.subject.put.label.summary')" prop="summary">
 					<el-input
 						v-model="subject.summary"
 						maxlength="10000"
@@ -250,14 +256,14 @@ onMounted(() => {
 					/>
 				</el-form-item>
 
-				<el-form-item label="InfoBox">
+				<el-form-item :label="t('module.subject.put.label.infobox')">
 					<el-input
 						v-model="subject.infobox"
 						maxlength="10000"
 						rows="15"
 						show-word-limit
 						type="textarea"
-						placeholder="一行一个 key:value, 例子 中文名: 天降之物"
+						:placeholder="t('module.subject.put.infobox-input.placeholder')"
 					/>
 				</el-form-item>
 
@@ -271,10 +277,10 @@ onMounted(() => {
 					@close-with-epsiode="onEpisodePutDialogCloseWithEpsiode"
 				/>
 
-				<el-form-item label="剧集">
+				<el-form-item :label="t('module.subject.put.label.episodes')">
 					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
 						<el-table-column
-							label="分组"
+							:label="t('module.subject.put.label.episode-table.group')"
 							prop="group"
 							width="110px"
 							show-overflow-tooltip
@@ -283,34 +289,34 @@ onMounted(() => {
 								{{ episodeGroupLabelMap.get(scoped.row.group) }}
 							</template>
 						</el-table-column>
-						<el-table-column label="序号" prop="sequence" width="80px" />
-						<el-table-column label="原始名称" prop="name" />
-						<el-table-column label="中文名称" prop="name_cn" />
+						<el-table-column :label="t('module.subject.put.label.episode-table.sequence')" prop="sequence" width="90px" />
+						<el-table-column :label="t('module.subject.put.label.episode-table.name')" prop="name" />
+						<el-table-column :label="t('module.subject.put.label.episode-table.name_cn')" prop="name_cn" />
 						<el-table-column
-							label="发布日期"
+							:label="t('module.subject.put.label.episode-table.air_time')"
 							prop="air_time"
 							:formatter="airTimeDateFormatter"
 						/>
-						<!-- <el-table-column label="描述" prop="description" /> -->
-						<el-table-column align="right" width="240">
+						<!-- <el-table-column :label="t('module.subject.put.label.episode-table.description')" prop="description" /> -->
+						<el-table-column align="right" width="350">
 							<template #header>
 								<el-button plain @click="episodePostDialogVisible = true">
-									添加剧集
+									{{t('module.subject.put.text.button.episode.add')}}
 								</el-button>
 							</template>
 							<template #default="scoped">
 								<el-button plain @click="showEpisodeDetails(scoped.row)">
-									详情
+									{{t('module.subject.put.text.button.episode.details')}}
 								</el-button>
 								<el-button plain @click="toEPisodeEdit(scoped.row)">
-									编辑
+									{{t('module.subject.put.text.button.episode.edit')}}
 								</el-button>
 								<el-button
 									plain
 									type="danger"
 									@click="removeCurrentRowEpisode(scoped.row)"
 								>
-									删除
+								{{t('module.subject.put.text.button.episode.remove')}}
 								</el-button>
 							</template>
 						</el-table-column>
@@ -319,7 +325,7 @@ onMounted(() => {
 
 				<el-form-item>
 					<el-button plain @click="submitForm(subjectElFormRef)">
-						更新
+						{{t('module.subject.put.text.button.subject.create')}}
 					</el-button>
 				</el-form-item>
 			</el-form>
