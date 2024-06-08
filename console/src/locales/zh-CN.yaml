@@ -306,7 +306,7 @@ module:
           air_time:
             type: 请选择一个时间
           validate-fail: 请检查所填内容是否有必要项缺失。
-          update-success: '更新成功条目：{name}'
+          update-success: 更新成功条目：{name}
       label:
         air_time: 发布时间
         cover: 条目封面
@@ -452,6 +452,75 @@ module:
               name: 名称
               name_cn: 中文名称
               type: 类型
+      dialog:
+        delete:
+          title: 条目关系新增
+          message:
+            validate-fail: 提交取消，请检查是否有必要项缺失，必要项：【副条目】【类型】。
+            remove-success: 移除条目关系成功
+          label:
+            master-subject: 主条目
+            slave-subject: 副条目
+            type: 关系类型
+          button:
+            cancel: 取消
+            confirm: 移除关联
+          popconfirm:
+            title: 确定移除关联吗？
+        main:
+          title: 条目关系
+          label:
+            id: ID
+            name: 名称
+            name_cn: 中文名称
+            air_time: 放送时间
+            type: 类型
+            nsfw: NSFW
+            summary: 介绍
+          button:
+            add: 新增
+            delete: 删除
+          tab:
+            label:
+              anime: 动漫({length})
+              comic: 漫画({length})
+              game: 游戏({length})
+              music: 音声({length})
+              novel: 小说({length})
+              real: 三次元({length})
+              before: 前传({length})
+              after: 后传({length})
+              same-worldview: 相同世界观({length})
+              ost: OST({length})
+              other: 其它({length})
+        post:
+          title: 条目关系新增
+          message:
+            validate-fail: 提交取消，请检查是否有必要项缺失，必要项：【副条目】【类型】。
+            add-success: 添加条目关系成功
+          label:
+            master-subject: 主条目
+            slave-subject: 副条目
+            type: 关系类型
+          placeholder:
+            slave-subject: 副条目ID，英文逗号隔开
+          type:
+            after: 后传
+            before: 前传
+            same-worldview: 相同世界观
+            ost: OST
+            anime: 动漫
+            comic: 漫画
+            game: 游戏
+            music: 音声
+            novel: 小说
+            real: 三次元
+            other: 其它
+          button:
+            cancel: 取消
+            confirm: 关联
+
+
     dialog:
       episode:
         details:
@@ -558,7 +627,6 @@ module:
         operate:
           remove: 移除标签[{name}]成功
           create: 新建标签[{name}]成功
-           
   plugin:
     title: 插件
     sidebar: 插件
@@ -566,8 +634,8 @@ module:
       title: 插件详情
     loader:
       message:
-        entry_load_failed: "{name}：加载插件入口附件失败"
-        style_load_failed: "{name}：加载插件样式附件失败"
+        entry_load_failed: '{name}：加载插件入口附件失败'
+        style_load_failed: '{name}：加载插件样式附件失败'
     upload_modal:
       titles:
         upgrade: 升级插件

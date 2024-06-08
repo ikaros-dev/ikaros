@@ -22,8 +22,10 @@ import { onMounted } from 'vue';
 import SubjectRelationPostDialog from './SubjectRelationPostDialog.vue';
 import SubjectRelationDeleteDialog from './SubjectRelationDeleteDialog.vue';
 import { useSubjectStore } from '@/stores/subject';
+import { useI18n } from 'vue-i18n';
 
 const subjectStore = useSubjectStore();
+const {t} = useI18n();
 const route = useRoute();
 // watch(route, async () => {
 // 	if (!route.params?.id && route.params?.id === undefined) {
@@ -270,30 +272,30 @@ onMounted(loadSubject);
 
 	<el-dialog
 		v-model="dialogVisible"
-		title="条目关系"
+		:title="t('module.subject.relaction.dialog.main.title')"
 		fullscreen
 		@close="onClose"
 	>
 		<el-descriptions direction="vertical" :column="6" size="large" border>
-			<el-descriptions-item label="ID" :span="1">
+			<el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.id')" :span="1">
 				{{ subject.id }}
 			</el-descriptions-item>
-			<el-descriptions-item label="名称" :span="1">
+			<el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.name')"  :span="1">
 				{{ subject.name }}
 			</el-descriptions-item>
-			<el-descriptions-item label="中文名称" :span="1">
+			<el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.name_cn')"  :span="1">
 				{{ subject.name_cn }}
 			</el-descriptions-item>
-			<el-descriptions-item label="放送时间" :span="1">
+			<el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.air_time')"  :span="1">
 				{{ subject.airTime }}
 			</el-descriptions-item>
-			<el-descriptions-item label="类型" :span="1">
+			<el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.type')"  :span="1">
 				{{ subject.type }}
 			</el-descriptions-item>
-			<el-descriptions-item label="NSFW" :span="1">
+			<el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.nsfw')"  :span="1">
 				{{ subject.nsfw }}
 			</el-descriptions-item>
-			<el-descriptions-item label="介绍" :span="6">
+			<el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.summary')"  :span="6">
 				{{ subject.summary }}
 			</el-descriptions-item>
 		</el-descriptions>
@@ -303,12 +305,14 @@ onMounted(loadSubject);
 		<el-row>
 			<el-col :span="24">
 				<el-button @click="subjectRelationPostDialogVisible = true">
-					新增
+					{{ t("module.subject.relaction.dialog.main.button.add") }}
 				</el-button>
 				<el-button
 					type="danger"
 					@click="subjectRelationDeleteDialogVisible = true"
-					>删除</el-button
+					>
+					{{ t("module.subject.relaction.dialog.main.button.delete") }}
+					</el-button
 				>
 			</el-col>
 		</el-row>
@@ -316,7 +320,7 @@ onMounted(loadSubject);
 		<br />
 
 		<el-tabs v-model="activeTabName">
-			<el-tab-pane :label="'动漫(' + relationAnimes.length + ')'" name="ANIME">
+			<el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.anime', {length: relationAnimes.length})" name="ANIME">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
 						v-for="anime in relationAnimes"
@@ -336,7 +340,7 @@ onMounted(loadSubject);
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane :label="'漫画(' + relationComics.length + ')'" name="COMIC">
+			<el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.comic', {length:  relationComics.length})" name="COMIC">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
 						v-for="comic in relationComics"
@@ -356,7 +360,7 @@ onMounted(loadSubject);
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane :label="'游戏(' + relationGames.length + ')'" name="GAME">
+			<el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.game', {length: relationGames.length})" name="GAME">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
 						v-for="game in relationGames"
@@ -376,7 +380,7 @@ onMounted(loadSubject);
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane :label="'音声(' + relationMusics.length + ')'" name="MUSIC">
+			<el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.music', {length: relationMusics.length})" name="MUSIC">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
 						v-for="music in relationMusics"
@@ -396,7 +400,7 @@ onMounted(loadSubject);
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane :label="'小说(' + relationNovels.length + ')'" name="NOVEL">
+			<el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.novel', {length: relationNovels.length})" name="NOVEL">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
 						v-for="novel in relationNovels"
@@ -416,7 +420,7 @@ onMounted(loadSubject);
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane :label="'三次元(' + relationReals.length + ')'" name="REAL">
+			<el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.real', {length: relationReals.length})" name="REAL">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
 						v-for="real in relationReals"
@@ -437,7 +441,7 @@ onMounted(loadSubject);
 				</el-row>
 			</el-tab-pane>
 			<el-tab-pane
-				:label="'前传(' + relationBefores.length + ')'"
+				:label="t('module.subject.relaction.dialog.main.tab.label.before', {length: relationBefores.length})"
 				name="BEFORE"
 			>
 				<el-row :gutter="10" justify="start" align="middle">
@@ -459,7 +463,7 @@ onMounted(loadSubject);
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane :label="'后传(' + relationAfters.length + ')'" name="AFTER">
+			<el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.after', {length: relationAfters.length})" name="AFTER">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
 						v-for="after in relationAfters"
@@ -480,7 +484,7 @@ onMounted(loadSubject);
 				</el-row>
 			</el-tab-pane>
 			<el-tab-pane
-				:label="'相同世界观(' + relationSWs.length + ')'"
+				:label="t('module.subject.relaction.dialog.main.tab.label.same-worldview', {length: relationSWs.length})"
 				name="SAME_WORLDVIEW"
 			>
 				<el-row :gutter="10" justify="start" align="middle">
@@ -503,7 +507,7 @@ onMounted(loadSubject);
 				</el-row>
 			</el-tab-pane>
 			<el-tab-pane
-				:label="'OST(' + relationOSTs.length + ')'"
+				:label="t('module.subject.relaction.dialog.main.tab.label.ost', {length: relationOSTs.length})"
 				name="ORIGINAL_SOUND_TRACK"
 			>
 				<el-row :gutter="10" justify="start" align="middle">
@@ -525,7 +529,7 @@ onMounted(loadSubject);
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane :label="'其它(' + relationOthers.length + ')'" name="OTHER">
+			<el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.other', {length: relationOthers.length})" name="OTHER">
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
 						v-for="other in relationOthers"

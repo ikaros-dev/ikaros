@@ -447,6 +447,77 @@ module:
               name: Name
               name_cn: NameCN
               type: Type
+      dialog:
+        delete:
+          title: Subject Relation Add
+          message:
+            validate-fail: >-
+              Submit cancellation, please check whether any necessary items are
+              missing, necessary items: [sub-item] [type].
+            remove-success: Remove subject relations success.
+          label:
+            master-subject: Master Subject ID
+            slave-subject: Slave Subject ID
+            type: Subject Relation Type
+          button:
+            cancel: Cancel
+            confirm: RemoveRelation
+          popconfirm:
+            title: Are you sure to remove the relation?
+        main:
+          title: Subject Relation
+          label:
+            id: ID
+            name: Name
+            name_cn: NameCN
+            air_time: Air Time
+            type: Type
+            nsfw: NSFW
+            summary: Summary
+          button:
+            add: Add
+            delete: Delete
+          tab:
+            label:
+              anime: Anime({length})
+              comic: Comic({length})
+              game: Game({length})
+              music: Music({length})
+              novel: Novel({length})
+              real: Real({length})
+              before: Before({length})
+              after: "After({length})\t"
+              same-worldview: SameWorldView({length})
+              ost: OST({length})
+              other: Other({length})
+        post:
+          message:
+            validate-fail: >-
+              Submit cancellation, please check whether any necessary items are
+              missing, necessary items: [sub-item] [type].
+            add-success: Add subject relation success
+          title: Subject Relation Add
+          label:
+            master-subject: Master Subject
+            slave-subject: Slave Subject
+            type: Relation Type
+          placeholder:
+            slave-subject: Slave Subject ID, separated by commas
+          type:
+            after: After
+            before: Before
+            same-worldview: SameWorldView
+            ost: OST
+            anime: Anime
+            comic: Comic
+            game: Game
+            music: Music
+            novel: Novel
+            real: Real
+            other: Other
+          button:
+            cancel: Cancel
+            confirm: Confirm
     dialog:
       episode:
         details:
