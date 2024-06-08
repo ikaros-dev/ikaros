@@ -443,6 +443,15 @@ module:
           placeholder: 输入观看进度，回车更新
     relaction:
       title: 条目关系
+      drawer:
+        delete:
+          title: 条目选择
+          table:
+            label:
+              id: ID
+              name: 名称
+              name_cn: 中文名称
+              type: 类型
     dialog:
       episode:
         details:

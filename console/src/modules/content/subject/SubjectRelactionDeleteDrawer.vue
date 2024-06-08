@@ -7,8 +7,10 @@ import {
 import { computed, ref } from 'vue';
 import { ElDrawer, ElTable, ElTableColumn } from 'element-plus';
 import { useSubjectStore } from '@/stores/subject';
+import { useI18n } from 'vue-i18n';
 
 const subjectStore = useSubjectStore();
+const {t} = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -95,7 +97,7 @@ const onOpen = async () => {
 <template>
 	<el-drawer
 		v-model="drawerVisible"
-		title="条目选择"
+		:title="t('module.subject.relaction.drawer.delete.title')"
 		direction="rtl"
 		:before-close="handleClose"
 		size="45%"
@@ -107,12 +109,12 @@ const onOpen = async () => {
 			@selection-change="handleSelectionChange"
 		>
 			<el-table-column type="selection" width="50" show-overflow-tooltip />
-			<el-table-column prop="id" label="ID" width="100" show-overflow-tooltip />
-			<el-table-column prop="name" label="名称" show-overflow-tooltip />
-			<el-table-column prop="name_cn" label="中文名称" show-overflow-tooltip />
+			<el-table-column prop="id" :label="t('module.subject.relaction.drawer.delete.table.label.id')" width="100" show-overflow-tooltip />
+			<el-table-column prop="name" :label="t('module.subject.relaction.drawer.delete.table.label.name')" show-overflow-tooltip />
+			<el-table-column prop="name_cn" :label="t('module.subject.relaction.drawer.delete.table.label.name_cn')" show-overflow-tooltip />
 			<el-table-column
 				prop="type"
-				label="类型"
+				:label="t('module.subject.relaction.drawer.delete.table.label.type')"
 				width="100"
 				show-overflow-tooltip
 			/>

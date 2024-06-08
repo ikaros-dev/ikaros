@@ -368,7 +368,7 @@ module:
           group: Group
           sequence: Sequence
           name: Name
-          name_cn: NamecCN
+          name_cn: NameCN
           air_time: Air Time
           description: Description
       date-picker:
@@ -438,6 +438,15 @@ module:
             pull: Pull
     relaction:
       title: Subject Relactions
+      drawer:
+        delete:
+          title: Subject Select
+          table:
+            label:
+              id: ID
+              name: Name
+              name_cn: NameCN
+              type: Type
     dialog:
       episode:
         details:
