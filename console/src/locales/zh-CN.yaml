@@ -302,6 +302,42 @@ module:
       title: 条目详情
     relaction:
       title: 条目关系
+    dialog:
+      episode:
+        details:
+          title: 剧集详情
+          message:
+            operate:
+              remove-episode-all-att-refs:
+                waring: 操作无效，您当前剧集并未绑定资源文件
+                success: 移除剧集所有附件绑定成功
+              remove-episode-att-ref:
+                success: 移除剧集单个附件绑定成功
+              match-single-episode-attachment:
+                success: 单个剧集和附件匹配成功
+              batch-match-episode-atts:
+                success: 批量匹单个剧集和多资源成功
+          hint:
+            video: 
+              unsuport: 您的浏览器不支持这个格式的视频
+              not_video: 当前资源文件非视频文件、或者不可读取
+            no_bind: 当前剧集暂未绑定资源文件
+          label:
+            name: 原始名称
+            name_cn: 中文名称
+            air_time: 放送时间
+            sequence: 序列号
+            description: 描述
+            resources: 资源
+          popconfirm:
+            title: 确定移除绑定吗？
+          footer:
+            button:
+              add-bind: 添加绑定
+            popconfirm:
+              title: 此操作会移除当前剧集所有资源绑定，确定移除绑定吗？
+              button:
+                remove-all-binds: 移除所有绑定
 
   plugin:
     title: 插件

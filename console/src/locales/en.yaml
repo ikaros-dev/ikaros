@@ -304,6 +304,43 @@ module:
       title: Subject Details
     relaction:
       title: Subject Relactions
+    dialog:
+      episode:
+        details:
+          title: Episode Details
+          message:
+            operate:
+              remove-episode-all-att-refs:
+                waring: Invalid operation, the current episode is not bound to any resource files
+                success: Successfully removed all attachment bindings of the episode
+              remove-episode-att-ref:
+                success: Successfully removed a single attachment binding of the episode
+              match-single-episode-attachment:
+                success: Successfully matched a single episode with an attachment
+              batch-match-episode-atts:
+                success: Successfully batch matched a single episode with multiple resources
+          hint:
+            video: 
+              unsuport: Your browser does not support this video format
+              not_video: The current resource file is not a video file or is unreadable
+            no_bind: The current episode is not bound to any resource files
+          label:
+            name: Original Name
+            name_cn: Chinese Name
+            air_time: Air Time
+            sequence: Sequence
+            description: Description
+            resources: Resources
+          popconfirm:
+            title: Are you sure you want to remove the binding?
+          footer:
+            button:
+              add-bind: Add Binding
+            popconfirm:
+              title: This operation will remove all resource bindings of the current episode. Are you sure you want to remove the bindings?
+              button:
+                remove-all-binds: Remove All Bindings
+
 
   plugin:
     title: Plugins
