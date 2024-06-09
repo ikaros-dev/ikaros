@@ -158,7 +158,7 @@ async function loadPluginModules() {
 				}
 			} catch (e) {
 				const message = i18n.global.t(
-					'core.plugin.loader.message.entry_load_failed',
+					'module.plugin.loader.message.entry_load_failed',
 					// @ts-ignore
 					{ name: plugin.name }
 				);
@@ -172,7 +172,7 @@ async function loadPluginModules() {
 				await loadStyle(`${import.meta.env.VITE_API_URL}${stylesheet}`);
 			} catch (e) {
 				const message = i18n.global.t(
-					'core.plugin.loader.message.style_load_failed',
+					'module.plugin.loader.message.style_load_failed',
 					// @ts-ignore
 					{ name: plugin.name }
 				);
