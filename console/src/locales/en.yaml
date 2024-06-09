@@ -762,6 +762,119 @@ module:
       titles:
         upgrade: Upgade plugin
         install: Install plugin
+    label:
+      state:
+        all: Status
+        started: Started
+        stopped: Stopped
+        disabled: Disabled
+        created: Created
+        resolved: Resolved
+        failed: Failed
+    operate:
+      plugin:
+        start:
+          confirm:
+            title: Are you sure you want to start the plugin?
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Start plugin [{name}] success
+          cancel: Cancelled
+        stop:
+          confirm:
+            title: Are you sure you want to stop the plugin?
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Stop plugin [{name}] success
+          cancel: Cancelled
+        enable:
+          confirm:
+            title: Are you sure you want to enable the plugin?
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Enable plugin [{name}] success
+          cancel: Cancelled
+        disable:
+          confirm:
+            title: >-
+              Are you sure you want to disable the plugin?after it is disabled,
+              you must enable it before starting it.
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Disable plugin [{name}] success
+          cancel: Cancelled
+        reload:
+          confirm:
+            title: >-
+              Are you sure you want to reload the plugin? it start automatically
+              after reload.
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Reload plugin [{name}] success
+          cancel: Cancelled
+        reload-all:
+          confirm:
+            title: >-
+              Are you sure you want to reload all plugins? it start
+              automatically after reload.
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Reload all plugins success
+          cancel: Cancelled
+        delete:
+          confirm:
+            title: Are you sure you want to delete the plugin?
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Delete plugin [{name}] success
+          cancel: Cancelled
+        upgrade:
+          confirm:
+            title: Are you sure you want to delete the plugin?
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Delete plugin [{name}] success
+          cancel: Cancelled
+    search:
+      placeholder:
+        name: Enter plugin name
+      button:
+        reload-all: ReloadAll
+        install-plugin: Install
+      dropdown:
+        all: All
+        started: Started
+        stoppedd: Stopped
+        resolved: Resolved
+        disabled: Disabled
+        created: Created
+        failed: Failed
+    table:
+      label:
+        icon: Icon
+        name: Name
+        author: Author
+        description: Description
+        state: State
+        operate: Operate
+      operate:
+        details: Details
+        start: Start
+        stop: Stop
+        enable: Enable
+        disable: Disable
+        reload: Reload
+        upgrade: Upgrade
+        delete: Delete
+        reset: Reset
   setting:
     title: Settings
     sidebar: Settings

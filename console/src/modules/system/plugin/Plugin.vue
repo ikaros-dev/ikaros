@@ -26,6 +26,9 @@ import {
 	ElTableColumn,
 } from 'element-plus';
 import router from '@/router';
+import { useI18n } from 'vue-i18n';
+
+const {t} = useI18n();
 
 interface PluginSearch {
 	page: number;
@@ -39,8 +42,7 @@ interface PluginSearch {
 	state: string;
 }
 
-const defaultPluginLogoUrl =
-	'https://gss0.baidu.com/7Po3dSag_xI4khGko9WTAnF6hhy/zhidao/pic/item/e7cd7b899e510fb3f001a7d2db33c895d1430c5f.jpg';
+const defaultPluginLogoUrl = 'https://ikaros.run/logo.png';
 
 const pluginSearch = ref<PluginSearch>({
 	page: 1,
@@ -57,13 +59,13 @@ const onCurrentPageChange = (val: number) => {
 
 // eslint-disable-next-line no-unused-vars
 const stateStrMap: Map<string, string> = new Map([
-	['ALL', '状态'],
-	['STARTED', '启动'],
-	['STOPPED', '停用'],
-	['CREATED', '启用'],
-	['DISABLED', '已禁用'],
-	['RESOLVED', '就绪'],
-	['FAILED', '失败'],
+	['ALL', t('module.plugin.label.state.all')],
+	['STARTED', t('module.plugin.label.state.started')],
+	['STOPPED', t('module.plugin.label.state.stopped')],
+	['CREATED', t('module.plugin.label.state.created')],
+	['DISABLED', t('module.plugin.label.state.disabled')],
+	['RESOLVED', t('module.plugin.label.state.resolved')],
+	['FAILED', t('module.plugin.label.state.failed')],
 ]);
 
 const onPluginSearchStateChange = (command: string | number | object) => {
@@ -96,9 +98,9 @@ const delegationPluginStateOperator = async (
 };
 
 const startPlugin = async (pluginName: string | undefined) => {
-	ElMessageBox.confirm('您确定要启动插件吗?', '警告', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
+	ElMessageBox.confirm(t('module.plugin.operate.plugin.start.confirm.title'), t('module.plugin.operate.plugin.start.confirm.warning'), {
+		confirmButtonText: t('module.plugin.operate.plugin.start.confirm.confirm'),
+		cancelButtonText: t('module.plugin.operate.plugin.start.confirm.cancel'),
 		type: 'warning',
 	})
 		.then(() => {
@@ -107,7 +109,7 @@ const startPlugin = async (pluginName: string | undefined) => {
 				operate: 'START',
 			})
 				.then(() => {
-					ElMessage.success('启动插件[' + pluginName + ']成功');
+					ElMessage.success(t('module.plugin.operate.plugin.start.success', {name: pluginName}));
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -118,15 +120,15 @@ const startPlugin = async (pluginName: string | undefined) => {
 		.catch(() => {
 			ElMessage({
 				type: 'info',
-				message: '已取消',
+				message: t('module.plugin.operate.plugin.start.cancel'),
 			});
 		});
 };
 
 const stopPlugin = (pluginName: string | undefined) => {
-	ElMessageBox.confirm('您确定要停止插件吗?', '警告', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
+	ElMessageBox.confirm(t('module.plugin.operate.plugin.stop.confirm.title'), t('module.plugin.operate.plugin.stop.confirm.warning'), {
+		confirmButtonText: t('module.plugin.operate.plugin.stop.confirm.confirm'),
+		cancelButtonText: t('module.plugin.operate.plugin.stop.confirm.cancel'),
 		type: 'warning',
 	})
 		.then(() => {
@@ -135,7 +137,7 @@ const stopPlugin = (pluginName: string | undefined) => {
 				operate: 'STOP',
 			})
 				.then(() => {
-					ElMessage.success('停止插件[' + pluginName + ']成功');
+					ElMessage.success(t('module.plugin.operate.plugin.stop.success', {name: pluginName}));
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -146,15 +148,15 @@ const stopPlugin = (pluginName: string | undefined) => {
 		.catch(() => {
 			ElMessage({
 				type: 'info',
-				message: '已取消',
+				message: t('module.plugin.operate.plugin.stop.cancel'),
 			});
 		});
 };
 
 const enablePlugin = (pluginName: string | undefined) => {
-	ElMessageBox.confirm('您确定要启用插件吗?', '警告', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
+	ElMessageBox.confirm(t('module.plugin.operate.plugin.enable.confirm.title'), t('module.plugin.operate.plugin.enable.confirm.warning'), {
+		confirmButtonText: t('module.plugin.operate.plugin.enable.confirm.confirm'),
+		cancelButtonText: t('module.plugin.operate.plugin.enable.confirm.cancel'),
 		type: 'warning',
 	})
 		.then(() => {
@@ -163,7 +165,7 @@ const enablePlugin = (pluginName: string | undefined) => {
 				operate: 'ENABLE',
 			})
 				.then(() => {
-					ElMessage.success('启用插件[' + pluginName + ']成功');
+					ElMessage.success(t('module.plugin.operate.plugin.enable.success', {name: pluginName}));
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -174,28 +176,24 @@ const enablePlugin = (pluginName: string | undefined) => {
 		.catch(() => {
 			ElMessage({
 				type: 'info',
-				message: '已取消',
+				message: t('module.plugin.operate.plugin.enable.cancel'),
 			});
 		});
 };
 
 const disablePlugin = (pluginName: string | undefined) => {
-	ElMessageBox.confirm(
-		'您确定要禁用插件吗? 禁用后不可直接启动，需要先进行启用再启动。',
-		'警告',
-		{
-			confirmButtonText: '确定',
-			cancelButtonText: '取消',
-			type: 'warning',
-		}
-	)
+	ElMessageBox.confirm(t('module.plugin.operate.plugin.disable.confirm.title'), t('module.plugin.operate.plugin.disable.confirm.warning'), {
+		confirmButtonText: t('module.plugin.operate.plugin.disable.confirm.confirm'),
+		cancelButtonText: t('module.plugin.operate.plugin.disable.confirm.cancel'),
+		type: 'warning',
+	})
 		.then(() => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'DISABLE',
 			})
 				.then(() => {
-					ElMessage.success('禁用插件[' + pluginName + ']成功');
+					ElMessage.success(t('module.plugin.operate.plugin.disable.success', {name: pluginName}));
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -206,15 +204,15 @@ const disablePlugin = (pluginName: string | undefined) => {
 		.catch(() => {
 			ElMessage({
 				type: 'info',
-				message: '已取消',
+				message: t('module.plugin.operate.plugin.disable.cancel'),
 			});
 		});
 };
 
 const reloadPlugin = (pluginName: string | undefined) => {
-	ElMessageBox.confirm('您确定要重载插件吗? ', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
+	ElMessageBox.confirm(t('module.plugin.operate.plugin.reload.confirm.title'), t('module.plugin.operate.plugin.reload.confirm.warning'), {
+		confirmButtonText: t('module.plugin.operate.plugin.reload.confirm.confirm'),
+		cancelButtonText: t('module.plugin.operate.plugin.reload.confirm.cancel'),
 		type: 'warning',
 	})
 		.then(() => {
@@ -223,7 +221,7 @@ const reloadPlugin = (pluginName: string | undefined) => {
 				operate: 'RELOAD',
 			})
 				.then(() => {
-					ElMessage.success('重载插件[' + pluginName + ']成功');
+					ElMessage.success(t('module.plugin.operate.plugin.reload.success', {name: pluginName}));
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -234,15 +232,15 @@ const reloadPlugin = (pluginName: string | undefined) => {
 		.catch(() => {
 			ElMessage({
 				type: 'info',
-				message: '已取消',
+				message: t('module.plugin.operate.plugin.reload.cancel'),
 			});
 		});
 };
 
 const reloadAllPlugin = () => {
-	ElMessageBox.confirm('您确定要重载所有插件吗? 重载后会自动启动。', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
+	ElMessageBox.confirm(t('module.plugin.operate.plugin.reload-all.confirm.title'), t('module.plugin.operate.plugin.reload-all.confirm.warning'), {
+		confirmButtonText: t('module.plugin.operate.plugin.reload-all.confirm.confirm'),
+		cancelButtonText: t('module.plugin.operate.plugin.reload-all.confirm.cancel'),
 		type: 'warning',
 	})
 		.then(() => {
@@ -251,7 +249,7 @@ const reloadAllPlugin = () => {
 				operate: 'RELOAD_ALL',
 			})
 				.then(() => {
-					ElMessage.success('重载所有插件成功');
+					ElMessage.success(t('module.plugin.operate.plugin.reload-all.success'));
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -262,15 +260,15 @@ const reloadAllPlugin = () => {
 		.catch(() => {
 			ElMessage({
 				type: 'info',
-				message: '已取消',
+				message: t('module.plugin.operate.plugin.reload-all.cancel'),
 			});
 		});
 };
 
 const deletePlugin = (pluginName: string | undefined) => {
-	ElMessageBox.confirm('您确定要删除插件吗? ', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
+	ElMessageBox.confirm(t('module.plugin.operate.plugin.delete.confirm.title'), t('module.plugin.operate.plugin.delete.confirm.warning'), {
+		confirmButtonText: t('module.plugin.operate.plugin.delete.confirm.confirm'),
+		cancelButtonText: t('module.plugin.operate.plugin.delete.confirm.cancel'),
 		type: 'warning',
 	})
 		.then(() => {
@@ -279,7 +277,7 @@ const deletePlugin = (pluginName: string | undefined) => {
 				operate: 'DELETE',
 			})
 				.then(() => {
-					ElMessage.success('删除插件[' + pluginName + ']成功');
+					ElMessage.success(t('module.plugin.operate.plugin.delete.success', {name: pluginName}));
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -290,16 +288,16 @@ const deletePlugin = (pluginName: string | undefined) => {
 		.catch(() => {
 			ElMessage({
 				type: 'info',
-				message: '已取消',
+				message: t('module.plugin.operate.plugin.delete.cancel'),
 			});
 		});
 };
 
 // eslint-disable-next-line no-unused-vars
 const upgradePlugin = (plugin: Plugin) => {
-	ElMessageBox.confirm('您确定要升级插件吗? ', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
+	ElMessageBox.confirm(t('module.plugin.operate.plugin.upgrade.confirm.title'), t('module.plugin.operate.plugin.upgrade.confirm.warning'), {
+		confirmButtonText: t('module.plugin.operate.plugin.upgrade.confirm.confirm'),
+		cancelButtonText: t('module.plugin.operate.plugin.upgrade.confirm.cancel'),
 		type: 'warning',
 	})
 		.then(() => {
@@ -310,7 +308,7 @@ const upgradePlugin = (plugin: Plugin) => {
 		.catch(() => {
 			ElMessage({
 				type: 'info',
-				message: '已取消',
+				message: t('module.plugin.operate.plugin.upgrade.cancel'),
 			});
 		});
 };
@@ -343,7 +341,7 @@ onMounted(getPluginsFromServer);
 				v-model="pluginSearch.name"
 				style="width: 100%"
 				size="large"
-				placeholder="请输入插件名称"
+				:placeholder="t('module.plugin.search.placeholder.name')"
 				:prefix-icon="Search"
 				disabled
 			/>
@@ -370,10 +368,13 @@ onMounted(getPluginsFromServer);
 			:xl="8"
 			style="text-align: right"
 		>
-			<el-button plain @click="reloadAllPlugin">重载所有</el-button>
+			<el-button plain @click="reloadAllPlugin">
+				{{ t('module.plugin.search.button.reload-all') }}
+			</el-button>
 
 			<el-button plain @click="pluginUploadDrawerVisible = true"
-				>安装插件
+				>
+				{{ t('module.plugin.search.button.install-plugin') }}
 			</el-button>
 
 			&nbsp;&nbsp;
@@ -397,24 +398,26 @@ onMounted(getPluginsFromServer);
 				</span>
 				<template #dropdown>
 					<el-dropdown-menu>
-						<el-dropdown-item command="ALL" disabled> 全部</el-dropdown-item>
+						<el-dropdown-item command="ALL" disabled> 
+							{{ t('module.plugin.search.dropdown.all') }}
+						</el-dropdown-item>
 						<el-dropdown-item command="STARTED" disabled>
-							启用
+							{{ t('module.plugin.search.dropdown.started') }}
 						</el-dropdown-item>
 						<el-dropdown-item command="STOPPED" disabled>
-							停用
+							{{ t('module.plugin.search.dropdown.stoppedd') }}
 						</el-dropdown-item>
 						<el-dropdown-item command="RESOLVED" disabled>
-							就绪
+							{{ t('module.plugin.search.dropdown.resolved') }}
 						</el-dropdown-item>
 						<el-dropdown-item command="DISABLED" disabled>
-							禁用
+							{{ t('module.plugin.search.dropdown.disabled') }}
 						</el-dropdown-item>
 						<el-dropdown-item command="CREATED" disabled>
-							创建
+							{{ t('module.plugin.search.dropdown.created') }}
 						</el-dropdown-item>
 						<el-dropdown-item command="FAILED" disabled>
-							失败
+							{{ t('module.plugin.search.dropdown.failed') }}
 						</el-dropdown-item>
 					</el-dropdown-menu>
 				</template>
@@ -423,7 +426,7 @@ onMounted(getPluginsFromServer);
 	</el-row>
 
 	<el-table :data="plugins" style="width: 100%">
-		<el-table-column prop="logo" label="图标" width="80">
+		<el-table-column prop="logo" :label="t('module.plugin.table.label.icon')" width="80">
 			<template #default="scope">
 				<el-avatar
 					shape="square"
@@ -434,8 +437,8 @@ onMounted(getPluginsFromServer);
 		</el-table-column>
 
 		<el-table-column prop="name" label="ID" width="150" />
-		<el-table-column prop="displayName" label="名称" width="150" />
-		<el-table-column prop="author.name" label="作者" width="200">
+		<el-table-column prop="displayName" :label="t('module.plugin.table.label.name')" width="150" />
+		<el-table-column prop="author.name" :label="t('module.plugin.table.label.author')" width="200">
 			<template #default="scope">
 				<a
 					v-if="scope?.row?.author?.website"
@@ -447,13 +450,13 @@ onMounted(getPluginsFromServer);
 				<span v-else>{{ scope.row.author.name }}</span>
 			</template>
 		</el-table-column>
-		<el-table-column prop="description" label="描述" />
-		<el-table-column prop="state" label="状态" align="right" width="100">
+		<el-table-column prop="description" :label="t('module.plugin.table.label.description')" />
+		<el-table-column prop="state" :label="t('module.plugin.table.label.state')" align="right" width="100">
 			<template #default="scope">
 				{{ stateStrMap.get(scope.row.state) }}
 			</template>
 		</el-table-column>
-		<el-table-column align="right" label="操作" width="55">
+		<el-table-column align="right" :label="t('module.plugin.table.label.operate')" width="80">
 			<template #default="scope">
 				<el-dropdown style="cursor: pointer" trigger="click">
 					<el-icon size="30">
@@ -462,21 +465,21 @@ onMounted(getPluginsFromServer);
 					<template #dropdown>
 						<el-dropdown-menu>
 							<el-dropdown-item @click="toPluginDetails(scope.row.name)">
-								详情</el-dropdown-item
-							>
+								{{ t('module.plugin.table.operate.details') }}
+							</el-dropdown-item>
 							<el-dropdown-item
 								divided
 								:disabled="scope.row.state === 'STARTED'"
 								@click="startPlugin(scope.row.name)"
 							>
-								启动
+							{{ t('module.plugin.table.operate.start') }}
 							</el-dropdown-item>
 
 							<el-dropdown-item
 								:disabled="scope.row.state === 'STOPPED'"
 								@click="stopPlugin(scope.row.name)"
 							>
-								停止
+							{{ t('module.plugin.table.operate.stop') }}
 							</el-dropdown-item>
 
 							<el-dropdown-item
@@ -484,31 +487,31 @@ onMounted(getPluginsFromServer);
 								:disabled="scope.row.state !== 'DISABLED'"
 								@click="enablePlugin(scope.row.name)"
 							>
-								启用
+							{{ t('module.plugin.table.operate.enable') }}
 							</el-dropdown-item>
 
 							<el-dropdown-item
 								:disabled="scope.row.state === 'DISABLED'"
 								@click="disablePlugin(scope.row.name)"
 							>
-								禁用
+							{{ t('module.plugin.table.operate.disable') }}
 							</el-dropdown-item>
 
 							<el-dropdown-item divided @click="reloadPlugin(scope.row.name)">
-								重载
+								{{ t('module.plugin.table.operate.reload') }}
 							</el-dropdown-item>
 							<el-dropdown-item @click="upgradePlugin(scope.row)">
-								升级</el-dropdown-item
-							>
+								{{ t('module.plugin.table.operate.upgrade') }}
+							</el-dropdown-item>
 							<el-dropdown-item
 								style="width: 170; color: red"
 								divided
 								@click="deletePlugin(scope.row.name)"
 							>
-								卸载
+							{{ t('module.plugin.table.operate.delete') }}
 							</el-dropdown-item>
 							<el-dropdown-item style="width: 170; color: red" disabled>
-								重置
+								{{ t('module.plugin.table.operate.reset') }}
 							</el-dropdown-item>
 						</el-dropdown-menu>
 					</template>
