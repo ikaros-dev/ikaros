@@ -623,7 +623,7 @@ module:
         message:
           form-hint-nouse: 暂无可用的远端，请开启相关的插件并启动，比如百度网盘的插件。
           operate:
-            request-remote: 
+            request-remote:
               success: 提交成功
               validate-fail: 请检查所填内容是否有必要项缺失。
       sync:
@@ -644,7 +644,7 @@ module:
         message:
           validate-fail: 请检查所填内容是否有必要项缺失。
           form-rule:
-            platform: 
+            platform:
               required: 请选择同步的平台
             platform-id:
               required: 请输入同步平台的条目ID
@@ -724,6 +724,22 @@ module:
     sidebar: 插件
     details:
       title: 插件详情
+      label:
+        id: ID
+        version: 版本
+        name: 名称
+        description: 描述
+        author: 作者
+        required: 系统版本前提
+        homepage: 主页
+        license: 许可证
+        entry: 入口
+        logo: LOGO
+        tab-basic: 基本设置
+        formkit-submit: 保存
+      message:
+        operate:
+          update-config-map: 更新配置成功
     loader:
       message:
         entry_load_failed: '{name}：加载插件入口附件失败'
@@ -732,6 +748,9 @@ module:
       titles:
         upgrade: 升级插件
         install: 安装插件
+      message:
+        operate:
+          upgrade: 升级成功
     label:
       state:
         all: 状态
@@ -793,7 +812,7 @@ module:
           success: 重载所有插件成功
         delete:
           confirm:
-            title: 您确定要删除插件吗? 
+            title: 您确定要删除插件吗?
             warning: 警告
             confirm: 确定
             cancel: 取消
@@ -801,7 +820,7 @@ module:
           success: 删除插件[{name}]成功
         upgrade:
           confirm:
-            title: 您确定要升级插件吗? 
+            title: 您确定要升级插件吗?
             warning: 警告
             confirm: 确定
             cancel: 取消
@@ -841,3 +860,48 @@ module:
   setting:
     title: 设置
     sidebar: 设置
+    button:
+      save: 保存
+    label:
+      tab:
+        pane:
+          mail-config: 邮件配置
+        item:
+          enable-mail: 启用邮件
+          switch:
+            active: 启用
+            inactive: 禁用
+          mail:
+            protocol: 协议
+            smtp:
+              host: 服务器地址
+              port: 服务器端口
+              account: 邮件服务账户名
+              password: 邮件服务密码
+              alias: 邮件服务别名
+              receive-address: 收件方地址
+    placeholder:
+      smtp:
+        host: 请输入邮件服务器地址
+        port: 请输入邮件服务器端口
+        account: 请输入邮件服务用户名
+        password: 请输入邮件服务密码
+        alias: 请输入邮件服务用户名别名
+        receive-address: 请输入收件方邮件地址
+    message:
+      operate:
+        update: 更新成功
+      form-rule:
+        site-title:
+          required: 请输入有效的站点标题
+          length: 长度应该在3到15个字符内
+        mail-smtp-host:
+          required: 请输入服务器地址
+        mail-smtp-port:
+          required: 请输入邮件服务器端口
+        mail-smtp-account:
+          required: 请输入邮件服务用户名
+        mail-smtp-password:
+          required: 请输入邮件服务密码
+        mail-receive-address:
+          required: 请输入收件方邮件地址

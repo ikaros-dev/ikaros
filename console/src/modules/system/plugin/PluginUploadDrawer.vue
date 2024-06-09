@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { i18n } from '@/locales';
 import type { Plugin } from '@runikaros/api-client';
 import { ErrorResponse } from '@uppy/core';
 import { computed, ref, watch } from 'vue';
 import { ElMessage, ElDrawer } from 'element-plus';
 import UppyUpload from '@/components/upload/UppyUpload.vue';
+import { useI18n } from 'vue-i18n';
 
-const t = i18n.global.t;
+const {t} = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -33,12 +33,12 @@ const drawerVisible = ref(false);
 
 const modalTitle = computed(() => {
 	return props.upgradePlugin && props.upgradePlugin.name
-		? t('core.plugin.upload_modal.titles.upgrade', {
+		? t('module.plugin.upload_modal.titles.upgrade', {
 				display_name: props.upgradePlugin.displayName
 					? props.upgradePlugin.displayName
 					: props.upgradePlugin.name,
 		  })
-		: t('core.plugin.upload_modal.titles.install');
+		: t('module.plugin.upload_modal.titles.install');
 });
 
 const handleVisibleChange = (visible: boolean) => {
@@ -78,7 +78,7 @@ const handleClose = (done: () => void) => {
 
 const onUploaded = async () => {
 	if (props.upgradePlugin && props.upgradePlugin.name) {
-		ElMessage.success('升级成功');
+		ElMessage.success(t('module.plugin.upload_modal.message.operate.upgrade'));
 		window.location.reload();
 		return;
 	}

@@ -754,6 +754,22 @@ module:
     sidebar: Plugins
     details:
       title: Plugin Details
+      message:
+        operate:
+          update-config-map: Update config map success
+      label:
+        id: ID
+        version: Version
+        name: Name
+        description: Description
+        author: Author
+        required: Required
+        homepage: Homepage
+        license: License
+        entry: Entry
+        logo: LOGO
+        tab-basic: Basic Config
+        formkit-submit: Save
     loader:
       message:
         entry_load_failed: '{name}: Failed to load plugin entry file'
@@ -762,6 +778,9 @@ module:
       titles:
         upgrade: Upgade plugin
         install: Install plugin
+      message:
+        operate:
+          upgrade: Upgrade Success
     label:
       state:
         all: Status
@@ -878,3 +897,48 @@ module:
   setting:
     title: Settings
     sidebar: Settings
+    message:
+      form-rule:
+        site-title:
+          required: Please enter a valid site title
+          length: The length should be between 3 and 15 char
+        mail-smtp-host:
+          required: Mail SMTP Host
+        mail-smtp-port:
+          required: Mail SMTP Port
+        mail-smtp-account:
+          required: Mail SMTP Account
+        mail-smtp-password:
+          required: Mail SMTP Password
+        mail-receive-address:
+          required: Mail Receive Address
+      operate:
+        update: Update Setting Success
+    label:
+      tab:
+        pane:
+          mail-config: Mail Config
+        item:
+          enable-mail: Enable Mail
+          switch:
+            active: Enable
+            inactive: Disable
+          mail:
+            protocol: Protocol
+            smtp:
+              host: SMTP Host
+              port: SMTP Port
+              account: SMTP Account
+              password: SMTP Password
+              alias: SMTP Account Alias
+              receive-address: Receive Mail Address
+    button:
+      save: Save
+    placeholder:
+      smtp:
+        host: Mail SMTP Address
+        port: SMTP Mail Port
+        account: SMTP Mail Account
+        password: SMTP Password
+        alias: SMTP Account Alias
+        receive-address: Recive Mail Address
