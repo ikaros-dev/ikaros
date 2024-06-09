@@ -70,11 +70,11 @@ const filePondUploadRef = ref(null);
 const handleClose = (done: () => void) => {
 	// console.log('firstFile', firstFile);
 	ElMessageBox.confirm(
-		t('core.file.drawer.upload.closeConfirm.message'),
-		t('core.file.drawer.upload.closeConfirm.title'),
+		t('module.attachment.drawer.fragment-upload.confirm.message'),
+		t('module.attachment.drawer.fragment-upload.confirm.title'),
 		{
-			confirmButtonText: t('core.file.drawer.upload.closeConfirm.confirm'),
-			cancelButtonText: t('core.file.drawer.upload.closeConfirm.cancel'),
+			confirmButtonText: t('module.attachment.drawer.fragment-upload.confirm.confirm'),
+			cancelButtonText: t('module.attachment.drawer.fragment-upload.confirm.cancel'),
 			type: 'warning',
 		}
 	)
@@ -88,7 +88,7 @@ const handleClose = (done: () => void) => {
 			handleVisibleChange(false);
 		})
 		.catch(() => {
-			ElMessage.warning(t('core.file.drawer.upload.closeConfirm.hintMsg'));
+			ElMessage.warning(t('module.attachment.drawer.fragment-upload.confirm.hintMsg'));
 		});
 };
 
@@ -102,14 +102,14 @@ const uploadHandler = (file, onUploadProgress) => {
 <template>
 	<el-drawer
 		v-model="drawerVisible"
-		title="上传文件"
+		:title="t('module.attachment.drawer.fragment-upload.title')"
 		direction="rtl"
 		:before-close="handleClose"
 		size="40%"
 	>
 		<template #header>
 			<div align="center">
-				<h4>{{ t('core.file.drawer.upload.title') }}</h4>
+				<h4>{{ t('module.attachment.drawer.fragment-upload.title') }}</h4>
 			</div>
 		</template>
 		<template #default>

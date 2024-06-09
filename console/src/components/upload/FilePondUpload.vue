@@ -103,7 +103,7 @@ defineExpose({
 		:allowImagePreview="true"
 		:allowRevert="false"
 		:files="fileList"
-		:label-idle="t('components.upload.file-pond-upload.mainLabel')"
+		:label-idle="t('component.upload.file-pond-upload.mainLabel')"
 		:maxFiles="100"
 		:maxParallelUploads="5"
 		:name="props.name"
@@ -112,21 +112,21 @@ defineExpose({
 		:chunkSize="props.chunkSize"
 		:chunkForce="props.enableChunkForce"
 		fileValidateTypeLabelExpectedTypes="请选择 {lastType} 格式的文件"
-		:labelFileProcessing="t('components.upload.file-pond-upload.uploadding')"
+		:labelFileProcessing="t('component.upload.file-pond-upload.uploadding')"
 		:labelFileProcessingAborted="
-			t('components.upload.file-pond-upload.cancelUpload')
+			t('component.upload.file-pond-upload.cancelUpload')
 		"
 		:labelFileProcessingComplete="
-			t('components.upload.file-pond-upload.uploadFinish')
+			t('component.upload.file-pond-upload.uploadFinish')
 		"
 		:labelFileProcessingError="
-			t('components.upload.file-pond-upload.uploadException')
+			t('component.upload.file-pond-upload.uploadException')
 		"
 		:labelFileTypeNotAllowed="
-			t('components.upload.file-pond-upload.notSupportFileFormat')
+			t('component.upload.file-pond-upload.notSupportFileFormat')
 		"
-		:labelTapToCancel="t('components.upload.file-pond-upload.clickCancel')"
-		:labelTapToRetry="t('components.upload.file-pond-upload.clickRetry')"
+		:labelTapToCancel="t('component.upload.file-pond-upload.clickCancel')"
+		:labelTapToRetry="t('component.upload.file-pond-upload.clickRetry')"
 		@init="handleFilePondInit"
 	>
 	</file-pond>

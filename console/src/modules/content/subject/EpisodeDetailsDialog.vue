@@ -19,6 +19,9 @@ import { AttachmentReferenceTypeEnum } from '@runikaros/api-client';
 import { isVideo } from '@/utils/file';
 import { Close, Plus } from '@element-plus/icons-vue';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
+import { useI18n } from 'vue-i18n';
+
+const {t} = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -69,7 +72,7 @@ const removeEpisodeAllAttachmentRefs = async () => {
 		!episode.value.resources ||
 		episode.value.resources.length === 0
 	) {
-		ElMessage.warning('操作无效，您当前剧集并未绑定资源文件');
+		ElMessage.warning(t('module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.waring'));
 		return;
 	}
 	await episode.value.resources.forEach(async (resouce) => {
@@ -81,7 +84,7 @@ const removeEpisodeAllAttachmentRefs = async () => {
 			},
 		});
 	});
-	ElMessage.success('移除剧集所有附件绑定成功');
+	ElMessage.success(t('module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.success'));
 	dialogVisible.value = false;
 	emit('removeEpisodeFilesBind');
 };
@@ -96,7 +99,7 @@ const removeEpisodeAttachmentRef = async (attachmentId) => {
 			referenceId: episode.value.id,
 		},
 	});
-	ElMessage.success('移除剧集单个附件绑定成功');
+	ElMessage.success(t('module.subject.dialog.episode.details.message.operate.remove-episode-att-ref.success'));
 	await fetchEpisodeResources();
 };
 
@@ -127,7 +130,7 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 			referenceId: currentOperateEpisode.value?.id as number,
 		},
 	});
-	ElMessage.success('单个剧集和附件匹配成功');
+	ElMessage.success(t('module.subject.dialog.episode.details.message.operate.match-single-episode-attachment.success'));
 	await fetchEpisodeResources();
 };
 const onCloseWithAttachments = async (attachments: Attachment[]) => {
@@ -153,7 +156,7 @@ const delegateBatchMatchingEpisode = async (
 			},
 		})
 		.then(() => {
-			ElMessage.success('批量匹单个剧集和多资源成功');
+			ElMessage.success(t('module.subject.dialog.episode.details.message.operate.batch-match-episode-atts.success'));
 		})
 		.finally(() => {
 			batchMatchingEpisodeButtonLoading.value = false;
@@ -187,24 +190,24 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 		v-model:visible="attachmentMultiSelectDialogVisible"
 		@close-with-attachments="onCloseWithAttachments"
 	/>
-	<el-dialog v-model="dialogVisible" title="剧集详情" width="70%">
+	<el-dialog v-model="dialogVisible" :title="t('module.subject.dialog.episode.details.title')" width="70%">
 		<el-descriptions border :column="1">
-			<el-descriptions-item label="原始名称">
+			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.name')">
 				{{ episode?.name }}
 			</el-descriptions-item>
-			<el-descriptions-item label="中文名称">
+			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.name_cn')">
 				{{ episode?.name_cn }}
 			</el-descriptions-item>
-			<el-descriptions-item label="放送时间">
+			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.air_time')">
 				{{ episode?.air_time }}
 			</el-descriptions-item>
-			<el-descriptions-item label="序列号">
+			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.sequence')">
 				{{ episode?.sequence }}
 			</el-descriptions-item>
-			<el-descriptions-item label="描述">
+			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.description')">
 				{{ episode?.description }}
 			</el-descriptions-item>
-			<el-descriptions-item label="资源">
+			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.resources')">
 				<div v-if="episode?.resources && episode?.resources.length > 0">
 					<div v-if="!props.multiResource" align="center">
 						<router-link
@@ -225,10 +228,10 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 							controls
 							preload="metadata"
 						>
-							您的浏览器不支持这个格式的视频
+							{{t('module.subject.dialog.episode.details.hint.video.unsuport')}}
 						</video>
 						<span v-else>
-							当前资源文件非视频文件、或者不可读取，如是视频文件且需读取，请先从远端拉取。
+							{{t('module.subject.dialog.episode.details.hint.video.not_video')}}
 						</span>
 					</div>
 					<el-row v-else :gutter="12" :span="24">
@@ -253,8 +256,8 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 								</router-link>
 								<span style="float: right">
 									<el-popconfirm
-										title="确定移除绑定吗？"
-										width="150"
+										:title="t('module.subject.dialog.episode.details.popconfirm.title')"
+										width="250"
 										@confirm="removeEpisodeAttachmentRef(res.attachmentId)"
 									>
 										<template #reference>
@@ -266,7 +269,7 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 						</el-col>
 					</el-row>
 				</div>
-				<span v-else> 当前剧集暂未绑定资源文件 </span>
+				<span v-else> {{ t('module.subject.dialog.episode.details.hint.no_bind') }} </span>
 			</el-descriptions-item>
 		</el-descriptions>
 
@@ -277,15 +280,17 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 				:loading="batchMatchingEpisodeButtonLoading"
 				@click="bingResources(episode)"
 			>
-				添加绑定
+				{{t('module.subject.dialog.episode.details.footer.button.add-bind')}}
 			</el-button>
 			<el-popconfirm
-				title="此操作会移除当前剧集所有资源绑定，确定移除绑定吗？"
+				:title="t('module.subject.dialog.episode.details.footer.popconfirm.title')"
 				width="280"
 				@confirm="removeEpisodeAllAttachmentRefs"
 			>
 				<template #reference>
-					<el-button plain type="danger" :icon="Close">移除所有绑定</el-button>
+					<el-button plain type="danger" :icon="Close">
+						{{ t('module.subject.dialog.episode.details.footer.popconfirm.button.remove-all-binds') }}
+					</el-button>
 				</template>
 			</el-popconfirm>
 		</template>

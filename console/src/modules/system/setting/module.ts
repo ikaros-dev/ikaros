@@ -14,9 +14,9 @@ export default definePlugin({
 				name: 'Setting',
 				component: Setting,
 				meta: {
-					title: 'core.settings.title',
+					title: 'module.setting.title',
 					menu: {
-						name: 'core.sidebar.menu.items.settings',
+						name: 'module.setting.sidebar',
 						group: 'system',
 						icon: markRaw(SettingIcon),
 						priority: 0,

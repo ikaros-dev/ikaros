@@ -11,8 +11,10 @@ import {
 	ElTabPane,
 	ElTabs,
 } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
+const {t} = useI18n();
 
 const onPluginNameUpdate = async (pluginNewName: string) => {
 	//@ts-ignore
@@ -156,14 +158,14 @@ const convertValToStr = (obj) => {
 // eslint-disable-next-line no-unused-vars
 const updateConfigMap = async () => {
 	// console.log('plugin.value.name', plugin.value.name);
-	console.log('configMap.value', configMap.value);
+	console.debug('configMap.value', configMap.value);
 	// @ts-ignore
 	configMap.value.name = plugin.value.name;
 	await apiClient.configmap.updateConfigmap({
 		name: plugin.value.name as string,
 		configMap: configMap.value,
 	});
-	ElMessage.success('更新配置成功');
+	ElMessage.success(t('module.plugin.details.message.operate.update-config-map'));
 	window.location.reload();
 };
 
@@ -174,21 +176,21 @@ onMounted(() => {
 
 <template>
 	<el-tabs>
-		<el-tab-pane label="详情">
+		<el-tab-pane :label="t('module.plugin.details.title')">
 			<el-descriptions :column="2" size="large" border>
-				<el-descriptions-item label="ID">
+				<el-descriptions-item :label="t('module.plugin.details.label.id')">
 					{{ plugin.name }}
 				</el-descriptions-item>
-				<el-descriptions-item label="版本">
+				<el-descriptions-item :label="t('module.plugin.details.label.version')">
 					{{ plugin.version }}
 				</el-descriptions-item>
-				<el-descriptions-item label="名称">
+				<el-descriptions-item :label="t('module.plugin.details.label.name')">
 					{{ plugin.displayName }}
 				</el-descriptions-item>
-				<el-descriptions-item label="描述">
+				<el-descriptions-item :label="t('module.plugin.details.label.description')">
 					{{ plugin.description }}
 				</el-descriptions-item>
-				<el-descriptions-item label="作者">
+				<el-descriptions-item :label="t('module.plugin.details.label.author')">
 					<span v-if="plugin.author?.website">
 						<a :href="plugin.author.website" target="_blank">
 							<span>{{ plugin.author?.name }}</span>
@@ -198,16 +200,16 @@ onMounted(() => {
 						<span>{{ plugin.author?.name }}</span>
 					</span>
 				</el-descriptions-item>
-				<el-descriptions-item label="系统版本前提">
+				<el-descriptions-item :label="t('module.plugin.details.label.required')">
 					{{ plugin.requires }}
 				</el-descriptions-item>
-				<el-descriptions-item label="主页">
+				<el-descriptions-item :label="t('module.plugin.details.label.homepage')">
 					<a :href="plugin.homepage" target="_blank">{{ plugin.homepage }}</a>
 				</el-descriptions-item>
-				<el-descriptions-item label="LICENSE">
+				<el-descriptions-item :label="t('module.plugin.details.label.license')">
 					{{ plugin.license }}
 				</el-descriptions-item>
-				<el-descriptions-item v-if="plugin.entry" label="Entry" :span="2">
+				<el-descriptions-item v-if="plugin.entry" :label="t('module.plugin.details.label.entry')" :span="2">
 					{{ plugin.entry }}
 				</el-descriptions-item>
 				<el-descriptions-item
@@ -217,7 +219,7 @@ onMounted(() => {
 				>
 					{{ plugin.stylesheet }}
 				</el-descriptions-item>
-				<el-descriptions-item label="LOGO" :span="2">
+				<el-descriptions-item :label="t('module.plugin.details.label.logo')" :span="2">
 					<el-image
 						style="width: 100px"
 						:src="plugin.logo as string"
@@ -229,13 +231,13 @@ onMounted(() => {
 				</el-descriptions-item>
 			</el-descriptions>
 		</el-tab-pane>
-		<el-tab-pane v-if="plugin.configMapSchemas" label="基本设置">
+		<el-tab-pane v-if="plugin.configMapSchemas" :label="t('module.plugin.details.label.tab-basic')">
 			<!-- {{ plugin.configMapSchemas }}
 			<hr />
 			{{ configMap?.data }}
 			<hr /> -->
 			<div style="padding: 5px">
-				<FormKit type="form" submit-label="保存" @submit="onSubmit">
+				<FormKit type="form" :submit-label="t('module.plugin.details.label.formkit-submit')" @submit="onSubmit">
 					<FormKitSchema
 						v-if="configMap?.data"
 						:data="configMap?.data"

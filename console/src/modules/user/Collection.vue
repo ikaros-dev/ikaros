@@ -11,10 +11,13 @@ import {
 	ElOption,
 	ElPagination,
 	ElForm,
+	ElSwitch,
 } from 'element-plus';
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
+import { useI18n } from 'vue-i18n';
 
 const userStore = useUserStore();
+const { t } = useI18n();
 
 // eslint-disable-next-line no-unused-vars
 const findSubjectCollection = ref({
@@ -49,30 +52,23 @@ onMounted(fetchCollections);
 		<el-col :xs="24" :sm="24" :md="24" :lg="20" :xl="20">
 			<el-form :inline="true" :model="findSubjectCollection">
 				<el-row :gutter="1">
-					<el-col :xs="24" :sm="24" :md="24" :lg="5" :xl="5">
-						<el-form-item label="私有" style="width: 95%">
-							<el-select
-								v-model="findSubjectCollection.isPrivate"
-								clearable
-								@change="fetchCollections"
-							>
-								<el-option label="是" value="true" />
-								<el-option label="非" value="false" />
-							</el-select>
+					<el-col :xs="24" :sm="24" :md="24" :lg="4" :xl="4">
+						<el-form-item :label="t('module.user.collection.label.private')" style="width: 95%">
+							<el-switch v-model="findSubjectCollection.isPrivate" @change="fetchCollections"/>
 						</el-form-item>
 					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="5" :xl="5">
-						<el-form-item label="收藏类型" style="width: 95%">
+					<el-col :xs="24" :sm="24" :md="24" :lg="6" :xl="6">
+						<el-form-item :label="t('module.user.collection.label.type.value')"  style="width: 95%">
 							<el-select
 								v-model="findSubjectCollection.type"
 								clearable
 								@change="fetchCollections"
 							>
-								<el-option label="想看" value="WISH" />
-								<el-option label="在看" value="DOING" />
-								<el-option label="看完" value="DONE" />
-								<el-option label="搁置" value="SHELVE" />
-								<el-option label="抛弃" value="DISCARD" />
+								<el-option  :label="t('module.user.collection.label.type.wish')"  value="WISH" />
+								<el-option :label="t('module.user.collection.label.type.doing')" value="DOING" />
+								<el-option :label="t('module.user.collection.label.type.done')" value="DONE" />
+								<el-option :label="t('module.user.collection.label.type.shelve')" value="SHELVE" />
+								<el-option :label="t('module.user.collection.label.type.discard')" value="DISCARD" />
 							</el-select>
 						</el-form-item>
 					</el-col>

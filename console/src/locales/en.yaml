@@ -1,5 +1,51 @@
 Root: Root
-components:
+common:
+  exception:
+    title: Application exception
+    network_error: API network error
+    request_parameter_error: Request parameters error
+    unauthorized: 401 Unauthorized
+    forbidden: 403 Forbidden
+    not_found: 404 Not found
+    server_internal_error_with_title: Server internal error with title
+    unknown_error_with_title: Unknow error with title
+  forbidden:
+    title: Forbidden
+  notFound:
+    title: NotFound
+  button:
+    confirm: Confirm
+    cancel: Cancel
+router:
+  title:
+    notfound: NotFound
+    forbidden: Forbidden
+  sidebar:
+    group:
+      content: Content
+      user: User
+      interface: Interface
+      system: System
+      tool: Tool
+    item:
+      dashboard: Dashboard
+      profile: Profile
+      files: Files
+      subjects: Subjects
+      plugins: Plugins
+      users: Users
+      settings: Settings
+      actuator: Actuator
+      anime: Animes
+      comic: Comics
+      game: Games
+      music: Musics
+      novel: Novels
+      tasks: Tasks
+      folders: Folders
+      collection: Collection
+      attachment: Attachment
+component:
   upload:
     file-pond-upload:
       mainLabel: Click Select File or drag the file here
@@ -10,291 +56,889 @@ components:
       notSupportFileFormat: Not support file format
       clickCancel: Click cancel
       clickRetry: Click retry
-
-core:
-  common:
+view:
+  exception:
     exception:
       title: Application exception
-      network_error: API network error
-      request_parameter_error: Request parameters error
-      unauthorized: 401 Unauthorized
-      forbidden: 403 Forbidden
-      not_found: 404 Not found
-      server_internal_error_with_title: Server internal error with title
-      unknown_error_with_title: Unknow error with title
-  forbidden:
-    title: Forbidden
-  notFound:
-    title: NotFound
-  login:
-    title: Login
-    fields:
-      username:
-        placeholder: Username
-        rule: Please input username
-      password:
-        placeholder: Password
-        rule: Please input password
-    operations:
-      submit:
-        toast_success: Login successful
-        toast_failed: Login failed, incorrect username or password
-        toast_csrf: CSRF Token expired, please try again
-      signup:
-        label: No account
-        button: Sign up
-      return_login:
-        label: Already have an account
-        button: Sign in
-    button: Login
-    modal:
-      title: Re-login
-  signup:
-    title: Sign up
-    fields:
-      username:
-        placeholder: Username
-      display_name:
-        placeholder: Display name
-      password:
-        placeholder: Password
-      password_confirm:
-        placeholder: Confirm password
-    operations:
-      submit:
-        button: Sign up
-        toast_success: Sign up successfully
-  binding:
-    title: Account binding
-    common:
-      toast:
-        mounted: >-
-          The current login method is not bound to an account, Please bind or
-          sign up a new account first
-    operations:
-      login_and_bind:
-        button: Login and Bind
-      signup_and_bind:
-        button: Signup and Bind
-      bind:
-        toast_success: Binding successfully
-        toast_failed: Binding failed, no enabled login method found
-  sidebar:
-    search:
-      placeholder: Search
-    menu:
-      groups:
-        content: Content
-        user: User
-        interface: Interface
-        system: System
-        tool: Tool
-      items:
-        dashboard: Dashboard
-        profile: Profile
-        files: Files
-        subjects: Subjects
-        plugins: Plugins
-        users: Users
-        settings: Settings
-        actuator: Actuator
-        anime: Animes
-        comic: Comics
-        game: Games
-        music: Musics
-        novel: Novels
-        tasks: Tasks
-        folders: Folders
-        collection: Collection
-        attachment: Attachment
-    operations:
-      profile:
-        button: Profile
-      visit_homepage:
-        title: Visit homepage
+      back: Back
+      dashboard: Dashboard
+    forbidden:
+      message: 403 Forbidden
+    notfound:
+      message: 404 Not Found
+module:
   dashboard:
     title: Dashboard
-  profile:
-    title: Profile
-  attachment:
-    title: Attachment
-  file:
-    title: Files
-    type:
-      image: Image
-      video: Video
-      document: Document
-      voice: Voice
-      unknown: Unknown
-    form:
-      item:
-        label:
-          search:
-            type: File Type
-            name: File Name
-            namePlaceHolder: Fuzzy matching carriage return search
-    button:
+    sidebar: Dashboard
+    label:
+      attachment: Attachments
+      subject: Subjects
+      collection: Collections
+      doing: Doings
+  user:
+    title: User
+    sidebar: User
+    login:
+      title: Login
+      field:
+        username:
+          placeholder: Username
+          rule: Please input username
+        password:
+          placeholder: Password
+          rule: Please input password
+      operations:
+        submit:
+          toast_success: Login successful
+          toast_failed: Login failed, incorrect username or password
+          toast_csrf: CSRF Token expired, please try again
+        signup:
+          label: No account
+          button: Sign up
+        return_login:
+          label: Already have an account
+          button: Sign in
+      button: Login
+      modal:
+        title: Re-login
+    profile:
+      title: Profile
       label:
-        upload: Upload Files
-    table:
-      column:
-        label:
-          id: ID
-          name: Name
-          updateTime: Update Time
-          size: Size
-          operators: Operators
-        operations:
-          details: Details
-          push: Push
-          pull: Pull
-          delete:
-            button: Delete
-            popconfirm:
-              title: Are you sure you want to delete this file?
-              confirm: Confirm
-              cancel: Cancel
+        basic_info: Basic Info
+        nickname: Nickname
+        avatar: Avatar
+        site: Site
+        introduce: Introduce
+        update_password: Update Password
+        old_password: Old Password
+        new_password: New Password
+        btn_save: Save
+      message:
+        update:
+          all: Update Basic Info Success
+          password: Update Password Success
+    collection:
+      title: Collections
+      sidebar: Collections
+      label:
+        private: Private
+        type:
+          value: Type
+          wish: Wish
+          doing: Doing
+          done: Done
+          shelve: Shelve
+          discard: Discard
+  attachment:
+    title: Attachments
+    sidebar: Attachments
     message:
+      directory: Directory
+      file: File
+      operate:
+        create_att_dir: Mkdir success, name[{name}]
+        delete_att:
+          success: Delete {type} [{name}] success.
+          fail: Delete {type} [{name}] fail.
+          cancel: Delete [{name}] cancel.
+        delete_atts:
+          cancel: Deleting directories in batch is cancelled.
+        copy_short_name: Copy short name of attachment [{name}] to clipboard.
+        copy_integrally_name: Full name of attachment [{name}] has been copied to the clipboard.
+        copy_url: Copy the URL of attachment [{name}] to the clipboard.
+        move_atts: Succeeded in batch moving attachments.
+    confirm:
+      content: >-
+        Are you sure to delete it?It is detected that the attachment you want to
+        delete (selected) contains a directory type. By default, the system will
+        delete all contents in the directory.
+      warning: Warning
+      btn:
+        confirm: Confirm
+        cancel: Cancel
+    contextmenu:
+      entry: Entry
+      details: Details
+      copy_short_name: Copy short name
+      copy_integrally_name: Copy integrally name
+      copy_url: Copy url
+      download: Download
       delete:
-        success: Delete file successful for
-        fail: Delete file fail for
-      update:
-        success: Update file successful for
+        value: Delete
+        confirm: >-
+          The attachment you are deleting [{name}] is a directory type. By
+          default, the system deletes all contents in the directory. Are you
+          sure you want to delete it?
+    dialog:
+      mkdir:
+        title: Crate new directory
+        placeholder: >-
+          Please enter a directory name, subdirectories will be created in the
+          current directory after sub attachment.
+        btn:
+          confirm: Confirm
+          cancel: Cancel
+      directory-select:
+        title: Select Directory
+        footer:
+          button:
+            cancel: Cancel
+            submit: Submit
+      multi-select:
+        title: Select Multi Attachments
+        operate:
+          upload: Uplaod
+        parent-dir: Parent Attachment
+        search:
+          placeholder: Search for attachments, fuzzy match, enter search
+        table:
+          colum:
+            label:
+              name: Name
+              path: Path
+              update-time: UpdateTime
+              size: Size
+      select:
+        title: Select Single Attachments
+        operate:
+          upload: Uplaod
+        parent-dir: Parent Attachment
+        search:
+          placeholder: Search for attachments, fuzzy match, enter search
+        table:
+          colum:
+            label:
+              name: Name
+              path: Path
+              update-time: UpdateTime
+              size: Size
+      relation:
+        title: Attachment Relations
+        label:
+          type: Type
+          relationAtt: Relation Attachments
+          operate: Operate
+        message:
+          create-success: The attachment relation is added success
+          delete-success: The attachment relation is deleted success
+        popconfirm:
+          title: Are you sure you want to delete the attachment relation?
+          confirm: Confirm
+          cancel: Cancel
+          submit: Delete
+        footer:
+          add: Add
+          cancel: Cancel
+    btn:
+      upload: Upload
+      mkdir: Crate
+      move_atts: Batch move
+    popconfirm:
+      title: Are you sure to delete attachments in bulk?
+      btn: Batch delete
+    search_input:
+      placeholder: >-
+        Search all attachments in the current directory, fuzzy match, space
+        multiple keywords, enter search.
+    breadcrumb:
+      label: Path
+    table:
+      colum:
+        label:
+          name: Name
+          update_time: Update Time
+          size: Size
     drawer:
-      upload:
+      fragment-upload:
         title: Upload Files
-        closeConfirm:
-          message: When exiting the upload page, if a file has not been uploaded, the next time you need to upload from scratch, are you sure you want to exit the current upload page?
+        confirm:
+          message: >-
+            When exiting the upload page, if a file has not been uploaded, the
+            next time you need to upload from scratch, are you sure you want to
+            exit the current upload page?
           title: kind reminder
           confirm: Exit
           cancel: Not Exit
           hintMsg: Exit has been cancelled.
-
-  fileDetail:
-    title: File details
-    descTitle: File Details
-    descItemLabel:
-      name: Name
-      type: Type
-      size: Size
-      updateTime: Update Time
-      fsPath: File System Path
-    message:
-      hint:
-        name: File name must not empty
-        videoFormat: Your browser does not support video in this format
-        audioFormat: Your browser does not support audio in this format
-        preview: This file does not support preview
-        needPull: The file is unreadable and needs to be pulled from the remote end.
-      event:
-        delete: Delete file successful
-        updateName: Update file name successful
-
-  folder:
-    title: Folders
-    button:
-      confirm: Confirm
-      cancel: Cancel
-      newFile: New file
-      newFolder: New folder
-      deleteFolder: Delete
-      push: Push
-      pull: Pull
-      paste: Paste
-    folderTable:
-      column:
-        name: Folder name
-        updateTime: Updated time
-    fileTable:
-      column:
-        name: File name
-        updateTime: Updated time
+    details:
+      title: File details
+      descTitle: File Details
+      descItemLabel:
+        name: Name (Double-click the value to rename it)
+        type: Type
         size: Size
-    createDialog:
-      title: New folder
-      parentId: Parent ID
-      parentName: Parent name
-      name: Name
-      confirm: Confirm
-      cancel: Cancel
-    message:
-      deleteRecursivelyHint: Detected that there are files or directories inside the selected directory. Are you sure you want to delete them all together (recursively)? This might take some time.
-      deleteFolderHint: Are you sure you want to delete the selected directory?
-      event:
-        create: Create folder successful
-        move: Move folder successful
-        delete: Delete folder successful
-        deleteCancel: Delete cancel
-        paste: Paste successful
-
-  fileRemoteAction:
-    title: File remote operate
-    alert:
-      title: The larger the file, the longer the operation time. Please wait until the operation is complete.
-    formItemLabel:
-      remote: Remote
-      fileId: File ID
-    button:
-      cancel: Cancel
-      push: Push
-      pull: PUll
-    message:
-      hint:
-        submitFail: Please check if any necessary items are missing.
-        selectRemote: Please select remote
-        noStartPlugin: If there is no remote end available, please open the relevant plugin and start it, such as the plugin of Baidu web disk.
-  folderRemoteAction:
-    title: Remote directory operation
-    alert:
-      title: The more files the directory contains, the larger the file and the longer the operation time. Please wait until the operation is complete.
-    formItemLabel:
-      remote: Remote
-      folderId: Folder ID
-    button:
-      cancel: Cancel
-      push: Push
-      pull: Pull
-    message:
-      hint:
-        pushSuccess:
-          prefix: The request to push the directory to the remote end succeeds. The directory =
-          postfix: remote=
-        pullSuccess:
-          prefix: The request succeeds in retrieving the directory from the remote end. Directory =
-          postfix: remote=
-        submitFail: Please check if any necessary items are missing.
-        selectRemote: Please select remote
-        noStartPlugin: If there is no remote end available, please open the relevant plugin and start it, such as the plugin of Baidu web disk.
-
+        updateTime: Update Time
+        path: Path
+        fsPath: File System Path
+      button:
+        relation: Relation
+        delete: Delete
+      popconfirm:
+        title: Are you sure you want to delete this attachment?
+        confirm: Confirm
+        cancel: Cancel
+      message:
+        hint:
+          name: File name must not empty
+          videoFormat: Your browser does not support video in this format
+          audioFormat: Your browser does not support audio in this format
+          preview: This file does not support preview
+          needPull: The file is unreadable and needs to be pulled from the remote end.
+        event:
+          delete: Delete file successful
+          updateName: Update file name successful
+    reference:
+      message:
+        operate:
+          batch-match-subject-episodes-atts: Batch match entries for all episodes and multiple resources success
+          batch-match-episode-atts: Batch match single episode and multi-attachments success
   subject:
     title: Subjects
+    sidebar: Subjects
     put:
       title: Subject Edit
+      message:
+        form-rule:
+          name:
+            required: Please input original subject name
+            length: The length should be between 1 and 100
+          summary:
+            required: Please enter subject summary
+            length: The length should be greater than 5
+          type:
+            required: Please select an subject type
+          air_time:
+            type: Please select a time
+          validate-fail: Please check if any necessary items are missing.
+          update-success: 'Update subject success: {name}'
+      label:
+        air_time: Air Time
+        cover: Cover
+        name: Name
+        name_cn: NameCN
+        type: Type
+        summary: Summary
+        infobox: Infobox
+        episodes: Episodes
+        episode-table:
+          group: Group
+          sequence: Sequence
+          name: Name
+          name_cn: NameCN
+          air_time: Air Time
+          description: Description
+      date-picker:
+        placeholder: Select a date
+      infobox-input:
+        placeholder: 'A line of key:value, example name: things from heaven'
+      text:
+        button:
+          episode:
+            add: New Episode
+            details: Details
+            remove: Delete
+            edit: Edit
+          subject:
+            create: Create
     post:
       title: Subject Post
+      message:
+        form-rule:
+          name:
+            required: Please input original subject name
+            length: The length should be between 1 and 100
+          summary:
+            required: Please enter subject summary
+            length: The length should be greater than 5
+          type:
+            required: Please select an subject type
+          air_time:
+            type: Please select a time
+          validate-fail: Please check if any necessary items are missing.
+      label:
+        air_time: Air Time
+        cover: Cover
+        name: Name
+        name_cn: NameCN
+        type: Type
+        summary: Summary
+        infobox: Infobox
+        episodes: Episodes
+        episode-table:
+          group: Group
+          sequence: Sequence
+          name: Name
+          name_cn: NameCN
+          air_time: Air Time
+          description: Description
+      date-picker:
+        placeholder: Select a date
+      infobox-input:
+        placeholder: 'A line of key:value, example name: things from heaven'
+      text:
+        button:
+          episode:
+            add: New Episode
+            details: Details
+            remove: Delete
+          subject:
+            create: Create
     details:
       title: Subject Details
+      message:
+        operate:
+          delete:
+            success: Delete subject {name} succsss
+          update:
+            success: Request to update entry information succeeded
+          cancel:
+            success: Cancel Subject Collect Success
+      text:
+        collect:
+          not: Not Collect
+          click: Click Collect
+          cancel: Cancel Collect
+          done: Collected
+        button:
+          edit: Edit
+          update: Update
+          delete: Delete
+          relaction: Relaction
+          add-tag: New Tag
+      dele-popconfirm:
+        title: Are you sure you want to delete this subject?
+      label:
+        name: Name
+        name_cn: Chinese Name
+        air_time: Air Time
+        type: Type
+        summary: Summary
+        sync-platform: Sync Platform
+        tag: Tag
+        collect-status: Collect Status
+      cancel-collect-popconfirm:
+        title-prefix: Are you sure
+        title-postfix: this subject?
+        cancel-collect: cancel collect
+        collect: collect
+      episode:
+        label:
+          group: Group
+          sequence: Sequence
+          name: Original Name
+          name_cn: Chinese Name
+          air_time: Air Time
+          operate: Operate
+          button:
+            batch-resources: Batch Match Attachments
+            details: Details
+            reset: Reset
+            done: Done
+            push: Push
+            pull: Pull
     relaction:
       title: Subject Relactions
+      drawer:
+        delete:
+          title: Subject Select
+          table:
+            label:
+              id: ID
+              name: Name
+              name_cn: NameCN
+              type: Type
+      dialog:
+        delete:
+          title: Subject Relation Add
+          message:
+            validate-fail: >-
+              Submit cancellation, please check whether any necessary items are
+              missing, necessary items: [sub-item] [type].
+            remove-success: Remove subject relations success.
+          label:
+            master-subject: Master Subject ID
+            slave-subject: Slave Subject ID
+            type: Subject Relation Type
+          button:
+            cancel: Cancel
+            confirm: RemoveRelation
+          popconfirm:
+            title: Are you sure to remove the relation?
+        main:
+          title: Subject Relation
+          label:
+            id: ID
+            name: Name
+            name_cn: NameCN
+            air_time: Air Time
+            type: Type
+            nsfw: NSFW
+            summary: Summary
+          button:
+            add: Add
+            delete: Delete
+          tab:
+            label:
+              anime: Anime({length})
+              comic: Comic({length})
+              game: Game({length})
+              music: Music({length})
+              novel: Novel({length})
+              real: Real({length})
+              before: Before({length})
+              after: "After({length})\t"
+              same-worldview: SameWorldView({length})
+              ost: OST({length})
+              other: Other({length})
+        post:
+          message:
+            validate-fail: >-
+              Submit cancellation, please check whether any necessary items are
+              missing, necessary items: [sub-item] [type].
+            add-success: Add subject relation success
+          title: Subject Relation Add
+          label:
+            master-subject: Master Subject
+            slave-subject: Slave Subject
+            type: Relation Type
+          placeholder:
+            slave-subject: Slave Subject ID, separated by commas
+          type:
+            after: After
+            before: Before
+            same-worldview: SameWorldView
+            ost: OST
+            anime: Anime
+            comic: Comic
+            game: Game
+            music: Music
+            novel: Novel
+            real: Real
+            other: Other
+          button:
+            cancel: Cancel
+            confirm: Confirm
+    dialog:
+      episode:
+        details:
+          title: Episode Details
+          message:
+            operate:
+              remove-episode-all-att-refs:
+                waring: >-
+                  Invalid operation, the current episode is not bound to any
+                  resource files
+                success: Successfully removed all attachment bindings of the episode
+              remove-episode-att-ref:
+                success: >-
+                  Successfully removed a single attachment binding of the
+                  episode
+              match-single-episode-attachment:
+                success: Successfully matched a single episode with an attachment
+              batch-match-episode-atts:
+                success: >-
+                  Successfully batch matched a single episode with multiple
+                  resources
+          hint:
+            video:
+              unsuport: Your browser does not support this video format
+              not_video: The current resource file is not a video file or is unreadable
+            no_bind: The current episode is not bound to any resource files
+          label:
+            name: Original Name
+            name_cn: Chinese Name
+            air_time: Air Time
+            sequence: Sequence
+            description: Description
+            resources: Resources
+          popconfirm:
+            title: Are you sure you want to remove the binding?
+          footer:
+            button:
+              add-bind: Add Binding
+            popconfirm:
+              title: >-
+                This operation will remove all resource bindings of the current
+                episode. Are you sure you want to remove the bindings?
+              button:
+                remove-all-binds: Remove All Bindings
+      remote-action:
+        message:
+          operate:
+            request-remote:
+              success: Submit success
+              validate-fail: Please check if any necessary items are missing
+          form-hint-nouse: >-
+            If the remote end is not available, please open the relevant plugin
+            and start it, such as the plugin.
+        form-rule:
+          remote:
+            required:
+              message: Select the name of the remote end
+        title: Subject Remote Operate
+        alert:
+          title: >-
+            The more episodes, the larger the episode file, and the longer the
+            operation time, please wait patiently for the operation to complete.
+        form-label:
+          remote: Remote
+          subject-id: SubjectID
+        button:
+          cancel: Cancel
+          push: Push
+          pull: Pull
+      sync:
+        message:
+          validate-fail: Please check if any necessary items are missing.
+          form-rule:
+            platform:
+              required: Please select the platform for sync
+            platform-id:
+              required: Please enter the subject ID of the sync platform
+              length: The length should be between 1 and 10
+        title:
+          update: Subject Update
+          pull: Subject Pull
+        label:
+          platform: Platform
+          subject-platform-id: Platform ID
+        placeholder:
+          platform-id: Please enter the subject ID of the sync platform
+        text:
+          platform-no-available-hint-msg: >-
+            There is no sync platform available, please open the relevant plugin
+            and start, such as the plugin of plugin-bgmtv
+        footer:
+          button:
+            cancel: Cancel
+            confirm: Sync
+    episode:
+      post:
+        message:
+          hint:
+            validate: Please check if any necessary items are missing
+          episode:
+            form-rule:
+              sequence:
+                required: Please specify the serial number of the episode
+                type: The serial number must be a number
+              air_time:
+                required: Please select a time
+              name:
+                required: Please enter the original episode name
+                length: The length should be between 1 and 100
+        title: Add Episode
+        label:
+          air_time: Air Time
+          group: Group
+          name: Name
+          name_cn: NameCN
+          sequence: Sequence
+          description: Description
+        date-picker:
+          placeholder: Please select date
+        select:
+          placeholder: Please select group
+        footer:
+          button:
+            confirm: Confirm
+      put:
+        title: Update Episode
+        message:
+          hint:
+            validate: Please check if any necessary items are missing
+          episode:
+            form-rule:
+              sequence:
+                required: Please specify the serial number of the episode
+                type: The serial number must be a number
+              air_time:
+                required: Please select a time
+              name:
+                required: Please enter the original episode name
+                length: The length should be between 1 and 100
+        label:
+          air_time: Air Time
+          group: Group
+          name: Name
+          name_cn: NameCN
+          sequence: Sequence
+          description: Description
+        date-picker:
+          placeholder: Please select date
+        select:
+          placeholder: Please select group
+        footer:
+          button:
+            confirm: Confirm
+      collect:
+        message:
+          operate:
+            mark-finish: Mark episode is finished success
+    collect:
+      message:
+        operate:
+          update:
+            success: Update Subject Collect Success
+          update-progress:
+            success: Update Subject Collect Progress Success
+      type:
+        wish: WISH
+        doing: DOING
+        done: DONE
+        shelve: SHELVE
+        discard: DISCARD
+      progress:
+        text: Collect Progress
+        update-input:
+          placeholder: Enter the viewing progress and press Enter to update
+    tag:
+      message:
+        operate:
+          remove: Remove tag [{name}] success
+          create: New tag [{name}] success
+        hint:
+          rename-when-repetition: The tag name is empty or duplicate. Creating the tag  is skipped
+    label:
+      name: Name
+      name_cn: NameCN
+      type: Type
+    placeholder:
+      name: Original name fuzzy match
+      name_cn: Chinese name fuzzy match
+    select:
+      nsfw-true: 'True'
+      nsfw-false: 'False'
+    type:
+      anime: Anime
+      comic: Comic
+      game: Game
+      music: Music
+      novel: Novel
+      real: Real
+      other: Other
+    text:
+      button:
+        rapid-addition: RapidAdd
+        new-subject: NewSubject
+    drawer:
+      select:
+        title: Subject Select
+        text:
+          subject-select: Subject Select
+        label:
+          name: Name
+          name_cn: NameCN
+          type: Type
+        placeholder:
+          name: Original name fuzzy match
+          name_cn: Chinese name fuzzy match
+        optin:
+          nsfw-true: 'True'
+          nsfw-false: 'False'
+        type:
+          anime: Anime
+          comic: Comic
+          game: Game
+          music: Music
+          novel: Novel
+          real: Real
+          other: Other
+        table:
+          label:
+            name: Name
+            name_cn: NameCN
+            type: Type
   plugin:
     title: Plugins
+    sidebar: Plugins
     details:
       title: Plugin Details
+      message:
+        operate:
+          update-config-map: Update config map success
+      label:
+        id: ID
+        version: Version
+        name: Name
+        description: Description
+        author: Author
+        required: Required
+        homepage: Homepage
+        license: License
+        entry: Entry
+        logo: LOGO
+        tab-basic: Basic Config
+        formkit-submit: Save
     loader:
       message:
-        entry_load_failed: "{name}: Failed to load plugin entry file"
-        style_load_failed: "{name}: Failed to load plugin stylesheet file"
+        entry_load_failed: '{name}: Failed to load plugin entry file'
+        style_load_failed: '{name}: Failed to load plugin stylesheet file'
     upload_modal:
       titles:
         upgrade: Upgade plugin
         install: Install plugin
-  settings:
+      message:
+        operate:
+          upgrade: Upgrade Success
+    label:
+      state:
+        all: Status
+        started: Started
+        stopped: Stopped
+        disabled: Disabled
+        created: Created
+        resolved: Resolved
+        failed: Failed
+    operate:
+      plugin:
+        start:
+          confirm:
+            title: Are you sure you want to start the plugin?
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Start plugin [{name}] success
+          cancel: Cancelled
+        stop:
+          confirm:
+            title: Are you sure you want to stop the plugin?
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Stop plugin [{name}] success
+          cancel: Cancelled
+        enable:
+          confirm:
+            title: Are you sure you want to enable the plugin?
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Enable plugin [{name}] success
+          cancel: Cancelled
+        disable:
+          confirm:
+            title: >-
+              Are you sure you want to disable the plugin?after it is disabled,
+              you must enable it before starting it.
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Disable plugin [{name}] success
+          cancel: Cancelled
+        reload:
+          confirm:
+            title: >-
+              Are you sure you want to reload the plugin? it start automatically
+              after reload.
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Reload plugin [{name}] success
+          cancel: Cancelled
+        reload-all:
+          confirm:
+            title: >-
+              Are you sure you want to reload all plugins? it start
+              automatically after reload.
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Reload all plugins success
+          cancel: Cancelled
+        delete:
+          confirm:
+            title: Are you sure you want to delete the plugin?
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Delete plugin [{name}] success
+          cancel: Cancelled
+        upgrade:
+          confirm:
+            title: Are you sure you want to delete the plugin?
+            warning: warning
+            confirm: Confirm
+            cancel: Cancel
+          success: Delete plugin [{name}] success
+          cancel: Cancelled
+    search:
+      placeholder:
+        name: Enter plugin name
+      button:
+        reload-all: ReloadAll
+        install-plugin: Install
+      dropdown:
+        all: All
+        started: Started
+        stoppedd: Stopped
+        resolved: Resolved
+        disabled: Disabled
+        created: Created
+        failed: Failed
+    table:
+      label:
+        icon: Icon
+        name: Name
+        author: Author
+        description: Description
+        state: State
+        operate: Operate
+      operate:
+        details: Details
+        start: Start
+        stop: Stop
+        enable: Enable
+        disable: Disable
+        reload: Reload
+        upgrade: Upgrade
+        delete: Delete
+        reset: Reset
+  setting:
     title: Settings
-  tasks:
-    title: Tasks
-    details:
-      title: Task Details
-  collection:
-    title: Collection
-    details:
-      title: Collection
+    sidebar: Settings
+    message:
+      form-rule:
+        site-title:
+          required: Please enter a valid site title
+          length: The length should be between 3 and 15 char
+        mail-smtp-host:
+          required: Mail SMTP Host
+        mail-smtp-port:
+          required: Mail SMTP Port
+        mail-smtp-account:
+          required: Mail SMTP Account
+        mail-smtp-password:
+          required: Mail SMTP Password
+        mail-receive-address:
+          required: Mail Receive Address
+      operate:
+        update: Update Setting Success
+    label:
+      tab:
+        pane:
+          mail-config: Mail Config
+        item:
+          enable-mail: Enable Mail
+          switch:
+            active: Enable
+            inactive: Disable
+          mail:
+            protocol: Protocol
+            smtp:
+              host: SMTP Host
+              port: SMTP Port
+              account: SMTP Account
+              password: SMTP Password
+              alias: SMTP Account Alias
+              receive-address: Receive Mail Address
+    button:
+      save: Save
+    placeholder:
+      smtp:
+        host: Mail SMTP Address
+        port: SMTP Mail Port
+        account: SMTP Mail Account
+        password: SMTP Password
+        alias: SMTP Account Alias
+        receive-address: Recive Mail Address

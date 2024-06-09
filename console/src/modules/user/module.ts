@@ -18,7 +18,7 @@ export default definePlugin({
 				component: Login,
 				name: 'Login',
 				meta: {
-					title: 'core.login.title',
+					title: 'module.user.login.title',
 					menu: {},
 				},
 			},
@@ -30,9 +30,9 @@ export default definePlugin({
 				name: 'Profile',
 				component: Profile,
 				meta: {
-					title: 'core.profile.title',
+					title: 'module.user.profile.title',
 					menu: {
-						name: 'core.sidebar.menu.items.profile',
+						name: 'module.user.sidebar',
 						group: 'user',
 						icon: markRaw(UserFilled),
 						priority: 1,
@@ -47,9 +47,9 @@ export default definePlugin({
 				name: 'Collection',
 				component: Collection,
 				meta: {
-					title: 'core.collection.title',
+					title: 'module.user.collection.title',
 					menu: {
-						name: 'core.sidebar.menu.items.collection',
+						name: 'module.user.collection.sidebar',
 						group: 'user',
 						icon: markRaw(MessageBox),
 						priority: 1,

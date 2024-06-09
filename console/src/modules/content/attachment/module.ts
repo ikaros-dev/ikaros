@@ -15,9 +15,9 @@ export default definePlugin({
 				name: 'Attachments',
 				component: Attachments,
 				meta: {
-					title: 'core.attachment.title',
+					title: 'module.attachment.title',
 					menu: {
-						name: 'core.sidebar.menu.items.attachment',
+						name: 'module.attachment.sidebar',
 						group: 'content',
 						icon: markRaw(FolderIcon),
 						priority: 0,

@@ -29,6 +29,9 @@ import {
 	ElDialog,
 	ElFormItem,
 } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+
+const {t} = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -147,7 +150,7 @@ onMounted(fetchAttachments);
 
 	<el-dialog
 		v-model="dialogVisible"
-		title="附件选择器"
+		:title="t('module.attachment.dialog.multi-select.title')"
 		width="85%"
 		@close="onClose"
 	>
@@ -159,11 +162,11 @@ onMounted(fetchAttachments);
 							<el-icon>
 								<Upload />
 							</el-icon>
-							上传附件
+							{{ t('module.attachment.dialog.multi-select.operate.upload') }}
 						</el-button>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-						<el-form-item label="父目录">
+						<el-form-item :label="t('module.attachment.dialog.multi-select.parent-dir')">
 							<AttachmentDirectoryTreeSelect
 								v-model:target-dirid="attachmentCondition.parentId"
 								@change="onParentDirSelected"
@@ -175,7 +178,7 @@ onMounted(fetchAttachments);
 			<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
 				<el-input
 					v-model="attachmentCondition.name"
-					placeholder="搜索附件，模糊匹配，回车搜查"
+					:placeholder="t('module.attachment.dialog.multi-select.search.placeholder')"
 					clearable
 					@change="onSearchNameChange"
 				>
@@ -218,7 +221,7 @@ onMounted(fetchAttachments);
 					<!-- <el-table-column prop="id" label="ID" width="60" /> -->
 					<el-table-column
 						prop="name"
-						label="名称"
+						:label="t('module.attachment.dialog.multi-select.table.colum.label.name')"
 						show-overflow-tooltip
 						sortable
 					>
@@ -241,15 +244,15 @@ onMounted(fetchAttachments);
 							</span>
 						</template>
 					</el-table-column>
-					<el-table-column prop="path" label="路径" show-overflow-tooltip />
+					<el-table-column prop="path" :label="t('module.attachment.dialog.multi-select.table.colum.label.path')" show-overflow-tooltip />
 					<el-table-column
 						prop="updateTime"
-						label="更新时间"
+						:label="t('module.attachment.dialog.multi-select.table.colum.label.update-time')"
 						sortable
 						width="160"
 						:formatter="dateFormat"
 					/>
-					<el-table-column prop="size" label="大小" width="130" sortable>
+					<el-table-column prop="size" :label="t('module.attachment.dialog.multi-select.table.colum.label.size')" width="130" sortable>
 						<template #default="scoped">
 							<span v-if="scoped.row.type === 'File'">
 								{{ formatFileSize(scoped.row.size) }}
@@ -263,9 +266,11 @@ onMounted(fetchAttachments);
 		<template #footer>
 			<span class="dialog-footer">
 				<el-button plain type="info" @click="dialogVisible = false">
-					返回
+					{{t('common.button.cancel')}}
 				</el-button>
-				<el-button plain @click="onConfirm"> 确认 </el-button>
+				<el-button plain @click="onConfirm"> 
+					{{t('common.button.confirm')}}	
+				</el-button>
 			</span>
 		</template>
 	</el-dialog>

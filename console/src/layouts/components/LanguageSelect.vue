@@ -13,6 +13,7 @@ const changeLanguage = () => {
 	changeI18nLocal(selectedLanguage.value);
 	// console.debug('selectedLanguage.value', selectedLanguage.value);
 	layoutStore.setI18nCode(selectedLanguage.value);
+	window.location.reload();
 };
 onMounted(()=>{
 	const selectdI18nCode = layoutStore.i18nCode

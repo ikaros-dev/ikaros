@@ -19,9 +19,9 @@ export default definePlugin({
 					name: 'Dashboard',
 					component: Dashboard,
 					meta: {
-						title: 'core.dashboard.title',
+						title: 'module.dashboard.title',
 						menu: {
-							name: 'core.sidebar.menu.items.dashboard',
+							name: 'module.dashboard.sidebar',
 							group: 'dashboard',
 							icon: markRaw(Odometer),
 							priority: 0,

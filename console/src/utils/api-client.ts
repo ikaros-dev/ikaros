@@ -49,11 +49,11 @@ axiosInstance.interceptors.response.use(
 
 		if (/Network Error/.test(msg)) {
 			console.error(
-				i18n.global.t('core.common.exception.network_error') + ': ' + msg,
+				i18n.global.t('common.exception.network_error') + ': ' + msg,
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.network_error') + ': ' + msg
+				i18n.global.t('common.exception.network_error') + ': ' + msg
 			);
 			return Promise.reject(error);
 		}
@@ -62,11 +62,11 @@ axiosInstance.interceptors.response.use(
 
 		if (!errorResponse) {
 			console.error(
-				i18n.global.t('core.common.exception.network_error') + ': ' + msg,
+				i18n.global.t('common.exception.network_error') + ': ' + msg,
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.network_error') + ': ' + msg
+				i18n.global.t('common.exception.network_error') + ': ' + msg
 			);
 			return Promise.reject(error);
 		}
@@ -77,46 +77,46 @@ axiosInstance.interceptors.response.use(
 
 		if (status === 400) {
 			console.error(
-				i18n.global.t('core.common.exception.request_parameter_error', {
+				i18n.global.t('common.exception.request_parameter_error', {
 					title,
 				}),
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.request_parameter_error') +
+				i18n.global.t('common.exception.request_parameter_error') +
 					': ' +
 					msg
 			);
 		} else if (status === 401) {
 			console.error(
-				i18n.global.t('core.common.exception.unauthorized') + ': ' + msg,
+				i18n.global.t('common.exception.unauthorized') + ': ' + msg,
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.unauthorized') + ': ' + msg
+				i18n.global.t('common.exception.unauthorized') + ': ' + msg
 			);
 		} else if (status === 403) {
 			console.error(
-				i18n.global.t('core.common.exception.forbidden') + ': ' + msg,
+				i18n.global.t('common.exception.forbidden') + ': ' + msg,
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.forbidden') + ': ' + msg
+				i18n.global.t('common.exception.forbidden') + ': ' + msg
 			);
 		} else if (status === 404) {
 			return Promise.resolve();
 			// console.error(
-			// 	i18n.global.t('core.common.exception.not_found') + ': ' + msg,
+			// 	i18n.global.t('common.exception.not_found') + ': ' + msg,
 			// 	error
 			// );
 			// ElMessage.error(
-			// 	i18n.global.t('core.common.exception.not_found') + ': ' + msg
+			// 	i18n.global.t('common.exception.not_found') + ': ' + msg
 			// );
 		} else if (status === 500) {
 			return Promise.reject(error);
 			// console.error(
 			// 	i18n.global.t(
-			// 		'core.common.exception.server_internal_error_with_title'
+			// 		'common.exception.server_internal_error_with_title'
 			// 	) +
 			// 		': ' +
 			// 		msg,
@@ -124,14 +124,14 @@ axiosInstance.interceptors.response.use(
 			// );
 			// ElMessage.error(
 			// 	i18n.global.t(
-			// 		'core.common.exception.server_internal_error_with_title'
+			// 		'common.exception.server_internal_error_with_title'
 			// 	) +
 			// 		': ' +
 			// 		msg
 			// );
 		} else {
 			console.error(
-				i18n.global.t('core.common.exception.unknown_error_with_title', {
+				i18n.global.t('common.exception.unknown_error_with_title', {
 					title,
 				}) +
 					': ' +
@@ -139,7 +139,7 @@ axiosInstance.interceptors.response.use(
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('core.common.exception.unknown_error_with_title') +
+				i18n.global.t('common.exception.unknown_error_with_title') +
 					': ' +
 					msg
 			);
