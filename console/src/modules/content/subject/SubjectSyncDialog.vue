@@ -117,7 +117,7 @@ const subjectSyncFormRules = reactive<FormRules>({
 		{ required: true, message: t('module.subject.dialog.sync.message.form-rule.platform-id.required'), trigger: 'blur' },
 		{
 			min: 1,
-			max: 10,
+			max: 100,
 			message: t('module.subject.dialog.sync.message.form-rule.platform-id.length'),
 			trigger: 'blur',
 		},
