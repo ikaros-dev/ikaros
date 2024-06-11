@@ -210,7 +210,7 @@ create table if not exists subject
     type          varchar(255)   not null,
     name          varchar(255)   not null,
     name_cn       varchar(255)   null,
-    cover         varchar(255)   null,
+    cover         varchar(10000)   null,
     infobox       varchar(50000) null,
     summary       varchar(50000) null,
     nsfw          bool           not null,
