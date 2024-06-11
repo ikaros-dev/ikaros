@@ -73,8 +73,12 @@ const handleClose = (done: () => void) => {
 		t('module.attachment.drawer.fragment-upload.confirm.message'),
 		t('module.attachment.drawer.fragment-upload.confirm.title'),
 		{
-			confirmButtonText: t('module.attachment.drawer.fragment-upload.confirm.confirm'),
-			cancelButtonText: t('module.attachment.drawer.fragment-upload.confirm.cancel'),
+			confirmButtonText: t(
+				'module.attachment.drawer.fragment-upload.confirm.confirm'
+			),
+			cancelButtonText: t(
+				'module.attachment.drawer.fragment-upload.confirm.cancel'
+			),
 			type: 'warning',
 		}
 	)
@@ -88,7 +92,9 @@ const handleClose = (done: () => void) => {
 			handleVisibleChange(false);
 		})
 		.catch(() => {
-			ElMessage.warning(t('module.attachment.drawer.fragment-upload.confirm.hintMsg'));
+			ElMessage.warning(
+				t('module.attachment.drawer.fragment-upload.confirm.hintMsg')
+			);
 		});
 };
 

@@ -393,6 +393,8 @@ module:
             success: Request to update entry information succeeded
           cancel:
             success: Cancel Subject Collect Success
+          delete-batch-attachments:
+            success: Batch removed episode attachment bindings successfully
       text:
         collect:
           not: Not Collect
@@ -436,6 +438,9 @@ module:
             done: Done
             push: Push
             pull: Pull
+            cancel-batch-resources: Cancel Batch
+      cancel-batch-popconfirm:
+        title: Are you sure cancel batching atts bind?
     relaction:
       title: Subject Relactions
       drawer:

@@ -74,7 +74,9 @@ const handleDelete = async () => {
 			})
 			.then(() => {
 				ElMessage.success(
-					t('module.attachment.details.message.event.delete') + ' ' + file.value.name
+					t('module.attachment.details.message.event.delete') +
+						' ' +
+						file.value.name
 				);
 				emit('delete', file.value);
 				drawerVisible.value = false;
@@ -112,7 +114,9 @@ const handleUpdateName = async () => {
 				attachment: file.value,
 			})
 			.then(() => {
-				ElMessage.success(t('module.attachment.details.message.event.updateName'));
+				ElMessage.success(
+					t('module.attachment.details.message.event.updateName')
+				);
 			});
 	} catch (error) {
 		console.error(error);
@@ -125,7 +129,9 @@ const getCompleteFileUrl = (reactiveUrl: string | undefined): string => {
 	var curPageUrl = window.location.href;
 	var pathName = window.location.pathname;
 	var localhostPath = curPageUrl.substring(0, curPageUrl.indexOf(pathName));
-	return reactiveUrl?.startsWith('http') ? reactiveUrl : localhostPath + reactiveUrl;
+	return reactiveUrl?.startsWith('http')
+		? reactiveUrl
+		: localhostPath + reactiveUrl;
 };
 
 const handleClose = (done: () => void) => {
@@ -134,23 +140,21 @@ const handleClose = (done: () => void) => {
 };
 
 const attachmentRelationsDialogVisible = ref(false);
-const onAttachmentRelationsDialogClose = async ()=>{
+const onAttachmentRelationsDialogClose = async () => {
 	// artplayerRef.value.getVideoSubtitles();
 	// artplayerRef.value.reloadArtplayer();
 	window.location.reload();
-}
-const onClose = async()=>{
+};
+const onClose = async () => {
 	drawerVisible.value = false;
 	emit('close');
-}
+};
 
 const artplayer = ref<Artplayer>();
 const artplayerRef = ref();
 const getArtplayerInstance = (art: Artplayer) => {
 	artplayer.value = art;
-}
-
-
+};
 </script>
 
 <template>
@@ -199,7 +203,9 @@ const getArtplayerInstance = (art: Artplayer) => {
 					>
 						{{ t('module.attachment.details.message.hint.audioFormat') }}
 					</audio>
-					<div v-else>{{ t('module.attachment.details.message.hint.preview') }}</div>
+					<div v-else>
+						{{ t('module.attachment.details.message.hint.preview') }}
+					</div>
 				</div>
 			</el-col>
 		</el-row>
@@ -219,7 +225,9 @@ const getArtplayerInstance = (art: Artplayer) => {
 					<el-descriptions-item label="ID">
 						{{ file.id }}
 					</el-descriptions-item>
-					<el-descriptions-item :label="t('module.attachment.details.descItemLabel.name')">
+					<el-descriptions-item
+						:label="t('module.attachment.details.descItemLabel.name')"
+					>
 						<span v-if="editable">
 							<el-input
 								ref="nameInput"
@@ -245,7 +253,10 @@ const getArtplayerInstance = (art: Artplayer) => {
 					>
 						{{ file.updateTime }}
 					</el-descriptions-item>
-					<el-descriptions-item v-if="file.path" :label="t('module.attachment.details.descItemLabel.path')">
+					<el-descriptions-item
+						v-if="file.path"
+						:label="t('module.attachment.details.descItemLabel.path')"
+					>
 						{{ file.path }}
 					</el-descriptions-item>
 					<el-descriptions-item v-if="file.url" label="URL">
@@ -281,8 +292,11 @@ const getArtplayerInstance = (art: Artplayer) => {
 			</el-popconfirm>
 		</template>
 
-		<AttachmentRelationsDialog v-model:visible="attachmentRelationsDialogVisible" :attachmentId="file.id" @close="onAttachmentRelationsDialogClose"/>
-
+		<AttachmentRelationsDialog
+			v-model:visible="attachmentRelationsDialogVisible"
+			:attachmentId="file.id"
+			@close="onAttachmentRelationsDialogClose"
+		/>
 	</el-drawer>
 </template>
 

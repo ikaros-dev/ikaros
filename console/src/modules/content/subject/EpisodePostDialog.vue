@@ -18,7 +18,7 @@ import {
 } from '@/modules/common/constants';
 import { useI18n } from 'vue-i18n';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -76,21 +76,48 @@ const formLabelWidth = '85px';
 
 const episodeRuleFormRules = reactive<FormRules>({
 	sequence: [
-		{ required: true, message: t('module.subject.episode.post.message.episode.form-rule.sequence.required'), trigger: 'blur' },
-		{ type: 'number', message: t('module.subject.episode.post.message.episode.form-rule.sequence.type'), trigger: 'blur' },
+		{
+			required: true,
+			message: t(
+				'module.subject.episode.post.message.episode.form-rule.sequence.required'
+			),
+			trigger: 'blur',
+		},
+		{
+			type: 'number',
+			message: t(
+				'module.subject.episode.post.message.episode.form-rule.sequence.type'
+			),
+			trigger: 'blur',
+		},
 	],
 	air_time: [
 		{
 			type: 'date',
 			required: true,
-			message: t('module.subject.episode.post.message.episode.form-rule.air_time.required'),
+			message: t(
+				'module.subject.episode.post.message.episode.form-rule.air_time.required'
+			),
 			trigger: 'change',
 		},
 	],
 	group: [{ required: true }],
 	name: [
-		{ required: true, message: t('module.subject.episode.post.message.episode.form-rule.name.required'), trigger: 'blur' },
-		{ min: 1, max: 100, message: t('module.subject.episode.post.message.episode.form-rule.name.length'), trigger: 'blur' },
+		{
+			required: true,
+			message: t(
+				'module.subject.episode.post.message.episode.form-rule.name.required'
+			),
+			trigger: 'blur',
+		},
+		{
+			min: 1,
+			max: 100,
+			message: t(
+				'module.subject.episode.post.message.episode.form-rule.name.length'
+			),
+			trigger: 'blur',
+		},
 	],
 });
 
@@ -98,7 +125,11 @@ const episodeElFormRef = ref<FormInstance>();
 </script>
 
 <template>
-	<el-dialog v-model="dialogVisible" :title="t('module.subject.episode.post.title')" @close="onClose">
+	<el-dialog
+		v-model="dialogVisible"
+		:title="t('module.subject.episode.post.title')"
+		@close="onClose"
+	>
 		<el-form
 			ref="episodeElFormRef"
 			:rules="episodeRuleFormRules"
@@ -112,7 +143,9 @@ const episodeElFormRef = ref<FormInstance>();
 				<el-date-picker
 					v-model="episode.air_time"
 					type="date"
-					:placeholder="t('module.subject.episode.post.date-picker.placeholder')"
+					:placeholder="
+						t('module.subject.episode.post.date-picker.placeholder')
+					"
 				/>
 			</el-form-item>
 			<el-form-item
@@ -122,7 +155,11 @@ const episodeElFormRef = ref<FormInstance>();
 				width="110px"
 				show-overflow-tooltip
 			>
-				<el-select v-model="episode.group" clearable :placeholder="t('module.subject.episode.post.select.placeholder')">
+				<el-select
+					v-model="episode.group"
+					clearable
+					:placeholder="t('module.subject.episode.post.select.placeholder')"
+				>
 					<el-option
 						v-for="item in episodeGroups"
 						:key="item"
@@ -131,16 +168,30 @@ const episodeElFormRef = ref<FormInstance>();
 					/>
 				</el-select>
 			</el-form-item>
-			<el-form-item :label="t('module.subject.episode.post.label.name')" :label-width="formLabelWidth" prop="name">
+			<el-form-item
+				:label="t('module.subject.episode.post.label.name')"
+				:label-width="formLabelWidth"
+				prop="name"
+			>
 				<el-input v-model="episode.name" />
 			</el-form-item>
-			<el-form-item :label="t('module.subject.episode.post.label.name_cn')" :label-width="formLabelWidth">
+			<el-form-item
+				:label="t('module.subject.episode.post.label.name_cn')"
+				:label-width="formLabelWidth"
+			>
 				<el-input v-model="episode.name_cn" />
 			</el-form-item>
-			<el-form-item :label="t('module.subject.episode.post.label.sequence')" prop="sequence" :label-width="formLabelWidth">
+			<el-form-item
+				:label="t('module.subject.episode.post.label.sequence')"
+				prop="sequence"
+				:label-width="formLabelWidth"
+			>
 				<el-input v-model.number="episode.sequence" type="text" />
 			</el-form-item>
-			<el-form-item :label="t('module.subject.episode.post.label.description')" :label-width="formLabelWidth">
+			<el-form-item
+				:label="t('module.subject.episode.post.label.description')"
+				:label-width="formLabelWidth"
+			>
 				<el-input
 					v-model="episode.description"
 					:autosize="{ minRows: 3 }"
@@ -153,8 +204,8 @@ const episodeElFormRef = ref<FormInstance>();
 		</el-form>
 		<template #footer>
 			<span>
-				<el-button plain @click="onConfirm(episodeElFormRef)"> 
-					{{ t('module.subject.episode.post.footer.button.confirm') }}	
+				<el-button plain @click="onConfirm(episodeElFormRef)">
+					{{ t('module.subject.episode.post.footer.button.confirm') }}
 				</el-button>
 			</span>
 		</template>

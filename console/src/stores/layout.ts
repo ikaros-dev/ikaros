@@ -19,7 +19,7 @@ export const useLayoutStore = defineStore('layout', {
 		updatecurrentActivePathByRoutePath(path) {
 			this.currentActivePath = path;
 		},
-		setI18nCode(code:string) {
+		setI18nCode(code: string) {
 			this.i18nCode = code;
 		},
 	},

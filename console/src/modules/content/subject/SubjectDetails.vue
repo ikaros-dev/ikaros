@@ -51,7 +51,7 @@ const route = useRoute();
 const settingStore = useSettingStore();
 const userStore = useUserStore();
 const subjectStore = useSubjectStore();
-const {t} = useI18n();
+const { t } = useI18n();
 
 const refreshSubjectRelactionDialog = ref(true);
 watch(route, async () => {
@@ -200,11 +200,10 @@ const deleteSubject = async () => {
 		})
 		.then(() => {
 			ElMessage.success(
-				t('module.subject.details.message.operate.delete.success',
-					{name: subject.value.name}
-				)
-
-			)
+				t('module.subject.details.message.operate.delete.success', {
+					name: subject.value.name,
+				})
+			);
 			router.push('/subjects');
 		});
 };
@@ -214,7 +213,7 @@ const openSubjectSyncDialog = () => {
 	subjectSyncDialogVisible.value = true;
 };
 const onSubjectSyncDialogCloseWithSubjectName = () => {
-	ElMessage.success(t('module.subject.details.message.operate.update.success',));
+	ElMessage.success(t('module.subject.details.message.operate.update.success'));
 	fetchSubjectById();
 };
 
@@ -273,7 +272,9 @@ const updateSubjectCollectionProgress = async () => {
 		subjectId: subject.value.id as number,
 		progress: subjectCollection.value.main_ep_progress as number,
 	});
-	ElMessage.success(t('module.subject.collect.message.operate.update-progress.success'));
+	ElMessage.success(
+		t('module.subject.collect.message.operate.update-progress.success')
+	);
 	await fetchDatas();
 };
 
@@ -287,7 +288,9 @@ const changeSubjectCollectState = async () => {
 			userId: userStore.currentUser?.entity?.id as number,
 			subjectId: subject.value.id as number,
 		});
-		ElMessage.success(t('module.subject.details.message.operate.cancel.success'));
+		ElMessage.success(
+			t('module.subject.details.message.operate.cancel.success')
+		);
 	} else {
 		// collect
 		subjectCollectDialogVisible.value = true;
@@ -348,7 +351,9 @@ const udpateEpisodeCollectionProgress = async (
 		episodeId: episode.id as number,
 		finish: isFinish,
 	});
-	ElMessage.success(t('module.subject.episode.collect.message.operate.mark-finish'));
+	ElMessage.success(
+		t('module.subject.episode.collect.message.operate.mark-finish')
+	);
 	await fetchDatas();
 };
 
@@ -391,7 +396,11 @@ const delegateBatchMatchingSubject = async (
 			},
 		})
 		.then(() => {
-			ElMessage.success(t('module.attachment.reference.message.operate.batch-match-subject-episodes-atts'))
+			ElMessage.success(
+				t(
+					'module.attachment.reference.message.operate.batch-match-subject-episodes-atts'
+				)
+			);
 			window.location.reload();
 		})
 		.finally(() => {
@@ -414,7 +423,11 @@ const delegateBatchMatchingEpisode = async (
 			},
 		})
 		.then(() => {
-			ElMessage.success(t('module.attachment.reference.message.operate.batch-match-episode-atts'));
+			ElMessage.success(
+				t(
+					'module.attachment.reference.message.operate.batch-match-episode-atts'
+				)
+			);
 			window.location.reload();
 		})
 		.finally(() => {
@@ -435,7 +448,9 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 			referenceId: currentOperateEpisode.value?.id as number,
 		},
 	});
-	ElMessage.success(t('module.attachment.reference.message.operate.batch-match-episode-atts'));
+	ElMessage.success(
+		t('module.attachment.reference.message.operate.batch-match-episode-atts')
+	);
 	await fetchDatas();
 };
 
@@ -454,7 +469,9 @@ const onTagRemove = async (tag: SubjectTag) => {
 		masterId: tag.subjectId,
 		name: tag.name,
 	});
-	ElMessage.success(t('module.subject.tag.message.operate.remove', {name: tag.name}))
+	ElMessage.success(
+		t('module.subject.tag.message.operate.remove', { name: tag.name })
+	);
 	await fetchTags();
 };
 const newTagInputVisible = ref(false);
@@ -473,7 +490,9 @@ const onNewTagNameChange = async () => {
 		tagName === '' ||
 		tags.value.filter((t) => tagName === t.name).length > 0
 	) {
-		ElMessage.warning(t('module.subject.tag.message.hint.rename-when-repetition'));
+		ElMessage.warning(
+			t('module.subject.tag.message.hint.rename-when-repetition')
+		);
 		newTagInputVisible.value = false;
 		return;
 	}
@@ -486,13 +505,38 @@ const onNewTagNameChange = async () => {
 	});
 	ElMessage.success('新建标签【' + newTag.value.name + '】成功');
 	ElMessage.success(
-		t('module.subject.tag.message.operate.create',
-			{name: newTag.value.name}
-		)
-	)
+		t('module.subject.tag.message.operate.create', { name: newTag.value.name })
+	);
 	await fetchTags();
 	newTagInputVisible.value = false;
 	newTagInputRef.value!.input!.value = '';
+};
+
+const batchCancenMatchingSubjectButtonLoading = ref(false);
+const deleteBatchingAttachments = async () => {
+	// console.debug('deleteBatchingAttachments subject episodes', subject.value.episodes)
+	batchCancenMatchingSubjectButtonLoading.value = true;
+	await subject.value.episodes?.forEach(async (ep) => {
+		if (ep && ep.resources && ep.resources.length > 0) {
+			await ep.resources.forEach(async (epres) => {
+				const attId = epres.attachmentId;
+				await apiClient.attachmentRef
+					.removeByTypeAndAttachmentIdAndReferenceId({
+						attachmentReference: {
+							type: 'EPISODE',
+							attachmentId: attId,
+							referenceId: ep.id,
+						},
+					})
+					.catch((e) => console.error(e));
+			});
+		}
+	});
+	batchCancenMatchingSubjectButtonLoading.value = false;
+	ElMessage.success(
+		t('module.subject.details.message.operate.delete-batch-attachments.success')
+	);
+	window.location.reload();
 };
 
 onMounted(fetchDatas);
@@ -530,13 +574,16 @@ onMounted(fetchDatas);
 
 	<el-row>
 		<el-col :span="24">
-			<el-button plain @click="toSubjectPut"> 
+			<el-button plain @click="toSubjectPut">
 				{{ t('module.subject.details.text.button.edit') }}
 			</el-button>
 			<el-button plain @click="openSubjectSyncDialog">
 				{{ t('module.subject.details.text.button.update') }}
 			</el-button>
-			<el-popconfirm :title="t('module.subject.details.dele-popconfirm.title')" @confirm="deleteSubject">
+			<el-popconfirm
+				:title="t('module.subject.details.dele-popconfirm.title')"
+				@confirm="deleteSubject"
+			>
 				<template #reference>
 					<el-button plain type="danger">
 						{{ t('module.subject.details.text.button.delete') }}
@@ -558,7 +605,7 @@ onMounted(fetchDatas);
 						style="width: 100%"
 						:src="subject.cover as string"
 						:zoom-rate="1.2"
-						:preview-src-list="new Array(subject.cover)  as string[]"
+						:preview-src-list="new Array(subject.cover) as string[]"
 						:initial-index="4"
 						fit="cover"
 					/>
@@ -574,22 +621,37 @@ onMounted(fetchDatas);
 						<el-descriptions-item label="ID" :span="1">
 							{{ subject.id }}
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.name')" :span="1">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.name')"
+							:span="1"
+						>
 							{{ subject.name }}
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.name_cn')" :span="1">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.name_cn')"
+							:span="1"
+						>
 							{{ subject.name_cn }}
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.air_time')"  :span="1">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.air_time')"
+							:span="1"
+						>
 							{{ subject.airTime }}
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.type')"  :span="1">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.type')"
+							:span="1"
+						>
 							{{ subject.type }}
 						</el-descriptions-item>
 						<el-descriptions-item label="NSFW" :span="1">
 							{{ subject.nsfw }}
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.summary')"  :span="6">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.summary')"
+							:span="6"
+						>
 							{{ subject.summary }}
 						</el-descriptions-item>
 					</el-descriptions>
@@ -598,7 +660,9 @@ onMounted(fetchDatas);
 						size="large"
 						border
 					>
-						<el-descriptions-item :label="t('module.subject.details.label.sync-platform')" >
+						<el-descriptions-item
+							:label="t('module.subject.details.label.sync-platform')"
+						>
 							<span v-for="(sync, index) in subject.syncs" :key="index">
 								{{ sync.platform }} :
 								<span v-if="sync.platform === 'BGM_TV'">
@@ -616,7 +680,9 @@ onMounted(fetchDatas);
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions size="large" border>
-						<el-descriptions-item :label="t('module.subject.details.label.tag')" >
+						<el-descriptions-item
+							:label="t('module.subject.details.label.tag')"
+						>
 							<el-tag
 								v-for="tag in tags"
 								:key="tag.id"
@@ -641,14 +707,24 @@ onMounted(fetchDatas);
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions size="large" border>
-						<el-descriptions-item :label="t('module.subject.details.label.collect-status')" >
+						<el-descriptions-item
+							:label="t('module.subject.details.label.collect-status')"
+						>
 							<el-popconfirm
 								:title="
-									t('module.subject.details.cancel-collect-popconfirm.title-prefix') +
+									t(
+										'module.subject.details.cancel-collect-popconfirm.title-prefix'
+									) +
 									(subjectCollection && subjectCollection.type
-										? t('module.subject.details.cancel-collect-popconfirm.cancel-collect')
-										: t('module.subject.details.cancel-collect-popconfirm.collect')) +
-										t('module.subject.details.cancel-collect-popconfirm.title-postfix')
+										? t(
+												'module.subject.details.cancel-collect-popconfirm.cancel-collect'
+										  )
+										: t(
+												'module.subject.details.cancel-collect-popconfirm.collect'
+										  )) +
+									t(
+										'module.subject.details.cancel-collect-popconfirm.title-postfix'
+									)
 								"
 								@confirm="changeSubjectCollectState"
 							>
@@ -680,16 +756,33 @@ onMounted(fetchDatas);
 								placeholder="Select"
 								@change="updateSubjectCollection"
 							>
-								<el-option :label="t('module.subject.collect.type.wish')" value="WISH" />
-								<el-option  :label="t('module.subject.collect.type.doing')"  value="DOING" />
-								<el-option  :label="t('module.subject.collect.type.done')"  value="DONE" />
-								<el-option  :label="t('module.subject.collect.type.shelve')"  value="SHELVE" />
-								<el-option  :label="t('module.subject.collect.type.discard')"  value="DISCARD" />
+								<el-option
+									:label="t('module.subject.collect.type.wish')"
+									value="WISH"
+								/>
+								<el-option
+									:label="t('module.subject.collect.type.doing')"
+									value="DOING"
+								/>
+								<el-option
+									:label="t('module.subject.collect.type.done')"
+									value="DONE"
+								/>
+								<el-option
+									:label="t('module.subject.collect.type.shelve')"
+									value="SHELVE"
+								/>
+								<el-option
+									:label="t('module.subject.collect.type.discard')"
+									value="DISCARD"
+								/>
 							</el-select>
-							&nbsp;&nbsp; {{t('module.subject.collect.progress.text')}}: 
+							&nbsp;&nbsp; {{ t('module.subject.collect.progress.text') }}:
 							<el-input
 								v-model="subjectCollection.main_ep_progress"
-								:placeholder="t('module.subject.collect.progress.update-input.placeholder')"
+								:placeholder="
+									t('module.subject.collect.progress.update-input.placeholder')
+								"
 								style="width: 200px"
 								@change="updateSubjectCollectionProgress"
 							/>
@@ -717,15 +810,24 @@ onMounted(fetchDatas);
 							width="80px"
 							sortable
 						/>
-						<el-table-column :label="t('module.subject.details.episode.label.name')" prop="name" />
-						<el-table-column :label="t('module.subject.details.episode.label.name_cn')" prop="name_cn" />
+						<el-table-column
+							:label="t('module.subject.details.episode.label.name')"
+							prop="name"
+						/>
+						<el-table-column
+							:label="t('module.subject.details.episode.label.name_cn')"
+							prop="name_cn"
+						/>
 						<el-table-column
 							:label="t('module.subject.details.episode.label.air_time')"
 							prop="air_time"
 							sortable
 							:formatter="airTimeDateFormatter"
 						/>
-						<el-table-column :label="t('module.subject.details.episode.label.operate')" width="320">
+						<el-table-column
+							:label="t('module.subject.details.episode.label.operate')"
+							width="320"
+						>
 							<template #header>
 								<el-button
 									plain
@@ -737,12 +839,36 @@ onMounted(fetchDatas);
 										}
 									"
 								>
-									{{t('module.subject.details.episode.label.button.batch-resources')}}
+									{{
+										t(
+											'module.subject.details.episode.label.button.batch-resources'
+										)
+									}}
 								</el-button>
+								<el-popconfirm
+									:title="
+										t('module.subject.details.cancel-batch-popconfirm.title')
+									"
+									@confirm="deleteBatchingAttachments"
+								>
+									<template #reference>
+										<el-button
+											plain
+											type="danger"
+											:loading="batchCancenMatchingSubjectButtonLoading"
+										>
+											{{
+												t(
+													'module.subject.details.episode.label.button.cancel-batch-resources'
+												)
+											}}
+										</el-button>
+									</template>
+								</el-popconfirm>
 							</template>
 							<template #default="scoped">
 								<el-button plain @click="showEpisodeDetails(scoped.row)">
-									{{t('module.subject.details.episode.label.button.details')}}
+									{{ t('module.subject.details.episode.label.button.details') }}
 								</el-button>
 
 								<el-button
@@ -785,11 +911,11 @@ onMounted(fetchDatas);
 										)
 									"
 								>
-									<span v-if="scoped.row.resources[0].canRead"> 
-										{{ t('module.subject.details.episode.label.button.push') }}	
+									<span v-if="scoped.row.resources[0].canRead">
+										{{ t('module.subject.details.episode.label.button.push') }}
 									</span>
-									<span v-else> 
-										{{ t('module.subject.details.episode.label.button.pull') }}	
+									<span v-else>
+										{{ t('module.subject.details.episode.label.button.pull') }}
 									</span>
 								</el-button>
 							</template>

@@ -35,7 +35,7 @@ import { base64Encode } from '@/utils/string-util';
 import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
-const {t} = useI18n();
+const { t } = useI18n();
 
 const subject = ref<Subject>({
 	name: '',
@@ -47,12 +47,29 @@ const subject = ref<Subject>({
 
 const subjectRuleFormRules = reactive<FormRules>({
 	name: [
-		{ required: true, message: t('module.subject.post.message.form-rule.name.required'), trigger: 'blur' },
-		{ min: 1, max: 100, message: t('module.subject.post.message.form-rule.name.length'), trigger: 'blur' },
+		{
+			required: true,
+			message: t('module.subject.post.message.form-rule.name.required'),
+			trigger: 'blur',
+		},
+		{
+			min: 1,
+			max: 100,
+			message: t('module.subject.post.message.form-rule.name.length'),
+			trigger: 'blur',
+		},
 	],
 	summary: [
-		{ required: true, message: t('module.subject.post.message.form-rule.summary.required'), trigger: 'blur' },
-		{ min: 5, message: t('module.subject.post.message.form-rule.summary.length'), trigger: 'blur' },
+		{
+			required: true,
+			message: t('module.subject.post.message.form-rule.summary.required'),
+			trigger: 'blur',
+		},
+		{
+			min: 5,
+			message: t('module.subject.post.message.form-rule.summary.length'),
+			trigger: 'blur',
+		},
 	],
 	type: [
 		{
@@ -152,11 +169,16 @@ const onCloseWithAttachment = (attachment) => {
 							</el-form-item>
 						</el-col>
 						<el-col :span="16">
-							<el-form-item :label="t('module.subject.post.label.air_time')" prop="airTime">
+							<el-form-item
+								:label="t('module.subject.post.label.air_time')"
+								prop="airTime"
+							>
 								<el-date-picker
 									v-model="subject.airTime"
 									type="date"
-									:placeholder="t('module.subject.post.date-picker.placeholder')"
+									:placeholder="
+										t('module.subject.post.date-picker.placeholder')
+									"
 								/>
 							</el-form-item>
 						</el-col>
@@ -197,7 +219,10 @@ const onCloseWithAttachment = (attachment) => {
 					</el-radio-group>
 				</el-form-item>
 
-				<el-form-item :label="t('module.subject.post.label.summary')" prop="summary">
+				<el-form-item
+					:label="t('module.subject.post.label.summary')"
+					prop="summary"
+				>
 					<el-input
 						v-model="subject.summary"
 						:autosize="{ minRows: 2 }"
@@ -237,9 +262,19 @@ const onCloseWithAttachment = (attachment) => {
 								{{ episodeGroupLabelMap.get(scoped.row.group) }}
 							</template>
 						</el-table-column>
-						<el-table-column :label="t('module.subject.post.label.episode-table.sequence')" prop="sequence" width="90px" />
-						<el-table-column :label="t('module.subject.post.label.episode-table.name')" prop="name" />
-						<el-table-column :label="t('module.subject.post.label.episode-table.name_cn')" prop="name_cn" />
+						<el-table-column
+							:label="t('module.subject.post.label.episode-table.sequence')"
+							prop="sequence"
+							width="90px"
+						/>
+						<el-table-column
+							:label="t('module.subject.post.label.episode-table.name')"
+							prop="name"
+						/>
+						<el-table-column
+							:label="t('module.subject.post.label.episode-table.name_cn')"
+							prop="name_cn"
+						/>
 						<el-table-column
 							:label="t('module.subject.post.label.episode-table.air_time')"
 							prop="air_time"
@@ -249,19 +284,19 @@ const onCloseWithAttachment = (attachment) => {
 						<el-table-column align="right" width="350">
 							<template #header>
 								<el-button plain @click="episodePostDialogVisible = true">
-									{{t('module.subject.post.text.button.episode.add')}}
+									{{ t('module.subject.post.text.button.episode.add') }}
 								</el-button>
 							</template>
 							<template #default="scoped">
 								<el-button plain @click="showEpisodeDetails(scoped.row)">
-									{{t('module.subject.post.text.button.episode.details')}}
+									{{ t('module.subject.post.text.button.episode.details') }}
 								</el-button>
 								<el-button
 									plain
 									type="danger"
 									@click="removeCurrentRowEpisode(scoped.row)"
 								>
-								{{t('module.subject.post.text.button.episode.remove')}}
+									{{ t('module.subject.post.text.button.episode.remove') }}
 								</el-button>
 							</template>
 						</el-table-column>
@@ -270,7 +305,7 @@ const onCloseWithAttachment = (attachment) => {
 
 				<el-form-item>
 					<el-button plain @click="submitForm(subjectElFormRef)">
-						{{t('module.subject.post.text.button.subject.create')}}
+						{{ t('module.subject.post.text.button.subject.create') }}
 					</el-button>
 				</el-form-item>
 			</el-form>

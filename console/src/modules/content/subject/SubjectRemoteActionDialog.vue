@@ -19,7 +19,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { useI18n } from 'vue-i18n';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -99,12 +99,20 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 					// 		actionButtonLoading.value = false;
 					// 	});
 				}
-				ElMessage.success(t('module.subject.dialog.remote-action.message.operate.request-remote.success'));
+				ElMessage.success(
+					t(
+						'module.subject.dialog.remote-action.message.operate.request-remote.success'
+					)
+				);
 				dialogVisible.value = false;
 				emit('close');
 			} else {
 				console.log('error submit!', fields);
-				ElMessage.error(t('module.subject.dialog.remote-action.message.operate.request-remote.validate-fail'));
+				ElMessage.error(
+					t(
+						'module.subject.dialog.remote-action.message.operate.request-remote.validate-fail'
+					)
+				);
 			}
 		});
 	}
@@ -115,7 +123,9 @@ const fileActionFormRules = reactive<FormRules>({
 	remote: [
 		{
 			required: true,
-			message: t('module.subject.dialog.remote-action.form-rule.remote.required.message'),
+			message: t(
+				'module.subject.dialog.remote-action.form-rule.remote.required.message'
+			),
 			trigger: 'change',
 		},
 	],
@@ -134,7 +144,10 @@ onMounted(() => {
 </script>
 
 <template>
-	<el-dialog v-model="dialogVisible" :title="t('module.subject.dialog.remote-action.title')">
+	<el-dialog
+		v-model="dialogVisible"
+		:title="t('module.subject.dialog.remote-action.title')"
+	>
 		<el-alert
 			:title="t('module.subject.dialog.remote-action.alert.title')"
 			type="warning"
@@ -151,7 +164,10 @@ onMounted(() => {
 			:model="fileRemoteAction"
 			label-width="120px"
 		>
-			<el-form-item :label="t('module.subject.dialog.remote-action.form-label.remote')" prop="remote">
+			<el-form-item
+				:label="t('module.subject.dialog.remote-action.form-label.remote')"
+				prop="remote"
+			>
 				<el-select v-model="fileRemoteAction.remote">
 					<el-option
 						v-for="remote in subjectRemoteArr"
@@ -161,12 +177,14 @@ onMounted(() => {
 					/>
 				</el-select>
 			</el-form-item>
-			<el-form-item :label="t('module.subject.dialog.remote-action.form-label.subject-id')">
+			<el-form-item
+				:label="t('module.subject.dialog.remote-action.form-label.subject-id')"
+			>
 				<el-input v-model="fileRemoteAction.subjectId" disabled />
 			</el-form-item>
 		</el-form>
 		<span v-else>
-			{{t('module.subject.dialog.remote-action.message.form-hint-nouse')}}
+			{{ t('module.subject.dialog.remote-action.message.form-hint-nouse') }}
 		</span>
 		<template #footer>
 			<span>

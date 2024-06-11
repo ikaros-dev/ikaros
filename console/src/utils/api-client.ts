@@ -83,9 +83,7 @@ axiosInstance.interceptors.response.use(
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('common.exception.request_parameter_error') +
-					': ' +
-					msg
+				i18n.global.t('common.exception.request_parameter_error') + ': ' + msg
 			);
 		} else if (status === 401) {
 			console.error(
@@ -100,9 +98,7 @@ axiosInstance.interceptors.response.use(
 				i18n.global.t('common.exception.forbidden') + ': ' + msg,
 				error
 			);
-			ElMessage.error(
-				i18n.global.t('common.exception.forbidden') + ': ' + msg
-			);
+			ElMessage.error(i18n.global.t('common.exception.forbidden') + ': ' + msg);
 		} else if (status === 404) {
 			return Promise.resolve();
 			// console.error(
@@ -139,9 +135,7 @@ axiosInstance.interceptors.response.use(
 				error
 			);
 			ElMessage.error(
-				i18n.global.t('common.exception.unknown_error_with_title') +
-					': ' +
-					msg
+				i18n.global.t('common.exception.unknown_error_with_title') + ': ' + msg
 			);
 		}
 

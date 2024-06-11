@@ -4,7 +4,7 @@ import { ElButton, ElDialog } from 'element-plus';
 import AttachmentDirectoryTreeSelect from '@/components/modules/content/attachment/AttachmentDirectoryTreeSelect.vue';
 import { useI18n } from 'vue-i18n';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -61,10 +61,14 @@ const onDirectorySelectDialogButtonClick = async () => {
 		<template #footer>
 			<span class="dialog-footer">
 				<el-button @click="onClose">
-					{{ t('module.attachment.dialog.directory-select.footer.button.cancel') }}
+					{{
+						t('module.attachment.dialog.directory-select.footer.button.cancel')
+					}}
 				</el-button>
 				<el-button type="primary" @click="onDirectorySelectDialogButtonClick">
-					{{ t('module.attachment.dialog.directory-select.footer.button.submit') }}
+					{{
+						t('module.attachment.dialog.directory-select.footer.button.submit')
+					}}
 				</el-button>
 			</span>
 		</template>

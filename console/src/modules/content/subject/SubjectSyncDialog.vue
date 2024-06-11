@@ -16,7 +16,7 @@ import {
 } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -109,16 +109,26 @@ const subjectSyncFormRules = reactive<FormRules>({
 	platform: [
 		{
 			required: true,
-			message: t('module.subject.dialog.sync.message.form-rule.platform.required'),
+			message: t(
+				'module.subject.dialog.sync.message.form-rule.platform.required'
+			),
 			trigger: 'change',
 		},
 	],
 	platformId: [
-		{ required: true, message: t('module.subject.dialog.sync.message.form-rule.platform-id.required'), trigger: 'blur' },
+		{
+			required: true,
+			message: t(
+				'module.subject.dialog.sync.message.form-rule.platform-id.required'
+			),
+			trigger: 'blur',
+		},
 		{
 			min: 1,
 			max: 100,
-			message: t('module.subject.dialog.sync.message.form-rule.platform-id.length'),
+			message: t(
+				'module.subject.dialog.sync.message.form-rule.platform-id.length'
+			),
 			trigger: 'blur',
 		},
 	],
@@ -141,7 +151,11 @@ onMounted(() => {
 <template>
 	<el-dialog
 		v-model="dialogVisible"
-		:title="props.isMerge ? t('module.subject.dialog.sync.title.update') : t('module.subject.dialog.sync.title.pull')"
+		:title="
+			props.isMerge
+				? t('module.subject.dialog.sync.title.update')
+				: t('module.subject.dialog.sync.title.pull')
+		"
 	>
 		<el-form
 			v-if="subjectPlatformArr.length > 0"
@@ -150,7 +164,10 @@ onMounted(() => {
 			:model="subjectSync"
 			label-width="120px"
 		>
-			<el-form-item :label="t('module.subject.dialog.sync.label.platform')" prop="platform">
+			<el-form-item
+				:label="t('module.subject.dialog.sync.label.platform')"
+				prop="platform"
+			>
 				<el-select v-model="subjectSync.platform">
 					<el-option
 						v-for="platform in subjectPlatformArr"
@@ -160,18 +177,19 @@ onMounted(() => {
 					/>
 				</el-select>
 			</el-form-item>
-			<el-form-item :label="t('module.subject.dialog.sync.label.subject-platform-id')" prop="platformId">
+			<el-form-item
+				:label="t('module.subject.dialog.sync.label.subject-platform-id')"
+				prop="platformId"
+			>
 				<el-input
 					v-model="subjectSync.platformId"
 					:placeholder="t('module.subject.dialog.sync.placeholder.platform-id')"
 				/>
 			</el-form-item>
 		</el-form>
-		<span v-else
-			>
+		<span v-else>
 			{{ t('module.subject.dialog.sync.text.platform-no-available-hint-msg') }}
-			</span
-		>
+		</span>
 		<template #footer>
 			<span>
 				<el-button
@@ -179,7 +197,11 @@ onMounted(() => {
 					:loading="syncButtonLoading"
 					@click="onConfirm(subjectSyncFormRef)"
 				>
-					{{ subjectPlatformArr.length === 0 ? t('module.subject.dialog.sync.footer.button.cancel') : t('module.subject.dialog.sync.footer.button.confirm') }}
+					{{
+						subjectPlatformArr.length === 0
+							? t('module.subject.dialog.sync.footer.button.cancel')
+							: t('module.subject.dialog.sync.footer.button.confirm')
+					}}
 				</el-button>
 			</span>
 		</template>

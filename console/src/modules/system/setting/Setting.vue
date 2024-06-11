@@ -16,7 +16,7 @@ import { useSettingStore } from '@/stores/setting';
 import { watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const setting = ref({
 	SITE_TITLE: '',
@@ -40,23 +40,56 @@ const setting = ref({
 
 const settingFormRules = reactive<FormRules>({
 	SITE_TITLE: [
-		{ required: true, message: t('module.setting.message.form-rule.site-title.required'), trigger: 'blur' },
-		{ min: 3, max: 15, message: t('module.setting.message.form-rule.site-title.length'), trigger: 'blur' },
+		{
+			required: true,
+			message: t('module.setting.message.form-rule.site-title.required'),
+			trigger: 'blur',
+		},
+		{
+			min: 3,
+			max: 15,
+			message: t('module.setting.message.form-rule.site-title.length'),
+			trigger: 'blur',
+		},
 	],
 	MAIL_SMTP_HOST: [
-		{ required: true, message: t('module.setting.message.form-rule.mail-smtp-host.required'), trigger: 'blur' },
+		{
+			required: true,
+			message: t('module.setting.message.form-rule.mail-smtp-host.required'),
+			trigger: 'blur',
+		},
 	],
 	MAIL_SMTP_PORT: [
-		{ required: true, message: t('module.setting.message.form-rule.mail-smtp-port.required'), trigger: 'blur' },
+		{
+			required: true,
+			message: t('module.setting.message.form-rule.mail-smtp-port.required'),
+			trigger: 'blur',
+		},
 	],
 	MAIL_SMTP_ACCOUNT: [
-		{ required: true, message: t('module.setting.message.form-rule.mail-smtp-account.required'), trigger: 'blur' },
+		{
+			required: true,
+			message: t('module.setting.message.form-rule.mail-smtp-account.required'),
+			trigger: 'blur',
+		},
 	],
 	MAIL_SMTP_PASSWORD: [
-		{ required: true, message: t('module.setting.message.form-rule.mail-smtp-password.required'), trigger: 'blur' },
+		{
+			required: true,
+			message: t(
+				'module.setting.message.form-rule.mail-smtp-password.required'
+			),
+			trigger: 'blur',
+		},
 	],
 	MAIL_RECEIVE_ADDRESS: [
-		{ required: true, message: t('module.setting.message.form-rule.mail-receive-address.required'), trigger: 'blur' },
+		{
+			required: true,
+			message: t(
+				'module.setting.message.form-rule.mail-receive-address.required'
+			),
+			trigger: 'blur',
+		},
 	],
 });
 
@@ -118,7 +151,10 @@ onMounted(getSettingFromServer);
 					/>
 				</el-form-item>
 				<span v-if="mailEnable">
-					<el-form-item :label="t('module.setting.label.tab.item.mail.protocol')" prop="MAIL_PROTOCOL">
+					<el-form-item
+						:label="t('module.setting.label.tab.item.mail.protocol')"
+						prop="MAIL_PROTOCOL"
+					>
 						<el-input
 							v-model="setting.MAIL_PROTOCOL"
 							style="max-width: 600px"
@@ -126,7 +162,10 @@ onMounted(getSettingFromServer);
 							disabled
 						/>
 					</el-form-item>
-					<el-form-item :label="t('module.setting.label.tab.item.mail.smtp.host')" prop="MAIL_SMTP_HOST">
+					<el-form-item
+						:label="t('module.setting.label.tab.item.mail.smtp.host')"
+						prop="MAIL_SMTP_HOST"
+					>
 						<el-input
 							v-model="setting.MAIL_SMTP_HOST"
 							:placeholder="t('module.setting.placeholder.smtp.host')"
@@ -134,7 +173,10 @@ onMounted(getSettingFromServer);
 							clearable
 						/>
 					</el-form-item>
-					<el-form-item :label="t('module.setting.label.tab.item.mail.smtp.port')" prop="MAIL_SMTP_PORT">
+					<el-form-item
+						:label="t('module.setting.label.tab.item.mail.smtp.port')"
+						prop="MAIL_SMTP_PORT"
+					>
 						<el-input
 							v-model="setting.MAIL_SMTP_PORT"
 							:placeholder="t('module.setting.placeholder.smtp.port')"
@@ -142,7 +184,10 @@ onMounted(getSettingFromServer);
 							clearable
 						/>
 					</el-form-item>
-					<el-form-item :label="t('module.setting.label.tab.item.mail.smtp.account')" prop="MAIL_SMTP_ACCOUNT">
+					<el-form-item
+						:label="t('module.setting.label.tab.item.mail.smtp.account')"
+						prop="MAIL_SMTP_ACCOUNT"
+					>
 						<el-input
 							v-model="setting.MAIL_SMTP_ACCOUNT"
 							:placeholder="t('module.setting.placeholder.smtp.account')"
@@ -150,7 +195,10 @@ onMounted(getSettingFromServer);
 							clearable
 						/>
 					</el-form-item>
-					<el-form-item :label="t('module.setting.label.tab.item.mail.smtp.password')" prop="MAIL_SMTP_PASSWORD">
+					<el-form-item
+						:label="t('module.setting.label.tab.item.mail.smtp.password')"
+						prop="MAIL_SMTP_PASSWORD"
+					>
 						<el-input
 							v-model="setting.MAIL_SMTP_PASSWORD"
 							:placeholder="t('module.setting.placeholder.smtp.password')"
@@ -169,17 +217,26 @@ onMounted(getSettingFromServer);
 							clearable
 						/>
 					</el-form-item>
-					<el-form-item :label="t('module.setting.label.tab.item.mail.smtp.receive-address')" prop="MAIL_RECEIVE_ADDRESS">
+					<el-form-item
+						:label="
+							t('module.setting.label.tab.item.mail.smtp.receive-address')
+						"
+						prop="MAIL_RECEIVE_ADDRESS"
+					>
 						<el-input
 							v-model="setting.MAIL_RECEIVE_ADDRESS"
-							:placeholder="t('module.setting.placeholder.smtp.receive-address')"
+							:placeholder="
+								t('module.setting.placeholder.smtp.receive-address')
+							"
 							style="max-width: 600px"
 							clearable
 						/>
 					</el-form-item>
 				</span>
 				<el-form-item>
-					<el-button type="primary" @click="updateSetting">{{t('module.setting.button.save')}}</el-button>
+					<el-button type="primary" @click="updateSetting">{{
+						t('module.setting.button.save')
+					}}</el-button>
 				</el-form-item>
 			</el-tab-pane>
 			<!-- <el-tab-pane label="远端配置">

@@ -127,7 +127,9 @@ onMounted(initProfileAndUsername);
 						</el-form-item>
 
 						<el-form-item>
-							<el-button type="primary" @click="updateProfile">{{t('module.user.profile.label.btn_save')}}</el-button>
+							<el-button type="primary" @click="updateProfile">{{
+								t('module.user.profile.label.btn_save')
+							}}</el-button>
 						</el-form-item>
 					</ElCol>
 					<ElCol :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
@@ -160,7 +162,9 @@ onMounted(initProfileAndUsername);
 					/>
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary" @click="updatePassword">{{t('module.user.profile.label.btn_save')}}</el-button>
+					<el-button type="primary" @click="updatePassword">{{
+						t('module.user.profile.label.btn_save')
+					}}</el-button>
 				</el-form-item>
 			</el-tab-pane>
 		</el-tabs>

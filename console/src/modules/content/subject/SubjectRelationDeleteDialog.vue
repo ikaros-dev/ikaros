@@ -17,7 +17,7 @@ import { useSubjectStore } from '@/stores/subject';
 import { useI18n } from 'vue-i18n';
 
 const subjectStore = useSubjectStore();
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -95,7 +95,9 @@ const reqRemoveRelaction = async () => {
 		});
 		subjectStore.clearSubjectCacheById(subRel.subject);
 	});
-	ElMessage.success(t('module.subject.relaction.dialog.delete.message.remove-success'));
+	ElMessage.success(
+		t('module.subject.relaction.dialog.delete.message.remove-success')
+	);
 	reqRemoveRelactionBtnLoading.value = false;
 	onClose();
 };
@@ -115,11 +117,17 @@ const reqRemoveRelaction = async () => {
 		@close="onClose"
 	>
 		<el-form label-width="100px" style="max-width: 460px">
-			<el-form-item :label="t('module.subject.relaction.dialog.delete.label.master-subject')">
+			<el-form-item
+				:label="
+					t('module.subject.relaction.dialog.delete.label.master-subject')
+				"
+			>
 				<el-input disabled :value="props.masterSubjectId" />
 			</el-form-item>
-			<el-form-item :label="t('module.subject.relaction.dialog.delete.label.slave-subject')">
-				<el-input v-model="slaveSubjectIdsStr" disabled >
+			<el-form-item
+				:label="t('module.subject.relaction.dialog.delete.label.slave-subject')"
+			>
+				<el-input v-model="slaveSubjectIdsStr" disabled>
 					<template #append>
 						<el-button
 							:icon="Tickets"
@@ -129,11 +137,10 @@ const reqRemoveRelaction = async () => {
 				</el-input>
 			</el-form-item>
 
-			<el-form-item :label="t('module.subject.relaction.dialog.delete.label.type')">
-				<el-input
-					v-model="slaveSubjectTypesStr"
-					disabled
-				/>
+			<el-form-item
+				:label="t('module.subject.relaction.dialog.delete.label.type')"
+			>
+				<el-input v-model="slaveSubjectTypesStr" disabled />
 			</el-form-item>
 		</el-form>
 		<template #footer>
@@ -141,10 +148,13 @@ const reqRemoveRelaction = async () => {
 				<el-button @click="dialogVisible = false">
 					{{ t('module.subject.relaction.dialog.delete.button.cancel') }}
 				</el-button>
-				<el-popconfirm :title="t('module.subject.relaction.dialog.delete.popconfirm.title')" @confirm="reqRemoveRelaction">
+				<el-popconfirm
+					:title="t('module.subject.relaction.dialog.delete.popconfirm.title')"
+					@confirm="reqRemoveRelaction"
+				>
 					<template #reference>
 						<el-button type="primary" :loading="reqRemoveRelactionBtnLoading">
-							{{t('module.subject.relaction.dialog.delete.button.confirm')}}
+							{{ t('module.subject.relaction.dialog.delete.button.confirm') }}
 						</el-button>
 					</template>
 				</el-popconfirm>

@@ -27,7 +27,9 @@ onMounted(fetchActuatorInfo);
 					<el-col :span="18">
 						<el-row>
 							<el-col :span="24">
-								<span style="font-size: x-small; color: gray">{{t('module.dashboard.label.attachment')}}</span>
+								<span style="font-size: x-small; color: gray">{{
+									t('module.dashboard.label.attachment')
+								}}</span>
 							</el-col>
 							<br />
 							<el-col :span="24">
@@ -49,7 +51,9 @@ onMounted(fetchActuatorInfo);
 					<el-col :span="18">
 						<el-row>
 							<el-col :span="24">
-								<span style="font-size: x-small; color: gray">{{t('module.dashboard.label.subject')}}</span>
+								<span style="font-size: x-small; color: gray">{{
+									t('module.dashboard.label.subject')
+								}}</span>
 							</el-col>
 							<br />
 							<el-col :span="24">
@@ -71,7 +75,9 @@ onMounted(fetchActuatorInfo);
 					<el-col :span="18">
 						<el-row>
 							<el-col :span="24">
-								<span style="font-size: x-small; color: gray">{{t('module.dashboard.label.collection')}}</span>
+								<span style="font-size: x-small; color: gray">{{
+									t('module.dashboard.label.collection')
+								}}</span>
 							</el-col>
 							<br />
 							<el-col :span="24">
@@ -93,7 +99,9 @@ onMounted(fetchActuatorInfo);
 					<el-col :span="18">
 						<el-row>
 							<el-col :span="24">
-								<span style="font-size: x-small; color: gray">{{t('module.dashboard.label.doing')}}</span>
+								<span style="font-size: x-small; color: gray">{{
+									t('module.dashboard.label.doing')
+								}}</span>
 							</el-col>
 							<br />
 							<el-col :span="24">

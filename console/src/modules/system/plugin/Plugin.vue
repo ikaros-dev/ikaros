@@ -28,7 +28,7 @@ import {
 import router from '@/router';
 import { useI18n } from 'vue-i18n';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 interface PluginSearch {
 	page: number;
@@ -98,18 +98,28 @@ const delegationPluginStateOperator = async (
 };
 
 const startPlugin = async (pluginName: string | undefined) => {
-	ElMessageBox.confirm(t('module.plugin.operate.plugin.start.confirm.title'), t('module.plugin.operate.plugin.start.confirm.warning'), {
-		confirmButtonText: t('module.plugin.operate.plugin.start.confirm.confirm'),
-		cancelButtonText: t('module.plugin.operate.plugin.start.confirm.cancel'),
-		type: 'warning',
-	})
+	ElMessageBox.confirm(
+		t('module.plugin.operate.plugin.start.confirm.title'),
+		t('module.plugin.operate.plugin.start.confirm.warning'),
+		{
+			confirmButtonText: t(
+				'module.plugin.operate.plugin.start.confirm.confirm'
+			),
+			cancelButtonText: t('module.plugin.operate.plugin.start.confirm.cancel'),
+			type: 'warning',
+		}
+	)
 		.then(() => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'START',
 			})
 				.then(() => {
-					ElMessage.success(t('module.plugin.operate.plugin.start.success', {name: pluginName}));
+					ElMessage.success(
+						t('module.plugin.operate.plugin.start.success', {
+							name: pluginName,
+						})
+					);
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -126,18 +136,24 @@ const startPlugin = async (pluginName: string | undefined) => {
 };
 
 const stopPlugin = (pluginName: string | undefined) => {
-	ElMessageBox.confirm(t('module.plugin.operate.plugin.stop.confirm.title'), t('module.plugin.operate.plugin.stop.confirm.warning'), {
-		confirmButtonText: t('module.plugin.operate.plugin.stop.confirm.confirm'),
-		cancelButtonText: t('module.plugin.operate.plugin.stop.confirm.cancel'),
-		type: 'warning',
-	})
+	ElMessageBox.confirm(
+		t('module.plugin.operate.plugin.stop.confirm.title'),
+		t('module.plugin.operate.plugin.stop.confirm.warning'),
+		{
+			confirmButtonText: t('module.plugin.operate.plugin.stop.confirm.confirm'),
+			cancelButtonText: t('module.plugin.operate.plugin.stop.confirm.cancel'),
+			type: 'warning',
+		}
+	)
 		.then(() => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'STOP',
 			})
 				.then(() => {
-					ElMessage.success(t('module.plugin.operate.plugin.stop.success', {name: pluginName}));
+					ElMessage.success(
+						t('module.plugin.operate.plugin.stop.success', { name: pluginName })
+					);
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -154,18 +170,28 @@ const stopPlugin = (pluginName: string | undefined) => {
 };
 
 const enablePlugin = (pluginName: string | undefined) => {
-	ElMessageBox.confirm(t('module.plugin.operate.plugin.enable.confirm.title'), t('module.plugin.operate.plugin.enable.confirm.warning'), {
-		confirmButtonText: t('module.plugin.operate.plugin.enable.confirm.confirm'),
-		cancelButtonText: t('module.plugin.operate.plugin.enable.confirm.cancel'),
-		type: 'warning',
-	})
+	ElMessageBox.confirm(
+		t('module.plugin.operate.plugin.enable.confirm.title'),
+		t('module.plugin.operate.plugin.enable.confirm.warning'),
+		{
+			confirmButtonText: t(
+				'module.plugin.operate.plugin.enable.confirm.confirm'
+			),
+			cancelButtonText: t('module.plugin.operate.plugin.enable.confirm.cancel'),
+			type: 'warning',
+		}
+	)
 		.then(() => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'ENABLE',
 			})
 				.then(() => {
-					ElMessage.success(t('module.plugin.operate.plugin.enable.success', {name: pluginName}));
+					ElMessage.success(
+						t('module.plugin.operate.plugin.enable.success', {
+							name: pluginName,
+						})
+					);
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -182,18 +208,30 @@ const enablePlugin = (pluginName: string | undefined) => {
 };
 
 const disablePlugin = (pluginName: string | undefined) => {
-	ElMessageBox.confirm(t('module.plugin.operate.plugin.disable.confirm.title'), t('module.plugin.operate.plugin.disable.confirm.warning'), {
-		confirmButtonText: t('module.plugin.operate.plugin.disable.confirm.confirm'),
-		cancelButtonText: t('module.plugin.operate.plugin.disable.confirm.cancel'),
-		type: 'warning',
-	})
+	ElMessageBox.confirm(
+		t('module.plugin.operate.plugin.disable.confirm.title'),
+		t('module.plugin.operate.plugin.disable.confirm.warning'),
+		{
+			confirmButtonText: t(
+				'module.plugin.operate.plugin.disable.confirm.confirm'
+			),
+			cancelButtonText: t(
+				'module.plugin.operate.plugin.disable.confirm.cancel'
+			),
+			type: 'warning',
+		}
+	)
 		.then(() => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'DISABLE',
 			})
 				.then(() => {
-					ElMessage.success(t('module.plugin.operate.plugin.disable.success', {name: pluginName}));
+					ElMessage.success(
+						t('module.plugin.operate.plugin.disable.success', {
+							name: pluginName,
+						})
+					);
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -210,18 +248,28 @@ const disablePlugin = (pluginName: string | undefined) => {
 };
 
 const reloadPlugin = (pluginName: string | undefined) => {
-	ElMessageBox.confirm(t('module.plugin.operate.plugin.reload.confirm.title'), t('module.plugin.operate.plugin.reload.confirm.warning'), {
-		confirmButtonText: t('module.plugin.operate.plugin.reload.confirm.confirm'),
-		cancelButtonText: t('module.plugin.operate.plugin.reload.confirm.cancel'),
-		type: 'warning',
-	})
+	ElMessageBox.confirm(
+		t('module.plugin.operate.plugin.reload.confirm.title'),
+		t('module.plugin.operate.plugin.reload.confirm.warning'),
+		{
+			confirmButtonText: t(
+				'module.plugin.operate.plugin.reload.confirm.confirm'
+			),
+			cancelButtonText: t('module.plugin.operate.plugin.reload.confirm.cancel'),
+			type: 'warning',
+		}
+	)
 		.then(() => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'RELOAD',
 			})
 				.then(() => {
-					ElMessage.success(t('module.plugin.operate.plugin.reload.success', {name: pluginName}));
+					ElMessage.success(
+						t('module.plugin.operate.plugin.reload.success', {
+							name: pluginName,
+						})
+					);
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -238,18 +286,28 @@ const reloadPlugin = (pluginName: string | undefined) => {
 };
 
 const reloadAllPlugin = () => {
-	ElMessageBox.confirm(t('module.plugin.operate.plugin.reload-all.confirm.title'), t('module.plugin.operate.plugin.reload-all.confirm.warning'), {
-		confirmButtonText: t('module.plugin.operate.plugin.reload-all.confirm.confirm'),
-		cancelButtonText: t('module.plugin.operate.plugin.reload-all.confirm.cancel'),
-		type: 'warning',
-	})
+	ElMessageBox.confirm(
+		t('module.plugin.operate.plugin.reload-all.confirm.title'),
+		t('module.plugin.operate.plugin.reload-all.confirm.warning'),
+		{
+			confirmButtonText: t(
+				'module.plugin.operate.plugin.reload-all.confirm.confirm'
+			),
+			cancelButtonText: t(
+				'module.plugin.operate.plugin.reload-all.confirm.cancel'
+			),
+			type: 'warning',
+		}
+	)
 		.then(() => {
 			delegationPluginStateOperator({
 				name: 'ALL',
 				operate: 'RELOAD_ALL',
 			})
 				.then(() => {
-					ElMessage.success(t('module.plugin.operate.plugin.reload-all.success'));
+					ElMessage.success(
+						t('module.plugin.operate.plugin.reload-all.success')
+					);
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -266,18 +324,28 @@ const reloadAllPlugin = () => {
 };
 
 const deletePlugin = (pluginName: string | undefined) => {
-	ElMessageBox.confirm(t('module.plugin.operate.plugin.delete.confirm.title'), t('module.plugin.operate.plugin.delete.confirm.warning'), {
-		confirmButtonText: t('module.plugin.operate.plugin.delete.confirm.confirm'),
-		cancelButtonText: t('module.plugin.operate.plugin.delete.confirm.cancel'),
-		type: 'warning',
-	})
+	ElMessageBox.confirm(
+		t('module.plugin.operate.plugin.delete.confirm.title'),
+		t('module.plugin.operate.plugin.delete.confirm.warning'),
+		{
+			confirmButtonText: t(
+				'module.plugin.operate.plugin.delete.confirm.confirm'
+			),
+			cancelButtonText: t('module.plugin.operate.plugin.delete.confirm.cancel'),
+			type: 'warning',
+		}
+	)
 		.then(() => {
 			delegationPluginStateOperator({
 				name: pluginName as string,
 				operate: 'DELETE',
 			})
 				.then(() => {
-					ElMessage.success(t('module.plugin.operate.plugin.delete.success', {name: pluginName}));
+					ElMessage.success(
+						t('module.plugin.operate.plugin.delete.success', {
+							name: pluginName,
+						})
+					);
 					window.location.reload();
 				})
 				.catch((err) => {
@@ -295,11 +363,19 @@ const deletePlugin = (pluginName: string | undefined) => {
 
 // eslint-disable-next-line no-unused-vars
 const upgradePlugin = (plugin: Plugin) => {
-	ElMessageBox.confirm(t('module.plugin.operate.plugin.upgrade.confirm.title'), t('module.plugin.operate.plugin.upgrade.confirm.warning'), {
-		confirmButtonText: t('module.plugin.operate.plugin.upgrade.confirm.confirm'),
-		cancelButtonText: t('module.plugin.operate.plugin.upgrade.confirm.cancel'),
-		type: 'warning',
-	})
+	ElMessageBox.confirm(
+		t('module.plugin.operate.plugin.upgrade.confirm.title'),
+		t('module.plugin.operate.plugin.upgrade.confirm.warning'),
+		{
+			confirmButtonText: t(
+				'module.plugin.operate.plugin.upgrade.confirm.confirm'
+			),
+			cancelButtonText: t(
+				'module.plugin.operate.plugin.upgrade.confirm.cancel'
+			),
+			type: 'warning',
+		}
+	)
 		.then(() => {
 			// console.log('upgrade plugin.', plugin);
 			pluginUploadDrawerVisible.value = true;
@@ -372,8 +448,7 @@ onMounted(getPluginsFromServer);
 				{{ t('module.plugin.search.button.reload-all') }}
 			</el-button>
 
-			<el-button plain @click="pluginUploadDrawerVisible = true"
-				>
+			<el-button plain @click="pluginUploadDrawerVisible = true">
 				{{ t('module.plugin.search.button.install-plugin') }}
 			</el-button>
 
@@ -398,7 +473,7 @@ onMounted(getPluginsFromServer);
 				</span>
 				<template #dropdown>
 					<el-dropdown-menu>
-						<el-dropdown-item command="ALL" disabled> 
+						<el-dropdown-item command="ALL" disabled>
 							{{ t('module.plugin.search.dropdown.all') }}
 						</el-dropdown-item>
 						<el-dropdown-item command="STARTED" disabled>
@@ -426,7 +501,11 @@ onMounted(getPluginsFromServer);
 	</el-row>
 
 	<el-table :data="plugins" style="width: 100%">
-		<el-table-column prop="logo" :label="t('module.plugin.table.label.icon')" width="80">
+		<el-table-column
+			prop="logo"
+			:label="t('module.plugin.table.label.icon')"
+			width="80"
+		>
 			<template #default="scope">
 				<el-avatar
 					shape="square"
@@ -437,8 +516,16 @@ onMounted(getPluginsFromServer);
 		</el-table-column>
 
 		<el-table-column prop="name" label="ID" width="150" />
-		<el-table-column prop="displayName" :label="t('module.plugin.table.label.name')" width="150" />
-		<el-table-column prop="author.name" :label="t('module.plugin.table.label.author')" width="200">
+		<el-table-column
+			prop="displayName"
+			:label="t('module.plugin.table.label.name')"
+			width="150"
+		/>
+		<el-table-column
+			prop="author.name"
+			:label="t('module.plugin.table.label.author')"
+			width="200"
+		>
 			<template #default="scope">
 				<a
 					v-if="scope?.row?.author?.website"
@@ -450,13 +537,25 @@ onMounted(getPluginsFromServer);
 				<span v-else>{{ scope.row.author.name }}</span>
 			</template>
 		</el-table-column>
-		<el-table-column prop="description" :label="t('module.plugin.table.label.description')" />
-		<el-table-column prop="state" :label="t('module.plugin.table.label.state')" align="right" width="100">
+		<el-table-column
+			prop="description"
+			:label="t('module.plugin.table.label.description')"
+		/>
+		<el-table-column
+			prop="state"
+			:label="t('module.plugin.table.label.state')"
+			align="right"
+			width="100"
+		>
 			<template #default="scope">
 				{{ stateStrMap.get(scope.row.state) }}
 			</template>
 		</el-table-column>
-		<el-table-column align="right" :label="t('module.plugin.table.label.operate')" width="80">
+		<el-table-column
+			align="right"
+			:label="t('module.plugin.table.label.operate')"
+			width="80"
+		>
 			<template #default="scope">
 				<el-dropdown style="cursor: pointer" trigger="click">
 					<el-icon size="30">
@@ -472,14 +571,14 @@ onMounted(getPluginsFromServer);
 								:disabled="scope.row.state === 'STARTED'"
 								@click="startPlugin(scope.row.name)"
 							>
-							{{ t('module.plugin.table.operate.start') }}
+								{{ t('module.plugin.table.operate.start') }}
 							</el-dropdown-item>
 
 							<el-dropdown-item
 								:disabled="scope.row.state === 'STOPPED'"
 								@click="stopPlugin(scope.row.name)"
 							>
-							{{ t('module.plugin.table.operate.stop') }}
+								{{ t('module.plugin.table.operate.stop') }}
 							</el-dropdown-item>
 
 							<el-dropdown-item
@@ -487,14 +586,14 @@ onMounted(getPluginsFromServer);
 								:disabled="scope.row.state !== 'DISABLED'"
 								@click="enablePlugin(scope.row.name)"
 							>
-							{{ t('module.plugin.table.operate.enable') }}
+								{{ t('module.plugin.table.operate.enable') }}
 							</el-dropdown-item>
 
 							<el-dropdown-item
 								:disabled="scope.row.state === 'DISABLED'"
 								@click="disablePlugin(scope.row.name)"
 							>
-							{{ t('module.plugin.table.operate.disable') }}
+								{{ t('module.plugin.table.operate.disable') }}
 							</el-dropdown-item>
 
 							<el-dropdown-item divided @click="reloadPlugin(scope.row.name)">
@@ -508,7 +607,7 @@ onMounted(getPluginsFromServer);
 								divided
 								@click="deletePlugin(scope.row.name)"
 							>
-							{{ t('module.plugin.table.operate.delete') }}
+								{{ t('module.plugin.table.operate.delete') }}
 							</el-dropdown-item>
 							<el-dropdown-item style="width: 170; color: red" disabled>
 								{{ t('module.plugin.table.operate.reset') }}

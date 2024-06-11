@@ -15,7 +15,7 @@ import SubjectSelectDrawer from './SubjectSelectDrawer.vue';
 import { apiClient } from '@/utils/api-client';
 import { useI18n } from 'vue-i18n';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -75,7 +75,9 @@ const reqCreateRelaction = async () => {
 			relation_type: selectSubjectReactionType.value,
 		},
 	});
-	ElMessage.success(t('module.subject.relaction.dialog.post.message.add-success'));
+	ElMessage.success(
+		t('module.subject.relaction.dialog.post.message.add-success')
+	);
 	reqCreateRelactionBtnLoading.value = false;
 	onClose();
 };
@@ -93,14 +95,20 @@ const reqCreateRelaction = async () => {
 		@close="onClose"
 	>
 		<el-form label-width="100px" style="max-width: 460px">
-			<el-form-item :label="t('module.subject.relaction.dialog.post.label.master-subject')">
+			<el-form-item
+				:label="t('module.subject.relaction.dialog.post.label.master-subject')"
+			>
 				<el-input disabled :value="props.masterSubjectId" />
 			</el-form-item>
-			<el-form-item :label="t('module.subject.relaction.dialog.post.label.slave-subject')">
+			<el-form-item
+				:label="t('module.subject.relaction.dialog.post.label.slave-subject')"
+			>
 				<el-input
 					v-model="slaveSubjectIdsStr"
 					disabled
-					:placeholder="t('module.subject.relaction.dialog.post.placeholder.slave-subject')"
+					:placeholder="
+						t('module.subject.relaction.dialog.post.placeholder.slave-subject')
+					"
 				>
 					<template #append>
 						<el-button
@@ -110,19 +118,56 @@ const reqCreateRelaction = async () => {
 					</template>
 				</el-input>
 			</el-form-item>
-			<el-form-item :label="t('module.subject.relaction.dialog.post.label.type')">
+			<el-form-item
+				:label="t('module.subject.relaction.dialog.post.label.type')"
+			>
 				<el-select v-model="selectSubjectReactionType" clearable>
-					<el-option :label="t('module.subject.relaction.dialog.post.type.after')" value="AFTER" />
-					<el-option :label="t('module.subject.relaction.dialog.post.type.before')" value="BEFORE" />
-					<el-option :label="t('module.subject.relaction.dialog.post.type.same-worldview')" value="SAME_WORLDVIEW" />
-					<el-option :label="t('module.subject.relaction.dialog.post.type.ost')" value="ORIGINAL_SOUND_TRACK" />
-					<el-option :label="t('module.subject.relaction.dialog.post.type.anime')"  value="ANIME" />
-					<el-option :label="t('module.subject.relaction.dialog.post.type.comic')"  value="COMIC" />
-					<el-option :label="t('module.subject.relaction.dialog.post.type.game')" value="GAME" />
-					<el-option :label="t('module.subject.relaction.dialog.post.type.music')"  value="MUSIC" />
-					<el-option :label="t('module.subject.relaction.dialog.post.type.novel')"  value="NOVEL" />
-					<el-option :label="t('module.subject.relaction.dialog.post.type.real')"  value="REAL" />
-					<el-option :label="t('module.subject.relaction.dialog.post.type.other')"  value="OTHER" />
+					<el-option
+						:label="t('module.subject.relaction.dialog.post.type.after')"
+						value="AFTER"
+					/>
+					<el-option
+						:label="t('module.subject.relaction.dialog.post.type.before')"
+						value="BEFORE"
+					/>
+					<el-option
+						:label="
+							t('module.subject.relaction.dialog.post.type.same-worldview')
+						"
+						value="SAME_WORLDVIEW"
+					/>
+					<el-option
+						:label="t('module.subject.relaction.dialog.post.type.ost')"
+						value="ORIGINAL_SOUND_TRACK"
+					/>
+					<el-option
+						:label="t('module.subject.relaction.dialog.post.type.anime')"
+						value="ANIME"
+					/>
+					<el-option
+						:label="t('module.subject.relaction.dialog.post.type.comic')"
+						value="COMIC"
+					/>
+					<el-option
+						:label="t('module.subject.relaction.dialog.post.type.game')"
+						value="GAME"
+					/>
+					<el-option
+						:label="t('module.subject.relaction.dialog.post.type.music')"
+						value="MUSIC"
+					/>
+					<el-option
+						:label="t('module.subject.relaction.dialog.post.type.novel')"
+						value="NOVEL"
+					/>
+					<el-option
+						:label="t('module.subject.relaction.dialog.post.type.real')"
+						value="REAL"
+					/>
+					<el-option
+						:label="t('module.subject.relaction.dialog.post.type.other')"
+						value="OTHER"
+					/>
 				</el-select>
 			</el-form-item>
 		</el-form>
@@ -136,7 +181,7 @@ const reqCreateRelaction = async () => {
 					:loading="reqCreateRelactionBtnLoading"
 					@click="reqCreateRelaction"
 				>
-				{{ t('module.subject.relaction.dialog.post.button.confirm') }}
+					{{ t('module.subject.relaction.dialog.post.button.confirm') }}
 				</el-button>
 			</span>
 		</template>

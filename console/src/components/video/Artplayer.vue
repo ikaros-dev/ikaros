@@ -50,7 +50,7 @@ const getSubtitleSimpleNameByAttachmentName = (name: string): string => {
 
 const getSubtitleChineseSimpleNameBySimpleName = (name: string): string => {
 	const cnName = subtitleNameChineseMap.get(name) as string;
-	return (cnName != null && cnName != undefined && cnName != '') ? cnName : name;
+	return cnName != null && cnName != undefined && cnName != '' ? cnName : name;
 };
 
 const artSubtitles = ref<ArtSubtitle[]>([]);
@@ -66,7 +66,8 @@ const getVideoSubtitles = async () => {
 			data![index].name as string
 		);
 		var artSubtitle: ArtSubtitle = {
-			default: simpleName === 'SC' || simpleName === 'sc' || simpleName == 'JPSC',
+			default:
+				simpleName === 'SC' || simpleName === 'sc' || simpleName == 'JPSC',
 			html: getSubtitleChineseSimpleNameBySimpleName(simpleName),
 			url: data![index].url as string,
 		};
