@@ -16,7 +16,7 @@ import run.ikaros.server.infra.utils.JsonUtils;
 
 
 /**
- * Return a user detail json when login seccess.
+ * Return a user detail json when login success.
  *
  * @see <a href="https://stackoverflow.com/questions/45211431/webexceptionhandler-how-to-write-a-body-with-spring-webflux">WebExceptionHandler : How to write a body with Spring Webflux</a>
  */
