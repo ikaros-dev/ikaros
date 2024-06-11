@@ -21,7 +21,7 @@ import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const route = useRoute();
-const {t} = useI18n();
+const { t } = useI18n();
 
 const fetchSubjectByRouterQuery = () => {
 	// console.log('route.query', route.query);
@@ -146,7 +146,10 @@ onMounted(fetchSubjectByRouterQuery);
 			<el-form :inline="true" :model="findSubjectsCondition">
 				<el-row :gutter="1">
 					<el-col :xs="24" :sm="24" :md="24" :lg="7" :xl="7">
-						<el-form-item :label="t('module.subject.label.name')" style="width: 95%">
+						<el-form-item
+							:label="t('module.subject.label.name')"
+							style="width: 95%"
+						>
 							<el-input
 								v-model="findSubjectsCondition.name"
 								:placeholder="t('module.subject.placeholder.name')"
@@ -156,7 +159,10 @@ onMounted(fetchSubjectByRouterQuery);
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="7" :xl="7">
-						<el-form-item :label="t('module.subject.label.name_cn')" style="width: 95%">
+						<el-form-item
+							:label="t('module.subject.label.name_cn')"
+							style="width: 95%"
+						>
 							<el-input
 								v-model="findSubjectsCondition.nameCn"
 								:placeholder="t('module.subject.placeholder.name_cn')"
@@ -172,25 +178,55 @@ onMounted(fetchSubjectByRouterQuery);
 								clearable
 								@change="fetchSubjects"
 							>
-								<el-option :label="t('module.subject.select.nsfw-true')" :value="true" />
-								<el-option :label="t('module.subject.select.nsfw-false')"  :value="false" />
+								<el-option
+									:label="t('module.subject.select.nsfw-true')"
+									:value="true"
+								/>
+								<el-option
+									:label="t('module.subject.select.nsfw-false')"
+									:value="false"
+								/>
 							</el-select>
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="5" :xl="5">
-						<el-form-item :label="t('module.subject.label.type')" style="width: 95%">
+						<el-form-item
+							:label="t('module.subject.label.type')"
+							style="width: 95%"
+						>
 							<el-select
 								v-model="findSubjectsCondition.type"
 								clearable
 								@change="fetchSubjects"
 							>
-								<el-option :label="t('module.subject.type.anime')" value="ANIME" />
-								<el-option :label="t('module.subject.type.comic')" value="COMIC" />
-								<el-option :label="t('module.subject.type.game')" value="GAME" />
-								<el-option :label="t('module.subject.type.music')" value="MUSIC" />
-								<el-option :label="t('module.subject.type.novel')" value="NOVEL" />
-								<el-option :label="t('module.subject.type.real')" value="REAL" />
-								<el-option :label="t('module.subject.type.other')" value="OTHER" />
+								<el-option
+									:label="t('module.subject.type.anime')"
+									value="ANIME"
+								/>
+								<el-option
+									:label="t('module.subject.type.comic')"
+									value="COMIC"
+								/>
+								<el-option
+									:label="t('module.subject.type.game')"
+									value="GAME"
+								/>
+								<el-option
+									:label="t('module.subject.type.music')"
+									value="MUSIC"
+								/>
+								<el-option
+									:label="t('module.subject.type.novel')"
+									value="NOVEL"
+								/>
+								<el-option
+									:label="t('module.subject.type.real')"
+									value="REAL"
+								/>
+								<el-option
+									:label="t('module.subject.type.other')"
+									value="OTHER"
+								/>
 							</el-select>
 						</el-form-item>
 					</el-col>
@@ -209,8 +245,8 @@ onMounted(fetchSubjectByRouterQuery);
 			<el-button plain @click="subjectSyncDialogVisible = true">
 				{{ t('module.subject.text.button.rapid-addition') }}
 			</el-button>
-			<el-button plain @click="toSubjectPost"> 
-				{{ t('module.subject.text.button.new-subject') }}	
+			<el-button plain @click="toSubjectPost">
+				{{ t('module.subject.text.button.new-subject') }}
 			</el-button>
 		</el-col>
 	</el-row>

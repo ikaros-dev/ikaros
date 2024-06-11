@@ -31,7 +31,7 @@ import {
 } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -166,7 +166,9 @@ onMounted(fetchAttachments);
 						</el-button>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-						<el-form-item :label="t('module.attachment.dialog.multi-select.parent-dir')">
+						<el-form-item
+							:label="t('module.attachment.dialog.multi-select.parent-dir')"
+						>
 							<AttachmentDirectoryTreeSelect
 								v-model:target-dirid="attachmentCondition.parentId"
 								@change="onParentDirSelected"
@@ -178,7 +180,9 @@ onMounted(fetchAttachments);
 			<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
 				<el-input
 					v-model="attachmentCondition.name"
-					:placeholder="t('module.attachment.dialog.multi-select.search.placeholder')"
+					:placeholder="
+						t('module.attachment.dialog.multi-select.search.placeholder')
+					"
 					clearable
 					@change="onSearchNameChange"
 				>
@@ -221,7 +225,9 @@ onMounted(fetchAttachments);
 					<!-- <el-table-column prop="id" label="ID" width="60" /> -->
 					<el-table-column
 						prop="name"
-						:label="t('module.attachment.dialog.multi-select.table.colum.label.name')"
+						:label="
+							t('module.attachment.dialog.multi-select.table.colum.label.name')
+						"
 						show-overflow-tooltip
 						sortable
 					>
@@ -244,15 +250,32 @@ onMounted(fetchAttachments);
 							</span>
 						</template>
 					</el-table-column>
-					<el-table-column prop="path" :label="t('module.attachment.dialog.multi-select.table.colum.label.path')" show-overflow-tooltip />
+					<el-table-column
+						prop="path"
+						:label="
+							t('module.attachment.dialog.multi-select.table.colum.label.path')
+						"
+						show-overflow-tooltip
+					/>
 					<el-table-column
 						prop="updateTime"
-						:label="t('module.attachment.dialog.multi-select.table.colum.label.update-time')"
+						:label="
+							t(
+								'module.attachment.dialog.multi-select.table.colum.label.update-time'
+							)
+						"
 						sortable
 						width="160"
 						:formatter="dateFormat"
 					/>
-					<el-table-column prop="size" :label="t('module.attachment.dialog.multi-select.table.colum.label.size')" width="130" sortable>
+					<el-table-column
+						prop="size"
+						:label="
+							t('module.attachment.dialog.multi-select.table.colum.label.size')
+						"
+						width="130"
+						sortable
+					>
 						<template #default="scoped">
 							<span v-if="scoped.row.type === 'File'">
 								{{ formatFileSize(scoped.row.size) }}
@@ -266,10 +289,10 @@ onMounted(fetchAttachments);
 		<template #footer>
 			<span class="dialog-footer">
 				<el-button plain type="info" @click="dialogVisible = false">
-					{{t('common.button.cancel')}}
+					{{ t('common.button.cancel') }}
 				</el-button>
-				<el-button plain @click="onConfirm"> 
-					{{t('common.button.confirm')}}	
+				<el-button plain @click="onConfirm">
+					{{ t('common.button.confirm') }}
 				</el-button>
 			</span>
 		</template>

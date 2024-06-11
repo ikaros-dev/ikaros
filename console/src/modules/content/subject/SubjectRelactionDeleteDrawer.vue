@@ -10,7 +10,7 @@ import { useSubjectStore } from '@/stores/subject';
 import { useI18n } from 'vue-i18n';
 
 const subjectStore = useSubjectStore();
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -109,9 +109,22 @@ const onOpen = async () => {
 			@selection-change="handleSelectionChange"
 		>
 			<el-table-column type="selection" width="50" show-overflow-tooltip />
-			<el-table-column prop="id" :label="t('module.subject.relaction.drawer.delete.table.label.id')" width="100" show-overflow-tooltip />
-			<el-table-column prop="name" :label="t('module.subject.relaction.drawer.delete.table.label.name')" show-overflow-tooltip />
-			<el-table-column prop="name_cn" :label="t('module.subject.relaction.drawer.delete.table.label.name_cn')" show-overflow-tooltip />
+			<el-table-column
+				prop="id"
+				:label="t('module.subject.relaction.drawer.delete.table.label.id')"
+				width="100"
+				show-overflow-tooltip
+			/>
+			<el-table-column
+				prop="name"
+				:label="t('module.subject.relaction.drawer.delete.table.label.name')"
+				show-overflow-tooltip
+			/>
+			<el-table-column
+				prop="name_cn"
+				:label="t('module.subject.relaction.drawer.delete.table.label.name_cn')"
+				show-overflow-tooltip
+			/>
 			<el-table-column
 				prop="type"
 				:label="t('module.subject.relaction.drawer.delete.table.label.type')"

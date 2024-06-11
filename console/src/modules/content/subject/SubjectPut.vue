@@ -44,7 +44,7 @@ import { useI18n } from 'vue-i18n';
 const router = useRouter();
 const route = useRoute();
 const subjectStore = useSubjectStore();
-const {t} = useI18n();
+const { t } = useI18n();
 
 watch(route, () => {
 	//@ts-ignore
@@ -72,12 +72,29 @@ const subject = ref<Subject>({
 
 const subjectRuleFormRules = reactive<FormRules>({
 	name: [
-		{ required: true, message: t('module.subject.put.message.form-rule.name.required'), trigger: 'blur' },
-		{ min: 1, max: 100, message: t('module.subject.put.message.form-rule.name.length'), trigger: 'blur' },
+		{
+			required: true,
+			message: t('module.subject.put.message.form-rule.name.required'),
+			trigger: 'blur',
+		},
+		{
+			min: 1,
+			max: 100,
+			message: t('module.subject.put.message.form-rule.name.length'),
+			trigger: 'blur',
+		},
 	],
 	summary: [
-		{ required: true, message: t('module.subject.put.message.form-rule.summary.required'), trigger: 'blur' },
-		{ min: 5, message: t('module.subject.put.message.form-rule.summary.length'), trigger: 'blur' },
+		{
+			required: true,
+			message: t('module.subject.put.message.form-rule.summary.required'),
+			trigger: 'blur',
+		},
+		{
+			min: 5,
+			message: t('module.subject.put.message.form-rule.summary.length'),
+			trigger: 'blur',
+		},
 	],
 	type: [
 		{
@@ -107,10 +124,10 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 				})
 				.then(() => {
 					ElMessage.success(
-						t('module.subject.put.message.form-rule.update-success',
-							{name: subject.value.name}
-						)
-					)
+						t('module.subject.put.message.form-rule.update-success', {
+							name: subject.value.name,
+						})
+					);
 					router.push(
 						'/subjects?name=' +
 							base64Encode(encodeURI(subject.value.name)) +
@@ -201,7 +218,10 @@ onMounted(() => {
 							</el-form-item>
 						</el-col>
 						<el-col :span="16">
-							<el-form-item :label="t('module.subject.put.label.air_time')" prop="airTime">
+							<el-form-item
+								:label="t('module.subject.put.label.air_time')"
+								prop="airTime"
+							>
 								<el-date-picker
 									v-model="subject.airTime"
 									type="date"
@@ -246,7 +266,10 @@ onMounted(() => {
 					</el-radio-group>
 				</el-form-item>
 
-				<el-form-item :label="t('module.subject.put.label.summary')" prop="summary">
+				<el-form-item
+					:label="t('module.subject.put.label.summary')"
+					prop="summary"
+				>
 					<el-input
 						v-model="subject.summary"
 						maxlength="10000"
@@ -289,9 +312,19 @@ onMounted(() => {
 								{{ episodeGroupLabelMap.get(scoped.row.group) }}
 							</template>
 						</el-table-column>
-						<el-table-column :label="t('module.subject.put.label.episode-table.sequence')" prop="sequence" width="90px" />
-						<el-table-column :label="t('module.subject.put.label.episode-table.name')" prop="name" />
-						<el-table-column :label="t('module.subject.put.label.episode-table.name_cn')" prop="name_cn" />
+						<el-table-column
+							:label="t('module.subject.put.label.episode-table.sequence')"
+							prop="sequence"
+							width="90px"
+						/>
+						<el-table-column
+							:label="t('module.subject.put.label.episode-table.name')"
+							prop="name"
+						/>
+						<el-table-column
+							:label="t('module.subject.put.label.episode-table.name_cn')"
+							prop="name_cn"
+						/>
 						<el-table-column
 							:label="t('module.subject.put.label.episode-table.air_time')"
 							prop="air_time"
@@ -301,22 +334,22 @@ onMounted(() => {
 						<el-table-column align="right" width="350">
 							<template #header>
 								<el-button plain @click="episodePostDialogVisible = true">
-									{{t('module.subject.put.text.button.episode.add')}}
+									{{ t('module.subject.put.text.button.episode.add') }}
 								</el-button>
 							</template>
 							<template #default="scoped">
 								<el-button plain @click="showEpisodeDetails(scoped.row)">
-									{{t('module.subject.put.text.button.episode.details')}}
+									{{ t('module.subject.put.text.button.episode.details') }}
 								</el-button>
 								<el-button plain @click="toEPisodeEdit(scoped.row)">
-									{{t('module.subject.put.text.button.episode.edit')}}
+									{{ t('module.subject.put.text.button.episode.edit') }}
 								</el-button>
 								<el-button
 									plain
 									type="danger"
 									@click="removeCurrentRowEpisode(scoped.row)"
 								>
-								{{t('module.subject.put.text.button.episode.remove')}}
+									{{ t('module.subject.put.text.button.episode.remove') }}
 								</el-button>
 							</template>
 						</el-table-column>
@@ -325,7 +358,7 @@ onMounted(() => {
 
 				<el-form-item>
 					<el-button plain @click="submitForm(subjectElFormRef)">
-						{{t('module.subject.put.text.button.subject.create')}}
+						{{ t('module.subject.put.text.button.subject.create') }}
 					</el-button>
 				</el-form-item>
 			</el-form>

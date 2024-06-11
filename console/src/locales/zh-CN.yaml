@@ -458,6 +458,8 @@ module:
             success: 请求更新条目信息成功
           cancel:
             success: 取消条目收藏成功
+          delete-batch-attachments:
+            success: 批量移除剧集附件绑定成功
       episode:
         label:
           group: 分组
@@ -473,6 +475,9 @@ module:
             done: 看完
             push: 推送
             pull: 拉取
+            cancel-batch-resources: 批量移除
+      cancel-batch-popconfirm:
+        title: 您确定要批量移除绑定吗？
     collect:
       message:
         operate:

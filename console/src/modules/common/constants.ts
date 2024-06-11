@@ -90,5 +90,5 @@ export const subtitleNameChineseMap = new Map([
 	['JPSC', '简体中文'],
 	['jpsc', '简体中文'],
 	['JPTC', '繁体中文'],
-	['jptc', '繁体中文']
+	['jptc', '繁体中文'],
 ]);

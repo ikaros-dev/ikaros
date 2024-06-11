@@ -23,22 +23,22 @@ const toDashboard = () => {
 
 <template>
 	<div>
-		<h1>
-			Code: {{ code }}
-		</h1>
-		<br/>
+		<h1>Code: {{ code }}</h1>
+		<br />
 
-		<p>
-			Title: {{ title }}
-		</p>
-		<br/>
+		<p>Title: {{ title }}</p>
+		<br />
 
 		<p>Message: {{ message }}</p>
-		<br/>
+		<br />
 
 		<div>
-			<ElButton @click="router.back()"> {{ i18n.global.t('views.exception.exception.back') }} </ElButton>
-			<ElButton @click="toDashboard"> {{ i18n.global.t('views.exception.exception.dashboard') }} </ElButton>
+			<ElButton @click="router.back()">
+				{{ i18n.global.t('views.exception.exception.back') }}
+			</ElButton>
+			<ElButton @click="toDashboard">
+				{{ i18n.global.t('views.exception.exception.dashboard') }}
+			</ElButton>
 		</div>
 	</div>
 </template>

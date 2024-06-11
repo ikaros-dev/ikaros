@@ -21,7 +21,7 @@ import { Close, Plus } from '@element-plus/icons-vue';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 import { useI18n } from 'vue-i18n';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -72,7 +72,11 @@ const removeEpisodeAllAttachmentRefs = async () => {
 		!episode.value.resources ||
 		episode.value.resources.length === 0
 	) {
-		ElMessage.warning(t('module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.waring'));
+		ElMessage.warning(
+			t(
+				'module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.waring'
+			)
+		);
 		return;
 	}
 	await episode.value.resources.forEach(async (resouce) => {
@@ -84,7 +88,11 @@ const removeEpisodeAllAttachmentRefs = async () => {
 			},
 		});
 	});
-	ElMessage.success(t('module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.success'));
+	ElMessage.success(
+		t(
+			'module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.success'
+		)
+	);
 	dialogVisible.value = false;
 	emit('removeEpisodeFilesBind');
 };
@@ -99,7 +107,11 @@ const removeEpisodeAttachmentRef = async (attachmentId) => {
 			referenceId: episode.value.id,
 		},
 	});
-	ElMessage.success(t('module.subject.dialog.episode.details.message.operate.remove-episode-att-ref.success'));
+	ElMessage.success(
+		t(
+			'module.subject.dialog.episode.details.message.operate.remove-episode-att-ref.success'
+		)
+	);
 	await fetchEpisodeResources();
 };
 
@@ -130,7 +142,11 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 			referenceId: currentOperateEpisode.value?.id as number,
 		},
 	});
-	ElMessage.success(t('module.subject.dialog.episode.details.message.operate.match-single-episode-attachment.success'));
+	ElMessage.success(
+		t(
+			'module.subject.dialog.episode.details.message.operate.match-single-episode-attachment.success'
+		)
+	);
 	await fetchEpisodeResources();
 };
 const onCloseWithAttachments = async (attachments: Attachment[]) => {
@@ -156,7 +172,11 @@ const delegateBatchMatchingEpisode = async (
 			},
 		})
 		.then(() => {
-			ElMessage.success(t('module.subject.dialog.episode.details.message.operate.batch-match-episode-atts.success'));
+			ElMessage.success(
+				t(
+					'module.subject.dialog.episode.details.message.operate.batch-match-episode-atts.success'
+				)
+			);
 		})
 		.finally(() => {
 			batchMatchingEpisodeButtonLoading.value = false;
@@ -190,24 +210,40 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 		v-model:visible="attachmentMultiSelectDialogVisible"
 		@close-with-attachments="onCloseWithAttachments"
 	/>
-	<el-dialog v-model="dialogVisible" :title="t('module.subject.dialog.episode.details.title')" width="70%">
+	<el-dialog
+		v-model="dialogVisible"
+		:title="t('module.subject.dialog.episode.details.title')"
+		width="70%"
+	>
 		<el-descriptions border :column="1">
-			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.name')">
+			<el-descriptions-item
+				:label="t('module.subject.dialog.episode.details.label.name')"
+			>
 				{{ episode?.name }}
 			</el-descriptions-item>
-			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.name_cn')">
+			<el-descriptions-item
+				:label="t('module.subject.dialog.episode.details.label.name_cn')"
+			>
 				{{ episode?.name_cn }}
 			</el-descriptions-item>
-			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.air_time')">
+			<el-descriptions-item
+				:label="t('module.subject.dialog.episode.details.label.air_time')"
+			>
 				{{ episode?.air_time }}
 			</el-descriptions-item>
-			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.sequence')">
+			<el-descriptions-item
+				:label="t('module.subject.dialog.episode.details.label.sequence')"
+			>
 				{{ episode?.sequence }}
 			</el-descriptions-item>
-			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.description')">
+			<el-descriptions-item
+				:label="t('module.subject.dialog.episode.details.label.description')"
+			>
 				{{ episode?.description }}
 			</el-descriptions-item>
-			<el-descriptions-item :label="t('module.subject.dialog.episode.details.label.resources')">
+			<el-descriptions-item
+				:label="t('module.subject.dialog.episode.details.label.resources')"
+			>
 				<div v-if="episode?.resources && episode?.resources.length > 0">
 					<div v-if="!props.multiResource" align="center">
 						<router-link
@@ -228,10 +264,14 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 							controls
 							preload="metadata"
 						>
-							{{t('module.subject.dialog.episode.details.hint.video.unsuport')}}
+							{{
+								t('module.subject.dialog.episode.details.hint.video.unsuport')
+							}}
 						</video>
 						<span v-else>
-							{{t('module.subject.dialog.episode.details.hint.video.not_video')}}
+							{{
+								t('module.subject.dialog.episode.details.hint.video.not_video')
+							}}
 						</span>
 					</div>
 					<el-row v-else :gutter="12" :span="24">
@@ -256,7 +296,11 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 								</router-link>
 								<span style="float: right">
 									<el-popconfirm
-										:title="t('module.subject.dialog.episode.details.popconfirm.title')"
+										:title="
+											t(
+												'module.subject.dialog.episode.details.popconfirm.title'
+											)
+										"
 										width="250"
 										@confirm="removeEpisodeAttachmentRef(res.attachmentId)"
 									>
@@ -269,7 +313,9 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 						</el-col>
 					</el-row>
 				</div>
-				<span v-else> {{ t('module.subject.dialog.episode.details.hint.no_bind') }} </span>
+				<span v-else>
+					{{ t('module.subject.dialog.episode.details.hint.no_bind') }}
+				</span>
 			</el-descriptions-item>
 		</el-descriptions>
 
@@ -280,16 +326,22 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 				:loading="batchMatchingEpisodeButtonLoading"
 				@click="bingResources(episode)"
 			>
-				{{t('module.subject.dialog.episode.details.footer.button.add-bind')}}
+				{{ t('module.subject.dialog.episode.details.footer.button.add-bind') }}
 			</el-button>
 			<el-popconfirm
-				:title="t('module.subject.dialog.episode.details.footer.popconfirm.title')"
+				:title="
+					t('module.subject.dialog.episode.details.footer.popconfirm.title')
+				"
 				width="280"
 				@confirm="removeEpisodeAllAttachmentRefs"
 			>
 				<template #reference>
 					<el-button plain type="danger" :icon="Close">
-						{{ t('module.subject.dialog.episode.details.footer.popconfirm.button.remove-all-binds') }}
+						{{
+							t(
+								'module.subject.dialog.episode.details.footer.popconfirm.button.remove-all-binds'
+							)
+						}}
 					</el-button>
 				</template>
 			</el-popconfirm>

@@ -15,14 +15,14 @@ const changeLanguage = () => {
 	layoutStore.setI18nCode(selectedLanguage.value);
 	window.location.reload();
 };
-onMounted(()=>{
-	const selectdI18nCode = layoutStore.i18nCode
+onMounted(() => {
+	const selectdI18nCode = layoutStore.i18nCode;
 	if (selectdI18nCode && selectdI18nCode != '') {
 		// console.debug('selectdI18nCode', selectdI18nCode)
 		selectedLanguage.value = selectdI18nCode;
 		changeI18nLocal(selectedLanguage.value);
 	}
-})
+});
 </script>
 
 <template>

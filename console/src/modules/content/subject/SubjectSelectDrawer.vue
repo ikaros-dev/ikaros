@@ -19,7 +19,7 @@ import {
 import { onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -111,27 +111,37 @@ onMounted(fetchSubjects);
 	>
 		<template #header>
 			<div align="center">
-				<h4>{{t('module.subject.drawer.select.text.subject-select')}}</h4>
+				<h4>{{ t('module.subject.drawer.select.text.subject-select') }}</h4>
 			</div>
 		</template>
 		<template #default>
 			<el-form :inline="true" :model="findSubjectsCondition">
 				<el-row>
 					<el-col :span="24">
-						<el-form-item :label="t('module.subject.drawer.select.label.name')" style="width: 95%">
+						<el-form-item
+							:label="t('module.subject.drawer.select.label.name')"
+							style="width: 95%"
+						>
 							<el-input
 								v-model="findSubjectsCondition.name"
-								:placeholder="t('module.subject.drawer.select.placeholder.name')"
+								:placeholder="
+									t('module.subject.drawer.select.placeholder.name')
+								"
 								clearable
 								@change="fetchSubjects"
 							/>
 						</el-form-item>
 					</el-col>
 					<el-col :span="24">
-						<el-form-item :label="t('module.subject.drawer.select.label.name_cn')" style="width: 95%">
+						<el-form-item
+							:label="t('module.subject.drawer.select.label.name_cn')"
+							style="width: 95%"
+						>
 							<el-input
 								v-model="findSubjectsCondition.nameCn"
-								:placeholder="t('module.subject.drawer.select.placeholder.name_cn')"
+								:placeholder="
+									t('module.subject.drawer.select.placeholder.name_cn')
+								"
 								clearable
 								@change="fetchSubjects"
 							/>
@@ -146,25 +156,55 @@ onMounted(fetchSubjects);
 								clearable
 								@change="fetchSubjects"
 							>
-								<el-option :label="t('module.subject.drawer.select.optin.nsfw-true')" :value="true" />
-								<el-option :label="t('module.subject.drawer.select.optin.nsfw-false')" :value="false" />
+								<el-option
+									:label="t('module.subject.drawer.select.optin.nsfw-true')"
+									:value="true"
+								/>
+								<el-option
+									:label="t('module.subject.drawer.select.optin.nsfw-false')"
+									:value="false"
+								/>
 							</el-select>
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-form-item :label="t('module.subject.drawer.select.label.type')" style="width: 95%">
+						<el-form-item
+							:label="t('module.subject.drawer.select.label.type')"
+							style="width: 95%"
+						>
 							<el-select
 								v-model="findSubjectsCondition.type"
 								clearable
 								@change="fetchSubjects"
 							>
-								<el-option :label="t('module.subject.drawer.select.type.anime')" value="ANIME" />
-								<el-option :label="t('module.subject.drawer.select.type.comic')" value="COMIC" />
-								<el-option :label="t('module.subject.drawer.select.type.game')" value="GAME" />
-								<el-option :label="t('module.subject.drawer.select.type.music')" value="MUSIC" />
-								<el-option :label="t('module.subject.drawer.select.type.novel')" value="NOVEL" />
-								<el-option :label="t('module.subject.drawer.select.type.real')" value="REAL" />
-								<el-option :label="t('module.subject.drawer.select.type.other')" value="OTHER" />
+								<el-option
+									:label="t('module.subject.drawer.select.type.anime')"
+									value="ANIME"
+								/>
+								<el-option
+									:label="t('module.subject.drawer.select.type.comic')"
+									value="COMIC"
+								/>
+								<el-option
+									:label="t('module.subject.drawer.select.type.game')"
+									value="GAME"
+								/>
+								<el-option
+									:label="t('module.subject.drawer.select.type.music')"
+									value="MUSIC"
+								/>
+								<el-option
+									:label="t('module.subject.drawer.select.type.novel')"
+									value="NOVEL"
+								/>
+								<el-option
+									:label="t('module.subject.drawer.select.type.real')"
+									value="REAL"
+								/>
+								<el-option
+									:label="t('module.subject.drawer.select.type.other')"
+									value="OTHER"
+								/>
 							</el-select>
 						</el-form-item>
 					</el-col>
@@ -197,15 +237,19 @@ onMounted(fetchSubjects);
 						width="100"
 						show-overflow-tooltip
 					/>
-					<el-table-column prop="name" :label="t('module.subject.drawer.select.table.label.name')" show-overflow-tooltip />
+					<el-table-column
+						prop="name"
+						:label="t('module.subject.drawer.select.table.label.name')"
+						show-overflow-tooltip
+					/>
 					<el-table-column
 						prop="name_cn"
-						:label="t('module.subject.drawer.select.table.label.name_cn')" 
+						:label="t('module.subject.drawer.select.table.label.name_cn')"
 						show-overflow-tooltip
 					/>
 					<el-table-column
 						prop="type"
-						:label="t('module.subject.drawer.select.table.label.type')" 
+						:label="t('module.subject.drawer.select.table.label.type')"
 						width="100"
 						show-overflow-tooltip
 					/>

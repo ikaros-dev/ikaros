@@ -175,7 +175,11 @@ const onCreateFolderButtonClick = async () => {
 		parentId: attachmentCondition.value.parentId as any as string,
 		name: base64Encode(createFolderName.value),
 	});
-	ElMessage.success(t('module.attachment.message.operate.create_att_dir', {name: createFolderName.value}));
+	ElMessage.success(
+		t('module.attachment.message.operate.create_att_dir', {
+			name: createFolderName.value,
+		})
+	);
 	createFolderName.value = '';
 	await fetchAttachments();
 	dialogFolderVisible.value = false;
@@ -207,17 +211,14 @@ const deleteAttachment = async (attachment: Attachment) => {
 		})
 		.then(() => {
 			ElMessage.success(
-				t('module.attachment.message.operate.delete_att.success',
-					{
-						type: (
-							attachment.type === 'Directory' 
+				t('module.attachment.message.operate.delete_att.success', {
+					type:
+						attachment.type === 'Directory'
 							? t('module.attachment.message.directory')
-							: t('module.attachment.message.file')
-						),
-						name: attachment.name
-					}
-				)
-			)
+							: t('module.attachment.message.file'),
+					name: attachment.name,
+				})
+			);
 		})
 		.catch((e) => {
 			// @ts-ignore
@@ -227,17 +228,14 @@ const deleteAttachment = async (attachment: Attachment) => {
 			}
 			console.log('error', msg, e);
 			ElMessage.error(
-				t('module.attachment.message.operate.delete_att.fail',
-					{
-						type: (
-							attachment.type === 'Directory' 
+				t('module.attachment.message.operate.delete_att.fail', {
+					type:
+						attachment.type === 'Directory'
 							? t('module.attachment.message.directory')
-							: t('module.attachment.message.file')
-						),
-						name: attachment.name
-					}
-				)
-			)
+							: t('module.attachment.message.file'),
+					name: attachment.name,
+				})
+			);
 		});
 
 	await fetchAttachments();
@@ -335,10 +333,10 @@ const onRowContextmenu = (row, column, event) => {
 					simpleName = simpleName.substring(0, simpleName.lastIndexOf('.'));
 					await copyValue(simpleName);
 					ElMessage.success(
-						t('module.attachment.message.operate.copy_short_name',
-							{name: name}
-						)
-					)
+						t('module.attachment.message.operate.copy_short_name', {
+							name: name,
+						})
+					);
 				},
 			},
 			{
@@ -348,10 +346,10 @@ const onRowContextmenu = (row, column, event) => {
 					const name = currentSelectionAttachment.value?.name as string;
 					await copyValue(name);
 					ElMessage.success(
-						t('module.attachment.message.operate.copy_integrally_name',
-							{name: name}
-						)
-					)
+						t('module.attachment.message.operate.copy_integrally_name', {
+							name: name,
+						})
+					);
 				},
 			},
 			{
@@ -364,10 +362,8 @@ const onRowContextmenu = (row, column, event) => {
 					const url = currentSelectionAttachment.value?.url as string;
 					await copyValue(url);
 					ElMessage.success(
-						t('module.attachment.message.operate.copy_url',
-							{name: name}
-						)
-					)
+						t('module.attachment.message.operate.copy_url', { name: name })
+					);
 				},
 			},
 			{
@@ -385,9 +381,9 @@ const onRowContextmenu = (row, column, event) => {
 				onClick: async () => {
 					if (currentSelectionAttachment.value?.type === 'Directory') {
 						await ElMessageBox.confirm(
-							t('module.attachment.contextmenu.delete.confirm',
-								{name: currentSelectionAttachment.value.name}
-							),
+							t('module.attachment.contextmenu.delete.confirm', {
+								name: currentSelectionAttachment.value.name,
+							}),
 							t('module.attachment.confirm.warning'),
 							{
 								confirmButtonText: t('module.attachment.confirm.btn.confirm'),
@@ -403,14 +399,16 @@ const onRowContextmenu = (row, column, event) => {
 							.catch(() => {
 								ElMessage({
 									type: 'info',
-									message: t('module.attachment.message.operate.delete_atts.cancel'),
+									message: t(
+										'module.attachment.message.operate.delete_atts.cancel'
+									),
 								});
 							});
 					} else {
 						await ElMessageBox.confirm(
-							t('module.attachment.contextmenu.delete.confirm',
-								{name: currentSelectionAttachment.value?.name}
-							),
+							t('module.attachment.contextmenu.delete.confirm', {
+								name: currentSelectionAttachment.value?.name,
+							}),
 							t('module.attachment.confirm.warning'),
 							{
 								confirmButtonText: t('module.attachment.confirm.btn.confirm'),
@@ -426,8 +424,10 @@ const onRowContextmenu = (row, column, event) => {
 							.catch(() => {
 								ElMessage({
 									type: 'info',
-									message:
-										t('module.attachment.message.operate.delete_att.cancel', {name: currentSelectionAttachment.value?.name}),
+									message: t(
+										'module.attachment.message.operate.delete_att.cancel',
+										{ name: currentSelectionAttachment.value?.name }
+									),
 								});
 							});
 					}
@@ -483,9 +483,9 @@ watch(attachmentCondition.value, () => {
 	}
 	router.push({ path: route.path, query });
 });
-const onAttachmentDetailDrawerClose = () =>{
+const onAttachmentDetailDrawerClose = () => {
 	window.location.reload();
-}
+};
 </script>
 
 <template>
@@ -518,7 +518,7 @@ const onAttachmentDetailDrawerClose = () =>{
 		<template #footer>
 			<span class="dialog-footer">
 				<el-button @click="dialogFolderVisible = false">
-					{{t('module.attachment.dialog.mkdir.btn.cancel') }}
+					{{ t('module.attachment.dialog.mkdir.btn.cancel') }}
 				</el-button>
 				<el-button type="primary" @click="onCreateFolderButtonClick">
 					{{ t('module.attachment.dialog.mkdir.btn.confirm') }}
@@ -538,10 +538,10 @@ const onAttachmentDetailDrawerClose = () =>{
 				<el-icon>
 					<Upload />
 				</el-icon>
-				{{t('module.attachment.btn.upload')}}
+				{{ t('module.attachment.btn.upload') }}
 			</el-button>
 			<el-button :icon="FolderAdd" @click="dialogFolderVisible = true">
-				{{t('module.attachment.btn.mkdir')}}
+				{{ t('module.attachment.btn.mkdir') }}
 			</el-button>
 
 			<el-button
@@ -549,7 +549,7 @@ const onAttachmentDetailDrawerClose = () =>{
 				:icon="Position"
 				@click="directorySelectDialogVisible = true"
 			>
-				{{t('module.attachment.btn.move_atts')}}
+				{{ t('module.attachment.btn.move_atts') }}
 			</el-button>
 
 			<el-popconfirm
@@ -559,7 +559,9 @@ const onAttachmentDetailDrawerClose = () =>{
 				@confirm="onDeleteButtonClick"
 			>
 				<template #reference>
-					<el-button :icon="FolderDelete" type="danger"> {{t('module.attachment.popconfirm.btn')}} </el-button>
+					<el-button :icon="FolderDelete" type="danger">
+						{{ t('module.attachment.popconfirm.btn') }}
+					</el-button>
 				</template>
 			</el-popconfirm>
 		</el-col>
@@ -599,7 +601,10 @@ const onAttachmentDetailDrawerClose = () =>{
 	<el-row>
 		<el-col :span="24">
 			<el-form :inline="true">
-				<el-form-item :label="t('module.attachment.breadcrumb.label')" style="width: 100%">
+				<el-form-item
+					:label="t('module.attachment.breadcrumb.label')"
+					style="width: 100%"
+				>
 					<el-breadcrumb separator=">">
 						<el-breadcrumb-item v-for="path in paths" :key="path.id">
 							<el-button @click="onBreadcrumbClick(path)">
@@ -625,7 +630,11 @@ const onAttachmentDetailDrawerClose = () =>{
 			>
 				<el-table-column type="selection" width="60" />
 				<!-- <el-table-column prop="id" label="ID" width="60" /> -->
-				<el-table-column prop="name" :label="t('module.attachment.table.colum.label.name')" show-overflow-tooltip>
+				<el-table-column
+					prop="name"
+					:label="t('module.attachment.table.colum.label.name')"
+					show-overflow-tooltip
+				>
 					<template #default="scoped">
 						<el-icon
 							size="25"
@@ -651,7 +660,11 @@ const onAttachmentDetailDrawerClose = () =>{
 					width="160"
 					:formatter="dateFormat"
 				/>
-				<el-table-column prop="size" :label="t('module.attachment.table.colum.label.size')" width="130">
+				<el-table-column
+					prop="size"
+					:label="t('module.attachment.table.colum.label.size')"
+					width="130"
+				>
 					<template #default="scoped">
 						<span v-if="scoped.row.type === 'File'">
 							{{ formatFileSize(scoped.row.size) }}
@@ -668,5 +681,4 @@ const onAttachmentDetailDrawerClose = () =>{
 	width: 20px;
 	cursor: pointer;
 }
-
 </style>
