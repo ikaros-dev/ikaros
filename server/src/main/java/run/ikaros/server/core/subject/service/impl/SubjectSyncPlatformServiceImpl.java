@@ -1,5 +1,7 @@
 package run.ikaros.server.core.subject.service.impl;
 
+import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
+
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
@@ -14,13 +16,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.SubjectSync;
+import run.ikaros.api.core.subject.SubjectSyncAction;
 import run.ikaros.api.core.subject.SubjectSynchronizer;
+import run.ikaros.api.core.subject.vo.PostSubjectSyncCondition;
 import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
-import run.ikaros.server.core.subject.enums.SubjectSyncAction;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
-import run.ikaros.server.core.subject.vo.PostSubjectSyncCondition;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
@@ -51,7 +54,8 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
         Assert.notNull(platform, "'platform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
         // 查询是否已经同步过了，如果已经同步过则返回对应的条目信息
-        return subjectSyncRepository.findByPlatformAndPlatformId(platform, platformId)
+        return subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
+                subjectId, platform, platformId)
             .map(SubjectSyncEntity::getSubjectId)
             .flatMap(subjectService::findById)
             .switchIfEmpty(syncBySubjectSynchronizer(subjectId, platform, platformId));
@@ -100,6 +104,61 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
             .subscribeOn(Schedulers.boundedElastic());
 
     }
+
+    @Override
+    public Mono<SubjectSync> save(SubjectSync subjectSync) {
+        return copyProperties(subjectSync, SubjectSyncEntity.builder().build())
+            .flatMap(subjectSyncRepository::save)
+            .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, subjectSync));
+    }
+
+    @Override
+    public Mono<Void> remove(SubjectSync subjectSync) {
+        return copyProperties(subjectSync, SubjectSyncEntity.builder().build())
+            .flatMap(subjectSyncRepository::delete);
+    }
+
+    @Override
+    public Flux<SubjectSync> findSubjectSyncsBySubjectId(long subjectId) {
+        Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
+        return subjectSyncRepository.findAllBySubjectId(subjectId)
+            .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity,
+                SubjectSync.builder().build()));
+    }
+
+    @Override
+    public Mono<SubjectSync> findSubjectSyncBySubjectIdAndPlatform(long subjectId,
+                                                                   SubjectSyncPlatform platform) {
+        Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
+        Assert.notNull(platform, "'platform' must not null.");
+        return subjectSyncRepository.findBySubjectIdAndPlatform(subjectId, platform)
+            .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity,
+                SubjectSync.builder().build()));
+    }
+
+    @Override
+    public Flux<SubjectSync> findSubjectSyncsByPlatformAndPlatformId(SubjectSyncPlatform platform,
+                                                                     String platformId) {
+        Assert.notNull(platform, "'platform' must not null.");
+        Assert.hasText(platformId, "'platformId' must has text.");
+        return subjectSyncRepository.findByPlatformAndPlatformId(platform, platformId)
+            .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity,
+                SubjectSync.builder().build()));
+    }
+
+    @Override
+    public Mono<SubjectSync> findBySubjectIdAndPlatformAndPlatformId(Long subjectId,
+                                                                     SubjectSyncPlatform platform,
+                                                                     String platformId) {
+        Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
+        Assert.notNull(platform, "'platform' must not null.");
+        Assert.hasText(platformId, "'platformId' must has text.");
+        return subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
+                subjectId, platform, platformId)
+            .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity,
+                SubjectSync.builder().build()));
+    }
+
 
     private Mono<Subject> syncBySubjectSynchronizer(@Nullable Long subjectId,
                                                     SubjectSyncPlatform platform,

@@ -7,8 +7,11 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
 
 public interface SubjectSyncRepository extends R2dbcRepository<SubjectSyncEntity, Long> {
-    Mono<SubjectSyncEntity> findByPlatformAndPlatformId(SubjectSyncPlatform platform,
+    Flux<SubjectSyncEntity> findByPlatformAndPlatformId(SubjectSyncPlatform platform,
                                                         String platformId);
+
+    Mono<SubjectSyncEntity> findBySubjectIdAndPlatform(Long subjectId,
+                                                       SubjectSyncPlatform platform);
 
     Mono<SubjectSyncEntity> findBySubjectIdAndPlatformAndPlatformId(Long subjectId,
                                                                     SubjectSyncPlatform platform,

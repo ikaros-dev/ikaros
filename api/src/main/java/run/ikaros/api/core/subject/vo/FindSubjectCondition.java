@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject.vo;
+package run.ikaros.api.core.subject.vo;
 
 
 import java.util.Objects;

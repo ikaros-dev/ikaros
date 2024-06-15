@@ -1,15 +1,13 @@
-package run.ikaros.server.core.subject.service;
+package run.ikaros.api.core.subject;
 
 import jakarta.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.core.subject.Subject;
-import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.core.subject.vo.PostSubjectSyncCondition;
+import run.ikaros.api.plugin.AllowPluginOperate;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
-import run.ikaros.server.store.entity.SubjectSyncEntity;
 
-public interface SubjectSyncPlatformService {
+public interface SubjectSyncPlatformOperate extends AllowPluginOperate {
     Mono<Subject> sync(@Nullable Long subjectId, SubjectSyncPlatform platform, String platformId);
 
     Mono<Subject> sync(PostSubjectSyncCondition condition);
@@ -27,6 +25,6 @@ public interface SubjectSyncPlatformService {
                                                               String platformId);
 
     Mono<SubjectSync> findBySubjectIdAndPlatformAndPlatformId(Long subjectId,
-                                                                    SubjectSyncPlatform platform,
-                                                                    String platformId);
+                                                              SubjectSyncPlatform platform,
+                                                              String platformId);
 }

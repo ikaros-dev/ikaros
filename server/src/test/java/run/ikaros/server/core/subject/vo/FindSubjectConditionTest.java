@@ -2,6 +2,7 @@ package run.ikaros.server.core.subject.vo;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import run.ikaros.api.core.subject.vo.FindSubjectCondition;
 
 class FindSubjectConditionTest {
 
