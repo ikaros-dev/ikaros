@@ -28,11 +28,14 @@ class AttachmentRepositoryTest {
     void findAllByTypeAndNameLike() {
         // 保存一些记录
         final String videoAttName =
-            "[Airota&LoliHouse] Liz and the Blue Bird - Movie [BDRip 1080p HEVC-yuv420p10 FLACx2].mkv";
+            "[Airota&LoliHouse] Liz and the Blue Bird "
+                + "- Movie [BDRip 1080p HEVC-yuv420p10 FLACx2].mkv";
         final String assScSubtitleAttName =
-            "[Airota&LoliHouse] Liz and the Blue Bird - Movie [BDRip 1080p HEVC-yuv420p10 FLACx2].sc.ass";
+            "[Airota&LoliHouse] Liz and the Blue Bird - "
+                + "Movie [BDRip 1080p HEVC-yuv420p10 FLACx2].sc.ass";
         final String assTcSubtitleAttName =
-            "[Airota&LoliHouse] Liz and the Blue Bird - Movie [BDRip 1080p HEVC-yuv420p10 FLACx2].tc.ass";
+            "[Airota&LoliHouse] Liz and the Blue Bird - "
+                + "Movie [BDRip 1080p HEVC-yuv420p10 FLACx2].tc.ass";
 
         StepVerifier.create(repository.save(AttachmentEntity.builder()
                 .name(videoAttName).type(AttachmentType.File).path(videoAttName)
@@ -55,7 +58,8 @@ class AttachmentRepositoryTest {
         String fileName = FileUtils.parseFileNameWithoutPostfix(videoAttName);
         Assertions.assertThat(fileName)
             .isEqualTo(
-                "[Airota&LoliHouse] Liz and the Blue Bird - Movie [BDRip 1080p HEVC-yuv420p10 FLACx2]");
+                "[Airota&LoliHouse] Liz and the Blue Bird "
+                    + "- Movie [BDRip 1080p HEVC-yuv420p10 FLACx2]");
         StepVerifier.create(repository.findAllByTypeAndNameLike(
                 AttachmentType.File, fileName + "%"
             ).collectList().map(List::size))
