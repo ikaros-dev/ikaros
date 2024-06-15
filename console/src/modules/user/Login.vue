@@ -58,6 +58,8 @@ const handleLogin = async () => {
 
 		await userStore.fetchCurrentUser();
 
+		
+
 		// Reload page
 		// if (route.query.redirect_uri) {
 		// 	window.location.reload();

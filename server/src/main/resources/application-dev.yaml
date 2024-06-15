@@ -3,8 +3,8 @@ ikaros:
   plugin:
     runtime-mode: development
     fixed-plugin-path:
-      - C:\Users\li-guohao\GitRepo\ikaros-dev\plugin-alist
-      - C:\Users\li-guohao\GitRepo\ikaros-dev\plugin-bgmtv
+#      - C:\Users\li-guohao\GitRepo\ikaros-dev\plugin-alist
+#      - C:\Users\li-guohao\GitRepo\ikaros-dev\plugin-bgmtv
     #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-local-files-import
     #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-jellyfin
     #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-mikan

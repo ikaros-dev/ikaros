@@ -9,6 +9,7 @@ export * from "./episode";
 export * from "./episode-collection";
 export * from "./episode-meta";
 export * from "./episode-resource";
+export * from "./jwt-apply-param";
 export * from "./link";
 export * from "./paging-wrap";
 export * from "./plugin";
