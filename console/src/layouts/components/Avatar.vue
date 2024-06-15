@@ -70,18 +70,18 @@ const lougout = async () => {
 
 		if (e instanceof AxiosError) {
 			if (/Network Error/.test(e.message)) {
-				ElMessage.error(t('core.common.exception.network_error'));
+				ElMessage.error(t('common.exception.network_error'));
 				return;
 			}
 
 			if (e.response?.status === 403) {
-				ElMessage.warning(t('core.login.operations.submit.toast_csrf'));
+				ElMessage.warning(t('login.operations.submit.toast_csrf'));
 				return;
 			}
 
-			ElMessage.error(t('core.login.operations.submit.toast_failed'));
+			ElMessage.error(t('login.operations.submit.toast_failed'));
 		} else {
-			ElMessage.error(t('core.common.exception.unknown_error_with_title'));
+			ElMessage.error(t('common.exception.unknown_error_with_title'));
 		}
 	}
 };

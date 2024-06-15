@@ -947,3 +947,8 @@ module:
         password: SMTP Password
         alias: SMTP Account Alias
         receive-address: Recive Mail Address
+login:
+  operations:
+    submit:
+      toast_csrf: '403'
+      toast_failed: Logout失败

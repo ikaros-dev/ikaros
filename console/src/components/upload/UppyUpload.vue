@@ -12,6 +12,9 @@ import { computed, onUnmounted } from 'vue';
 import type { ProblemDetail } from '@/utils/api-client';
 import { i18n } from '@/locales';
 import { ElMessage } from 'element-plus';
+import { useUserStore } from '@/stores/user';
+
+const userStore = useUserStore();
 
 const props = withDefaults(
 	defineProps<{
@@ -63,6 +66,7 @@ const uppy = computed(() => {
 	}).use(XHRUpload, {
 		endpoint: `${import.meta.env.VITE_API_URL}${props.endpoint}`,
 		allowedMetaFields: props.allowedMetaFields,
+		headers: {'Authorization':'Bearer ' + userStore.jwtToken},
 		withCredentials: true,
 		formData: true,
 		fieldName: props.name,

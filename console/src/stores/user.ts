@@ -29,11 +29,14 @@ export const useUserStore = defineStore('user', {
 					this.currentUser = data;
 					this.isAnonymous = false;
 					// console.log('current user: ', this.currentUser)
-				}
+				} else {
+					this.jwtToken = undefined;
+					this.isAnonymous = true;
+				}	
 			} catch (e) {
 				console.error('Failed to fetch current user', e);
 				this.isAnonymous = true;
-				if (this.jwtToken) this.isAnonymous = false;
+				this.jwtToken = undefined;
 			}
 		},
 		async applyJwtToken(username:string, password:string) {
@@ -48,7 +51,10 @@ export const useUserStore = defineStore('user', {
 				if (status === 200) {
 					this.jwtToken = data;
 					this.isAnonymous = false;
-				}
+				} else {
+					this.jwtToken = undefined;
+					this.isAnonymous = true;
+				}				
 			} catch (e) {
 				console.error('Failed to apply jwt token', e);
 				this.isAnonymous = true;

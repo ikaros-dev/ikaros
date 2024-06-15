@@ -13,9 +13,11 @@ import Utf8 from 'crypto-js/enc-utf8';
 import Base64 from 'crypto-js/enc-base64';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useUserStore } from '@/stores/user';
 
 const filePondRef = ref(null);
 const { t } = useI18n();
+const userStore = useUserStore();
 
 // Create component and register plugins
 const filePond = VueFilePond(
@@ -80,17 +82,20 @@ const server = computed({
 			process: {
 				url: './api/v1alpha1/attachment/fragment/unique',
 				withCredentials: true,
+				headers: {'Authorization':'Bearer ' + userStore.jwtToken},
 			},
 			patch: {
 				url: './api/v1alpha1/attachment/fragment/patch/',
 				withCredentials: true,
 				headers: {
 					'PARENT-ID': reqHeaderParendId.value,
+					'Authorization':'Bearer ' + userStore.jwtToken
 				},
 			},
 			revert: {
 				url: './api/v1alpha1/attachment/fragment/revert',
 				withCredentials: true,
+				headers: {'Authorization':'Bearer ' + userStore.jwtToken},
 			},
 		};
 	},
