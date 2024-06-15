@@ -20,6 +20,7 @@ import {
 	V1alpha1AttachmentRelationApi,
 	V1alpha1StaticApi,
 	V1alpha1EpisodeApi,
+	V1alpha1SecurityApi,
 } from '@runikaros/api-client';
 import { ElMessage } from 'element-plus';
 
@@ -188,6 +189,7 @@ function setupApiClient(axios: AxiosInstance) {
 		),
 		tag: new V1alpha1TagApi(undefined, baseURL, axios),
 		staticRes: new V1alpha1StaticApi(undefined, baseURL, axios),
+		security: new V1alpha1SecurityApi(undefined, baseURL, axios),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
 		configmap: new SettingIkarosRunV1alpha1ConfigmapApi(
@@ -198,4 +200,10 @@ function setupApiClient(axios: AxiosInstance) {
 	};
 }
 
-export { apiClient };
+const setApiClientJwtToken = (token:string) => {
+	// console.debug('setJwtToken', token)
+	if (!token) return;
+	axiosInstance.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+}
+
+export { apiClient,setApiClientJwtToken};
