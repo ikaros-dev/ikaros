@@ -1,4 +1,5 @@
 import { useUserStore } from '@/stores/user';
+import { setApiClientJwtToken } from '@/utils/api-client';
 import type { Router } from 'vue-router';
 
 const whiteList = ['Setup', 'Login', 'Binding'];
@@ -7,12 +8,18 @@ export function setupAuthCheckGuard(router: Router) {
 	router.beforeEach((to, from, next) => {
 		const userStore = useUserStore();
 
+		// 获取jwt token，配置到请求头
+		if (userStore.authType == 'EMAIL_PASSWORD' && userStore.jwtToken) {
+			setApiClientJwtToken(userStore.jwtToken);
+		}
+
 		if (userStore.isAnonymous) {
 			// console.log('Anonymous redirect to: ', to)
 			if (whiteList.includes(to.name as string)) {
 				next();
 				return;
 			}
+			
 
 			next({
 				name: 'Login',

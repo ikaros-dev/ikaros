@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ElMessage, ElInput, ElForm, ElFormItem, ElButton } from 'element-plus';
-import axios from 'axios';
 import { AxiosError } from 'axios';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
 import { randomUUID } from '@/utils/id';
-import qs from 'qs';
 import { onMounted, ref } from 'vue';
 import LanguageSelect from '@/layouts/components/LanguageSelect.vue';
 // import Dashboard from '@/modules/dashboard/Dashboard.vue';
@@ -48,15 +46,18 @@ const userStore = useUserStore();
 
 const handleLogin = async () => {
 	try {
-		const url = `${import.meta.env.VITE_API_URL}/login`;
-		await axios.post(url, qs.stringify(form.value), {
-			withCredentials: true,
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-		});
+		// const url = `${import.meta.env.VITE_API_URL}/login`;
+		// await axios.post(url, qs.stringify(form.value), {
+		// 	withCredentials: true,
+		// 	headers: {
+		// 		'Content-Type': 'application/x-www-form-urlencoded',
+		// 	},
+		// });
 
-		await userStore.fetchCurrentUser();
+		// await userStore.fetchCurrentUser();
+
+		await userStore.applyJwtToken(form.value.username, form.value.password);
+
 
 		// Reload page
 		// if (route.query.redirect_uri) {
@@ -64,7 +65,10 @@ const handleLogin = async () => {
 		// } else {
 		// 	router.push(Dashboard);
 		// }
-		window.location.reload();
+		if (!userStore.isAnonymous) {
+			window.location.reload();
+		}
+		
 	} catch (e: unknown) {
 		console.error('Failed to login', e);
 

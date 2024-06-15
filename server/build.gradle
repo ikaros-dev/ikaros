@@ -66,6 +66,11 @@ dependencies {
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
     implementation 'org.json:json:20230227'
 
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+
     // 针对logback.xml if 不工作的支持
 //    implementation 'org.codehaus.janino:janino:3.1.11'
 
