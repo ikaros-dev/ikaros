@@ -7,7 +7,6 @@ import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.core.subject.vo.PostSubjectSyncCondition;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
-import run.ikaros.server.store.entity.SubjectSyncEntity;
 
 public interface SubjectSyncPlatformService {
     Mono<Subject> sync(@Nullable Long subjectId, SubjectSyncPlatform platform, String platformId);
@@ -27,6 +26,6 @@ public interface SubjectSyncPlatformService {
                                                               String platformId);
 
     Mono<SubjectSync> findBySubjectIdAndPlatformAndPlatformId(Long subjectId,
-                                                                    SubjectSyncPlatform platform,
-                                                                    String platformId);
+                                                              SubjectSyncPlatform platform,
+                                                              String platformId);
 }
