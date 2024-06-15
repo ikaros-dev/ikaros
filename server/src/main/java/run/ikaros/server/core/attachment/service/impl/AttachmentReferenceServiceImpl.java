@@ -169,7 +169,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                     EpisodeAttachmentUpdateEvent event =
                         new EpisodeAttachmentUpdateEvent(this,
                             entity.getReferenceId(),
-                            entity.getId(), false);
+                            entity.getAttachmentId(), false);
                     applicationEventPublisher.publishEvent(event);
                     log.debug("publish event EpisodeAttachmentUpdateEvent "
                         + "for attachmentReferenceEntity: {}", attachmentReferenceEntity);

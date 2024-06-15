@@ -1,5 +1,6 @@
 package run.ikaros.server.plugin.listener;
 
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
@@ -24,6 +25,9 @@ public class PluginAwareEventListener {
      */
     @EventListener(PluginAwareEvent.class)
     public void notifyPlugin(PluginAwareEvent event) {
+        if (Objects.isNull(event)) {
+            return;
+        }
         String pluginId = event.getPluginId();
         if ("ALL".equals(pluginId)) {
             log.debug("publish event [{}] to plugin [{}].",
