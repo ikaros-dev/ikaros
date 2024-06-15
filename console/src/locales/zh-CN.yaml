@@ -910,3 +910,8 @@ module:
           required: 请输入邮件服务密码
         mail-receive-address:
           required: 请输入收件方邮件地址
+login:
+  operations:
+    submit:
+      toast_csrf: 403无权访问
+      toast_failed: 登录失败
