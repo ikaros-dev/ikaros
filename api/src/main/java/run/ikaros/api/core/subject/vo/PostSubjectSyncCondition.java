@@ -1,9 +1,9 @@
-package run.ikaros.server.core.subject.vo;
+package run.ikaros.api.core.subject.vo;
 
 import lombok.Builder;
 import lombok.Data;
+import run.ikaros.api.core.subject.SubjectSyncAction;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
-import run.ikaros.server.core.subject.enums.SubjectSyncAction;
 
 @Data
 @Builder

@@ -1,4 +1,4 @@
-package run.ikaros.server.core.subject.enums;
+package run.ikaros.api.core.subject;
 
 public enum SubjectSyncAction {
     /**
