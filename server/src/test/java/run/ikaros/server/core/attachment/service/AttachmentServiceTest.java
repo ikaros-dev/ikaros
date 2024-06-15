@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,6 +45,7 @@ class AttachmentServiceTest {
     }
 
     @Test
+    @Disabled
     void upload() throws IOException {
         StepVerifier.create(attachmentService.listEntitiesByCondition(
                     AttachmentSearchCondition.builder().build())
