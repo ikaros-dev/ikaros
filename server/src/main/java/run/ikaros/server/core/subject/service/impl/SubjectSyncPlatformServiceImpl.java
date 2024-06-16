@@ -107,9 +107,25 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
 
     @Override
     public Mono<SubjectSync> save(SubjectSync subjectSync) {
-        return copyProperties(subjectSync, SubjectSyncEntity.builder().build())
+        log.debug("save: {}", subjectSync);
+        return subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
+                subjectSync.getSubjectId(), subjectSync.getPlatform(), subjectSync.getPlatformId())
+            .switchIfEmpty(Mono.just(new SubjectSyncEntity()
+                    .setSubjectId(subjectSync.getSubjectId())
+                    .setPlatform(subjectSync.getPlatform())
+                    .setPlatformId(subjectSync.getPlatformId())
+                    .setSyncTime(subjectSync.getSyncTime()))
+                .doOnSuccess(e -> log.debug("create new subject sync record: [{}].", e)))
+            .map(entity -> entity.setSubjectId(subjectSync.getSubjectId())
+                .setPlatform(subjectSync.getPlatform())
+                .setPlatformId(subjectSync.getPlatformId())
+                .setSyncTime(subjectSync.getSyncTime()))
             .flatMap(subjectSyncRepository::save)
-            .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, subjectSync));
+            .map(entity -> subjectSync
+                .setSubjectId(entity.getSubjectId())
+                .setPlatform(entity.getPlatform())
+                .setPlatformId(entity.getPlatformId())
+                .setSyncTime(entity.getSyncTime()));
     }
 
     @Override

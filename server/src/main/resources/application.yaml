@@ -3,6 +3,10 @@ ikaros:
   work-dir: ${user.home}/.ikaros
   show-theme: false
 
+  security:
+    # 3 day for token expire
+    jwt-expiration-time: 259200000
+
   plugin:
     runtime-mode: deployment
     plugins-root: ${ikaros.work-dir}/plugins

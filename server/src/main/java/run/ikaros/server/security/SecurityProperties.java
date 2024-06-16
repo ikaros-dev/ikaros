@@ -17,7 +17,7 @@ public class SecurityProperties {
         どんなに辛いことがあっても、笑顔で乗り越えるのが俺の流儀だ！
         君と出会えたこと、それが私の奇跡です。
         """;
-    private Long jwtExpirationTime = (long) (2 * 60 * 60 * 1000); // 2h
+    private Long jwtExpirationTime = (long) (3 * 24 * 60 * 60 * 1000); // 3day
 
     @Data
     public static class Initializer {

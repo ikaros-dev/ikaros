@@ -285,12 +285,15 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMap(episodeRepository::save)
             .checkpoint("UpdateEpisodeEntities")
 
-            // 条目同步的更新逻辑是: 移除原有的所有记录,再创建新的记录.
-            .then(subjectSyncRepository.deleteAllBySubjectId(subjectId.get()))
+            // 条目同步的更新逻辑是: 不存在则新增，存在则更新
             .then(Mono.justOrEmpty(subject.getSyncs()))
             .flatMapMany(subjectSyncs -> Flux.fromStream(subjectSyncs.stream()))
             .flatMap(subjectSync -> copyProperties(subjectSync, new SubjectSyncEntity()))
             .map(entity -> entity.setSubjectId(subjectId.get()))
+            .flatMap(entity -> subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
+                entity.getSubjectId(), entity.getPlatform(), entity.getPlatformId()
+            ).switchIfEmpty(Mono.just(entity)
+                .doOnSuccess(e2 -> log.debug("create new subject sync record: [{}].", e2))))
             .flatMap(subjectSyncRepository::save)
             .checkpoint("UpdateSubjectSyncEntities")
             .then();
