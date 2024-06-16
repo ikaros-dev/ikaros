@@ -58,7 +58,6 @@ const handleLogin = async () => {
 
 		await userStore.applyJwtToken(form.value.username, form.value.password);
 
-
 		// Reload page
 		// if (route.query.redirect_uri) {
 		// 	window.location.reload();
@@ -68,7 +67,6 @@ const handleLogin = async () => {
 		if (!userStore.isAnonymous) {
 			window.location.reload();
 		}
-		
 	} catch (e: unknown) {
 		console.error('Failed to login', e);
 

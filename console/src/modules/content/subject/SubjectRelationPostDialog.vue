@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue';
-import {ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElMessage, ElOption, ElSelect,} from 'element-plus';
+import {
+  ElButton,
+  ElDialog,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElMessage,
+  ElOption,
+  ElSelect,
+} from 'element-plus';
 import {Tickets} from '@element-plus/icons-vue';
 import SubjectSelectDrawer from './SubjectSelectDrawer.vue';
 import {apiClient} from '@/utils/api-client';

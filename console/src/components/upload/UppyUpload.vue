@@ -66,7 +66,7 @@ const uppy = computed(() => {
 	}).use(XHRUpload, {
 		endpoint: `${import.meta.env.VITE_API_URL}${props.endpoint}`,
 		allowedMetaFields: props.allowedMetaFields,
-		headers: {'Authorization':'Bearer ' + userStore.jwtToken},
+    headers: {Authorization: 'Bearer ' + userStore.jwtToken},
 		withCredentials: true,
 		formData: true,
 		fieldName: props.name,

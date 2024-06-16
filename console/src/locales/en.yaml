@@ -947,6 +947,9 @@ module:
         password: SMTP Password
         alias: SMTP Account Alias
         receive-address: Recive Mail Address
+  about:
+    title: About
+    sidebar: About
 login:
   operations:
     submit:

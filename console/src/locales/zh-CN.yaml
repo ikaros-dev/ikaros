@@ -910,6 +910,9 @@ module:
           required: 请输入邮件服务密码
         mail-receive-address:
           required: 请输入收件方邮件地址
+  about:
+    title: 关于
+    sidebar: 关于
 login:
   operations:
     submit:

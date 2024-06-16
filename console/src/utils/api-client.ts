@@ -200,10 +200,10 @@ function setupApiClient(axios: AxiosInstance) {
 	};
 }
 
-const setApiClientJwtToken = (token:string) => {
+const setApiClientJwtToken = (token: string) => {
 	// console.debug('setJwtToken', token)
 	if (!token) return;
 	axiosInstance.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-}
+};
 
-export { apiClient,setApiClientJwtToken};
+export {apiClient, setApiClientJwtToken};

@@ -19,7 +19,6 @@ export function setupAuthCheckGuard(router: Router) {
 				next();
 				return;
 			}
-			
 
 			next({
 				name: 'Login',
