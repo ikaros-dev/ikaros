@@ -1,32 +1,33 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { Subject } from '@runikaros/api-client';
-import { apiClient } from '@/utils/api-client';
-import { base64Encode } from '@/utils/string-util';
+import {computed, onMounted, ref} from 'vue';
+import {Subject} from '@runikaros/api-client';
+import {apiClient} from '@/utils/api-client';
+import {base64Encode} from '@/utils/string-util';
 import {
-	ElDrawer,
-	ElRow,
-	ElCol,
-	ElInput,
-	ElForm,
-	ElFormItem,
-	ElSelect,
-	ElOption,
-	ElTable,
-	ElTableColumn,
-	ElPagination,
+  ElCol,
+  ElDrawer,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElOption,
+  ElPagination,
+  ElRow,
+  ElSelect,
+  ElTable,
+  ElTableColumn,
 } from 'element-plus';
-import { onMounted } from 'vue';
-import { useI18n } from 'vue-i18n';
+import {useI18n} from 'vue-i18n';
 
 const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
+    filter: number[];
 	}>(),
 	{
 		visible: false,
+    filter: undefined,
 	}
 );
 
@@ -86,6 +87,10 @@ const fetchSubjects = async () => {
 	findSubjectsCondition.value.size = data.size;
 	findSubjectsCondition.value.total = data.total;
 	subjects.value = data.items as Subject[];
+  if (props.filter && props.filter.length > 0) {
+    console.debug('props.filter', props.filter)
+    subjects.value = subjects.value.filter(sub => sub.id && sub.id > 0 && props.filter.indexOf(sub.id) < 0)
+  }
 };
 
 const selectionSubjectIdSet = new Set<number>();

@@ -12,7 +12,7 @@ const userStore = useUserStore();
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		subjectId: number;
+    subjectId: number | string;
 	}>(),
 	{
 		visible: false,
