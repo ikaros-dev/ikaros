@@ -124,6 +124,60 @@ public class RegexUtils {
     }
 
     /**
+     * Get episode seq by file name, such as: xxxx-04-xxxx.mp4 => 04 .
+     */
+    @Nonnull
+    public static Long getFileNameHorizontalEpSeq(@Nonnull final String fileName) {
+        AssertUtils.notBlank(fileName, "fileName");
+        Set<String> strSet = new HashSet<>();
+
+        Matcher matcher =
+            Pattern.compile(RegexConst.FILE_NAME_EPISODE_SEQUENCE_WITH_HORIZONTAL)
+                .matcher(fileName);
+        while (matcher.find()) {
+            strSet.add(matcher.group());
+        }
+
+        if (strSet.isEmpty()) {
+            throw new RegexMatchingException(
+                "file name episode seq matching exception , file name: "
+                    + fileName);
+        }
+
+        return strSet.stream().findFirst()
+            .map(str -> str.replace("-", ""))
+            .map(Long::parseLong)
+            .orElse(null);
+    }
+
+    /**
+     * Get episode seq by file name, such as: xxxx_04_xxxx.mp4 => 04 .
+     */
+    @Nonnull
+    public static Long getFileNameUnderlineEpSeq(@Nonnull final String fileName) {
+        AssertUtils.notBlank(fileName, "fileName");
+        Set<String> strSet = new HashSet<>();
+
+        Matcher matcher =
+            Pattern.compile(RegexConst.FILE_NAME_EPISODE_SEQUENCE_WITH_UNDERLINE)
+                .matcher(fileName);
+        while (matcher.find()) {
+            strSet.add(matcher.group());
+        }
+
+        if (strSet.isEmpty()) {
+            throw new RegexMatchingException(
+                "file name episode seq matching exception , file name: "
+                    + fileName);
+        }
+
+        return strSet.stream().findFirst()
+            .map(str -> str.replace("_", ""))
+            .map(Long::parseLong)
+            .orElse(null);
+    }
+
+    /**
      * Get episode seq by file name and ep integrally, such as: xxxx EP04 xxxx.mp4 => 04 .
      */
     @Nonnull
@@ -252,7 +306,15 @@ public class RegexUtils {
                 try {
                     seq = getEpFileNameIntegrallySeq(fileName);
                 } catch (RegexMatchingException e3) {
-                    log.warn("parse episode seq fail by file name: {}.", fileName, e3);
+                    try {
+                        seq = getFileNameHorizontalEpSeq(fileName);
+                    } catch (RegexMatchingException e4) {
+                        try {
+                            seq = getFileNameUnderlineEpSeq(fileName);
+                        } catch (RegexMatchingException e5) {
+                            log.warn("parse episode seq fail by file name: {}.", fileName, e5);
+                        }
+                    }
                 }
             }
         }

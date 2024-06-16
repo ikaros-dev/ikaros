@@ -14,7 +14,6 @@ import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.core.attachment.exception.AttachmentRefMatchingException;
 import run.ikaros.api.infra.exception.RegexMatchingException;
 import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
-import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.RegexUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.EpisodeGroup;
@@ -105,9 +104,6 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
             .flatMap(attId -> attachmentRepository.findById(attId)
                 .switchIfEmpty(Mono.error(new AttachmentNotFoundException(
                     "Check fail, current attachment not found for id=" + attId))))
-            .filter(entity -> FileUtils.isVideo(entity.getUrl()))
-            .switchIfEmpty(Mono.error(new AttachmentRefMatchingException(
-                "Matching fail, current attachment is not a video.")))
             .flatMap(entity -> getSeqMono(entity.getName())
                 .flatMap(seq -> episodeRepository.findBySubjectIdAndGroupAndSequence(subjectId,
                         EpisodeGroup.MAIN, seq)
