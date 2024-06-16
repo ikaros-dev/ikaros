@@ -82,7 +82,7 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
 ## 贡献者
 
-[![Contributors](https://contrib.nn.ci/api?repo=ikaros-dev/ikaros&repo=ikaros-dev/docs&repo=ikaros-dev/app)
+![Contributors](https://contrib.nn.ci/api?repo=ikaros-dev/ikaros&repo=ikaros-dev/docs&repo=ikaros-dev/app)
 
 # 感谢
 
