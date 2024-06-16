@@ -230,6 +230,12 @@ public class FileUtils {
         if (parentFile == null) {
             return;
         }
+
+        if (parentFile.isFile()) {
+            Files.deleteIfExists(parentFile.toPath());
+            log.debug("Delete file in path: {}", parentFile.toPath());
+        }
+
         if (parentFile.listFiles() == null) {
             return;
         }

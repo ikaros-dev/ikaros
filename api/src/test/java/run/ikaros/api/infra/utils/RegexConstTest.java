@@ -24,4 +24,38 @@ class RegexConstTest {
 
         Assertions.assertThat(strSet).isNotEmpty();
     }
+
+    @Test
+    void testFileNameEpSeqWithHorizontal() {
+        String fileName =
+            "[ANi] Reign of the Seven Spellblades "
+                + "- 七魔剑支配天下 -03- [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]";
+        Set<String> strSet = new HashSet<>();
+
+        Matcher matcher =
+            Pattern.compile(RegexConst.FILE_NAME_EPISODE_SEQUENCE_WITH_HORIZONTAL)
+                .matcher(fileName);
+        while (matcher.find()) {
+            strSet.add(matcher.group());
+        }
+
+        Assertions.assertThat(strSet).isNotEmpty();
+    }
+
+    @Test
+    void testFileNameEpSeqWithUnderline() {
+        String fileName =
+            "[ANi] Reign of the Seven Spellblades "
+                + "- 七魔剑支配天下 _03_ [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]";
+        Set<String> strSet = new HashSet<>();
+
+        Matcher matcher =
+            Pattern.compile(RegexConst.FILE_NAME_EPISODE_SEQUENCE_WITH_UNDERLINE)
+                .matcher(fileName);
+        while (matcher.find()) {
+            strSet.add(matcher.group());
+        }
+
+        Assertions.assertThat(strSet).isNotEmpty();
+    }
 }

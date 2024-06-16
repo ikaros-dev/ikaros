@@ -29,4 +29,21 @@ public class Episode {
     private EpisodeGroup group;
 
     private List<EpisodeResource> resources;
+
+    /**
+     * Create a default episode instance.
+     */
+    public static Episode defaultEpisode(Long subjectId) {
+        Episode episode = new Episode();
+        episode.setAirTime(LocalDateTime.now());
+        episode.setSequence(1);
+        episode.setGroup(EpisodeGroup.MAIN);
+        episode.setDescription("Default episode description");
+        episode.setName("Default episode name");
+        episode.setNameCn("默认的剧集名称");
+        if (subjectId != null) {
+            episode.setSubjectId(subjectId);
+        }
+        return episode;
+    }
 }
