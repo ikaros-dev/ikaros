@@ -34,23 +34,12 @@
 
 请看：https://docs.ikaros.run/
 
-# 旧版本 v0.1.0
-
-旧版本仅供体验功能，**不推荐正式使用**，
-
-部署指导文档: [docker compose 方式部署指导手册(v0.1.0)](https://github.com/ikaros-dev/ikaros/blob/v0.1.0/docs/deploy/deploy-with-docker-compose.md)
-
-功能介绍：https://github.com/ikaros-dev/ikaros/blob/v0.1.0/docs/introduce/feature.md
-
 # 许可证
 
 <a href="https://github.com/ikaros-dev/ikaros/blob/master/LICENSE"><img alt="LICENSE" src="https://img.shields.io/github/license/ikaros-dev/ikaros?style=flat-square" /></a>
 
 Ikaros 使用 AGPL-v3.0 协议开源，请遵守开源协议。
 
-# 声明
-
-Ikaros 的作用是为了辅助对资源进行管理，类似于是 C/S 架构的文件管理器。
 
 # 社区汇总
 
@@ -82,6 +71,18 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
 - [CONTRIBUTING.MD](CONTRIBUTING.MD) : 贡献指南
 - [CHANGELOG.MD](CHANGELOG.MD) : 更新日志
+
+# 免责声明
+
+- 本程序为开源解决方案，所有源代码公开获取。
+- 本程序的作用是为了辅助**个人**对资源进行管理，类似于是 C/S 架构的文件管理器。
+- 本程序仅供个人使用，不建议允许公网访问。
+- 使用本程序的用户的行为，仅与相应的用户有关，与本程序无关，更与本程序开发团队无关。
+- 非本程序开发团队所开发的本程序插件，与本程序开发团队无关。
+
+## 贡献者
+
+[![Contributors](https://contrib.nn.ci/api?repo=ikaros-dev/ikaros&repo=ikaros-dev/docs&repo=ikaros-dev/app)
 
 # 感谢
 
