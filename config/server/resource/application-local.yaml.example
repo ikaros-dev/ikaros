@@ -20,6 +20,7 @@ logging:
     io.r2dbc: INFO
     run.ikaros.server: DEBUG
     run.ikaros.plugin: DEBUG
+    run.ikaros.api: DEBUG
     org.pf4j: INFO
     org.hibernate.SQL: INFO
     org.hibernate.type.descriptor.sql.BasicBinder: INFO

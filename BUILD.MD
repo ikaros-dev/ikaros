@@ -79,7 +79,7 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 
 ## 本地开发
 
-在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win,local`
+在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win-dev,local`
 
 这里的`local`请先确保您已经进行了上面的`application-local.yaml.example`实例文件复制移动重命名
 
@@ -120,7 +120,7 @@ java -jar ./ikaros-server.jar
 在打包文件所在目录，`Windwos` 运行，
 需要加上额外参数`--spring.profiles.active=win`
 ```shell
-java -jar ikaros-server.jar --spring.profiles.active=win 
+java -jar ikaros-server.jar --spring.profiles.active=win
 ```
 
 # 提交PR后

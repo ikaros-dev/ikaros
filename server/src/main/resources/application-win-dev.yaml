@@ -1,0 +1,3 @@
+spring:
+  r2dbc:
+    url: r2dbc:h2:file:///~/ikaros-dev/database/ikaros?MODE=MySQL&DB_CLOSE_ON_EXIT=FALSE
