@@ -45,7 +45,6 @@ out/
 /tripartite/
 /original/
 /plugins/
-application-local.yaml
 
 ### Console ###
 /server/src/main/resources/console/
