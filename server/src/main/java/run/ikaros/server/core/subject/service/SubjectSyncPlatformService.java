@@ -1,6 +1,7 @@
 package run.ikaros.server.core.subject.service;
 
 import jakarta.annotation.Nullable;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Subject;
@@ -13,8 +14,10 @@ public interface SubjectSyncPlatformService {
 
     Mono<Subject> sync(PostSubjectSyncCondition condition);
 
+    @Transactional
     Mono<SubjectSync> save(SubjectSync subjectSync);
 
+    @Transactional
     Mono<Void> remove(SubjectSync subjectSync);
 
     Flux<SubjectSync> findSubjectSyncsBySubjectId(long subjectId);

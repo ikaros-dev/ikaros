@@ -1,0 +1,26 @@
+ikaros:
+  show-theme: true
+  security:
+    # 30 day for local dev token expire
+    jwt-expiration-time: 18144000000
+
+  plugin:
+    runtime-mode: development
+    fixed-plugin-path:
+    #      - C:\Users\li-guohao\GitRepo\ikaros-dev\plugin-bgmtv
+    #      - C:\Users\li-guohao\GitRepo\ikaros-dev\plugin-alist
+    #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-local-files-import
+    #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-jellyfin
+    #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-mikan
+    #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-baidupan
+
+logging:
+  level:
+    org.springframework.data.r2dbc: INFO
+    io.r2dbc: INFO
+    run.ikaros.server: DEBUG
+    run.ikaros.plugin: DEBUG
+    org.pf4j: INFO
+    org.hibernate.SQL: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO
+    org.springframework.r2dbc.core.DefaultDatabaseClient: INFO

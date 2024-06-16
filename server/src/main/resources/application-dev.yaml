@@ -5,6 +5,8 @@ ikaros:
 
   #    auto-start-plugin: false
   security:
+    # 30 day for local dev token expire
+    jwt-expiration-time: 18144000000
     initializer:
       master-username: tomoki
       master-password: tomoki
