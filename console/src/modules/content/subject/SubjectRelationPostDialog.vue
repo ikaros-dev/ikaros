@@ -1,19 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import {
-	ElDialog,
-	ElForm,
-	ElFormItem,
-	ElButton,
-	ElInput,
-	ElSelect,
-	ElOption,
-	ElMessage,
-} from 'element-plus';
-import { Tickets } from '@element-plus/icons-vue';
+import {computed, ref} from 'vue';
+import {ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElMessage, ElOption, ElSelect,} from 'element-plus';
+import {Tickets} from '@element-plus/icons-vue';
 import SubjectSelectDrawer from './SubjectSelectDrawer.vue';
-import { apiClient } from '@/utils/api-client';
-import { useI18n } from 'vue-i18n';
+import {apiClient} from '@/utils/api-client';
+import {useI18n} from 'vue-i18n';
 
 const { t } = useI18n();
 
@@ -86,6 +77,7 @@ const reqCreateRelaction = async () => {
 <template>
 	<subject-select-drawer
 		v-model:visible="subjectSelectDrawerVisible"
+    :filter="[props.masterSubjectId as number]"
 		@selections-change="onSelectionsChange"
 	/>
 	<el-dialog
