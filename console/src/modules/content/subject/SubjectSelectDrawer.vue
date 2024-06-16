@@ -88,8 +88,10 @@ const fetchSubjects = async () => {
 	findSubjectsCondition.value.total = data.total;
 	subjects.value = data.items as Subject[];
   if (props.filter && props.filter.length > 0) {
-    console.debug('props.filter', props.filter)
-    subjects.value = subjects.value.filter(sub => sub.id && sub.id > 0 && props.filter.indexOf(sub.id) < 0)
+    console.debug('props.filter', props.filter);
+    subjects.value = subjects.value.filter(
+        (sub) => sub.id && sub.id > 0 && props.filter.indexOf(sub.id) < 0
+    );
   }
 };
 
