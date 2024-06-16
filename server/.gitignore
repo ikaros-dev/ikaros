@@ -40,3 +40,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+
+### Local Dev Files
+application-local.yaml
