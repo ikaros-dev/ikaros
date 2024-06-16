@@ -26,7 +26,7 @@ const { t } = useI18n();
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		subjectId: number | undefined;
+    subjectId: number | string | undefined;
 		// episode
 		ep: Episode | undefined;
 		multiResource?: boolean;
