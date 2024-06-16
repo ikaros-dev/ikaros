@@ -85,6 +85,13 @@ const fetchSubjectById = async () => {
 		subject.value = await subjectStore.fetchSubjectById(
 			subject.value.id as number
 		);
+    if (!subject.value.episodes || subject.value.episodes.length === 0) {
+      batchMatchingSubjectButtonDisable.value = true;
+      deleteMatchingSubjectButtonDisable.value = true;
+    } else {
+      batchMatchingSubjectButtonDisable.value = false;
+      deleteMatchingSubjectButtonDisable.value = false;
+    }
 	}
 };
 
@@ -369,6 +376,8 @@ const fetchDatas = async () => {
 
 const bindMasterIsEpisodeFlag = ref(false);
 const batchMatchingSubjectButtonLoading = ref(false);
+const batchMatchingSubjectButtonDisable = ref(false);
+const deleteMatchingSubjectButtonDisable = ref(false);
 const batchMatchingEpisodeButtonLoading = ref(false);
 const attachmentMultiSelectDialogVisible = ref(false);
 const onCloseWithAttachments = async (attachments: Attachment[]) => {
@@ -832,6 +841,8 @@ onMounted(fetchDatas);
 								<el-button
 									plain
 									:loading="batchMatchingSubjectButtonLoading"
+                  :disabled="batchMatchingSubjectButtonDisable"
+									
 									@click="
 										() => {
 											attachmentMultiSelectDialogVisible = true;
@@ -855,6 +866,7 @@ onMounted(fetchDatas);
 										<el-button
 											plain
 											type="danger"
+                      :disabled="deleteMatchingSubjectButtonDisable"
 											:loading="batchCancenMatchingSubjectButtonLoading"
 										>
 											{{
