@@ -3,6 +3,7 @@ package run.ikaros.server.core.subject.service.impl;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -76,8 +77,9 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
     @Override
     public Mono<SubjectRelation> createSubjectRelation(SubjectRelation subjectRelation) {
         Assert.notNull(subjectRelation, "'subjectRelation' must not be null.");
-        Assert.isTrue(subjectRelation.getSubject() > 0, "'subjectRelation' must not be null.");
-        return findBySubjectIdAndType(subjectRelation.getSubject(),
+        final Long masterSubjectId = subjectRelation.getSubject();
+        Assert.isTrue(masterSubjectId > 0, "'subjectRelation' must not be null.");
+        return findBySubjectIdAndType(masterSubjectId,
             subjectRelation.getRelationType())
             .map(SubjectRelation::getRelationSubjects)
             .switchIfEmpty(Mono.just(new HashSet<>()))
@@ -85,9 +87,10 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
                 existsRelationSubjectSet -> Flux.fromStream(subjectRelation.getRelationSubjects()
                         .stream())
                     .filter(relationSubject -> !existsRelationSubjectSet.contains(relationSubject))
+                    .filter(relationSubject -> !Objects.equals(relationSubject, masterSubjectId))
                     // save master relation
                     .map(relationSubject -> SubjectRelationEntity.builder()
-                        .subjectId(subjectRelation.getSubject())
+                        .subjectId(masterSubjectId)
                         .relationType(subjectRelation.getRelationType())
                         .relationSubjectId(relationSubject)
                         .build())
@@ -105,7 +108,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
                     .flatMap(subjectRelationRepository::save)
 
             )
-            .then(findBySubjectIdAndType(subjectRelation.getSubject(),
+            .then(findBySubjectIdAndType(masterSubjectId,
                 subjectRelation.getRelationType()));
     }
 
