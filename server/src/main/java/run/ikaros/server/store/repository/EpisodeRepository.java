@@ -9,6 +9,8 @@ import run.ikaros.server.store.entity.EpisodeEntity;
 public interface EpisodeRepository extends R2dbcRepository<EpisodeEntity, Long> {
     Flux<EpisodeEntity> findAllBySubjectId(Long subjectId);
 
+    Mono<Long> countBySubjectId(Long subjectId);
+
     Flux<EpisodeEntity> findAllBySubjectIdOrderByGroupDescSequenceAscAirTimeAscCreateTimeAsc(
         Long subjectId);
 

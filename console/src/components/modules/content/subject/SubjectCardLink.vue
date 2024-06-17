@@ -7,12 +7,14 @@ const props = withDefaults(
 		name: string;
 		nameCn?: string;
 		cover: string;
+		percentage: number;
 	}>(),
 	{
 		id: -1,
 		name: '',
 		nameCn: '',
 		cover: '',
+		percentage: 0,
 	}
 );
 </script>
@@ -23,6 +25,7 @@ const props = withDefaults(
 			:name="props.name"
 			:name-cn="props.nameCn"
 			:cover="props.cover"
+			:percentage="props.percentage"
 		/>
 	</router-link>
 </template>

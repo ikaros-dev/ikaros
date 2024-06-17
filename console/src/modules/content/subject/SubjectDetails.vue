@@ -548,6 +548,10 @@ const deleteBatchingAttachments = async () => {
 	window.location.reload();
 };
 
+const isEpisodeBindResource = (episode: Episode): boolean | undefined => {
+  return episode.resources && episode.resources.length > 0;
+};
+
 onMounted(fetchDatas);
 </script>
 
@@ -842,7 +846,6 @@ onMounted(fetchDatas);
 									plain
 									:loading="batchMatchingSubjectButtonLoading"
                   :disabled="batchMatchingSubjectButtonDisable"
-									
 									@click="
 										() => {
 											attachmentMultiSelectDialogVisible = true;
@@ -879,7 +882,14 @@ onMounted(fetchDatas);
 								</el-popconfirm>
 							</template>
 							<template #default="scoped">
-								<el-button plain @click="showEpisodeDetails(scoped.row)">
+                <el-button
+                    plain
+                    :icon="isEpisodeBindResource(scoped.row) ? Check : Close"
+                    :color="
+										isEpisodeBindResource(scoped.row) ? '#00CCFF' : '#FF0000'
+									"
+                    @click="showEpisodeDetails(scoped.row)"
+                >
 									{{ t('module.subject.details.episode.label.button.details') }}
 								</el-button>
 

@@ -146,7 +146,7 @@ onMounted(() => {
 		subjectPlatformArr.value.push(subjectPlatform);
 	});
 	if (subjectPlatformArr.value.length == 1) {
-		subjectSync.value.platform = subjectPlatformArr.value[0]
+    subjectSync.value.platform = subjectPlatformArr.value[0];
 	}
 });
 </script>
