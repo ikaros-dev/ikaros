@@ -4,9 +4,6 @@
     </a>
 </p>
 
-<p align="center"><b>Ikaros</b> [Ίκαρος]，专注于ACGMN的内容管理系统(CMS)。</p>
-
-<p align="center">ACGMN全拼是：Anime(动画) + Comic(漫画) + Game(游戏) + Music(音乐) + Novel(小说)</p>
 
 <p align="center">
 <a href="https://t.me/run_ikaros"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white" /></a>
@@ -21,6 +18,10 @@
 <a href="https://github.com/ikaros-dev/ikaros/issues"><img src="https://img.shields.io/github/issues/ikaros-dev/ikaros?color=blue&style=flat-square"/></a>
 <a href="https://hub.docker.com/r/ikarosrun/ikaros"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/ikarosrun/ikaros?style=flat-square" /></a>
 </p>
+
+<p align="center"><b>Ikaros</b> [Ίκαρος]，专注于ACGMN的内容管理系统(CMS)。</p>
+
+<p align="center">ACGMN全拼是：Anime(动画) + Comic(漫画) + Game(游戏) + Music(音乐) + Novel(小说)</p>
 
 # 特性
 
