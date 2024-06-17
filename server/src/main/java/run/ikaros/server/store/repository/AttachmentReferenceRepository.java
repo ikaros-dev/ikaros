@@ -4,6 +4,7 @@ import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 
 public interface AttachmentReferenceRepository
@@ -13,6 +14,10 @@ public interface AttachmentReferenceRepository
 
     Mono<Boolean> existsByTypeAndAttachmentId(
         AttachmentReferenceType type, Long attachmentId);
+
+    Mono<Boolean> existsByTypeAndReferenceId(
+        AttachmentRelationType type, Long referenceId
+    );
 
     Mono<Boolean> existsByAttachmentId(Long attachmentId);
 

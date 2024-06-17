@@ -105,6 +105,12 @@ export interface Subject {
   total_episodes?: number;
   /**
    *
+   * @type {number}
+   * @memberof Subject
+   */
+  matching_episode?: number;
+  /**
+   *
    * @type {string}
    * @memberof Subject
    */

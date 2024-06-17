@@ -40,4 +40,11 @@ public class SubjectMeta {
     @JsonProperty("collection_status")
     private CollectionType collectionType;
     private boolean canRead;
+    @JsonProperty("total_episodes")
+    private Long totalEpisodes;
+    /**
+     * 已经绑定附件的剧集数量.
+     */
+    @JsonProperty("matching_episode")
+    private Long matchingEpisodes;
 }

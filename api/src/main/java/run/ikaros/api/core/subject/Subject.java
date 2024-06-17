@@ -41,6 +41,11 @@ public class Subject {
     private List<Episode> episodes;
     @JsonProperty("total_episodes")
     private Long totalEpisodes;
+    /**
+     * 已经绑定附件的剧集数量.
+     */
+    @JsonProperty("matching_episode")
+    private Long matchingEpisodes;
     @JsonProperty("collection_status")
     private CollectionType collectionType;
     private List<SubjectSync> syncs;

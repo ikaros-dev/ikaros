@@ -133,6 +133,11 @@ watch(findSubjectsCondition.value, () => {
 	router.push({ path: route.path, query });
 });
 
+const episodeAttsPercentage =  (subject:Subject):number =>{
+	// console.debug('subject', subject);
+	return (subject.matching_episode / subject.total_episodes) * 100;
+}
+
 onMounted(fetchSubjectByRouterQuery);
 </script>
 
@@ -266,6 +271,7 @@ onMounted(fetchSubjectByRouterQuery);
 				:name="subject.name"
 				:name-cn="subject.name_cn"
 				:cover="subject.cover"
+				:percentage="episodeAttsPercentage(subject)"
 			/>
 		</el-col>
 	</el-row>
