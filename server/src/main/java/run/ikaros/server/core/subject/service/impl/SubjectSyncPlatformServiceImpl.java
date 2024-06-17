@@ -54,8 +54,10 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
         Assert.notNull(platform, "'platform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
         // 查询是否已经同步过了，如果已经同步过则返回对应的条目信息
-        return subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
-                subjectId, platform, platformId)
+        return subjectSyncRepository.findByPlatformAndPlatformId(platform, platformId)
+            .collectList()
+            .filter(subjectSyncEntities -> !subjectSyncEntities.isEmpty())
+            .map(subjectSyncEntities -> subjectSyncEntities.get(0))
             .map(SubjectSyncEntity::getSubjectId)
             .flatMap(subjectService::findById)
             .switchIfEmpty(syncBySubjectSynchronizer(subjectId, platform, platformId));
