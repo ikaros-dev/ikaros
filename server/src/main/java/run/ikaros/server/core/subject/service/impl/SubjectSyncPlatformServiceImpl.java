@@ -1,6 +1,6 @@
 package run.ikaros.server.core.subject.service.impl;
 
-import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
+import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;

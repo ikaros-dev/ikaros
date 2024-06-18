@@ -1,5 +1,6 @@
 package run.ikaros.server.core.subject;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -61,8 +62,24 @@ public class SubjectOperator implements SubjectOperate {
     }
 
     @Override
-    public Mono<Subject> findByPlatform(@Nullable Long subjectId, SubjectSyncPlatform platform,
-                                        String keyword) {
-        return null;
+    public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull Long subjectId,
+                                                                 @Nonnull SubjectSyncPlatform
+                                                                     subjectSyncPlatform,
+                                                                 String platformId) {
+        return subjectService.findBySubjectIdAndPlatformAndPlatformId(
+            subjectId, subjectSyncPlatform, platformId);
     }
+
+    @Override
+    public Flux<Subject> findByPlatformAndPlatformId(
+        @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
+        return subjectService.findByPlatformAndPlatformId(subjectSyncPlatform, platformId);
+    }
+
+    @Override
+    public Mono<Boolean> existsByPlatformAndPlatformId(
+        @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
+        return subjectService.existsByPlatformAndPlatformId(subjectSyncPlatform, platformId);
+    }
+
 }

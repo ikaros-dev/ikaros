@@ -1,6 +1,6 @@
 package run.ikaros.server.core.attachment.service.impl;
 
-import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
+import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;

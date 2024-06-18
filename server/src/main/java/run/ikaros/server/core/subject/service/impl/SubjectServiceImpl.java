@@ -1,7 +1,7 @@
 package run.ikaros.server.core.subject.service.impl;
 
 import static org.springframework.data.relational.core.query.Criteria.where;
-import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
+import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
@@ -34,6 +34,7 @@ import run.ikaros.api.core.subject.SubjectMeta;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.core.subject.vo.FindSubjectCondition;
 import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.utils.ReactiveBeanUtils;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
@@ -42,7 +43,6 @@ import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
-import run.ikaros.server.infra.utils.ReactiveBeanUtils;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.entity.BaseEntity;
@@ -175,20 +175,34 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    public Mono<Subject> findBySyncPlatform(@Nonnull Long subjectId,
-                                            @Nonnull SubjectSyncPlatform subjectSyncPlatform,
-                                            @NotBlank String platformId) {
-        Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
+    public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull Long subjectId,
+                                                                 @Nonnull SubjectSyncPlatform
+                                                                     platform,
+                                                                 @NotBlank String platformId) {
+        Assert.notNull(platform, "'platform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
         return subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(subjectId,
-                subjectSyncPlatform, platformId)
+                platform, platformId)
             .map(SubjectSyncEntity::getSubjectId)
-            .flatMap(this::findById)
-            .switchIfEmpty(
-                Mono.error(new NotFoundException(
-                    "Not found subject by sync platform and platformId: "
-                        + subjectSyncPlatform + "-" + platformId)))
+            .flatMap(this::findById).flatMap(subjectEntity -> findById(subjectEntity.getId()));
+    }
+
+    @Override
+    public Flux<Subject> findByPlatformAndPlatformId(
+        @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
+        Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
+        Assert.hasText(platformId, "'platformId' must has text.");
+        return subjectSyncRepository.findByPlatformAndPlatformId(subjectSyncPlatform, platformId)
+            .map(SubjectSyncEntity::getSubjectId).flatMap(this::findById)
             .flatMap(subjectEntity -> findById(subjectEntity.getId()));
+    }
+
+    @Override
+    public Mono<Boolean> existsByPlatformAndPlatformId(
+        @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
+        Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
+        Assert.hasText(platformId, "'platformId' must has text.");
+        return subjectSyncRepository.existsByPlatformAndPlatformId(subjectSyncPlatform, platformId);
     }
 
     @Override

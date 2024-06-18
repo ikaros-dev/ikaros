@@ -1,4 +1,4 @@
-package run.ikaros.server.infra.utils;
+package run.ikaros.api.infra.utils;
 
 import java.util.Objects;
 import org.springframework.beans.BeansException;
