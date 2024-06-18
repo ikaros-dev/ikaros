@@ -108,6 +108,44 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
     }
 
     @Override
+    public Mono<Subject> syncSelfAndRelations(SubjectSyncPlatform platform, String platformId) {
+        Assert.notNull(platform, "'platform' must not null.");
+        Assert.hasText(platformId, "'platformId' must has text.");
+        // 查询是否已经同步过了，如果已经同步过则返回对应的条目信息
+        return subjectSyncRepository.findByPlatformAndPlatformId(platform, platformId)
+            .collectList()
+            .filter(subjectSyncEntities -> !subjectSyncEntities.isEmpty())
+            .map(subjectSyncEntities -> subjectSyncEntities.get(0))
+            .map(SubjectSyncEntity::getSubjectId)
+            .flatMap(subjectService::findById)
+            .switchIfEmpty(doSyncSelfAndRelations(platform, platformId));
+    }
+
+    private Mono<Subject> doSyncSelfAndRelations(SubjectSyncPlatform platform, String platformId) {
+        Assert.notNull(platform, "'platform' must not null.");
+        Assert.hasText(platformId, "'platformId' must has text.");
+        return Flux.fromStream(extensionComponentsFinder.getExtensions(SubjectSynchronizer.class)
+                .stream())
+            .filter(subjectSynchronizer -> platform.equals(subjectSynchronizer.getSyncPlatform()))
+            .collectList()
+            .filter(subjectSynchronizes -> !subjectSynchronizes.isEmpty())
+            .switchIfEmpty(Mono.error(new NoAvailableSubjectPlatformSynchronizerException(
+                "No found available subject platform synchronizer for platform-id: "
+                    + platform.name() + "-" + platformId)))
+            .map(subjectSynchronizes -> subjectSynchronizes.get(0))
+            .flatMap(subjectSynchronizer -> subjectSynchronizer.pullSelfAndRelations(platformId))
+            .onErrorResume(Exception.class, e -> {
+                String msg =
+                    "Operate has exception "
+                        + "for platform-id: "
+                        + platform.name() + "-" + platformId
+                        + ", plugin exception msg: " + e.getMessage();
+                log.error(msg, e);
+                return Mono.error(new NoAvailableSubjectPlatformSynchronizerException(msg));
+            }).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    @Override
     public Mono<SubjectSync> save(SubjectSync subjectSync) {
         log.debug("save: {}", subjectSync);
         return subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
