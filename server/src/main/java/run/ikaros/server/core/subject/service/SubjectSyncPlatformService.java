@@ -14,6 +14,15 @@ public interface SubjectSyncPlatformService {
 
     Mono<Subject> sync(PostSubjectSyncCondition condition);
 
+    /**
+     * 同步对应平台ID条目及其所有的相关条目.
+     *
+     * @param platform   平台
+     * @param platformId 平台ID
+     * @return 第一个(起点)条目
+     */
+    Mono<Subject> syncSelfAndRelations(SubjectSyncPlatform platform, String platformId);
+
     @Transactional
     Mono<SubjectSync> save(SubjectSync subjectSync);
 

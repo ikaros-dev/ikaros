@@ -2,8 +2,8 @@ package run.ikaros.server.core.attachment.service.impl;
 
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARENT_ID;
+import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import static run.ikaros.api.store.enums.AttachmentType.Directory;
-import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;

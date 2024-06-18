@@ -1,7 +1,7 @@
 package run.ikaros.server.core.attachment.service.impl;
 
+import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import static run.ikaros.api.store.enums.AttachmentReferenceType.EPISODE;
-import static run.ikaros.server.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;

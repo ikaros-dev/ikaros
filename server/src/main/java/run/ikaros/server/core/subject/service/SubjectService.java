@@ -3,6 +3,7 @@ package run.ikaros.server.core.subject.service;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectMeta;
@@ -15,9 +16,15 @@ public interface SubjectService {
 
     Mono<Subject> findByBgmId(@Nonnull Long subjectId, Long bgmtvId);
 
-    Mono<Subject> findBySyncPlatform(@Nonnull Long subjectId,
+    Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull Long subjectId,
                                      @Nonnull SubjectSyncPlatform subjectSyncPlatform,
                                      @NotBlank String platformId);
+
+    Flux<Subject> findByPlatformAndPlatformId(@Nonnull SubjectSyncPlatform subjectSyncPlatform,
+                                              @NotBlank String platformId);
+
+    Mono<Boolean> existsByPlatformAndPlatformId(@Nonnull SubjectSyncPlatform subjectSyncPlatform,
+                                                @NotBlank String platformId);
 
     @Transactional
     Mono<Subject> create(Subject subject);
