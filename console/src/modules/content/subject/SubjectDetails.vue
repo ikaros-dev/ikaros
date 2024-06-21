@@ -545,7 +545,7 @@ const deleteBatchingAttachments = async () => {
 	ElMessage.success(
 		t('module.subject.details.message.operate.delete-batch-attachments.success')
 	);
-	window.location.reload();
+  fetchDatas();
 };
 
 const isEpisodeBindResource = (episode: Episode): boolean | undefined => {
