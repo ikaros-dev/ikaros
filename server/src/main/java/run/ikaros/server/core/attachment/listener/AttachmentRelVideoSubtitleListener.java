@@ -13,7 +13,6 @@ import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.core.attachment.event.AttachmentReferenceSaveEvent;
 import run.ikaros.server.core.attachment.event.EpisodeAttachmentUpdateEvent;
-import run.ikaros.server.infra.utils.SqlUtils;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.entity.AttachmentRelationEntity;
@@ -88,7 +87,7 @@ public class AttachmentRelVideoSubtitleListener {
         String postfix = FileUtils.parseFilePostfix(attachmentName);
         attachmentName = attachmentName.substring(0, attachmentName.indexOf(postfix));
         return attachmentRepository.findAllByTypeAndNameLike(File,
-                SqlUtils.escapeLikeSpecialChars(attachmentName) + "%")
+                attachmentName + "%")
             .filter(entity -> entity.getName().endsWith("ass"))
             .map(entity -> VideoSubtitle.builder()
                 .masterAttachmentId(attachmentEntity.getId())
