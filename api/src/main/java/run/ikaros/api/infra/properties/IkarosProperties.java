@@ -10,7 +10,7 @@ import org.springframework.validation.annotation.Validated;
 /**
  * Ikaros base properties.
  *
- * @author: li-guohao
+ * @author: chivehao
  */
 @Data
 @Validated

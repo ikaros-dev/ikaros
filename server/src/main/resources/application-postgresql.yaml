@@ -3,7 +3,6 @@ spring:
     url: r2dbc:pool:postgresql://localhost:5432/postgres
     username: postgres
     password: openpostgresql
-  sql:
-    init:
-      mode: always
-      platform: postgresql
+
+  flyway:
+    locations: classpath:db/postgresql/migration

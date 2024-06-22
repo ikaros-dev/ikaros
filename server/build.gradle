@@ -1,3 +1,6 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+import org.springframework.core.io.ClassPathResource
+
 plugins {
     id 'org.springframework.boot' version '3.0.1'
     id 'io.spring.dependency-management' version '1.1.0'
@@ -54,6 +57,7 @@ ext {
     pf4j = '3.9.0'
     jsoup = '1.15.3'
     springDocOpenAPI = "2.0.2"
+    flywaydb = "10.15.0"
 }
 
 dependencies {
@@ -66,9 +70,13 @@ dependencies {
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
     implementation 'org.json:json:20230227'
 
+    implementation "org.flywaydb:flyway-core:$flywaydb"
+
+
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+    runtimeOnly "org.flywaydb:flyway-database-postgresql:$flywaydb"
 
 
     // 针对logback.xml if 不工作的支持
