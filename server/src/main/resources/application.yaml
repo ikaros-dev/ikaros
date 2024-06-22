@@ -34,7 +34,7 @@ spring:
     password: 123456
   sql:
     init:
-      mode: always
+      mode: never
       platform: h2
   flyway:
     locations: classpath:db/h2/migration
@@ -43,7 +43,6 @@ spring:
     encoding: UTF-8
     sql-migration-separator: __
     clean-disabled: true
-    table: FLYWAY_SCHEMA_HISTORY
 
 springdoc:
   api-docs:
