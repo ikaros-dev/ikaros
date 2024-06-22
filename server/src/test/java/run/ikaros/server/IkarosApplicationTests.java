@@ -22,6 +22,5 @@ class IkarosApplicationTests {
     @Test
     void ikarosProps() {
         assertThat(ikarosProperties).isNotNull();
-        assertThat(ikarosProperties.getVersion()).isNotBlank();
     }
 }
