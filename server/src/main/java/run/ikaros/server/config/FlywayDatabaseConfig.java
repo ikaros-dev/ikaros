@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.r2dbc.R2dbcProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import run.ikaros.api.infra.utils.StringUtils;
 
 @Configuration
 @EnableConfigurationProperties({R2dbcProperties.class, FlywayProperties.class})
@@ -16,11 +15,9 @@ public class FlywayDatabaseConfig {
      */
     @Bean(initMethod = "migrate")
     public Flyway flyway(FlywayProperties flywayProperties, R2dbcProperties r2dbcProperties) {
-        final String databaseUrl = StringUtils.isNotBlank(flywayProperties.getUrl())
-            ? flywayProperties.getUrl() : convert2flywayDatabaseUrl(r2dbcProperties);
         return Flyway.configure()
             .dataSource(
-                databaseUrl,
+                flywayProperties.getUrl(),
                 r2dbcProperties.getUsername(),
                 r2dbcProperties.getPassword()
             )
@@ -29,10 +26,4 @@ public class FlywayDatabaseConfig {
             .load();
     }
 
-    private static String convert2flywayDatabaseUrl(R2dbcProperties r2dbcProperties) {
-        String jdbcUrl = r2dbcProperties.getUrl().replace("r2dbc:", "jdbc:");
-        jdbcUrl = jdbcUrl.substring(0, jdbcUrl.lastIndexOf("?"));
-        jdbcUrl = jdbcUrl.replace("///", "");
-        return jdbcUrl;
-    }
 }

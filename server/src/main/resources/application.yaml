@@ -40,6 +40,7 @@ spring:
     encoding: UTF-8
     sql-migration-separator: __
     clean-disabled: true
+    url: jdbc:h2:file:${ikaros.work-dir}/database/ikaros
 
 springdoc:
   api-docs:
