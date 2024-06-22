@@ -28,7 +28,10 @@ public class RoleServiceImpl implements RoleService {
     public Mono<RoleEntity> createIfNotExist(String role) {
         return roleRepository.existsByName(role)
             .filter(Boolean.FALSE::equals)
-            .flatMap(exists -> Mono.just(RoleEntity.builder().name(role).build()))
+            .flatMap(exists -> Mono.just(RoleEntity.builder()
+                .name(role)
+                .parentId(0L)
+                .build()))
             .flatMap(roleRepository::save);
     }
 }

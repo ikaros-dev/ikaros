@@ -7,6 +7,7 @@ create table if not exists role
     update_time   timestamp(6) null,
     update_uid    int8         null,
     ol_version    int8         null,
+    parent_id     int8         not null,
     name          varchar(255) not null,
     constraint role_pkey primary key (id)
 );
