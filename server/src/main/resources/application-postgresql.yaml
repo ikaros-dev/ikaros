@@ -7,3 +7,5 @@ spring:
     init:
       mode: always
       platform: postgresql
+  flyway:
+    locations: classpath:db/postgres/migration

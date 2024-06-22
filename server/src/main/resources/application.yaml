@@ -36,6 +36,8 @@ spring:
     init:
       mode: always
       platform: h2
+  flyway:
+    locations: classpath:db/h2/migration
 
 springdoc:
   api-docs:

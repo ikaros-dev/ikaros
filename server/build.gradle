@@ -54,6 +54,7 @@ ext {
     pf4j = '3.9.0'
     jsoup = '1.15.3'
     springDocOpenAPI = "2.0.2"
+    flywaydb = "10.15.0"
 }
 
 dependencies {
@@ -65,6 +66,9 @@ dependencies {
     // 针对插件RestTemplate的支持
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
     implementation 'org.json:json:20230227'
+
+    implementation "org.flywaydb:flyway-core:$flywaydb"
+
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
