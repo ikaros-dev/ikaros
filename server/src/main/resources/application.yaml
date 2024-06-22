@@ -38,6 +38,12 @@ spring:
       platform: h2
   flyway:
     locations: classpath:db/h2/migration
+    baseline-version: 0.13.0_0000
+    enabled: true
+    encoding: UTF-8
+    sql-migration-separator: __
+    clean-disabled: true
+    table: FLYWAY_SCHEMA_HISTORY
 
 springdoc:
   api-docs:
