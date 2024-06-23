@@ -3,11 +3,19 @@ package run.ikaros.api.constant;
 /**
  * security constants.
  *
- * @author: li-guohao
+ * @author: chivehao
  */
 public interface SecurityConst {
     String PREFIX = "ROLE_";
+    /**
+     * 有完整的路径权限.
+     */
     String ROLE_MASTER = "MASTER";
+    /**
+     * 只有读取的路径权限.
+     */
+    String ROLE_FRIEND = "FRIEND";
+    String AUTHORITY_DIVIDE = "&&";
 
     Long UID_WHEN_NO_AUTH = 0L;
 

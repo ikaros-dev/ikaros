@@ -27,6 +27,7 @@ import run.ikaros.server.core.user.RoleService;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 import run.ikaros.server.security.authorization.RequestAuthorizationManager;
+import run.ikaros.server.store.repository.AuthorityRepository;
 
 @EnableWebFluxSecurity
 @Configuration(proxyBeanMethods = false)
@@ -39,8 +40,9 @@ public class SecurityConfiguration {
 
     @Bean
     ReactiveUserDetailsService userDetailsService(UserService userService,
-                                                  RoleService roleService) {
-        return new DefaultUserDetailService(userService, roleService);
+                                                  RoleService roleService,
+                                                  AuthorityRepository authorityRepository) {
+        return new DefaultUserDetailService(userService, roleService, authorityRepository);
     }
 
     @Bean
