@@ -113,6 +113,7 @@ module:
         old_password: 旧密码
         new_password: 新密码
         btn_save: 保存
+        update_username: 更新用户名
         username: 用户名
       message:
         update:

@@ -46,12 +46,15 @@ const updateProfile = async () => {
 };
 const updateUsername = async () => {
 	await apiClient.user
-	.updateUser({updateUserRequest: profile.value as UpdateUserRequest})
+	.updateUsername({
+		username: userStore.currentUser?.entity?.username as string,
+		newUsername: profile.value.username
+	})
 	.then(() => {
 		ElMessage.success(t('module.user.profile.message.update.all'));
 		userStore.fetchCurrentUser();
-		// userStore.jwtTokenLogout();
-		// window.location.reload();
+		userStore.jwtTokenLogout();
+		window.location.reload();
 	})
 };
 
@@ -158,7 +161,7 @@ onMounted(initProfileAndUsername);
 				</ElRow>
 			</el-tab-pane>
 			<!-- username -->
-			<el-tab-pane :label="t('module.user.profile.label.username')">
+			<el-tab-pane :label="t('module.user.profile.label.update_username')">
 				<el-form-item :label="t('module.user.profile.label.username')">
 					<el-input
 						v-model="profile.username"

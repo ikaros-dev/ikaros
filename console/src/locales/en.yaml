@@ -113,6 +113,7 @@ module:
         old_password: Old Password
         new_password: New Password
         btn_save: Save
+        update_username: Update Password
         username: Username
       message:
         update:
