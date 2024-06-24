@@ -103,6 +103,7 @@ module:
         title: 重新登录
     profile:
       title: 个人中心
+      sidebar: 我的
       label:
         basic_info: 基本信息
         nickname: 昵称

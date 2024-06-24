@@ -103,6 +103,7 @@ module:
         title: Re-login
     profile:
       title: Profile
+      sidebar: Profile
       label:
         basic_info: Basic Info
         nickname: Nickname

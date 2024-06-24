@@ -32,7 +32,7 @@ export default definePlugin({
 				meta: {
 					title: 'module.user.profile.title',
 					menu: {
-						name: 'module.user.sidebar',
+						name: 'module.user.profile.sidebar',
 						group: 'user',
 						icon: markRaw(UserFilled),
 						priority: 1,
