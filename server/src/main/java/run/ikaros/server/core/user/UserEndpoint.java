@@ -22,8 +22,10 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.core.user.enums.VerificationCodeType;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.server.endpoint.CoreEndpoint;
+import run.ikaros.server.store.entity.BaseEntity;
 
 @Slf4j
 @Component
@@ -45,6 +47,22 @@ public class UserEndpoint implements CoreEndpoint {
                     .response(responseBuilder()
                         .implementation(User.class)))
 
+            .GET("/user/username/exists/{username}", this::existUserByUsername,
+                builder -> builder.operationId("ExistUserByUsername")
+                    .tag(tag)
+                    .description("Exist user by username.")
+                    .parameter(Builder.parameterBuilder()
+                        .name("username").required(true).in(ParameterIn.PATH))
+                    .response(responseBuilder().implementation(Boolean.class)))
+
+            .GET("/user/email/exists/{email}", this::existUserByEmail,
+                builder -> builder.operationId("ExistUserByEmail")
+                    .tag(tag)
+                    .description("Exist user by email.")
+                    .parameter(Builder.parameterBuilder()
+                        .name("email").required(true).in(ParameterIn.PATH))
+                    .response(responseBuilder().implementation(Boolean.class)))
+
             .PUT("/user", this::putUser,
                 builder -> builder.operationId("UpdateUser")
                     .tag(tag)
@@ -52,7 +70,7 @@ public class UserEndpoint implements CoreEndpoint {
                     .requestBody(requestBodyBuilder()
                         .required(true).implementation(UpdateUserRequest.class)
                         .description("User update info."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
+                    .response(responseBuilder()
                         .responseCode("200")
                         .description("Update user information success.")
                         .implementation(User.class)))
@@ -68,10 +86,19 @@ public class UserEndpoint implements CoreEndpoint {
                         .in(ParameterIn.DEFAULT)
                         .name("roleId").implementation(Long.class)
                         .required(true).description("Id for role."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
+                    .response(responseBuilder()
                         .responseCode("200")
                         .description("Change user role success.")
                         .implementation(Void.class)))
+
+            .PUT("/user/{username}/username/{newUsername}", this::updateUsername,
+                builder -> builder.operationId("UpdateUsername")
+                    .tag(tag).description("Update user username.")
+                    .parameter(Builder.parameterBuilder()
+                        .name("username").required(true).in(ParameterIn.PATH))
+                    .parameter(Builder.parameterBuilder()
+                        .name("newUsername").required(true).in(ParameterIn.PATH)))
+
 
             .PUT("/user/{username}/password", this::changeUserPassword,
                 builder -> builder.operationId("ChangeUserPassword")
@@ -88,7 +115,7 @@ public class UserEndpoint implements CoreEndpoint {
                         .in(ParameterIn.DEFAULT)
                         .name("newPassword").implementation(String.class)
                         .required(true).description("New password for user."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
+                    .response(responseBuilder()
                         .responseCode("200")
                         .description("Update user password success.")
                         .implementation(Void.class)))
@@ -109,7 +136,7 @@ public class UserEndpoint implements CoreEndpoint {
                         .in(ParameterIn.DEFAULT)
                         .name("verificationCode").implementation(String.class)
                         .required(true).description("Verification code once."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
+                    .response(responseBuilder()
                         .responseCode("200")
                         .description("Bind user and email success.")
                         .implementation(Void.class)))
@@ -130,10 +157,19 @@ public class UserEndpoint implements CoreEndpoint {
                         .in(ParameterIn.DEFAULT)
                         .name("verificationCode").implementation(String.class)
                         .required(true).description("Verification code once."))
-                    .response(org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder()
+                    .response(responseBuilder()
                         .responseCode("200")
                         .description("Bind user and telephone success.")
                         .implementation(Void.class)))
+
+            .PUT("/user/{username}/verificationCode/{type}", this::sendVerificationCode,
+                builder -> builder.operationId("SendVerificationCode")
+                    .tag(tag).description("Send verification code.")
+                    .parameter(Builder.parameterBuilder()
+                        .name("username").required(true).in(ParameterIn.PATH))
+                    .parameter(Builder.parameterBuilder()
+                        .name("type").required(true).in(ParameterIn.PATH)
+                        .implementation(VerificationCodeType.class)))
             .build();
     }
 
@@ -149,6 +185,20 @@ public class UserEndpoint implements CoreEndpoint {
             .flatMap(user -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(user));
+    }
+
+    private Mono<ServerResponse> existUserByUsername(ServerRequest request) {
+        return Mono.just(request)
+            .map(req -> req.pathVariable("username"))
+            .flatMap(userService::existsByUsername)
+            .flatMap(exists -> ServerResponse.ok().bodyValue(exists));
+    }
+
+    private Mono<ServerResponse> existUserByEmail(ServerRequest request) {
+        return Mono.just(request)
+            .map(req -> req.pathVariable("email"))
+            .flatMap(userService::existsByEmail)
+            .flatMap(exists -> ServerResponse.ok().bodyValue(exists));
     }
 
     private Mono<ServerResponse> putUser(ServerRequest request) {
@@ -170,6 +220,16 @@ public class UserEndpoint implements CoreEndpoint {
         return Mono.justOrEmpty(request.queryParam("roleId"))
             .map(Long::valueOf)
             .flatMap(roleId -> userService.changeRole(username, roleId))
+            .then(ServerResponse.ok().build());
+    }
+
+    private Mono<ServerResponse> updateUsername(ServerRequest request) {
+        String username = request.pathVariable("username");
+        String newUsername = request.pathVariable("newUsername");
+        return userService.getUserByUsername(username)
+            .map(User::entity)
+            .map(BaseEntity::getId)
+            .flatMap(userId -> userService.updateUsername(userId, newUsername))
             .then(ServerResponse.ok().build());
     }
 
@@ -201,6 +261,16 @@ public class UserEndpoint implements CoreEndpoint {
         Assert.isTrue(verificationCodeOptional.isPresent(), "'verificationCode' must not blank.");
         return userService.bindTelephone(username, telephoneOp.get(),
                 verificationCodeOptional.get())
+            .then(ServerResponse.ok().build());
+    }
+
+    private Mono<ServerResponse> sendVerificationCode(ServerRequest request) {
+        String username = request.pathVariable("username");
+        VerificationCodeType type = VerificationCodeType.valueOf(request.pathVariable("type"));
+        return userService.getUserByUsername(username)
+                .map(User::entity)
+                    .map(BaseEntity::getId)
+                        .flatMap(userId -> userService.sendVerificationCode(userId, type))
             .then(ServerResponse.ok().build());
     }
 }

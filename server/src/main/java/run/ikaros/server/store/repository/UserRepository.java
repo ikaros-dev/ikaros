@@ -19,6 +19,8 @@ public interface UserRepository extends R2dbcRepository<UserEntity, Long> {
 
     Mono<Boolean> existsByUsername(String username);
 
+    Mono<Boolean> existsByEmail(String email);
+
     Mono<Boolean> existsByUsernameAndEnableAndDeleteStatus(String username,
                                                            Boolean enable,
                                                            Boolean deleteStatus);

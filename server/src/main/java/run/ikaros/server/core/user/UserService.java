@@ -4,6 +4,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.user.enums.VerificationCodeType;
 
 public interface UserService {
     String DEFAULT_PASSWORD_ENCODING_ID_PREFIX = "{bcrypt}";
@@ -27,6 +28,12 @@ public interface UserService {
 
     Mono<User> getUserByUsername(String username);
 
+    Mono<Boolean> existsByUsername(String username);
+
+    Mono<Boolean> existsByEmail(String email);
+
+    Mono<Void> updateUsername(Long id, String username);
+
     Mono<Void> updatePassword(@NotBlank String username, @NotBlank String oldRawPassword,
                               @NotBlank String rawPassword);
 
@@ -39,4 +46,6 @@ public interface UserService {
                              @NotBlank String verificationCode);
 
     Mono<Void> changeRole(@NotBlank String username, Long roleId);
+
+    Mono<Void> sendVerificationCode(Long userId, VerificationCodeType type);
 }

@@ -539,6 +539,51 @@ export const ActuatorApiAxiosParamCreator = function (
     },
     /**
      *
+     * @summary Actuator web endpoint \'flyway\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    flyway: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+      const localVarPath = `/actuator/flyway`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     *
      * @summary Actuator web endpoint \'health\'
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1499,6 +1544,25 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
     },
     /**
      *
+     * @summary Actuator web endpoint \'flyway\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async flyway(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.flyway(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     *
      * @summary Actuator web endpoint \'health\'
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1965,6 +2029,17 @@ export const ActuatorApiFactory = function (
     },
     /**
      *
+     * @summary Actuator web endpoint \'flyway\'
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    flyway(options?: AxiosRequestConfig): AxiosPromise<object> {
+      return localVarFp
+        .flyway(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     *
      * @summary Actuator web endpoint \'health\'
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2421,6 +2496,19 @@ export class ActuatorApi extends BaseAPI {
   ) {
     return ActuatorApiFp(this.configuration)
       .envToMatch(requestParameters.toMatch, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   *
+   * @summary Actuator web endpoint \'flyway\'
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ActuatorApi
+   */
+  public flyway(options?: AxiosRequestConfig) {
+    return ActuatorApiFp(this.configuration)
+      .flyway(options)
       .then((request) => request(this.axios, this.basePath));
   }
 
