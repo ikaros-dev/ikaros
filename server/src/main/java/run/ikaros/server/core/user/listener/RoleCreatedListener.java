@@ -45,23 +45,23 @@ public class RoleCreatedListener {
         return Mono.empty();
     }
 
-    private Mono<Void> addFriendAuthority(Long roleId) {
+    private Mono<Void> addMasterAuthority(Long roleId) {
         AuthorityEntity authorityEntity = AuthorityEntity.builder().roleId(roleId)
             .type(AuthorityType.ALL).allow(true).target("*").authority("*").build();
         return authorityRepository.save(authorityEntity)
             .doOnSuccess(e ->
-                log.debug("create new friend authority: {}", authorityEntity))
+                log.debug("create new master authority: {}", authorityEntity))
             .then();
     }
 
-    private Mono<Void> addMasterAuthority(Long roleId) {
+    private Mono<Void> addFriendAuthority(Long roleId) {
         AuthorityEntity authorityEntity = AuthorityEntity.builder().roleId(roleId)
             .type(AuthorityType.ALL).allow(true).target("*").authority(
                 JsonUtils.obj2Json(List.of("GET"))
             ).build();
         return authorityRepository.save(authorityEntity)
             .doOnSuccess(e ->
-                log.debug("create new master authority: {}", authorityEntity))
+                log.debug("create new friend authority: {}", authorityEntity))
             .then();
     }
 

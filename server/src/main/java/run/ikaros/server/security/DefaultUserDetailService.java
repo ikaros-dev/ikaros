@@ -1,7 +1,6 @@
 package run.ikaros.server.security;
 
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import reactor.core.publisher.Flux;
@@ -43,10 +42,10 @@ public class DefaultUserDetailService implements ReactiveUserDetailsService {
                         .collectList()
                         .map(authorities ->
                             org.springframework.security.core.userdetails.User.builder()
-                                .authorities(authorities)
                                 .username(username)
                                 .password(userEntity.getPassword())
-                                .roles(role).build()))
+                                .authorities(authorities)
+                                .build()))
             );
     }
 
@@ -56,6 +55,7 @@ public class DefaultUserDetailService implements ReactiveUserDetailsService {
             .map(authority -> authority.getTarget()
                 + SecurityConst.AUTHORITY_DIVIDE
                 + authority.getAuthority())
-            .map(SimpleGrantedAuthority::new);
+            .map(IkarosGrantedAuthority::new);
     }
+
 }

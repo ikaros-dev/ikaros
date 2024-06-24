@@ -12,7 +12,6 @@ import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.ReactiveAuthorizationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.server.authorization.AuthorizationContext;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
@@ -37,15 +36,22 @@ public class RequestAuthorizationManager
             return authentication.map(auth -> new AuthorizationDecision(true));
         }
 
-        authentication.map(auth -> {
+        return authentication.map(auth -> {
             Set<String> authorities = auth.getAuthorities()
                 .stream().map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
             if (authorities.isEmpty()) {
                 return new AuthorizationDecision(false);
             }
+
+            if (authorities.size() == 1 && authorities.toArray()[0] == "anonymous") {
+                return new AuthorizationDecision(false);
+            }
+
             boolean granted = false;
+
             for (String authority : authorities) {
+
                 String[] split = authority.split(SecurityConst.AUTHORITY_DIVIDE);
                 if (split.length != 2) {
                     log.debug("Invalid authority: {}", authority);
@@ -68,11 +74,6 @@ public class RequestAuthorizationManager
             }
             return new AuthorizationDecision(granted);
         });
-
-        return authentication.map(auth -> new AuthorizationDecision(
-            auth.getAuthorities()
-                .contains(new SimpleGrantedAuthority(
-                    SecurityConst.PREFIX + SecurityConst.ROLE_MASTER))));
     }
 
 }
