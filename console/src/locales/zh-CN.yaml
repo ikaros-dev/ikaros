@@ -916,6 +916,9 @@ module:
   about:
     title: 关于
     sidebar: 关于
+  users:
+    title: 用户
+    sidebar: 用户
 login:
   operations:
     submit:

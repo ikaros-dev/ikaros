@@ -953,6 +953,9 @@ module:
   about:
     title: About
     sidebar: About
+  users:
+    title: Users
+    sidebar: Users
 login:
   operations:
     submit:

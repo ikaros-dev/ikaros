@@ -19,7 +19,7 @@ export default definePlugin({
                         name: 'module.about.sidebar',
                         group: 'system',
                         icon: markRaw(Ship),
-                        priority: 0,
+                        priority: 3,
                     },
                 },
             },
