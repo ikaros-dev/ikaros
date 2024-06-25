@@ -19,7 +19,7 @@ export default definePlugin({
 						name: 'module.users.sidebar',
 						group: 'system',
 						icon: markRaw(UserFilled),
-						priority: 1,
+						priority: 2,
 					},
 				},
 			},

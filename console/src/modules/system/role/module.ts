@@ -19,7 +19,7 @@ export default definePlugin({
 						name: 'module.roles.sidebar',
 						group: 'system',
 						icon: markRaw(Ticket),
-						priority: 2,
+						priority: 1,
 					},
 				},
 			},
