@@ -956,6 +956,9 @@ module:
   users:
     title: Users
     sidebar: Users
+  roles:
+    title: Users
+    sidebar: Users
 login:
   operations:
     submit:

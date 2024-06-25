@@ -7,6 +7,7 @@ import Setting from './system/setting/module';
 import About from './system/about/module';
 // import Tasks from './system/task/module';
 import Users from './system/user/module';
+import Roles from './system/role/module'
 
 const coreModules = [
 	Dashboard,
@@ -18,6 +19,7 @@ const coreModules = [
     About,
 	// Tasks,
 	Users,
+	Roles,
 ];
 
 export { coreModules };

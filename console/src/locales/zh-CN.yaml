@@ -919,6 +919,9 @@ module:
   users:
     title: 用户
     sidebar: 用户
+  roles:
+    title: 角色
+    sidebar: 角色
 login:
   operations:
     submit:
