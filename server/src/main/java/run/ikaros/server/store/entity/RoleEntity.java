@@ -20,4 +20,5 @@ public class RoleEntity extends BaseEntity {
     private String name;
     @Column("parent_id")
     private Long parentId;
+    private String description;
 }
