@@ -64,7 +64,6 @@ create table if not exists authority
     update_time   timestamp(6)   null,
     update_uid    int8           null,
     ol_version    int8           null,
-    role_id       int8           not null,
     allow         bool           not null,
     type          varchar(100)   not null,
     target        varchar(255)   not null,
@@ -172,15 +171,16 @@ create table if not exists person
 -- role
 create table if not exists role
 (
-    id            int8         not null auto_increment,
-    create_time   timestamp(6) null,
-    create_uid    int8         null,
-    delete_status bool         null,
-    update_time   timestamp(6) null,
-    update_uid    int8         null,
-    ol_version    int8         null,
-    parent_id     int8         not null,
-    name          varchar(255) not null,
+    id            int8           not null auto_increment,
+    create_time   timestamp(6)   null,
+    create_uid    int8           null,
+    delete_status bool           null,
+    update_time   timestamp(6)   null,
+    update_uid    int8           null,
+    ol_version    int8           null,
+    parent_id     int8           not null,
+    name          varchar(255)   not null,
+    description   varchar(50000) null,
     constraint role_pkey primary key (id)
 );
 
@@ -279,13 +279,10 @@ create table if not exists ikuser
     update_time     timestamp(6)        null,
     update_uid      int8                null,
     ol_version      int8                null,
-    role_id         int8                null,
     avatar          varchar(255)        null,
     email           varchar(255)        null,
     enable          bool                null,
     introduce       varchar(50000)      null,
-    last_login_ip   varchar(255)        null,
-    last_login_time timestamp(6)        null,
     nickname        varchar(255)        null,
     non_locked      bool                null,
     password        varchar(255)        null,
@@ -345,4 +342,22 @@ create table if not exists tag
     user_id     int8         not null,
     create_time timestamp(6) null,
     constraint tag_pkey primary key (id)
+);
+
+-- ikuser_role
+create table if not exists ikuser_role
+(
+    id      int8 not null auto_increment,
+    user_id int8 not null,
+    role_id int8 not null,
+    constraint ikuser_role_pkey primary key (id)
+);
+
+-- role_authority
+create table if not exists role_authority
+(
+    id           int8 not null auto_increment,
+    role_id      int8 not null,
+    authority_id int8 not null,
+    constraint role_authority_pkey primary key (id)
 );
