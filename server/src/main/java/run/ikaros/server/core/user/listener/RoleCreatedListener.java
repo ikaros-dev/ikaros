@@ -9,6 +9,7 @@ import org.springframework.util.ReflectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
+import run.ikaros.api.infra.utils.ReactiveBeanUtils;
 import run.ikaros.api.store.enums.AuthorityType;
 import run.ikaros.server.core.user.event.RoleCreatedEvent;
 import run.ikaros.server.store.entity.AuthorityEntity;
@@ -91,16 +92,21 @@ public class RoleCreatedListener {
                 .authority(String.valueOf(ReflectionUtils.getField(authField, null)))
                 .target(String.valueOf(ReflectionUtils.getField(tarField, null)))
                 .build())
-            .flatMap(authorityEntity -> authorityRepository.save(authorityEntity)
-                .doOnSuccess(e -> log.debug("Init new authority record: [{}].", e)))
-            .then();
+            .flatMap(authorityEntity -> authorityRepository
+                .findByTypeAndTargetAndAuthority(authorityEntity.getType(),
+                    authorityEntity.getTarget(), authorityEntity.getAuthority())
+                .switchIfEmpty(Mono.just(authorityEntity))
+                .flatMap(e -> ReactiveBeanUtils.copyProperties(authorityEntity, e)))
+            .flatMap(entity -> authorityRepository.save(entity)
+                .doOnSuccess(e -> log.debug("Save authority record: [{}].", e)))
+            .then()
+            ;
     }
 
     private Mono<Void> addMasterAuthority(Long roleId) {
         return authorityRepository.findByTypeAndTargetAndAuthority(
                 AuthorityType.ALL, SecurityConst.Authorization.Target.ALL,
                 SecurityConst.Authorization.Authority.ALL)
-            .filter(AuthorityEntity::getAllow)
             .map(BaseEntity::getId)
             .map(authorityId -> RoleAuthorityEntity.builder()
                 .authorityId(authorityId)
@@ -108,7 +114,7 @@ public class RoleCreatedListener {
                 .build())
             .flatMap(roleAuthorityEntity -> roleAuthorityRepository.save(roleAuthorityEntity)
                 .doOnSuccess(e ->
-                    log.debug("create master role authority record: [{}].", e)))
+                    log.debug("save master role authority record: [{}].", e)))
             .then();
     }
 
