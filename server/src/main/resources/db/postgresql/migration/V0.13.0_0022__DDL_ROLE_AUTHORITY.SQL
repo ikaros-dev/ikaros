@@ -10,5 +10,6 @@ create table if not exists ikuser_role
     id           int8 not null default nextval('role_authority_seq'),
     role_id      int8 not null,
     authority_id int8 not null,
+    constraint role_authority_id_uk unique (role_id, authority_id),
     constraint role_authority_pkey primary key (id)
 );
