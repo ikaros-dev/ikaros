@@ -18,5 +18,6 @@ create table if not exists authority
     type          varchar(100)   not null,
     target        varchar(255)   not null,
     authority     varchar(10000) not null,
+    constraint type_target_authority_uk unique (type, target, authority),
     constraint authority_pkey primary key (id)
 );
