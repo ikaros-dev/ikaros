@@ -51,6 +51,7 @@ public interface SecurityConst {
             String API_CORE_PLUGIN = "/api/" + CORE_VERSION + "/plugin/**";
             String API_CORE_INDICES = "/api/" + CORE_VERSION + "/indices/**";
             String API_CORE_EPISODE = "/api/" + CORE_VERSION + "/episode/**";
+            String API_CORE_AUTHORITY = "/api/" + CORE_VERSION + "/authority/**";
             String APIS_CUSTOM = "/apis/**";
             String MENU_DASHBOARD = "/dashboard/**";
             String MENU_ATTACHMENTS = "/attachments/**";

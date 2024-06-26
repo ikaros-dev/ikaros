@@ -10,6 +10,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.infra.utils.ReactiveBeanUtils;
+import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.AuthorityType;
 import run.ikaros.server.core.user.event.RoleCreatedEvent;
 import run.ikaros.server.store.entity.AuthorityEntity;
@@ -82,6 +83,10 @@ public class RoleCreatedListener {
             authorityType = AuthorityType.URL;
         }
 
+        final String tarFieldValue = String.valueOf(ReflectionUtils.getField(tarField, null));
+        final String tarFieldValueWithoutPostfix
+            = tarFieldValue.substring(0, tarFieldValue.indexOf("/**"));
+
         final AuthorityType type = authorityType;
         Class<SecurityConst.Authorization.Authority> authorityClass =
             SecurityConst.Authorization.Authority.class;
@@ -90,7 +95,22 @@ public class RoleCreatedListener {
                 .allow(true)
                 .type(type)
                 .authority(String.valueOf(ReflectionUtils.getField(authField, null)))
-                .target(String.valueOf(ReflectionUtils.getField(tarField, null)))
+                .target(tarFieldValue)
+                .build())
+            .flatMap(authorityEntity -> authorityRepository
+                .findByTypeAndTargetAndAuthority(authorityEntity.getType(),
+                    authorityEntity.getTarget(), authorityEntity.getAuthority())
+                .switchIfEmpty(Mono.just(authorityEntity))
+                .flatMap(e -> ReactiveBeanUtils.copyProperties(authorityEntity, e)))
+            .flatMap(entity -> authorityRepository.save(entity)
+                .doOnSuccess(e -> log.debug("Save authority record: [{}].", e)))
+            .filter(entity -> tarFieldValue.endsWith("/**"))
+            .filter(entity -> StringUtils.isNotBlank(tarFieldValueWithoutPostfix))
+            .map(entity -> AuthorityEntity.builder()
+                .allow(entity.getAllow())
+                .type(entity.getType())
+                .authority(entity.getAuthority())
+                .target(tarFieldValue.substring(0, tarFieldValue.indexOf("/**")))
                 .build())
             .flatMap(authorityEntity -> authorityRepository
                 .findByTypeAndTargetAndAuthority(authorityEntity.getType(),
