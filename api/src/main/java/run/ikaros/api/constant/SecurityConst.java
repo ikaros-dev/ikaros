@@ -43,15 +43,23 @@ public interface SecurityConst {
         interface Target {
             String ALL = "*";
             String API_CORE_USER = "/api/" + CORE_VERSION + "/user/**";
+            String API_CORE_USERS = "/api/" + CORE_VERSION + "/users/**";
             String API_CORE_STATIC = "/api/" + CORE_VERSION + "/static/**";
             String API_CORE_ATTACHMENT = "/api/" + CORE_VERSION + "/attachment/**";
+            String API_CORE_ATTACHMENTS = "/api/" + CORE_VERSION + "/attachments/**";
             String API_CORE_SUBJECT = "/api/" + CORE_VERSION + "/subject/**";
+            String API_CORE_SUBJECTS = "/api/" + CORE_VERSION + "/subjects/**";
             String API_CORE_TAG = "/api/" + CORE_VERSION + "/tag/**";
+            String API_CORE_TAGS = "/api/" + CORE_VERSION + "/tags/**";
             String API_CORE_TASK = "/api/" + CORE_VERSION + "/task/**";
+            String API_CORE_TASKS = "/api/" + CORE_VERSION + "/tasks/**";
             String API_CORE_PLUGIN = "/api/" + CORE_VERSION + "/plugin/**";
+            String API_CORE_PLUGINS = "/api/" + CORE_VERSION + "/plugins/**";
             String API_CORE_INDICES = "/api/" + CORE_VERSION + "/indices/**";
             String API_CORE_EPISODE = "/api/" + CORE_VERSION + "/episode/**";
+            String API_CORE_EPISODES = "/api/" + CORE_VERSION + "/episodes/**";
             String API_CORE_AUTHORITY = "/api/" + CORE_VERSION + "/authority/**";
+            String API_CORE_AUTHORITIES = "/api/" + CORE_VERSION + "/authorities/**";
             String APIS_CUSTOM = "/apis/**";
             String MENU_DASHBOARD = "/dashboard/**";
             String MENU_ATTACHMENTS = "/attachments/**";

@@ -84,8 +84,6 @@ public class RoleCreatedListener {
         }
 
         final String tarFieldValue = String.valueOf(ReflectionUtils.getField(tarField, null));
-        final String tarFieldValueWithoutPostfix
-            = tarFieldValue.substring(0, tarFieldValue.indexOf("/**"));
 
         final AuthorityType type = authorityType;
         Class<SecurityConst.Authorization.Authority> authorityClass =
@@ -105,7 +103,8 @@ public class RoleCreatedListener {
             .flatMap(entity -> authorityRepository.save(entity)
                 .doOnSuccess(e -> log.debug("Save authority record: [{}].", e)))
             .filter(entity -> tarFieldValue.endsWith("/**"))
-            .filter(entity -> StringUtils.isNotBlank(tarFieldValueWithoutPostfix))
+            .filter(entity ->
+                StringUtils.isNotBlank(tarFieldValue.substring(0, tarFieldValue.indexOf("/**"))))
             .map(entity -> AuthorityEntity.builder()
                 .allow(entity.getAllow())
                 .type(entity.getType())
