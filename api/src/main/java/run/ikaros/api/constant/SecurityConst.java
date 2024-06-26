@@ -19,7 +19,7 @@ public interface SecurityConst {
      * 只有读取的路径权限.
      */
     String ROLE_FRIEND = "FRIEND";
-    String AUTHORITY_DIVIDE = "&&";
+    String AUTHORITY_DIVIDE = "&&&&&&";
 
     Long UID_WHEN_NO_AUTH = 0L;
 

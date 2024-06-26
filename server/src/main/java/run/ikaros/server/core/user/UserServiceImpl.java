@@ -56,6 +56,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Mono<Long> count() {
+        return repository.count();
+    }
+
+    @Override
     public Mono<Void> deleteAll() {
         return repository.deleteAll();
     }
@@ -152,15 +157,17 @@ public class UserServiceImpl implements UserService {
     public Mono<Void> changeRole(String username, Long roleId) {
         Assert.hasText(username, "'username' must not blank.");
         Assert.isTrue(roleId != null && roleId > 0, "'roleId' must not null and must gt 0.");
-        return repository.existsByUsername(username)
-            .flatMap(r -> r ? roleRepository.existsById(roleId) :
-                Mono.error(new NotFoundException("User not exists for username=" + username)))
-            .flatMap(r ->
-                r ? repository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
-                    : Mono.error(new NotFoundException("Role not exists for id=" + roleId)))
-            .map(userEntity -> userEntity.setRoleId(roleId))
-            .flatMap(repository::save)
-            .then();
+        // todo impl change role.
+        // return repository.existsByUsername(username)
+        //     .flatMap(r -> r ? roleRepository.existsById(roleId) :
+        //         Mono.error(new NotFoundException("User not exists for username=" + username)))
+        //     .flatMap(r ->
+        //         r ? repository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
+        //             : Mono.error(new NotFoundException("Role not exists for id=" + roleId)))
+        //     .map(userEntity -> userEntity.setRoleId(roleId))
+        //     .flatMap(repository::save)
+        //     .then();
+        return Mono.empty();
     }
 
     @Override

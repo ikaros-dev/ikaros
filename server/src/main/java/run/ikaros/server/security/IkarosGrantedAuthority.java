@@ -1,10 +1,17 @@
 package run.ikaros.server.security;
 
-import org.springframework.security.core.GrantedAuthority;
+import static run.ikaros.api.constant.SecurityConst.AUTHORITY_DIVIDE;
 
-public record IkarosGrantedAuthority(String authority) implements GrantedAuthority {
+import org.springframework.security.core.GrantedAuthority;
+import run.ikaros.api.security.Authority;
+
+public record IkarosGrantedAuthority(Authority authority)
+    implements GrantedAuthority {
+
     @Override
     public String getAuthority() {
-        return this.authority;
+        return authority.getType().name()
+            + AUTHORITY_DIVIDE + authority.getTarget()
+            + AUTHORITY_DIVIDE + authority.getAuthority();
     }
 }

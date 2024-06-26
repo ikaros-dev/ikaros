@@ -28,6 +28,9 @@ import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 import run.ikaros.server.security.authorization.RequestAuthorizationManager;
 import run.ikaros.server.store.repository.AuthorityRepository;
+import run.ikaros.server.store.repository.RoleAuthorityRepository;
+import run.ikaros.server.store.repository.UserRepository;
+import run.ikaros.server.store.repository.UserRoleRepository;
 
 @EnableWebFluxSecurity
 @Configuration(proxyBeanMethods = false)
@@ -39,10 +42,12 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    ReactiveUserDetailsService userDetailsService(UserService userService,
-                                                  RoleService roleService,
-                                                  AuthorityRepository authorityRepository) {
-        return new DefaultUserDetailService(userService, roleService, authorityRepository);
+    ReactiveUserDetailsService userDetailsService(
+        AuthorityRepository authorityRepository, UserRepository userRepository,
+        UserRoleRepository userRoleRepository,
+        RoleAuthorityRepository roleAuthorityRepository) {
+        return new DefaultUserDetailService(userRepository, userRoleRepository,
+            authorityRepository, roleAuthorityRepository);
     }
 
     @Bean
@@ -90,7 +95,9 @@ public class SecurityConfiguration {
         havingValue = "false",
         matchIfMissing = true)
     MasterInitializer superAdminInitializer(SecurityProperties securityProperties,
-                                            UserService userService, RoleService roleService) {
-        return new MasterInitializer(securityProperties.getInitializer(), userService, roleService);
+                                            UserService userService, RoleService roleService,
+                                            UserRoleRepository userRoleRepository) {
+        return new MasterInitializer(securityProperties.getInitializer(), userService, roleService,
+                userRoleRepository);
     }
 }

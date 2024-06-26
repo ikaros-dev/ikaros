@@ -72,6 +72,7 @@ public class PluginPropertiesEnablesInitListener {
                 .map(PluginWrapper::getPluginId)
                 .forEach(pluginId -> reactiveCustomClient.findOne(Plugin.class, pluginId)
                     .filter(plugin -> PluginState.DISABLED != plugin.getState())
+                    .onErrorResume(NotFoundException.class, e -> Mono.empty())
                     .subscribe(plugin -> ikarosPluginManager.startPlugin(plugin.getName())));
         }
 

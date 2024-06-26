@@ -24,6 +24,8 @@ public interface UserService {
 
     Mono<User> save(User user);
 
+    Mono<Long> count();
+
     Mono<Void> deleteAll();
 
     Mono<User> getUserByUsername(String username);

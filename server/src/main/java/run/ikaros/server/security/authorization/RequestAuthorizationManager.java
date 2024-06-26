@@ -2,7 +2,6 @@ package run.ikaros.server.security.authorization;
 
 import static run.ikaros.api.constant.OpenApiConst.CORE_VERSION;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.server.authorization.AuthorizationContext;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.server.infra.utils.JsonUtils;
+import run.ikaros.api.constant.SecurityConst.Authorization;
+import run.ikaros.api.store.enums.AuthorityType;
 
 @Slf4j
 public class RequestAuthorizationManager
@@ -53,24 +53,34 @@ public class RequestAuthorizationManager
             for (String authority : authorities) {
 
                 String[] split = authority.split(SecurityConst.AUTHORITY_DIVIDE);
-                if (split.length != 2) {
+                if (split.length != 3) {
                     log.debug("Invalid authority: {}", authority);
                     granted = false;
                     break;
                 }
-                String target = split[0];
-                String author = split[1];
-                if ("*".equals(target) && "*".equals(author)) {
-                    granted = true;
-                    break;
+                AuthorityType type = AuthorityType.valueOf(split[0]);
+                String target = split[1];
+                String author = split[2];
+
+                if (AuthorityType.ALL.equals(type)) {
+                    if (Authorization.Target.ALL.equals(target)
+                        && Authorization.Authority.ALL.equals(author)) {
+                        granted = true;
+                        break;
+                    }
+
+                    if (Authorization.Target.ALL.equals(target)
+                        && Authorization.Authority.HTTP_ALL.equals(author)) {
+                        granted = true;
+                        break;
+                    }
+
+                    if (!Authorization.Authority.ALL.equals(author) && author.startsWith("HTTP")) {
+                        granted = author.contains(method.name());
+                    }
                 }
-                if (!"*".equals(author)) {
-                    String[] methods = JsonUtils.json2ObjArr(author, new TypeReference<>() {
-                    });
-                    assert methods != null;
-                    granted = Set.of(methods).contains(method.name());
-                }
-                // todo 匹配路径和target
+
+                // todo 匹配其它权限类型
             }
             return new AuthorizationDecision(granted);
         });

@@ -5,5 +5,6 @@ public enum AuthorityType {
     API,
     APIS,
     MENU,
-    URL
+    URL,
+    OTHERS
 }
