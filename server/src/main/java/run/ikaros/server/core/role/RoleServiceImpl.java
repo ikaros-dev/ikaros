@@ -1,10 +1,10 @@
-package run.ikaros.server.core.user;
+package run.ikaros.server.core.role;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import run.ikaros.server.core.user.event.RoleCreatedEvent;
+import run.ikaros.server.core.role.event.RoleCreatedEvent;
 import run.ikaros.server.store.entity.RoleEntity;
 import run.ikaros.server.store.repository.RoleRepository;
 

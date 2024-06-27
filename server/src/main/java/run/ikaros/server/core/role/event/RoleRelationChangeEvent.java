@@ -1,4 +1,4 @@
-package run.ikaros.server.core.user.event;
+package run.ikaros.server.core.role.event;
 
 import java.time.Clock;
 import lombok.Getter;

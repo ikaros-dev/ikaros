@@ -1,4 +1,4 @@
-package run.ikaros.server.core.user;
+package run.ikaros.server.core.role;
 
 import reactor.core.publisher.Mono;
 import run.ikaros.server.store.entity.RoleEntity;

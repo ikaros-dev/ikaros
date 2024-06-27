@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.server.core.user.RoleService;
+import run.ikaros.server.core.role.RoleService;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.store.entity.BaseEntity;

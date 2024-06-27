@@ -1,4 +1,4 @@
-package run.ikaros.server.core.user.listener;
+package run.ikaros.server.core.role.listener;
 
 
 import java.lang.reflect.Field;
@@ -12,7 +12,7 @@ import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.infra.utils.ReactiveBeanUtils;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.AuthorityType;
-import run.ikaros.server.core.user.event.RoleCreatedEvent;
+import run.ikaros.server.core.role.event.RoleCreatedEvent;
 import run.ikaros.server.store.entity.AuthorityEntity;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.RoleAuthorityEntity;

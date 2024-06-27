@@ -23,7 +23,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.MediaTypeServerWebExchangeMatcher;
 import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.server.core.user.RoleService;
+import run.ikaros.server.core.role.RoleService;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 import run.ikaros.server.security.authorization.RequestAuthorizationManager;

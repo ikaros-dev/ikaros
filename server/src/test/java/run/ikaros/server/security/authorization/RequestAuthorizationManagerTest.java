@@ -14,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.server.core.user.RoleService;
+import run.ikaros.server.core.role.RoleService;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.security.SecurityProperties;
