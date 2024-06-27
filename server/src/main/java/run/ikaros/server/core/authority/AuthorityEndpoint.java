@@ -5,6 +5,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -12,7 +13,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.security.Authority;
+import run.ikaros.api.core.authority.Authority;
+import run.ikaros.api.core.authority.AuthorityCondition;
 import run.ikaros.api.store.enums.AuthorityType;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
@@ -45,6 +47,28 @@ public class AuthorityEndpoint implements CoreEndpoint {
                     .response(responseBuilder()
                         .implementationArray(Authority.class)))
 
+            .POST("/authority", this::postAuthority,
+                builder -> builder.operationId("CreateAuthority")
+                    .tag(tag).description("Create authority")
+                    .requestBody(Builder.requestBodyBuilder()
+                        .implementation(Authority.class)))
+
+            .DELETE("/authority/id/{id}", this::deleteAuthorityById,
+                builder -> builder.operationId("DeleteAuthorityById")
+                    .tag(tag).description("Delete authority by id")
+                    .parameter(parameterBuilder()
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .name("id")))
+
+            .GET("/authorities/condition", this::getAuthoritiesByCondition,
+                builder -> builder.operationId("GetAuthoritiesByCondition")
+                    .tag(tag).description("Get authorities by condition")
+                    .requestBody(Builder.requestBodyBuilder()
+                        .implementation(AuthorityCondition.class))
+                    .response(responseBuilder()
+                        .implementationArray(Authority.class)))
+
             .build();
     }
 
@@ -57,6 +81,25 @@ public class AuthorityEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> getAuthoritiesByType(ServerRequest serverRequest) {
         AuthorityType type = AuthorityType.valueOf(serverRequest.pathVariable("type"));
         return authorityService.getAuthoritiesByType(type)
+            .collectList()
+            .flatMap(authorities -> ServerResponse.ok().bodyValue(authorities));
+    }
+
+    private Mono<ServerResponse> postAuthority(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(Authority.class)
+            .flatMap(authorityService::save)
+            .flatMap(authority -> ServerResponse.ok().bodyValue(authority));
+    }
+
+    private Mono<ServerResponse> deleteAuthorityById(ServerRequest serverRequest) {
+        Long id = Long.valueOf(serverRequest.pathVariable("id"));
+        return authorityService.deleteById(id)
+            .then(ServerResponse.ok().bodyValue(id));
+    }
+
+    private Mono<ServerResponse> getAuthoritiesByCondition(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(AuthorityCondition.class)
+            .flatMapMany(authorityService::findAllByCondition)
             .collectList()
             .flatMap(authorities -> ServerResponse.ok().bodyValue(authorities));
     }

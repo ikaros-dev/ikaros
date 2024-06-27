@@ -1,4 +1,4 @@
-package run.ikaros.api.security;
+package run.ikaros.api.core.authority;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +13,7 @@ import run.ikaros.api.store.enums.AuthorityType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class Authority {
+    private Long id;
     private Boolean allow;
     private AuthorityType type;
     private String target;

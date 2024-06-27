@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.security.Authority;
+import run.ikaros.api.core.authority.Authority;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.RoleAuthorityEntity;
 import run.ikaros.server.store.entity.UserEntity;
