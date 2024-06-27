@@ -94,8 +94,20 @@ public class DefaultRoleService implements RoleService {
             .map(entity -> entity.setName(role.getName())
                 .setParentId(Objects.isNull(role.getParentId()) ? 0L : role.getParentId())
                 .setDescription(role.getDescription()))
-            .switchIfEmpty(Mono.just(vo2Entity(role)))
             .flatMap(roleRepository::save)
+            .doOnNext(roleEntity -> log.debug("update exists role entity={}", roleEntity))
+            .switchIfEmpty(createNewRole(role))
             .map(this::entity2Vo);
+    }
+
+    private Mono<RoleEntity> createNewRole(Role role) {
+        return Mono.just(vo2Entity(role))
+            .flatMap(roleRepository::save)
+            .doOnNext(roleEntity -> {
+                log.debug("create new role entity={}", roleEntity);
+                RoleCreatedEvent event = new RoleCreatedEvent(this, roleEntity);
+                applicationEventPublisher.publishEvent(event);
+                log.debug("publish role created event={}", event);
+            });
     }
 }

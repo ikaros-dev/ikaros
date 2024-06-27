@@ -65,7 +65,10 @@ public class MasterInitializer {
     private Mono<Void> createMaster() {
         log.debug("Create init user form username={} and role={}",
             initializer.getMasterUsername(), SecurityConst.ROLE_MASTER);
-        return roleService.createIfNotExist(SecurityConst.ROLE_MASTER)
+        return roleService.save(Role.builder()
+                .name(SecurityConst.ROLE_MASTER)
+                .description("Default admin role, unable delete")
+                .build())
             .map(Role::getId)
             .zipWith(Mono.just(UserEntity.builder()
                     .username(initializer.getMasterUsername())
