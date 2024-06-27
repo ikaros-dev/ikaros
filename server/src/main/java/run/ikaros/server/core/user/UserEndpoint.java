@@ -47,6 +47,12 @@ public class UserEndpoint implements CoreEndpoint {
                     .response(responseBuilder()
                         .implementation(User.class)))
 
+            .GET("/users", this::getUsers,
+                builder -> builder.operationId("GetUsers")
+                    .tag(tag).description("Get all users.")
+                    .response(responseBuilder()
+                        .implementationArray(User.class)))
+
             .GET("/user/username/exists/{username}", this::existUserByUsername,
                 builder -> builder.operationId("ExistUserByUsername")
                     .tag(tag)
@@ -197,6 +203,12 @@ public class UserEndpoint implements CoreEndpoint {
             .flatMap(user -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(user));
+    }
+
+    private Mono<ServerResponse> getUsers(ServerRequest request) {
+        return userService.findAll()
+            .collectList()
+            .flatMap(users -> ServerResponse.ok().bodyValue(users));
     }
 
     private Mono<ServerResponse> existUserByUsername(ServerRequest request) {

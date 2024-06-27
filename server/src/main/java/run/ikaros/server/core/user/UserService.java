@@ -3,6 +3,7 @@ package run.ikaros.server.core.user;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.util.Assert;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.user.enums.VerificationCodeType;
 
@@ -52,4 +53,6 @@ public interface UserService {
     Mono<Void> sendVerificationCode(Long userId, VerificationCodeType type);
 
     Mono<User> create(CreateUserReqParams createUserReqParams);
+
+    Flux<User> findAll();
 }

@@ -475,6 +475,52 @@ export const V1alpha1UserApiAxiosParamCreator = function (
       };
     },
     /**
+     * Get all users.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getUsers: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/users`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * Create user.
      * @param {CreateUserReqParams} createUserReqParams User info.
      * @param {*} [options] Override http request option.
@@ -894,6 +940,26 @@ export const V1alpha1UserApiFp = function (configuration?: Configuration) {
       );
     },
     /**
+     * Get all users.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getUsers(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<User>>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getUsers(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
      * Create user.
      * @param {CreateUserReqParams} createUserReqParams User info.
      * @param {*} [options] Override http request option.
@@ -1119,6 +1185,16 @@ export const V1alpha1UserApiFactory = function (
     getCurrentUserDetail(options?: AxiosRequestConfig): AxiosPromise<User> {
       return localVarFp
         .getCurrentUserDetail(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get all users.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getUsers(options?: AxiosRequestConfig): AxiosPromise<Array<User>> {
+      return localVarFp
+        .getUsers(options)
         .then((request) => request(axios, basePath));
     },
     /**
@@ -1524,6 +1600,18 @@ export class V1alpha1UserApi extends BaseAPI {
   public getCurrentUserDetail(options?: AxiosRequestConfig) {
     return V1alpha1UserApiFp(this.configuration)
       .getCurrentUserDetail(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Get all users.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1UserApi
+   */
+  public getUsers(options?: AxiosRequestConfig) {
+    return V1alpha1UserApiFp(this.configuration)
+      .getUsers(options)
       .then((request) => request(this.axios, this.basePath));
   }
 

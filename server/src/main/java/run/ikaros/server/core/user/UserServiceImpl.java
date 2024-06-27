@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.user.enums.VerificationCodeType;
 import run.ikaros.api.infra.exception.NotFoundException;
@@ -206,6 +207,12 @@ public class UserServiceImpl implements UserService {
             .map(User::new)
             .onErrorResume(DuplicateKeyException.class, e ->
                 Mono.error(new UserExistsException("User exists for username=" + username, e)));
+    }
+
+    @Override
+    public Flux<User> findAll() {
+        return repository.findAll()
+            .map(User::new);
     }
 
     private Mono<Void> sendVerificationCodeWithPhoneMsg(Long userId, VerificationCodeType type) {
