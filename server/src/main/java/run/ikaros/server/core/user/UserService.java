@@ -55,4 +55,6 @@ public interface UserService {
     Mono<User> create(CreateUserReqParams createUserReqParams);
 
     Flux<User> findAll();
+
+    Mono<Void> deleteById(Long id);
 }

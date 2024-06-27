@@ -322,6 +322,59 @@ export const V1alpha1UserApiAxiosParamCreator = function (
       };
     },
     /**
+     * Delete user by id..
+     * @param {string} id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteById: async (
+      id: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("deleteById", "id", id);
+      const localVarPath = `/api/v1alpha1/user/id/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * Exist user by email.
      * @param {string} email
      * @param {*} [options] Override http request option.
@@ -879,6 +932,29 @@ export const V1alpha1UserApiFp = function (configuration?: Configuration) {
       );
     },
     /**
+     * Delete user by id..
+     * @param {string} id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async deleteById(
+      id: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.deleteById(
+        id,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
      * Exist user by email.
      * @param {string} email
      * @param {*} [options] Override http request option.
@@ -1150,6 +1226,20 @@ export const V1alpha1UserApiFactory = function (
         .then((request) => request(axios, basePath));
     },
     /**
+     * Delete user by id..
+     * @param {V1alpha1UserApiDeleteByIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteById(
+      requestParameters: V1alpha1UserApiDeleteByIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .deleteById(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
      * Exist user by email.
      * @param {V1alpha1UserApiExistUserByEmailRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -1370,6 +1460,20 @@ export interface V1alpha1UserApiChangeUserRoleRequest {
 }
 
 /**
+ * Request parameters for deleteById operation in V1alpha1UserApi.
+ * @export
+ * @interface V1alpha1UserApiDeleteByIdRequest
+ */
+export interface V1alpha1UserApiDeleteByIdRequest {
+  /**
+   *
+   * @type {string}
+   * @memberof V1alpha1UserApiDeleteById
+   */
+  readonly id: string;
+}
+
+/**
  * Request parameters for existUserByEmail operation in V1alpha1UserApi.
  * @export
  * @interface V1alpha1UserApiExistUserByEmailRequest
@@ -1556,6 +1660,22 @@ export class V1alpha1UserApi extends BaseAPI {
         requestParameters.roleId,
         options
       )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Delete user by id..
+   * @param {V1alpha1UserApiDeleteByIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1UserApi
+   */
+  public deleteById(
+    requestParameters: V1alpha1UserApiDeleteByIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1UserApiFp(this.configuration)
+      .deleteById(requestParameters.id, options)
       .then((request) => request(this.axios, this.basePath));
   }
 

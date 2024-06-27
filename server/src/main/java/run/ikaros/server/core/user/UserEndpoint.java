@@ -188,6 +188,12 @@ public class UserEndpoint implements CoreEndpoint {
                     .parameter(Builder.parameterBuilder()
                         .name("type").required(true).in(ParameterIn.PATH)
                         .implementation(VerificationCodeType.class)))
+
+            .DELETE("/user/id/{id}", this::deleteById,
+                builder -> builder.operationId("DeleteById")
+                    .tag(tag).description("Delete user by id..")
+                    .parameter(Builder.parameterBuilder()
+                        .name("id").required(true).in(ParameterIn.PATH)))
             .build();
     }
 
@@ -301,6 +307,12 @@ public class UserEndpoint implements CoreEndpoint {
                 .map(User::entity)
                     .map(BaseEntity::getId)
                         .flatMap(userId -> userService.sendVerificationCode(userId, type))
+            .then(ServerResponse.ok().build());
+    }
+
+    private Mono<ServerResponse> deleteById(ServerRequest request) {
+        Long userId = Long.valueOf(request.pathVariable("id"));
+        return userService.deleteById(userId)
             .then(ServerResponse.ok().build());
     }
 }

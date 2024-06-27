@@ -81,7 +81,7 @@ public class DefaultRoleService implements RoleService {
 
     @Override
     public Mono<Void> deleteById(Long roleId) {
-        Assert.isTrue(roleId >= 0, "roleId must be greater than or equal 0");
+        Assert.isTrue(roleId > 1, "roleId must be greater than 1");
         return roleRepository.deleteById(roleId);
     }
 

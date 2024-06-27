@@ -215,6 +215,12 @@ public class UserServiceImpl implements UserService {
             .map(User::new);
     }
 
+    @Override
+    public Mono<Void> deleteById(Long id) {
+        Assert.isTrue(id > 1, "id must be greater than 1.");
+        return repository.deleteById(id);
+    }
+
     private Mono<Void> sendVerificationCodeWithPhoneMsg(Long userId, VerificationCodeType type) {
         // todo
         return Mono.error(new UnsupportedOperationException(
