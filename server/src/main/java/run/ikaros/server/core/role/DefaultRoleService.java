@@ -1,5 +1,6 @@
 package run.ikaros.server.core.role;
 
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -87,7 +88,15 @@ public class DefaultRoleService implements RoleService {
     @Override
     public Mono<Role> save(Role role) {
         Assert.notNull(role, "role must not be null");
-        return roleRepository.save(vo2Entity(role))
+        return Mono.just(role)
+            .map(Role::getId)
+            .filter(Objects::nonNull)
+            .flatMap(roleRepository::findById)
+            .map(entity -> entity.setName(role.getName())
+                .setParentId(role.getParentId())
+                .setDescription(role.getDescription()))
+            .switchIfEmpty(Mono.just(vo2Entity(role)))
+            .flatMap(roleRepository::save)
             .map(this::entity2Vo);
     }
 }

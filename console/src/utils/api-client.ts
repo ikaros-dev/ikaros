@@ -1,28 +1,32 @@
+import type {AxiosError, AxiosInstance} from 'axios';
 import axios from 'axios';
-import { i18n } from '../locales';
-import type { AxiosError, AxiosInstance } from 'axios';
+import {i18n} from '../locales';
 import {
+	ActuatorApi,
 	PluginIkarosRunV1alpha1PluginApi,
 	SettingIkarosRunV1alpha1ConfigmapApi,
-	V1alpha1EpisodeCollectionApi,
-	V1alpha1SubjectCollectionApi,
-	V1alpha1IndicesApi,
-	V1alpha1PluginApi,
-	V1alpha1SubjectApi,
-	V1alpha1SubjectSyncPlatformApi,
-	V1alpha1TaskApi,
-	V1alpha1UserApi,
-	V1alpha1SubjectRelationApi,
 	V1alpha1AttachmentApi,
 	V1alpha1AttachmentReferenceApi,
-	ActuatorApi,
-	V1alpha1TagApi,
 	V1alpha1AttachmentRelationApi,
-	V1alpha1StaticApi,
+	V1alpha1AuthorityApi,
 	V1alpha1EpisodeApi,
+	V1alpha1EpisodeCollectionApi,
+	V1alpha1IndicesApi,
+	V1alpha1PluginApi,
+	V1alpha1RoleApi,
+	V1alpha1RoleAuthorityApi,
 	V1alpha1SecurityApi,
+	V1alpha1StaticApi,
+	V1alpha1SubjectApi,
+	V1alpha1SubjectCollectionApi,
+	V1alpha1SubjectRelationApi,
+	V1alpha1SubjectSyncPlatformApi,
+	V1alpha1TagApi,
+	V1alpha1TaskApi,
+	V1alpha1UserApi,
+	V1alpha1UserRoleApi,
 } from '@runikaros/api-client';
-import { ElMessage } from 'element-plus';
+import {ElMessage} from 'element-plus';
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -155,6 +159,10 @@ function setupApiClient(axios: AxiosInstance) {
 		actuator: new ActuatorApi(undefined, baseURL, axios),
 		// core endpoints
 		user: new V1alpha1UserApi(undefined, baseURL, axios),
+        role: new V1alpha1RoleApi(undefined, baseURL, axios),
+        userRole: new V1alpha1UserRoleApi(undefined, baseURL, axios),
+        roleAuthority: new V1alpha1RoleAuthorityApi(undefined, baseURL, axios),
+        authority: new V1alpha1AuthorityApi(undefined, baseURL, axios),
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),
 		attachment: new V1alpha1AttachmentApi(undefined, baseURL, axios),
 		attachmentRef: new V1alpha1AttachmentReferenceApi(
