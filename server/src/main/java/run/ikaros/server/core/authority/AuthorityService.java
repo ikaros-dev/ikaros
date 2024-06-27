@@ -5,6 +5,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.authority.Authority;
 import run.ikaros.api.core.authority.AuthorityCondition;
 import run.ikaros.api.store.enums.AuthorityType;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.AuthorityEntity;
 
 public interface AuthorityService {
@@ -18,5 +19,5 @@ public interface AuthorityService {
 
     Mono<Void> deleteById(Long id);
 
-    Flux<Authority> findAllByCondition(AuthorityCondition authorityCondition);
+    Mono<PagingWrap<Authority>> findAllByCondition(AuthorityCondition authorityCondition);
 }

@@ -1,6 +1,7 @@
 package run.ikaros.server.core.authority;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
@@ -12,6 +13,7 @@ import run.ikaros.api.core.authority.Authority;
 import run.ikaros.api.core.authority.AuthorityCondition;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.AuthorityType;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.AuthorityEntity;
 import run.ikaros.server.store.repository.AuthorityRepository;
 
@@ -76,34 +78,50 @@ public class DefaultAuthorityService implements AuthorityService {
     }
 
     @Override
-    public Flux<Authority> findAllByCondition(AuthorityCondition authorityCondition) {
+    public Mono<PagingWrap<Authority>> findAllByCondition(AuthorityCondition authorityCondition) {
         Assert.notNull(authorityCondition, "authority must not be null");
+
+        Integer page = authorityCondition.getPage();
+        Integer size = authorityCondition.getSize();
+        Assert.isTrue(page >= 0, "page must not be negative");
+        Assert.isTrue(size >= 0, "size must not be negative");
 
         final AuthorityType type = authorityCondition.getType();
         Assert.notNull(type, "type must not be null");
 
+        final Boolean allow = authorityCondition.getAllow();
+        Assert.notNull(allow, "allow must not be null");
+
         final String target = authorityCondition.getTarget();
-        Assert.hasText(target, "target must has text");
         final String targetLike = '%' + target + '%';
 
         final String authority = authorityCondition.getAuthority();
-        Assert.hasText(authority, "authority must has text");
         final String authorityLike = '%' + authority + '%';
 
         Criteria criteria = Criteria.empty();
 
+        criteria = criteria.and("type").is(type);
+        criteria = criteria.and("allow").is(allow);
+
+
         if (StringUtils.isNotBlank(target)) {
-            criteria = Criteria.where("target").like(targetLike);
+            criteria = criteria.and("target").like(targetLike);
         }
 
         if (StringUtils.isNotBlank(authority)) {
-            criteria = Criteria.where("authority").like(authorityLike);
+            criteria = criteria.and("authority").like(authorityLike);
         }
 
-        Query query = Query.query(criteria);
+        Query query = Query.query(criteria)
+            .with(PageRequest.of(page - 1, size));
+
+        Mono<Long> countMono = template.count(query, AuthorityEntity.class);
 
         return template.select(query, AuthorityEntity.class)
-            .map(this::entity2Vo);
+            .map(this::entity2Vo)
+            .collectList()
+            .flatMap(authorities -> countMono
+                .map(count -> new PagingWrap<>(page, size, count, authorities)));
     }
 
     private AuthorityEntity vo2Entity(Authority authority) {

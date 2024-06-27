@@ -16,6 +16,7 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.authority.Authority;
 import run.ikaros.api.core.authority.AuthorityCondition;
 import run.ikaros.api.store.enums.AuthorityType;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -61,13 +62,34 @@ public class AuthorityEndpoint implements CoreEndpoint {
                         .required(true)
                         .name("id")))
 
-            .GET("/authorities/condition", this::getAuthoritiesByCondition,
+            .GET("/authorities/condition", this::findAuthoritiesByCondition,
                 builder -> builder.operationId("GetAuthoritiesByCondition")
                     .tag(tag).description("Get authorities by condition")
-                    .requestBody(Builder.requestBodyBuilder()
-                        .implementation(AuthorityCondition.class))
+                    .parameter(parameterBuilder()
+                        .name("allow").description("是否放行")
+                        .in(ParameterIn.QUERY).implementation(Boolean.class)
+                        .example("true"))
+                    .parameter(parameterBuilder().required(true)
+                        .name("type").description("权限的类型")
+                        .in(ParameterIn.QUERY).implementation(AuthorityType.class))
+                    .parameter(parameterBuilder()
+                        .name("target").description("权限的目标方，一般是路径")
+                        .in(ParameterIn.QUERY).implementation(String.class))
+                    .parameter(parameterBuilder()
+                        .name("authority")
+                        .description("操作目标的方式，一般是HTTP的方法")
+                        .in(ParameterIn.QUERY).implementation(String.class))
+                    .parameter(parameterBuilder()
+                        .name("page")
+                        .description("第几页，从1开始, 默认为1.")
+                        .implementation(Integer.class))
+                    .parameter(parameterBuilder()
+                        .name("size")
+                        .description("每页条数，默认为10.")
+                        .implementation(Integer.class))
+
                     .response(responseBuilder()
-                        .implementationArray(Authority.class)))
+                        .implementation(PagingWrap.class)))
 
             .build();
     }
@@ -97,10 +119,16 @@ public class AuthorityEndpoint implements CoreEndpoint {
             .then(ServerResponse.ok().bodyValue(id));
     }
 
-    private Mono<ServerResponse> getAuthoritiesByCondition(ServerRequest serverRequest) {
-        return serverRequest.bodyToMono(AuthorityCondition.class)
-            .flatMapMany(authorityService::findAllByCondition)
-            .collectList()
-            .flatMap(authorities -> ServerResponse.ok().bodyValue(authorities));
+    private Mono<ServerResponse> findAuthoritiesByCondition(ServerRequest serverRequest) {
+        AuthorityType type = AuthorityType.valueOf(serverRequest.queryParam("type").orElse("ALL"));
+        Boolean allow = Boolean.valueOf(serverRequest.queryParam("allow").orElse("true"));
+        String target = serverRequest.queryParam("target").orElse("");
+        String authority = serverRequest.queryParam("authority").orElse("");
+        Integer page = Integer.valueOf(serverRequest.queryParam("page").orElse("1"));
+        Integer size = Integer.valueOf(serverRequest.queryParam("size").orElse("20"));
+        AuthorityCondition condition = AuthorityCondition.builder().page(page).size(size)
+            .type(type).allow(allow).target(target).authority(authority).build();
+        return authorityService.findAllByCondition(condition)
+            .flatMap(pagingWarp -> ServerResponse.ok().bodyValue(pagingWarp));
     }
 }
