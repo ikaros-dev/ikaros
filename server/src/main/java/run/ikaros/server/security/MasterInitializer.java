@@ -2,12 +2,15 @@ package run.ikaros.server.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
+import run.ikaros.api.core.role.Role;
 import run.ikaros.server.core.role.RoleService;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
@@ -17,8 +20,13 @@ import run.ikaros.server.store.entity.UserRoleEntity;
 import run.ikaros.server.store.repository.UserRoleRepository;
 
 @Slf4j
+@Component
+@ConditionalOnProperty(name = "ikaros.security.initializer.disabled",
+    havingValue = "false",
+    matchIfMissing = true)
 public class MasterInitializer {
 
+    private final SecurityProperties securityProperties;
     private final SecurityProperties.Initializer initializer;
     private final UserService userService;
     private final RoleService roleService;
@@ -26,15 +34,12 @@ public class MasterInitializer {
 
     /**
      * default master tomoki init.
-     *
-     * @param initializer security init properties
-     * @param userService user service
-     * @param roleService role service
      */
-    public MasterInitializer(SecurityProperties.Initializer initializer,
+    public MasterInitializer(SecurityProperties securityProperties,
                              UserService userService, RoleService roleService,
                              UserRoleRepository userRoleRepository) {
-        this.initializer = initializer;
+        this.securityProperties = securityProperties;
+        this.initializer = this.securityProperties.getInitializer();
         this.userService = userService;
         this.roleService = roleService;
         this.userRoleRepository = userRoleRepository;
@@ -61,7 +66,7 @@ public class MasterInitializer {
         log.debug("Create init user form username={} and role={}",
             initializer.getMasterUsername(), SecurityConst.ROLE_MASTER);
         return roleService.createIfNotExist(SecurityConst.ROLE_MASTER)
-            .map(BaseEntity::getId)
+            .map(Role::getId)
             .zipWith(Mono.just(UserEntity.builder()
                     .username(initializer.getMasterUsername())
                     .password(getPassword())
