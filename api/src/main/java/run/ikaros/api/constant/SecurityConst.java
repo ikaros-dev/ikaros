@@ -44,6 +44,8 @@ public interface SecurityConst {
             String ALL = "*";
             String API_CORE_USER = "/api/" + CORE_VERSION + "/user/**";
             String API_CORE_USERS = "/api/" + CORE_VERSION + "/users/**";
+            String API_CORE_ROLE = "/api/" + CORE_VERSION + "/role/**";
+            String API_CORE_ROLES = "/api/" + CORE_VERSION + "/roles/**";
             String API_CORE_STATIC = "/api/" + CORE_VERSION + "/static/**";
             String API_CORE_ATTACHMENT = "/api/" + CORE_VERSION + "/attachment/**";
             String API_CORE_ATTACHMENTS = "/api/" + CORE_VERSION + "/attachments/**";
