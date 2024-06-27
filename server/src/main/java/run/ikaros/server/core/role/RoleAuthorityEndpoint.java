@@ -1,7 +1,9 @@
 package run.ikaros.server.core.role;
 
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
+import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -46,6 +48,8 @@ public class RoleAuthorityEndpoint implements CoreEndpoint {
             .GET("/role/authorities/roleId/{roleId}", this::getAuthoritiesForRole,
                 builder -> builder.operationId("GetAuthoritiesForRole")
                     .tag(tag).description("Get authorities for role")
+                    .parameter(parameterBuilder()
+                        .name("roleId").required(true).in(ParameterIn.PATH))
                     .response(responseBuilder()
                         .implementationArray(Authority.class)))
 
