@@ -35,7 +35,7 @@ public class DefaultRoleService implements RoleService {
         role.setId(e.getId());
         role.setName(e.getName());
         role.setDescription(e.getDescription());
-        role.setParentId(e.getParentId());
+        role.setParentId(Objects.isNull(e.getParentId()) ? 0L : e.getParentId());
         return role;
     }
 
@@ -44,7 +44,7 @@ public class DefaultRoleService implements RoleService {
         entity.setId(role.getId());
         entity.setName(role.getName());
         entity.setDescription(role.getDescription());
-        entity.setParentId(role.getParentId());
+        entity.setParentId(Objects.isNull(role.getParentId()) ? 0L : role.getParentId());
         return entity;
     }
 
@@ -89,11 +89,10 @@ public class DefaultRoleService implements RoleService {
     public Mono<Role> save(Role role) {
         Assert.notNull(role, "role must not be null");
         return Mono.just(role)
-            .map(Role::getId)
-            .filter(Objects::nonNull)
+            .mapNotNull(Role::getId)
             .flatMap(roleRepository::findById)
             .map(entity -> entity.setName(role.getName())
-                .setParentId(role.getParentId())
+                .setParentId(Objects.isNull(role.getParentId()) ? 0L : role.getParentId())
                 .setDescription(role.getDescription()))
             .switchIfEmpty(Mono.just(vo2Entity(role)))
             .flatMap(roleRepository::save)

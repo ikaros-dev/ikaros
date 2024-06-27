@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // @ts-ignore
-import VueFilePond, { setOptions } from 'vue-filepond';
+import VueFilePond, {setOptions} from 'vue-filepond';
 import 'filepond/dist/filepond.min.css';
 
 // Plugins
@@ -11,9 +11,9 @@ import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginFileRename from 'filepond-plugin-file-rename';
 import Utf8 from 'crypto-js/enc-utf8';
 import Base64 from 'crypto-js/enc-base64';
-import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useUserStore } from '@/stores/user';
+import {computed, ref} from 'vue';
+import {useI18n} from 'vue-i18n';
+import {useUserStore} from '@/stores/user';
 
 const filePondRef = ref(null);
 const { t } = useI18n();

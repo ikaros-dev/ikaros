@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia';
+import {defineStore} from 'pinia';
 
-import type { User } from '@runikaros/api-client';
+import type {User} from '@runikaros/api-client';
 import {JwtApplyParamAuthTypeEnum} from '@runikaros/api-client';
-import { apiClient, setApiClientJwtToken } from '@/utils/api-client';
+import {apiClient, setApiClientJwtToken} from '@/utils/api-client';
 
 interface UserStoreState {
     authType: JwtApplyParamAuthTypeEnum;

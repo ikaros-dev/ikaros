@@ -1,18 +1,18 @@
 <script lang="ts" setup>
-import { Dashboard } from '@uppy/vue';
+import {Dashboard} from '@uppy/vue';
 import '@uppy/core/dist/style.css';
 import '@uppy/dashboard/dist/style.css';
-import Uppy, { type SuccessResponse } from '@uppy/core';
-import type { Restrictions } from '@uppy/core';
+import type {Restrictions} from '@uppy/core';
+import Uppy, {type SuccessResponse} from '@uppy/core';
 import XHRUpload from '@uppy/xhr-upload';
 import zh_CN from '@uppy/locales/lib/zh_CN';
 import zh_TW from '@uppy/locales/lib/zh_TW';
 import en_US from '@uppy/locales/lib/en_US';
-import { computed, onUnmounted } from 'vue';
-import type { ProblemDetail } from '@/utils/api-client';
-import { i18n } from '@/locales';
-import { ElMessage } from 'element-plus';
-import { useUserStore } from '@/stores/user';
+import {computed, onUnmounted} from 'vue';
+import type {ProblemDetail} from '@/utils/api-client';
+import {i18n} from '@/locales';
+import {ElMessage} from 'element-plus';
+import {useUserStore} from '@/stores/user';
 
 const userStore = useUserStore();
 

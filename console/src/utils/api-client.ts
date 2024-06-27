@@ -159,10 +159,10 @@ function setupApiClient(axios: AxiosInstance) {
 		actuator: new ActuatorApi(undefined, baseURL, axios),
 		// core endpoints
 		user: new V1alpha1UserApi(undefined, baseURL, axios),
-        role: new V1alpha1RoleApi(undefined, baseURL, axios),
-        userRole: new V1alpha1UserRoleApi(undefined, baseURL, axios),
-        roleAuthority: new V1alpha1RoleAuthorityApi(undefined, baseURL, axios),
-        authority: new V1alpha1AuthorityApi(undefined, baseURL, axios),
+		role: new V1alpha1RoleApi(undefined, baseURL, axios),
+		userRole: new V1alpha1UserRoleApi(undefined, baseURL, axios),
+		roleAuthority: new V1alpha1RoleAuthorityApi(undefined, baseURL, axios),
+		authority: new V1alpha1AuthorityApi(undefined, baseURL, axios),
 		corePlugin: new V1alpha1PluginApi(undefined, baseURL, axios),
 		attachment: new V1alpha1AttachmentApi(undefined, baseURL, axios),
 		attachmentRef: new V1alpha1AttachmentReferenceApi(
