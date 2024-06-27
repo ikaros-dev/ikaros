@@ -75,6 +75,18 @@ public class UserEndpoint implements CoreEndpoint {
                         .description("Update user information success.")
                         .implementation(User.class)))
 
+            .POST("/user", this::postUser,
+                builder -> builder.operationId("PostUser")
+                    .tag(tag)
+                    .description("Create user.")
+                    .requestBody(requestBodyBuilder()
+                        .required(true).implementation(CreateUserReqParams.class)
+                        .description("User info."))
+                    .response(responseBuilder()
+                        .responseCode("200")
+                        .description("Create user information success.")
+                        .implementation(User.class)))
+
             .PUT("/user/{username}/role", this::changeRole,
                 builder -> builder.operationId("ChangeUserRole")
                     .tag(tag).description("Change user role by username and roleId.")
@@ -213,6 +225,12 @@ public class UserEndpoint implements CoreEndpoint {
             .onErrorResume(IllegalArgumentException.class,
                 e -> ServerResponse.badRequest()
                     .bodyValue("No user id. exception msg:" + e.getMessage()));
+    }
+
+    private Mono<ServerResponse> postUser(ServerRequest request) {
+        return request.bodyToMono(CreateUserReqParams.class)
+            .flatMap(userService::create)
+            .flatMap(user -> ServerResponse.ok().bodyValue(user));
     }
 
     private Mono<ServerResponse> changeRole(ServerRequest request) {

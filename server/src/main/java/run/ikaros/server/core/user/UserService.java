@@ -50,4 +50,6 @@ public interface UserService {
     Mono<Void> changeRole(@NotBlank String username, Long roleId);
 
     Mono<Void> sendVerificationCode(Long userId, VerificationCodeType type);
+
+    Mono<User> create(CreateUserReqParams createUserReqParams);
 }

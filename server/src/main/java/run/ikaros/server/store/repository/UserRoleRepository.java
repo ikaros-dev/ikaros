@@ -9,4 +9,6 @@ public interface UserRoleRepository extends R2dbcRepository<UserRoleEntity, Long
     Flux<UserRoleEntity> findByUserId(Long userId);
 
     Mono<UserRoleEntity> findByUserIdAndRoleId(Long userId, Long roleId);
+
+    Mono<Void> deleteByUserIdAndRoleId(Long userId, Long roleId);
 }

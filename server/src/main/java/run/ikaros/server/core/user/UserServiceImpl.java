@@ -7,6 +7,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Example;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.user.enums.VerificationCodeType;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.security.PasswordNotMatchingException;
+import run.ikaros.api.infra.exception.user.UserExistsException;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.RoleRepository;
 import run.ikaros.server.store.repository.UserRepository;
@@ -182,6 +184,28 @@ public class UserServiceImpl implements UserService {
             return Mono.error(new UnsupportedOperationException(
                 "Unsupported verification code type=" + type));
         }
+    }
+
+    @Override
+    public Mono<User> create(CreateUserReqParams createUserReqParams) {
+        Assert.notNull(createUserReqParams, "'createUserReqParams' must not be null.");
+        String username = createUserReqParams.getUsername();
+        Assert.hasText(username, "'username' must has text.");
+        String password = createUserReqParams.getPassword();
+        Assert.hasText(password, "'password' must has text.");
+        Boolean enabled = createUserReqParams.getEnabled();
+        if (enabled == null) {
+            enabled = false;
+        }
+
+        return repository.save(UserEntity.builder()
+                .enable(enabled)
+                .username(username)
+                .password(passwordEncoder.encode(password))
+                .build())
+            .map(User::new)
+            .onErrorResume(DuplicateKeyException.class, e ->
+                Mono.error(new UserExistsException("User exists for username=" + username, e)));
     }
 
     private Mono<Void> sendVerificationCodeWithPhoneMsg(Long userId, VerificationCodeType type) {
