@@ -193,7 +193,8 @@ onMounted(() => {
       </template>
     </el-dialog>
 
-    <el-dialog v-model="userRoleDialogVisible" title="User Role" width="500">
+    <el-dialog v-model="userRoleDialogVisible" title="User Role" width="500"
+               @closed="()=>{userRoleId = undefined;rowUserEntity = {};}">
       <el-form :model="rowUserEntity" label-width="auto">
         <el-form-item label="ID">
           <el-input v-model="rowUserEntity.id" disabled/>
