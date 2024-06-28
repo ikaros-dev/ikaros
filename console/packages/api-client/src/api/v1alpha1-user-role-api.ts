@@ -38,8 +38,6 @@ import {
   RequiredError,
 } from "../base";
 // @ts-ignore
-import { Authority } from "../models";
-// @ts-ignore
 import { Role } from "../models";
 // @ts-ignore
 import { UserRoleReqParams } from "../models";
@@ -281,10 +279,7 @@ export const V1alpha1UserRoleApiFp = function (configuration?: Configuration) {
       userId: string,
       options?: AxiosRequestConfig
     ): Promise<
-      (
-        axios?: AxiosInstance,
-        basePath?: string
-      ) => AxiosPromise<Array<Authority>>
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Role>>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getRolesForUser(
         userId,
@@ -348,7 +343,7 @@ export const V1alpha1UserRoleApiFactory = function (
     getRolesForUser(
       requestParameters: V1alpha1UserRoleApiGetRolesForUserRequest,
       options?: AxiosRequestConfig
-    ): AxiosPromise<Array<Authority>> {
+    ): AxiosPromise<Array<Role>> {
       return localVarFp
         .getRolesForUser(requestParameters.userId, options)
         .then((request) => request(axios, basePath));
