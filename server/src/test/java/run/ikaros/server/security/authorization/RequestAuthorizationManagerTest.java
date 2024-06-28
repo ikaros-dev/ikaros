@@ -14,11 +14,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.SecurityConst;
+import run.ikaros.api.core.role.Role;
 import run.ikaros.server.core.role.RoleService;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.security.SecurityProperties;
-import run.ikaros.server.store.entity.RoleEntity;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.AuthorityRepository;
 import run.ikaros.server.store.repository.RoleRepository;
@@ -80,7 +80,7 @@ class RequestAuthorizationManagerTest {
             .verifyComplete();
 
         StepVerifier.create(roleService.createIfNotExist(SecurityConst.ROLE_FRIEND)
-                .map(RoleEntity::getId)
+                .map(Role::getId)
                 .flatMap(f -> userService.save(new User(friend)))
                 .map(User::entity)
                 .map(UserEntity::getUsername))
