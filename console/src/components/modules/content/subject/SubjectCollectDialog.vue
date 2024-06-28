@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { SubjectCollectionTypeEnum } from '@runikaros/api-client';
-import { computed, ref } from 'vue';
-import { subjectCollectTypeAliasMap } from '@/modules/common/constants';
-import { ElMessage } from 'element-plus';
-import { apiClient } from '@/utils/api-client';
-import { useUserStore } from '@/stores/user';
-import { ElDialog, ElRadioGroup, ElRadioButton, ElButton } from 'element-plus';
+import {SubjectCollectionTypeEnum} from '@runikaros/api-client';
+import {computed, ref} from 'vue';
+import {subjectCollectTypeAliasMap} from '@/modules/common/constants';
+import {ElButton, ElDialog, ElMessage, ElRadioButton, ElRadioGroup,} from 'element-plus';
+import {apiClient} from '@/utils/api-client';
+import {useUserStore} from '@/stores/user';
 
 const userStore = useUserStore();
 

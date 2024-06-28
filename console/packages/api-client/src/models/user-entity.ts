@@ -62,12 +62,6 @@ export interface UserEntity {
   optimisticLockVersion?: number;
   /**
    *
-   * @type {number}
-   * @memberof UserEntity
-   */
-  roleId?: number;
-  /**
-   *
    * @type {string}
    * @memberof UserEntity
    */
@@ -126,16 +120,4 @@ export interface UserEntity {
    * @memberof UserEntity
    */
   avatar?: string;
-  /**
-   *
-   * @type {string}
-   * @memberof UserEntity
-   */
-  lastLoginIp?: string;
-  /**
-   *
-   * @type {string}
-   * @memberof UserEntity
-   */
-  lastLoginTime?: string;
 }

@@ -20,7 +20,7 @@ export default definePlugin({
 						name: 'module.plugin.sidebar',
 						group: 'system',
 						icon: markRaw(Connection),
-						priority: 0,
+						priority: 98,
 					},
 				},
 			},

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.infra.exception.user.UserNotFoundException;
 
 @Slf4j
 @Component
@@ -27,7 +28,9 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
         final String username = authentication.getName();
         final String password = authentication.getCredentials().toString();
         return userDetailsService.findByUsername(username)
-            .switchIfEmpty(Mono.error(new BadCredentialsException("Invalid Credentials")))
+            .switchIfEmpty(Mono.error(
+                new UserNotFoundException("User for username[" + username + "] not found, "
+                    + "may be disabled or not exists。")))
             .filter(userDetails -> passwordEncoder.matches(password, userDetails.getPassword()))
             .switchIfEmpty(Mono.error(new BadCredentialsException("Invalid Credentials")))
             .map(userDetails -> new UsernamePasswordAuthenticationToken(userDetails, password,

@@ -103,6 +103,7 @@ module:
         title: 重新登录
     profile:
       title: 个人中心
+      sidebar: 我的
       label:
         basic_info: 基本信息
         nickname: 昵称
@@ -113,6 +114,8 @@ module:
         old_password: 旧密码
         new_password: 新密码
         btn_save: 保存
+        update_username: 更新用户名
+        username: 用户名
       message:
         update:
           all: 更新基本信息成功
@@ -913,6 +916,14 @@ module:
   about:
     title: 关于
     sidebar: 关于
+  users:
+    title: 用户
+    sidebar: 用户
+  roles:
+    title: 角色
+    sidebar: 角色
+    authorities:
+      sidebar: 角色权限
 login:
   operations:
     submit:

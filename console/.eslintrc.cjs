@@ -46,6 +46,12 @@ module.exports = {
 		'import/no-extraneous-dependencies': 0,
 		'no-param-reassing': 0,
 		'vue/attribute-hyphenation': 0,
-		'vue/v-on-event-hyphenation': 0
+		'vue/v-on-event-hyphenation': 0,
+		"vue/first-attribute-linebreak": [
+			"error", {
+				"singleline": "ignore",
+				"multiline": "ignore"
+			}
+		]
 	},
 };

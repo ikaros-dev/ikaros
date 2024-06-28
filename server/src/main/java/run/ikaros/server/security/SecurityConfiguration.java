@@ -6,7 +6,6 @@ import static org.springframework.security.web.server.util.matcher.ServerWebExch
 
 import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,10 +22,12 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.MediaTypeServerWebExchangeMatcher;
 import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.server.core.user.RoleService;
-import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 import run.ikaros.server.security.authorization.RequestAuthorizationManager;
+import run.ikaros.server.store.repository.AuthorityRepository;
+import run.ikaros.server.store.repository.RoleAuthorityRepository;
+import run.ikaros.server.store.repository.UserRepository;
+import run.ikaros.server.store.repository.UserRoleRepository;
 
 @EnableWebFluxSecurity
 @Configuration(proxyBeanMethods = false)
@@ -38,9 +39,12 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    ReactiveUserDetailsService userDetailsService(UserService userService,
-                                                  RoleService roleService) {
-        return new DefaultUserDetailService(userService, roleService);
+    ReactiveUserDetailsService userDetailsService(
+        AuthorityRepository authorityRepository, UserRepository userRepository,
+        UserRoleRepository userRoleRepository,
+        RoleAuthorityRepository roleAuthorityRepository) {
+        return new DefaultUserDetailService(userRepository, userRoleRepository,
+            authorityRepository, roleAuthorityRepository);
     }
 
     @Bean
@@ -83,12 +87,4 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-    @Bean
-    @ConditionalOnProperty(name = "ikaros.security.initializer.disabled",
-        havingValue = "false",
-        matchIfMissing = true)
-    MasterInitializer superAdminInitializer(SecurityProperties securityProperties,
-                                            UserService userService, RoleService roleService) {
-        return new MasterInitializer(securityProperties.getInitializer(), userService, roleService);
-    }
 }

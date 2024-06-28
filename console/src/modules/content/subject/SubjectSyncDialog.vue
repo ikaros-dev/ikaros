@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { usePluginModuleStore } from '@/stores/plugin';
-import { apiClient } from '@/utils/api-client';
-import { PluginModule } from '@runikaros/shared';
-import { Subject } from '@runikaros/api-client';
-import { ElMessage, FormInstance, FormRules } from 'element-plus';
-import { computed, onMounted, reactive, ref } from 'vue';
+import {usePluginModuleStore} from '@/stores/plugin';
+import {apiClient} from '@/utils/api-client';
+import {PluginModule} from '@runikaros/shared';
+import {Subject} from '@runikaros/api-client';
 import {
-	ElDialog,
-	ElForm,
-	ElFormItem,
-	ElSelect,
-	ElOption,
-	ElInput,
-	ElButton,
+  ElButton,
+  ElDialog,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElMessage,
+  ElOption,
+  ElSelect,
+  FormInstance,
+  FormRules,
 } from 'element-plus';
-import { useI18n } from 'vue-i18n';
+import {computed, onMounted, reactive, ref} from 'vue';
+import {useI18n} from 'vue-i18n';
 
 const { t } = useI18n();
 

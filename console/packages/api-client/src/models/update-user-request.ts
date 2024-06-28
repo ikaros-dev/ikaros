@@ -48,4 +48,10 @@ export interface UpdateUserRequest {
    * @memberof UpdateUserRequest
    */
   site?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof UpdateUserRequest
+   */
+  enable?: boolean;
 }

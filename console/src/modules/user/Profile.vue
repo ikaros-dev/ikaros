@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import type { Attachment, UpdateUserRequest } from '@runikaros/api-client';
-import { useUserStore } from '@/stores/user';
-import { apiClient } from '@/utils/api-client';
-import { onMounted, ref } from 'vue';
-import { Picture } from '@element-plus/icons-vue';
+import type {Attachment, UpdateUserRequest} from '@runikaros/api-client';
+import {useUserStore} from '@/stores/user';
+import {apiClient} from '@/utils/api-client';
+import {onMounted, ref} from 'vue';
+import {Picture} from '@element-plus/icons-vue';
 import {
-	ElMessage,
-	ElForm,
-	ElFormItem,
-	ElTabs,
-	ElTabPane,
-	ElInput,
-	ElButton,
-	ElRow,
-	ElCol,
-	ElImage,
+  ElButton,
+  ElCol,
+  ElForm,
+  ElFormItem,
+  ElImage,
+  ElInput,
+  ElMessage,
+  ElRow,
+  ElTabPane,
+  ElTabs,
 } from 'element-plus';
 import AttachmentSelectDialog from '../content/attachment/AttachmentSelectDialog.vue';
-import { useI18n } from 'vue-i18n';
+import {useI18n} from 'vue-i18n';
 
 const userStore = useUserStore();
 const { t } = useI18n();
@@ -44,6 +44,20 @@ const updateProfile = async () => {
 			userStore.fetchCurrentUser();
 		});
 };
+const updateUsername = async () => {
+	await apiClient.user
+      .updateUsername({
+        username: userStore.currentUser?.entity?.username as string,
+        newUsername: profile.value.username,
+      })
+      .then(() => {
+        ElMessage.success(t('module.user.profile.message.update.all'));
+        userStore.fetchCurrentUser();
+        userStore.jwtTokenLogout();
+        window.location.reload();
+      });
+};
+
 const updatePassword = async () => {
 	await apiClient.user
 		.changeUserPassword({
@@ -146,6 +160,18 @@ onMounted(initProfileAndUsername);
 					</ElCol>
 				</ElRow>
 			</el-tab-pane>
+			<!-- username -->
+			<el-tab-pane :label="t('module.user.profile.label.update_username')">
+				<el-form-item :label="t('module.user.profile.label.username')">
+          <el-input v-model="profile.username"/>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" @click="updateUsername">{{
+						t('module.user.profile.label.btn_save')
+					}}</el-button>
+				</el-form-item>
+			</el-tab-pane>
+			<!-- password -->
 			<el-tab-pane :label="t('module.user.profile.label.update_password')">
 				<el-form-item :label="t('module.user.profile.label.old_password')">
 					<el-input

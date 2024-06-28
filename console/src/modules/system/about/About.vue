@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {apiClient} from '@/utils/api-client';
 import {formatDate} from '@/utils/date';
-import {ElDescriptionsItem, ElDescriptions, ElImage} from 'element-plus';
+import {ElDescriptions, ElDescriptionsItem, ElImage} from 'element-plus';
 import {onMounted, ref} from 'vue';
 
 const actuatorInfo = ref();

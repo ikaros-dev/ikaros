@@ -103,6 +103,7 @@ module:
         title: Re-login
     profile:
       title: Profile
+      sidebar: Profile
       label:
         basic_info: Basic Info
         nickname: Nickname
@@ -113,6 +114,8 @@ module:
         old_password: Old Password
         new_password: New Password
         btn_save: Save
+        update_username: Update Password
+        username: Username
       message:
         update:
           all: Update Basic Info Success
@@ -950,6 +953,14 @@ module:
   about:
     title: About
     sidebar: About
+  users:
+    title: Users
+    sidebar: Users
+  roles:
+    title: Users
+    sidebar: Users
+    authorities:
+      sidebar: Role Authorities
 login:
   operations:
     submit:

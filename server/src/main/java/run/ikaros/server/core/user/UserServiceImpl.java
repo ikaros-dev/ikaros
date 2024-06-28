@@ -5,16 +5,21 @@ import static run.ikaros.server.core.user.UserService.addEncodingIdPrefixIfNotEx
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Example;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.user.enums.VerificationCodeType;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.security.PasswordNotMatchingException;
+import run.ikaros.api.infra.exception.user.UserExistsException;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.RoleRepository;
 import run.ikaros.server.store.repository.UserRepository;
@@ -25,6 +30,9 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher applicationEventPublisher;
+
+    private final ConcurrentHashMap<String /* username */, String /* code */> verificationCodes
+        = new ConcurrentHashMap<>();
 
     /**
      * Construct.
@@ -51,6 +59,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Mono<Long> count() {
+        return repository.count();
+    }
+
+    @Override
     public Mono<Void> deleteAll() {
         return repository.deleteAll();
     }
@@ -66,6 +79,28 @@ public class UserServiceImpl implements UserService {
             .switchIfEmpty(Mono.error(() -> new UsernameNotFoundException(
                 String.format("Not found for username=%s", username))))
             .map(User::new);
+    }
+
+    @Override
+    public Mono<Boolean> existsByUsername(String username) {
+        Assert.hasText("username", "'username' must has text");
+        return repository.existsByUsername(username);
+    }
+
+    @Override
+    public Mono<Boolean> existsByEmail(String email) {
+        Assert.hasText("email", "'email' must has text");
+        return repository.existsByEmail(email);
+    }
+
+    @Override
+    public Mono<Void> updateUsername(Long id, String username) {
+        Assert.hasText("username", "'username' must has text");
+        return repository.findById(id)
+            .switchIfEmpty(Mono.error(new NotFoundException("User not found for id=" + id)))
+            .map(userEntity -> userEntity.setUsername(username))
+            .flatMap(repository::save)
+            .then();
     }
 
     @Override
@@ -94,7 +129,7 @@ public class UserServiceImpl implements UserService {
         Assert.notNull(updateUserRequest, "'updateUserRequest' must not be null.");
         String username = updateUserRequest.getUsername();
         Assert.hasText(username, "'username' must has text.");
-        return repository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
+        return repository.findByUsernameAndDeleteStatus(username, false)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("User not found for username=" + username)))
             .flatMap(userEntity -> updateEntity(userEntity, updateUserRequest))
@@ -125,15 +160,76 @@ public class UserServiceImpl implements UserService {
     public Mono<Void> changeRole(String username, Long roleId) {
         Assert.hasText(username, "'username' must not blank.");
         Assert.isTrue(roleId != null && roleId > 0, "'roleId' must not null and must gt 0.");
-        return repository.existsByUsername(username)
-            .flatMap(r -> r ? roleRepository.existsById(roleId) :
-                Mono.error(new NotFoundException("User not exists for username=" + username)))
-            .flatMap(r ->
-                r ? repository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
-                    : Mono.error(new NotFoundException("Role not exists for id=" + roleId)))
-            .map(userEntity -> userEntity.setRoleId(roleId))
-            .flatMap(repository::save)
-            .then();
+        // todo impl change role.
+        // return repository.existsByUsername(username)
+        //     .flatMap(r -> r ? roleRepository.existsById(roleId) :
+        //         Mono.error(new NotFoundException("User not exists for username=" + username)))
+        //     .flatMap(r ->
+        //         r ? repository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
+        //             : Mono.error(new NotFoundException("Role not exists for id=" + roleId)))
+        //     .map(userEntity -> userEntity.setRoleId(roleId))
+        //     .flatMap(repository::save)
+        //     .then();
+        return Mono.empty();
+    }
+
+    @Override
+    public Mono<Void> sendVerificationCode(Long userId, VerificationCodeType type) {
+        Assert.notNull(userId, "'userId' must not null");
+        Assert.notNull(type, "'type' must not null");
+        if (type == VerificationCodeType.EMAIL) {
+            return sendVerificationCodeWithEmail(userId, type);
+        } else if (type == VerificationCodeType.PHONE_MSG) {
+            return sendVerificationCodeWithPhoneMsg(userId, type);
+        } else {
+            return Mono.error(new UnsupportedOperationException(
+                "Unsupported verification code type=" + type));
+        }
+    }
+
+    @Override
+    public Mono<User> create(CreateUserReqParams createUserReqParams) {
+        Assert.notNull(createUserReqParams, "'createUserReqParams' must not be null.");
+        String username = createUserReqParams.getUsername();
+        Assert.hasText(username, "'username' must has text.");
+        String password = createUserReqParams.getPassword();
+        Assert.hasText(password, "'password' must has text.");
+        Boolean enabled = createUserReqParams.getEnabled();
+        if (enabled == null) {
+            enabled = false;
+        }
+
+        return repository.save(UserEntity.builder()
+                .enable(enabled)
+                .username(username)
+                .password(passwordEncoder.encode(password))
+                .build())
+            .map(User::new)
+            .onErrorResume(DuplicateKeyException.class, e ->
+                Mono.error(new UserExistsException("User exists for username=" + username, e)));
+    }
+
+    @Override
+    public Flux<User> findAll() {
+        return repository.findAll()
+            .map(User::new);
+    }
+
+    @Override
+    public Mono<Void> deleteById(Long id) {
+        Assert.isTrue(id > 1, "id must be greater than 1.");
+        return repository.deleteById(id);
+    }
+
+    private Mono<Void> sendVerificationCodeWithPhoneMsg(Long userId, VerificationCodeType type) {
+        // todo
+        return Mono.error(new UnsupportedOperationException(
+            "Un impl for verification code type=" + type));
+    }
+
+    private Mono<Void> sendVerificationCodeWithEmail(Long userId, VerificationCodeType type) {
+        return Mono.error(new UnsupportedOperationException(
+            "Unsupported verification code type=" + type));
     }
 
 
@@ -142,6 +238,9 @@ public class UserServiceImpl implements UserService {
                                           UpdateUserRequest updateUserRequest) {
         Assert.notNull(userEntity, "'userEntity' must not null.");
         Assert.notNull(updateUserRequest, "'updateUserRequest' must not null.");
+        if (isNotBlank(updateUserRequest.getUsername())) {
+            userEntity.setUsername(updateUserRequest.getUsername());
+        }
         if (isNotBlank(updateUserRequest.getNickname())) {
             userEntity.setNickname(updateUserRequest.getNickname());
         }
@@ -151,13 +250,17 @@ public class UserServiceImpl implements UserService {
         if (isNotBlank(updateUserRequest.getSite())) {
             userEntity.setSite(updateUserRequest.getSite());
         }
-        if (!updateUserRequest.getAvatar().equalsIgnoreCase(userEntity.getAvatar())) {
+        if (updateUserRequest.getAvatar() != null
+            && !updateUserRequest.getAvatar().equalsIgnoreCase(userEntity.getAvatar())) {
             String oldAvatar = userEntity.getAvatar();
             userEntity.setAvatar(updateUserRequest.getAvatar());
             UserAvatarUpdateEvent event =
                 new UserAvatarUpdateEvent(this, oldAvatar, updateUserRequest.getAvatar(),
                     userEntity.getId(), userEntity.getUsername());
             applicationEventPublisher.publishEvent(event);
+        }
+        if (updateUserRequest.getEnable() != null) {
+            userEntity.setEnable(updateUserRequest.getEnable());
         }
         return repository.save(userEntity);
     }

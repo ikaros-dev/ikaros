@@ -1,14 +1,7 @@
 -- attachment
-create sequence if not exists attachment_seq
-    increment 1
-    start 10
-    minvalue 10
-    cache 1
-    no cycle;
-
 create table if not exists attachment
 (
-    id          int8          not null default nextval('attachment_seq'),
+    id          int8          not null auto_increment,
     parent_id   int8          null,
     type        varchar(255)  not null,
     url         varchar(5000) null,
@@ -21,50 +14,28 @@ create table if not exists attachment
     constraint attachment_pkey primary key (id)
 );
 -- Insert Root directory
-INSERT INTO attachment (id, type, parent_id, path, name, update_time)
-SELECT 0,
-       'Directory',
-       -1,
-       '/',
-       '/',
-       CURRENT_TIMESTAMP
+INSERT INTO attachment (id, parent_id, type, path, name, update_time)
+SELECT 0, -1, 'Directory', '/', '/', CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
                   FROM attachment
                   WHERE id = 0);
 -- Insert Covers directory
-INSERT INTO attachment (id, type, parent_id, path, name, update_time)
-SELECT 1,
-       'Directory',
-       0,
-       '/Covers',
-       'Covers',
-       CURRENT_TIMESTAMP
+INSERT INTO attachment (id, parent_id, type, path, name, update_time)
+SELECT 1, 0, 'Directory', '/Covers', 'Covers', CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
                   FROM attachment
                   WHERE id = 1);
 -- Insert Downloads directory
-INSERT INTO attachment (id, type, parent_id, path, name, update_time)
-SELECT 2,
-       'Directory',
-       0,
-       '/Downloads',
-       'Downloads',
-       CURRENT_TIMESTAMP
+INSERT INTO attachment (id, parent_id, type, path, name, update_time)
+SELECT 2, 0, 'Directory', '/Downloads', 'Downloads', CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1
                   FROM attachment
                   WHERE id = 2);
 
 -- attachment_relation
-create sequence if not exists attachment_relation_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists attachment_relation
 (
-    id                     int8         not null default nextval('attachment_relation_seq'),
+    id                     int8         not null auto_increment,
     attachment_id          int8         not null,
     type                   varchar(255) not null,
     relation_attachment_id int8         not null,
@@ -72,16 +43,9 @@ create table if not exists attachment_relation
 );
 
 -- attachment_reference
-create sequence if not exists attachment_reference_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists attachment_reference
 (
-    id            int8         not null default nextval('attachment_reference_seq'),
+    id            int8         not null auto_increment,
     type          varchar(255) not null,
     attachment_id int8         not null,
     reference_id  int8         not null,
@@ -89,41 +53,28 @@ create table if not exists attachment_reference
     constraint attachment_reference_pkey primary key (id)
 );
 
--- authority
-create sequence if not exists authority_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
 
+-- authority
 create table if not exists authority
 (
-    id            int8         not null default nextval('authority_seq'),
-    create_time   timestamp(6) null,
-    create_uid    int8         null,
-    delete_status bool         null,
-    update_time   timestamp(6) null,
-    update_uid    int8         null,
-    ol_version    int8         null,
-    role_id       int8         not null,
-    method        varchar(255) not null,
-    allow         bool         not null,
-    url           varchar(255) not null,
+    id            int8           not null auto_increment,
+    create_time   timestamp(6)   null,
+    create_uid    int8           null,
+    delete_status bool           null,
+    update_time   timestamp(6)   null,
+    update_uid    int8           null,
+    ol_version    int8           null,
+    allow         bool           not null,
+    type          varchar(100)   not null,
+    target        varchar(255)   not null,
+    authority     varchar(10000) not null,
     constraint authority_pkey primary key (id)
 );
 
 -- character
-create sequence if not exists character_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists character
 (
-    id            int8           not null default nextval('character_seq'),
+    id            int8           not null auto_increment,
     create_time   timestamp(6)   null,
     create_uid    int8           null,
     delete_status bool           null,
@@ -137,16 +88,9 @@ create table if not exists character
 );
 
 -- subject_collection
-create sequence if not exists subject_collection_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists subject_collection
 (
-    id               int8         not null default nextval('subject_collection_seq'),
+    id               int8         not null auto_increment,
     user_id          int8         not null,
     subject_id       int8         not null,
     type             varchar(255) not null,
@@ -157,16 +101,9 @@ create table if not exists subject_collection
 );
 
 -- episode_collection
-create sequence if not exists episode_collection_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists episode_collection
 (
-    id          int8         not null default nextval('episode_collection_seq'),
+    id          int8         not null auto_increment,
     user_id     int8         not null,
     subject_id  int8         not null,
     episode_id  int8         not null,
@@ -179,16 +116,9 @@ create table if not exists episode_collection
 );
 
 -- episode
-create sequence if not exists episode_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists episode
 (
-    id            int8           not null default nextval('episode_seq'),
+    id            int8           not null auto_increment,
     create_time   timestamp(6)   null,
     create_uid    int8           null,
     delete_status bool           null,
@@ -207,16 +137,9 @@ create table if not exists episode
 );
 
 -- person_character
-create sequence if not exists person_character_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists person_character
 (
-    id            int8         not null default nextval('person_character_seq'),
+    id            int8         not null auto_increment,
     create_time   timestamp(6) null,
     create_uid    int8         null,
     delete_status bool         null,
@@ -229,16 +152,9 @@ create table if not exists person_character
 );
 
 -- person
-create sequence if not exists person_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists person
 (
-    id            int8           not null default nextval('person_seq'),
+    id            int8           not null auto_increment,
     create_time   timestamp(6)   null,
     create_uid    int8           null,
     delete_status bool           null,
@@ -251,38 +167,27 @@ create table if not exists person
     constraint person_pkey primary key (id)
 );
 
--- role
-create sequence if not exists role_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
 
+-- role
 create table if not exists role
 (
-    id            int8         not null default nextval('role_seq'),
-    create_time   timestamp(6) null,
-    create_uid    int8         null,
-    delete_status bool         null,
-    update_time   timestamp(6) null,
-    update_uid    int8         null,
-    ol_version    int8         null,
-    name          varchar(255) not null,
+    id            int8           not null auto_increment,
+    create_time   timestamp(6)   null,
+    create_uid    int8           null,
+    delete_status bool           null,
+    update_time   timestamp(6)   null,
+    update_uid    int8           null,
+    ol_version    int8           null,
+    parent_id     int8           not null,
+    name          varchar(255)   not null,
+    description   varchar(50000) null,
     constraint role_pkey primary key (id)
 );
 
 -- subject_character
-create sequence if not exists subject_character_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists subject_character
 (
-    id            int8         not null default nextval('subject_character_seq'),
+    id            int8         not null auto_increment,
     create_time   timestamp(6) null,
     create_uid    int8         null,
     delete_status bool         null,
@@ -295,16 +200,9 @@ create table if not exists subject_character
 );
 
 -- subject
-create sequence if not exists subject_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists subject
 (
-    id            int8           not null default nextval('subject_seq'),
+    id            int8           not null auto_increment,
     create_time   timestamp(6)   null,
     create_uid    int8           null,
     delete_status bool           null,
@@ -322,18 +220,10 @@ create table if not exists subject
     constraint subject_pkey primary key (id)
 );
 
-
 -- subject_person
-create sequence if not exists subject_person_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists subject_person
 (
-    id            int8         not null default nextval('subject_person_seq'),
+    id            int8         not null auto_increment,
     create_time   timestamp(6) null,
     create_uid    int8         null,
     delete_status bool         null,
@@ -346,16 +236,9 @@ create table if not exists subject_person
 );
 
 -- subject_relation
-create sequence if not exists subject_relation_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists subject_relation
 (
-    id                  int8         not null default nextval('subject_relation_seq'),
+    id                  int8         not null auto_increment,
     create_time         timestamp(6) null,
     create_uid          int8         null,
     delete_status       bool         null,
@@ -369,16 +252,9 @@ create table if not exists subject_relation
 );
 
 -- subject_sync
-create sequence if not exists subject_sync_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists subject_sync
 (
-    id            int8         not null default nextval('subject_sync_seq'),
+    id            int8         not null auto_increment,
     create_time   timestamp(6) null,
     create_uid    int8         null,
     delete_status bool         null,
@@ -387,116 +263,79 @@ create table if not exists subject_sync
     ol_version    int8         null,
     subject_id    int8         not null,
     platform      varchar(255) not null,
-    platform_id   varchar(255) null,
+    platform_id   varchar(255) not null,
     sync_time     timestamp(6) null,
     constraint platform_pid_ukey unique (platform, platform_id),
     constraint subject_sync_pkey primary key (id)
 );
 
 -- ikuser
-create sequence if not exists ikuser_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists ikuser
 (
-    id              int8                not null default nextval('ikuser_seq'),
+    id              int8                not null auto_increment,
     create_time     timestamp(6)        null,
     create_uid      int8                null,
     delete_status   bool                null,
     update_time     timestamp(6)        null,
     update_uid      int8                null,
     ol_version      int8                null,
-    role_id         int8                null,
     avatar          varchar(255)        null,
     email           varchar(255)        null,
-    "enable"        bool                null,
+    enable          bool                null,
     introduce       varchar(50000)      null,
-    last_login_ip   varchar(255)        null,
-    last_login_time timestamp(6)        null,
     nickname        varchar(255)        null,
     non_locked      bool                null,
-    "password"      varchar(255)        null,
+    password        varchar(255)        null,
     site            varchar(255)        null,
     telephone       varchar(255)        null,
     username        varchar(255) unique null,
     constraint ikuser_pkey primary key (id)
 );
 
--- custom
-create sequence if not exists custom_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
 
-create table if not exists custom
+-- custom
+create table if not exists `custom`
 (
-    id        int8         not null default nextval('custom_seq'),
-    c_group   varchar(255) not null,
-    "version" varchar(255) not null,
-    kind      varchar(255) not null,
-    name      varchar(255) not null,
-    constraint custom_gvkn unique (c_group, "version", kind, name),
+    id      int8         not null auto_increment,
+    c_group varchar(255) not null,
+    version varchar(255) not null,
+    kind    varchar(255) not null,
+    name    varchar(255) not null,
+    constraint custom_gvkn unique (c_group, version, kind, name),
     constraint custom_pkey primary key (id)
 );
 
 -- custom_metadata
-create sequence if not exists custom_metadata_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
-create table if not exists custom_metadata
+create table if not exists `custom_metadata`
 (
-    id        int8         not null default nextval('custom_metadata_seq'),
+    id        int8         not null auto_increment,
     custom_id int8         not null,
     cm_key    varchar(255) not null,
-    cm_value  bytea,
-    constraint custom_metadata_custom_id_em_key unique (custom_id, cm_key),
+    cm_value  blob,
+    constraint custom_metadata_e_id_em_key unique (custom_id, cm_key),
     constraint custom_metadata_pkey primary key (id)
 );
 
 -- task
-create sequence if not exists task_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
-create table if not exists task
+create table if not exists `task`
 (
-    id           int8          not null default nextval('task_seq'),
+    id           int8          not null auto_increment,
     name         varchar(255)  not null,
     status       varchar(255)  not null,
     create_time  timestamp(6)  null,
     start_time   timestamp(6)  null,
     end_time     timestamp(6)  null,
     total        int8          null,
-    index int8 null,
+    index        int8          null,
     fail_message varchar(2000) null,
     constraint task_pkey primary key (id)
 );
 
 
 -- tag
-create sequence if not exists tag_seq
-    increment 1
-    start 1
-    minvalue 1
-    cache 1
-    no cycle;
-
 create table if not exists tag
 (
-    id          int8         not null default nextval('tag_seq'),
+    id          int8         not null auto_increment,
     type        varchar(255) not null,
     master_id   int8         not null,
     name        varchar(255) not null,
@@ -505,4 +344,20 @@ create table if not exists tag
     constraint tag_pkey primary key (id)
 );
 
+-- ikuser_role
+create table if not exists ikuser_role
+(
+    id      int8 not null auto_increment,
+    user_id int8 not null,
+    role_id int8 not null,
+    constraint ikuser_role_pkey primary key (id)
+);
 
+-- role_authority
+create table if not exists role_authority
+(
+    id           int8 not null auto_increment,
+    role_id      int8 not null,
+    authority_id int8 not null,
+    constraint role_authority_pkey primary key (id)
+);

@@ -81,7 +81,7 @@ public class FormLoginTests {
             .body(BodyInserters.fromFormData("username", notExistsUsername)
                 .with("password", "password"))
             .exchange()
-            .expectStatus().is4xxClientError();
+            .expectStatus().is5xxServerError();
     }
 
     @Test

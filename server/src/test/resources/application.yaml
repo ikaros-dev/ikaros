@@ -35,6 +35,10 @@ spring:
     url: r2dbc:h2:mem:///ikaros?MODE=MySQL&DB_CLOSE_ON_EXIT=FALSE
   jpa:
     show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
 
 springdoc:
   api-docs:

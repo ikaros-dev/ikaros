@@ -6,9 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import org.springframework.http.HttpMethod;
+import run.ikaros.api.store.enums.AuthorityType;
 
 @Data
 @Builder
@@ -18,14 +17,8 @@ import org.springframework.http.HttpMethod;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public class AuthorityEntity extends BaseEntity {
-    @Column("role_id")
-    private Long roleId;
-    /**
-     * Control api operate method.
-     *
-     * @see HttpMethod#name()
-     */
-    private String method;
     private Boolean allow;
-    private String url;
+    private AuthorityType type;
+    private String target;
+    private String authority;
 }

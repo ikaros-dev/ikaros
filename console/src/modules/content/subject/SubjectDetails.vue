@@ -1,51 +1,48 @@
 <script setup lang="ts">
 import {
-	Attachment,
-	AttachmentReferenceTypeEnum,
-	EpisodeCollection,
-	SubjectCollection,
+  Attachment,
+  AttachmentReferenceTypeEnum,
+  Episode,
+  EpisodeCollection,
+  Subject,
+  SubjectCollection,
+  SubjectTag,
+  SubjectTypeEnum,
 } from '@runikaros/api-client';
-import { apiClient } from '@/utils/api-client';
-import { formatDate } from '@/utils/date';
-import {
-	Episode,
-	Subject,
-	SubjectTypeEnum,
-	SubjectTag,
-} from '@runikaros/api-client';
+import {apiClient} from '@/utils/api-client';
+import {formatDate} from '@/utils/date';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import router from '@/router';
-import { Check, Close } from '@element-plus/icons-vue';
+import {Check, Close} from '@element-plus/icons-vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
-import { useRoute } from 'vue-router';
-import { onMounted, ref, watch } from 'vue';
+import {useRoute} from 'vue-router';
+import {nextTick, onMounted, ref, watch} from 'vue';
 import {
-	ElButton,
-	ElCol,
-	ElDescriptions,
-	ElDescriptionsItem,
-	ElImage,
-	ElMessage,
-	ElPopconfirm,
-	ElRow,
-	ElTable,
-	ElTableColumn,
-	ElSelect,
-	ElOption,
-	ElInput,
-	ElTag,
+  ElButton,
+  ElCol,
+  ElDescriptions,
+  ElDescriptionsItem,
+  ElImage,
+  ElInput,
+  ElMessage,
+  ElOption,
+  ElPopconfirm,
+  ElRow,
+  ElSelect,
+  ElTable,
+  ElTableColumn,
+  ElTag,
 } from 'element-plus';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
-import { useSettingStore } from '@/stores/setting';
-import { episodeGroupLabelMap } from '@/modules/common/constants';
-import { useUserStore } from '@/stores/user';
+import {useSettingStore} from '@/stores/setting';
+import {episodeGroupLabelMap} from '@/modules/common/constants';
+import {useUserStore} from '@/stores/user';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
-import { useSubjectStore } from '@/stores/subject';
-import { nextTick } from 'vue';
+import {useSubjectStore} from '@/stores/subject';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 import AttachmentSelectDialog from '@/modules/content/attachment/AttachmentSelectDialog.vue';
 import SubjectCollectDialog from '@/components/modules/content/subject/SubjectCollectDialog.vue';
-import { useI18n } from 'vue-i18n';
+import {useI18n} from 'vue-i18n';
 
 const route = useRoute();
 const settingStore = useSettingStore();

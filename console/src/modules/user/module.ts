@@ -1,7 +1,7 @@
 import { definePlugin } from '@runikaros/shared';
 import Login from './Login.vue';
 import Profile from './Profile.vue';
-import { UserFilled } from '@element-plus/icons-vue';
+import { Avatar } from '@element-plus/icons-vue';
 import { markRaw } from 'vue';
 import Collection from './Collection.vue';
 import { MessageBox } from '@element-plus/icons-vue';
@@ -32,9 +32,9 @@ export default definePlugin({
 				meta: {
 					title: 'module.user.profile.title',
 					menu: {
-						name: 'module.user.sidebar',
+						name: 'module.user.profile.sidebar',
 						group: 'user',
-						icon: markRaw(UserFilled),
+						icon: markRaw(Avatar),
 						priority: 1,
 					},
 				},

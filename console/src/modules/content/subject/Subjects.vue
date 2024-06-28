@@ -1,23 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
-import { Subject } from '@runikaros/api-client';
-import { apiClient } from '@/utils/api-client';
+import {onMounted, ref, watch} from 'vue';
+import {Subject} from '@runikaros/api-client';
+import {apiClient} from '@/utils/api-client';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
-import { base64Decode, base64Encode } from '@/utils/string-util';
-import { useRouter, useRoute } from 'vue-router';
+import {base64Decode, base64Encode} from '@/utils/string-util';
+import {useRoute, useRouter} from 'vue-router';
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
-import {
-	ElRow,
-	ElCol,
-	ElForm,
-	ElFormItem,
-	ElInput,
-	ElSelect,
-	ElOption,
-	ElButton,
-	ElPagination,
-} from 'element-plus';
-import { useI18n } from 'vue-i18n';
+import {ElButton, ElCol, ElForm, ElFormItem, ElInput, ElOption, ElPagination, ElRow, ElSelect,} from 'element-plus';
+import {useI18n} from 'vue-i18n';
 
 const router = useRouter();
 const route = useRoute();
