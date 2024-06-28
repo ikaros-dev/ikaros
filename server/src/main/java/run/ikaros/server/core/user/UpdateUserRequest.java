@@ -13,5 +13,6 @@ public class UpdateUserRequest {
     private String nickname;
     private String introduce;
     private String site;
+    private Boolean enable;
 
 }

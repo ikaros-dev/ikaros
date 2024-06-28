@@ -129,7 +129,7 @@ public class UserServiceImpl implements UserService {
         Assert.notNull(updateUserRequest, "'updateUserRequest' must not be null.");
         String username = updateUserRequest.getUsername();
         Assert.hasText(username, "'username' must has text.");
-        return repository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
+        return repository.findByUsernameAndDeleteStatus(username, false)
             .switchIfEmpty(
                 Mono.error(new NotFoundException("User not found for username=" + username)))
             .flatMap(userEntity -> updateEntity(userEntity, updateUserRequest))
@@ -258,6 +258,9 @@ public class UserServiceImpl implements UserService {
                 new UserAvatarUpdateEvent(this, oldAvatar, updateUserRequest.getAvatar(),
                     userEntity.getId(), userEntity.getUsername());
             applicationEventPublisher.publishEvent(event);
+        }
+        if (updateUserRequest.getEnable() != null) {
+            userEntity.setEnable(updateUserRequest.getEnable());
         }
         return repository.save(userEntity);
     }
