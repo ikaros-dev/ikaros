@@ -31,6 +31,17 @@ public class DefaultUserRoleService implements UserRoleService {
     }
 
     @Override
+    public Mono<UserRoleEntity> saveEntity(UserRoleEntity entity) {
+        Assert.notNull(entity, "roleEntity must not be null");
+        Assert.isTrue(entity.getUserId() >= 0, "roleId must be greater than or equal 0");
+        Assert.isTrue(entity.getRoleId() >= 0, "roleId must be greater than or equal 0");
+        return userRoleRepository.findByUserIdAndRoleId(entity.getUserId(), entity.getRoleId())
+            .map(e -> e.setUserId(entity.getUserId()).setRoleId(entity.getRoleId()))
+            .switchIfEmpty(Mono.just(entity))
+            .flatMap(userRoleRepository::save);
+    }
+
+    @Override
     public Flux<Role> addUserRoles(Long userId, Long[] roleIds) {
         Assert.isTrue(userId >= 0, "userId must be greater than zero");
         Assert.isTrue(roleIds.length > 0, "roleIds must be greater than zero");
@@ -38,7 +49,7 @@ public class DefaultUserRoleService implements UserRoleService {
             .map(roleId -> UserRoleEntity.builder()
                 .userId(userId).roleId(roleId)
                 .build())
-            .flatMap(userRoleRepository::save)
+            .flatMap(this::saveEntity)
             .map(UserRoleEntity::getRoleId)
             .flatMap(this::findRoleByRoleId);
     }

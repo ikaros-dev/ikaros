@@ -13,7 +13,7 @@ import {
   ElOption,
   ElSelect,
   FormInstance,
-  FormRules
+  FormRules,
 } from 'element-plus';
 import {computed, onMounted, reactive, ref} from 'vue';
 import {useI18n} from 'vue-i18n';

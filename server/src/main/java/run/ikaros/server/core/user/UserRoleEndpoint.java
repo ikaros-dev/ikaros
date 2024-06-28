@@ -13,7 +13,6 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.core.authority.Authority;
 import run.ikaros.api.core.role.Role;
 import run.ikaros.api.core.user.UserRoleReqParams;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -52,7 +51,7 @@ public class UserRoleEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder()
                         .name("userId").required(true).in(ParameterIn.PATH))
                     .response(responseBuilder()
-                        .implementationArray(Authority.class)))
+                        .implementationArray(Role.class)))
 
             .build();
     }

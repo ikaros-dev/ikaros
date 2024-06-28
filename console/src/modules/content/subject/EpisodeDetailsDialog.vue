@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Attachment, AttachmentReferenceTypeEnum, Episode, EpisodeResource} from '@runikaros/api-client';
+import {Attachment, AttachmentReferenceTypeEnum, Episode, EpisodeResource,} from '@runikaros/api-client';
 import {computed, ref, watch} from 'vue';
 import {
   ElButton,

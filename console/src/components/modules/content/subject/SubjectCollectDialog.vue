@@ -2,7 +2,7 @@
 import {SubjectCollectionTypeEnum} from '@runikaros/api-client';
 import {computed, ref} from 'vue';
 import {subjectCollectTypeAliasMap} from '@/modules/common/constants';
-import {ElButton, ElDialog, ElMessage, ElRadioButton, ElRadioGroup} from 'element-plus';
+import {ElButton, ElDialog, ElMessage, ElRadioButton, ElRadioGroup,} from 'element-plus';
 import {apiClient} from '@/utils/api-client';
 import {useUserStore} from '@/stores/user';
 

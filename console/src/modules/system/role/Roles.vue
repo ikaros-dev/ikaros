@@ -4,7 +4,17 @@ import {Role} from '@runikaros/api-client';
 import {onMounted, ref} from 'vue';
 import {WarningFilled} from '@element-plus/icons-vue';
 
-import {ElButton, ElCol, ElDialog, ElInput, ElMessage, ElPopconfirm, ElRow, ElTable, ElTableColumn} from 'element-plus';
+import {
+  ElButton,
+  ElCol,
+  ElDialog,
+  ElInput,
+  ElMessage,
+  ElPopconfirm,
+  ElRow,
+  ElTable,
+  ElTableColumn,
+} from 'element-plus';
 
 const roles = ref<Role[]>([]);
 
@@ -60,10 +70,10 @@ const subitRoleAdd = async () => {
 };
 
 const deleteRole = async (id) => {
-  await apiClient.role.deleteRoleById({id})
-  ElMessage.success('Delete role success for id=' + id)
+  await apiClient.role.deleteRoleById({id});
+  ElMessage.success('Delete role success for id=' + id);
   await fetchRoles();
-}
+};
 
 onMounted(fetchRoles);
 </script>
@@ -139,14 +149,12 @@ onMounted(fetchRoles);
                 <template #reference>
                   <el-button type="danger" :disabled="scope.row.id === 1"
                   >Delete
-                  </el-button
-                  >
+                  </el-button>
                 </template>
               </el-popconfirm>
               <el-button type="primary" :disabled="scope.row.id === 1"
               >Authorities
-              </el-button
-              >
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
