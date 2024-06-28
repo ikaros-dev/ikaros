@@ -2,6 +2,7 @@ import {definePlugin} from '@runikaros/shared';
 import {Ticket} from '@element-plus/icons-vue';
 import {markRaw} from 'vue';
 import Roles from './Roles.vue';
+import RoleAuthorities from './RoleAuthorities.vue'
 
 export default definePlugin({
 	name: 'SystemSetting',
@@ -24,5 +25,17 @@ export default definePlugin({
 				},
 			},
 		},
+        {
+            parentName: 'Root',
+            route: {
+                path: '/role/authorities/roleId/:roleId',
+                name: 'RoleAuthorities',
+                component: RoleAuthorities,
+                meta: {
+                    title: 'module.roles.authorities.sidebar',
+                    hidden: true,
+                },
+            },
+        },
 	],
 });

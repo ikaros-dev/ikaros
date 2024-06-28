@@ -66,21 +66,58 @@ public class RequestAuthorizationManager
                     if (Authorization.Target.ALL.equals(target)
                         && Authorization.Authority.ALL.equals(author)) {
                         granted = true;
-                        break;
+                        continue;
                     }
 
                     if (Authorization.Target.ALL.equals(target)
                         && Authorization.Authority.HTTP_ALL.equals(author)) {
                         granted = true;
-                        break;
+                        continue;
                     }
 
                     if (!Authorization.Authority.ALL.equals(author) && author.startsWith("HTTP")) {
-                        granted = author.contains(method.name());
+                        if (author.contains(method.name())) {
+                            granted = true;
+                            continue;
+                        }
+                    }
+                }
+
+                if (AuthorityType.API.equals(type)) {
+
+                    if (target.contains("/**")) {
+                        String apiPrefix = target.substring(0, target.lastIndexOf("/**"));
+                        if (!granted && !path.contains(apiPrefix)) {
+                            continue;
+                        }
+
+
+                    } else {
+                        if (!granted && !path.contains(target)) {
+                            continue;
+                        }
+                    }
+
+                    if (Authorization.Target.ALL.equals(target)
+                        && Authorization.Authority.HTTP_ALL.equals(author)) {
+                        granted = true;
+                        continue;
+                    }
+
+                    if (!Authorization.Authority.ALL.equals(author) && author.startsWith("HTTP")) {
+                        if (author.contains(method.name())) {
+                            granted = true;
+                            continue;
+                        }
                     }
                 }
 
                 // todo 匹配其它权限类型
+
+
+                if (granted) {
+                    break;
+                }
             }
             return new AuthorizationDecision(granted);
         });

@@ -959,6 +959,8 @@ module:
   roles:
     title: Users
     sidebar: Users
+    authorities:
+      sidebar: Role Authorities
 login:
   operations:
     submit:

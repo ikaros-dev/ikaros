@@ -15,8 +15,10 @@ import {
   ElTable,
   ElTableColumn,
 } from 'element-plus';
+import {useRouter} from 'vue-router';
 
 const roles = ref<Role[]>([]);
+const router = useRouter();
 
 const fetchRoles = async () => {
   const {data} = await apiClient.role.getRoles();
@@ -75,7 +77,21 @@ const deleteRole = async (id) => {
   await fetchRoles();
 };
 
-onMounted(fetchRoles);
+
+const authorityTypes = ref<string[]>([])
+const fetchAuthorityTypes = async () => {
+  const {data} = await apiClient.authority.getAuthorityTypes();
+  authorityTypes.value = data;
+}
+
+const toRoleAuthiritiesPage = (roleId) => {
+  router.push('/role/authorities/roleId/' + roleId);
+}
+
+onMounted(() => {
+  fetchRoles();
+  fetchAuthorityTypes();
+});
 </script>
 <template>
   <div>
@@ -152,8 +168,8 @@ onMounted(fetchRoles);
                   </el-button>
                 </template>
               </el-popconfirm>
-              <el-button type="primary" :disabled="scope.row.id === 1"
-              >Authorities
+              <el-button type="primary" :disabled="scope.row.id === 1" @click="toRoleAuthiritiesPage(scope.row.id)">
+                Authorities
               </el-button>
             </template>
           </el-table-column>

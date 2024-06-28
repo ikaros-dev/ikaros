@@ -922,6 +922,8 @@ module:
   roles:
     title: 角色
     sidebar: 角色
+    authorities:
+      sidebar: 角色权限
 login:
   operations:
     submit:

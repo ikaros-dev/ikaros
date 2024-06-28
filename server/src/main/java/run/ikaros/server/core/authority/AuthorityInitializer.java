@@ -9,7 +9,6 @@ import org.springframework.util.ReflectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.AuthorityType;
 import run.ikaros.server.store.entity.AuthorityEntity;
 
@@ -71,16 +70,6 @@ public class AuthorityInitializer {
                 .type(type)
                 .authority(String.valueOf(ReflectionUtils.getField(authField, null)))
                 .target(tarFieldValue)
-                .build())
-            .flatMap(authorityService::saveEntity)
-            .filter(entity -> tarFieldValue.endsWith("/**"))
-            .filter(entity ->
-                StringUtils.isNotBlank(tarFieldValue.substring(0, tarFieldValue.indexOf("/**"))))
-            .map(entity -> AuthorityEntity.builder()
-                .allow(entity.getAllow())
-                .type(entity.getType())
-                .authority(entity.getAuthority())
-                .target(tarFieldValue.substring(0, tarFieldValue.indexOf("/**")))
                 .build())
             .flatMap(authorityService::saveEntity)
             .then()
