@@ -5,7 +5,7 @@ create sequence if not exists role_authority_seq
     cache 1
     no cycle;
 
-create table if not exists ikuser_role
+create table if not exists role_authority
 (
     id           int8 not null default nextval('role_authority_seq'),
     role_id      int8 not null,
