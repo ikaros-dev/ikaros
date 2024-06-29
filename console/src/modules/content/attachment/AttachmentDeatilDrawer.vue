@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { apiClient } from '@/utils/api-client';
-import { Attachment } from '@runikaros/api-client';
-import { formatFileSize } from '@/utils/string-util';
-import { computed, nextTick, ref } from 'vue';
+import {apiClient} from '@/utils/api-client';
+import {Attachment} from '@runikaros/api-client';
+import {formatFileSize} from '@/utils/string-util';
+import {computed, nextTick, ref} from 'vue';
 import {
-	ElButton,
-	ElCol,
-	ElDescriptions,
-	ElDescriptionsItem,
-	ElDrawer,
-	ElInput,
-	ElMessage,
-	ElPopconfirm,
-	ElRow,
+  ElButton,
+  ElCol,
+  ElDescriptions,
+  ElDescriptionsItem,
+  ElDrawer,
+  ElInput,
+  ElMessage,
+  ElPopconfirm,
+  ElRow,
 } from 'element-plus';
-import { useI18n } from 'vue-i18n';
-import { isImage, isVideo, isVoice } from '@/utils/file';
-import { Edit } from '@element-plus/icons-vue';
+import {useI18n} from 'vue-i18n';
+import {isImage, isVideo, isVoice} from '@/utils/file';
+import {Edit} from '@element-plus/icons-vue';
 import Artplayer from '@/components/video/Artplayer.vue';
 import AttachmentRelationsDialog from './AttachmentRelationsDialog.vue';
 
@@ -183,7 +183,7 @@ const getArtplayerInstance = (art: Artplayer) => {
 					<artplayer
 						v-else-if="isVideo(file.url as string)"
 						ref="artplayerRef"
-						v-model:attachment="file"
+            v-model:attachmentId="file.id"
 						style="width: 100%"
 						@getInstance="getArtplayerInstance"
 					/>
