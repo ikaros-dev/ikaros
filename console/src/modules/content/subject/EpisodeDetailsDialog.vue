@@ -19,6 +19,7 @@ import {isVideo} from '@/utils/file';
 import {Close, Plus} from '@element-plus/icons-vue';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 import {useI18n} from 'vue-i18n';
+import Artplayer from '@/components/video/Artplayer.vue';
 
 const { t } = useI18n();
 
@@ -43,6 +44,8 @@ watch(props, (newVal) => {
 	episode.value = newVal.ep as Episode;
 	if (episode.value?.resources) {
 		episode.value.resources?.sort(compareFun);
+    emit('update:multiResource', episode.value.resources && episode.value.resources.length > 1);
+    loadVideoAttachment();
 	}
 });
 
@@ -199,8 +202,26 @@ const fetchEpisodeResources = async () => {
 		id: episode.value.id as number,
 	});
 	episode.value.resources = data;
-	emit('update:multiResource', episode.value.resources && episode.value.resources.length > 1);
+  var multiResource = episode.value.resources && episode.value.resources.length > 1;
+  emit('update:multiResource', multiResource);
 };
+
+const loadVideoAttachment = async () => {
+  console.debug('loadVideoAttachment')
+  console.debug('episode.value.resources', episode.value.resources)
+  if (episode.value.resources
+      && episode.value.resources.length == 1
+      && isVideo(episode.value.resources[0].url as string)) {
+    console.debug('episode.value.resources[0].attachmentId', episode.value.resources[0].attachmentId)
+    const {data} = await apiClient.attachment.getAttachmentById({
+      id: episode.value.resources[0].attachmentId as number
+    })
+    currentVideoAttachment.value = data;
+  } else {
+    console.debug('loadVideoAttachment {}')
+    currentVideoAttachment.value = {};
+  }
+}
 
 const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 	const name1 = r1.name;
@@ -214,6 +235,14 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 	}
 	return 0;
 };
+
+const artplayer = ref<Artplayer>();
+const getArtplayerInstance = (art: Artplayer) => {
+  artplayer.value = art;
+};
+const currentVideoAttachment = ref<Attachment>({
+  id: 0
+})
 </script>
 
 <template>
@@ -268,17 +297,23 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 							>{{ episode?.resources[0].name }}</router-link
 						>
 						<br />
-						<video
-							v-if="isVideo(episode.resources[0].url as string)"
-							style="width: 100%"
-							:src="episode.resources[0].url"
-							controls
-							preload="metadata"
-						>
-							{{
-								t('module.subject.dialog.episode.details.hint.video.unsuport')
-							}}
-						</video>
+            <!-- <video
+              v-if="isVideo(episode.resources[0].url as string)"
+              style="width: 100%"
+              :src="episode.resources[0].url"
+              controls
+              preload="metadata"
+            >
+              {{
+                t('module.subject.dialog.episode.details.hint.video.unsuport')
+              }}
+            </video> -->
+            <artplayer
+                v-if="isVideo(episode.resources[0].url as string)"
+                v-model:attachmentId="episode.resources[0].attachmentId"
+                style="width: 100%"
+                @getInstance="getArtplayerInstance"
+            />
 						<span v-else>
 							{{
 								t('module.subject.dialog.episode.details.hint.video.not_video')
