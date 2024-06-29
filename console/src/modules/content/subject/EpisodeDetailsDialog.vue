@@ -50,6 +50,8 @@ const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
 	// eslint-disable-next-line no-unused-vars
+	(event: 'update:multiResource', multiResource: boolean): void;
+	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 	// eslint-disable-next-line no-unused-vars
 	(event: 'removeEpisodeFilesBind'): void;
@@ -63,6 +65,15 @@ const dialogVisible = computed({
 		emit('update:visible', value);
 	},
 });
+
+// const hasMultiRes = computed({
+// 	get() {
+// 		return props.multiResource;
+// 	},
+// 	set(value) {
+// 		emit('update:multiResource', value);
+// 	}
+// })
 
 const removeEpisodeAllAttachmentRefs = async () => {
 	// @ts-ignore
@@ -188,6 +199,7 @@ const fetchEpisodeResources = async () => {
 		id: episode.value.id as number,
 	});
 	episode.value.resources = data;
+	emit('update:multiResource', episode.value.resources && episode.value.resources.length > 1);
 };
 
 const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
