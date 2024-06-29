@@ -6,3 +6,6 @@ spring:
 
   flyway:
     locations: classpath:db/postgresql/migration
+    url: jdbc:postgresql://localhost:5432/postgres
+    user: postgres
+    password: openpostgresql
