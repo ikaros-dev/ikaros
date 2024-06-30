@@ -7,7 +7,7 @@
 
 <p align="center">
 <a href="https://t.me/run_ikaros"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white" /></a>
-<a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=78drHnTdkaGQHwAkt1eEU3JpxBfUeuPx&authKey=dvZ0CdZjiX36wKiDlDF0qKVcEDe7SNXfL%2BllKTIf%2FgiXNHwlWqTmlXTs%2BtLnB1un&noverify=0&group_code=413528874"><img alt="Telegram" src="https://img.shields.io/badge/413528874-EB1923?logo=tencent-qq&logoColor=white" /></a>
+<a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=78drHnTdkaGQHwAkt1eEU3JpxBfUeuPx&authKey=dvZ0CdZjiX36wKiDlDF0qKVcEDe7SNXfL%2BllKTIf%2FgiXNHwlWqTmlXTs%2BtLnB1un&noverify=0&group_code=413528874"><img alt="Telegram" src="https://img.shields.io/badge/413528874-2CA5E0?logo=tencent-qq&logoColor=white" /></a>
 <br />
 <a href="https://app.codecov.io/github/ikaros-dev/ikaros"><img alt="code coverage" src="https://img.shields.io/codecov/c/github/ikaros-dev/ikaros/master?style=flat-square" /></a>
 <a href="https://github.com/ikaros-dev/ikaros/commits"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/ikaros-dev/ikaros.svg?style=flat-square" /></a>
