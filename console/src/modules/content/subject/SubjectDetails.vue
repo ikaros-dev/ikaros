@@ -1,48 +1,48 @@
 <script setup lang="ts">
 import {
-	Attachment,
-	AttachmentReferenceTypeEnum,
-	Episode,
-	EpisodeCollection,
-	Subject,
-	SubjectCollection,
-	SubjectTag,
-	SubjectTypeEnum,
+  Attachment,
+  AttachmentReferenceTypeEnum,
+  Episode,
+  EpisodeCollection,
+  Subject,
+  SubjectCollection,
+  SubjectTag,
+  SubjectTypeEnum,
 } from '@runikaros/api-client';
-import { apiClient } from '@/utils/api-client';
-import { formatDate } from '@/utils/date';
+import {apiClient} from '@/utils/api-client';
+import {formatDate} from '@/utils/date';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import router from '@/router';
-import { Check, Close } from '@element-plus/icons-vue';
+import {Check, Close} from '@element-plus/icons-vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
-import { useRoute } from 'vue-router';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import {useRoute} from 'vue-router';
+import {nextTick, onMounted, ref, watch} from 'vue';
 import {
-	ElButton,
-	ElCol,
-	ElDescriptions,
-	ElDescriptionsItem,
-	ElImage,
-	ElInput,
-	ElMessage,
-	ElOption,
-	ElPopconfirm,
-	ElRow,
-	ElSelect,
-	ElTable,
-	ElTableColumn,
-	ElTag,
+  ElButton,
+  ElCol,
+  ElDescriptions,
+  ElDescriptionsItem,
+  ElImage,
+  ElInput,
+  ElMessage,
+  ElOption,
+  ElPopconfirm,
+  ElRow,
+  ElSelect,
+  ElTable,
+  ElTableColumn,
+  ElTag,
 } from 'element-plus';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
-import { useSettingStore } from '@/stores/setting';
-import { episodeGroupLabelMap } from '@/modules/common/constants';
-import { useUserStore } from '@/stores/user';
+import {useSettingStore} from '@/stores/setting';
+import {episodeGroupLabelMap} from '@/modules/common/constants';
+import {useUserStore} from '@/stores/user';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
-import { useSubjectStore } from '@/stores/subject';
+import {useSubjectStore} from '@/stores/subject';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 import AttachmentSelectDialog from '@/modules/content/attachment/AttachmentSelectDialog.vue';
 import SubjectCollectDialog from '@/components/modules/content/subject/SubjectCollectDialog.vue';
-import { useI18n } from 'vue-i18n';
+import {useI18n} from 'vue-i18n';
 
 const route = useRoute();
 const settingStore = useSettingStore();
@@ -491,6 +491,7 @@ const showNewTagInput = () => {
 };
 const newTag = ref<SubjectTag>({});
 const onNewTagNameChange = async () => {
+  if (!newTagInputVisible.value) return;
 	var tagName = newTag.value.name;
 	if (
 		!tagName ||
@@ -510,13 +511,13 @@ const onNewTagNameChange = async () => {
 			name: newTag.value.name,
 		},
 	});
-	ElMessage.success('新建标签【' + newTag.value.name + '】成功');
 	ElMessage.success(
 		t('module.subject.tag.message.operate.create', { name: newTag.value.name })
 	);
 	await fetchTags();
 	newTagInputVisible.value = false;
 	newTagInputRef.value!.input!.value = '';
+  newTag.value.name = ''
 };
 
 const batchCancenMatchingSubjectButtonLoading = ref(false);
@@ -642,7 +643,7 @@ onMounted(fetchDatas);
 								{{ tag.name }}
 							</el-tag>
 							<el-input v-if="newTagInputVisible" ref="newTagInputRef" v-model="newTag.name" size="small"
-								style="max-width: 80px" @blur="onNewTagNameChange" />
+                        style="max-width: 80px" @blur="onNewTagNameChange" @keydown.enter="onNewTagNameChange"/>
 							<el-button v-else size="small" @click="showNewTagInput">
 								{{ t('module.subject.details.text.button.add-tag') }}
 							</el-button>
