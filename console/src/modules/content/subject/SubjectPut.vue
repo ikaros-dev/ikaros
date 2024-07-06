@@ -1,45 +1,36 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue';
-import {
-	Episode,
-	Subject,
-	SubjectTypeEnum,
-	Attachment,
-} from '@runikaros/api-client';
+import {onMounted, reactive, ref, watch} from 'vue';
+import {Attachment, Episode, Subject, SubjectTypeEnum,} from '@runikaros/api-client';
 import EpisodePostDialog from './EpisodePostDialog.vue';
 import EpisodePutDialog from './EpisodePutDialog.vue';
-import { Picture } from '@element-plus/icons-vue';
-import { formatDate } from '@/utils/date';
-import { apiClient } from '@/utils/api-client';
+import {Picture} from '@element-plus/icons-vue';
+import {formatDate} from '@/utils/date';
+import {apiClient} from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
-import { useRoute, useRouter } from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
 import {
-	ElMessage,
-	FormInstance,
-	FormRules,
-	ElRow,
-	ElCol,
-	ElForm,
-	ElFormItem,
-	ElSwitch,
-	ElDatePicker,
-	ElInput,
-	ElButton,
-	ElRadioGroup,
-	ElRadio,
-	ElTable,
-	ElTableColumn,
-	ElImage,
+  ElButton,
+  ElCol,
+  ElDatePicker,
+  ElForm,
+  ElFormItem,
+  ElImage,
+  ElInput,
+  ElMessage,
+  ElRadio,
+  ElRadioGroup,
+  ElRow,
+  ElSwitch,
+  ElTable,
+  ElTableColumn,
+  FormInstance,
+  FormRules,
 } from 'element-plus';
-import {
-	episodeGroupLabelMap,
-	subjectTypes,
-	subjectTypeAliasMap,
-} from '@/modules/common/constants';
+import {episodeGroupLabelMap, subjectTypeAliasMap, subjectTypes,} from '@/modules/common/constants';
 import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
-import { base64Encode } from '@/utils/string-util';
-import { useSubjectStore } from '@/stores/subject';
-import { useI18n } from 'vue-i18n';
+import {base64Encode} from '@/utils/string-util';
+import {useSubjectStore} from '@/stores/subject';
+import {useI18n} from 'vue-i18n';
 
 const router = useRouter();
 const route = useRoute();
@@ -190,10 +181,24 @@ const onEpisodePutDialogCloseWithEpsiode = (episode) => {
 	currentEpisode.value = episode;
 	episodePostDialogVisible.value = false;
 };
+
+const episodeHasMultiResource = ref(false);
+const initEpisodeHasMultiResource = () => {
+  if (
+      subject.value.type === 'ANIME' ||
+      subject.value.type === 'GAME' ||
+      subject.value.type === 'NOVEL'
+  ) {
+    return;
+  }
+  episodeHasMultiResource.value = true;
+};
+
 onMounted(() => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
 	fetchSubjectById();
+  initEpisodeHasMultiResource();
 });
 </script>
 
@@ -380,6 +385,8 @@ onMounted(() => {
 		v-model:visible="episodeDetailsDialogVisible"
 		v-model:ep="currentEpisode"
 		v-model:subjectId="subject.id"
+    v-model:multi-resource="episodeHasMultiResource"
+    @remove-episode-files-bind="fetchSubjectById"
 	/>
 </template>
 
