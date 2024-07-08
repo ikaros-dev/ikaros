@@ -30,7 +30,6 @@
 - 快捷的搜索: 即使您有几十万资源，一样可以提供毫秒级的搜索响应
 - 插件支持: ikaros 本体只提供最为基础的功能，其它附加功能由插件提供
 - 客户端支持: 各个主流平台的客户端，包括不限于 Windows, 安卓
-- 文件加密分段上云: 支持主流云端的加密分段备份，在保障数据安全的前提下将云端的优势利用起来
 
 # 文档
 
@@ -41,27 +40,6 @@
 <a href="https://github.com/ikaros-dev/ikaros/blob/master/LICENSE"><img alt="LICENSE" src="https://img.shields.io/github/license/ikaros-dev/ikaros?style=flat-square" /></a>
 
 Ikaros 使用 AGPL-v3.0 协议开源，请遵守开源协议。
-
-
-# 社区汇总
-
-- GitHub: [Ikaros project github offical repo](https://github.com/ikaros-dev/ikaros)
-- QQ交流群: 413528874
-- 微信公众号：见下方[微信公众号](#微信公众号)
-- TG 群组：https://t.me/run_ikaros
-- TG 频道：https://t.me/run_ikaros_channel
-- 论坛：[Ikaros github discussions](https://github.com/orgs/ikaros-dev/discussions)
-- 问题追踪：[Ikaros issues](https://github.com/ikaros-dev/ikaros/issues)
-
-# 微信公众号
-
-TG 群组和频道，很多不方便的朋友没法及时收到通知，我们创建了一个微信公众号，欢迎感兴趣的朋友进行订阅
-
-- 直接扫描下方的二维码
-- 微信=>添加朋友=>微信公众号 搜索 `run_ikaros_wx`
-- 搜索 `Ikaros开源` 选择公众号一栏
-
-![image](https://user-images.githubusercontent.com/46225881/205643915-e41b46a3-b094-4e50-8458-9417139add7a.png)
 
 # 项目进度
 
