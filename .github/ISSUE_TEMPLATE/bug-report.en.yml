@@ -104,17 +104,6 @@ body:
         ``` ``` blocks or inside a collapsable details tag if it's too long:
         <details><summary>x.log</summary> lots of stuff </details>
 
-  - type: checkboxes
-    attributes:
-      label: Are you willing to submit PR?
-      description: >
-        This is absolutely not required, but we are happy to guide you in the contribution process
-        especially if you already have a good understanding of how to implement the fix.
-      options:
-        - label: Yes I am willing to submit a PR!
-          required: false
-
-
   - type: markdown
     attributes:
       value: "Thanks for completing our form!"

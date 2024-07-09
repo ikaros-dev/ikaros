@@ -109,16 +109,6 @@ body:
         
         如果日志内容太长，可以用这个格式包裹起来：<details><summary>x.log</summary> 很长的日志内容</details>
 
-  - type: checkboxes
-    id: submitPullRequest
-    attributes:
-      label: 您将要去提交PR吗？
-      description: >
-        这个不是必须的，但是如果您知道这个问题如何修复，并且愿意提交RP给这个项目做贡献，我们将非常欢迎。
-      options:
-        - label: 是的我想要提交个PR!
-          required: false
-
 
   - type: markdown
     attributes:
