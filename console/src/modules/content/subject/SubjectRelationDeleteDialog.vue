@@ -82,8 +82,6 @@ const reqRemoveRelaction = async () => {
 		return;
 	}
 	reqRemoveRelactionBtnLoading.value = true;
-	// await apiClient.subjectRelation.removeSubjectRelation({
-	// });
 	await subjectRelations.value.forEach(async (subRel) => {
 		const subIdSet = subRel.relation_subjects;
 		let ids: number[] = [];
