@@ -457,7 +457,7 @@ module:
               type: Type
       dialog:
         delete:
-          title: Subject Relation Add
+          title: Subject Relation Delete
           message:
             validate-fail: >-
               Submit cancellation, please check whether any necessary items are

@@ -1,20 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import {
-	ElDialog,
-	ElForm,
-	ElFormItem,
-	ElButton,
-	ElInput,
-	ElMessage,
-	ElPopconfirm,
-} from 'element-plus';
-import { Tickets } from '@element-plus/icons-vue';
+import {computed, ref} from 'vue';
+import {ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElMessage, ElPopconfirm,} from 'element-plus';
+import {Tickets} from '@element-plus/icons-vue';
 import SubjectRelactionDeleteDrawer from './SubjectRelactionDeleteDrawer.vue';
-import { SubjectRelation } from '@runikaros/api-client';
-import { apiClient } from '@/utils/api-client';
-import { useSubjectStore } from '@/stores/subject';
-import { useI18n } from 'vue-i18n';
+import {SubjectRelation} from '@runikaros/api-client';
+import {apiClient} from '@/utils/api-client';
+import {useSubjectStore} from '@/stores/subject';
+import {useI18n} from 'vue-i18n';
 
 const subjectStore = useSubjectStore();
 const { t } = useI18n();
@@ -57,7 +49,7 @@ const slaveSubjectTypesStr = ref('[]');
 const slaveSubjectIdsStr = ref('[]');
 const subjectRelations = ref<SubjectRelation[]>([]);
 const onSelectionsChange = (subjectRels) => {
-	// console.log('receive subjectRelations', subjectRelations);
+  console.log('receive subjectRelations', subjectRelations);
 	subjectRelations.value = subjectRels;
 	let types = new Set<string>();
 	let ids = new Set<number>();
@@ -82,8 +74,6 @@ const reqRemoveRelaction = async () => {
 		return;
 	}
 	reqRemoveRelactionBtnLoading.value = true;
-	// await apiClient.subjectRelation.removeSubjectRelation({
-	// });
 	await subjectRelations.value.forEach(async (subRel) => {
 		const subIdSet = subRel.relation_subjects;
 		let ids: number[] = [];

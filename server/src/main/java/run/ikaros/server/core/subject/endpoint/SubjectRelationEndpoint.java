@@ -73,15 +73,15 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .required(true)
                         .description("SubjectRelation")
                         .implementation(SubjectRelation.class)))
-            .DELETE("/subject/relation", this::removeSubjectRelation,
+            .DELETE("/subject/relation/subjectId/{subjectId}", this::removeSubjectRelation,
                 builder -> builder
                     .tag(tag)
                     .operationId("RemoveSubjectRelation")
                     .description("Remove subject relation")
                     .parameter(parameterBuilder()
                         .required(true)
-                        .in(ParameterIn.QUERY)
-                        .name("subject_id")
+                        .in(ParameterIn.PATH)
+                        .name("subjectId")
                         .description("Subject id")
                         .implementation(Long.class))
                     .parameter(parameterBuilder()
@@ -138,14 +138,14 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
 
 
     private Mono<ServerResponse> removeSubjectRelation(ServerRequest request) {
-        Optional<String> subjectId = request.queryParam("subject_id");
-        Assert.isTrue(subjectId.isPresent(), "'subject_id' must not be empty");
+        String subjectId = request.pathVariable("subjectId");
+        Assert.hasText(subjectId, "subjectId must not be empty");
         Optional<String> relationType = request.queryParam("relation_type");
         Assert.isTrue(relationType.isPresent(), "'relation_type' must not be empty");
         Optional<String> relationSubjects = request.queryParam("relation_subjects");
         Assert.isTrue(relationSubjects.isPresent(), "'relation_subjects' must not be empty");
         SubjectRelation subjectRelation = SubjectRelation.builder()
-            .subject(Long.valueOf(subjectId.get()))
+            .subject(Long.valueOf(subjectId))
             .relationType(
                 StringUtils.isNumeric(relationType.get())
                     ? SubjectRelationType.codeOf(Integer.valueOf(relationType.get()))
