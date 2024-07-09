@@ -13,4 +13,5 @@ public class SubjectDoc {
     private String summary;
     private Boolean nsfw;
     private Long airTime;
+    private String cover;
 }
