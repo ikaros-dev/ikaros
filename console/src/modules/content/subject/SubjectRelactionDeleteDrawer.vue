@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import {
-	Subject,
-	SubjectRelation,
-	SubjectRelationRelationTypeEnum,
-} from '@runikaros/api-client';
-import { computed, ref } from 'vue';
-import { ElDrawer, ElTable, ElTableColumn } from 'element-plus';
-import { useSubjectStore } from '@/stores/subject';
-import { useI18n } from 'vue-i18n';
+import {Subject, SubjectRelation,} from '@runikaros/api-client';
+import {computed, ref} from 'vue';
+import {ElDrawer, ElTable, ElTableColumn} from 'element-plus';
+import {useSubjectStore} from '@/stores/subject';
+import {useI18n} from 'vue-i18n';
 
 const subjectStore = useSubjectStore();
 const { t } = useI18n();
@@ -49,8 +45,10 @@ const handleClose = () => {
 const selectionSubjectMap = new Map<string, number[]>();
 const selectionSubjectReactions = ref<SubjectRelation[]>([]);
 const handleSelectionChange = (selection) => {
-	// console.log('selection', selection);
+  // console.debug('selection', selection);
+  // console.debug('props.relationSubjects', props.relationSubjects);
 	selectionSubjectMap.clear();
+  selectionSubjectReactions.value = [];
 	selection.forEach((sub) => {
 		let ids: number[] = selectionSubjectMap.get(sub.type) as number[];
 		if (ids) {
@@ -60,18 +58,17 @@ const handleSelectionChange = (selection) => {
 			ids.push(sub.id);
 			selectionSubjectMap.set(sub.type, ids);
 		}
+    var subjectRelation = props.relationSubjects.find(rel => {
+      var result = false;
+      rel.relation_subjects.forEach(relId => {
+        if (relId === sub.id) result = true;
+      });
+      return result;
+    }) as SubjectRelation;
+    // console.debug('subjectRelation', subjectRelation);
+    selectionSubjectReactions.value.push(subjectRelation);
 	});
-	// console.log('selectionSubjectIdSet', selectionSubjectIdSet);
-	selectionSubjectReactions.value = [];
-	selectionSubjectMap.forEach((ids, type) => {
-		let subRel: SubjectRelation = {
-			subject: props.masterSubjectId,
-			relation_type: type as SubjectRelationRelationTypeEnum,
-			relation_subjects: new Set(ids),
-		};
-		selectionSubjectReactions.value.push(subRel);
-	});
-	// console.log('selectionSubjectReactions', selectionSubjectReactions);
+  // console.debug('selectionSubjectReactions', selectionSubjectReactions);
 };
 
 const subjectIdMapCache = new Map<number, Subject>();
