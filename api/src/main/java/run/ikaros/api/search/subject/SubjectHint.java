@@ -11,7 +11,8 @@ public record SubjectHint(
     String summary,
     Boolean nsfw,
     SubjectType type,
-    Long airTime
+    Long airTime,
+    String cover
 ) {
     public static final String ID_FIELD = "subject";
 
