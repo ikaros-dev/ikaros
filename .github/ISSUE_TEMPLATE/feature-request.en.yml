@@ -41,16 +41,6 @@ body:
       label: Related issues
       description: Is there currently another issue associated with this?
 
-  - type: checkboxes
-    attributes:
-      label: Are you willing to submit a PR?
-      description: >
-        This is absolutely not required, but we are happy to guide you in the contribution process
-        especially if you already have a good understanding of how to implement the feature.
-      options:
-        - label: Yes I am willing to submit a PR!
-          required: false
-
   - type: markdown
     attributes:
       value: "Thanks for completing our form!"

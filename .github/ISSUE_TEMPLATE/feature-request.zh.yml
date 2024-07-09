@@ -44,16 +44,6 @@ body:
       label: 相关的Issues
       description: 目前是否有与此新功能有关的 issue, 您可以填写 `#数字` 或者URL 方便我们快速定位到这个issue
 
-  - type: checkboxes
-    id: submitPullRequest
-    attributes:
-      label: 您想要提交PR吗?
-      description: >
-        这个不是必须的，但是如果您知道这个问题如何修复，并且原因提交RP给这个项目做贡献，我们将非常欢迎。
-      options:
-        - label: 是的我想要提交个PR!
-          required: false
-
   - type: markdown
     attributes:
       value: "感谢您填写这个表单！因为有您的贡献，项目才能越来越好。"
