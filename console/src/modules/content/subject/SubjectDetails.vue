@@ -269,7 +269,7 @@ const updateSubjectCollection = async () => {
 	ElMessage.success(t('module.subject.collect.message.operate.update.success'));
 };
 const updateSubjectCollectionProgress = async () => {
-	await apiClient.collectionSubject.updateSubjectCollectionMainEpProgress({
+  await apiClient.collectionSubject.updateCollectionSubjectMainEpProgress({
 		subjectId: subject.value.id as number,
 		progress: subjectCollection.value.main_ep_progress as number,
 	});
@@ -302,7 +302,7 @@ const subjectCollection = ref<SubjectCollection>({});
 // eslint-disable-next-line no-unused-vars
 const fetchSubjectCollection = async () => {
 	// eslint-disable-next-line no-unused-vars
-	const rsp = await apiClient.collectionSubject.findSubjectCollection({
+  const rsp = await apiClient.collectionSubject.findCollectionSubject({
 		subjectId: subject.value.id as number,
 	});
 
@@ -323,7 +323,7 @@ const fetchSubjectCollection = async () => {
 const episodeCollections = ref<EpisodeCollection[]>([]);
 const fetchEpisodeCollections = async () => {
 	const { data } =
-		await apiClient.collectionEpisode.findEpisodeCollectionsByUserIdAndSubjectId(
+      await apiClient.collectionEpisode.findCollectionEpisodesByUserIdAndSubjectId(
 			{
 				subjectId: subject.value.id as number,
 			}
@@ -344,7 +344,7 @@ const udpateEpisodeCollectionProgress = async (
 	isFinish: boolean,
 	episode: Episode
 ) => {
-	await apiClient.collectionEpisode.updateEpisodeCollectionFinish({
+  await apiClient.collectionEpisode.updateCollectionEpisodeFinish({
 		episodeId: episode.id as number,
 		finish: isFinish,
 	});
