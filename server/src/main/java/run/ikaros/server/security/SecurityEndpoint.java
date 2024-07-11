@@ -16,6 +16,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.infra.exception.security.UserAuthenticationException;
+import run.ikaros.api.infra.exception.user.UserNotFoundException;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.security.authentication.jwt.JwtApplyParam;
 import run.ikaros.server.security.authentication.jwt.JwtAuthenticationProvider;
@@ -71,6 +73,8 @@ public class SecurityEndpoint implements CoreEndpoint {
             .flatMap(userDetailsService::findByUsername)
             .map(UserDetails::getUsername)
             .map(jwtAuthenticationProvider::generateToken)
-            .flatMap(token -> ServerResponse.ok().bodyValue(token));
+            .flatMap(token -> ServerResponse.ok().bodyValue(token))
+            .onErrorResume(UserNotFoundException.class,
+                e -> Mono.error(new UserAuthenticationException(e.getLocalizedMessage(), e)));
     }
 }
