@@ -58,7 +58,7 @@ npm publish
 选择当前目录下的更改进行`git add .`
 
 ```bash
-git commit -am "build: gen new api-client v0.14.0+1"
+git commit -am "build: gen new api-client v0.14.0+2"
 ```
 
 合成版(powershell)，升级 package.json 版本，并启动服务端后，在 api-client 路径下：

@@ -96,16 +96,16 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
     /**
      * Search subjects with fuzzy query
      * @param {string} keyword
-     * @param {string} [highlightPostTag]
      * @param {number} [limit]
+     * @param {string} [highlightPostTag]
      * @param {string} [highlightPreTag]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     searchSubject: async (
       keyword: string,
-      highlightPostTag?: string,
       limit?: number,
+      highlightPostTag?: string,
       highlightPreTag?: string,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
@@ -135,20 +135,20 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      if (highlightPostTag !== undefined) {
-        localVarQueryParameter["highlightPostTag"] = highlightPostTag;
-      }
-
       if (limit !== undefined) {
         localVarQueryParameter["limit"] = limit;
       }
 
-      if (highlightPreTag !== undefined) {
-        localVarQueryParameter["highlightPreTag"] = highlightPreTag;
+      if (highlightPostTag !== undefined) {
+        localVarQueryParameter["highlightPostTag"] = highlightPostTag;
       }
 
       if (keyword !== undefined) {
         localVarQueryParameter["keyword"] = keyword;
+      }
+
+      if (highlightPreTag !== undefined) {
+        localVarQueryParameter["highlightPreTag"] = highlightPreTag;
       }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -198,16 +198,16 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
     /**
      * Search subjects with fuzzy query
      * @param {string} keyword
-     * @param {string} [highlightPostTag]
      * @param {number} [limit]
+     * @param {string} [highlightPostTag]
      * @param {string} [highlightPreTag]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     async searchSubject(
       keyword: string,
-      highlightPostTag?: string,
       limit?: number,
+      highlightPostTag?: string,
       highlightPreTag?: string,
       options?: AxiosRequestConfig
     ): Promise<
@@ -215,8 +215,8 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.searchSubject(
         keyword,
-        highlightPostTag,
         limit,
+        highlightPostTag,
         highlightPreTag,
         options
       );
@@ -264,8 +264,8 @@ export const V1alpha1IndicesApiFactory = function (
       return localVarFp
         .searchSubject(
           requestParameters.keyword,
-          requestParameters.highlightPostTag,
           requestParameters.limit,
+          requestParameters.highlightPostTag,
           requestParameters.highlightPreTag,
           options
         )
@@ -289,17 +289,17 @@ export interface V1alpha1IndicesApiSearchSubjectRequest {
 
   /**
    *
-   * @type {string}
-   * @memberof V1alpha1IndicesApiSearchSubject
-   */
-  readonly highlightPostTag?: string;
-
-  /**
-   *
    * @type {number}
    * @memberof V1alpha1IndicesApiSearchSubject
    */
   readonly limit?: number;
+
+  /**
+   *
+   * @type {string}
+   * @memberof V1alpha1IndicesApiSearchSubject
+   */
+  readonly highlightPostTag?: string;
 
   /**
    *
@@ -342,8 +342,8 @@ export class V1alpha1IndicesApi extends BaseAPI {
     return V1alpha1IndicesApiFp(this.configuration)
       .searchSubject(
         requestParameters.keyword,
-        requestParameters.highlightPostTag,
         requestParameters.limit,
+        requestParameters.highlightPostTag,
         requestParameters.highlightPreTag,
         options
       )
