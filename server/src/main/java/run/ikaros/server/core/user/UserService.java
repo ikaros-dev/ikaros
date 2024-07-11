@@ -57,4 +57,6 @@ public interface UserService {
     Flux<User> findAll();
 
     Mono<Void> deleteById(Long id);
+
+    Mono<Long> getUserIdFromSecurityContext();
 }

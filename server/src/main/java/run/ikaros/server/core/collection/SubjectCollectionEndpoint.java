@@ -19,31 +19,29 @@ import run.ikaros.api.core.collection.SubjectCollection;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
 @Component
 public class SubjectCollectionEndpoint implements CoreEndpoint {
-    private final SubjectCollectionService subjectCollectionService;
+    private final SubjectCollectionService selfService;
+    private final UserService userService;
 
-    public SubjectCollectionEndpoint(SubjectCollectionService subjectCollectionService) {
-        this.subjectCollectionService = subjectCollectionService;
+    public SubjectCollectionEndpoint(SubjectCollectionService selfService,
+                                     UserService userService) {
+        this.selfService = selfService;
+        this.userService = userService;
     }
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/subject/collection";
+        var tag = OpenApiConst.CORE_VERSION + "/collection/subject";
         return SpringdocRouteBuilder.route()
-            .GET("/subject/collections/{userId}", this::findSubjectCollections,
+            .GET("/collections/subject/{userId}", this::findSubjectCollections,
                 builder -> builder.operationId("FindSubjectCollections")
                     .tag(tag)
                     .description("Find user subject collections.")
-                    .parameter(parameterBuilder()
-                        .name("userId")
-                        .required(true)
-                        .in(ParameterIn.PATH)
-                        .implementation(Long.class)
-                        .description("User id."))
                     .parameter(parameterBuilder()
                         .name("page")
                         .required(false)
@@ -72,16 +70,10 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .implementation(PagingWrap.class))
             )
 
-            .GET("/subject/collection/{userId}/{subjectId}", this::findSubjectCollection,
+            .GET("/collection/subject/{subjectId}", this::findSubjectCollection,
                 builder -> builder.operationId("FindSubjectCollection")
                     .tag(tag)
                     .description("Find user subject collection.")
-                    .parameter(parameterBuilder()
-                        .name("userId")
-                        .required(true)
-                        .in(ParameterIn.PATH)
-                        .implementation(Long.class)
-                        .description("User id."))
                     .parameter(parameterBuilder()
                         .name("subjectId")
                         .required(true)
@@ -94,16 +86,10 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
             )
 
 
-            .POST("/subject/collection/collect", this::collectSubject,
+            .POST("/collection/subject/collect", this::collectSubject,
                 builder -> builder.operationId("CollectSubject.")
                     .tag(tag)
                     .description("Collect subject by user.")
-                    .parameter(parameterBuilder()
-                        .name("userId")
-                        .required(true)
-                        .in(ParameterIn.QUERY)
-                        .implementation(Long.class)
-                        .description("User id."))
                     .parameter(parameterBuilder()
                         .name("subjectId")
                         .required(true)
@@ -124,16 +110,10 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .description("Is private, default is false."))
             )
 
-            .DELETE("/subject/collection/collect", this::unCollectSubject,
+            .DELETE("/collection/subject/collect", this::unCollectSubject,
                 builder -> builder.operationId("RemoveSubjectCollect.")
                     .tag(tag)
                     .description("Remove subject collect.")
-                    .parameter(parameterBuilder()
-                        .name("userId")
-                        .required(true)
-                        .in(ParameterIn.QUERY)
-                        .implementation(Long.class)
-                        .description("User id."))
                     .parameter(parameterBuilder()
                         .name("subjectId")
                         .required(true)
@@ -142,16 +122,10 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .description("Subject id."))
             )
 
-            .PUT("/subject/collection/mainEpisodeProgress/{userId}/{subjectId}/{progress}",
+            .PUT("/collection/subject/mainEpisodeProgress/{subjectId}/{progress}",
                 this::updateSubjectCollectionMainEpProgress,
                 builder -> builder.operationId("UpdateSubjectCollectionMainEpProgress")
                     .tag(tag).description("Update subject collection main episode progress.")
-                    .parameter(parameterBuilder()
-                        .name("userId")
-                        .required(true)
-                        .in(ParameterIn.PATH)
-                        .implementation(Long.class)
-                        .description("User id."))
                     .parameter(parameterBuilder()
                         .name("subjectId")
                         .required(true)
@@ -171,9 +145,6 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> findSubjectCollections(ServerRequest serverRequest) {
-        String userId = serverRequest.pathVariable("userId");
-        Assert.hasText(userId, "'userId' must has text.");
-        Long uid = Long.valueOf(userId);
         Optional<String> pageOp = serverRequest.queryParam("page");
         Integer page = pageOp.isEmpty() || Integer.parseInt(pageOp.get()) <= 0
             ? 1 : Integer.parseInt(pageOp.get());
@@ -186,7 +157,8 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
             : null;
         Optional<String> isPrivateOp = serverRequest.queryParam("is_private");
         Boolean isPrivate = isPrivateOp.map(Boolean::valueOf).orElse(null);
-        return subjectCollectionService.findCollections(uid, page, size, type, isPrivate)
+        return userService.getUserIdFromSecurityContext()
+            .flatMap(uid -> selfService.findCollections(uid, page, size, type, isPrivate))
             .flatMap(pagingWarp -> ServerResponse.ok().bodyValue(pagingWarp))
             .switchIfEmpty(ServerResponse.notFound().build())
             .onErrorResume(NotFoundException.class,
@@ -194,14 +166,11 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> findSubjectCollection(ServerRequest serverRequest) {
-        String userIdStr = serverRequest.pathVariable("userId");
-        Assert.hasText(userIdStr, "'userId' must has text.");
-        Long userId = Long.valueOf(userIdStr);
         String subjectIdStr = serverRequest.pathVariable("subjectId");
         Assert.hasText(subjectIdStr, "'subjectId' must has text.");
         Long subjectId = Long.valueOf(subjectIdStr);
-
-        return subjectCollectionService.findCollection(userId, subjectId)
+        return userService.getUserIdFromSecurityContext()
+            .flatMap(userId -> selfService.findCollection(userId, subjectId))
             .flatMap(subjectCollection -> ServerResponse.ok().bodyValue(subjectCollection))
             .switchIfEmpty(ServerResponse.notFound().build())
             .onErrorResume(NotFoundException.class,
@@ -209,9 +178,6 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> collectSubject(ServerRequest serverRequest) {
-        Optional<String> userIdOp = serverRequest.queryParam("userId");
-        Assert.isTrue(userIdOp.isPresent(), "'userId' must has value.");
-        Long userId = Long.parseLong(userIdOp.get());
         Optional<String> subjectIdOp = serverRequest.queryParam("subjectId");
         Assert.isTrue(subjectIdOp.isPresent(), "'subjectId' must has value.");
         Long subjectId = Long.parseLong(subjectIdOp.get());
@@ -220,36 +186,33 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
         CollectionType type = CollectionType.valueOf(typeOp.get());
         Optional<String> isPrivateOp = serverRequest.queryParam("isPrivate");
         Boolean isPrivate = Boolean.valueOf(isPrivateOp.orElse(Boolean.FALSE.toString()));
-        return subjectCollectionService.collect(userId, subjectId, type, isPrivate)
+        return userService.getUserIdFromSecurityContext()
+            .flatMap(userId -> selfService.collect(userId, subjectId, type, isPrivate))
             .then(ServerResponse.ok().build())
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
     }
 
     private Mono<ServerResponse> unCollectSubject(ServerRequest serverRequest) {
-        Optional<String> userIdOp = serverRequest.queryParam("userId");
-        Assert.isTrue(userIdOp.isPresent(), "'userId' must has value.");
-        Long userId = Long.parseLong(userIdOp.get());
         Optional<String> subjectIdOp = serverRequest.queryParam("subjectId");
         Assert.isTrue(subjectIdOp.isPresent(), "'subjectId' must has value.");
         Long subjectId = Long.parseLong(subjectIdOp.get());
-        return subjectCollectionService.unCollect(userId, subjectId)
+        return userService.getUserIdFromSecurityContext()
+            .flatMap(userId -> selfService.unCollect(userId, subjectId))
             .then(ServerResponse.ok().build())
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
     }
 
     private Mono<ServerResponse> updateSubjectCollectionMainEpProgress(ServerRequest request) {
-        String userIdStr = request.pathVariable("userId");
-        Assert.hasText(userIdStr, "'userId' must has text.");
-        Long userId = Long.valueOf(userIdStr);
         String subjectIdStr = request.pathVariable("subjectId");
         Assert.hasText(subjectIdStr, "'subjectId' must has text.");
         Long subjectId = Long.valueOf(subjectIdStr);
         String progressStr = request.pathVariable("progress");
         Assert.hasText(progressStr, "'progress' must has text.");
         Integer progress = Integer.valueOf(progressStr);
-        return subjectCollectionService.updateMainEpisodeProgress(userId, subjectId, progress)
+        return userService.getUserIdFromSecurityContext()
+            .flatMap(userId -> selfService.updateMainEpisodeProgress(userId, subjectId, progress))
             .then(Mono.defer(() -> ServerResponse.ok().build()))
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
