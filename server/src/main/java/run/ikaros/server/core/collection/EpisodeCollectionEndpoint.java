@@ -34,7 +34,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
         var tag = OpenApiConst.CORE_VERSION + "/collection/episode";
         return SpringdocRouteBuilder.route()
             .GET("/collection/episode/{episodeId}", this::findEpisodeCollection,
-                builder -> builder.operationId("FindEpisodeCollection")
+                builder -> builder.operationId("FindCollectionEpisode")
                     .tag(tag)
                     .parameter(parameterBuilder()
                         .name("episodeId")
@@ -45,9 +45,9 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                     .response(responseBuilder()
                         .implementation(EpisodeCollection.class)))
 
-            .GET("/collections/episode/subjectId/{subjectId}",
+            .GET("/collection/episodes/subjectId/{subjectId}",
                 this::findEpisodeCollectionsByUserIdAndSubjectId,
-                builder -> builder.operationId("FindEpisodeCollectionsByUserIdAndSubjectId")
+                builder -> builder.operationId("FindCollectionEpisodesByUserIdAndSubjectId")
                     .tag(tag)
                     .parameter(parameterBuilder()
                         .name("subjectId")
@@ -60,7 +60,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
 
             .PUT("/collection/episode/{episodeId}",
                 this::updateEpisodeCollection,
-                builder -> builder.operationId("UpdateEpisodeCollection")
+                builder -> builder.operationId("UpdateCollectionEpisode")
                     .tag(tag)
                     .parameter(parameterBuilder()
                         .name("episodeId")
@@ -84,7 +84,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
 
             .PUT("/collection/episode/finish/{episodeId}/{finish}",
                 this::updateEpisodeCollectionFinish,
-                builder -> builder.operationId("UpdateEpisodeCollectionFinish")
+                builder -> builder.operationId("UpdateCollectionEpisodeFinish")
                     .tag(tag)
                     .parameter(parameterBuilder()
                         .name("episodeId")
@@ -100,7 +100,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .implementation(Boolean.class)))
 
             .POST("/collection/episode/{episodeId}", this::create,
-                builder -> builder.operationId("SaveEpisodeCollection")
+                builder -> builder.operationId("SaveCollectionEpisode")
                     .tag(tag)
                     .parameter(parameterBuilder()
                         .name("episodeId")
@@ -113,7 +113,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
             )
 
             .DELETE("/collection/episode/{episodeId}", this::remove,
-                builder -> builder.operationId("DeleteEpisodeCollection")
+                builder -> builder.operationId("DeleteCollectionEpisode")
                     .tag(tag)
                     .parameter(parameterBuilder()
                         .name("episodeId")

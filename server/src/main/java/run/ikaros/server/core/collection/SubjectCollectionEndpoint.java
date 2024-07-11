@@ -38,8 +38,8 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
     public RouterFunction<ServerResponse> endpoint() {
         var tag = OpenApiConst.CORE_VERSION + "/collection/subject";
         return SpringdocRouteBuilder.route()
-            .GET("/collections/subject/{userId}", this::findSubjectCollections,
-                builder -> builder.operationId("FindSubjectCollections")
+            .GET("/collection/subjects", this::findSubjectCollections,
+                builder -> builder.operationId("FindCollectionSubjects")
                     .tag(tag)
                     .description("Find user subject collections.")
                     .parameter(parameterBuilder()
@@ -71,7 +71,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
             )
 
             .GET("/collection/subject/{subjectId}", this::findSubjectCollection,
-                builder -> builder.operationId("FindSubjectCollection")
+                builder -> builder.operationId("FindCollectionSubject")
                     .tag(tag)
                     .description("Find user subject collection.")
                     .parameter(parameterBuilder()
@@ -124,7 +124,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
 
             .PUT("/collection/subject/mainEpisodeProgress/{subjectId}/{progress}",
                 this::updateSubjectCollectionMainEpProgress,
-                builder -> builder.operationId("UpdateSubjectCollectionMainEpProgress")
+                builder -> builder.operationId("UpdateCollectionSubjectMainEpProgress")
                     .tag(tag).description("Update subject collection main episode progress.")
                     .parameter(parameterBuilder()
                         .name("subjectId")
