@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springdoc.core.fn.builders.apiresponse.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -47,7 +48,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("Subject id")
                         .implementation(Long.class)
-                        .required(true)))
+                        .required(true))
+                    .response(Builder.responseBuilder()
+                        .implementationArray(SubjectRelation.class)))
             .GET("/subject/relation/{subjectId}/{relationType}", this::findBySubjectIdAndType,
                 builder -> builder
                     .tag(tag)
