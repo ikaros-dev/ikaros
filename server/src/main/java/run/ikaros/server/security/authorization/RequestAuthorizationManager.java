@@ -87,13 +87,15 @@ public class RequestAuthorizationManager
 
                     if (target.contains("/**")) {
                         String apiPrefix = target.substring(0, target.lastIndexOf("/**"));
-                        if (!granted && !path.contains(apiPrefix)) {
+                        if (!granted && path.contains(apiPrefix)) {
+                            granted = true;
                             continue;
                         }
 
 
                     } else {
-                        if (!granted && !path.contains(target)) {
+                        if (!granted && path.equalsIgnoreCase(target)) {
+                            granted = true;
                             continue;
                         }
                     }
