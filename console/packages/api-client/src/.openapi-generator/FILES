@@ -8,8 +8,9 @@ api/v1alpha1-attachment-api.ts
 api/v1alpha1-attachment-reference-api.ts
 api/v1alpha1-attachment-relation-api.ts
 api/v1alpha1-authority-api.ts
+api/v1alpha1-collection-episode-api.ts
+api/v1alpha1-collection-subject-api.ts
 api/v1alpha1-episode-api.ts
-api/v1alpha1-episode-collection-api.ts
 api/v1alpha1-indices-api.ts
 api/v1alpha1-plugin-api.ts
 api/v1alpha1-role-api.ts
@@ -17,7 +18,6 @@ api/v1alpha1-role-authority-api.ts
 api/v1alpha1-security-api.ts
 api/v1alpha1-static-api.ts
 api/v1alpha1-subject-api.ts
-api/v1alpha1-subject-collection-api.ts
 api/v1alpha1-subject-relation-api.ts
 api/v1alpha1-subject-sync-platform-api.ts
 api/v1alpha1-tag-api.ts

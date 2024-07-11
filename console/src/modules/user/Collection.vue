@@ -31,7 +31,7 @@ const findSubjectCollection = ref({
 const subjectCollections = ref<SubjectCollection[]>([]);
 
 const fetchCollections = async () => {
-	const { data } = await apiClient.subjectCollection.findSubjectCollections({
+	const { data } = await apiClient.collectionSubject.findSubjectCollections({
 		userId: userStore.currentUser?.entity?.id as number,
 		page: findSubjectCollection.value.page,
 		size: findSubjectCollection.value.size,
