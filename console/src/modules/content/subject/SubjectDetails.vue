@@ -36,7 +36,6 @@ import {
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import {useSettingStore} from '@/stores/setting';
 import {episodeGroupLabelMap} from '@/modules/common/constants';
-import {useUserStore} from '@/stores/user';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
 import {useSubjectStore} from '@/stores/subject';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
@@ -46,7 +45,6 @@ import {useI18n} from 'vue-i18n';
 
 const route = useRoute();
 const settingStore = useSettingStore();
-const userStore = useUserStore();
 const subjectStore = useSubjectStore();
 const { t } = useI18n();
 
@@ -259,8 +257,7 @@ const updateSubjectCollection = async () => {
 	if (!isUnCollect) {
 		return;
 	}
-	await apiClient.subjectCollection.collectSubject({
-		userId: userStore.currentUser?.entity?.id as number,
+	await apiClient.collectionSubject.collectSubject({
 		subjectId: subject.value.id as number,
 		type: subjectCollection.value.type as
 			| 'WISH'
@@ -272,8 +269,7 @@ const updateSubjectCollection = async () => {
 	ElMessage.success(t('module.subject.collect.message.operate.update.success'));
 };
 const updateSubjectCollectionProgress = async () => {
-	await apiClient.subjectCollection.updateSubjectCollectionMainEpProgress({
-		userId: userStore.currentUser?.entity?.id as number,
+  await apiClient.collectionSubject.updateCollectionSubjectMainEpProgress({
 		subjectId: subject.value.id as number,
 		progress: subjectCollection.value.main_ep_progress as number,
 	});
@@ -289,8 +285,7 @@ const changeSubjectCollectState = async () => {
 	console.log('isUnCollect', isUnCollect);
 	if (isUnCollect) {
 		// un collect
-		await apiClient.subjectCollection.removeSubjectCollect({
-			userId: userStore.currentUser?.entity?.id as number,
+		await apiClient.collectionSubject.removeSubjectCollect({
 			subjectId: subject.value.id as number,
 		});
 		ElMessage.success(
@@ -307,8 +302,7 @@ const subjectCollection = ref<SubjectCollection>({});
 // eslint-disable-next-line no-unused-vars
 const fetchSubjectCollection = async () => {
 	// eslint-disable-next-line no-unused-vars
-	const rsp = await apiClient.subjectCollection.findSubjectCollection({
-		userId: userStore.currentUser?.entity?.id as number,
+  const rsp = await apiClient.collectionSubject.findCollectionSubject({
 		subjectId: subject.value.id as number,
 	});
 
@@ -329,9 +323,8 @@ const fetchSubjectCollection = async () => {
 const episodeCollections = ref<EpisodeCollection[]>([]);
 const fetchEpisodeCollections = async () => {
 	const { data } =
-		await apiClient.episodeCollection.findEpisodeCollectionsByUserIdAndSubjectId(
+      await apiClient.collectionEpisode.findCollectionEpisodesByUserIdAndSubjectId(
 			{
-				userId: userStore.currentUser?.entity?.id as number,
 				subjectId: subject.value.id as number,
 			}
 		);
@@ -351,8 +344,7 @@ const udpateEpisodeCollectionProgress = async (
 	isFinish: boolean,
 	episode: Episode
 ) => {
-	await apiClient.episodeCollection.updateEpisodeCollectionFinish({
-		userId: userStore.currentUser?.entity?.id as number,
+  await apiClient.collectionEpisode.updateCollectionEpisodeFinish({
 		episodeId: episode.id as number,
 		finish: isFinish,
 	});

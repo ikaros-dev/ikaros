@@ -9,8 +9,9 @@ import {
 	V1alpha1AttachmentReferenceApi,
 	V1alpha1AttachmentRelationApi,
 	V1alpha1AuthorityApi,
+	V1alpha1CollectionEpisodeApi,
+	V1alpha1CollectionSubjectApi,
 	V1alpha1EpisodeApi,
-	V1alpha1EpisodeCollectionApi,
 	V1alpha1IndicesApi,
 	V1alpha1PluginApi,
 	V1alpha1RoleApi,
@@ -18,7 +19,6 @@ import {
 	V1alpha1SecurityApi,
 	V1alpha1StaticApi,
 	V1alpha1SubjectApi,
-	V1alpha1SubjectCollectionApi,
 	V1alpha1SubjectRelationApi,
 	V1alpha1SubjectSyncPlatformApi,
 	V1alpha1TagApi,
@@ -183,14 +183,14 @@ function setupApiClient(axios: AxiosInstance) {
 		),
 		indices: new V1alpha1IndicesApi(undefined, baseURL, axios),
 		task: new V1alpha1TaskApi(undefined, baseURL, axios),
-		subjectCollection: new V1alpha1SubjectCollectionApi(
+		collectionSubject: new V1alpha1CollectionSubjectApi(
 			undefined,
 			baseURL,
 			axios
 		),
 		subjectRelation: new V1alpha1SubjectRelationApi(undefined, baseURL, axios),
 		episode: new V1alpha1EpisodeApi(undefined, baseURL, axios),
-		episodeCollection: new V1alpha1EpisodeCollectionApi(
+		collectionEpisode: new V1alpha1CollectionEpisodeApi(
 			undefined,
 			baseURL,
 			axios

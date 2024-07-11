@@ -1,22 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { SubjectCollection } from '@runikaros/api-client';
-import { apiClient } from '@/utils/api-client';
-import { useUserStore } from '@/stores/user';
-import {
-	ElRow,
-	ElCol,
-	ElFormItem,
-	ElSelect,
-	ElOption,
-	ElPagination,
-	ElForm,
-	ElSwitch,
-} from 'element-plus';
+import {onMounted, ref} from 'vue';
+import {SubjectCollection} from '@runikaros/api-client';
+import {apiClient} from '@/utils/api-client';
+import {ElCol, ElForm, ElFormItem, ElOption, ElPagination, ElRow, ElSelect, ElSwitch,} from 'element-plus';
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
-import { useI18n } from 'vue-i18n';
+import {useI18n} from 'vue-i18n';
 
-const userStore = useUserStore();
 const { t } = useI18n();
 
 // eslint-disable-next-line no-unused-vars
@@ -31,8 +20,7 @@ const findSubjectCollection = ref({
 const subjectCollections = ref<SubjectCollection[]>([]);
 
 const fetchCollections = async () => {
-	const { data } = await apiClient.subjectCollection.findSubjectCollections({
-		userId: userStore.currentUser?.entity?.id as number,
+  const {data} = await apiClient.collectionSubject.findCollectionSubjects({
 		page: findSubjectCollection.value.page,
 		size: findSubjectCollection.value.size,
 		type: findSubjectCollection.value.type,

@@ -411,7 +411,10 @@ export const V1alpha1SubjectRelationApiFp = function (
       subjectId: number,
       options?: AxiosRequestConfig
     ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<SubjectRelation>>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.getSubjectRelationsById(
@@ -521,7 +524,7 @@ export const V1alpha1SubjectRelationApiFactory = function (
     getSubjectRelationsById(
       requestParameters: V1alpha1SubjectRelationApiGetSubjectRelationsByIdRequest,
       options?: AxiosRequestConfig
-    ): AxiosPromise<void> {
+    ): AxiosPromise<Array<SubjectRelation>> {
       return localVarFp
         .getSubjectRelationsById(requestParameters.subjectId, options)
         .then((request) => request(axios, basePath));

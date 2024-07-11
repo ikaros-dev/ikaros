@@ -5,10 +5,14 @@ import static run.ikaros.server.core.user.UserService.addEncodingIdPrefixIfNotEx
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Example;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +24,7 @@ import run.ikaros.api.core.user.enums.VerificationCodeType;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.security.PasswordNotMatchingException;
 import run.ikaros.api.infra.exception.user.UserExistsException;
+import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.RoleRepository;
 import run.ikaros.server.store.repository.UserRepository;
@@ -219,6 +224,21 @@ public class UserServiceImpl implements UserService {
     public Mono<Void> deleteById(Long id) {
         Assert.isTrue(id > 1, "id must be greater than 1.");
         return repository.deleteById(id);
+    }
+
+    @Override
+    public Mono<Long> getUserIdFromSecurityContext() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (Objects.isNull(authentication)) {
+            throw new AuthenticationCredentialsNotFoundException("No authentication found.");
+        }
+        org.springframework.security.core.userdetails.User
+            principal =
+            (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+        String username = principal.getUsername();
+        return getUserByUsername(username)
+            .map(run.ikaros.server.core.user.User::entity)
+            .map(BaseEntity::getId);
     }
 
     private Mono<Void> sendVerificationCodeWithPhoneMsg(Long userId, VerificationCodeType type) {

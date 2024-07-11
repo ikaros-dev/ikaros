@@ -4,9 +4,6 @@ import {computed, ref} from 'vue';
 import {subjectCollectTypeAliasMap} from '@/modules/common/constants';
 import {ElButton, ElDialog, ElMessage, ElRadioButton, ElRadioGroup,} from 'element-plus';
 import {apiClient} from '@/utils/api-client';
-import {useUserStore} from '@/stores/user';
-
-const userStore = useUserStore();
 
 const props = withDefaults(
 	defineProps<{
@@ -37,8 +34,7 @@ const dialogVisible = computed({
 const collectType = ref<SubjectCollectionTypeEnum>();
 
 const onSubjectCollectionSubmit = async () => {
-	await apiClient.subjectCollection.collectSubject({
-		userId: userStore.currentUser?.entity?.id as number,
+	await apiClient.collectionSubject.collectSubject({
 		subjectId: props.subjectId as number,
 		type: collectType.value as 'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD',
 	});

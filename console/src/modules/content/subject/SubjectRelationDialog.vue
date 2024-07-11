@@ -1,28 +1,14 @@
 <script setup lang="ts">
-import { computed, watch, ref } from 'vue';
-import {
-	Subject,
-	SubjectRelation,
-	SubjectTypeEnum,
-} from '@runikaros/api-client';
-import { apiClient } from '@/utils/api-client';
-import { useRoute } from 'vue-router';
+import {computed, onMounted, ref, watch} from 'vue';
+import {Subject, SubjectRelation, SubjectTypeEnum,} from '@runikaros/api-client';
+import {apiClient} from '@/utils/api-client';
+import {useRoute} from 'vue-router';
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
-import {
-	ElDialog,
-	ElTabs,
-	ElTabPane,
-	ElDescriptions,
-	ElDescriptionsItem,
-	ElRow,
-	ElCol,
-	ElButton,
-} from 'element-plus';
-import { onMounted } from 'vue';
+import {ElButton, ElCol, ElDescriptions, ElDescriptionsItem, ElDialog, ElRow, ElTabPane, ElTabs,} from 'element-plus';
 import SubjectRelationPostDialog from './SubjectRelationPostDialog.vue';
 import SubjectRelationDeleteDialog from './SubjectRelationDeleteDialog.vue';
-import { useSubjectStore } from '@/stores/subject';
-import { useI18n } from 'vue-i18n';
+import {useSubjectStore} from '@/stores/subject';
+import {useI18n} from 'vue-i18n';
 
 const subjectStore = useSubjectStore();
 const { t } = useI18n();
@@ -86,14 +72,11 @@ watch(subject, async () => {
 });
 const subjectRelations = ref<SubjectRelation[]>([]);
 const loadSubjectRelations = async () => {
-	const rsp = await apiClient.subjectRelation.getSubjectRelationsById({
+  const {data} = await apiClient.subjectRelation.getSubjectRelationsById({
 		subjectId: subject.value.id as number,
 	});
 	// console.log('subject relations rsp:', rsp);
-	if (rsp) {
-		// console.log('subject relations data:', rsp.data);
-		subjectRelations.value = rsp.data as never;
-	}
+  subjectRelations.value = data;
 };
 const relationAnimes = ref<Subject[]>([]);
 const relationComics = ref<Subject[]>([]);
@@ -120,6 +103,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 		relationOSTs.value = [];
 		relationOthers.value = [];
 	}
+  if (!(newSubjectRelations instanceof Array)) return;
 	await newSubjectRelations.forEach(async (subRel: SubjectRelation) => {
 		const type = subRel.relation_type;
 		const relSubs: Set<number> = subRel.relation_subjects;
@@ -254,7 +238,10 @@ const subjectId = computed({
 		subject.value.id = val;
 	},
 });
-onMounted(loadSubject);
+onMounted(() => {
+  loadSubject();
+  loadSubjectRelations();
+});
 </script>
 
 <template>

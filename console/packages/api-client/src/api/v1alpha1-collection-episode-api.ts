@@ -49,24 +49,21 @@ export const V1alpha1CollectionEpisodeApiAxiosParamCreator = function (
   return {
     /**
      *
-     * @param {number} userId User id
      * @param {number} episodeId Episode id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    deleteEpisodeCollection: async (
-      userId: number,
+    deleteCollectionEpisode: async (
       episodeId: number,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      // verify required parameter 'userId' is not null or undefined
-      assertParamExists("deleteEpisodeCollection", "userId", userId);
       // verify required parameter 'episodeId' is not null or undefined
-      assertParamExists("deleteEpisodeCollection", "episodeId", episodeId);
+      assertParamExists("deleteCollectionEpisode", "episodeId", episodeId);
       const localVarPath =
-        `/api/v1alpha1/collection/episode/{userId}/{episodeId}`
-          .replace(`{${"userId"}}`, encodeURIComponent(String(userId)))
-          .replace(`{${"episodeId"}}`, encodeURIComponent(String(episodeId)));
+        `/api/v1alpha1/collection/episode/{episodeId}`.replace(
+          `{${"episodeId"}}`,
+          encodeURIComponent(String(episodeId))
+        );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -106,24 +103,21 @@ export const V1alpha1CollectionEpisodeApiAxiosParamCreator = function (
     },
     /**
      *
-     * @param {number} userId User id
      * @param {number} episodeId Episode id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    findEpisodeCollection: async (
-      userId: number,
+    findCollectionEpisode: async (
       episodeId: number,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      // verify required parameter 'userId' is not null or undefined
-      assertParamExists("findEpisodeCollection", "userId", userId);
       // verify required parameter 'episodeId' is not null or undefined
-      assertParamExists("findEpisodeCollection", "episodeId", episodeId);
+      assertParamExists("findCollectionEpisode", "episodeId", episodeId);
       const localVarPath =
-        `/api/v1alpha1/collection/episode/{userId}/{episodeId}`
-          .replace(`{${"userId"}}`, encodeURIComponent(String(userId)))
-          .replace(`{${"episodeId"}}`, encodeURIComponent(String(episodeId)));
+        `/api/v1alpha1/collection/episode/{episodeId}`.replace(
+          `{${"episodeId"}}`,
+          encodeURIComponent(String(episodeId))
+        );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -163,32 +157,25 @@ export const V1alpha1CollectionEpisodeApiAxiosParamCreator = function (
     },
     /**
      *
-     * @param {number} userId User id
      * @param {number} subjectId Subject id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    findEpisodeCollectionsByUserIdAndSubjectId: async (
-      userId: number,
+    findCollectionEpisodesByUserIdAndSubjectId: async (
       subjectId: number,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      // verify required parameter 'userId' is not null or undefined
-      assertParamExists(
-        "findEpisodeCollectionsByUserIdAndSubjectId",
-        "userId",
-        userId
-      );
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists(
-        "findEpisodeCollectionsByUserIdAndSubjectId",
+        "findCollectionEpisodesByUserIdAndSubjectId",
         "subjectId",
         subjectId
       );
       const localVarPath =
-        `/api/v1alpha1/collections/episode/subjectId/{userId}/{subjectId}`
-          .replace(`{${"userId"}}`, encodeURIComponent(String(userId)))
-          .replace(`{${"subjectId"}}`, encodeURIComponent(String(subjectId)));
+        `/api/v1alpha1/collection/episodes/subjectId/{subjectId}`.replace(
+          `{${"subjectId"}}`,
+          encodeURIComponent(String(subjectId))
+        );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -228,24 +215,21 @@ export const V1alpha1CollectionEpisodeApiAxiosParamCreator = function (
     },
     /**
      *
-     * @param {number} userId User id
      * @param {number} episodeId Episode id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    saveEpisodeCollection: async (
-      userId: number,
+    saveCollectionEpisode: async (
       episodeId: number,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      // verify required parameter 'userId' is not null or undefined
-      assertParamExists("saveEpisodeCollection", "userId", userId);
       // verify required parameter 'episodeId' is not null or undefined
-      assertParamExists("saveEpisodeCollection", "episodeId", episodeId);
+      assertParamExists("saveCollectionEpisode", "episodeId", episodeId);
       const localVarPath =
-        `/api/v1alpha1/collection/episode/{userId}/{episodeId}`
-          .replace(`{${"userId"}}`, encodeURIComponent(String(userId)))
-          .replace(`{${"episodeId"}}`, encodeURIComponent(String(episodeId)));
+        `/api/v1alpha1/collection/episode/{episodeId}`.replace(
+          `{${"episodeId"}}`,
+          encodeURIComponent(String(episodeId))
+        );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -285,30 +269,27 @@ export const V1alpha1CollectionEpisodeApiAxiosParamCreator = function (
     },
     /**
      *
-     * @param {number} userId User id
      * @param {number} episodeId Episode id
      * @param {number} progress Episode collection progress, unit is milliseconds.
      * @param {number} [duration] Episode collection duration, unit is milliseconds.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    updateEpisodeCollection: async (
-      userId: number,
+    updateCollectionEpisode: async (
       episodeId: number,
       progress: number,
       duration?: number,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      // verify required parameter 'userId' is not null or undefined
-      assertParamExists("updateEpisodeCollection", "userId", userId);
       // verify required parameter 'episodeId' is not null or undefined
-      assertParamExists("updateEpisodeCollection", "episodeId", episodeId);
+      assertParamExists("updateCollectionEpisode", "episodeId", episodeId);
       // verify required parameter 'progress' is not null or undefined
-      assertParamExists("updateEpisodeCollection", "progress", progress);
+      assertParamExists("updateCollectionEpisode", "progress", progress);
       const localVarPath =
-        `/api/v1alpha1/collection/episode/{userId}/{episodeId}`
-          .replace(`{${"userId"}}`, encodeURIComponent(String(userId)))
-          .replace(`{${"episodeId"}}`, encodeURIComponent(String(episodeId)));
+        `/api/v1alpha1/collection/episode/{episodeId}`.replace(
+          `{${"episodeId"}}`,
+          encodeURIComponent(String(episodeId))
+        );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -356,31 +337,26 @@ export const V1alpha1CollectionEpisodeApiAxiosParamCreator = function (
     },
     /**
      *
-     * @param {number} userId User id
      * @param {number} episodeId Episode id
      * @param {boolean} finish Episode collection finish.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    updateEpisodeCollectionFinish: async (
-      userId: number,
+    updateCollectionEpisodeFinish: async (
       episodeId: number,
       finish: boolean,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      // verify required parameter 'userId' is not null or undefined
-      assertParamExists("updateEpisodeCollectionFinish", "userId", userId);
       // verify required parameter 'episodeId' is not null or undefined
       assertParamExists(
-        "updateEpisodeCollectionFinish",
+        "updateCollectionEpisodeFinish",
         "episodeId",
         episodeId
       );
       // verify required parameter 'finish' is not null or undefined
-      assertParamExists("updateEpisodeCollectionFinish", "finish", finish);
+      assertParamExists("updateCollectionEpisodeFinish", "finish", finish);
       const localVarPath =
-        `/api/v1alpha1/collection/episode/finish/{userId}/{episodeId}/{finish}`
-          .replace(`{${"userId"}}`, encodeURIComponent(String(userId)))
+        `/api/v1alpha1/collection/episode/finish/{episodeId}/{finish}`
           .replace(`{${"episodeId"}}`, encodeURIComponent(String(episodeId)))
           .replace(`{${"finish"}}`, encodeURIComponent(String(finish)));
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -435,13 +411,11 @@ export const V1alpha1CollectionEpisodeApiFp = function (
   return {
     /**
      *
-     * @param {number} userId User id
      * @param {number} episodeId Episode id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async deleteEpisodeCollection(
-      userId: number,
+    async deleteCollectionEpisode(
       episodeId: number,
       options?: AxiosRequestConfig
     ): Promise<
@@ -451,8 +425,7 @@ export const V1alpha1CollectionEpisodeApiFp = function (
       ) => AxiosPromise<EpisodeCollection>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.deleteEpisodeCollection(
-          userId,
+        await localVarAxiosParamCreator.deleteCollectionEpisode(
           episodeId,
           options
         );
@@ -465,13 +438,11 @@ export const V1alpha1CollectionEpisodeApiFp = function (
     },
     /**
      *
-     * @param {number} userId User id
      * @param {number} episodeId Episode id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async findEpisodeCollection(
-      userId: number,
+    async findCollectionEpisode(
       episodeId: number,
       options?: AxiosRequestConfig
     ): Promise<
@@ -481,8 +452,7 @@ export const V1alpha1CollectionEpisodeApiFp = function (
       ) => AxiosPromise<EpisodeCollection>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.findEpisodeCollection(
-          userId,
+        await localVarAxiosParamCreator.findCollectionEpisode(
           episodeId,
           options
         );
@@ -495,13 +465,11 @@ export const V1alpha1CollectionEpisodeApiFp = function (
     },
     /**
      *
-     * @param {number} userId User id
      * @param {number} subjectId Subject id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async findEpisodeCollectionsByUserIdAndSubjectId(
-      userId: number,
+    async findCollectionEpisodesByUserIdAndSubjectId(
       subjectId: number,
       options?: AxiosRequestConfig
     ): Promise<
@@ -511,8 +479,7 @@ export const V1alpha1CollectionEpisodeApiFp = function (
       ) => AxiosPromise<Array<EpisodeCollection>>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.findEpisodeCollectionsByUserIdAndSubjectId(
-          userId,
+        await localVarAxiosParamCreator.findCollectionEpisodesByUserIdAndSubjectId(
           subjectId,
           options
         );
@@ -525,13 +492,11 @@ export const V1alpha1CollectionEpisodeApiFp = function (
     },
     /**
      *
-     * @param {number} userId User id
      * @param {number} episodeId Episode id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async saveEpisodeCollection(
-      userId: number,
+    async saveCollectionEpisode(
       episodeId: number,
       options?: AxiosRequestConfig
     ): Promise<
@@ -541,8 +506,7 @@ export const V1alpha1CollectionEpisodeApiFp = function (
       ) => AxiosPromise<EpisodeCollection>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.saveEpisodeCollection(
-          userId,
+        await localVarAxiosParamCreator.saveCollectionEpisode(
           episodeId,
           options
         );
@@ -555,15 +519,13 @@ export const V1alpha1CollectionEpisodeApiFp = function (
     },
     /**
      *
-     * @param {number} userId User id
      * @param {number} episodeId Episode id
      * @param {number} progress Episode collection progress, unit is milliseconds.
      * @param {number} [duration] Episode collection duration, unit is milliseconds.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async updateEpisodeCollection(
-      userId: number,
+    async updateCollectionEpisode(
       episodeId: number,
       progress: number,
       duration?: number,
@@ -572,8 +534,7 @@ export const V1alpha1CollectionEpisodeApiFp = function (
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.updateEpisodeCollection(
-          userId,
+        await localVarAxiosParamCreator.updateCollectionEpisode(
           episodeId,
           progress,
           duration,
@@ -588,14 +549,12 @@ export const V1alpha1CollectionEpisodeApiFp = function (
     },
     /**
      *
-     * @param {number} userId User id
      * @param {number} episodeId Episode id
      * @param {boolean} finish Episode collection finish.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async updateEpisodeCollectionFinish(
-      userId: number,
+    async updateCollectionEpisodeFinish(
       episodeId: number,
       finish: boolean,
       options?: AxiosRequestConfig
@@ -603,8 +562,7 @@ export const V1alpha1CollectionEpisodeApiFp = function (
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.updateEpisodeCollectionFinish(
-          userId,
+        await localVarAxiosParamCreator.updateCollectionEpisodeFinish(
           episodeId,
           finish,
           options
@@ -632,53 +590,44 @@ export const V1alpha1CollectionEpisodeApiFactory = function (
   return {
     /**
      *
-     * @param {V1alpha1CollectionEpisodeApiDeleteEpisodeCollectionRequest} requestParameters Request parameters.
+     * @param {V1alpha1CollectionEpisodeApiDeleteCollectionEpisodeRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    deleteEpisodeCollection(
-      requestParameters: V1alpha1CollectionEpisodeApiDeleteEpisodeCollectionRequest,
+    deleteCollectionEpisode(
+      requestParameters: V1alpha1CollectionEpisodeApiDeleteCollectionEpisodeRequest,
       options?: AxiosRequestConfig
     ): AxiosPromise<EpisodeCollection> {
       return localVarFp
-        .deleteEpisodeCollection(
-          requestParameters.userId,
-          requestParameters.episodeId,
-          options
-        )
+        .deleteCollectionEpisode(requestParameters.episodeId, options)
         .then((request) => request(axios, basePath));
     },
     /**
      *
-     * @param {V1alpha1CollectionEpisodeApiFindEpisodeCollectionRequest} requestParameters Request parameters.
+     * @param {V1alpha1CollectionEpisodeApiFindCollectionEpisodeRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    findEpisodeCollection(
-      requestParameters: V1alpha1CollectionEpisodeApiFindEpisodeCollectionRequest,
+    findCollectionEpisode(
+      requestParameters: V1alpha1CollectionEpisodeApiFindCollectionEpisodeRequest,
       options?: AxiosRequestConfig
     ): AxiosPromise<EpisodeCollection> {
       return localVarFp
-        .findEpisodeCollection(
-          requestParameters.userId,
-          requestParameters.episodeId,
-          options
-        )
+        .findCollectionEpisode(requestParameters.episodeId, options)
         .then((request) => request(axios, basePath));
     },
     /**
      *
-     * @param {V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest} requestParameters Request parameters.
+     * @param {V1alpha1CollectionEpisodeApiFindCollectionEpisodesByUserIdAndSubjectIdRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    findEpisodeCollectionsByUserIdAndSubjectId(
-      requestParameters: V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest,
+    findCollectionEpisodesByUserIdAndSubjectId(
+      requestParameters: V1alpha1CollectionEpisodeApiFindCollectionEpisodesByUserIdAndSubjectIdRequest,
       options?: AxiosRequestConfig
     ): AxiosPromise<Array<EpisodeCollection>> {
       return localVarFp
-        .findEpisodeCollectionsByUserIdAndSubjectId(
-          requestParameters.userId,
+        .findCollectionEpisodesByUserIdAndSubjectId(
           requestParameters.subjectId,
           options
         )
@@ -686,35 +635,30 @@ export const V1alpha1CollectionEpisodeApiFactory = function (
     },
     /**
      *
-     * @param {V1alpha1CollectionEpisodeApiSaveEpisodeCollectionRequest} requestParameters Request parameters.
+     * @param {V1alpha1CollectionEpisodeApiSaveCollectionEpisodeRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    saveEpisodeCollection(
-      requestParameters: V1alpha1CollectionEpisodeApiSaveEpisodeCollectionRequest,
+    saveCollectionEpisode(
+      requestParameters: V1alpha1CollectionEpisodeApiSaveCollectionEpisodeRequest,
       options?: AxiosRequestConfig
     ): AxiosPromise<EpisodeCollection> {
       return localVarFp
-        .saveEpisodeCollection(
-          requestParameters.userId,
-          requestParameters.episodeId,
-          options
-        )
+        .saveCollectionEpisode(requestParameters.episodeId, options)
         .then((request) => request(axios, basePath));
     },
     /**
      *
-     * @param {V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionRequest} requestParameters Request parameters.
+     * @param {V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    updateEpisodeCollection(
-      requestParameters: V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionRequest,
+    updateCollectionEpisode(
+      requestParameters: V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeRequest,
       options?: AxiosRequestConfig
     ): AxiosPromise<void> {
       return localVarFp
-        .updateEpisodeCollection(
-          requestParameters.userId,
+        .updateCollectionEpisode(
           requestParameters.episodeId,
           requestParameters.progress,
           requestParameters.duration,
@@ -724,17 +668,16 @@ export const V1alpha1CollectionEpisodeApiFactory = function (
     },
     /**
      *
-     * @param {V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionFinishRequest} requestParameters Request parameters.
+     * @param {V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeFinishRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    updateEpisodeCollectionFinish(
-      requestParameters: V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionFinishRequest,
+    updateCollectionEpisodeFinish(
+      requestParameters: V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeFinishRequest,
       options?: AxiosRequestConfig
     ): AxiosPromise<void> {
       return localVarFp
-        .updateEpisodeCollectionFinish(
-          requestParameters.userId,
+        .updateCollectionEpisodeFinish(
           requestParameters.episodeId,
           requestParameters.finish,
           options
@@ -745,148 +688,106 @@ export const V1alpha1CollectionEpisodeApiFactory = function (
 };
 
 /**
- * Request parameters for deleteEpisodeCollection operation in V1alpha1CollectionEpisodeApi.
+ * Request parameters for deleteCollectionEpisode operation in V1alpha1CollectionEpisodeApi.
  * @export
- * @interface V1alpha1CollectionEpisodeApiDeleteEpisodeCollectionRequest
+ * @interface V1alpha1CollectionEpisodeApiDeleteCollectionEpisodeRequest
  */
-export interface V1alpha1CollectionEpisodeApiDeleteEpisodeCollectionRequest {
-  /**
-   * User id
-   * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiDeleteEpisodeCollection
-   */
-  readonly userId: number;
-
+export interface V1alpha1CollectionEpisodeApiDeleteCollectionEpisodeRequest {
   /**
    * Episode id
    * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiDeleteEpisodeCollection
+   * @memberof V1alpha1CollectionEpisodeApiDeleteCollectionEpisode
    */
   readonly episodeId: number;
 }
 
 /**
- * Request parameters for findEpisodeCollection operation in V1alpha1CollectionEpisodeApi.
+ * Request parameters for findCollectionEpisode operation in V1alpha1CollectionEpisodeApi.
  * @export
- * @interface V1alpha1CollectionEpisodeApiFindEpisodeCollectionRequest
+ * @interface V1alpha1CollectionEpisodeApiFindCollectionEpisodeRequest
  */
-export interface V1alpha1CollectionEpisodeApiFindEpisodeCollectionRequest {
-  /**
-   * User id
-   * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiFindEpisodeCollection
-   */
-  readonly userId: number;
-
+export interface V1alpha1CollectionEpisodeApiFindCollectionEpisodeRequest {
   /**
    * Episode id
    * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiFindEpisodeCollection
+   * @memberof V1alpha1CollectionEpisodeApiFindCollectionEpisode
    */
   readonly episodeId: number;
 }
 
 /**
- * Request parameters for findEpisodeCollectionsByUserIdAndSubjectId operation in V1alpha1CollectionEpisodeApi.
+ * Request parameters for findCollectionEpisodesByUserIdAndSubjectId operation in V1alpha1CollectionEpisodeApi.
  * @export
- * @interface V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest
+ * @interface V1alpha1CollectionEpisodeApiFindCollectionEpisodesByUserIdAndSubjectIdRequest
  */
-export interface V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest {
-  /**
-   * User id
-   * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectId
-   */
-  readonly userId: number;
-
+export interface V1alpha1CollectionEpisodeApiFindCollectionEpisodesByUserIdAndSubjectIdRequest {
   /**
    * Subject id
    * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectId
+   * @memberof V1alpha1CollectionEpisodeApiFindCollectionEpisodesByUserIdAndSubjectId
    */
   readonly subjectId: number;
 }
 
 /**
- * Request parameters for saveEpisodeCollection operation in V1alpha1CollectionEpisodeApi.
+ * Request parameters for saveCollectionEpisode operation in V1alpha1CollectionEpisodeApi.
  * @export
- * @interface V1alpha1CollectionEpisodeApiSaveEpisodeCollectionRequest
+ * @interface V1alpha1CollectionEpisodeApiSaveCollectionEpisodeRequest
  */
-export interface V1alpha1CollectionEpisodeApiSaveEpisodeCollectionRequest {
-  /**
-   * User id
-   * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiSaveEpisodeCollection
-   */
-  readonly userId: number;
-
+export interface V1alpha1CollectionEpisodeApiSaveCollectionEpisodeRequest {
   /**
    * Episode id
    * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiSaveEpisodeCollection
+   * @memberof V1alpha1CollectionEpisodeApiSaveCollectionEpisode
    */
   readonly episodeId: number;
 }
 
 /**
- * Request parameters for updateEpisodeCollection operation in V1alpha1CollectionEpisodeApi.
+ * Request parameters for updateCollectionEpisode operation in V1alpha1CollectionEpisodeApi.
  * @export
- * @interface V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionRequest
+ * @interface V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeRequest
  */
-export interface V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionRequest {
-  /**
-   * User id
-   * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiUpdateEpisodeCollection
-   */
-  readonly userId: number;
-
+export interface V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeRequest {
   /**
    * Episode id
    * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiUpdateEpisodeCollection
+   * @memberof V1alpha1CollectionEpisodeApiUpdateCollectionEpisode
    */
   readonly episodeId: number;
 
   /**
    * Episode collection progress, unit is milliseconds.
    * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiUpdateEpisodeCollection
+   * @memberof V1alpha1CollectionEpisodeApiUpdateCollectionEpisode
    */
   readonly progress: number;
 
   /**
    * Episode collection duration, unit is milliseconds.
    * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiUpdateEpisodeCollection
+   * @memberof V1alpha1CollectionEpisodeApiUpdateCollectionEpisode
    */
   readonly duration?: number;
 }
 
 /**
- * Request parameters for updateEpisodeCollectionFinish operation in V1alpha1CollectionEpisodeApi.
+ * Request parameters for updateCollectionEpisodeFinish operation in V1alpha1CollectionEpisodeApi.
  * @export
- * @interface V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionFinishRequest
+ * @interface V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeFinishRequest
  */
-export interface V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionFinishRequest {
-  /**
-   * User id
-   * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionFinish
-   */
-  readonly userId: number;
-
+export interface V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeFinishRequest {
   /**
    * Episode id
    * @type {number}
-   * @memberof V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionFinish
+   * @memberof V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeFinish
    */
   readonly episodeId: number;
 
   /**
    * Episode collection finish.
    * @type {boolean}
-   * @memberof V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionFinish
+   * @memberof V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeFinish
    */
   readonly finish: boolean;
 }
@@ -900,58 +801,49 @@ export interface V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionFinishReques
 export class V1alpha1CollectionEpisodeApi extends BaseAPI {
   /**
    *
-   * @param {V1alpha1CollectionEpisodeApiDeleteEpisodeCollectionRequest} requestParameters Request parameters.
+   * @param {V1alpha1CollectionEpisodeApiDeleteCollectionEpisodeRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof V1alpha1CollectionEpisodeApi
    */
-  public deleteEpisodeCollection(
-    requestParameters: V1alpha1CollectionEpisodeApiDeleteEpisodeCollectionRequest,
+  public deleteCollectionEpisode(
+    requestParameters: V1alpha1CollectionEpisodeApiDeleteCollectionEpisodeRequest,
     options?: AxiosRequestConfig
   ) {
     return V1alpha1CollectionEpisodeApiFp(this.configuration)
-      .deleteEpisodeCollection(
-        requestParameters.userId,
-        requestParameters.episodeId,
-        options
-      )
+      .deleteCollectionEpisode(requestParameters.episodeId, options)
       .then((request) => request(this.axios, this.basePath));
   }
 
   /**
    *
-   * @param {V1alpha1CollectionEpisodeApiFindEpisodeCollectionRequest} requestParameters Request parameters.
+   * @param {V1alpha1CollectionEpisodeApiFindCollectionEpisodeRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof V1alpha1CollectionEpisodeApi
    */
-  public findEpisodeCollection(
-    requestParameters: V1alpha1CollectionEpisodeApiFindEpisodeCollectionRequest,
+  public findCollectionEpisode(
+    requestParameters: V1alpha1CollectionEpisodeApiFindCollectionEpisodeRequest,
     options?: AxiosRequestConfig
   ) {
     return V1alpha1CollectionEpisodeApiFp(this.configuration)
-      .findEpisodeCollection(
-        requestParameters.userId,
-        requestParameters.episodeId,
-        options
-      )
+      .findCollectionEpisode(requestParameters.episodeId, options)
       .then((request) => request(this.axios, this.basePath));
   }
 
   /**
    *
-   * @param {V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest} requestParameters Request parameters.
+   * @param {V1alpha1CollectionEpisodeApiFindCollectionEpisodesByUserIdAndSubjectIdRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof V1alpha1CollectionEpisodeApi
    */
-  public findEpisodeCollectionsByUserIdAndSubjectId(
-    requestParameters: V1alpha1CollectionEpisodeApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest,
+  public findCollectionEpisodesByUserIdAndSubjectId(
+    requestParameters: V1alpha1CollectionEpisodeApiFindCollectionEpisodesByUserIdAndSubjectIdRequest,
     options?: AxiosRequestConfig
   ) {
     return V1alpha1CollectionEpisodeApiFp(this.configuration)
-      .findEpisodeCollectionsByUserIdAndSubjectId(
-        requestParameters.userId,
+      .findCollectionEpisodesByUserIdAndSubjectId(
         requestParameters.subjectId,
         options
       )
@@ -960,38 +852,33 @@ export class V1alpha1CollectionEpisodeApi extends BaseAPI {
 
   /**
    *
-   * @param {V1alpha1CollectionEpisodeApiSaveEpisodeCollectionRequest} requestParameters Request parameters.
+   * @param {V1alpha1CollectionEpisodeApiSaveCollectionEpisodeRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof V1alpha1CollectionEpisodeApi
    */
-  public saveEpisodeCollection(
-    requestParameters: V1alpha1CollectionEpisodeApiSaveEpisodeCollectionRequest,
+  public saveCollectionEpisode(
+    requestParameters: V1alpha1CollectionEpisodeApiSaveCollectionEpisodeRequest,
     options?: AxiosRequestConfig
   ) {
     return V1alpha1CollectionEpisodeApiFp(this.configuration)
-      .saveEpisodeCollection(
-        requestParameters.userId,
-        requestParameters.episodeId,
-        options
-      )
+      .saveCollectionEpisode(requestParameters.episodeId, options)
       .then((request) => request(this.axios, this.basePath));
   }
 
   /**
    *
-   * @param {V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionRequest} requestParameters Request parameters.
+   * @param {V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof V1alpha1CollectionEpisodeApi
    */
-  public updateEpisodeCollection(
-    requestParameters: V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionRequest,
+  public updateCollectionEpisode(
+    requestParameters: V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeRequest,
     options?: AxiosRequestConfig
   ) {
     return V1alpha1CollectionEpisodeApiFp(this.configuration)
-      .updateEpisodeCollection(
-        requestParameters.userId,
+      .updateCollectionEpisode(
         requestParameters.episodeId,
         requestParameters.progress,
         requestParameters.duration,
@@ -1002,18 +889,17 @@ export class V1alpha1CollectionEpisodeApi extends BaseAPI {
 
   /**
    *
-   * @param {V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionFinishRequest} requestParameters Request parameters.
+   * @param {V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeFinishRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof V1alpha1CollectionEpisodeApi
    */
-  public updateEpisodeCollectionFinish(
-    requestParameters: V1alpha1CollectionEpisodeApiUpdateEpisodeCollectionFinishRequest,
+  public updateCollectionEpisodeFinish(
+    requestParameters: V1alpha1CollectionEpisodeApiUpdateCollectionEpisodeFinishRequest,
     options?: AxiosRequestConfig
   ) {
     return V1alpha1CollectionEpisodeApiFp(this.configuration)
-      .updateEpisodeCollectionFinish(
-        requestParameters.userId,
+      .updateCollectionEpisodeFinish(
         requestParameters.episodeId,
         requestParameters.finish,
         options
