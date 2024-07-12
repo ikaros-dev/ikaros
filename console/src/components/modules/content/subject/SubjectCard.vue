@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ElCard, ElProgress} from 'element-plus';
-import {onMounted, ref, watch} from 'vue';
+import {computed, onMounted, ref, watch} from 'vue';
 
 const props = withDefaults(
 	defineProps<{
@@ -78,29 +78,34 @@ const changeStyleByPercentage = (percentage: number) => {
 	}
 };
 
+const isPercentageExists = computed({
+  get() {
+    return props.percentage && props.percentage >= 0;
+  },
+  set() {
+  }
+});
+
+
 onMounted(() => {
-	changeStyleByPercentage(props.percentage);
+  if (isPercentageExists.value) {
+    changeStyleByPercentage(props.percentage);
+  } else {
+    cardStyle.value = {border: ''};
+  }
 });
 </script>
 
 <template>
-  <el-card
-      shadow="hover"
-      class="container"
-      :body-style="{ padding: '0px' }"
-      :style="cardStyle"
-  >
+  <el-card shadow="hover" class="container" :body-style="{ padding: '0px' }" :style="cardStyle">
 		<template #header>
 			<div class="card-header">
 				<span>{{ props.name }} </span>
 				<span class="grey">{{ props.nameCn }}</span>
 			</div>
 		</template>
-    <el-progress
-        :percentage="props.percentage"
-        :color="progressColor"
-        :show-text="false"
-    />
+    <el-progress v-if="isPercentageExists" :percentage="props.percentage" :color="progressColor"
+                 :show-text="false"/>
 		<span class="card-body">
 			<img :src="props.cover" />
 		</span>
@@ -113,12 +118,14 @@ onMounted(() => {
 	width: 100%;
 	height: auto;
 	aspect-ratio: 24/39;
-	.card-header {
+
+  .card-header {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		height: 15px;
-		.grey {
+
+    .grey {
 			font-size: 10px;
 			color: #999;
 		}
