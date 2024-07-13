@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.VideoSubtitle;
@@ -63,7 +64,8 @@ public class SubjectController {
      * Get subject details by id.
      */
     @GetMapping("/{id}")
-    public Mono<String> findById(@PathVariable("id") Long id, Model model) {
+    public Mono<String> findById(@PathVariable("id") Long id,
+                                 @RequestParam("episode") Integer epSeq, Model model) {
         return subjectService.findById(id)
             .flatMap(subject -> addEpisodesResourcesAttachmentIdSubtitleMap2Model(subject, model))
             .map(subject -> model.addAttribute("subject", subject))
