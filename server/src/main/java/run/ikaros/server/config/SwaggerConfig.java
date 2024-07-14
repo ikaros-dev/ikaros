@@ -7,9 +7,12 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import java.util.List;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import run.ikaros.api.infra.properties.IkarosProperties;
 
 @Configuration(proxyBeanMethods = false)
 public class SwaggerConfig {
@@ -58,8 +61,12 @@ public class SwaggerConfig {
      * @return openapi instance
      */
     @Bean
-    public OpenAPI ikarosOpenApi() {
+    public OpenAPI ikarosOpenApi(IkarosProperties ikarosProperties) {
+        var server = new Server();
+        server.setUrl(ikarosProperties.getExternalUrl().toString());
+        server.setDescription("ExternalUrl");
         return new OpenAPI()
+            .servers(List.of(server))
             .info(new Info()
                 .title("Ikaros Open API Documentation")
                 .description("Documentation for Ikaros Open API")
