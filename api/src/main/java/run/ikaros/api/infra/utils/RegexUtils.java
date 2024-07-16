@@ -292,6 +292,13 @@ public class RegexUtils {
 
     /**
      * Parse episode seq by file name.
+     * <ul>
+     *     <li>getFileNameBlankEpSeq: xxxx 04 xxxx. mp4 => 04 .</li>
+     *     <li>getFileNameTagEpSeq: xxxxxxx[02] xxxxxx. mp4 => 02 .</li>
+     *     <li>getEpFileNameIntegrallySeq: xxxx EP04 xxxx. mp4 => 04 .</li>
+     *     <li>getFileNameHorizontalEpSeq: xxxx-04-xxxx. mp4 => 04 .</li>
+     *     <li>getFileNameUnderlineEpSeq: xxxx_04_xxxx. mp4 => 04 .</li>
+     * </ul>
      */
     @Nonnull
     public static Long parseEpisodeSeqByFileName(String fileName) {
