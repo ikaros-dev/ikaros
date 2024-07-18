@@ -102,7 +102,7 @@ public class TaskServiceImpl implements TaskService {
             .filter(taskEntity -> TaskStatus.RUNNING.equals(taskEntity.getStatus())
                 || TaskStatus.CREATE.equals(taskEntity.getStatus()))
             .collectList()
-            .filter(taskEntities -> taskEntities != null && taskEntities.size() > 0)
+            .filter(taskEntities -> taskEntities != null && !taskEntities.isEmpty())
             .flatMap(
                 taskEntities -> Mono.error(new RuntimeException("Submission failed, task exists.")))
             .switchIfEmpty(taskRepository.save(entity)

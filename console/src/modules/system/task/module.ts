@@ -1,7 +1,7 @@
-import { definePlugin } from '@runikaros/shared';
+import {definePlugin} from '@runikaros/shared';
 import Tasks from './Tasks.vue';
-import { Ship } from '@element-plus/icons-vue';
-import { markRaw } from 'vue';
+import {MostlyCloudy} from '@element-plus/icons-vue';
+import {markRaw} from 'vue';
 import TaskDetails from './TaskDetails.vue';
 
 export default definePlugin({
@@ -15,11 +15,11 @@ export default definePlugin({
 				name: 'Tasks',
 				component: Tasks,
 				meta: {
-					title: 'core.tasks.title',
+                    title: 'module.tasks.title',
 					menu: {
-						name: 'core.sidebar.menu.items.tasks',
+                        name: 'module.tasks.sidebar',
 						group: 'system',
-						icon: markRaw(Ship),
+                        icon: markRaw(MostlyCloudy),
 						priority: 0,
 					},
 				},
@@ -32,7 +32,7 @@ export default definePlugin({
 				name: 'TaskDetails',
 				component: TaskDetails,
 				meta: {
-					title: 'core.tasks.details.title',
+                    title: 'module.tasks.details.title',
 					hidden: true,
 				},
 			},

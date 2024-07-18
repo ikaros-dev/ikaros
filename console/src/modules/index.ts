@@ -5,7 +5,7 @@ import Subject from './content/subject/module';
 import Plugin from './system/plugin/module';
 import Setting from './system/setting/module';
 import About from './system/about/module';
-// import Tasks from './system/task/module';
+import Tasks from './system/task/module';
 import Users from './system/user/module';
 import Roles from './system/role/module';
 
@@ -17,7 +17,7 @@ const coreModules = [
 	Plugin,
 	Setting,
     About,
-	// Tasks,
+    Tasks,
 	Users,
 	Roles,
 ];
