@@ -1,36 +1,36 @@
 <script setup lang="ts">
-import {onMounted, reactive, ref, watch} from 'vue';
-import {Attachment, Episode, Subject, SubjectTypeEnum,} from '@runikaros/api-client';
+import { onMounted, reactive, ref, watch } from 'vue';
+import { Attachment, Episode, Subject, SubjectTypeEnum, } from '@runikaros/api-client';
 import EpisodePostDialog from './EpisodePostDialog.vue';
 import EpisodePutDialog from './EpisodePutDialog.vue';
-import {Picture} from '@element-plus/icons-vue';
-import {formatDate} from '@/utils/date';
-import {apiClient} from '@/utils/api-client';
+import { Picture } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/date';
+import { apiClient } from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
-import {useRoute, useRouter} from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import {
-  ElButton,
-  ElCol,
-  ElDatePicker,
-  ElForm,
-  ElFormItem,
-  ElImage,
-  ElInput,
-  ElMessage,
-  ElRadio,
-  ElRadioGroup,
-  ElRow,
-  ElSwitch,
-  ElTable,
-  ElTableColumn,
-  FormInstance,
-  FormRules,
+	ElButton,
+	ElCol,
+	ElDatePicker,
+	ElForm,
+	ElFormItem,
+	ElImage,
+	ElInput,
+	ElMessage,
+	ElRadio,
+	ElRadioGroup,
+	ElRow,
+	ElSwitch,
+	ElTable,
+	ElTableColumn,
+	FormInstance,
+	FormRules,
 } from 'element-plus';
-import {episodeGroupLabelMap, subjectTypeAliasMap, subjectTypes,} from '@/modules/common/constants';
+import { episodeGroupLabelMap, subjectTypeAliasMap, subjectTypes, } from '@/modules/common/constants';
 import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
-import {base64Encode} from '@/utils/string-util';
-import {useSubjectStore} from '@/stores/subject';
-import {useI18n} from 'vue-i18n';
+import { base64Encode } from '@/utils/string-util';
+import { useSubjectStore } from '@/stores/subject';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const route = useRoute();
@@ -121,13 +121,13 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 					);
 					router.push(
 						'/subjects?name=' +
-							base64Encode(encodeURI(subject.value.name)) +
-							'&nameCn=' +
-							base64Encode(encodeURI(subject.value.name_cn as string)) +
-							'&nsfw=' +
-							subject.value.nsfw +
-							'&type=' +
-							subject.value.type
+						base64Encode(encodeURI(subject.value.name)) +
+						'&nameCn=' +
+						base64Encode(encodeURI(subject.value.name_cn as string)) +
+						'&nsfw=' +
+						subject.value.nsfw +
+						'&type=' +
+						subject.value.type
 					);
 					subjectStore.clearSubjectCacheById(subject.value.id as number);
 				});
@@ -184,37 +184,30 @@ const onEpisodePutDialogCloseWithEpsiode = (episode) => {
 
 const episodeHasMultiResource = ref(false);
 const initEpisodeHasMultiResource = () => {
-  if (
-      subject.value.type === 'ANIME' ||
-      subject.value.type === 'GAME' ||
-      subject.value.type === 'NOVEL'
-  ) {
-    return;
-  }
-  episodeHasMultiResource.value = true;
+	if (
+		subject.value.type === 'ANIME' ||
+		subject.value.type === 'GAME' ||
+		subject.value.type === 'NOVEL'
+	) {
+		return;
+	}
+	episodeHasMultiResource.value = true;
 };
 
 onMounted(() => {
 	//@ts-ignore
 	subject.value.id = route.params.id as number;
 	fetchSubjectById();
-  initEpisodeHasMultiResource();
+	initEpisodeHasMultiResource();
 });
 </script>
 
 <template>
-	<AttachmentSelectDialog
-		v-model:visible="attachmentSelectDialogVisible"
-		@close-with-attachment="onAttachmentSelectDialogColseWithAttachment"
-	/>
-	<el-row>
+	<AttachmentSelectDialog v-model:visible="attachmentSelectDialogVisible"
+		@close-with-attachment="onAttachmentSelectDialogColseWithAttachment" />
+	<el-row :gutter="10">
 		<el-col :xs="24" :sm="24" :md="24" :lg="16" :xl="16">
-			<el-form
-				ref="subjectElFormRef"
-				:rules="subjectRuleFormRules"
-				:model="subject"
-				label-width="85px"
-			>
+			<el-form ref="subjectElFormRef" :rules="subjectRuleFormRules" :model="subject" label-width="85px">
 				<el-form-item label="NSFW">
 					<el-row>
 						<el-col :span="8">
@@ -223,15 +216,9 @@ onMounted(() => {
 							</el-form-item>
 						</el-col>
 						<el-col :span="16">
-							<el-form-item
-								:label="t('module.subject.put.label.air_time')"
-								prop="airTime"
-							>
-								<el-date-picker
-									v-model="subject.airTime"
-									type="date"
-									:placeholder="t('module.subject.put.date-picker.placeholder')"
-								/>
+							<el-form-item :label="t('module.subject.put.label.air_time')" prop="airTime">
+								<el-date-picker v-model="subject.airTime" type="date"
+									:placeholder="t('module.subject.put.date-picker.placeholder')" />
 							</el-form-item>
 						</el-col>
 					</el-row>
@@ -240,11 +227,7 @@ onMounted(() => {
 				<el-form-item :label="t('module.subject.put.label.cover')">
 					<el-input v-model="subject.cover" clearable>
 						<template #prepend>
-							<el-button
-								:icon="Picture"
-								plain
-								@click="attachmentSelectDialogVisible = true"
-							/>
+							<el-button :icon="Picture" plain @click="attachmentSelectDialogVisible = true" />
 						</template>
 					</el-input>
 				</el-form-item>
@@ -259,82 +242,41 @@ onMounted(() => {
 
 				<el-form-item :label="t('module.subject.put.label.type')" prop="type">
 					<el-radio-group v-model="subject.type">
-						<el-radio
-							v-for="type in subjectTypes"
-							:key="type"
-							:label="type"
-							border
-							style="margin-right: 8px"
-						>
+						<el-radio v-for="type in subjectTypes" :key="type" :label="type" border
+							style="margin-right: 8px">
 							{{ subjectTypeAliasMap.get(type) }}
 						</el-radio>
 					</el-radio-group>
 				</el-form-item>
 
-				<el-form-item
-					:label="t('module.subject.put.label.summary')"
-					prop="summary"
-				>
-					<el-input
-						v-model="subject.summary"
-						maxlength="10000"
-						rows="5"
-						show-word-limit
-						type="textarea"
-					/>
+				<el-form-item :label="t('module.subject.put.label.summary')" prop="summary">
+					<el-input v-model="subject.summary" maxlength="10000" rows="5" show-word-limit type="textarea" />
 				</el-form-item>
 
 				<el-form-item :label="t('module.subject.put.label.infobox')">
-					<el-input
-						v-model="subject.infobox"
-						maxlength="10000"
-						rows="15"
-						show-word-limit
-						type="textarea"
-						:placeholder="t('module.subject.put.infobox-input.placeholder')"
-					/>
+					<el-input v-model="subject.infobox" maxlength="10000" rows="15" show-word-limit type="textarea"
+						:placeholder="t('module.subject.put.infobox-input.placeholder')" />
 				</el-form-item>
 
-				<EpisodePostDialog
-					v-model:visible="episodePostDialogVisible"
-					@closeWithEpsiode="onEpisodePostDialogCloseWithEpsiode"
-				/>
-				<EpisodePutDialog
-					v-model:visible="episodePutDialogVisible"
-					v-model:ep="crrentPutEpisode"
-					@close-with-epsiode="onEpisodePutDialogCloseWithEpsiode"
-				/>
+				<EpisodePostDialog v-model:visible="episodePostDialogVisible"
+					@closeWithEpsiode="onEpisodePostDialogCloseWithEpsiode" />
+				<EpisodePutDialog v-model:visible="episodePutDialogVisible" v-model:ep="crrentPutEpisode"
+					@close-with-epsiode="onEpisodePutDialogCloseWithEpsiode" />
 
 				<el-form-item :label="t('module.subject.put.label.episodes')">
 					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
-						<el-table-column
-							:label="t('module.subject.put.label.episode-table.group')"
-							prop="group"
-							width="110px"
-							show-overflow-tooltip
-						>
+						<el-table-column :label="t('module.subject.put.label.episode-table.group')" prop="group"
+							width="110px" show-overflow-tooltip>
 							<template #default="scoped">
 								{{ episodeGroupLabelMap.get(scoped.row.group) }}
 							</template>
 						</el-table-column>
-						<el-table-column
-							:label="t('module.subject.put.label.episode-table.sequence')"
-							prop="sequence"
-							width="90px"
-						/>
-						<el-table-column
-							:label="t('module.subject.put.label.episode-table.name')"
-							prop="name"
-						/>
-						<el-table-column
-							:label="t('module.subject.put.label.episode-table.name_cn')"
-							prop="name_cn"
-						/>
-						<el-table-column
-							:label="t('module.subject.put.label.episode-table.air_time')"
-							prop="air_time"
-							:formatter="airTimeDateFormatter"
-						/>
+						<el-table-column :label="t('module.subject.put.label.episode-table.sequence')" prop="sequence"
+							width="90px" />
+						<el-table-column :label="t('module.subject.put.label.episode-table.name')" prop="name" />
+						<el-table-column :label="t('module.subject.put.label.episode-table.name_cn')" prop="name_cn" />
+						<el-table-column :label="t('module.subject.put.label.episode-table.air_time')" prop="air_time"
+							:formatter="airTimeDateFormatter" />
 						<!-- <el-table-column :label="t('module.subject.put.label.episode-table.description')" prop="description" /> -->
 						<el-table-column align="right" width="350">
 							<template #header>
@@ -349,11 +291,7 @@ onMounted(() => {
 								<el-button plain @click="toEPisodeEdit(scoped.row)">
 									{{ t('module.subject.put.text.button.episode.edit') }}
 								</el-button>
-								<el-button
-									plain
-									type="danger"
-									@click="removeCurrentRowEpisode(scoped.row)"
-								>
+								<el-button plain type="danger" @click="removeCurrentRowEpisode(scoped.row)">
 									{{ t('module.subject.put.text.button.episode.remove') }}
 								</el-button>
 							</template>
@@ -369,25 +307,26 @@ onMounted(() => {
 			</el-form>
 		</el-col>
 		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
-			<span v-if="subject.cover">
-				<el-image
-					style="width: 100%"
-					:src="subject.cover"
-					:zoom-rate="1.2"
-					:preview-src-list="new Array(subject.cover)"
-					:initial-index="4"
-					fit="cover"
-				/>
-			</span>
+			<el-row>
+				<el-col :span="24">
+					<el-button>裁剪</el-button>
+				</el-col>
+			</el-row>
+			<br />
+			<el-row>
+				<el-col :span="24">
+					<span v-if="subject.cover">
+						<el-image style="width: 100%" :src="subject.cover" :zoom-rate="1.2"
+							:preview-src-list="new Array(subject.cover)" :initial-index="4" fit="cover" />
+					</span>
+				</el-col>
+			</el-row>
+
 		</el-col>
 	</el-row>
-	<EpisodeDetailsDialog
-		v-model:visible="episodeDetailsDialogVisible"
-		v-model:ep="currentEpisode"
-		v-model:subjectId="subject.id"
-    v-model:multi-resource="episodeHasMultiResource"
-    @remove-episode-files-bind="fetchSubjectById"
-	/>
+	<EpisodeDetailsDialog v-model:visible="episodeDetailsDialogVisible" v-model:ep="currentEpisode"
+		v-model:subjectId="subject.id" v-model:multi-resource="episodeHasMultiResource"
+		@remove-episode-files-bind="fetchSubjectById" />
 </template>
 
 <style lang="scss" scoped>
