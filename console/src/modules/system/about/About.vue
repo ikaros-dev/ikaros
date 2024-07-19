@@ -19,13 +19,7 @@ onMounted(fetchActuatorInfo);
 </script>
 <template>
   <!-- Basic -->
-  <el-descriptions
-      class="margin-top"
-      title="Basic"
-      :column="3"
-      size="large"
-      border
-  >
+  <el-descriptions class="margin-top" title="Basic" :column="3" size="large" border>
     <!-- git -->
     <el-descriptions-item>
       <template #label> Git Branch</template>
@@ -73,13 +67,7 @@ onMounted(fetchActuatorInfo);
   <br/>
 
   <!-- Jave -->
-  <el-descriptions
-      class="margin-top"
-      title="Java"
-      :column="3"
-      size="large"
-      border
-  >
+  <el-descriptions class="margin-top" title="Java" :column="3" size="large" border>
     <!-- version -->
     <el-descriptions-item>
       <template #label> Java Version</template>
@@ -122,39 +110,31 @@ onMounted(fetchActuatorInfo);
   <br/>
 
   <!-- Introduce -->
-  <el-descriptions
-      class="margin-top"
-      title="Ikaros Project"
-      :column="1"
-      size="large"
-      direction="vertical"
-      border
-  >
+  <el-descriptions class="margin-top" title="Ikaros Project" :column="1" size="large" direction="vertical" border>
     <el-descriptions-item>
       <template #label> Offical</template>
       <a href="https://ikaros.run" target="_blank">https://ikaros.run</a>
     </el-descriptions-item>
     <el-descriptions-item>
       <template #label> GitHub</template>
-      <a href="https://github.com/ikaros-dev/ikaros" target="_blank"
-      >https://github.com/ikaros-dev/ikaros</a
-      >
+      <a href="https://github.com/ikaros-dev/ikaros" target="_blank">https://github.com/ikaros-dev/ikaros</a>
+    </el-descriptions-item>
+    <el-descriptions-item>
+      <template #label> Open API Documentation</template>
+      <a href="/webjars/swagger-ui/index.html" target="_blank">
+        /webjars/swagger-ui/index.html
+      </a>
     </el-descriptions-item>
     <el-descriptions-item>
       <template #label> Contributors</template>
-      <el-image
-          style="width: 100%; height: 100%"
-          src="https://contrib.nn.ci/api?repo=ikaros-dev/ikaros&repo=ikaros-dev/docs&repo=ikaros-dev/app"
-          fit="fill"
-      />
+      <el-image style="width: 100%; height: 100%"
+                src="https://contrib.nn.ci/api?repo=ikaros-dev/ikaros&repo=ikaros-dev/docs&repo=ikaros-dev/app"
+                fit="fill"/>
     </el-descriptions-item>
     <el-descriptions-item>
       <template #label> Status</template>
-      <el-image
-          style="width: 100%; height: 100%"
-          src="https://repobeats.axiom.co/api/embed/f7285853048ff09f313f6483901e2af0e638f666.svg"
-          fit="fill"
-      />
+      <el-image style="width: 100%; height: 100%"
+                src="https://repobeats.axiom.co/api/embed/f7285853048ff09f313f6483901e2af0e638f666.svg" fit="fill"/>
     </el-descriptions-item>
   </el-descriptions>
 </template>

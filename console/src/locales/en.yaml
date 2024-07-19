@@ -961,6 +961,11 @@ module:
     sidebar: Users
     authorities:
       sidebar: Role Authorities
+  tasks:
+    title: Tasks
+    sidebar: Tasks
+    details:
+      title: Task Details
 login:
   operations:
     submit:

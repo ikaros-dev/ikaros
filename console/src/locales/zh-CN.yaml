@@ -924,6 +924,11 @@ module:
     sidebar: 角色
     authorities:
       sidebar: 角色权限
+  tasks:
+    title: 任务
+    sidebar: 任务
+    details:
+      title: 任务详情
 login:
   operations:
     submit:
