@@ -113,7 +113,10 @@ public class TaskServiceImpl implements TaskService {
             ).then();
     }
 
-    private static void setDefaultFieldValue(TaskEntity entity) {
+    /**
+     * Set Default filed for task entity.
+     */
+    public void setDefaultFieldValue(TaskEntity entity) {
         if (entity.getStatus() == null) {
             entity.setStatus(TaskStatus.CREATE);
         }

@@ -18,4 +18,6 @@ public interface TaskService {
     Mono<PagingWrap<TaskEntity>> listEntitiesByCondition(FindTaskCondition findTaskCondition);
 
     Mono<Long> getProcess(Long id);
+
+    void setDefaultFieldValue(TaskEntity entity);
 }
