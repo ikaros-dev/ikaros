@@ -42,6 +42,7 @@ import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
+import run.ikaros.server.core.subject.event.SubjectUpdateEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
@@ -261,6 +262,17 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .checkpoint("CreateSubjectSyncEntities");
     }
 
+    private Mono<SubjectEntity> publishSubjectUpdateEvent(SubjectEntity subjectEntity) {
+        Long subjectId = subjectEntity.getId();
+        return subjectRepository.findById(subjectId)
+            .doOnSuccess(oldEntity -> {
+                SubjectUpdateEvent event = new SubjectUpdateEvent(this, oldEntity, subjectEntity);
+                applicationContext.publishEvent(event);
+                log.debug("publish SubjectUpdateEvent: [{}]", event);
+            })
+            .then(Mono.just(subjectEntity));
+    }
+
     @Override
     public Mono<Void> update(Subject subject) {
         Assert.notNull(subject, "'subject' must not null.");
@@ -269,6 +281,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         AtomicReference<Long> subjectId = new AtomicReference<>(id);
         return Mono.just(subject)
             .flatMap(sub -> copyProperties(sub, new SubjectEntity()))
+            .flatMap(this::publishSubjectUpdateEvent)
             .flatMap(entity -> {
                 Map<SqlIdentifier, Object> map = new HashMap<>();
                 map.put(SqlIdentifier.unquoted("update_time"), entity.getUpdateTime());

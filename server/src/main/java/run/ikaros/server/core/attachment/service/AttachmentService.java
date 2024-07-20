@@ -31,6 +31,8 @@ public interface AttachmentService {
 
     Mono<Void> removeById(Long attachmentId);
 
+    Mono<Void> removeByIdForcibly(Long attachmentId);
+
     Mono<Void> removeByTypeAndParentIdAndName(
         AttachmentType type, @Nullable Long parentId, String name);
 
