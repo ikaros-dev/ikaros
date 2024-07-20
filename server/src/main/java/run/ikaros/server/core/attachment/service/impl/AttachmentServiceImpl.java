@@ -252,6 +252,13 @@ public class AttachmentServiceImpl implements AttachmentService {
                 }));
     }
 
+    @Override
+    public Mono<Void> removeByIdForcibly(Long attachmentId) {
+        Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
+        return referenceRepository.deleteAllByAttachmentId(attachmentId)
+            .then(removeById(attachmentId));
+    }
+
 
     @Override
     public Mono<Void> removeByTypeAndParentIdAndName(AttachmentType type,

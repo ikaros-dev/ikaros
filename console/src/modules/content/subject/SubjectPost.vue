@@ -1,38 +1,35 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { Episode, Subject, SubjectTypeEnum } from '@runikaros/api-client';
+import {reactive, ref} from 'vue';
+import {Episode, Subject, SubjectTypeEnum} from '@runikaros/api-client';
 import EpisodePostDialog from './EpisodePostDialog.vue';
-import { Picture } from '@element-plus/icons-vue';
-import { formatDate } from '@/utils/date';
-import { apiClient } from '@/utils/api-client';
+import {Picture} from '@element-plus/icons-vue';
+import {formatDate} from '@/utils/date';
+import {apiClient} from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
-import { useRouter } from 'vue-router';
+import CropperjsDialog from '@/components/image/CropperjsDialog.vue';
+import {useRouter} from 'vue-router';
 import {
-	ElMessage,
-	FormInstance,
-	FormRules,
-	ElRow,
-	ElCol,
-	ElForm,
-	ElFormItem,
-	ElSwitch,
-	ElDatePicker,
-	ElInput,
-	ElButton,
-	ElRadioGroup,
-	ElRadio,
-	ElTable,
-	ElTableColumn,
-	ElImage,
+  ElButton,
+  ElCol,
+  ElDatePicker,
+  ElForm,
+  ElFormItem,
+  ElImage,
+  ElInput,
+  ElMessage,
+  ElRadio,
+  ElRadioGroup,
+  ElRow,
+  ElSwitch,
+  ElTable,
+  ElTableColumn,
+  FormInstance,
+  FormRules,
 } from 'element-plus';
-import {
-	episodeGroupLabelMap,
-	subjectTypes,
-	subjectTypeAliasMap,
-} from '@/modules/common/constants';
+import {episodeGroupLabelMap, subjectTypeAliasMap, subjectTypes,} from '@/modules/common/constants';
 import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
-import { base64Encode } from '@/utils/string-util';
-import { useI18n } from 'vue-i18n';
+import {base64Encode} from '@/utils/string-util';
+import {useI18n} from 'vue-i18n';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -145,6 +142,21 @@ const onCloseWithAttachment = (attachment) => {
 	subject.value.cover = attachment.url as string;
 	attachmentSelectDialogVisible.value = false;
 };
+
+const cropperjsDialogVisible = ref(false);
+const cropperjsOldUrl = ref('');
+
+const onCroperjsUpdateUrl = (newUrl) => {
+  console.debug('Croperjs newUrl', newUrl);
+  subject.value.cover = newUrl;
+}
+
+const oepnCropperjsDialog = () => {
+  if (!(subject.value.cover)) return;
+  cropperjsOldUrl.value = subject.value.cover;
+  cropperjsDialogVisible.value = true;
+}
+
 </script>
 
 <template>
@@ -311,16 +323,20 @@ const onCloseWithAttachment = (attachment) => {
 			</el-form>
 		</el-col>
 		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
-			<span v-if="subject.cover">
-				<el-image
-					style="width: 100%"
-					:src="subject.cover"
-					:zoom-rate="1.2"
-					:preview-src-list="new Array(subject.cover)"
-					:initial-index="4"
-					fit="cover"
-				/>
-			</span>
+      <el-row>
+        <el-col :span="24">
+          <el-button @click="oepnCropperjsDialog">裁剪</el-button>
+        </el-col>
+      </el-row>
+      <br/>
+      <el-row>
+        <el-col :span="24">
+					<span v-if="subject.cover">
+						<el-image style="width: 100%" :src="subject.cover" :zoom-rate="1.2"
+                      :preview-src-list="new Array(subject.cover)" :initial-index="4" fit="cover"/>
+					</span>
+        </el-col>
+      </el-row>
 		</el-col>
 	</el-row>
 	<EpisodeDetailsDialog
@@ -328,6 +344,11 @@ const onCloseWithAttachment = (attachment) => {
 		v-model:subjectId="subject.id"
 		v-model:ep="currentEpisode"
 	/>
+  <CropperjsDialog
+      v-model:visible="cropperjsDialogVisible"
+      v-model:url="cropperjsOldUrl"
+      @update-url="onCroperjsUpdateUrl"
+  />
 </template>
 
 <style lang="scss" scoped></style>
