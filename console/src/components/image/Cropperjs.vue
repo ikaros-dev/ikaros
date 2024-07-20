@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import Cropper from 'cropperjs';
-import { onMounted, ref, watch } from 'vue';
+import "cropperjs/dist/cropper.css";
+import {onMounted, ref, watch} from 'vue';
 
 const props = withDefaults(
 	defineProps<{
 		url: string;
-    aspectRatio: number;
+    aspectRatio?: number;
 	}>(),
 	{
 		url: '',
-    aspectRatio: 24/39,
+    aspectRatio: 430 / 600,
 	}
 );
 
@@ -28,7 +29,8 @@ watch(props, (val)=>{
 const croimg = ref({});
 const cropper = ref<Cropper>();
 
-const clipImgEmitBase64 = (cvs) => {
+const clipImgEmitBase64 = (cvs: HTMLCanvasElement) => {
+  if (!cvs) return;
   const base64 = cvs.toDataURL('image/webp', 1);
   emit('clip-img', base64);
 }
@@ -38,14 +40,15 @@ onMounted(()=>{
     aspectRatio: props.aspectRatio,
     viewMode: 1,
     dragMode: 'move',
+    autoCropArea: 1,
     ready(){
-      clipImgEmitBase64(cropper.value?.getCroppedCanvas);
+      clipImgEmitBase64(cropper.value?.getCroppedCanvas({imageSmoothingQuality: 'high'}) as HTMLCanvasElement);
     },
     cropend(){
-      clipImgEmitBase64(cropper.value?.getCroppedCanvas);
+      clipImgEmitBase64(cropper.value?.getCroppedCanvas({imageSmoothingQuality: 'high'}) as HTMLCanvasElement);
     },
     zoom(){
-      clipImgEmitBase64(cropper.value?.getCroppedCanvas);
+      clipImgEmitBase64(cropper.value?.getCroppedCanvas({imageSmoothingQuality: 'high'}) as HTMLCanvasElement);
     },
   })
 })
@@ -57,9 +60,10 @@ onMounted(()=>{
 </template>
 <style lang="scss" scoped>
 .img {
-  object-fit: contain;
+  display: block;
+  // object-fit: contain;
   max-width: 100%;
-  width: 100%;
-  height: 100%;
+  // width: 100%;
+  // height: 100%;
 }
 </style>
