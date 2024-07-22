@@ -17,6 +17,10 @@ public interface SubjectSyncRepository extends R2dbcRepository<SubjectSyncEntity
                                                                     SubjectSyncPlatform platform,
                                                                     String platformId);
 
+    Mono<Boolean> existsBySubjectIdAndPlatformAndPlatformId(Long subjectId,
+                                                            SubjectSyncPlatform platform,
+                                                            String platformId);
+
     Mono<Boolean> existsByPlatformAndPlatformId(SubjectSyncPlatform platform, String platformId);
 
     Flux<SubjectSyncEntity> findAllBySubjectId(Long subjectId);
