@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
@@ -201,6 +202,84 @@ class SubjectServiceTest {
                     List<Episode> newEps = newSubject.getEpisodes();
                     Episode ep2 = newEps.get(1);
                     result = addEpisode.getName().equals(ep2.getName());
+                    return result;
+                }
+            )
+            .verifyComplete();
+
+
+    }
+
+    @Test
+    void updateLarge() {
+        Subject subject = createSubjectInstance();
+        final Random random = new Random();
+
+        StepVerifier.create(subjectService.create(subject))
+            .expectNext(subject)
+            .verifyComplete();
+
+        assertThat(subject.getId()).isNotNull();
+
+        // update
+        final String newName = "subject-name-unit-test";
+        subject.setName(newName);
+
+
+        List<Episode> episodes = subject.getEpisodes();
+        episodes.clear();
+        final int epCount = 100;
+        for (int i = 0; i < epCount; i++) {
+            Episode episode = Episode.builder()
+                .airTime(LocalDateTime.now())
+                .sequence(i)
+                .group(EpisodeGroup.MAIN)
+                .name("ep-" + i)
+                .nameCn("第二集").build();
+            episodes.add(episode);
+        }
+
+        final List<SubjectSync> syncs = subject.getSyncs();
+
+        SubjectSync aniDbSync = new SubjectSync();
+        aniDbSync.setSyncTime(LocalDateTime.now());
+        aniDbSync.setPlatform(SubjectSyncPlatform.AniDB);
+        aniDbSync.setSubjectId(subject.getId());
+        aniDbSync.setPlatformId(String.valueOf(random.nextInt(0, 30000)));
+        syncs.add(aniDbSync);
+        SubjectSync bgmtvSync = new SubjectSync();
+        bgmtvSync.setSyncTime(LocalDateTime.now());
+        bgmtvSync.setPlatform(SubjectSyncPlatform.BGM_TV);
+        bgmtvSync.setSubjectId(subject.getId());
+        bgmtvSync.setPlatformId(String.valueOf(random.nextInt(0, 30000)));
+        syncs.add(bgmtvSync);
+        SubjectSync tmDbSync = new SubjectSync();
+        tmDbSync.setSyncTime(LocalDateTime.now());
+        tmDbSync.setPlatform(SubjectSyncPlatform.TMDB);
+        tmDbSync.setSubjectId(subject.getId());
+        tmDbSync.setPlatformId(String.valueOf(random.nextInt(0, 30000)));
+        syncs.add(tmDbSync);
+
+        subject.setSyncs(syncs);
+
+        StepVerifier.create(subjectService.update(subject))
+            .verifyComplete();
+
+        StepVerifier.create(subjectService.findById(subject.getId()))
+            .expectNextMatches(newSubject -> {
+                    boolean result = true;
+                    result = newName.equals(newSubject.getName());
+                    result = newSubject.getTotalEpisodes() == epCount;
+                    if (!result) {
+                        return false;
+                    }
+
+                    List<Episode> newEps = newSubject.getEpisodes();
+                    result = newEps.size() == epCount;
+
+                    List<SubjectSync> newSyncs = newSubject.getSyncs();
+
+                    result = newSyncs.size() == syncs.size();
                     return result;
                 }
             )

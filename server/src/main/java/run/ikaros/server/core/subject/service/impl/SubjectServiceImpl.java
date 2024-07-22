@@ -315,18 +315,29 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMap(episodeRepository::save)
             .checkpoint("UpdateEpisodeEntities")
 
-            // 条目同步的更新逻辑是: 不存在则新增，存在则更新
+            // 条目同步的更新逻辑是: 不存在则新增，存在则忽略
             .then(Mono.justOrEmpty(subject.getSyncs()))
             .flatMapMany(subjectSyncs -> Flux.fromStream(subjectSyncs.stream()))
             .flatMap(subjectSync -> copyProperties(subjectSync, new SubjectSyncEntity()))
             .map(entity -> entity.setSubjectId(subjectId.get()))
-            .flatMap(entity -> subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
-                entity.getSubjectId(), entity.getPlatform(), entity.getPlatformId()
-            ).switchIfEmpty(Mono.just(entity)
-                .doOnSuccess(e2 -> log.debug("create new subject sync record: [{}].", e2))))
-            .flatMap(subjectSyncRepository::save)
+            .flatMap(this::updateSubjectSyncEntity)
             .checkpoint("UpdateSubjectSyncEntities")
             .then();
+    }
+
+    /**
+     * 不存在则新增，存在则忽略.
+     */
+    private Mono<SubjectSyncEntity> updateSubjectSyncEntity(SubjectSyncEntity entity) {
+        Assert.notNull(entity, "'subjectSyncEntity' must not null.");
+        return subjectSyncRepository.existsBySubjectIdAndPlatformAndPlatformId(
+                entity.getSubjectId(), entity.getPlatform(), entity.getPlatformId())
+            .filter(exists -> exists)
+            .flatMap(exists -> subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
+                entity.getSubjectId(), entity.getPlatform(), entity.getPlatformId()))
+            .switchIfEmpty(Mono.just(entity)
+                .doOnSuccess(e2 -> log.debug("create new subject sync record: [{}].", e2))
+                .flatMap(subjectSyncRepository::save));
     }
 
     @Override
