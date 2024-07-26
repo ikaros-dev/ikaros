@@ -85,19 +85,9 @@ public class RequestAuthorizationManager
 
                 if (AuthorityType.API.equals(type)) {
 
-                    if (target.contains("/**")) {
-                        String apiPrefix = target.substring(0, target.lastIndexOf("/**"));
-                        if (!granted && path.contains(apiPrefix)) {
-                            granted = true;
-                            continue;
-                        }
-
-
-                    } else {
-                        if (!granted && path.equalsIgnoreCase(target)) {
-                            granted = true;
-                            continue;
-                        }
+                    if (authTarget(target, path, granted)) {
+                        granted = true;
+                        continue;
                     }
 
                     if (Authorization.Target.ALL.equals(target)
@@ -108,8 +98,10 @@ public class RequestAuthorizationManager
 
                     if (!Authorization.Authority.ALL.equals(author) && author.startsWith("HTTP")) {
                         if (author.contains(method.name())) {
-                            granted = true;
-                            continue;
+                            if (authTarget(target, path, granted)) {
+                                granted = true;
+                                continue;
+                            }
                         }
                     }
                 }
@@ -123,6 +115,22 @@ public class RequestAuthorizationManager
             }
             return new AuthorizationDecision(granted);
         });
+    }
+
+    private boolean authTarget(String target, String path, boolean granted) {
+        if (target.contains("/**")) {
+            String apiPrefix = target.substring(0, target.lastIndexOf("/**"));
+            if (!granted && path.contains(apiPrefix)) {
+                return true;
+            }
+
+
+        } else {
+            if (!granted && path.equalsIgnoreCase(target)) {
+                return true;
+            }
+        }
+        return granted;
     }
 
 }
