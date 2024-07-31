@@ -22,7 +22,7 @@ export const useUserStore = defineStore('user', {
 		async fetchCurrentUser() {
 			if (this.jwtToken) setApiClientJwtToken(this.jwtToken);
 			try {
-				const { data, status } = await apiClient.user.getCurrentUserDetail();
+                const {data, status} = await apiClient.userMe.getUserMe();
 				// console.log('rsp status', status);
 				// console.log('rsp data: ', data);
 				if (status === 200) {

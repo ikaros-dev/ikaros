@@ -24,6 +24,7 @@ import {
 	V1alpha1TagApi,
 	V1alpha1TaskApi,
 	V1alpha1UserApi,
+	V1alpha1UserMeApi,
 	V1alpha1UserRoleApi,
 } from '@runikaros/api-client';
 import {ElMessage} from 'element-plus';
@@ -159,6 +160,7 @@ function setupApiClient(axios: AxiosInstance) {
 		actuator: new ActuatorApi(undefined, baseURL, axios),
 		// core endpoints
 		user: new V1alpha1UserApi(undefined, baseURL, axios),
+        userMe: new V1alpha1UserMeApi(undefined, baseURL, axios),
 		role: new V1alpha1RoleApi(undefined, baseURL, axios),
 		userRole: new V1alpha1UserRoleApi(undefined, baseURL, axios),
 		roleAuthority: new V1alpha1RoleAuthorityApi(undefined, baseURL, axios),
