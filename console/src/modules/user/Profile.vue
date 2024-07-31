@@ -35,8 +35,8 @@ const passwordReq = ref({
 	newPassword: '',
 });
 const updateProfile = async () => {
-	await apiClient.user
-		.updateUser({
+  await apiClient.userMe
+      .putProfile({
 			updateUserRequest: profile.value,
 		})
 		.then(() => {
@@ -45,9 +45,8 @@ const updateProfile = async () => {
 		});
 };
 const updateUsername = async () => {
-	await apiClient.user
+  await apiClient.userMe
       .updateUsername({
-        username: userStore.currentUser?.entity?.username as string,
         newUsername: profile.value.username,
       })
       .then(() => {
@@ -59,9 +58,8 @@ const updateUsername = async () => {
 };
 
 const updatePassword = async () => {
-	await apiClient.user
+  await apiClient.userMe
 		.changeUserPassword({
-			username: passwordReq.value.username,
 			oldPassword: passwordReq.value.oldPassword,
 			newPassword: passwordReq.value.newPassword,
 		})

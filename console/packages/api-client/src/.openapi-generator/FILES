@@ -23,6 +23,7 @@ api/v1alpha1-subject-sync-platform-api.ts
 api/v1alpha1-tag-api.ts
 api/v1alpha1-task-api.ts
 api/v1alpha1-user-api.ts
+api/v1alpha1-user-me-api.ts
 api/v1alpha1-user-role-api.ts
 base.ts
 common.ts

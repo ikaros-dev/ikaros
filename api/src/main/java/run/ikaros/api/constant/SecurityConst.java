@@ -47,6 +47,7 @@ public interface SecurityConst {
             String API_CORE_USERS = API_PREFIX + "/users/**";
             String API_CORE_USER_ROLE = API_PREFIX + "/user/role/**";
             String API_CORE_USER_ROLES = API_PREFIX + "/user/roles/**";
+            String API_CORE_USER_ME = API_PREFIX + "/user/me/**";
             String API_CORE_ROLE = API_PREFIX + "/role/**";
             String API_CORE_ROLES = API_PREFIX + "/roles/**";
             String API_CORE_ROLE_AUTHORITY = API_PREFIX + "/role/authority/**";

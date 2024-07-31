@@ -34,4 +34,5 @@ export * from "./api/v1alpha1-subject-sync-platform-api";
 export * from "./api/v1alpha1-tag-api";
 export * from "./api/v1alpha1-task-api";
 export * from "./api/v1alpha1-user-api";
+export * from "./api/v1alpha1-user-me-api";
 export * from "./api/v1alpha1-user-role-api";

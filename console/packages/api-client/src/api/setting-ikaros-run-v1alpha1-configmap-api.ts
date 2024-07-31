@@ -374,23 +374,15 @@ export const SettingIkarosRunV1alpha1ConfigmapApiAxiosParamCreator = function (
     },
     /**
      * Update configmap
-     * @param {string} name Name of configmap
      * @param {ConfigMap} [configMap] Updated ConfigMap
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     updateConfigmap: async (
-      name: string,
       configMap?: ConfigMap,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      // verify required parameter 'name' is not null or undefined
-      assertParamExists("updateConfigmap", "name", name);
-      const localVarPath =
-        `/apis/setting.ikaros.run/v1alpha1/configmap`.replace(
-          `{${"name"}}`,
-          encodeURIComponent(String(name))
-        );
+      const localVarPath = `/apis/setting.ikaros.run/v1alpha1/configmap`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -661,20 +653,17 @@ export const SettingIkarosRunV1alpha1ConfigmapApiFp = function (
     },
     /**
      * Update configmap
-     * @param {string} name Name of configmap
      * @param {ConfigMap} [configMap] Updated ConfigMap
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     async updateConfigmap(
-      name: string,
       configMap?: ConfigMap,
       options?: AxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.updateConfigmap(
-        name,
         configMap,
         options
       );
@@ -824,15 +813,11 @@ export const SettingIkarosRunV1alpha1ConfigmapApiFactory = function (
      * @throws {RequiredError}
      */
     updateConfigmap(
-      requestParameters: SettingIkarosRunV1alpha1ConfigmapApiUpdateConfigmapRequest,
+      requestParameters: SettingIkarosRunV1alpha1ConfigmapApiUpdateConfigmapRequest = {},
       options?: AxiosRequestConfig
     ): AxiosPromise<ConfigMap> {
       return localVarFp
-        .updateConfigmap(
-          requestParameters.name,
-          requestParameters.configMap,
-          options
-        )
+        .updateConfigmap(requestParameters.configMap, options)
         .then((request) => request(axios, basePath));
     },
     /**
@@ -947,13 +932,6 @@ export interface SettingIkarosRunV1alpha1ConfigmapApiGetConfigmapsByPagingReques
  * @interface SettingIkarosRunV1alpha1ConfigmapApiUpdateConfigmapRequest
  */
 export interface SettingIkarosRunV1alpha1ConfigmapApiUpdateConfigmapRequest {
-  /**
-   * Name of configmap
-   * @type {string}
-   * @memberof SettingIkarosRunV1alpha1ConfigmapApiUpdateConfigmap
-   */
-  readonly name: string;
-
   /**
    * Updated ConfigMap
    * @type {ConfigMap}
@@ -1105,15 +1083,11 @@ export class SettingIkarosRunV1alpha1ConfigmapApi extends BaseAPI {
    * @memberof SettingIkarosRunV1alpha1ConfigmapApi
    */
   public updateConfigmap(
-    requestParameters: SettingIkarosRunV1alpha1ConfigmapApiUpdateConfigmapRequest,
+    requestParameters: SettingIkarosRunV1alpha1ConfigmapApiUpdateConfigmapRequest = {},
     options?: AxiosRequestConfig
   ) {
     return SettingIkarosRunV1alpha1ConfigmapApiFp(this.configuration)
-      .updateConfigmap(
-        requestParameters.name,
-        requestParameters.configMap,
-        options
-      )
+      .updateConfigmap(requestParameters.configMap, options)
       .then((request) => request(this.axios, this.basePath));
   }
 

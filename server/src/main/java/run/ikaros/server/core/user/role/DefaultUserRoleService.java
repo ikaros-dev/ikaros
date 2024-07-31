@@ -1,4 +1,4 @@
-package run.ikaros.server.core.user;
+package run.ikaros.server.core.user.role;
 
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 

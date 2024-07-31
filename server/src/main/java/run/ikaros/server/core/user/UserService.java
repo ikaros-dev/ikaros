@@ -58,5 +58,7 @@ public interface UserService {
 
     Mono<Void> deleteById(Long id);
 
+    Mono<User> getUserFromSecurityContext();
+
     Mono<Long> getUserIdFromSecurityContext();
 }

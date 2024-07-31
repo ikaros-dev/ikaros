@@ -1,17 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { ConfigMap, Plugin } from '@runikaros/api-client';
-import { apiClient } from '@/utils/api-client';
-import {
-	ElDescriptions,
-	ElDescriptionsItem,
-	ElImage,
-	ElMessage,
-	ElTabPane,
-	ElTabs,
-} from 'element-plus';
-import { useI18n } from 'vue-i18n';
+import {computed, onMounted, ref, watch} from 'vue';
+import {useRoute} from 'vue-router';
+import {ConfigMap, Plugin} from '@runikaros/api-client';
+import {apiClient} from '@/utils/api-client';
+import {ElDescriptions, ElDescriptionsItem, ElImage, ElMessage, ElTabPane, ElTabs,} from 'element-plus';
+import {useI18n} from 'vue-i18n';
 
 const route = useRoute();
 const { t } = useI18n();
@@ -162,8 +155,10 @@ const updateConfigMap = async () => {
 	// @ts-ignore
 	configMap.value.name = plugin.value.name;
 	await apiClient.configmap.updateConfigmap({
-		name: plugin.value.name as string,
-		configMap: configMap.value,
+    configMap: {
+      name: plugin.value.name as string,
+      data: configMap.value?.data
+    },
 	});
 	ElMessage.success(
 		t('module.plugin.details.message.operate.update-config-map')

@@ -1,4 +1,4 @@
-package run.ikaros.server.core.user;
+package run.ikaros.server.core.user.role;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

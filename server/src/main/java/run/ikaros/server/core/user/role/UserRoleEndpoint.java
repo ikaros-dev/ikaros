@@ -1,4 +1,4 @@
-package run.ikaros.server.core.user;
+package run.ikaros.server.core.user.role;
 
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
