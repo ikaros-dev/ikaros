@@ -38,28 +38,35 @@ import {
   RequiredError,
 } from "../base";
 // @ts-ignore
-import { PagingWrap } from "../models";
+import { UpdateUserRequest } from "../models";
 // @ts-ignore
-import { Plugin } from "../models";
+import { User } from "../models";
 /**
- * PluginIkarosRunV1alpha1PluginApi - axios parameter creator
+ * V1alpha1UserMeApi - axios parameter creator
  * @export
  */
-export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
+export const V1alpha1UserMeApiAxiosParamCreator = function (
   configuration?: Configuration
 ) {
   return {
     /**
-     * Create plugin
-     * @param {Plugin} [plugin] Fresh Plugin
+     * Bind user and email.
+     * @param {string} email Email for user.
+     * @param {string} verificationCode Verification code once.
      * @param {*} [options] Override http request option.
+     * @deprecated
      * @throws {RequiredError}
      */
-    createPlugin: async (
-      plugin?: Plugin,
+    bindEmail: async (
+      email: string,
+      verificationCode: string,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/plugin`;
+      // verify required parameter 'email' is not null or undefined
+      assertParamExists("bindEmail", "email", email);
+      // verify required parameter 'verificationCode' is not null or undefined
+      assertParamExists("bindEmail", "verificationCode", verificationCode);
+      const localVarPath = `/api/v1alpha1/user/me/email`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -68,7 +75,7 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
       }
 
       const localVarRequestOptions = {
-        method: "POST",
+        method: "PUT",
         ...baseOptions,
         ...options,
       };
@@ -83,7 +90,13 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      localVarHeaderParameter["Content-Type"] = "application/json";
+      if (email !== undefined) {
+        localVarQueryParameter["email"] = email;
+      }
+
+      if (verificationCode !== undefined) {
+        localVarQueryParameter["verificationCode"] = verificationCode;
+      }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions =
@@ -93,88 +106,153 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
         ...headersFromBaseOptions,
         ...options.headers,
       };
-      localVarRequestOptions.data = serializeDataIfNeeded(
-        plugin,
-        localVarRequestOptions,
-        configuration
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Bind user and telephone.
+     * @param {string} telephone Telephone for user.
+     * @param {string} verificationCode Verification code once.
+     * @param {*} [options] Override http request option.
+     * @deprecated
+     * @throws {RequiredError}
+     */
+    bindTelephone: async (
+      telephone: string,
+      verificationCode: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'telephone' is not null or undefined
+      assertParamExists("bindTelephone", "telephone", telephone);
+      // verify required parameter 'verificationCode' is not null or undefined
+      assertParamExists("bindTelephone", "verificationCode", verificationCode);
+      const localVarPath = `/api/v1alpha1/user/me/telephone`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (telephone !== undefined) {
+        localVarQueryParameter["telephone"] = telephone;
+      }
+
+      if (verificationCode !== undefined) {
+        localVarQueryParameter["verificationCode"] = verificationCode;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Change user password.
+     * @param {string} oldPassword Old password for user.
+     * @param {string} newPassword New password for user.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    changeUserPassword: async (
+      oldPassword: string,
+      newPassword: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'oldPassword' is not null or undefined
+      assertParamExists("changeUserPassword", "oldPassword", oldPassword);
+      // verify required parameter 'newPassword' is not null or undefined
+      assertParamExists("changeUserPassword", "newPassword", newPassword);
+      const localVarPath = `/api/v1alpha1/user/me/password`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (oldPassword !== undefined) {
+        localVarQueryParameter["oldPassword"] = oldPassword;
+      }
+
+      if (newPassword !== undefined) {
+        localVarQueryParameter["newPassword"] = newPassword;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Exist email.
+     * @param {string} email
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    existEmail: async (
+      email: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'email' is not null or undefined
+      assertParamExists("existEmail", "email", email);
+      const localVarPath = `/api/v1alpha1/user/me/email/exists/{email}`.replace(
+        `{${"email"}}`,
+        encodeURIComponent(String(email))
       );
-
-      return {
-        url: toPathString(localVarUrlObj),
-        options: localVarRequestOptions,
-      };
-    },
-    /**
-     * Delete plugin
-     * @param {string} name Name of Plugin
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    deletePlugin: async (
-      name: string,
-      options: AxiosRequestConfig = {}
-    ): Promise<RequestArgs> => {
-      // verify required parameter 'name' is not null or undefined
-      assertParamExists("deletePlugin", "name", name);
-      const localVarPath =
-        `/apis/plugin.ikaros.run/v1alpha1/plugin/{name}`.replace(
-          `{${"name"}}`,
-          encodeURIComponent(String(name))
-        );
-      // use dummy base URL string because the URL constructor only accepts absolute URLs.
-      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-      let baseOptions;
-      if (configuration) {
-        baseOptions = configuration.baseOptions;
-      }
-
-      const localVarRequestOptions = {
-        method: "DELETE",
-        ...baseOptions,
-        ...options,
-      };
-      const localVarHeaderParameter = {} as any;
-      const localVarQueryParameter = {} as any;
-
-      // authentication BasicAuth required
-      // http basic authentication required
-      setBasicAuthToObject(localVarRequestOptions, configuration);
-
-      // authentication BearerAuth required
-      // http bearer authentication required
-      await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-      setSearchParams(localVarUrlObj, localVarQueryParameter);
-      let headersFromBaseOptions =
-        baseOptions && baseOptions.headers ? baseOptions.headers : {};
-      localVarRequestOptions.headers = {
-        ...localVarHeaderParameter,
-        ...headersFromBaseOptions,
-        ...options.headers,
-      };
-
-      return {
-        url: toPathString(localVarUrlObj),
-        options: localVarRequestOptions,
-      };
-    },
-    /**
-     * Get plugin By Name.
-     * @param {string} name Name of Plugin
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    getPlugin: async (
-      name: string,
-      options: AxiosRequestConfig = {}
-    ): Promise<RequestArgs> => {
-      // verify required parameter 'name' is not null or undefined
-      assertParamExists("getPlugin", "name", name);
-      const localVarPath =
-        `/apis/plugin.ikaros.run/v1alpha1/plugin/{name}`.replace(
-          `{${"name"}}`,
-          encodeURIComponent(String(name))
-        );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -213,25 +291,14 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
       };
     },
     /**
-     * Get plugin meta value by name and metaName.
-     * @param {string} name Name of Plugin
-     * @param {string} metaName MetaName of Plugin
+     * Get user me.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPluginMeta: async (
-      name: string,
-      metaName: string,
+    getUserMe: async (
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      // verify required parameter 'name' is not null or undefined
-      assertParamExists("getPluginMeta", "name", name);
-      // verify required parameter 'metaName' is not null or undefined
-      assertParamExists("getPluginMeta", "metaName", metaName);
-      const localVarPath =
-        `/apis/plugin.ikaros.run/v1alpha1/plugin/{name}/{metaName}`
-          .replace(`{${"name"}}`, encodeURIComponent(String(name)))
-          .replace(`{${"metaName"}}`, encodeURIComponent(String(metaName)));
+      const localVarPath = `/api/v1alpha1/user/me`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -270,119 +337,18 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
       };
     },
     /**
-     * Get plugins by paging.
-     * @param {string} page Page of Plugin
-     * @param {string} size Size ofPlugin
+     * Update user profile.
+     * @param {UpdateUserRequest} updateUserRequest User update info.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPluginsByPaging: async (
-      page: string,
-      size: string,
+    putProfile: async (
+      updateUserRequest: UpdateUserRequest,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      // verify required parameter 'page' is not null or undefined
-      assertParamExists("getPluginsByPaging", "page", page);
-      // verify required parameter 'size' is not null or undefined
-      assertParamExists("getPluginsByPaging", "size", size);
-      const localVarPath =
-        `/apis/plugin.ikaros.run/v1alpha1/plugins/{page}/{size}`
-          .replace(`{${"page"}}`, encodeURIComponent(String(page)))
-          .replace(`{${"size"}}`, encodeURIComponent(String(size)));
-      // use dummy base URL string because the URL constructor only accepts absolute URLs.
-      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-      let baseOptions;
-      if (configuration) {
-        baseOptions = configuration.baseOptions;
-      }
-
-      const localVarRequestOptions = {
-        method: "GET",
-        ...baseOptions,
-        ...options,
-      };
-      const localVarHeaderParameter = {} as any;
-      const localVarQueryParameter = {} as any;
-
-      // authentication BasicAuth required
-      // http basic authentication required
-      setBasicAuthToObject(localVarRequestOptions, configuration);
-
-      // authentication BearerAuth required
-      // http bearer authentication required
-      await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-      setSearchParams(localVarUrlObj, localVarQueryParameter);
-      let headersFromBaseOptions =
-        baseOptions && baseOptions.headers ? baseOptions.headers : {};
-      localVarRequestOptions.headers = {
-        ...localVarHeaderParameter,
-        ...headersFromBaseOptions,
-        ...options.headers,
-      };
-
-      return {
-        url: toPathString(localVarUrlObj),
-        options: localVarRequestOptions,
-      };
-    },
-    /**
-     * List plugins
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    listPlugins: async (
-      options: AxiosRequestConfig = {}
-    ): Promise<RequestArgs> => {
-      const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/plugins`;
-      // use dummy base URL string because the URL constructor only accepts absolute URLs.
-      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-      let baseOptions;
-      if (configuration) {
-        baseOptions = configuration.baseOptions;
-      }
-
-      const localVarRequestOptions = {
-        method: "GET",
-        ...baseOptions,
-        ...options,
-      };
-      const localVarHeaderParameter = {} as any;
-      const localVarQueryParameter = {} as any;
-
-      // authentication BasicAuth required
-      // http basic authentication required
-      setBasicAuthToObject(localVarRequestOptions, configuration);
-
-      // authentication BearerAuth required
-      // http bearer authentication required
-      await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-      setSearchParams(localVarUrlObj, localVarQueryParameter);
-      let headersFromBaseOptions =
-        baseOptions && baseOptions.headers ? baseOptions.headers : {};
-      localVarRequestOptions.headers = {
-        ...localVarHeaderParameter,
-        ...headersFromBaseOptions,
-        ...options.headers,
-      };
-
-      return {
-        url: toPathString(localVarUrlObj),
-        options: localVarRequestOptions,
-      };
-    },
-    /**
-     * Update plugin
-     * @param {Plugin} [plugin] Updated Plugin
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    updatePlugin: async (
-      plugin?: Plugin,
-      options: AxiosRequestConfig = {}
-    ): Promise<RequestArgs> => {
-      const localVarPath = `/apis/plugin.ikaros.run/v1alpha1/plugin`;
+      // verify required parameter 'updateUserRequest' is not null or undefined
+      assertParamExists("putProfile", "updateUserRequest", updateUserRequest);
+      const localVarPath = `/api/v1alpha1/user/me`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -417,7 +383,7 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
         ...options.headers,
       };
       localVarRequestOptions.data = serializeDataIfNeeded(
-        plugin,
+        updateUserRequest,
         localVarRequestOptions,
         configuration
       );
@@ -428,29 +394,22 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
       };
     },
     /**
-     * Update plugin metadata value.
-     * @param {string} name Name of plugin
-     * @param {string} metaName MetaName of plugin
-     * @param {string} body Updated Plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
+     * Send verification code.
+     * @param {'EMAIL' | 'PHONE_MSG' | 'OTHER'} type
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    updatePluginMeta: async (
-      name: string,
-      metaName: string,
-      body: string,
+    sendVerificationCode: async (
+      type: "EMAIL" | "PHONE_MSG" | "OTHER",
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      // verify required parameter 'name' is not null or undefined
-      assertParamExists("updatePluginMeta", "name", name);
-      // verify required parameter 'metaName' is not null or undefined
-      assertParamExists("updatePluginMeta", "metaName", metaName);
-      // verify required parameter 'body' is not null or undefined
-      assertParamExists("updatePluginMeta", "body", body);
+      // verify required parameter 'type' is not null or undefined
+      assertParamExists("sendVerificationCode", "type", type);
       const localVarPath =
-        `/apis/plugin.ikaros.run/v1alpha1/plugin/{name}/{metaName}`
-          .replace(`{${"name"}}`, encodeURIComponent(String(name)))
-          .replace(`{${"metaName"}}`, encodeURIComponent(String(metaName)));
+        `/api/v1alpha1/user/me/verificationCode/{type}`.replace(
+          `{${"type"}}`,
+          encodeURIComponent(String(type))
+        );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -474,7 +433,59 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      localVarHeaderParameter["Content-Type"] = "application/json";
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Update user username.
+     * @param {string} newUsername
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateUsername: async (
+      newUsername: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'newUsername' is not null or undefined
+      assertParamExists("updateUsername", "newUsername", newUsername);
+      const localVarPath =
+        `/api/v1alpha1/user/me/username/{newUsername}`.replace(
+          `{${"newUsername"}}`,
+          encodeURIComponent(String(newUsername))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions =
@@ -484,11 +495,6 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
         ...headersFromBaseOptions,
         ...options.headers,
       };
-      localVarRequestOptions.data = serializeDataIfNeeded(
-        body,
-        localVarRequestOptions,
-        configuration
-      );
 
       return {
         url: toPathString(localVarUrlObj),
@@ -499,52 +505,31 @@ export const PluginIkarosRunV1alpha1PluginApiAxiosParamCreator = function (
 };
 
 /**
- * PluginIkarosRunV1alpha1PluginApi - functional programming interface
+ * V1alpha1UserMeApi - functional programming interface
  * @export
  */
-export const PluginIkarosRunV1alpha1PluginApiFp = function (
-  configuration?: Configuration
-) {
+export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
   const localVarAxiosParamCreator =
-    PluginIkarosRunV1alpha1PluginApiAxiosParamCreator(configuration);
+    V1alpha1UserMeApiAxiosParamCreator(configuration);
   return {
     /**
-     * Create plugin
-     * @param {Plugin} [plugin] Fresh Plugin
+     * Bind user and email.
+     * @param {string} email Email for user.
+     * @param {string} verificationCode Verification code once.
      * @param {*} [options] Override http request option.
+     * @deprecated
      * @throws {RequiredError}
      */
-    async createPlugin(
-      plugin?: Plugin,
-      options?: AxiosRequestConfig
-    ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
-    > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.createPlugin(
-        plugin,
-        options
-      );
-      return createRequestFunction(
-        localVarAxiosArgs,
-        globalAxios,
-        BASE_PATH,
-        configuration
-      );
-    },
-    /**
-     * Delete plugin
-     * @param {string} name Name of Plugin
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    async deletePlugin(
-      name: string,
+    async bindEmail(
+      email: string,
+      verificationCode: string,
       options?: AxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.deletePlugin(
-        name,
+      const localVarAxiosArgs = await localVarAxiosParamCreator.bindEmail(
+        email,
+        verificationCode,
         options
       );
       return createRequestFunction(
@@ -555,45 +540,23 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
       );
     },
     /**
-     * Get plugin By Name.
-     * @param {string} name Name of Plugin
+     * Bind user and telephone.
+     * @param {string} telephone Telephone for user.
+     * @param {string} verificationCode Verification code once.
      * @param {*} [options] Override http request option.
+     * @deprecated
      * @throws {RequiredError}
      */
-    async getPlugin(
-      name: string,
-      options?: AxiosRequestConfig
-    ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
-    > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.getPlugin(
-        name,
-        options
-      );
-      return createRequestFunction(
-        localVarAxiosArgs,
-        globalAxios,
-        BASE_PATH,
-        configuration
-      );
-    },
-    /**
-     * Get plugin meta value by name and metaName.
-     * @param {string} name Name of Plugin
-     * @param {string} metaName MetaName of Plugin
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    async getPluginMeta(
-      name: string,
-      metaName: string,
+    async bindTelephone(
+      telephone: string,
+      verificationCode: string,
       options?: AxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.getPluginMeta(
-        name,
-        metaName,
+      const localVarAxiosArgs = await localVarAxiosParamCreator.bindTelephone(
+        telephone,
+        verificationCode,
         options
       );
       return createRequestFunction(
@@ -604,92 +567,23 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
       );
     },
     /**
-     * Get plugins by paging.
-     * @param {string} page Page of Plugin
-     * @param {string} size Size ofPlugin
+     * Change user password.
+     * @param {string} oldPassword Old password for user.
+     * @param {string} newPassword New password for user.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async getPluginsByPaging(
-      page: string,
-      size: string,
+    async changeUserPassword(
+      oldPassword: string,
+      newPassword: string,
       options?: AxiosRequestConfig
     ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.getPluginsByPaging(page, size, options);
-      return createRequestFunction(
-        localVarAxiosArgs,
-        globalAxios,
-        BASE_PATH,
-        configuration
-      );
-    },
-    /**
-     * List plugins
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    async listPlugins(
-      options?: AxiosRequestConfig
-    ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
-    > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.listPlugins(
-        options
-      );
-      return createRequestFunction(
-        localVarAxiosArgs,
-        globalAxios,
-        BASE_PATH,
-        configuration
-      );
-    },
-    /**
-     * Update plugin
-     * @param {Plugin} [plugin] Updated Plugin
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    async updatePlugin(
-      plugin?: Plugin,
-      options?: AxiosRequestConfig
-    ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
-    > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.updatePlugin(
-        plugin,
-        options
-      );
-      return createRequestFunction(
-        localVarAxiosArgs,
-        globalAxios,
-        BASE_PATH,
-        configuration
-      );
-    },
-    /**
-     * Update plugin metadata value.
-     * @param {string} name Name of plugin
-     * @param {string} metaName MetaName of plugin
-     * @param {string} body Updated Plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    async updatePluginMeta(
-      name: string,
-      metaName: string,
-      body: string,
-      options?: AxiosRequestConfig
-    ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
-    > {
-      const localVarAxiosArgs =
-        await localVarAxiosParamCreator.updatePluginMeta(
-          name,
-          metaName,
-          body,
+        await localVarAxiosParamCreator.changeUserPassword(
+          oldPassword,
+          newPassword,
           options
         );
       return createRequestFunction(
@@ -699,411 +593,516 @@ export const PluginIkarosRunV1alpha1PluginApiFp = function (
         configuration
       );
     },
+    /**
+     * Exist email.
+     * @param {string} email
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async existEmail(
+      email: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.existEmail(
+        email,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Get user me.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getUserMe(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<User>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getUserMe(
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Update user profile.
+     * @param {UpdateUserRequest} updateUserRequest User update info.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async putProfile(
+      updateUserRequest: UpdateUserRequest,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<User>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.putProfile(
+        updateUserRequest,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Send verification code.
+     * @param {'EMAIL' | 'PHONE_MSG' | 'OTHER'} type
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async sendVerificationCode(
+      type: "EMAIL" | "PHONE_MSG" | "OTHER",
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.sendVerificationCode(type, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Update user username.
+     * @param {string} newUsername
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updateUsername(
+      newUsername: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.updateUsername(
+        newUsername,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
   };
 };
 
 /**
- * PluginIkarosRunV1alpha1PluginApi - factory interface
+ * V1alpha1UserMeApi - factory interface
  * @export
  */
-export const PluginIkarosRunV1alpha1PluginApiFactory = function (
+export const V1alpha1UserMeApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
   axios?: AxiosInstance
 ) {
-  const localVarFp = PluginIkarosRunV1alpha1PluginApiFp(configuration);
+  const localVarFp = V1alpha1UserMeApiFp(configuration);
   return {
     /**
-     * Create plugin
-     * @param {PluginIkarosRunV1alpha1PluginApiCreatePluginRequest} requestParameters Request parameters.
+     * Bind user and email.
+     * @param {V1alpha1UserMeApiBindEmailRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
+     * @deprecated
      * @throws {RequiredError}
      */
-    createPlugin(
-      requestParameters: PluginIkarosRunV1alpha1PluginApiCreatePluginRequest = {},
-      options?: AxiosRequestConfig
-    ): AxiosPromise<Plugin> {
-      return localVarFp
-        .createPlugin(requestParameters.plugin, options)
-        .then((request) => request(axios, basePath));
-    },
-    /**
-     * Delete plugin
-     * @param {PluginIkarosRunV1alpha1PluginApiDeletePluginRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    deletePlugin(
-      requestParameters: PluginIkarosRunV1alpha1PluginApiDeletePluginRequest,
+    bindEmail(
+      requestParameters: V1alpha1UserMeApiBindEmailRequest,
       options?: AxiosRequestConfig
     ): AxiosPromise<void> {
       return localVarFp
-        .deletePlugin(requestParameters.name, options)
+        .bindEmail(
+          requestParameters.email,
+          requestParameters.verificationCode,
+          options
+        )
         .then((request) => request(axios, basePath));
     },
     /**
-     * Get plugin By Name.
-     * @param {PluginIkarosRunV1alpha1PluginApiGetPluginRequest} requestParameters Request parameters.
+     * Bind user and telephone.
+     * @param {V1alpha1UserMeApiBindTelephoneRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
+     * @deprecated
      * @throws {RequiredError}
      */
-    getPlugin(
-      requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginRequest,
-      options?: AxiosRequestConfig
-    ): AxiosPromise<Plugin> {
-      return localVarFp
-        .getPlugin(requestParameters.name, options)
-        .then((request) => request(axios, basePath));
-    },
-    /**
-     * Get plugin meta value by name and metaName.
-     * @param {PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    getPluginMeta(
-      requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest,
+    bindTelephone(
+      requestParameters: V1alpha1UserMeApiBindTelephoneRequest,
       options?: AxiosRequestConfig
     ): AxiosPromise<void> {
       return localVarFp
-        .getPluginMeta(
-          requestParameters.name,
-          requestParameters.metaName,
+        .bindTelephone(
+          requestParameters.telephone,
+          requestParameters.verificationCode,
           options
         )
         .then((request) => request(axios, basePath));
     },
     /**
-     * Get plugins by paging.
-     * @param {PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest} requestParameters Request parameters.
+     * Change user password.
+     * @param {V1alpha1UserMeApiChangeUserPasswordRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPluginsByPaging(
-      requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest,
+    changeUserPassword(
+      requestParameters: V1alpha1UserMeApiChangeUserPasswordRequest,
       options?: AxiosRequestConfig
-    ): AxiosPromise<PagingWrap> {
+    ): AxiosPromise<void> {
       return localVarFp
-        .getPluginsByPaging(
-          requestParameters.page,
-          requestParameters.size,
+        .changeUserPassword(
+          requestParameters.oldPassword,
+          requestParameters.newPassword,
           options
         )
         .then((request) => request(axios, basePath));
     },
     /**
-     * List plugins
+     * Exist email.
+     * @param {V1alpha1UserMeApiExistEmailRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    listPlugins(options?: AxiosRequestConfig): AxiosPromise<Plugin> {
+    existEmail(
+      requestParameters: V1alpha1UserMeApiExistEmailRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<boolean> {
       return localVarFp
-        .listPlugins(options)
+        .existEmail(requestParameters.email, options)
         .then((request) => request(axios, basePath));
     },
     /**
-     * Update plugin
-     * @param {PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest} requestParameters Request parameters.
+     * Get user me.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    updatePlugin(
-      requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest = {},
-      options?: AxiosRequestConfig
-    ): AxiosPromise<Plugin> {
+    getUserMe(options?: AxiosRequestConfig): AxiosPromise<User> {
       return localVarFp
-        .updatePlugin(requestParameters.plugin, options)
+        .getUserMe(options)
         .then((request) => request(axios, basePath));
     },
     /**
-     * Update plugin metadata value.
-     * @param {PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest} requestParameters Request parameters.
+     * Update user profile.
+     * @param {V1alpha1UserMeApiPutProfileRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    updatePluginMeta(
-      requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest,
+    putProfile(
+      requestParameters: V1alpha1UserMeApiPutProfileRequest,
       options?: AxiosRequestConfig
-    ): AxiosPromise<Plugin> {
+    ): AxiosPromise<User> {
       return localVarFp
-        .updatePluginMeta(
-          requestParameters.name,
-          requestParameters.metaName,
-          requestParameters.body,
-          options
-        )
+        .putProfile(requestParameters.updateUserRequest, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Send verification code.
+     * @param {V1alpha1UserMeApiSendVerificationCodeRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    sendVerificationCode(
+      requestParameters: V1alpha1UserMeApiSendVerificationCodeRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .sendVerificationCode(requestParameters.type, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Update user username.
+     * @param {V1alpha1UserMeApiUpdateUsernameRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateUsername(
+      requestParameters: V1alpha1UserMeApiUpdateUsernameRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .updateUsername(requestParameters.newUsername, options)
         .then((request) => request(axios, basePath));
     },
   };
 };
 
 /**
- * Request parameters for createPlugin operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for bindEmail operation in V1alpha1UserMeApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiCreatePluginRequest
+ * @interface V1alpha1UserMeApiBindEmailRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiCreatePluginRequest {
+export interface V1alpha1UserMeApiBindEmailRequest {
   /**
-   * Fresh Plugin
-   * @type {Plugin}
-   * @memberof PluginIkarosRunV1alpha1PluginApiCreatePlugin
+   * Email for user.
+   * @type {string}
+   * @memberof V1alpha1UserMeApiBindEmail
    */
-  readonly plugin?: Plugin;
+  readonly email: string;
+
+  /**
+   * Verification code once.
+   * @type {string}
+   * @memberof V1alpha1UserMeApiBindEmail
+   */
+  readonly verificationCode: string;
 }
 
 /**
- * Request parameters for deletePlugin operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for bindTelephone operation in V1alpha1UserMeApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiDeletePluginRequest
+ * @interface V1alpha1UserMeApiBindTelephoneRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiDeletePluginRequest {
+export interface V1alpha1UserMeApiBindTelephoneRequest {
   /**
-   * Name of Plugin
+   * Telephone for user.
    * @type {string}
-   * @memberof PluginIkarosRunV1alpha1PluginApiDeletePlugin
+   * @memberof V1alpha1UserMeApiBindTelephone
    */
-  readonly name: string;
+  readonly telephone: string;
+
+  /**
+   * Verification code once.
+   * @type {string}
+   * @memberof V1alpha1UserMeApiBindTelephone
+   */
+  readonly verificationCode: string;
 }
 
 /**
- * Request parameters for getPlugin operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for changeUserPassword operation in V1alpha1UserMeApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiGetPluginRequest
+ * @interface V1alpha1UserMeApiChangeUserPasswordRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiGetPluginRequest {
+export interface V1alpha1UserMeApiChangeUserPasswordRequest {
   /**
-   * Name of Plugin
+   * Old password for user.
    * @type {string}
-   * @memberof PluginIkarosRunV1alpha1PluginApiGetPlugin
+   * @memberof V1alpha1UserMeApiChangeUserPassword
    */
-  readonly name: string;
+  readonly oldPassword: string;
+
+  /**
+   * New password for user.
+   * @type {string}
+   * @memberof V1alpha1UserMeApiChangeUserPassword
+   */
+  readonly newPassword: string;
 }
 
 /**
- * Request parameters for getPluginMeta operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for existEmail operation in V1alpha1UserMeApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest
+ * @interface V1alpha1UserMeApiExistEmailRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest {
+export interface V1alpha1UserMeApiExistEmailRequest {
   /**
-   * Name of Plugin
+   *
    * @type {string}
-   * @memberof PluginIkarosRunV1alpha1PluginApiGetPluginMeta
+   * @memberof V1alpha1UserMeApiExistEmail
    */
-  readonly name: string;
-
-  /**
-   * MetaName of Plugin
-   * @type {string}
-   * @memberof PluginIkarosRunV1alpha1PluginApiGetPluginMeta
-   */
-  readonly metaName: string;
+  readonly email: string;
 }
 
 /**
- * Request parameters for getPluginsByPaging operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for putProfile operation in V1alpha1UserMeApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest
+ * @interface V1alpha1UserMeApiPutProfileRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest {
+export interface V1alpha1UserMeApiPutProfileRequest {
   /**
-   * Page of Plugin
-   * @type {string}
-   * @memberof PluginIkarosRunV1alpha1PluginApiGetPluginsByPaging
+   * User update info.
+   * @type {UpdateUserRequest}
+   * @memberof V1alpha1UserMeApiPutProfile
    */
-  readonly page: string;
-
-  /**
-   * Size ofPlugin
-   * @type {string}
-   * @memberof PluginIkarosRunV1alpha1PluginApiGetPluginsByPaging
-   */
-  readonly size: string;
+  readonly updateUserRequest: UpdateUserRequest;
 }
 
 /**
- * Request parameters for updatePlugin operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for sendVerificationCode operation in V1alpha1UserMeApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest
+ * @interface V1alpha1UserMeApiSendVerificationCodeRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest {
+export interface V1alpha1UserMeApiSendVerificationCodeRequest {
   /**
-   * Updated Plugin
-   * @type {Plugin}
-   * @memberof PluginIkarosRunV1alpha1PluginApiUpdatePlugin
+   *
+   * @type {'EMAIL' | 'PHONE_MSG' | 'OTHER'}
+   * @memberof V1alpha1UserMeApiSendVerificationCode
    */
-  readonly plugin?: Plugin;
+  readonly type: "EMAIL" | "PHONE_MSG" | "OTHER";
 }
 
 /**
- * Request parameters for updatePluginMeta operation in PluginIkarosRunV1alpha1PluginApi.
+ * Request parameters for updateUsername operation in V1alpha1UserMeApi.
  * @export
- * @interface PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest
+ * @interface V1alpha1UserMeApiUpdateUsernameRequest
  */
-export interface PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest {
+export interface V1alpha1UserMeApiUpdateUsernameRequest {
   /**
-   * Name of plugin
+   *
    * @type {string}
-   * @memberof PluginIkarosRunV1alpha1PluginApiUpdatePluginMeta
+   * @memberof V1alpha1UserMeApiUpdateUsername
    */
-  readonly name: string;
-
-  /**
-   * MetaName of plugin
-   * @type {string}
-   * @memberof PluginIkarosRunV1alpha1PluginApiUpdatePluginMeta
-   */
-  readonly metaName: string;
-
-  /**
-   * Updated Plugin Metadata value. current request body receive data type is byte[].class, If you specific data type is a String.class, must to add English double quotation marks.  correct is: \&quot;new value\&quot;.  incorrect is: new value.
-   * @type {string}
-   * @memberof PluginIkarosRunV1alpha1PluginApiUpdatePluginMeta
-   */
-  readonly body: string;
+  readonly newUsername: string;
 }
 
 /**
- * PluginIkarosRunV1alpha1PluginApi - object-oriented interface
+ * V1alpha1UserMeApi - object-oriented interface
  * @export
- * @class PluginIkarosRunV1alpha1PluginApi
+ * @class V1alpha1UserMeApi
  * @extends {BaseAPI}
  */
-export class PluginIkarosRunV1alpha1PluginApi extends BaseAPI {
+export class V1alpha1UserMeApi extends BaseAPI {
   /**
-   * Create plugin
-   * @param {PluginIkarosRunV1alpha1PluginApiCreatePluginRequest} requestParameters Request parameters.
+   * Bind user and email.
+   * @param {V1alpha1UserMeApiBindEmailRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
+   * @deprecated
    * @throws {RequiredError}
-   * @memberof PluginIkarosRunV1alpha1PluginApi
+   * @memberof V1alpha1UserMeApi
    */
-  public createPlugin(
-    requestParameters: PluginIkarosRunV1alpha1PluginApiCreatePluginRequest = {},
+  public bindEmail(
+    requestParameters: V1alpha1UserMeApiBindEmailRequest,
     options?: AxiosRequestConfig
   ) {
-    return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-      .createPlugin(requestParameters.plugin, options)
-      .then((request) => request(this.axios, this.basePath));
-  }
-
-  /**
-   * Delete plugin
-   * @param {PluginIkarosRunV1alpha1PluginApiDeletePluginRequest} requestParameters Request parameters.
-   * @param {*} [options] Override http request option.
-   * @throws {RequiredError}
-   * @memberof PluginIkarosRunV1alpha1PluginApi
-   */
-  public deletePlugin(
-    requestParameters: PluginIkarosRunV1alpha1PluginApiDeletePluginRequest,
-    options?: AxiosRequestConfig
-  ) {
-    return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-      .deletePlugin(requestParameters.name, options)
-      .then((request) => request(this.axios, this.basePath));
-  }
-
-  /**
-   * Get plugin By Name.
-   * @param {PluginIkarosRunV1alpha1PluginApiGetPluginRequest} requestParameters Request parameters.
-   * @param {*} [options] Override http request option.
-   * @throws {RequiredError}
-   * @memberof PluginIkarosRunV1alpha1PluginApi
-   */
-  public getPlugin(
-    requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginRequest,
-    options?: AxiosRequestConfig
-  ) {
-    return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-      .getPlugin(requestParameters.name, options)
-      .then((request) => request(this.axios, this.basePath));
-  }
-
-  /**
-   * Get plugin meta value by name and metaName.
-   * @param {PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest} requestParameters Request parameters.
-   * @param {*} [options] Override http request option.
-   * @throws {RequiredError}
-   * @memberof PluginIkarosRunV1alpha1PluginApi
-   */
-  public getPluginMeta(
-    requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginMetaRequest,
-    options?: AxiosRequestConfig
-  ) {
-    return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-      .getPluginMeta(
-        requestParameters.name,
-        requestParameters.metaName,
+    return V1alpha1UserMeApiFp(this.configuration)
+      .bindEmail(
+        requestParameters.email,
+        requestParameters.verificationCode,
         options
       )
       .then((request) => request(this.axios, this.basePath));
   }
 
   /**
-   * Get plugins by paging.
-   * @param {PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest} requestParameters Request parameters.
+   * Bind user and telephone.
+   * @param {V1alpha1UserMeApiBindTelephoneRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
+   * @deprecated
    * @throws {RequiredError}
-   * @memberof PluginIkarosRunV1alpha1PluginApi
+   * @memberof V1alpha1UserMeApi
    */
-  public getPluginsByPaging(
-    requestParameters: PluginIkarosRunV1alpha1PluginApiGetPluginsByPagingRequest,
+  public bindTelephone(
+    requestParameters: V1alpha1UserMeApiBindTelephoneRequest,
     options?: AxiosRequestConfig
   ) {
-    return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-      .getPluginsByPaging(
-        requestParameters.page,
-        requestParameters.size,
+    return V1alpha1UserMeApiFp(this.configuration)
+      .bindTelephone(
+        requestParameters.telephone,
+        requestParameters.verificationCode,
         options
       )
       .then((request) => request(this.axios, this.basePath));
   }
 
   /**
-   * List plugins
+   * Change user password.
+   * @param {V1alpha1UserMeApiChangeUserPasswordRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
-   * @memberof PluginIkarosRunV1alpha1PluginApi
+   * @memberof V1alpha1UserMeApi
    */
-  public listPlugins(options?: AxiosRequestConfig) {
-    return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-      .listPlugins(options)
-      .then((request) => request(this.axios, this.basePath));
-  }
-
-  /**
-   * Update plugin
-   * @param {PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest} requestParameters Request parameters.
-   * @param {*} [options] Override http request option.
-   * @throws {RequiredError}
-   * @memberof PluginIkarosRunV1alpha1PluginApi
-   */
-  public updatePlugin(
-    requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatePluginRequest = {},
+  public changeUserPassword(
+    requestParameters: V1alpha1UserMeApiChangeUserPasswordRequest,
     options?: AxiosRequestConfig
   ) {
-    return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-      .updatePlugin(requestParameters.plugin, options)
-      .then((request) => request(this.axios, this.basePath));
-  }
-
-  /**
-   * Update plugin metadata value.
-   * @param {PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest} requestParameters Request parameters.
-   * @param {*} [options] Override http request option.
-   * @throws {RequiredError}
-   * @memberof PluginIkarosRunV1alpha1PluginApi
-   */
-  public updatePluginMeta(
-    requestParameters: PluginIkarosRunV1alpha1PluginApiUpdatePluginMetaRequest,
-    options?: AxiosRequestConfig
-  ) {
-    return PluginIkarosRunV1alpha1PluginApiFp(this.configuration)
-      .updatePluginMeta(
-        requestParameters.name,
-        requestParameters.metaName,
-        requestParameters.body,
+    return V1alpha1UserMeApiFp(this.configuration)
+      .changeUserPassword(
+        requestParameters.oldPassword,
+        requestParameters.newPassword,
         options
       )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Exist email.
+   * @param {V1alpha1UserMeApiExistEmailRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1UserMeApi
+   */
+  public existEmail(
+    requestParameters: V1alpha1UserMeApiExistEmailRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1UserMeApiFp(this.configuration)
+      .existEmail(requestParameters.email, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Get user me.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1UserMeApi
+   */
+  public getUserMe(options?: AxiosRequestConfig) {
+    return V1alpha1UserMeApiFp(this.configuration)
+      .getUserMe(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Update user profile.
+   * @param {V1alpha1UserMeApiPutProfileRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1UserMeApi
+   */
+  public putProfile(
+    requestParameters: V1alpha1UserMeApiPutProfileRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1UserMeApiFp(this.configuration)
+      .putProfile(requestParameters.updateUserRequest, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Send verification code.
+   * @param {V1alpha1UserMeApiSendVerificationCodeRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1UserMeApi
+   */
+  public sendVerificationCode(
+    requestParameters: V1alpha1UserMeApiSendVerificationCodeRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1UserMeApiFp(this.configuration)
+      .sendVerificationCode(requestParameters.type, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Update user username.
+   * @param {V1alpha1UserMeApiUpdateUsernameRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1UserMeApi
+   */
+  public updateUsername(
+    requestParameters: V1alpha1UserMeApiUpdateUsernameRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1UserMeApiFp(this.configuration)
+      .updateUsername(requestParameters.newUsername, options)
       .then((request) => request(this.axios, this.basePath));
   }
 }
