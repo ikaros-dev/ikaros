@@ -67,6 +67,8 @@ public interface SecurityConst {
             String API_CORE_SUBJECT_SYNC_PLATFORMS = API_PREFIX + "/subject/sync/platforms/**";
             String API_CORE_TAG = API_PREFIX + "/tag/**";
             String API_CORE_TAGS = API_PREFIX + "/tags/**";
+            String API_CORE_NOTIFY = API_PREFIX + "/notify/**";
+            String API_CORE_NOTIFIES = API_PREFIX + "/notifies/**";
             String API_CORE_TASK = API_PREFIX + "/task/**";
             String API_CORE_TASKS = API_PREFIX + "/tasks/**";
             String API_CORE_PLUGIN = API_PREFIX + "/plugin/**";
