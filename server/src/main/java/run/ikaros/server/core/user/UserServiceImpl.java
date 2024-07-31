@@ -227,7 +227,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Long> getUserIdFromSecurityContext() {
+    public Mono<User> getUserFromSecurityContext() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (Objects.isNull(authentication)) {
             throw new AuthenticationCredentialsNotFoundException("No authentication found.");
@@ -236,7 +236,12 @@ public class UserServiceImpl implements UserService {
             principal =
             (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
         String username = principal.getUsername();
-        return getUserByUsername(username)
+        return getUserByUsername(username);
+    }
+
+    @Override
+    public Mono<Long> getUserIdFromSecurityContext() {
+        return getUserFromSecurityContext()
             .map(run.ikaros.server.core.user.User::entity)
             .map(BaseEntity::getId);
     }
