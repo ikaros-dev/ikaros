@@ -23,6 +23,7 @@ export * from "./api/v1alpha1-collection-episode-api";
 export * from "./api/v1alpha1-collection-subject-api";
 export * from "./api/v1alpha1-episode-api";
 export * from "./api/v1alpha1-indices-api";
+export * from "./api/v1alpha1-notify-api";
 export * from "./api/v1alpha1-plugin-api";
 export * from "./api/v1alpha1-role-api";
 export * from "./api/v1alpha1-role-authority-api";

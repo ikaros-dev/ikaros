@@ -1,20 +1,9 @@
 <script setup lang="ts">
-import { apiClient } from '@/utils/api-client';
-import { onMounted, reactive, ref } from 'vue';
-import {
-	ElMessage,
-	FormRules,
-	ElForm,
-	ElTabs,
-	ElTabPane,
-	ElFormItem,
-	ElInput,
-	ElButton,
-	ElSwitch,
-} from 'element-plus';
-import { useSettingStore } from '@/stores/setting';
-import { watch } from 'vue';
-import { useI18n } from 'vue-i18n';
+import {apiClient} from '@/utils/api-client';
+import {onMounted, reactive, ref, watch} from 'vue';
+import {ElButton, ElForm, ElFormItem, ElInput, ElMessage, ElSwitch, ElTabPane, ElTabs, FormRules,} from 'element-plus';
+import {useSettingStore} from '@/stores/setting';
+import {useI18n} from 'vue-i18n';
 
 const { t } = useI18n();
 
@@ -104,9 +93,11 @@ const getSettingFromServer = async () => {
 	setting.value = data;
 };
 
+const settingSaveBtnLoading = ref(false);
 const settingStore = useSettingStore();
 // eslint-disable-next-line no-unused-vars
 const updateSetting = async () => {
+  settingSaveBtnLoading.value = true;
 	await apiClient.configmap
 		.updateConfigmapMeta({
 			name: settingConfigMapName,
@@ -116,6 +107,9 @@ const updateSetting = async () => {
 		.then(async () => {
 			ElMessage.success(t('module.setting.message.operate.update'));
 			await settingStore.fetchSystemSetting();
+    })
+      .finally(() => {
+        settingSaveBtnLoading.value = false;
 		});
 };
 
@@ -127,6 +121,15 @@ watch(setting, () => {
 watch(mailEnable, () => {
 	setting.value.MAIL_ENABLE = mailEnable.value ? 'true' : 'false';
 });
+
+const testMailBtnLoading = ref(false);
+const testMailConfig = async ()=>{
+  if (!(mailEnable.value) || setting.value.MAIL_RECEIVE_ADDRESS === '' || setting.value.MAIL_SMTP_PASSWORD === '') return;
+  testMailBtnLoading.value = true;
+  await apiClient.notify.testMailSend();
+  testMailBtnLoading.value = false;
+  ElMessage.success("Email has been sent.");
+}
 
 onMounted(getSettingFromServer);
 </script>
@@ -234,9 +237,13 @@ onMounted(getSettingFromServer);
 					</el-form-item>
 				</span>
 				<el-form-item>
-					<el-button type="primary" @click="updateSetting">{{
-						t('module.setting.button.save')
-					}}</el-button>
+          <el-button type="primary" :loading="settingSaveBtnLoading" @click="updateSetting">
+						{{t('module.setting.button.save')}}
+					</el-button>
+
+          <el-button v-if="mailEnable" :loading="testMailBtnLoading" type="primary" @click="testMailConfig">
+						Test
+					</el-button>
 				</el-form-item>
 			</el-tab-pane>
 			<!-- <el-tab-pane label="远端配置">

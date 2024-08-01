@@ -13,6 +13,7 @@ import {
 	V1alpha1CollectionSubjectApi,
 	V1alpha1EpisodeApi,
 	V1alpha1IndicesApi,
+	V1alpha1NotifyApi,
 	V1alpha1PluginApi,
 	V1alpha1RoleApi,
 	V1alpha1RoleAuthorityApi,
@@ -200,6 +201,7 @@ function setupApiClient(axios: AxiosInstance) {
 		tag: new V1alpha1TagApi(undefined, baseURL, axios),
 		staticRes: new V1alpha1StaticApi(undefined, baseURL, axios),
 		security: new V1alpha1SecurityApi(undefined, baseURL, axios),
+        notify: new V1alpha1NotifyApi(undefined, baseURL, axios),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1alpha1PluginApi(undefined, baseURL, axios),
 		configmap: new SettingIkarosRunV1alpha1ConfigmapApi(
