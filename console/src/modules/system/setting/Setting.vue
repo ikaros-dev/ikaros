@@ -128,6 +128,10 @@ watch(mailEnable, () => {
 	setting.value.MAIL_ENABLE = mailEnable.value ? 'true' : 'false';
 });
 
+const testMailConfig = async ()=>{
+	
+}
+
 onMounted(getSettingFromServer);
 </script>
 
@@ -234,9 +238,13 @@ onMounted(getSettingFromServer);
 					</el-form-item>
 				</span>
 				<el-form-item>
-					<el-button type="primary" @click="updateSetting">{{
-						t('module.setting.button.save')
-					}}</el-button>
+					<el-button type="primary" @click="updateSetting">
+						{{t('module.setting.button.save')}}
+					</el-button>
+					
+					<el-button type="primary" @click="testMailConfig">
+						Test
+					</el-button>
 				</el-form-item>
 			</el-tab-pane>
 			<!-- <el-tab-pane label="远端配置">
