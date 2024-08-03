@@ -14,7 +14,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "episode_collection")
+@Table(name = "episode_list_collection")
 @Accessors(chain = true)
 public class EpisodeListCollectionEntity {
     @Id
