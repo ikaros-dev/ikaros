@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -18,8 +17,6 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table(name = "episode_list")
 @EqualsAndHashCode(callSuper = true)
 public class EpisodeListEntity extends BaseEntity {
-    @Id
-    private Long id;
     private String name;
     @Column("name_cn")
     private String nameCn;
