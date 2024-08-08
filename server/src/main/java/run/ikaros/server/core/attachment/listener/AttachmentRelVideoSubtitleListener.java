@@ -88,7 +88,8 @@ public class AttachmentRelVideoSubtitleListener {
         attachmentName = attachmentName.substring(0, attachmentName.indexOf(postfix));
         return attachmentRepository.findAllByTypeAndNameLike(File,
                 attachmentName + "%")
-            .filter(entity -> entity.getName().endsWith("ass"))
+            .filter(entity ->
+                (entity.getName().endsWith("ass") || entity.getName().endsWith("ssa")))
             .map(entity -> VideoSubtitle.builder()
                 .masterAttachmentId(attachmentEntity.getId())
                 .attachmentId(entity.getId())
