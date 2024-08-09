@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import { Episode } from '@runikaros/api-client';
-import { ElMessage, FormInstance, FormRules } from 'element-plus';
-import { computed, reactive, ref } from 'vue';
+import {Episode} from '@runikaros/api-client';
 import {
-	ElDialog,
-	ElForm,
-	ElFormItem,
-	ElDatePicker,
-	ElButton,
-	ElInput,
-	ElSelect,
-	ElOption,
+  ElButton,
+  ElDatePicker,
+  ElDialog,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElMessage,
+  ElOption,
+  ElSelect,
+  FormInstance,
+  FormRules
 } from 'element-plus';
-import { watch } from 'vue';
-import {
-	episodeGroups,
-	episodeGroupLabelMap,
-} from '@/modules/common/constants';
-import { useI18n } from 'vue-i18n';
+import {computed, reactive, ref, watch} from 'vue';
+import {episodeGroupLabelMap, episodeGroups,} from '@/modules/common/constants';
+import {useI18n} from 'vue-i18n';
 
 const { t } = useI18n();
 
@@ -90,7 +88,7 @@ const episodeRuleFormRules = reactive<FormRules>({
 			trigger: 'blur',
 		},
 		{
-			type: 'float',
+      type: 'number',
 			message: t(
 				'module.subject.episode.put.message.episode.form-rule.sequence.type'
 			),
@@ -131,77 +129,34 @@ const episodeElFormRef = ref<FormInstance>();
 </script>
 
 <template>
-	<el-dialog
-		v-model="dialogVisible"
-		:title="t('module.subject.episode.put.title')"
-		@close="onClose"
-	>
-		<el-form
-			ref="episodeElFormRef"
-			:rules="episodeRuleFormRules"
-			:model="episode"
-		>
-			<el-form-item
-				:label="t('module.subject.episode.put.label.air_time')"
-				prop="air_time"
-				:label-width="formLabelWidth"
-			>
-				<el-date-picker
-					v-model="episode.air_time"
-					type="date"
-					:placeholder="t('module.subject.episode.put.date-picker.placeholder')"
-				/>
+  <el-dialog v-model="dialogVisible" :title="t('module.subject.episode.put.title')" @close="onClose">
+    <el-form ref="episodeElFormRef" :rules="episodeRuleFormRules" :model="episode">
+      <el-form-item :label="t('module.subject.episode.put.label.air_time')" prop="air_time"
+                    :label-width="formLabelWidth">
+        <el-date-picker v-model="episode.air_time" type="date"
+                        :placeholder="t('module.subject.episode.put.date-picker.placeholder')"/>
 			</el-form-item>
-			<el-form-item
-				:label="t('module.subject.episode.put.label.group')"
-				prop="group"
-				:label-width="formLabelWidth"
-			>
-				<el-select
-					v-model="episode.group"
-					clearable
-					:placeholder="t('module.subject.episode.put.select.placeholder')"
-				>
-					<el-option
-						v-for="item in episodeGroups"
-						:key="item"
-						:label="episodeGroupLabelMap.get(item)"
-						:value="item"
-					/>
+      <el-form-item :label="t('module.subject.episode.put.label.group')" prop="group"
+                    :label-width="formLabelWidth">
+        <el-select v-model="episode.group" clearable
+                   :placeholder="t('module.subject.episode.put.select.placeholder')">
+          <el-option v-for="item in episodeGroups" :key="item" :label="episodeGroupLabelMap.get(item)"
+                     :value="item"/>
 				</el-select>
 			</el-form-item>
-			<el-form-item
-				:label="t('module.subject.episode.put.label.name')"
-				:label-width="formLabelWidth"
-				prop="name"
-			>
+      <el-form-item :label="t('module.subject.episode.put.label.name')" :label-width="formLabelWidth" prop="name">
 				<el-input v-model="episode.name" />
 			</el-form-item>
-			<el-form-item
-				:label="t('module.subject.episode.put.label.name_cn')"
-				:label-width="formLabelWidth"
-			>
+      <el-form-item :label="t('module.subject.episode.put.label.name_cn')" :label-width="formLabelWidth">
 				<el-input v-model="episode.name_cn" />
 			</el-form-item>
-			<el-form-item
-				:label="t('module.subject.episode.put.label.sequence')"
-				prop="sequence"
-				:label-width="formLabelWidth"
-			>
+      <el-form-item :label="t('module.subject.episode.put.label.sequence')" prop="sequence"
+                    :label-width="formLabelWidth">
 				<el-input v-model.number="episode.sequence" type="text" />
 			</el-form-item>
-			<el-form-item
-				:label="t('module.subject.episode.put.label.description')"
-				:label-width="formLabelWidth"
-			>
-				<el-input
-					v-model="episode.description"
-					:autosize="{ minRows: 3 }"
-					maxlength="10000"
-					rows="3"
-					show-word-limit
-					type="textarea"
-				/>
+      <el-form-item :label="t('module.subject.episode.put.label.description')" :label-width="formLabelWidth">
+        <el-input v-model="episode.description" :autosize="{ minRows: 3 }" maxlength="10000" rows="3"
+                  show-word-limit type="textarea"/>
 			</el-form-item>
 		</el-form>
 		<template #footer>
