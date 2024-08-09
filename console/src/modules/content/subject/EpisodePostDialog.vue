@@ -84,7 +84,7 @@ const episodeRuleFormRules = reactive<FormRules>({
 			trigger: 'blur',
 		},
 		{
-			type: 'number',
+			type: 'float',
 			message: t(
 				'module.subject.episode.post.message.episode.form-rule.sequence.type'
 			),
