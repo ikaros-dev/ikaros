@@ -32,7 +32,7 @@ public class SubjectAddEventListener {
                     .airTime(subjectEntity.getAirTime())
                     .subjectId(subjectEntity.getId())
                     .group(EpisodeGroup.MAIN)
-                    .sequence(0)
+                    .sequence(0F)
                     .name("Game archive package")
                     .nameCn("游戏本体归档包")
                     .build())).then();

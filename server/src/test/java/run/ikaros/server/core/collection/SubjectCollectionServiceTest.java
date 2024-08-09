@@ -78,7 +78,7 @@ class SubjectCollectionServiceTest {
                 .subjectId(subjectId)
                 .name(episodeName)
                 .airTime(LocalDateTime.now())
-                .sequence(i + 1)
+                .sequence(Float.sum(i, 1))
                 .nameCn("")
                 .build();
 
