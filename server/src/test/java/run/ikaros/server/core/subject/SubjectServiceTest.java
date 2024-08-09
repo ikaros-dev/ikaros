@@ -140,7 +140,7 @@ class SubjectServiceTest {
         var episodes = new ArrayList<Episode>();
         episodes.add(Episode.builder()
             .airTime(LocalDateTime.now())
-            .sequence(1)
+            .sequence(1F)
             .group(EpisodeGroup.MAIN)
             .name("ep-01")
             .nameCn("第一集").build());
@@ -179,7 +179,7 @@ class SubjectServiceTest {
         subject.setName(newName);
         Episode addEpisode = Episode.builder()
             .airTime(LocalDateTime.now())
-            .sequence(10)
+            .sequence(10F)
             .group(EpisodeGroup.MAIN)
             .name("ep-02")
             .nameCn("第二集").build();
@@ -232,7 +232,7 @@ class SubjectServiceTest {
         for (int i = 0; i < epCount; i++) {
             Episode episode = Episode.builder()
                 .airTime(LocalDateTime.now())
-                .sequence(i)
+                .sequence(Float.parseFloat(String.valueOf(i)))
                 .group(EpisodeGroup.MAIN)
                 .name("ep-" + i)
                 .nameCn("第二集").build();
