@@ -25,7 +25,7 @@ public class Episode {
     private String description;
     @JsonProperty("air_time")
     private LocalDateTime airTime;
-    private Integer sequence;
+    private Float sequence;
     private EpisodeGroup group;
 
     private List<EpisodeResource> resources;
@@ -36,7 +36,7 @@ public class Episode {
     public static Episode defaultEpisode(Long subjectId) {
         Episode episode = new Episode();
         episode.setAirTime(LocalDateTime.now());
-        episode.setSequence(1);
+        episode.setSequence(1F);
         episode.setGroup(EpisodeGroup.MAIN);
         episode.setDescription("Default episode description");
         episode.setName("Default episode name");

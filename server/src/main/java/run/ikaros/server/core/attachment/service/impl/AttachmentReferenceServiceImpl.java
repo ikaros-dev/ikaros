@@ -173,10 +173,10 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
             .then();
     }
 
-    private static Mono<Integer> getSeqMono(String name) {
-        int seq;
+    private static Mono<Float> getSeqMono(String name) {
+        Float seq;
         try {
-            seq = Integer.parseInt(String.valueOf(RegexUtils.parseEpisodeSeqByFileName(name)));
+            seq = Float.parseFloat(String.valueOf(RegexUtils.parseEpisodeSeqByFileName(name)));
             if (-1 == seq) {
                 throw new RegexMatchingException("Matching fail");
             }

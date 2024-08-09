@@ -97,16 +97,16 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
      * Search subjects with fuzzy query
      * @param {string} keyword
      * @param {number} [limit]
-     * @param {string} [highlightPreTag]
      * @param {string} [highlightPostTag]
+     * @param {string} [highlightPreTag]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     searchSubject: async (
       keyword: string,
       limit?: number,
-      highlightPreTag?: string,
       highlightPostTag?: string,
+      highlightPreTag?: string,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       // verify required parameter 'keyword' is not null or undefined
@@ -139,16 +139,16 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
         localVarQueryParameter["limit"] = limit;
       }
 
+      if (highlightPostTag !== undefined) {
+        localVarQueryParameter["highlightPostTag"] = highlightPostTag;
+      }
+
       if (keyword !== undefined) {
         localVarQueryParameter["keyword"] = keyword;
       }
 
       if (highlightPreTag !== undefined) {
         localVarQueryParameter["highlightPreTag"] = highlightPreTag;
-      }
-
-      if (highlightPostTag !== undefined) {
-        localVarQueryParameter["highlightPostTag"] = highlightPostTag;
       }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -199,16 +199,16 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
      * Search subjects with fuzzy query
      * @param {string} keyword
      * @param {number} [limit]
-     * @param {string} [highlightPreTag]
      * @param {string} [highlightPostTag]
+     * @param {string} [highlightPreTag]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     async searchSubject(
       keyword: string,
       limit?: number,
-      highlightPreTag?: string,
       highlightPostTag?: string,
+      highlightPreTag?: string,
       options?: AxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubjectHints>
@@ -216,8 +216,8 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
       const localVarAxiosArgs = await localVarAxiosParamCreator.searchSubject(
         keyword,
         limit,
-        highlightPreTag,
         highlightPostTag,
+        highlightPreTag,
         options
       );
       return createRequestFunction(
@@ -265,8 +265,8 @@ export const V1alpha1IndicesApiFactory = function (
         .searchSubject(
           requestParameters.keyword,
           requestParameters.limit,
-          requestParameters.highlightPreTag,
           requestParameters.highlightPostTag,
+          requestParameters.highlightPreTag,
           options
         )
         .then((request) => request(axios, basePath));
@@ -299,14 +299,14 @@ export interface V1alpha1IndicesApiSearchSubjectRequest {
    * @type {string}
    * @memberof V1alpha1IndicesApiSearchSubject
    */
-  readonly highlightPreTag?: string;
+  readonly highlightPostTag?: string;
 
   /**
    *
    * @type {string}
    * @memberof V1alpha1IndicesApiSearchSubject
    */
-  readonly highlightPostTag?: string;
+  readonly highlightPreTag?: string;
 }
 
 /**
@@ -343,8 +343,8 @@ export class V1alpha1IndicesApi extends BaseAPI {
       .searchSubject(
         requestParameters.keyword,
         requestParameters.limit,
-        requestParameters.highlightPreTag,
         requestParameters.highlightPostTag,
+        requestParameters.highlightPreTag,
         options
       )
       .then((request) => request(this.axios, this.basePath));
