@@ -65,7 +65,7 @@ public class SubjectController {
      */
     @GetMapping("/{id}")
     public Mono<String> findById(@PathVariable("id") Long id,
-                                 @RequestParam("episode") Integer epSeq, Model model) {
+                                 @RequestParam("episode") Float epSeq, Model model) {
         return subjectService.findById(id)
             .flatMap(subject -> addEpisodesResourcesAttachmentIdSubtitleMap2Model(subject, model))
             .map(subject -> model.addAttribute("subject", subject))
