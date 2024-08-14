@@ -127,7 +127,7 @@ java -jar ikaros-server.jar --spring.profiles.active=win
 
 更新本地主分支
 ```
-git checkout master | git pull upstream master | git push origin master | git remote prune origin
+git checkout main | git pull upstream main | git push origin main | git remote prune origin
 ```
 
 查看本地分支，并删除工作分支
@@ -144,8 +144,8 @@ git remote add upstream https://github.com/ikaros-dev/ikaros.git
 ```
 
 ```text
-git checkout master
-git pull upstream master
+git checkout main
+git pull upstream main
 ```
 
 # 更多
