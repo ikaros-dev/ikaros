@@ -1,11 +1,15 @@
 package run.ikaros.server.core.attachment.service;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
+import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -22,6 +26,7 @@ import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
+import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.store.enums.AttachmentType;
@@ -110,7 +115,7 @@ class AttachmentServiceTest {
     @Test
     void saveEntity() {
         AttachmentEntity entity = AttachmentEntity.builder()
-            .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .parentId(ROOT_DIRECTORY_ID)
             .name(RandomUtils.randomString(20))
             .type(AttachmentType.File)
             .updateTime(LocalDateTime.now())
@@ -153,7 +158,7 @@ class AttachmentServiceTest {
         final var attachmentPidNotNull = Attachment.builder()
             .name(RandomUtils.randomString(20))
             .type(AttachmentType.File)
-            .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .parentId(ROOT_DIRECTORY_ID)
             .build();
 
         StepVerifier.create(attachmentService.save(attachmentPidNotNull))
@@ -234,7 +239,7 @@ class AttachmentServiceTest {
         final String namePrefix = RandomUtils.randomString(20);
         for (int i = 0; i < size; i++) {
             AttachmentEntity entity = AttachmentEntity.builder()
-                .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+                .parentId(ROOT_DIRECTORY_ID)
                 .type(AttachmentType.File)
                 .name(namePrefix + i)
                 .size(Long.parseLong(String.valueOf(i)))
@@ -246,7 +251,7 @@ class AttachmentServiceTest {
         }
 
         AttachmentSearchCondition condition = AttachmentSearchCondition.builder()
-            .page(1).size(size).parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .page(1).size(size).parentId(ROOT_DIRECTORY_ID)
             .type(AttachmentType.File)
             .build();
         StepVerifier.create(attachmentService.listEntitiesByCondition(condition))
@@ -269,7 +274,7 @@ class AttachmentServiceTest {
         final String namePrefix = RandomUtils.randomString(20);
         for (int i = 0; i < size; i++) {
             AttachmentEntity entity = AttachmentEntity.builder()
-                .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+                .parentId(ROOT_DIRECTORY_ID)
                 .type(AttachmentType.File)
                 .name(namePrefix + i)
                 .size(Long.parseLong(String.valueOf(i)))
@@ -281,7 +286,7 @@ class AttachmentServiceTest {
         }
 
         AttachmentSearchCondition condition = AttachmentSearchCondition.builder()
-            .page(1).size(size).parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .page(1).size(size).parentId(ROOT_DIRECTORY_ID)
             .type(AttachmentType.File)
             .build();
         StepVerifier.create(attachmentService.listByCondition(condition))
@@ -297,22 +302,111 @@ class AttachmentServiceTest {
 
     @Test
     void findById() {
+        AttachmentEntity entity = AttachmentEntity.builder()
+            .name(RandomUtils.randomString(20))
+            .type(AttachmentType.File)
+            .parentId(ROOT_DIRECTORY_ID)
+            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
+            .updateTime(LocalDateTime.now())
+            .build();
+        StepVerifier.create(attachmentService.saveEntity(entity))
+            .expectNextMatches(new AttachmentEntityPredicate(entity))
+            .verifyComplete();
+
+        Assertions.assertThat(entity.getId()).isNotNull();
+        StepVerifier.create(attachmentService.findById(entity.getId())
+                .flatMap(attachment -> copyProperties(attachment, new AttachmentEntity())))
+            .expectNextMatches(new AttachmentEntityPredicate(entity))
+            .verifyComplete();
     }
 
     @Test
     void findByTypeAndParentIdAndName() {
+        AttachmentEntity entity = AttachmentEntity.builder()
+            .name(RandomUtils.randomString(20))
+            .type(AttachmentType.File)
+            .parentId(ROOT_DIRECTORY_ID)
+            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
+            .updateTime(LocalDateTime.now())
+            .build();
+        StepVerifier.create(attachmentService.saveEntity(entity))
+            .expectNextMatches(new AttachmentEntityPredicate(entity))
+            .verifyComplete();
+
+        Assertions.assertThat(entity.getId()).isNotNull();
+        StepVerifier.create(
+                attachmentService.findByTypeAndParentIdAndName(entity.getType(),
+                        entity.getParentId(), entity.getName())
+                    .flatMap(attachment -> copyProperties(attachment, new AttachmentEntity())))
+            .expectNextMatches(new AttachmentEntityPredicate(entity))
+            .verifyComplete();
     }
 
     @Test
     void removeById() {
+        // remove system internal 'Covers' attachment
+        StepVerifier.create(attachmentService.removeById(AttachmentConst.COVER_DIRECTORY_ID))
+            .expectError(AttachmentRemoveException.class)
+            .verify();
+
+        // remove system internal 'Downloads' attachment
+        StepVerifier.create(attachmentService.removeById(AttachmentConst.DOWNLOAD_DIRECTORY_ID))
+            .expectError(AttachmentRemoveException.class)
+            .verify();
+
+        // normal remove
+        AttachmentEntity entity = AttachmentEntity.builder()
+            .name(RandomUtils.randomString(20))
+            .type(AttachmentType.File)
+            .parentId(ROOT_DIRECTORY_ID)
+            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
+            .updateTime(LocalDateTime.now())
+            .build();
+        StepVerifier.create(attachmentService.saveEntity(entity))
+            .expectNextMatches(new AttachmentEntityPredicate(entity))
+            .verifyComplete();
+
+        Assertions.assertThat(entity.getId()).isNotNull();
+        StepVerifier.create(attachmentService.removeById(entity.getId()))
+            .verifyComplete();
     }
 
     @Test
     void removeByIdForcibly() {
+        AttachmentEntity entity = AttachmentEntity.builder()
+            .name(RandomUtils.randomString(20))
+            .type(AttachmentType.File)
+            .parentId(ROOT_DIRECTORY_ID)
+            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
+            .updateTime(LocalDateTime.now())
+            .build();
+        StepVerifier.create(attachmentService.saveEntity(entity))
+            .expectNextMatches(new AttachmentEntityPredicate(entity))
+            .verifyComplete();
+
+        Assertions.assertThat(entity.getId()).isNotNull();
+        StepVerifier.create(attachmentService.removeByIdForcibly(entity.getId()))
+            .verifyComplete();
     }
 
     @Test
     void removeByTypeAndParentIdAndName() {
+        AttachmentEntity entity = AttachmentEntity.builder()
+            .name(RandomUtils.randomString(20))
+            .type(AttachmentType.File)
+            .parentId(ROOT_DIRECTORY_ID)
+            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
+            .updateTime(LocalDateTime.now())
+            .build();
+        StepVerifier.create(attachmentService.saveEntity(entity))
+            .expectNextMatches(new AttachmentEntityPredicate(entity))
+            .verifyComplete();
+
+        Assertions.assertThat(entity.getId()).isNotNull();
+        StepVerifier.create(
+                attachmentService.removeByTypeAndParentIdAndName(entity.getType(),
+                    null, entity.getName()))
+            .verifyComplete();
     }
 
     @Test
@@ -325,10 +419,55 @@ class AttachmentServiceTest {
 
     @Test
     void createDirectory() {
+        AttachmentEntity parentAttachmentEntity = AttachmentEntity.builder()
+            .name(RandomUtils.randomString(20))
+            .type(AttachmentType.Directory)
+            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
+            .updateTime(LocalDateTime.now())
+            .parentId(ROOT_DIRECTORY_ID)
+            .path("/test")
+            .build();
+        StepVerifier.create(attachmentRepository.save(parentAttachmentEntity))
+            .expectNextMatches(new AttachmentEntityPredicate(parentAttachmentEntity))
+            .verifyComplete();
+        Assertions.assertThat(parentAttachmentEntity.getId()).isNotNull();
+
+        final String name = RandomUtils.randomString(20);
+        StepVerifier.create(attachmentService.createDirectory(parentAttachmentEntity.getId(), name))
+            .expectNextMatches(attachment -> name.equals(attachment.getName()))
+            .verifyComplete();
     }
 
     @Test
     void findAttachmentPathDirsById() {
+        final String dir1name = RandomUtils.randomString(20);
+        final String dir2name = RandomUtils.randomString(20);
+
+        final AttachmentEntity att1 = AttachmentEntity.builder()
+            .name(dir1name)
+            .type(AttachmentType.Directory)
+            .parentId(ROOT_DIRECTORY_ID)
+            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
+            .updateTime(LocalDateTime.now())
+            .build();
+        StepVerifier.create(attachmentService.saveEntity(att1))
+            .expectNextMatches(new AttachmentEntityPredicate(att1))
+            .verifyComplete();
+        Assertions.assertThat(att1.getId()).isNotNull();
+
+        final AttachmentEntity att2 = AttachmentEntity.builder()
+            .name(dir2name)
+            .type(AttachmentType.Directory)
+            .parentId(att1.getId())
+            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
+            .updateTime(LocalDateTime.now())
+            .build();
+
+        StepVerifier.create(attachmentService.saveEntity(att2))
+            .expectNextMatches(new AttachmentEntityPredicate(att2))
+            .verifyComplete();
+        Assertions.assertThat(att2.getId()).isNotNull();
+
     }
 
     @Test
