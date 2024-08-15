@@ -3,6 +3,8 @@ package run.ikaros.server.core.attachment.service;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -127,18 +129,170 @@ class AttachmentServiceTest {
 
     @Test
     void save() {
+        // parent id is null
+        final var attachment = Attachment.builder()
+            .name(RandomUtils.randomString(20))
+            .type(AttachmentType.File)
+            .build();
+
+        StepVerifier.create(attachmentService.save(attachment))
+            .expectNextMatches(newAttachment ->
+                attachment.getName().equals(newAttachment.getName())
+                    && attachment.getType().equals(newAttachment.getType()))
+            .verifyComplete();
+
+        StepVerifier.create(attachmentRepository.findByTypeAndParentIdAndName(
+                attachment.getType(), attachment.getParentId(), attachment.getName()
+            )).expectNextMatches(newAttachmentEntity ->
+                attachment.getType().equals(newAttachmentEntity.getType())
+                    && attachment.getParentId().equals(newAttachmentEntity.getParentId())
+                    && attachment.getName().equals(newAttachmentEntity.getName()))
+            .verifyComplete();
+
+        // parent id not null
+        final var attachmentPidNotNull = Attachment.builder()
+            .name(RandomUtils.randomString(20))
+            .type(AttachmentType.File)
+            .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .build();
+
+        StepVerifier.create(attachmentService.save(attachmentPidNotNull))
+            .expectNextMatches(newAttachment ->
+                attachmentPidNotNull.getParentId().equals(newAttachment.getParentId())
+                    && attachmentPidNotNull.getName().equals(newAttachment.getName())
+                    && attachmentPidNotNull.getType().equals(newAttachment.getType()))
+            .verifyComplete();
+
+        StepVerifier.create(attachmentRepository.findByTypeAndParentIdAndName(
+                attachmentPidNotNull.getType(), attachmentPidNotNull.getParentId(),
+                attachmentPidNotNull.getName()
+            )).expectNextMatches(newAttachmentEntity ->
+                attachmentPidNotNull.getType().equals(newAttachmentEntity.getType())
+                    && attachmentPidNotNull.getParentId().equals(newAttachmentEntity.getParentId())
+                    && attachmentPidNotNull.getName().equals(newAttachmentEntity.getName()))
+            .verifyComplete();
     }
 
     @Test
     void testUpload() {
     }
 
+    private boolean entitiesIsEquals(List<AttachmentEntity> oldAttachments,
+                                     List<AttachmentEntity> newAttachments) {
+        if (oldAttachments.size() != newAttachments.size()) {
+            return false;
+        }
+
+        oldAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
+        newAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
+
+        boolean result = true;
+        for (int i = 0; i < oldAttachments.size(); i++) {
+            AttachmentEntity oldEntity = oldAttachments.get(i);
+            AttachmentEntity newEntity = newAttachments.get(i);
+            if (!oldEntity.getName().equals(newEntity.getName())) {
+                result = false;
+                break;
+            }
+            if (!oldEntity.getType().equals(newEntity.getType())) {
+                result = false;
+                break;
+            }
+            if (!oldEntity.getParentId().equals(newEntity.getParentId())) {
+                result = false;
+                break;
+            }
+            if (!oldEntity.getSize().equals(newEntity.getSize())) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private boolean attIsEquals(List<AttachmentEntity> oldAttachments,
+                                List<Attachment> newAttachments) {
+        ArrayList<AttachmentEntity> objects = new ArrayList<>();
+        for (Attachment newAttachment : newAttachments) {
+            objects.add(AttachmentEntity.builder()
+                .id(newAttachment.getId())
+                .name(newAttachment.getName())
+                .type(newAttachment.getType())
+                .parentId(newAttachment.getParentId())
+                .size(newAttachment.getSize())
+                .updateTime(newAttachment.getUpdateTime())
+                .build());
+        }
+        return entitiesIsEquals(oldAttachments, objects);
+    }
+
     @Test
     void listEntitiesByCondition() {
+        final int size = RandomUtils.getRandom().nextInt(1, 100);
+        List<AttachmentEntity> attachmentEntities = new ArrayList<>(size);
+
+        final String namePrefix = RandomUtils.randomString(20);
+        for (int i = 0; i < size; i++) {
+            AttachmentEntity entity = AttachmentEntity.builder()
+                .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+                .type(AttachmentType.File)
+                .name(namePrefix + i)
+                .size(Long.parseLong(String.valueOf(i)))
+                .build();
+            attachmentEntities.add(entity);
+            StepVerifier.create(attachmentService.saveEntity(entity))
+                .expectNextMatches(new AttachmentEntityPredicate(entity))
+                .verifyComplete();
+        }
+
+        AttachmentSearchCondition condition = AttachmentSearchCondition.builder()
+            .page(1).size(size).parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .type(AttachmentType.File)
+            .build();
+        StepVerifier.create(attachmentService.listEntitiesByCondition(condition))
+            .expectNextMatches(newPagingwrap ->
+                condition.getSize().equals(newPagingwrap.getSize())
+                    && condition.getPage().equals(newPagingwrap.getPage())
+                    && condition.getSize().equals(newPagingwrap.getItems().size())
+                    &&
+                    entitiesIsEquals(attachmentEntities.subList(0, size), newPagingwrap.getItems()))
+            .verifyComplete();
+
     }
 
     @Test
     void listByCondition() {
+
+        final int size = RandomUtils.getRandom().nextInt(1, 100);
+        List<AttachmentEntity> attachmentEntities = new ArrayList<>(size);
+
+        final String namePrefix = RandomUtils.randomString(20);
+        for (int i = 0; i < size; i++) {
+            AttachmentEntity entity = AttachmentEntity.builder()
+                .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+                .type(AttachmentType.File)
+                .name(namePrefix + i)
+                .size(Long.parseLong(String.valueOf(i)))
+                .build();
+            attachmentEntities.add(entity);
+            StepVerifier.create(attachmentService.saveEntity(entity))
+                .expectNextMatches(new AttachmentEntityPredicate(entity))
+                .verifyComplete();
+        }
+
+        AttachmentSearchCondition condition = AttachmentSearchCondition.builder()
+            .page(1).size(size).parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .type(AttachmentType.File)
+            .build();
+        StepVerifier.create(attachmentService.listByCondition(condition))
+            .expectNextMatches(newPagingwrap ->
+                condition.getSize().equals(newPagingwrap.getSize())
+                    && condition.getPage().equals(newPagingwrap.getPage())
+                    && condition.getSize().equals(newPagingwrap.getItems().size())
+                    &&
+                    attIsEquals(attachmentEntities.subList(0, size), newPagingwrap.getItems()))
+            .verifyComplete();
+
     }
 
     @Test
