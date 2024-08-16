@@ -16,10 +16,10 @@ const fontStore = useFontStore();
 
 const props = withDefaults(
 	defineProps<{
-    attachmentId: number;
+		attachmentId: number;
 	}>(),
 	{
-    attachmentId: undefined,
+		attachmentId: undefined,
 	}
 );
 
@@ -29,19 +29,19 @@ const emit = defineEmits<{
 }>();
 
 watch(props, (newVal) => {
-  if (newVal.attachmentId) {
-    fetchAttachment();
-  }
-})
+	if (newVal.attachmentId) {
+		fetchAttachment();
+	}
+});
 
 const attachment = ref<Attachment>();
 const fetchAttachment = async () => {
-  if (!(props.attachmentId)) return;
-  const {data} = await apiClient.attachment.getAttachmentById({
-    id: props.attachmentId
-  })
-  attachment.value = data;
-}
+	if (!props.attachmentId) return;
+	const { data } = await apiClient.attachment.getAttachmentById({
+		id: props.attachmentId,
+	});
+	attachment.value = data;
+};
 
 const fonts = ref<string[]>([]);
 const initFonts = async () => {
@@ -73,7 +73,7 @@ const getVideoSubtitles = async () => {
 	artSubtitles.value = [];
 	const { data } =
 		await apiClient.attachmentRelation.findAttachmentVideoSubtitles({
-      attachmentId: props.attachmentId as number,
+			attachmentId: props.attachmentId as number,
 		});
 	// console.log('load video subtitles', data);
 	for (let index = 0; index < data!.length; index++) {
@@ -146,10 +146,10 @@ const artplayerSubtitleSetting: Setting = {
 
 const initArtplayer = async () => {
 	console.debug('start init artplyer....');
-  console.debug('att url', attachment.value?.url);
+	console.debug('att url', attachment.value?.url);
 	art.value = new Artplayer({
 		container: artRef.value,
-    url: attachment.value?.url as string,
+		url: attachment.value?.url as string,
 		volume: 0.5,
 		isLive: false,
 		muted: false,
@@ -217,9 +217,9 @@ const initArtplayer = async () => {
 };
 
 onMounted(async () => {
-  console.debug('attachmentId', props.attachmentId);
-  if (props.attachmentId) {
-    await fetchAttachment();
+	console.debug('attachmentId', props.attachmentId);
+	if (props.attachmentId) {
+		await fetchAttachment();
 		await getVideoSubtitles();
 		await initFonts();
 		await initArtplayer();

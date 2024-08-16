@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Subject, SubjectRelation,} from '@runikaros/api-client';
+import {Subject, SubjectRelation} from '@runikaros/api-client';
 import {computed, ref} from 'vue';
 import {ElDrawer, ElTable, ElTableColumn} from 'element-plus';
 import {useSubjectStore} from '@/stores/subject';
@@ -45,10 +45,10 @@ const handleClose = () => {
 const selectionSubjectMap = new Map<string, number[]>();
 const selectionSubjectReactions = ref<SubjectRelation[]>([]);
 const handleSelectionChange = (selection) => {
-  // console.debug('selection', selection);
-  // console.debug('props.relationSubjects', props.relationSubjects);
+	// console.debug('selection', selection);
+	// console.debug('props.relationSubjects', props.relationSubjects);
 	selectionSubjectMap.clear();
-  selectionSubjectReactions.value = [];
+	selectionSubjectReactions.value = [];
 	selection.forEach((sub) => {
 		let ids: number[] = selectionSubjectMap.get(sub.type) as number[];
 		if (ids) {
@@ -58,17 +58,17 @@ const handleSelectionChange = (selection) => {
 			ids.push(sub.id);
 			selectionSubjectMap.set(sub.type, ids);
 		}
-    var subjectRelation = props.relationSubjects.find(rel => {
-      var result = false;
-      rel.relation_subjects.forEach(relId => {
-        if (relId === sub.id) result = true;
-      });
-      return result;
-    }) as SubjectRelation;
-    // console.debug('subjectRelation', subjectRelation);
-    selectionSubjectReactions.value.push(subjectRelation);
+		var subjectRelation = props.relationSubjects.find((rel) => {
+			var result = false;
+			rel.relation_subjects.forEach((relId) => {
+				if (relId === sub.id) result = true;
+			});
+			return result;
+		}) as SubjectRelation;
+		// console.debug('subjectRelation', subjectRelation);
+		selectionSubjectReactions.value.push(subjectRelation);
 	});
-  // console.debug('selectionSubjectReactions', selectionSubjectReactions);
+	// console.debug('selectionSubjectReactions', selectionSubjectReactions);
 };
 
 const subjectIdMapCache = new Map<number, Subject>();

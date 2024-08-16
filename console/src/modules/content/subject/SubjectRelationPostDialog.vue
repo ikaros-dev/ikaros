@@ -77,7 +77,7 @@ const reqCreateRelaction = async () => {
 <template>
 	<subject-select-drawer
 		v-model:visible="subjectSelectDrawerVisible"
-    :filter="[props.masterSubjectId as number]"
+		:filter="[props.masterSubjectId as number]"
 		@selections-change="onSelectionsChange"
 	/>
 	<el-dialog

@@ -5,10 +5,10 @@ import {JwtApplyParamAuthTypeEnum} from '@runikaros/api-client';
 import {apiClient, setApiClientJwtToken} from '@/utils/api-client';
 
 interface UserStoreState {
-    authType: JwtApplyParamAuthTypeEnum;
+	authType: JwtApplyParamAuthTypeEnum;
 	currentUser?: User;
 	isAnonymous: boolean;
-    jwtToken?: string;
+	jwtToken?: string;
 }
 
 export const useUserStore = defineStore('user', {
@@ -22,7 +22,7 @@ export const useUserStore = defineStore('user', {
 		async fetchCurrentUser() {
 			if (this.jwtToken) setApiClientJwtToken(this.jwtToken);
 			try {
-                const {data, status} = await apiClient.userMe.getUserMe();
+				const { data, status } = await apiClient.userMe.getUserMe();
 				// console.log('rsp status', status);
 				// console.log('rsp data: ', data);
 				if (status === 200) {
@@ -32,29 +32,29 @@ export const useUserStore = defineStore('user', {
 				} else {
 					this.jwtToken = undefined;
 					this.isAnonymous = true;
-                }
+				}
 			} catch (e) {
 				console.error('Failed to fetch current user', e);
 				this.isAnonymous = true;
 				this.jwtToken = undefined;
 			}
 		},
-        async applyJwtToken(username: string, password: string) {
+		async applyJwtToken(username: string, password: string) {
 			try {
-                const {data, status} = await apiClient.security.applyJwtToken({
+				const { data, status } = await apiClient.security.applyJwtToken({
 					jwtApplyParam: {
 						authType: 'USERNAME_PASSWORD',
 						username: username,
-                        password: password,
-                    },
-                });
+						password: password,
+					},
+				});
 				if (status === 200) {
 					this.jwtToken = data;
 					this.isAnonymous = false;
 				} else {
 					this.jwtToken = undefined;
 					this.isAnonymous = true;
-                }
+				}
 			} catch (e) {
 				console.error('Failed to apply jwt token', e);
 				this.isAnonymous = true;
@@ -64,7 +64,7 @@ export const useUserStore = defineStore('user', {
 			this.jwtToken = undefined;
 			this.isAnonymous = true;
 			this.currentUser = undefined;
-        },
+		},
 	},
 	persist: {
 		enabled: true,

@@ -15,11 +15,11 @@ export default definePlugin({
 				name: 'Tasks',
 				component: Tasks,
 				meta: {
-                    title: 'module.tasks.title',
+					title: 'module.tasks.title',
 					menu: {
-                        name: 'module.tasks.sidebar',
+						name: 'module.tasks.sidebar',
 						group: 'system',
-                        icon: markRaw(MostlyCloudy),
+						icon: markRaw(MostlyCloudy),
 						priority: 0,
 					},
 				},
@@ -32,7 +32,7 @@ export default definePlugin({
 				name: 'TaskDetails',
 				component: TaskDetails,
 				meta: {
-                    title: 'module.tasks.details.title',
+					title: 'module.tasks.details.title',
 					hidden: true,
 				},
 			},

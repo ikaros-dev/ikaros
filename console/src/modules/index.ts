@@ -16,8 +16,8 @@ const coreModules = [
 	Subject,
 	Plugin,
 	Setting,
-    About,
-    Tasks,
+	About,
+	Tasks,
 	Users,
 	Roles,
 ];

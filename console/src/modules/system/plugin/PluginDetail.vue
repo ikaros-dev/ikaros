@@ -155,10 +155,10 @@ const updateConfigMap = async () => {
 	// @ts-ignore
 	configMap.value.name = plugin.value.name;
 	await apiClient.configmap.updateConfigmap({
-    configMap: {
-      name: plugin.value.name as string,
-      data: configMap.value?.data
-    },
+		configMap: {
+			name: plugin.value.name as string,
+			data: configMap.value?.data,
+		},
 	});
 	ElMessage.success(
 		t('module.plugin.details.message.operate.update-config-map')

@@ -20,7 +20,7 @@ const findSubjectCollection = ref({
 const subjectCollections = ref<SubjectCollection[]>([]);
 
 const fetchCollections = async () => {
-  const {data} = await apiClient.collectionSubject.findCollectionSubjects({
+	const { data } = await apiClient.collectionSubject.findCollectionSubjects({
 		page: findSubjectCollection.value.page,
 		size: findSubjectCollection.value.size,
 		type: findSubjectCollection.value.type,
