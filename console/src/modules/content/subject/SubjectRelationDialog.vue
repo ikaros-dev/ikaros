@@ -76,7 +76,9 @@ const loadSubjectRelations = async () => {
 		subjectId: subject.value.id as number,
 	});
 	// console.log('subject relations rsp:', rsp);
-  subjectRelations.value = data;
+  if (data instanceof Array) {
+    subjectRelations.value = data;
+  }
 };
 const relationAnimes = ref<Subject[]>([]);
 const relationComics = ref<Subject[]>([]);
@@ -245,65 +247,34 @@ onMounted(() => {
 </script>
 
 <template>
-	<SubjectRelationPostDialog
-		v-model:visible="subjectRelationPostDialogVisible"
-		v-model:masterSubjectId="subjectId"
-		@close="onSubjectRelationPostDialogClose"
-	/>
-	<SubjectRelationDeleteDialog
-		v-model:visible="subjectRelationDeleteDialogVisible"
-		v-model:masterSubjectId="subjectId"
-		v-model:relationSubjects="subjectRelations"
-		@close="onSubjectRelationDeleteDialogClose"
-	/>
+  <SubjectRelationPostDialog v-model:visible="subjectRelationPostDialogVisible" v-model:masterSubjectId="subjectId"
+                             @close="onSubjectRelationPostDialogClose"/>
+  <SubjectRelationDeleteDialog v-model:visible="subjectRelationDeleteDialogVisible"
+                               v-model:masterSubjectId="subjectId" v-model:relationSubjects="subjectRelations"
+                               @close="onSubjectRelationDeleteDialogClose"/>
 
-	<el-dialog
-		v-model="dialogVisible"
-		:title="t('module.subject.relaction.dialog.main.title')"
-		fullscreen
-		@close="onClose"
-	>
+  <el-dialog v-model="dialogVisible" :title="t('module.subject.relaction.dialog.main.title')" fullscreen
+             @close="onClose">
 		<el-descriptions direction="vertical" :column="6" size="large" border>
-			<el-descriptions-item
-				:label="t('module.subject.relaction.dialog.main.label.id')"
-				:span="1"
-			>
+      <el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.id')" :span="1">
 				{{ subject.id }}
 			</el-descriptions-item>
-			<el-descriptions-item
-				:label="t('module.subject.relaction.dialog.main.label.name')"
-				:span="1"
-			>
+      <el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.name')" :span="1">
 				{{ subject.name }}
 			</el-descriptions-item>
-			<el-descriptions-item
-				:label="t('module.subject.relaction.dialog.main.label.name_cn')"
-				:span="1"
-			>
+      <el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.name_cn')" :span="1">
 				{{ subject.name_cn }}
 			</el-descriptions-item>
-			<el-descriptions-item
-				:label="t('module.subject.relaction.dialog.main.label.air_time')"
-				:span="1"
-			>
+      <el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.air_time')" :span="1">
 				{{ subject.airTime }}
 			</el-descriptions-item>
-			<el-descriptions-item
-				:label="t('module.subject.relaction.dialog.main.label.type')"
-				:span="1"
-			>
+      <el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.type')" :span="1">
 				{{ subject.type }}
 			</el-descriptions-item>
-			<el-descriptions-item
-				:label="t('module.subject.relaction.dialog.main.label.nsfw')"
-				:span="1"
-			>
+      <el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.nsfw')" :span="1">
 				{{ subject.nsfw }}
 			</el-descriptions-item>
-			<el-descriptions-item
-				:label="t('module.subject.relaction.dialog.main.label.summary')"
-				:span="6"
-			>
+      <el-descriptions-item :label="t('module.subject.relaction.dialog.main.label.summary')" :span="6">
 				{{ subject.summary }}
 			</el-descriptions-item>
 		</el-descriptions>
@@ -315,10 +286,7 @@ onMounted(() => {
 				<el-button @click="subjectRelationPostDialogVisible = true">
 					{{ t('module.subject.relaction.dialog.main.button.add') }}
 				</el-button>
-				<el-button
-					type="danger"
-					@click="subjectRelationDeleteDialogVisible = true"
-				>
+        <el-button type="danger" @click="subjectRelationDeleteDialogVisible = true">
 					{{ t('module.subject.relaction.dialog.main.button.delete') }}
 				</el-button>
 			</el-col>
@@ -327,300 +295,121 @@ onMounted(() => {
 		<br />
 
 		<el-tabs v-model="activeTabName">
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.anime', {
-						length: relationAnimes.length,
-					})
-				"
-				name="ANIME"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.anime', {
+				length: relationAnimes.length,
+			})
+				" name="ANIME">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="anime in relationAnimes"
-						:key="anime.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="anime.id"
-							:cover="anime.cover"
-							:name="anime.name"
-							:name-cn="anime.name_cn"
-						/>
+          <el-col v-for="anime in relationAnimes" :key="anime.id" :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <SubjectCardLink :id="anime.id" :cover="anime.cover" :name="anime.name"
+                             :name-cn="anime.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.comic', {
-						length: relationComics.length,
-					})
-				"
-				name="COMIC"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.comic', {
+				length: relationComics.length,
+			})
+				" name="COMIC">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="comic in relationComics"
-						:key="comic.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="comic.id"
-							:cover="comic.cover"
-							:name="comic.name"
-							:name-cn="comic.name_cn"
-						/>
+          <el-col v-for="comic in relationComics" :key="comic.id" :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <SubjectCardLink :id="comic.id" :cover="comic.cover" :name="comic.name"
+                             :name-cn="comic.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.game', {
-						length: relationGames.length,
-					})
-				"
-				name="GAME"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.game', {
+				length: relationGames.length,
+			})
+				" name="GAME">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="game in relationGames"
-						:key="game.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="game.id"
-							:cover="game.cover"
-							:name="game.name"
-							:name-cn="game.name_cn"
-						/>
+          <el-col v-for="game in relationGames" :key="game.id" :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <SubjectCardLink :id="game.id" :cover="game.cover" :name="game.name" :name-cn="game.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.music', {
-						length: relationMusics.length,
-					})
-				"
-				name="MUSIC"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.music', {
+				length: relationMusics.length,
+			})
+				" name="MUSIC">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="music in relationMusics"
-						:key="music.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="music.id"
-							:cover="music.cover"
-							:name="music.name"
-							:name-cn="music.name_cn"
-						/>
+          <el-col v-for="music in relationMusics" :key="music.id" :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <SubjectCardLink :id="music.id" :cover="music.cover" :name="music.name"
+                             :name-cn="music.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.novel', {
-						length: relationNovels.length,
-					})
-				"
-				name="NOVEL"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.novel', {
+				length: relationNovels.length,
+			})
+				" name="NOVEL">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="novel in relationNovels"
-						:key="novel.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="novel.id"
-							:cover="novel.cover"
-							:name="novel.name"
-							:name-cn="novel.name_cn"
-						/>
+          <el-col v-for="novel in relationNovels" :key="novel.id" :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <SubjectCardLink :id="novel.id" :cover="novel.cover" :name="novel.name"
+                             :name-cn="novel.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.real', {
-						length: relationReals.length,
-					})
-				"
-				name="REAL"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.real', {
+				length: relationReals.length,
+			})
+				" name="REAL">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="real in relationReals"
-						:key="real.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="real.id"
-							:cover="real.cover"
-							:name="real.name"
-							:name-cn="real.name_cn"
-						/>
+          <el-col v-for="real in relationReals" :key="real.id" :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <SubjectCardLink :id="real.id" :cover="real.cover" :name="real.name" :name-cn="real.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.before', {
-						length: relationBefores.length,
-					})
-				"
-				name="BEFORE"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.before', {
+				length: relationBefores.length,
+			})
+				" name="BEFORE">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="before in relationBefores"
-						:key="before.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="before.id"
-							:cover="before.cover"
-							:name="before.name"
-							:name-cn="before.name_cn"
-						/>
+          <el-col v-for="before in relationBefores" :key="before.id" :xs="24" :sm="12" :md="8" :lg="4"
+                  :xl="4">
+            <SubjectCardLink :id="before.id" :cover="before.cover" :name="before.name"
+                             :name-cn="before.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.after', {
-						length: relationAfters.length,
-					})
-				"
-				name="AFTER"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.after', {
+				length: relationAfters.length,
+			})
+				" name="AFTER">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="after in relationAfters"
-						:key="after.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="after.id"
-							:cover="after.cover"
-							:name="after.name"
-							:name-cn="after.name_cn"
-						/>
+          <el-col v-for="after in relationAfters" :key="after.id" :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <SubjectCardLink :id="after.id" :cover="after.cover" :name="after.name"
+                             :name-cn="after.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.same-worldview', {
-						length: relationSWs.length,
-					})
-				"
-				name="SAME_WORLDVIEW"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.same-worldview', {
+				length: relationSWs.length,
+			})
+				" name="SAME_WORLDVIEW">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="sw in relationSWs"
-						:key="sw.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="sw.id"
-							:cover="sw.cover"
-							:name="sw.name"
-							:name-cn="sw.name_cn"
-						/>
+          <el-col v-for="sw in relationSWs" :key="sw.id" :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <SubjectCardLink :id="sw.id" :cover="sw.cover" :name="sw.name" :name-cn="sw.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.ost', {
-						length: relationOSTs.length,
-					})
-				"
-				name="ORIGINAL_SOUND_TRACK"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.ost', {
+				length: relationOSTs.length,
+			})
+				" name="ORIGINAL_SOUND_TRACK">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="ost in relationOSTs"
-						:key="ost.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="ost.id"
-							:cover="ost.cover"
-							:name="ost.name"
-							:name-cn="ost.name_cn"
-						/>
+          <el-col v-for="ost in relationOSTs" :key="ost.id" :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <SubjectCardLink :id="ost.id" :cover="ost.cover" :name="ost.name" :name-cn="ost.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.other', {
-						length: relationOthers.length,
-					})
-				"
-				name="OTHER"
-			>
+      <el-tab-pane :label="t('module.subject.relaction.dialog.main.tab.label.other', {
+				length: relationOthers.length,
+			})
+				" name="OTHER">
 				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="other in relationOthers"
-						:key="other.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="other.id"
-							:cover="other.cover"
-							:name="other.name"
-							:name-cn="other.name_cn"
-						/>
+          <el-col v-for="other in relationOthers" :key="other.id" :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <SubjectCardLink :id="other.id" :cover="other.cover" :name="other.name"
+                             :name-cn="other.name_cn"/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>

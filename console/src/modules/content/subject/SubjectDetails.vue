@@ -4,6 +4,7 @@ import {
   AttachmentReferenceTypeEnum,
   Episode,
   EpisodeCollection,
+  EpisodeGroupEnum,
   Subject,
   SubjectCollection,
   SubjectTag,
@@ -16,7 +17,7 @@ import router from '@/router';
 import {Check, Close} from '@element-plus/icons-vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import {useRoute} from 'vue-router';
-import {nextTick, onMounted, ref, watch} from 'vue';
+import {computed, nextTick, onMounted, ref, watch} from 'vue';
 import {
   ElButton,
   ElCol,
@@ -31,7 +32,9 @@ import {
   ElSelect,
   ElTable,
   ElTableColumn,
-  ElTag,
+  ElTabPane,
+  ElTabs,
+  ElTag
 } from 'element-plus';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import {useSettingStore} from '@/stores/setting';
@@ -87,6 +90,9 @@ const fetchSubjectById = async () => {
 			batchMatchingSubjectButtonDisable.value = false;
 			deleteMatchingSubjectButtonDisable.value = false;
 		}
+    if (subject.value.episodes) {
+      loadEpisodeGroupLabels();
+    }
 	}
 };
 
@@ -543,6 +549,76 @@ const isEpisodeBindResource = (episode: Episode): boolean | undefined => {
 	return episode.resources && episode.resources.length > 0;
 };
 
+interface EpisdoeGroupItem {
+  group: EpisodeGroupEnum,
+  label: string,
+  count: number,
+}
+
+const episodeCountIsGt20 = computed(() => subject.value.total_episodes as number >= 20);
+
+const episodeGroupItems = ref<EpisdoeGroupItem[]>([]);
+const loadEpisodeGroupLabels = () => {
+  const groupCountMap = new Map<EpisodeGroupEnum, number>();
+  console.debug('subject', subject.value);
+  subject.value.episodes?.forEach(ep => {
+    const epGroup = ep.group as EpisodeGroupEnum;
+    if (groupCountMap.get(epGroup)) {
+      let count = groupCountMap.get(epGroup) as number;
+      count++;
+      groupCountMap.set(epGroup, count);
+    } else {
+      groupCountMap.set(epGroup, 1);
+    }
+  });
+  console.debug('groupCountMap', groupCountMap);
+  const epGroupItems: EpisdoeGroupItem[] = [];
+  // MAIN
+  epGroupItems.push({
+    group: EpisodeGroupEnum.Main,
+    label: t('module.subject.episode.group.' + EpisodeGroupEnum.Main.toString()),
+    count: groupCountMap.get(EpisodeGroupEnum.Main) as number
+  });
+  groupCountMap.delete(EpisodeGroupEnum.Main);
+  // OP
+  if (groupCountMap.has(EpisodeGroupEnum.OpeningSong)) {
+    epGroupItems.push({
+      group: EpisodeGroupEnum.OpeningSong,
+      label: t('module.subject.episode.group.' + EpisodeGroupEnum.OpeningSong.toString()),
+      count: groupCountMap.get(EpisodeGroupEnum.OpeningSong) as number
+    });
+    groupCountMap.delete(EpisodeGroupEnum.OpeningSong);
+  }
+  // ED
+  if (groupCountMap.has(EpisodeGroupEnum.EndingSong)) {
+    epGroupItems.push({
+      group: EpisodeGroupEnum.EndingSong,
+      label: t('module.subject.episode.group.' + EpisodeGroupEnum.EndingSong.toString()),
+      count: groupCountMap.get(EpisodeGroupEnum.EndingSong) as number
+    });
+    groupCountMap.delete(EpisodeGroupEnum.EndingSong);
+  }
+  // SP
+  if (groupCountMap.has(EpisodeGroupEnum.SpecialPromotion)) {
+    epGroupItems.push({
+      group: EpisodeGroupEnum.SpecialPromotion,
+      label: t('module.subject.episode.group.' + EpisodeGroupEnum.SpecialPromotion.toString()),
+      count: groupCountMap.get(EpisodeGroupEnum.SpecialPromotion) as number
+    });
+    groupCountMap.delete(EpisodeGroupEnum.SpecialPromotion);
+  }
+  // remaining
+  groupCountMap.forEach((val, key) => {
+    epGroupItems.push({
+      group: key,
+      label: t('module.subject.episode.group.' + key),
+      count: val
+    });
+  })
+  console.debug('epGroupLabelSet', epGroupItems);
+  episodeGroupItems.value = epGroupItems;
+}
+
 onMounted(fetchDatas);
 </script>
 
@@ -635,7 +711,8 @@ onMounted(fetchDatas);
 								{{ tag.name }}
 							</el-tag>
 							<el-input v-if="newTagInputVisible" ref="newTagInputRef" v-model="newTag.name" size="small"
-                        style="max-width: 80px" @blur="onNewTagNameChange" @keydown.enter="onNewTagNameChange"/>
+                        style="max-width: 80px" @blur="onNewTagNameChange"
+                        @keydown.enter="onNewTagNameChange"/>
 							<el-button v-else size="small" @click="showNewTagInput">
 								{{ t('module.subject.details.text.button.add-tag') }}
 							</el-button>
@@ -691,7 +768,97 @@ onMounted(fetchDatas);
 			</el-row>
 			<el-row>
 				<el-col :span="24">
-					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
+          <el-tabs v-if="episodeCountIsGt20" type="border-card">
+            <el-tab-pane v-for="item in episodeGroupItems" :key="item.group" :label="item.label">
+              <el-table :data="subject.episodes?.filter(ep => ep.group === item.group)"
+                        @row-dblclick="showEpisodeDetails">
+                <el-table-column :label="t('module.subject.details.episode.label.sequence')"
+                                 prop="sequence" width="80px" sortable/>
+                <el-table-column :label="t('module.subject.details.episode.label.name')" prop="name"/>
+                <el-table-column :label="t('module.subject.details.episode.label.name_cn')"
+                                 prop="name_cn"/>
+                <el-table-column :label="t('module.subject.details.episode.label.air_time')"
+                                 prop="air_time" sortable :formatter="airTimeDateFormatter"/>
+                <el-table-column :label="t('module.subject.details.episode.label.operate')" width="320">
+                  <template #header>
+                    <el-button plain :loading="batchMatchingSubjectButtonLoading"
+                               :disabled="batchMatchingSubjectButtonDisable" @click="() => {
+												attachmentMultiSelectDialogVisible = true;
+												bindMasterIsEpisodeFlag = false;
+											}
+												">
+                      {{
+                        t(
+                            'module.subject.details.episode.label.button.batch-resources'
+                        )
+                      }}
+                    </el-button>
+                    <el-popconfirm :title="t('module.subject.details.cancel-batch-popconfirm.title')
+											" @confirm="deleteBatchingAttachments">
+                      <template #reference>
+                        <el-button plain type="danger"
+                                   :disabled="deleteMatchingSubjectButtonDisable"
+                                   :loading="batchCancenMatchingSubjectButtonLoading">
+                          {{
+                            t(
+                                'module.subject.details.episode.label.button.cancel-batch-resources'
+                            )
+                          }}
+                        </el-button>
+                      </template>
+                    </el-popconfirm>
+                  </template>
+                  <template #default="scoped">
+                    <el-button plain :icon="isEpisodeBindResource(scoped.row) ? Check : Close"
+                               :color="isEpisodeBindResource(scoped.row) ? '#00CCFF' : '#FF0000'
+												" @click="showEpisodeDetails(scoped.row)">
+                      {{ t('module.subject.details.episode.label.button.details') }}
+                    </el-button>
+
+                    <el-button plain :icon="getEpisodeCollectionByEpisodeId(scoped.row)?.finish
+											? Check
+											: Close
+											" @click="
+												udpateEpisodeCollectionProgress(
+													!getEpisodeCollectionByEpisodeId(scoped.row)?.finish,
+													scoped.row
+												)
+												">
+                      {{
+                        getEpisodeCollectionByEpisodeId(scoped.row)?.finish
+                            ? t('module.subject.details.episode.label.button.reset')
+                            : t('module.subject.details.episode.label.button.done')
+                      }}
+                    </el-button>
+                    <!-- <el-button
+                      plain
+                      @click="showEpisodeCollectionDetails(scoped.row)"
+                    >
+                      进度
+                    </el-button> -->
+                    <el-button v-if="
+											settingStore.remoteEnable &&
+											scoped.row.resources &&
+											scoped.row.resources.length > 0
+										" plain @click="
+											openFileRemoteActionDialog(
+												scoped.row.resources[0].file_id,
+												scoped.row.resources[0].canRead
+											)
+											">
+											<span v-if="scoped.row.resources[0].canRead">
+												{{ t('module.subject.details.episode.label.button.push') }}
+											</span>
+                      <span v-else>
+												{{ t('module.subject.details.episode.label.button.pull') }}
+											</span>
+                    </el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-tab-pane>
+          </el-tabs>
+          <el-table v-else :data="subject.episodes" @row-dblclick="showEpisodeDetails">
 						<el-table-column :label="t('module.subject.details.episode.label.group')" prop="group"
 							width="110px" show-overflow-tooltip sortable>
 							<template #default="scoped">
@@ -708,9 +875,9 @@ onMounted(fetchDatas);
 							<template #header>
 								<el-button plain :loading="batchMatchingSubjectButtonLoading"
 									:disabled="batchMatchingSubjectButtonDisable" @click="() => {
-											attachmentMultiSelectDialogVisible = true;
-											bindMasterIsEpisodeFlag = false;
-										}
+										attachmentMultiSelectDialogVisible = true;
+										bindMasterIsEpisodeFlag = false;
+									}
 										">
 									{{
 										t(
@@ -739,8 +906,8 @@ onMounted(fetchDatas);
 								</el-button>
 
 								<el-button plain :icon="getEpisodeCollectionByEpisodeId(scoped.row)?.finish
-										? Check
-										: Close
+									? Check
+									: Close
 									" @click="
 										udpateEpisodeCollectionProgress(
 											!getEpisodeCollectionByEpisodeId(scoped.row)?.finish,
@@ -764,11 +931,11 @@ onMounted(fetchDatas);
 									scoped.row.resources &&
 									scoped.row.resources.length > 0
 								" plain @click="
-										openFileRemoteActionDialog(
-											scoped.row.resources[0].file_id,
-											scoped.row.resources[0].canRead
-										)
-										">
+									openFileRemoteActionDialog(
+										scoped.row.resources[0].file_id,
+										scoped.row.resources[0].canRead
+									)
+									">
 									<span v-if="scoped.row.resources[0].canRead">
 										{{ t('module.subject.details.episode.label.button.push') }}
 									</span>
