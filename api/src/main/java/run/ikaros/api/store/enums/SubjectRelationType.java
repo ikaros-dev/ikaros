@@ -24,9 +24,17 @@ public enum SubjectRelationType {
      */
     SAME_WORLDVIEW(10),
     /**
-     * OST.
+     * OST: Original Sound Track.
      */
-    ORIGINAL_SOUND_TRACK(11);
+    ORIGINAL_SOUND_TRACK(11),
+    /**
+     * OVA: Original Video Animation.
+     */
+    ORIGINAL_VIDEO_ANIMATION(12),
+    /**
+     * OAD: Original Animation Disc.
+     */
+    ORIGINAL_ANIMATION_DISC(13);
     // todo more subject relation type.
 
     private final int code;
