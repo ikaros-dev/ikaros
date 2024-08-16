@@ -5,6 +5,7 @@ import {Tickets} from '@element-plus/icons-vue';
 import SubjectSelectDrawer from './SubjectSelectDrawer.vue';
 import {apiClient} from '@/utils/api-client';
 import {useI18n} from 'vue-i18n';
+import {subjectRelationTypes} from '@/modules/common/constants';
 
 const { t } = useI18n();
 
@@ -115,50 +116,10 @@ const reqCreateRelaction = async () => {
 			>
 				<el-select v-model="selectSubjectReactionType" clearable>
 					<el-option
-						:label="t('module.subject.relaction.dialog.post.type.after')"
-						value="AFTER"
-					/>
-					<el-option
-						:label="t('module.subject.relaction.dialog.post.type.before')"
-						value="BEFORE"
-					/>
-					<el-option
-						:label="
-							t('module.subject.relaction.dialog.post.type.same-worldview')
-						"
-						value="SAME_WORLDVIEW"
-					/>
-					<el-option
-						:label="t('module.subject.relaction.dialog.post.type.ost')"
-						value="ORIGINAL_SOUND_TRACK"
-					/>
-					<el-option
-						:label="t('module.subject.relaction.dialog.post.type.anime')"
-						value="ANIME"
-					/>
-					<el-option
-						:label="t('module.subject.relaction.dialog.post.type.comic')"
-						value="COMIC"
-					/>
-					<el-option
-						:label="t('module.subject.relaction.dialog.post.type.game')"
-						value="GAME"
-					/>
-					<el-option
-						:label="t('module.subject.relaction.dialog.post.type.music')"
-						value="MUSIC"
-					/>
-					<el-option
-						:label="t('module.subject.relaction.dialog.post.type.novel')"
-						value="NOVEL"
-					/>
-					<el-option
-						:label="t('module.subject.relaction.dialog.post.type.real')"
-						value="REAL"
-					/>
-					<el-option
-						:label="t('module.subject.relaction.dialog.post.type.other')"
-						value="OTHER"
+						v-for="type in subjectRelationTypes"
+						:key="type"
+						:label="t('module.subject.relaction.type.' + type)"
+						:value="type"
 					/>
 				</el-select>
 			</el-form-item>
