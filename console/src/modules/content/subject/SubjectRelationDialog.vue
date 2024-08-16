@@ -92,25 +92,24 @@ const loadSubjectRelationTabItems = ()=>{
 			countMap.set(type, 1);
 		}
 	});
-	const tabItems:SubjectRelationTabItem[] = [];
+	subjectRelationTabItems.value = [];
 	countMap.forEach((val, key) => {
-		tabItems.push({
+		subjectRelationTabItems.value.push({
 			type: key,
 			label: t('module.subject.relaction.type.' + key)
 			+ '(' + val + ')',
 			count: val,
 		});
 	});
-	subjectRelationTabItems.value = tabItems;
 	console.debug('subjectRelationTabItems', subjectRelationTabItems.value);
 	if (subjectRelationTabItems.value.length > 0) {
 		activeTabName.value = subjectRelationTabItems.value[0].label
 	}
 }
-const typeRelSubjectMap = ref<Map<SubjectRelationRelationTypeEnum, Subject[]>>()
+const typeRelSubjectMap = ref<Map<SubjectRelationRelationTypeEnum, Subject[]>>(new Map())
 const loadTypeRelSubjectMap = async ()=>{
 	if (!(subjectRelations.value instanceof Array)) return;
-	const typeRelSubMap = new Map<SubjectRelationRelationTypeEnum, Subject[]>();
+	typeRelSubjectMap.value.clear();
 	await subjectRelations.value.forEach(async (subRel) => {
 		const type = subRel.relation_type;
 		const relSubs: Set<number> = subRel.relation_subjects;
@@ -119,21 +118,23 @@ const loadTypeRelSubjectMap = async ()=>{
 			let tmpSub = await subjectStore.getSubjectById(id);
 			subjects.push(tmpSub);
 		});
-		typeRelSubMap.set(type, subjects);
+		typeRelSubjectMap.value.set(type, subjects);
 	});
-	typeRelSubjectMap.value = typeRelSubMap;
 }
-
 
 const subjectRelationPostDialogVisible = ref(false);
 
 const onSubjectRelationPostDialogClose = async () => {
-	// await loadSubjectRelations();
-	window.location.reload();
+	await loadSubjectRelations();
+	setTimeout(() => {
+		window.location.reload();
+	}, 500);
 };
 const onSubjectRelationDeleteDialogClose = async () => {
-	// await loadSubjectRelations();
-	window.location.reload();
+	await loadSubjectRelations();
+	setTimeout(() => {
+		window.location.reload();
+	}, 500);
 };
 
 const subjectRelationDeleteDialogVisible = ref(false);
