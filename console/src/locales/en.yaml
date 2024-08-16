@@ -494,7 +494,7 @@ module:
               novel: Novel({length})
               real: Real({length})
               before: Before({length})
-              after: "After({length})\t"
+              after: After({length})
               same-worldview: SameWorldView({length})
               ost: OST({length})
               ova: OVA({length})
@@ -528,6 +528,20 @@ module:
           button:
             cancel: Cancel
             confirm: Confirm
+      type:
+        OTHER: Other
+        ANIME: Anime
+        COMIC: Comic
+        GAME: Game
+        MUSIC: Music
+        NOVEL: Novel
+        REAL: Real
+        BEFORE: Before
+        AFTER: After
+        SAME_WORLDVIEW: SameWord
+        ORIGINAL_SOUND_TRACK: OST
+        ORIGINAL_VIDEO_ANIMATION: OVA
+        ORIGINAL_ANIMATION_DISC: OAD
     dialog:
       episode:
         details:

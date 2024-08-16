@@ -580,6 +580,20 @@ module:
           button:
             cancel: 取消
             confirm: 关联
+      type:
+        OTHER: 其它
+        ANIME: 动漫
+        COMIC: 漫画
+        GAME: 游戏
+        MUSIC: 音乐
+        NOVEL: 小说
+        REAL: 三次元
+        BEFORE: 前传
+        AFTER: 后传
+        SAME_WORLDVIEW: 相同世界观
+        ORIGINAL_SOUND_TRACK: OST
+        ORIGINAL_VIDEO_ANIMATION: OVA
+        ORIGINAL_ANIMATION_DISC: OAD
     dialog:
       episode:
         details:
