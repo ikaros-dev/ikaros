@@ -90,6 +90,8 @@ const relationBefores = ref<Subject[]>([]);
 const relationAfters = ref<Subject[]>([]);
 const relationSWs = ref<Subject[]>([]);
 const relationOSTs = ref<Subject[]>([]);
+const relationOVAs = ref<Subject[]>([]);
+const relationOADs = ref<Subject[]>([]);
 const relationOthers = ref<Subject[]>([]);
 watch(subjectRelations, async (newSubjectRelations) => {
 	if (!newSubjectRelations || newSubjectRelations.length === 0) {
@@ -103,6 +105,8 @@ watch(subjectRelations, async (newSubjectRelations) => {
 		relationAfters.value = [];
 		relationSWs.value = [];
 		relationOSTs.value = [];
+		relationOVAs.value = [];
+		relationOADs.value = [];
 		relationOthers.value = [];
 	}
 	if (!(newSubjectRelations instanceof Array)) return;
@@ -198,6 +202,24 @@ watch(subjectRelations, async (newSubjectRelations) => {
 					subjects.push(tmpSub);
 				});
 				relationOSTs.value = subjects;
+				break;
+			}
+			case 'ORIGINAL_VIDEO_ANIMATION': {
+				let subjects: Subject[] = [];
+				await relSubs.forEach(async (id) => {
+					let tmpSub = await subjectStore.getSubjectById(id);
+					subjects.push(tmpSub);
+				});
+				relationOVAs.value = subjects;
+				break;
+			}
+			case 'ORIGINAL_ANIMATION_DISC': {
+				let subjects: Subject[] = [];
+				await relSubs.forEach(async (id) => {
+					let tmpSub = await subjectStore.getSubjectById(id);
+					subjects.push(tmpSub);
+				});
+				relationOADs.value = subjects;
 				break;
 			}
 			case 'OTHER': {
@@ -595,6 +617,60 @@ onMounted(() => {
 							:cover="ost.cover"
 							:name="ost.name"
 							:name-cn="ost.name_cn"
+						/>
+					</el-col>
+				</el-row>
+			</el-tab-pane>
+			<el-tab-pane
+				:label="
+					t('module.subject.relaction.dialog.main.tab.label.ova', {
+						length: relationOVAs.length,
+					})
+				"
+				name="ORIGINAL_VIDEO_ANIMATION"
+			>
+				<el-row :gutter="10" justify="start" align="middle">
+					<el-col
+						v-for="ova in relationOVAs"
+						:key="ova.id"
+						:xs="24"
+						:sm="12"
+						:md="8"
+						:lg="4"
+						:xl="4"
+					>
+						<SubjectCardLink
+							:id="ova.id"
+							:cover="ova.cover"
+							:name="ova.name"
+							:name-cn="ova.name_cn"
+						/>
+					</el-col>
+				</el-row>
+			</el-tab-pane>
+			<el-tab-pane
+				:label="
+					t('module.subject.relaction.dialog.main.tab.label.oad', {
+						length: relationOADs.length,
+					})
+				"
+				name="ORIGINAL_ANIMATION_DISC"
+			>
+				<el-row :gutter="10" justify="start" align="middle">
+					<el-col
+						v-for="oad in relationOADs"
+						:key="oad.id"
+						:xs="24"
+						:sm="12"
+						:md="8"
+						:lg="4"
+						:xl="4"
+					>
+						<SubjectCardLink
+							:id="oad.id"
+							:cover="oad.cover"
+							:name="oad.name"
+							:name-cn="oad.name_cn"
 						/>
 					</el-col>
 				</el-row>

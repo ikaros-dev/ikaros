@@ -551,6 +551,8 @@ module:
               after: 后传({length})
               same-worldview: 相同世界观({length})
               ost: OST({length})
+              ova: OVA({length})
+              oad: OAD({length})
               other: 其它({length})
         post:
           title: 条目关系新增
@@ -730,6 +732,9 @@ module:
         SMALL_THEATER: 相同世界观
         LIVE: 直播
         COMMERCIAL_MESSAGE: 广告
+        ORIGINAL_SOUND_TRACK: OST
+        ORIGINAL_VIDEO_ANIMATION: OVA
+        ORIGINAL_ANIMATION_DISC: OAD
         MUSIC_DIST1: MD1
         MUSIC_DIST2: MD2
         MUSIC_DIST3: MD3

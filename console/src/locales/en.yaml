@@ -497,6 +497,8 @@ module:
               after: "After({length})\t"
               same-worldview: SameWorldView({length})
               ost: OST({length})
+              ova: OVA({length})
+              oad: OAD({length})
               other: Other({length})
         post:
           message:
@@ -692,6 +694,9 @@ module:
         SMALL_THEATER: ST
         LIVE: Live
         COMMERCIAL_MESSAGE: CM
+        ORIGINAL_SOUND_TRACK: OST
+        ORIGINAL_VIDEO_ANIMATION: OVA
+        ORIGINAL_ANIMATION_DISC: OAD
         MUSIC_DIST1: MD1
         MUSIC_DIST2: MD2
         MUSIC_DIST3: MD3

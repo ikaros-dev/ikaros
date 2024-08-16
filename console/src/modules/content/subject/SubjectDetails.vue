@@ -546,6 +546,21 @@ interface EpisdoeGroupItem {
 }
 
 const episodeGroupItems = ref<EpisdoeGroupItem[]>([]);
+const doPushEpGroupItems = (
+	group:EpisodeGroupEnum, 
+	groupCountMap:Map<EpisodeGroupEnum, number>,
+	epGroupItems: EpisdoeGroupItem[])=>{
+	if (!groupCountMap.has(group)) return;
+	const count = groupCountMap.get(group) as number;
+	epGroupItems.push({
+		group:group,
+		count: count,
+		label: t(
+			'module.subject.episode.group.' + group.toString()
+		) + '(' + count + ')'
+	});
+	groupCountMap.delete(group);
+}
 const loadEpisodeGroupLabels = () => {
 	const groupCountMap = new Map<EpisodeGroupEnum, number>();
 	console.debug('subject', subject.value);
@@ -562,54 +577,23 @@ const loadEpisodeGroupLabels = () => {
 	console.debug('groupCountMap', groupCountMap);
 	const epGroupItems: EpisdoeGroupItem[] = [];
 	// MAIN
-	epGroupItems.push({
-		group: EpisodeGroupEnum.Main,
-		label: t(
-			'module.subject.episode.group.' + EpisodeGroupEnum.Main.toString()
-		),
-		count: groupCountMap.get(EpisodeGroupEnum.Main) as number,
-	});
-	groupCountMap.delete(EpisodeGroupEnum.Main);
+	doPushEpGroupItems(EpisodeGroupEnum.Main, groupCountMap, epGroupItems);
+
 	// OP
-	if (groupCountMap.has(EpisodeGroupEnum.OpeningSong)) {
-		epGroupItems.push({
-			group: EpisodeGroupEnum.OpeningSong,
-			label: t(
-				'module.subject.episode.group.' +
-					EpisodeGroupEnum.OpeningSong.toString()
-			),
-			count: groupCountMap.get(EpisodeGroupEnum.OpeningSong) as number,
-		});
-		groupCountMap.delete(EpisodeGroupEnum.OpeningSong);
-	}
+	doPushEpGroupItems(EpisodeGroupEnum.OpeningSong, groupCountMap, epGroupItems);
+
 	// ED
-	if (groupCountMap.has(EpisodeGroupEnum.EndingSong)) {
-		epGroupItems.push({
-			group: EpisodeGroupEnum.EndingSong,
-			label: t(
-				'module.subject.episode.group.' + EpisodeGroupEnum.EndingSong.toString()
-			),
-			count: groupCountMap.get(EpisodeGroupEnum.EndingSong) as number,
-		});
-		groupCountMap.delete(EpisodeGroupEnum.EndingSong);
-	}
+	doPushEpGroupItems(EpisodeGroupEnum.EndingSong, groupCountMap, epGroupItems);
+
 	// SP
-	if (groupCountMap.has(EpisodeGroupEnum.SpecialPromotion)) {
-		epGroupItems.push({
-			group: EpisodeGroupEnum.SpecialPromotion,
-			label: t(
-				'module.subject.episode.group.' +
-					EpisodeGroupEnum.SpecialPromotion.toString()
-			),
-			count: groupCountMap.get(EpisodeGroupEnum.SpecialPromotion) as number,
-		});
-		groupCountMap.delete(EpisodeGroupEnum.SpecialPromotion);
-	}
+	doPushEpGroupItems(EpisodeGroupEnum.SpecialPromotion, groupCountMap, epGroupItems);
+
 	// remaining
 	groupCountMap.forEach((val, key) => {
 		epGroupItems.push({
 			group: key,
-			label: t('module.subject.episode.group.' + key),
+			label: t('module.subject.episode.group.' + key)
+			+ '(' + val + ')',
 			count: val,
 		});
 	});

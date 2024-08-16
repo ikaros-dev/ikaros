@@ -50,6 +50,8 @@ export const SubjectRelationRelationTypeEnum = {
   After: "AFTER",
   SameWorldview: "SAME_WORLDVIEW",
   OriginalSoundTrack: "ORIGINAL_SOUND_TRACK",
+  OriginalVideoAnimation: "ORIGINAL_VIDEO_ANIMATION",
+  OriginalAnimationDisc: "ORIGINAL_ANIMATION_DISC",
 } as const;
 
 export type SubjectRelationRelationTypeEnum =
