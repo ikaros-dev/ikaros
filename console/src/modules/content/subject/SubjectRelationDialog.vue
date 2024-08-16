@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from 'vue';
-import {Subject, SubjectRelation, SubjectTypeEnum,} from '@runikaros/api-client';
+import {computed, onMounted, ref} from 'vue';
+import {Subject, SubjectRelation, SubjectRelationRelationTypeEnum, SubjectTypeEnum,} from '@runikaros/api-client';
 import {apiClient} from '@/utils/api-client';
 import {useRoute} from 'vue-router';
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
@@ -13,13 +13,6 @@ import {useI18n} from 'vue-i18n';
 const subjectStore = useSubjectStore();
 const { t } = useI18n();
 const route = useRoute();
-// watch(route, async () => {
-// 	if (!route.params?.id && route.params?.id === undefined) {
-// 		return;
-// 	}
-// 	// console.log(route.params.id);
-// 	await loadSubject();
-// });
 
 const props = withDefaults(
 	defineProps<{
@@ -65,11 +58,8 @@ const loadSubject = async () => {
 		id: subject.value.id,
 	});
 	subject.value = data;
-};
-watch(subject, async () => {
-	subjectRelations.value = [];
 	await loadSubjectRelations();
-});
+};
 const subjectRelations = ref<SubjectRelation[]>([]);
 const loadSubjectRelations = async () => {
 	const { data } = await apiClient.subjectRelation.getSubjectRelationsById({
@@ -78,179 +68,72 @@ const loadSubjectRelations = async () => {
 	// console.log('subject relations rsp:', rsp);
 	if (data instanceof Array) {
 		subjectRelations.value = data;
+		loadSubjectRelationTabItems();
+		loadTypeRelSubjectMap();
 	}
 };
-const relationAnimes = ref<Subject[]>([]);
-const relationComics = ref<Subject[]>([]);
-const relationGames = ref<Subject[]>([]);
-const relationMusics = ref<Subject[]>([]);
-const relationNovels = ref<Subject[]>([]);
-const relationReals = ref<Subject[]>([]);
-const relationBefores = ref<Subject[]>([]);
-const relationAfters = ref<Subject[]>([]);
-const relationSWs = ref<Subject[]>([]);
-const relationOSTs = ref<Subject[]>([]);
-const relationOVAs = ref<Subject[]>([]);
-const relationOADs = ref<Subject[]>([]);
-const relationOthers = ref<Subject[]>([]);
-watch(subjectRelations, async (newSubjectRelations) => {
-	if (!newSubjectRelations || newSubjectRelations.length === 0) {
-		relationAnimes.value = [];
-		relationComics.value = [];
-		relationGames.value = [];
-		relationMusics.value = [];
-		relationNovels.value = [];
-		relationReals.value = [];
-		relationBefores.value = [];
-		relationAfters.value = [];
-		relationSWs.value = [];
-		relationOSTs.value = [];
-		relationOVAs.value = [];
-		relationOADs.value = [];
-		relationOthers.value = [];
-	}
-	if (!(newSubjectRelations instanceof Array)) return;
-	await newSubjectRelations.forEach(async (subRel: SubjectRelation) => {
-		const type = subRel.relation_type;
-		const relSubs: Set<number> = subRel.relation_subjects;
-		switch (type) {
-			case 'ANIME': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationAnimes.value = subjects;
-				break;
-			}
-			case 'COMIC': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationComics.value = subjects;
-				break;
-			}
-			case 'GAME': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationGames.value = subjects;
-				break;
-			}
-			case 'MUSIC': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationMusics.value = subjects;
-				break;
-			}
-			case 'NOVEL': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationNovels.value = subjects;
-				break;
-			}
-			case 'REAL': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationReals.value = subjects;
-				break;
-			}
-			case 'BEFORE': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationBefores.value = subjects;
-				break;
-			}
-			case 'AFTER': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationAfters.value = subjects;
-				break;
-			}
-			case 'SAME_WORLDVIEW': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationSWs.value = subjects;
-				break;
-			}
-			case 'ORIGINAL_SOUND_TRACK': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationOSTs.value = subjects;
-				break;
-			}
-			case 'ORIGINAL_VIDEO_ANIMATION': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationOVAs.value = subjects;
-				break;
-			}
-			case 'ORIGINAL_ANIMATION_DISC': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationOADs.value = subjects;
-				break;
-			}
-			case 'OTHER': {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationOthers.value = subjects;
-				break;
-			}
-			default: {
-				let subjects: Subject[] = [];
-				await relSubs.forEach(async (id) => {
-					let tmpSub = await subjectStore.getSubjectById(id);
-					subjects.push(tmpSub);
-				});
-				relationOthers.value = subjects;
-				break;
-			}
+interface SubjectRelationTabItem {
+	type:SubjectRelationRelationTypeEnum,
+	count:number,
+	label:string
+}
+const subjectRelationTabItems = ref<SubjectRelationTabItem[]>([]);
+const loadSubjectRelationTabItems = ()=>{
+	if (!(subjectRelations.value instanceof Array)) return;
+	// convert count map
+	const countMap = new Map<SubjectRelationRelationTypeEnum, number>();
+	subjectRelations.value.forEach(e => {
+		const type = e.relation_type;
+		if (countMap.has(type)) {
+			let count = countMap.get(type) as number;
+			count++;
+			countMap.set(type, count);
+		} else {
+			countMap.set(type, 1);
 		}
 	});
-});
+	const tabItems:SubjectRelationTabItem[] = [];
+	countMap.forEach((val, key) => {
+		tabItems.push({
+			type: key,
+			label: t('module.subject.relaction.type.' + key)
+			+ '(' + val + ')',
+			count: val,
+		});
+	});
+	subjectRelationTabItems.value = tabItems;
+	console.debug('subjectRelationTabItems', subjectRelationTabItems.value);
+	if (subjectRelationTabItems.value.length > 0) {
+		activeTabName.value = subjectRelationTabItems.value[0].label
+	}
+}
+const typeRelSubjectMap = ref<Map<SubjectRelationRelationTypeEnum, Subject[]>>()
+const loadTypeRelSubjectMap = async ()=>{
+	if (!(subjectRelations.value instanceof Array)) return;
+	const typeRelSubMap = new Map<SubjectRelationRelationTypeEnum, Subject[]>();
+	await subjectRelations.value.forEach(async (subRel) => {
+		const type = subRel.relation_type;
+		const relSubs: Set<number> = subRel.relation_subjects;
+		let subjects: Subject[] = [];
+		await relSubs.forEach(async (id) => {
+			let tmpSub = await subjectStore.getSubjectById(id);
+			subjects.push(tmpSub);
+		});
+		typeRelSubMap.set(type, subjects);
+	});
+	typeRelSubjectMap.value = typeRelSubMap;
+}
+
 
 const subjectRelationPostDialogVisible = ref(false);
 
 const onSubjectRelationPostDialogClose = async () => {
-	await loadSubjectRelations();
+	// await loadSubjectRelations();
+	window.location.reload();
 };
 const onSubjectRelationDeleteDialogClose = async () => {
-	await loadSubjectRelations();
+	// await loadSubjectRelations();
+	window.location.reload();
 };
 
 const subjectRelationDeleteDialogVisible = ref(false);
@@ -350,19 +233,17 @@ onMounted(() => {
 
 		<br />
 
-		<el-tabs v-model="activeTabName">
+		<el-tabs v-if="subjectRelationTabItems && subjectRelationTabItems.length > 0" v-model="activeTabName" type="border-card" >
 			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.anime', {
-						length: relationAnimes.length,
-					})
-				"
-				name="ANIME"
+				v-for="item in subjectRelationTabItems"
+				:key="item.type"
+				:label="item.label"
+				:name="item.label"
 			>
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
-						v-for="anime in relationAnimes"
-						:key="anime.id"
+						v-for="sub in (typeRelSubjectMap?.get(item.type))"
+						:key="sub.id"
 						:xs="24"
 						:sm="12"
 						:md="8"
@@ -370,339 +251,17 @@ onMounted(() => {
 						:xl="4"
 					>
 						<SubjectCardLink
-							:id="anime.id"
-							:cover="anime.cover"
-							:name="anime.name"
-							:name-cn="anime.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.comic', {
-						length: relationComics.length,
-					})
-				"
-				name="COMIC"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="comic in relationComics"
-						:key="comic.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="comic.id"
-							:cover="comic.cover"
-							:name="comic.name"
-							:name-cn="comic.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.game', {
-						length: relationGames.length,
-					})
-				"
-				name="GAME"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="game in relationGames"
-						:key="game.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="game.id"
-							:cover="game.cover"
-							:name="game.name"
-							:name-cn="game.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.music', {
-						length: relationMusics.length,
-					})
-				"
-				name="MUSIC"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="music in relationMusics"
-						:key="music.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="music.id"
-							:cover="music.cover"
-							:name="music.name"
-							:name-cn="music.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.novel', {
-						length: relationNovels.length,
-					})
-				"
-				name="NOVEL"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="novel in relationNovels"
-						:key="novel.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="novel.id"
-							:cover="novel.cover"
-							:name="novel.name"
-							:name-cn="novel.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.real', {
-						length: relationReals.length,
-					})
-				"
-				name="REAL"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="real in relationReals"
-						:key="real.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="real.id"
-							:cover="real.cover"
-							:name="real.name"
-							:name-cn="real.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.before', {
-						length: relationBefores.length,
-					})
-				"
-				name="BEFORE"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="before in relationBefores"
-						:key="before.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="before.id"
-							:cover="before.cover"
-							:name="before.name"
-							:name-cn="before.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.after', {
-						length: relationAfters.length,
-					})
-				"
-				name="AFTER"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="after in relationAfters"
-						:key="after.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="after.id"
-							:cover="after.cover"
-							:name="after.name"
-							:name-cn="after.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.same-worldview', {
-						length: relationSWs.length,
-					})
-				"
-				name="SAME_WORLDVIEW"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="sw in relationSWs"
-						:key="sw.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="sw.id"
-							:cover="sw.cover"
-							:name="sw.name"
-							:name-cn="sw.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.ost', {
-						length: relationOSTs.length,
-					})
-				"
-				name="ORIGINAL_SOUND_TRACK"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="ost in relationOSTs"
-						:key="ost.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="ost.id"
-							:cover="ost.cover"
-							:name="ost.name"
-							:name-cn="ost.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.ova', {
-						length: relationOVAs.length,
-					})
-				"
-				name="ORIGINAL_VIDEO_ANIMATION"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="ova in relationOVAs"
-						:key="ova.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="ova.id"
-							:cover="ova.cover"
-							:name="ova.name"
-							:name-cn="ova.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.oad', {
-						length: relationOADs.length,
-					})
-				"
-				name="ORIGINAL_ANIMATION_DISC"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="oad in relationOADs"
-						:key="oad.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="oad.id"
-							:cover="oad.cover"
-							:name="oad.name"
-							:name-cn="oad.name_cn"
-						/>
-					</el-col>
-				</el-row>
-			</el-tab-pane>
-			<el-tab-pane
-				:label="
-					t('module.subject.relaction.dialog.main.tab.label.other', {
-						length: relationOthers.length,
-					})
-				"
-				name="OTHER"
-			>
-				<el-row :gutter="10" justify="start" align="middle">
-					<el-col
-						v-for="other in relationOthers"
-						:key="other.id"
-						:xs="24"
-						:sm="12"
-						:md="8"
-						:lg="4"
-						:xl="4"
-					>
-						<SubjectCardLink
-							:id="other.id"
-							:cover="other.cover"
-							:name="other.name"
-							:name-cn="other.name_cn"
+							:id="sub.id"
+							:cover="sub.cover"
+							:name="sub.name"
+							:name-cn="sub.name_cn"
+							:percentage="0"
 						/>
 					</el-col>
 				</el-row>
 			</el-tab-pane>
 		</el-tabs>
+
 	</el-dialog>
 </template>
 
