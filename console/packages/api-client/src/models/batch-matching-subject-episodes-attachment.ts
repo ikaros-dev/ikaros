@@ -30,4 +30,33 @@ export interface BatchMatchingSubjectEpisodesAttachment {
    * @memberof BatchMatchingSubjectEpisodesAttachment
    */
   attachmentIds: Array<number>;
+  /**
+   * subject episode group.
+   * @type {string}
+   * @memberof BatchMatchingSubjectEpisodesAttachment
+   */
+  episodeGroup?: BatchMatchingSubjectEpisodesAttachmentEpisodeGroupEnum;
 }
+
+export const BatchMatchingSubjectEpisodesAttachmentEpisodeGroupEnum = {
+  Main: "MAIN",
+  PromotionVideo: "PROMOTION_VIDEO",
+  OpeningSong: "OPENING_SONG",
+  EndingSong: "ENDING_SONG",
+  SpecialPromotion: "SPECIAL_PROMOTION",
+  SmallTheater: "SMALL_THEATER",
+  Live: "LIVE",
+  CommercialMessage: "COMMERCIAL_MESSAGE",
+  OriginalSoundTrack: "ORIGINAL_SOUND_TRACK",
+  OriginalVideoAnimation: "ORIGINAL_VIDEO_ANIMATION",
+  OriginalAnimationDisc: "ORIGINAL_ANIMATION_DISC",
+  MusicDist1: "MUSIC_DIST1",
+  MusicDist2: "MUSIC_DIST2",
+  MusicDist3: "MUSIC_DIST3",
+  MusicDist4: "MUSIC_DIST4",
+  MusicDist5: "MUSIC_DIST5",
+  Other: "OTHER",
+} as const;
+
+export type BatchMatchingSubjectEpisodesAttachmentEpisodeGroupEnum =
+  (typeof BatchMatchingSubjectEpisodesAttachmentEpisodeGroupEnum)[keyof typeof BatchMatchingSubjectEpisodesAttachmentEpisodeGroupEnum];

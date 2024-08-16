@@ -17,7 +17,7 @@ import router from '@/router';
 import {Check, Close} from '@element-plus/icons-vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import {useRoute} from 'vue-router';
-import {computed, nextTick, onMounted, ref, watch} from 'vue';
+import {nextTick, onMounted, ref, watch} from 'vue';
 import {
   ElButton,
   ElCol,
@@ -38,7 +38,6 @@ import {
 } from 'element-plus';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import {useSettingStore} from '@/stores/setting';
-import {episodeGroupLabelMap} from '@/modules/common/constants';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
 import {useSubjectStore} from '@/stores/subject';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
@@ -274,16 +273,6 @@ const updateSubjectCollection = async () => {
 			| 'DISCARD',
 	});
 	ElMessage.success(t('module.subject.collect.message.operate.update.success'));
-};
-const updateSubjectCollectionProgress = async () => {
-	await apiClient.collectionSubject.updateCollectionSubjectMainEpProgress({
-		subjectId: subject.value.id as number,
-		progress: subjectCollection.value.main_ep_progress as number,
-	});
-	ElMessage.success(
-		t('module.subject.collect.message.operate.update-progress.success')
-	);
-	await fetchDatas();
 };
 
 const subjectCollectDialogVisible = ref(false);
@@ -556,11 +545,22 @@ interface EpisdoeGroupItem {
 	count: number;
 }
 
-const episodeCountIsGt20 = computed(
-	() => (subject.value.total_episodes as number) >= 20
-);
-
 const episodeGroupItems = ref<EpisdoeGroupItem[]>([]);
+const doPushEpGroupItems = (
+	group:EpisodeGroupEnum, 
+	groupCountMap:Map<EpisodeGroupEnum, number>,
+	epGroupItems: EpisdoeGroupItem[])=>{
+	if (!groupCountMap.has(group)) return;
+	const count = groupCountMap.get(group) as number;
+	epGroupItems.push({
+		group:group,
+		count: count,
+		label: t(
+			'module.subject.episode.group.' + group.toString()
+		) + '(' + count + ')'
+	});
+	groupCountMap.delete(group);
+}
 const loadEpisodeGroupLabels = () => {
 	const groupCountMap = new Map<EpisodeGroupEnum, number>();
 	console.debug('subject', subject.value);
@@ -577,54 +577,23 @@ const loadEpisodeGroupLabels = () => {
 	console.debug('groupCountMap', groupCountMap);
 	const epGroupItems: EpisdoeGroupItem[] = [];
 	// MAIN
-	epGroupItems.push({
-		group: EpisodeGroupEnum.Main,
-		label: t(
-			'module.subject.episode.group.' + EpisodeGroupEnum.Main.toString()
-		),
-		count: groupCountMap.get(EpisodeGroupEnum.Main) as number,
-	});
-	groupCountMap.delete(EpisodeGroupEnum.Main);
+	doPushEpGroupItems(EpisodeGroupEnum.Main, groupCountMap, epGroupItems);
+
 	// OP
-	if (groupCountMap.has(EpisodeGroupEnum.OpeningSong)) {
-		epGroupItems.push({
-			group: EpisodeGroupEnum.OpeningSong,
-			label: t(
-				'module.subject.episode.group.' +
-					EpisodeGroupEnum.OpeningSong.toString()
-			),
-			count: groupCountMap.get(EpisodeGroupEnum.OpeningSong) as number,
-		});
-		groupCountMap.delete(EpisodeGroupEnum.OpeningSong);
-	}
+	doPushEpGroupItems(EpisodeGroupEnum.OpeningSong, groupCountMap, epGroupItems);
+
 	// ED
-	if (groupCountMap.has(EpisodeGroupEnum.EndingSong)) {
-		epGroupItems.push({
-			group: EpisodeGroupEnum.EndingSong,
-			label: t(
-				'module.subject.episode.group.' + EpisodeGroupEnum.EndingSong.toString()
-			),
-			count: groupCountMap.get(EpisodeGroupEnum.EndingSong) as number,
-		});
-		groupCountMap.delete(EpisodeGroupEnum.EndingSong);
-	}
+	doPushEpGroupItems(EpisodeGroupEnum.EndingSong, groupCountMap, epGroupItems);
+
 	// SP
-	if (groupCountMap.has(EpisodeGroupEnum.SpecialPromotion)) {
-		epGroupItems.push({
-			group: EpisodeGroupEnum.SpecialPromotion,
-			label: t(
-				'module.subject.episode.group.' +
-					EpisodeGroupEnum.SpecialPromotion.toString()
-			),
-			count: groupCountMap.get(EpisodeGroupEnum.SpecialPromotion) as number,
-		});
-		groupCountMap.delete(EpisodeGroupEnum.SpecialPromotion);
-	}
+	doPushEpGroupItems(EpisodeGroupEnum.SpecialPromotion, groupCountMap, epGroupItems);
+
 	// remaining
 	groupCountMap.forEach((val, key) => {
 		epGroupItems.push({
 			group: key,
-			label: t('module.subject.episode.group.' + key),
+			label: t('module.subject.episode.group.' + key)
+			+ '(' + val + ')',
 			count: val,
 		});
 	});
@@ -871,22 +840,13 @@ onMounted(fetchDatas);
 									value="DISCARD"
 								/>
 							</el-select>
-							&nbsp;&nbsp; {{ t('module.subject.collect.progress.text') }}:
-							<el-input
-								v-model="subjectCollection.main_ep_progress"
-								:placeholder="
-									t('module.subject.collect.progress.update-input.placeholder')
-								"
-								style="width: 200px"
-								@change="updateSubjectCollectionProgress"
-							/>
 						</el-descriptions-item>
 					</el-descriptions>
 				</el-col>
 			</el-row>
 			<el-row>
 				<el-col :span="24">
-					<el-tabs v-if="episodeCountIsGt20" type="border-card">
+					<el-tabs type="border-card">
 						<el-tab-pane
 							v-for="item in episodeGroupItems"
 							:key="item.group"
@@ -1043,148 +1003,6 @@ onMounted(fetchDatas);
 							</el-table>
 						</el-tab-pane>
 					</el-tabs>
-					<el-table
-						v-else
-						:data="subject.episodes"
-						@row-dblclick="showEpisodeDetails"
-					>
-						<el-table-column
-							:label="t('module.subject.details.episode.label.group')"
-							prop="group"
-							width="110px"
-							show-overflow-tooltip
-							sortable
-						>
-							<template #default="scoped">
-								{{ episodeGroupLabelMap.get(scoped.row.group) }}
-							</template>
-						</el-table-column>
-						<el-table-column
-							:label="t('module.subject.details.episode.label.sequence')"
-							prop="sequence"
-							width="80px"
-							sortable
-						/>
-						<el-table-column
-							:label="t('module.subject.details.episode.label.name')"
-							prop="name"
-						/>
-						<el-table-column
-							:label="t('module.subject.details.episode.label.name_cn')"
-							prop="name_cn"
-						/>
-						<el-table-column
-							:label="t('module.subject.details.episode.label.air_time')"
-							prop="air_time"
-							sortable
-							:formatter="airTimeDateFormatter"
-						/>
-						<el-table-column
-							:label="t('module.subject.details.episode.label.operate')"
-							width="320"
-						>
-							<template #header>
-								<el-button
-									plain
-									:loading="batchMatchingSubjectButtonLoading"
-									:disabled="batchMatchingSubjectButtonDisable"
-									@click="
-										() => {
-											attachmentMultiSelectDialogVisible = true;
-											bindMasterIsEpisodeFlag = false;
-										}
-									"
-								>
-									{{
-										t(
-											'module.subject.details.episode.label.button.batch-resources'
-										)
-									}}
-								</el-button>
-								<el-popconfirm
-									:title="
-										t('module.subject.details.cancel-batch-popconfirm.title')
-									"
-									@confirm="deleteBatchingAttachments"
-								>
-									<template #reference>
-										<el-button
-											plain
-											type="danger"
-											:disabled="deleteMatchingSubjectButtonDisable"
-											:loading="batchCancenMatchingSubjectButtonLoading"
-										>
-											{{
-												t(
-													'module.subject.details.episode.label.button.cancel-batch-resources'
-												)
-											}}
-										</el-button>
-									</template>
-								</el-popconfirm>
-							</template>
-							<template #default="scoped">
-								<el-button
-									plain
-									:icon="isEpisodeBindResource(scoped.row) ? Check : Close"
-									:color="
-										isEpisodeBindResource(scoped.row) ? '#00CCFF' : '#FF0000'
-									"
-									@click="showEpisodeDetails(scoped.row)"
-								>
-									{{ t('module.subject.details.episode.label.button.details') }}
-								</el-button>
-
-								<el-button
-									plain
-									:icon="
-										getEpisodeCollectionByEpisodeId(scoped.row)?.finish
-											? Check
-											: Close
-									"
-									@click="
-										udpateEpisodeCollectionProgress(
-											!getEpisodeCollectionByEpisodeId(scoped.row)?.finish,
-											scoped.row
-										)
-									"
-								>
-									{{
-										getEpisodeCollectionByEpisodeId(scoped.row)?.finish
-											? t('module.subject.details.episode.label.button.reset')
-											: t('module.subject.details.episode.label.button.done')
-									}}
-								</el-button>
-								<!-- <el-button
-									plain
-									@click="showEpisodeCollectionDetails(scoped.row)"
-								>
-									进度
-								</el-button> -->
-								<el-button
-									v-if="
-										settingStore.remoteEnable &&
-										scoped.row.resources &&
-										scoped.row.resources.length > 0
-									"
-									plain
-									@click="
-										openFileRemoteActionDialog(
-											scoped.row.resources[0].file_id,
-											scoped.row.resources[0].canRead
-										)
-									"
-								>
-									<span v-if="scoped.row.resources[0].canRead">
-										{{ t('module.subject.details.episode.label.button.push') }}
-									</span>
-									<span v-else>
-										{{ t('module.subject.details.episode.label.button.pull') }}
-									</span>
-								</el-button>
-							</template>
-						</el-table-column>
-					</el-table>
 				</el-col>
 			</el-row>
 		</el-col>
