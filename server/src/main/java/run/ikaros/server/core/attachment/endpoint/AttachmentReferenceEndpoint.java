@@ -133,7 +133,8 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                 batchMatchingSubjectEpisodesAttachment ->
                     service.matchingAttachmentsAndSubjectEpisodes(
                         batchMatchingSubjectEpisodesAttachment.getSubjectId(),
-                        batchMatchingSubjectEpisodesAttachment.getAttachmentIds()))
+                        batchMatchingSubjectEpisodesAttachment.getAttachmentIds(),
+                        batchMatchingSubjectEpisodesAttachment.getEpisodeGroup()))
             .then(ServerResponse.ok().build());
     }
 

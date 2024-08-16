@@ -92,12 +92,29 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
 
     @Override
     public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds) {
-        return matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds, false);
+        return matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds,
+            EpisodeGroup.MAIN, false);
+    }
+
+    @Override
+    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
+                                                            EpisodeGroup group) {
+        return matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds,
+            group, false);
     }
 
     @Override
     public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
                                                             boolean notify) {
+        Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
+        Assert.notNull(attachmentIds, "'attachmentIds' must not null.");
+        return matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds,
+            EpisodeGroup.MAIN, notify);
+    }
+
+    @Override
+    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
+                                                            EpisodeGroup group, boolean notify) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.notNull(attachmentIds, "'attachmentIds' must not null.");
         return Flux.fromArray(attachmentIds)
@@ -106,10 +123,11 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                     "Check fail, current attachment not found for id=" + attId))))
             .flatMap(entity -> getSeqMono(entity.getName())
                 .flatMap(seq -> episodeRepository.findBySubjectIdAndGroupAndSequence(subjectId,
-                        EpisodeGroup.MAIN, seq)
+                        group == null ? EpisodeGroup.MAIN : group, seq)
                     .switchIfEmpty(Mono.error(new AttachmentRefMatchingException(
                         "Matching fail, episode not fond by seq=" + seq
-                            + " and subjectId=" + subjectId))))
+                            + " and subjectId=" + subjectId
+                            + " and ep group=" + group))))
                 .flatMap(episodeEntity -> repository
                     .existsByTypeAndReferenceId(EPISODE, episodeEntity.getId())
                     .filter(exists -> !exists)

@@ -4,6 +4,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentReference;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.api.store.enums.EpisodeGroup;
 
 public interface AttachmentReferenceService {
     Mono<AttachmentReference> save(AttachmentReference attachmentReference);
@@ -19,7 +20,13 @@ public interface AttachmentReferenceService {
     Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds);
 
     Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
+                                                     EpisodeGroup group);
+
+    Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
                                                      boolean notify);
+
+    Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
+                                                     EpisodeGroup group, boolean notify);
 
     Mono<Void> matchingAttachmentsForEpisode(Long episodeId, Long[] attachmentIds);
 
