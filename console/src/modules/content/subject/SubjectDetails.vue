@@ -340,6 +340,10 @@ const udpateEpisodeCollectionProgress = async (
 	isFinish: boolean,
 	episode: Episode
 ) => {
+	if (!(subjectCollection.value.id)) {
+		ElMessage.warning(t('module.subject.episode.collect.message.operate.mark-finish-notcollect'));
+		return;
+	}
 	await apiClient.collectionEpisode.updateCollectionEpisodeFinish({
 		episodeId: episode.id as number,
 		finish: isFinish,

@@ -98,3 +98,19 @@ export const subtitleNameChineseMap = new Map([
 	['JPTC', '繁体中文'],
 	['jptc', '繁体中文'],
 ]);
+
+export const subjectRelationTypes = [
+	'OTHER',
+	'ANIME',
+	'COMIC',
+	'GAME',
+	'MUSIC',
+	'NOVEL',
+	'REAL',
+	'BEFORE',
+	'AFTER',
+	'SAME_WORLDVIEW',
+	'ORIGINAL_SOUND_TRACK',
+	'ORIGINAL_VIDEO_ANIMATION',
+	'ORIGINAL_ANIMATION_DISC'
+];
