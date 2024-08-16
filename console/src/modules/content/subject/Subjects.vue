@@ -125,11 +125,11 @@ watch(findSubjectsCondition.value, () => {
 
 const episodeAttsPercentage = (subject: Subject): number => {
 	// console.debug('subject', subject);
-  return (
-      ((subject.matching_episode as number) /
-          (subject.total_episodes as number)) *
-      100
-  );
+	return (
+		((subject.matching_episode as number) /
+			(subject.total_episodes as number)) *
+		100
+	);
 };
 
 onMounted(fetchSubjectByRouterQuery);

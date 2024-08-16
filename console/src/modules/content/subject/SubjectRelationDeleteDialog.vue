@@ -49,7 +49,7 @@ const slaveSubjectTypesStr = ref('[]');
 const slaveSubjectIdsStr = ref('[]');
 const subjectRelations = ref<SubjectRelation[]>([]);
 const onSelectionsChange = (subjectRels) => {
-  console.log('receive subjectRelations', subjectRelations);
+	console.log('receive subjectRelations', subjectRelations);
 	subjectRelations.value = subjectRels;
 	let types = new Set<string>();
 	let ids = new Set<number>();

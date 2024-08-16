@@ -35,8 +35,8 @@ const passwordReq = ref({
 	newPassword: '',
 });
 const updateProfile = async () => {
-  await apiClient.userMe
-      .putProfile({
+	await apiClient.userMe
+		.putProfile({
 			updateUserRequest: profile.value,
 		})
 		.then(() => {
@@ -45,20 +45,20 @@ const updateProfile = async () => {
 		});
 };
 const updateUsername = async () => {
-  await apiClient.userMe
-      .updateUsername({
-        newUsername: profile.value.username,
-      })
-      .then(() => {
-        ElMessage.success(t('module.user.profile.message.update.all'));
-        userStore.fetchCurrentUser();
-        userStore.jwtTokenLogout();
-        window.location.reload();
-      });
+	await apiClient.userMe
+		.updateUsername({
+			newUsername: profile.value.username,
+		})
+		.then(() => {
+			ElMessage.success(t('module.user.profile.message.update.all'));
+			userStore.fetchCurrentUser();
+			userStore.jwtTokenLogout();
+			window.location.reload();
+		});
 };
 
 const updatePassword = async () => {
-  await apiClient.userMe
+	await apiClient.userMe
 		.changeUserPassword({
 			oldPassword: passwordReq.value.oldPassword,
 			newPassword: passwordReq.value.newPassword,
@@ -161,7 +161,7 @@ onMounted(initProfileAndUsername);
 			<!-- username -->
 			<el-tab-pane :label="t('module.user.profile.label.update_username')">
 				<el-form-item :label="t('module.user.profile.label.username')">
-          <el-input v-model="profile.username"/>
+					<el-input v-model="profile.username" />
 				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" @click="updateUsername">{{

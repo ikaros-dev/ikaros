@@ -285,6 +285,7 @@ module:
   subject:
     title: 条目
     sidebar: 条目
+
     label:
       name: 原始名称
       name_cn: 中文名称
@@ -720,6 +721,21 @@ module:
         message:
           operate:
             mark-finish: 标记是否观看完成成功
+      group:
+        MAIN: 正片
+        PROMOTION_VIDEO: PV
+        OPENING_SONG: 片头曲
+        ENDING_SONG: 片尾曲
+        SPECIAL_PROMOTION: 特典
+        SMALL_THEATER: 相同世界观
+        LIVE: 直播
+        COMMERCIAL_MESSAGE: 广告
+        MUSIC_DIST1: MD1
+        MUSIC_DIST2: MD2
+        MUSIC_DIST3: MD3
+        MUSIC_DIST4: MD4
+        MUSIC_DIST5: MD5
+        OTHER: 其它
     tag:
       message:
         hint:

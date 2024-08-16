@@ -72,11 +72,13 @@ watch(subject, async () => {
 });
 const subjectRelations = ref<SubjectRelation[]>([]);
 const loadSubjectRelations = async () => {
-  const {data} = await apiClient.subjectRelation.getSubjectRelationsById({
+	const { data } = await apiClient.subjectRelation.getSubjectRelationsById({
 		subjectId: subject.value.id as number,
 	});
 	// console.log('subject relations rsp:', rsp);
-  subjectRelations.value = data;
+	if (data instanceof Array) {
+		subjectRelations.value = data;
+	}
 };
 const relationAnimes = ref<Subject[]>([]);
 const relationComics = ref<Subject[]>([]);
@@ -103,7 +105,7 @@ watch(subjectRelations, async (newSubjectRelations) => {
 		relationOSTs.value = [];
 		relationOthers.value = [];
 	}
-  if (!(newSubjectRelations instanceof Array)) return;
+	if (!(newSubjectRelations instanceof Array)) return;
 	await newSubjectRelations.forEach(async (subRel: SubjectRelation) => {
 		const type = subRel.relation_type;
 		const relSubs: Set<number> = subRel.relation_subjects;
@@ -239,8 +241,8 @@ const subjectId = computed({
 	},
 });
 onMounted(() => {
-  loadSubject();
-  loadSubjectRelations();
+	loadSubject();
+	loadSubjectRelations();
 });
 </script>
 

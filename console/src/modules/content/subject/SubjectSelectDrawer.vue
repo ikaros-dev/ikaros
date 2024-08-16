@@ -23,11 +23,11 @@ const { t } = useI18n();
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-    filter: number[];
+		filter: number[];
 	}>(),
 	{
 		visible: false,
-    filter: undefined,
+		filter: undefined,
 	}
 );
 
@@ -87,12 +87,12 @@ const fetchSubjects = async () => {
 	findSubjectsCondition.value.size = data.size;
 	findSubjectsCondition.value.total = data.total;
 	subjects.value = data.items as Subject[];
-  if (props.filter && props.filter.length > 0) {
-    console.debug('props.filter', props.filter);
-    subjects.value = subjects.value.filter(
-        (sub) => sub.id && sub.id > 0 && props.filter.indexOf(sub.id) < 0
-    );
-  }
+	if (props.filter && props.filter.length > 0) {
+		console.debug('props.filter', props.filter);
+		subjects.value = subjects.value.filter(
+			(sub) => sub.id && sub.id > 0 && props.filter.indexOf(sub.id) < 0
+		);
+	}
 };
 
 const selectionSubjectIdSet = new Set<number>();

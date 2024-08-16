@@ -183,7 +183,7 @@ const getArtplayerInstance = (art: Artplayer) => {
 					<artplayer
 						v-else-if="isVideo(file.url as string)"
 						ref="artplayerRef"
-            v-model:attachmentId="file.id"
+						v-model:attachmentId="file.id"
 						style="width: 100%"
 						@getInstance="getArtplayerInstance"
 					/>

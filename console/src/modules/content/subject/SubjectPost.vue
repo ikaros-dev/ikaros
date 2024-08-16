@@ -147,16 +147,15 @@ const cropperjsDialogVisible = ref(false);
 const cropperjsOldUrl = ref('');
 
 const onCroperjsUpdateUrl = (newUrl) => {
-  console.debug('Croperjs newUrl', newUrl);
-  subject.value.cover = newUrl;
-}
+	console.debug('Croperjs newUrl', newUrl);
+	subject.value.cover = newUrl;
+};
 
 const oepnCropperjsDialog = () => {
-  if (!(subject.value.cover)) return;
-  cropperjsOldUrl.value = subject.value.cover;
-  cropperjsDialogVisible.value = true;
-}
-
+	if (!subject.value.cover) return;
+	cropperjsOldUrl.value = subject.value.cover;
+	cropperjsDialogVisible.value = true;
+};
 </script>
 
 <template>
@@ -323,20 +322,26 @@ const oepnCropperjsDialog = () => {
 			</el-form>
 		</el-col>
 		<el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
-      <el-row>
-        <el-col :span="24">
-          <el-button @click="oepnCropperjsDialog">裁剪</el-button>
-        </el-col>
-      </el-row>
-      <br/>
-      <el-row>
-        <el-col :span="24">
+			<el-row>
+				<el-col :span="24">
+					<el-button @click="oepnCropperjsDialog">裁剪</el-button>
+				</el-col>
+			</el-row>
+			<br />
+			<el-row>
+				<el-col :span="24">
 					<span v-if="subject.cover">
-						<el-image style="width: 100%" :src="subject.cover" :zoom-rate="1.2"
-                      :preview-src-list="new Array(subject.cover)" :initial-index="4" fit="cover"/>
+						<el-image
+							style="width: 100%"
+							:src="subject.cover"
+							:zoom-rate="1.2"
+							:preview-src-list="new Array(subject.cover)"
+							:initial-index="4"
+							fit="cover"
+						/>
 					</span>
-        </el-col>
-      </el-row>
+				</el-col>
+			</el-row>
 		</el-col>
 	</el-row>
 	<EpisodeDetailsDialog
@@ -344,11 +349,11 @@ const oepnCropperjsDialog = () => {
 		v-model:subjectId="subject.id"
 		v-model:ep="currentEpisode"
 	/>
-  <CropperjsDialog
-      v-model:visible="cropperjsDialogVisible"
-      v-model:url="cropperjsOldUrl"
-      @update-url="onCroperjsUpdateUrl"
-  />
+	<CropperjsDialog
+		v-model:visible="cropperjsDialogVisible"
+		v-model:url="cropperjsOldUrl"
+		@update-url="onCroperjsUpdateUrl"
+	/>
 </template>
 
 <style lang="scss" scoped></style>

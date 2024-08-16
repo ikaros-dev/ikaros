@@ -97,7 +97,7 @@ const settingSaveBtnLoading = ref(false);
 const settingStore = useSettingStore();
 // eslint-disable-next-line no-unused-vars
 const updateSetting = async () => {
-  settingSaveBtnLoading.value = true;
+	settingSaveBtnLoading.value = true;
 	await apiClient.configmap
 		.updateConfigmapMeta({
 			name: settingConfigMapName,
@@ -107,9 +107,9 @@ const updateSetting = async () => {
 		.then(async () => {
 			ElMessage.success(t('module.setting.message.operate.update'));
 			await settingStore.fetchSystemSetting();
-    })
-      .finally(() => {
-        settingSaveBtnLoading.value = false;
+		})
+		.finally(() => {
+			settingSaveBtnLoading.value = false;
 		});
 };
 
@@ -123,13 +123,18 @@ watch(mailEnable, () => {
 });
 
 const testMailBtnLoading = ref(false);
-const testMailConfig = async ()=>{
-  if (!(mailEnable.value) || setting.value.MAIL_RECEIVE_ADDRESS === '' || setting.value.MAIL_SMTP_PASSWORD === '') return;
-  testMailBtnLoading.value = true;
-  await apiClient.notify.testMailSend();
-  testMailBtnLoading.value = false;
-  ElMessage.success("Email has been sent.");
-}
+const testMailConfig = async () => {
+	if (
+		!mailEnable.value ||
+		setting.value.MAIL_RECEIVE_ADDRESS === '' ||
+		setting.value.MAIL_SMTP_PASSWORD === ''
+	)
+		return;
+	testMailBtnLoading.value = true;
+	await apiClient.notify.testMailSend();
+	testMailBtnLoading.value = false;
+	ElMessage.success('Email has been sent.');
+};
 
 onMounted(getSettingFromServer);
 </script>
@@ -237,11 +242,20 @@ onMounted(getSettingFromServer);
 					</el-form-item>
 				</span>
 				<el-form-item>
-          <el-button type="primary" :loading="settingSaveBtnLoading" @click="updateSetting">
-						{{t('module.setting.button.save')}}
+					<el-button
+						type="primary"
+						:loading="settingSaveBtnLoading"
+						@click="updateSetting"
+					>
+						{{ t('module.setting.button.save') }}
 					</el-button>
 
-          <el-button v-if="mailEnable" :loading="testMailBtnLoading" type="primary" @click="testMailConfig">
+					<el-button
+						v-if="mailEnable"
+						:loading="testMailBtnLoading"
+						type="primary"
+						@click="testMailConfig"
+					>
 						Test
 					</el-button>
 				</el-form-item>

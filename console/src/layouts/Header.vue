@@ -12,8 +12,8 @@ import Wellcome from './components/Wellcome.vue';
 		<Breadcrumb />
 
 		<div class="navbar-right">
-      <Wellcome/>
-      &nbsp;&nbsp;&nbsp;&nbsp;
+			<Wellcome />
+			&nbsp;&nbsp;&nbsp;&nbsp;
 			<LanguageSelect />
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<Avatar class="navbar-item" />

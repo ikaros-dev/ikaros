@@ -82,20 +82,20 @@ const server = computed({
 			process: {
 				url: './api/v1alpha1/attachment/fragment/unique',
 				withCredentials: true,
-        headers: {Authorization: 'Bearer ' + userStore.jwtToken},
+				headers: { Authorization: 'Bearer ' + userStore.jwtToken },
 			},
 			patch: {
 				url: './api/v1alpha1/attachment/fragment/patch/',
 				withCredentials: true,
 				headers: {
 					'PARENT-ID': reqHeaderParendId.value,
-          Authorization: 'Bearer ' + userStore.jwtToken,
+					Authorization: 'Bearer ' + userStore.jwtToken,
 				},
 			},
 			revert: {
 				url: './api/v1alpha1/attachment/fragment/revert',
 				withCredentials: true,
-        headers: {Authorization: 'Bearer ' + userStore.jwtToken},
+				headers: { Authorization: 'Bearer ' + userStore.jwtToken },
 			},
 		};
 	},

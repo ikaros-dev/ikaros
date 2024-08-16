@@ -683,6 +683,21 @@ module:
         message:
           operate:
             mark-finish: Mark episode is finished success
+      group:
+        MAIN: Main
+        PROMOTION_VIDEO: PV
+        OPENING_SONG: OP
+        ENDING_SONG: ED
+        SPECIAL_PROMOTION: SP
+        SMALL_THEATER: ST
+        LIVE: Live
+        COMMERCIAL_MESSAGE: CM
+        MUSIC_DIST1: MD1
+        MUSIC_DIST2: MD2
+        MUSIC_DIST3: MD3
+        MUSIC_DIST4: MD4
+        MUSIC_DIST5: MD5
+        OTHER: Other
     collect:
       message:
         operate:

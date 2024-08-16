@@ -8,7 +8,7 @@ import {apiClient} from '@/utils/api-client';
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-    subjectId: number | string;
+		subjectId: number | string;
 	}>(),
 	{
 		visible: false,

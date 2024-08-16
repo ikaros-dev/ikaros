@@ -26,7 +26,7 @@ const { t } = useI18n();
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-    subjectId: number | string | undefined;
+		subjectId: number | string | undefined;
 		// episode
 		ep: Episode | undefined;
 		multiResource?: boolean;
@@ -44,8 +44,11 @@ watch(props, (newVal) => {
 	episode.value = newVal.ep as Episode;
 	if (episode.value?.resources) {
 		episode.value.resources?.sort(compareFun);
-    emit('update:multiResource', episode.value.resources && episode.value.resources.length > 1);
-    loadVideoAttachment();
+		emit(
+			'update:multiResource',
+			episode.value.resources && episode.value.resources.length > 1
+		);
+		loadVideoAttachment();
 	}
 });
 
@@ -202,26 +205,32 @@ const fetchEpisodeResources = async () => {
 		id: episode.value.id as number,
 	});
 	episode.value.resources = data;
-  var multiResource = episode.value.resources && episode.value.resources.length > 1;
-  emit('update:multiResource', multiResource);
+	var multiResource =
+		episode.value.resources && episode.value.resources.length > 1;
+	emit('update:multiResource', multiResource);
 };
 
 const loadVideoAttachment = async () => {
-  console.debug('loadVideoAttachment')
-  console.debug('episode.value.resources', episode.value.resources)
-  if (episode.value.resources
-      && episode.value.resources.length == 1
-      && isVideo(episode.value.resources[0].url as string)) {
-    console.debug('episode.value.resources[0].attachmentId', episode.value.resources[0].attachmentId)
-    const {data} = await apiClient.attachment.getAttachmentById({
-      id: episode.value.resources[0].attachmentId as number
-    })
-    currentVideoAttachment.value = data;
-  } else {
-    console.debug('loadVideoAttachment {}')
-    currentVideoAttachment.value = {};
-  }
-}
+	console.debug('loadVideoAttachment');
+	console.debug('episode.value.resources', episode.value.resources);
+	if (
+		episode.value.resources &&
+		episode.value.resources.length == 1 &&
+		isVideo(episode.value.resources[0].url as string)
+	) {
+		console.debug(
+			'episode.value.resources[0].attachmentId',
+			episode.value.resources[0].attachmentId
+		);
+		const { data } = await apiClient.attachment.getAttachmentById({
+			id: episode.value.resources[0].attachmentId as number,
+		});
+		currentVideoAttachment.value = data;
+	} else {
+		console.debug('loadVideoAttachment {}');
+		currentVideoAttachment.value = {};
+	}
+};
 
 const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 	const name1 = r1.name;
@@ -238,11 +247,11 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 
 const artplayer = ref<Artplayer>();
 const getArtplayerInstance = (art: Artplayer) => {
-  artplayer.value = art;
+	artplayer.value = art;
 };
 const currentVideoAttachment = ref<Attachment>({
-  id: 0
-})
+	id: 0,
+});
 </script>
 
 <template>
@@ -297,7 +306,7 @@ const currentVideoAttachment = ref<Attachment>({
 							>{{ episode?.resources[0].name }}</router-link
 						>
 						<br />
-            <!-- <video
+						<!-- <video
               v-if="isVideo(episode.resources[0].url as string)"
               style="width: 100%"
               :src="episode.resources[0].url"
@@ -308,12 +317,12 @@ const currentVideoAttachment = ref<Attachment>({
                 t('module.subject.dialog.episode.details.hint.video.unsuport')
               }}
             </video> -->
-            <artplayer
-                v-if="isVideo(episode.resources[0].url as string)"
-                v-model:attachmentId="episode.resources[0].attachmentId"
-                style="width: 100%"
-                @getInstance="getArtplayerInstance"
-            />
+						<artplayer
+							v-if="isVideo(episode.resources[0].url as string)"
+							v-model:attachmentId="episode.resources[0].attachmentId"
+							style="width: 100%"
+							@getInstance="getArtplayerInstance"
+						/>
 						<span v-else>
 							{{
 								t('module.subject.dialog.episode.details.hint.video.not_video')
