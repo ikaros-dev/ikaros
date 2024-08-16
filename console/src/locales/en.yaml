@@ -699,6 +699,7 @@ module:
         message:
           operate:
             mark-finish: Mark episode is finished success
+            mark-finish-notcollect: operate fail, current subject not collect.
       group:
         MAIN: Main
         PROMOTION_VIDEO: PV

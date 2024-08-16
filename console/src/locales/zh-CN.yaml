@@ -285,7 +285,6 @@ module:
   subject:
     title: 条目
     sidebar: 条目
-
     label:
       name: 原始名称
       name_cn: 中文名称
@@ -737,6 +736,7 @@ module:
         message:
           operate:
             mark-finish: 标记是否观看完成成功
+            mark-finish-notcollect: 操作失败，当前条目未收藏。
       group:
         MAIN: 正片
         PROMOTION_VIDEO: PV
