@@ -130,7 +130,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                     .setTotalEpisodes((long) episodes.size())
                     .setEpisodes(episodes)
                     .setCanRead(getSubjectCanReadByEpisodes(episodes)))
-                .flatMap(sub -> findMatchingEpisodCount(sub.getId())
+                .flatMap(sub -> findMatchingEpisodeCount(sub.getId())
                     .map(sub::setMatchingEpisodes))
                 .switchIfEmpty(Mono.just(subject)))
             .checkpoint("FindEpisodeEntitiesBySubjectId")
@@ -362,7 +362,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             ;
     }
 
-    private Mono<Long> findMatchingEpisodCount(Long subjectId) {
+    private Mono<Long> findMatchingEpisodeCount(Long subjectId) {
         return episodeRepository.findAllBySubjectId(subjectId)
             .map(EpisodeEntity::getId)
             .filterWhen(epId -> attachmentReferenceRepository.existsByTypeAndReferenceId(
@@ -386,7 +386,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                     .flatMap(subjectRepository::findById)
                     .flatMap(
                         subject -> ReactiveBeanUtils.copyProperties(subject, new SubjectMeta()))
-                    .flatMap(subjectMeta -> findMatchingEpisodCount(subjectMeta.getId())
+                    .flatMap(subjectMeta -> findMatchingEpisodeCount(subjectMeta.getId())
                         .map(subjectMeta::setMatchingEpisodes))
                     .flatMap(subjectMeta -> episodeRepository.countBySubjectId(subjectMeta.getId())
                         .map(subjectMeta::setTotalEpisodes))
@@ -445,7 +445,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         return subjectEntityFlux.map(BaseEntity::getId)
             .flatMap(subjectRepository::findById)
             .flatMap(subject -> ReactiveBeanUtils.copyProperties(subject, new SubjectMeta()))
-            .flatMap(subjectMeta -> findMatchingEpisodCount(subjectMeta.getId())
+            .flatMap(subjectMeta -> findMatchingEpisodeCount(subjectMeta.getId())
                 .map(subjectMeta::setMatchingEpisodes))
             .flatMap(subjectMeta -> episodeRepository.countBySubjectId(subjectMeta.getId())
                 .map(subjectMeta::setTotalEpisodes))
