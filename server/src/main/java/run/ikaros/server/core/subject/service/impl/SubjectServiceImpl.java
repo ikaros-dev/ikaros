@@ -5,6 +5,7 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -217,6 +218,10 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .checkpoint("AssertParams")
 
             .flatMap(sub -> copyProperties(sub, new SubjectEntity()))
+            .map(subjectEntity -> {
+                subjectEntity.setUpdateTime(LocalDateTime.now());
+                return subjectEntity;
+            })
             .flatMap(subjectRepository::save)
             .doOnNext(entity -> applicationContext.publishEvent(new SubjectAddEvent(this, entity)))
             .map(subjectEntity -> {
@@ -237,6 +242,10 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMap(entity ->
                 episodeRepository.findBySubjectIdAndGroupAndSequence(subjectId.get(),
                         entity.getGroup(), entity.getSequence())
+                    .map(episodeEntity -> {
+                        episodeEntity.setUpdateTime(LocalDateTime.now());
+                        return episodeEntity;
+                    })
                     .switchIfEmpty(episodeRepository.save(entity)))
             .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
             .collectList()
@@ -250,6 +259,10 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMapMany(subjectSyncs -> Flux.fromStream(subjectSyncs.stream()))
             .flatMap(subjectSync -> copyProperties(subjectSync, new SubjectSyncEntity()))
             .map(entity -> entity.setSubjectId(subjectId.get()))
+            .map(subjectSyncEntity -> {
+                subjectSyncEntity.setUpdateTime(LocalDateTime.now());
+                return subjectSyncEntity;
+            })
             .flatMap(subjectSyncRepository::save)
             .onErrorResume(DuplicateKeyException.class, e -> {
                 log.warn("duplicate key when save subject sync record, exception msg: {}",
@@ -281,6 +294,10 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         AtomicReference<Long> subjectId = new AtomicReference<>(id);
         return Mono.just(subject)
             .flatMap(sub -> copyProperties(sub, new SubjectEntity()))
+            .map(subjectEntity -> {
+                subjectEntity.setUpdateTime(LocalDateTime.now());
+                return subjectEntity;
+            })
             .flatMap(this::publishSubjectUpdateEvent)
             .flatMap(entity -> {
                 Map<SqlIdentifier, Object> map = new HashMap<>();
@@ -410,6 +427,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         Boolean nsfw = condition.getNsfw();
         final SubjectType type = condition.getType();
         final Boolean airTimeDesc = condition.getAirTimeDesc();
+        final Boolean updateTimeDesc = condition.getUpdateTimeDesc();
+        final Boolean isEnd = condition.getIsEnd();
 
         final PageRequest pageRequest = PageRequest.of(page - 1, size);
 
@@ -429,11 +448,17 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         if (!Objects.isNull(type)) {
             criteria = criteria.and("type").is(type);
         }
+        if (!Objects.isNull(isEnd)) {
+            criteria = criteria.and("is_end").is(isEnd);
+        }
 
         Query query = Query.query(criteria)
             .sort(Sort.by(airTimeDesc
                 ? Sort.Order.desc("air_time")
                 : Sort.Order.asc("air_time")))
+            .sort(Sort.by(updateTimeDesc
+                ? Sort.Order.desc("update_time")
+                : Sort.Order.asc("update_time")))
             .sort(Sort.by(Sort.Order.asc("name")))
             .sort(Sort.by(Sort.Order.asc("type")))
             .sort(Sort.by(Sort.Order.asc("nsfw")))

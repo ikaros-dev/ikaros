@@ -36,6 +36,11 @@ public class SubjectEntity extends BaseEntity {
      * Not Safe/Suitable For Work.
      */
     private Boolean nsfw;
+    /**
+     * 是否完结.
+     */
+    @Column("is_end")
+    private Boolean isEnd;
     private String cover;
     @Column("air_time")
     private LocalDateTime airTime;

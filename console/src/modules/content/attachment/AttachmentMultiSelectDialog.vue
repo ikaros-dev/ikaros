@@ -1,35 +1,27 @@
 <script setup lang="ts">
-import { Attachment } from '@runikaros/api-client';
-import { computed, ref, onMounted } from 'vue';
-import { apiClient } from '@/utils/api-client';
-import { base64Encode, formatFileSize } from '@/utils/string-util';
+import {Attachment} from '@runikaros/api-client';
+import {computed, onMounted, ref} from 'vue';
+import {apiClient} from '@/utils/api-client';
+import {base64Encode, formatFileSize} from '@/utils/string-util';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import AttachmentDirectoryTreeSelect from '@/components/modules/content/attachment/AttachmentDirectoryTreeSelect.vue';
 import moment from 'moment';
-import { isImage, isVideo, isVoice } from '@/utils/file';
+import {isImage, isVideo, isVoice} from '@/utils/file';
 
+import {Document, Film, Folder, Headset, Picture, Search, Upload,} from '@element-plus/icons-vue';
 import {
-	Upload,
-	Search,
-	Folder,
-	Document,
-	Picture,
-	Headset,
-	Film,
-} from '@element-plus/icons-vue';
-import {
-	ElRow,
-	ElCol,
-	ElInput,
-	ElPagination,
-	ElButton,
-	ElIcon,
-	ElTable,
-	ElTableColumn,
-	ElDialog,
-	ElFormItem,
+  ElButton,
+  ElCol,
+  ElDialog,
+  ElFormItem,
+  ElIcon,
+  ElInput,
+  ElPagination,
+  ElRow,
+  ElTable,
+  ElTableColumn,
 } from 'element-plus';
-import { useI18n } from 'vue-i18n';
+import {useI18n} from 'vue-i18n';
 
 const { t } = useI18n();
 
@@ -116,7 +108,7 @@ const dateFormat = (row, column) => {
 const selectionAttachments = ref<Attachment[]>([]);
 
 const onSelectionChange = (selections) => {
-	// console.log('selections', selections);
+	// console.debug('selections', selections);
 	selectionAttachments.value = selections;
 };
 
@@ -136,7 +128,15 @@ const onParentDirSelected = async (val) => {
 const onSearchNameChange = async () => {
 	attachmentCondition.value.page = 1;
 	await fetchAttachments();
+	if (attachments.value && attachments.value.length == 1) {
+		// selectionAttachments.value = attachments.value;
+		// console.debug("selections atts: ", selectionAttachments.value);
+		// console.debug("attachments atts: ", attachments.value);
+		attachmentTableRel.value?.toggleAllSelection();
+	}
 };
+
+const attachmentTableRel = ref<InstanceType<typeof ElTable>>();
 
 onMounted(fetchAttachments);
 </script>
@@ -216,6 +216,7 @@ onMounted(fetchAttachments);
 		<el-row>
 			<el-col :span="24">
 				<el-table
+					ref="attachmentTableRel"
 					:data="attachments"
 					style="width: 100%"
 					row-key="id"

@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.listener;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -88,7 +89,11 @@ public class AttachmentSubjectCoverChangeListener {
             .map(AttachmentEntity::getId)
             .flatMap(coverDirAttId -> attachmentRepository.findByUrl(newCover)
                 .filter(entity -> !coverDirAttId.equals(entity.getParentId()))
-                .map(entity -> entity.setParentId(coverDirAttId)))
+                .map(entity -> {
+                    entity.setParentId(coverDirAttId);
+                    entity.setUpdateTime(LocalDateTime.now());
+                    return entity;
+                }))
             .flatMap(attachmentRepository::save)
             .map(AttachmentEntity::getId)
             .map(attId -> AttachmentReferenceEntity.builder()

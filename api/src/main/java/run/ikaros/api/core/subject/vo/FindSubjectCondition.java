@@ -21,12 +21,29 @@ public class FindSubjectCondition {
     private String nameCn;
     private Boolean nsfw;
     private SubjectType type;
-    private Integer year;
+    /**
+     * 数字年份，则直接匹配，如 2020
+     * 年份范围，如 2012-2020
+     * 年份范围大于小于，如 lt1970
+     *  .
+     */
+    private String year;
+    /**
+     * 1, 4, 7, 10.
+     */
     private Integer month;
+    /**
+     * default is false.
+     */
+    private Boolean airTimeDesc;
     /**
      * default is true.
      */
-    private Boolean airTimeDesc;
+    private Boolean updateTimeDesc;
+    /**
+     * default is null.
+     */
+    private Boolean isEnd;
 
     /**
      * init default if field value is null.
@@ -35,6 +52,7 @@ public class FindSubjectCondition {
      * @see #size
      * @see #nsfw
      * @see #airTimeDesc
+     * @see #updateTimeDesc
      */
     public void initDefaultIfNull() {
         if (Objects.isNull(page)) {
@@ -44,7 +62,10 @@ public class FindSubjectCondition {
             page = 10;
         }
         if (Objects.isNull(airTimeDesc)) {
-            airTimeDesc = true;
+            airTimeDesc = false;
+        }
+        if (Objects.isNull(updateTimeDesc)) {
+            updateTimeDesc = true;
         }
 
     }
