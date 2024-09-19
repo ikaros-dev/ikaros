@@ -258,7 +258,6 @@ public class AttachmentServiceImpl implements AttachmentService {
             .filter(Directory::equals)
             .map(eq -> attachmentEntity.getId())
             .flatMap(this::checkAttachmentRefNotExists)
-            .flatMap(this::checkAttachmentRelNotExists)
             .flatMapMany(repository::findAllByParentId)
             .flatMap(this::removeChildrenAttachment)
             .switchIfEmpty(Mono.just(attachmentEntity))
@@ -302,7 +301,6 @@ public class AttachmentServiceImpl implements AttachmentService {
                     + attachmentId));
         }
         return checkAttachmentRefNotExists(attachmentId)
-            .flatMap(this::checkAttachmentRelNotExists)
             .flatMap(repository::findById)
             .flatMap(this::removeChildrenAttachment)
             .map(AttachmentEntity::getId)
