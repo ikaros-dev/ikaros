@@ -2,11 +2,14 @@ package run.ikaros.server.core.task;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -33,19 +36,22 @@ public class TaskServiceImpl implements TaskService {
     /**
      * Update task status.
      */
-    //@Async
-    //@Scheduled(cron = "0/30 * *  * * ? ")
+    @Async
+    @Scheduled(cron = "0/5 * *  * * ? ")
     public void updateTaskStatus() {
         // log.debug("exec updateTaskStatus");
-        for (Map.Entry<String, Future<?>> entry : futureMap.entrySet()) {
+        HashSet<Map.Entry<String, Future<?>>> entries = new HashSet<>(futureMap.entrySet());
+        for (Map.Entry<String, Future<?>> entry : entries) {
             String name = entry.getKey();
             Future<?> future = entry.getValue();
 
             TaskStatus taskStatus;
             if (future.isDone()) {
                 taskStatus = TaskStatus.FINISH;
+                futureMap.remove(name);
             } else if (future.isCancelled()) {
                 taskStatus = TaskStatus.CANCEL;
+                futureMap.remove(name);
             } else {
                 taskStatus = TaskStatus.RUNNING;
             }
@@ -107,7 +113,8 @@ public class TaskServiceImpl implements TaskService {
                 taskEntities -> Mono.error(new RuntimeException("Submission failed, task exists.")))
             .switchIfEmpty(taskRepository.save(entity)
                 .flatMap(taskEntity -> {
-                    futureMap.put(taskEntity.getName(), executorService.submit(task));
+                    Future<?> future = executorService.submit(task);
+                    futureMap.put(taskEntity.getName(), future);
                     return Mono.empty();
                 })
             ).then();

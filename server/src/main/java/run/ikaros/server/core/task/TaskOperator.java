@@ -1,5 +1,7 @@
 package run.ikaros.server.core.task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -28,6 +30,31 @@ public class TaskOperator implements TaskOperate {
         TaskEntity taskEntity = new TaskEntity();
         taskEntity.setName(name);
         taskService.setDefaultFieldValue(taskEntity);
+
+        PluginTask pluginTask = new PluginTask(taskEntity, taskRepository) {
+            @Override
+            protected String getTaskEntityName() {
+                return name;
+            }
+
+            @Override
+            protected void doRun() throws Exception {
+                runnable.run();
+            }
+        };
+
+        return taskService.submit(pluginTask);
+    }
+
+    @Override
+    public Mono<Void> submit(String name, Runnable runnable, Duration delay) {
+        Assert.hasText(name, "name must not be empty");
+        Assert.notNull(runnable, "runnable must not be null");
+
+        TaskEntity taskEntity = new TaskEntity();
+        taskEntity.setName(name);
+        taskService.setDefaultFieldValue(taskEntity);
+        taskEntity.setStartTime(LocalDateTime.now().plus(delay));
 
         PluginTask pluginTask = new PluginTask(taskEntity, taskRepository) {
             @Override

@@ -16,6 +16,8 @@ public interface AttachmentRelationRepository
     Flux<AttachmentRelationEntity> findAllByTypeAndAttachmentId(AttachmentRelationType type,
                                                                 Long attachmentId);
 
+    Mono<Boolean> existsByAttachmentId(Long attachmentId);
+
     Mono<Boolean> existsByTypeAndAttachmentIdAndRelationAttachmentId(AttachmentRelationType type,
                                                                      Long attachmentId,
                                                                      Long relationAttachmentId);
@@ -24,4 +26,5 @@ public interface AttachmentRelationRepository
                                                                   Long attachmentId,
                                                                   Long relationAttachmentId);
 
+    Mono<Void> deleteAllByAttachmentId(Long attachmentId);
 }
