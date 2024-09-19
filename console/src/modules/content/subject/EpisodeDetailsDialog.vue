@@ -85,13 +85,10 @@ const removeEpisodeAllAttachmentRefs = async () => {
 	// @ts-ignore
 	if (
 		!episode.value ||
-		!episode.value.resources ||
-		episode.value.resources.length === 0
+		!episode.value.resources 
 	) {
 		ElMessage.warning(
-			t(
-				'module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.waring'
-			)
+			t('module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.waring')
 		);
 		return;
 	}

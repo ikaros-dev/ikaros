@@ -600,7 +600,7 @@ module:
           message:
             operate:
               remove-episode-all-att-refs:
-                waring: 操作无效，您当前剧集并未绑定资源附件
+                waring: 操作无效，您当前操作的剧集为空。
                 success: 移除剧集所有附件绑定成功
               remove-episode-att-ref:
                 success: 移除剧集单个附件绑定成功

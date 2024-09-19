@@ -549,9 +549,7 @@ module:
           message:
             operate:
               remove-episode-all-att-refs:
-                waring: >-
-                  Invalid operation, the current episode is not bound to any
-                  resource files
+                waring: Invalid operation, the current episode is null.
                 success: Successfully removed all attachment bindings of the episode
               remove-episode-att-ref:
                 success: >-
