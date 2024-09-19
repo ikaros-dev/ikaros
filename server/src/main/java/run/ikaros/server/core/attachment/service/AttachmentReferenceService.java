@@ -14,6 +14,8 @@ public interface AttachmentReferenceService {
 
     Mono<Void> removeById(Long attachmentRefId);
 
+    Mono<Void> removeAllByTypeAndReferenceId(AttachmentReferenceType type, Long referenceId);
+
     Mono<Void> removeByTypeAndAttachmentIdAndReferenceId(
         AttachmentReferenceType type, Long attachmentId, Long referenceId);
 
