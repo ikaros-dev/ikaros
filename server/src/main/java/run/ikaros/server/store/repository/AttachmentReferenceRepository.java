@@ -23,6 +23,7 @@ public interface AttachmentReferenceRepository
 
     Mono<Boolean> existsByAttachmentId(Long attachmentId);
 
+    Flux<AttachmentReferenceEntity> findAllByAttachmentId(Long attachmentId);
 
     Mono<AttachmentReferenceEntity> findByTypeAndAttachmentIdAndReferenceId(
         AttachmentReferenceType type, Long attachmentId, Long referenceId

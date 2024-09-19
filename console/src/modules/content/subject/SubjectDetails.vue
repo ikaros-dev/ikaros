@@ -517,20 +517,12 @@ const deleteBatchingAttachments = async () => {
 	// console.debug('deleteBatchingAttachments subject episodes', subject.value.episodes)
 	batchCancenMatchingSubjectButtonLoading.value = true;
 	await subject.value.episodes?.forEach(async (ep) => {
-		if (ep && ep.resources && ep.resources.length > 0) {
-			await ep.resources.forEach(async (epres) => {
-				const attId = epres.attachmentId;
-				await apiClient.attachmentRef
-					.removeByTypeAndAttachmentIdAndReferenceId({
-						attachmentReference: {
-							type: 'EPISODE',
-							attachmentId: attId,
-							referenceId: ep.id,
-						},
-					})
-					.catch((e) => console.error(e));
-			});
-		}
+		await apiClient.attachmentRef.removeAllByTypeAndReferenceId({
+			attachmentReference: {
+				type: 'EPISODE',
+				referenceId: ep.id
+			}
+		});
 	});
 	batchCancenMatchingSubjectButtonLoading.value = false;
 	ElMessage.success(

@@ -294,6 +294,61 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
       };
     },
     /**
+     * Remove references by type and referenceId
+     * @param {AttachmentReference} [attachmentReference]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    removeAllByTypeAndReferenceId: async (
+      attachmentReference?: AttachmentReference,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/attachment/references`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        attachmentReference,
+        localVarRequestOptions,
+        configuration
+      );
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * Remove by type and attachmentId and referenceId
      * @param {AttachmentReference} [attachmentReference]
      * @param {*} [options] Override http request option.
@@ -513,6 +568,30 @@ export const V1alpha1AttachmentReferenceApiFp = function (
       );
     },
     /**
+     * Remove references by type and referenceId
+     * @param {AttachmentReference} [attachmentReference]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async removeAllByTypeAndReferenceId(
+      attachmentReference?: AttachmentReference,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.removeAllByTypeAndReferenceId(
+          attachmentReference,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
      * Remove by type and attachmentId and referenceId
      * @param {AttachmentReference} [attachmentReference]
      * @param {*} [options] Override http request option.
@@ -641,6 +720,23 @@ export const V1alpha1AttachmentReferenceApiFactory = function (
         .then((request) => request(axios, basePath));
     },
     /**
+     * Remove references by type and referenceId
+     * @param {V1alpha1AttachmentReferenceApiRemoveAllByTypeAndReferenceIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    removeAllByTypeAndReferenceId(
+      requestParameters: V1alpha1AttachmentReferenceApiRemoveAllByTypeAndReferenceIdRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<void> {
+      return localVarFp
+        .removeAllByTypeAndReferenceId(
+          requestParameters.attachmentReference,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
      * Remove by type and attachmentId and referenceId
      * @param {V1alpha1AttachmentReferenceApiRemoveByTypeAndAttachmentIdAndReferenceIdRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -735,6 +831,20 @@ export interface V1alpha1AttachmentReferenceApiMatchingAttachmentsForEpisodeRequ
    * @memberof V1alpha1AttachmentReferenceApiMatchingAttachmentsForEpisode
    */
   readonly batchMatchingEpisodeAttachment: BatchMatchingEpisodeAttachment;
+}
+
+/**
+ * Request parameters for removeAllByTypeAndReferenceId operation in V1alpha1AttachmentReferenceApi.
+ * @export
+ * @interface V1alpha1AttachmentReferenceApiRemoveAllByTypeAndReferenceIdRequest
+ */
+export interface V1alpha1AttachmentReferenceApiRemoveAllByTypeAndReferenceIdRequest {
+  /**
+   *
+   * @type {AttachmentReference}
+   * @memberof V1alpha1AttachmentReferenceApiRemoveAllByTypeAndReferenceId
+   */
+  readonly attachmentReference?: AttachmentReference;
 }
 
 /**
@@ -841,6 +951,25 @@ export class V1alpha1AttachmentReferenceApi extends BaseAPI {
     return V1alpha1AttachmentReferenceApiFp(this.configuration)
       .matchingAttachmentsForEpisode(
         requestParameters.batchMatchingEpisodeAttachment,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Remove references by type and referenceId
+   * @param {V1alpha1AttachmentReferenceApiRemoveAllByTypeAndReferenceIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentReferenceApi
+   */
+  public removeAllByTypeAndReferenceId(
+    requestParameters: V1alpha1AttachmentReferenceApiRemoveAllByTypeAndReferenceIdRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentReferenceApiFp(this.configuration)
+      .removeAllByTypeAndReferenceId(
+        requestParameters.attachmentReference,
         options
       )
       .then((request) => request(this.axios, this.basePath));

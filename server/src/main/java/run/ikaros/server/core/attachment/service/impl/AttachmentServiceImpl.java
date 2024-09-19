@@ -55,6 +55,7 @@ import run.ikaros.server.core.attachment.event.AttachmentRemoveEvent;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
+import run.ikaros.server.store.repository.AttachmentRelationRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
 @Slf4j
@@ -62,6 +63,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 public class AttachmentServiceImpl implements AttachmentService {
     private final AttachmentRepository repository;
     private final AttachmentReferenceRepository referenceRepository;
+    private final AttachmentRelationRepository relationRepository;
     private final R2dbcEntityTemplate template;
     private final IkarosProperties ikarosProperties;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -72,11 +74,13 @@ public class AttachmentServiceImpl implements AttachmentService {
      */
     public AttachmentServiceImpl(AttachmentRepository repository,
                                  AttachmentReferenceRepository referenceRepository,
+                                 AttachmentRelationRepository relationRepository,
                                  R2dbcEntityTemplate template, IkarosProperties ikarosProperties,
                                  ApplicationEventPublisher applicationEventPublisher,
                                  AttachmentRepository attachmentRepository) {
         this.repository = repository;
         this.referenceRepository = referenceRepository;
+        this.relationRepository = relationRepository;
         this.template = template;
         this.ikarosProperties = ikarosProperties;
         this.applicationEventPublisher = applicationEventPublisher;
@@ -195,11 +199,13 @@ public class AttachmentServiceImpl implements AttachmentService {
             .filter(Directory::equals)
             .map(eq -> attachmentEntity.getId())
             .flatMapMany(repository::findAllByParentId)
+            .flatMap(this::checkChildAttachmentRefNotExists)
             .flatMap(entity -> referenceRepository.existsByAttachmentId(entity.getId())
                 .filter(exists -> !exists)
                 .switchIfEmpty(Mono.error(new AttachmentRemoveException(
-                    "Forbid remove, attachment refs exists, "
-                        + "please remove all refs for current attachment before remove it, id="
+                    "Attachment references exists, "
+                        +
+                        "please remove all references for current attachment before remove it, id="
                         + entity.getId() + " and name=" + entity.getName()))))
             .then(Mono.just(attachmentEntity));
     }
@@ -210,8 +216,38 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(entity -> referenceRepository.existsByAttachmentId(entity.getId())
                 .filter(exists -> !exists)
                 .switchIfEmpty(Mono.error(new AttachmentRemoveException(
-                    "Forbid remove, attachment refs exists, "
-                        + "please remove all refs for current attachment before remove it, id="
+                    "Attachment references exists, "
+                        +
+                        "please remove all references for current attachment before remove it, id="
+                        + entity.getId() + " and name=" + entity.getName()))))
+            .then(Mono.just(attachmentId));
+    }
+
+    private Mono<AttachmentEntity> checkChildAttachmentRelNotExists(
+        AttachmentEntity attachmentEntity) {
+        return Mono.just(attachmentEntity)
+            .map(AttachmentEntity::getType)
+            .filter(Directory::equals)
+            .map(eq -> attachmentEntity.getId())
+            .flatMapMany(repository::findAllByParentId)
+            .flatMap(this::checkChildAttachmentRelNotExists)
+            .flatMap(entity -> relationRepository.existsByAttachmentId(entity.getId())
+                .filter(exists -> !exists)
+                .switchIfEmpty(Mono.error(new AttachmentRemoveException(
+                    "Attachment relations exists, "
+                        + "please remove all relations for current attachment before remove it, id="
+                        + entity.getId() + " and name=" + entity.getName()))))
+            .then(Mono.just(attachmentEntity));
+    }
+
+    private Mono<Long> checkAttachmentRelNotExists(Long attachmentId) {
+        return repository.findById(attachmentId)
+            .flatMap(this::checkChildAttachmentRelNotExists)
+            .flatMap(entity -> relationRepository.existsByAttachmentId(entity.getId())
+                .filter(exists -> !exists)
+                .switchIfEmpty(Mono.error(new AttachmentRemoveException(
+                    "Attachment relations exists, "
+                        + "please remove all relations for current attachment before remove it, id="
                         + entity.getId() + " and name=" + entity.getName()))))
             .then(Mono.just(attachmentId));
     }
@@ -221,14 +257,39 @@ public class AttachmentServiceImpl implements AttachmentService {
             .map(AttachmentEntity::getType)
             .filter(Directory::equals)
             .map(eq -> attachmentEntity.getId())
+            .flatMap(this::checkAttachmentRefNotExists)
             .flatMapMany(repository::findAllByParentId)
             .flatMap(this::removeChildrenAttachment)
             .switchIfEmpty(Mono.just(attachmentEntity))
             .map(this::removeFileSystemFile)
-            .flatMap(repository::delete)
+            .flatMap(this::deleteEntity)
             .then(Mono.just(attachmentEntity));
     }
 
+    private Mono<AttachmentEntity> removeChildrenAttachmentForcibly(
+        AttachmentEntity attachmentEntity) {
+        return Mono.just(attachmentEntity)
+            .map(AttachmentEntity::getType)
+            .filter(Directory::equals)
+            .map(eq -> attachmentEntity.getId())
+            .flatMapMany(repository::findAllByParentId)
+            .flatMap(this::removeChildrenAttachmentForcibly)
+            .switchIfEmpty(Mono.just(attachmentEntity))
+            .map(this::removeFileSystemFile)
+            .flatMap(this::deleteEntity)
+            .then(Mono.just(attachmentEntity));
+    }
+
+
+    private Mono<Void> deleteEntity(AttachmentEntity attachmentEntity) {
+        return repository.delete(attachmentEntity)
+            .doOnSuccess(unused -> {
+                AttachmentRemoveEvent event = new AttachmentRemoveEvent(this, attachmentEntity);
+                applicationEventPublisher.publishEvent(event);
+                log.debug("publish AttachmentRemoveEvent for attachment entity: [{}]",
+                    attachmentEntity);
+            });
+    }
 
     @Override
     public Mono<Void> removeById(Long attachmentId) {
@@ -242,21 +303,17 @@ public class AttachmentServiceImpl implements AttachmentService {
         return checkAttachmentRefNotExists(attachmentId)
             .flatMap(repository::findById)
             .flatMap(this::removeChildrenAttachment)
-            .map(this::removeFileSystemFile)
-            .flatMap(attachmentEntity -> repository.delete(attachmentEntity)
-                .doOnSuccess(unused -> {
-                    AttachmentRemoveEvent event = new AttachmentRemoveEvent(this, attachmentEntity);
-                    applicationEventPublisher.publishEvent(event);
-                    log.debug("publish AttachmentRemoveEvent for attachment entity: [{}]",
-                        attachmentEntity);
-                }));
+            .map(AttachmentEntity::getId)
+            .flatMap(this::removeByIdForcibly);
     }
 
     @Override
     public Mono<Void> removeByIdForcibly(Long attachmentId) {
         Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
-        return referenceRepository.deleteAllByAttachmentId(attachmentId)
-            .then(removeById(attachmentId));
+        return repository.findById(attachmentId)
+            .flatMap(this::removeChildrenAttachmentForcibly)
+            .map(this::removeFileSystemFile)
+            .flatMap(this::deleteEntity);
     }
 
 
@@ -629,7 +686,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             return attachmentEntity;
         }
         String fsPath = attachmentEntity.getFsPath();
-        if (!StringUtils.hasText(fsPath)) {
+        if (!StringUtils.hasText(fsPath) || fsPath.startsWith("http")) {
             return attachmentEntity;
         }
         try {

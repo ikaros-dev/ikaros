@@ -80,6 +80,14 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     }
 
     @Override
+    public Mono<Void> removeAllByTypeAndReferenceId(AttachmentReferenceType type,
+                                                    Long referenceId) {
+        Assert.notNull(type, "'type' must not null.");
+        Assert.isTrue(referenceId > 0, "'referenceId' must gt 0.");
+        return repository.deleteAllByTypeAndReferenceId(type, referenceId);
+    }
+
+    @Override
     public Mono<Void> removeByTypeAndAttachmentIdAndReferenceId(AttachmentReferenceType type,
                                                                 Long attachmentId,
                                                                 Long referenceId) {
