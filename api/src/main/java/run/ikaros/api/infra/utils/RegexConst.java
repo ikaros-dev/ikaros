@@ -9,7 +9,7 @@ public interface RegexConst {
     String MOBILE_PHONE_NUMBER = "^((13[0-9])|(15[^4,\\\\D])|(18[0,5-9]))\\\\d{8}$";
 
     String FILE_NAME_TAG_EPISODE_SEQUENCE = "[0-9]{1,2}";
-    String FILE_NAME_TAG_EPISODE_SEQUENCE_WITH_BRACKETS = "\\[[0-9]{1,2}\\]";
+    String FILE_NAME_TAG_EPISODE_SEQUENCE_WITH_BRACKETS = "\\[[0-9]{1,3}(\\.[0-9]+)?\\]";
     String FILE_NAME_EPISODE_SEQUENCE_WITH_BLANK = "\\s{1}[0-9]{1,2}\\s{1}";
     String FILE_NAME_EPISODE_SEQUENCE_WITH_INTEGRALLY_AND_BLANK = "\\s{1}EP[0-9]{1,2}\\s{1}";
     String FILE_NAME_EPISODE_SEQUENCE_WITH_HORIZONTAL = "\\-[0-9]{1,2}\\-";
