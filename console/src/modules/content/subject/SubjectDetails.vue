@@ -940,6 +940,7 @@ onMounted(fetchDatas);
 										</el-button>
 
 										<el-button
+											v-if="subjectCollection && subjectCollection.type"
 											plain
 											:icon="
 												getEpisodeCollectionByEpisodeId(scoped.row)?.finish
