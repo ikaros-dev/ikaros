@@ -16,4 +16,6 @@ public interface SubjectCollectionRepository
     Mono<Long> countAllByUserId(Long userId);
 
     Mono<Long> countByType(CollectionType type);
+
+    Mono<Void> removeAllBySubjectId(Long subjectId);
 }
