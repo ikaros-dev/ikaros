@@ -22,6 +22,13 @@ public interface SubjectCollectionService {
     @Transactional
     Mono<Void> unCollect(Long userId, Long subjectId);
 
+    /**
+     * Find subject collection with userId and subjectId.
+     *
+     * @param userId    user id
+     * @param subjectId subject id
+     * @return subject collection or null
+     */
     Mono<SubjectCollection> findCollection(Long userId, Long subjectId);
 
     Mono<PagingWrap<SubjectCollection>> findCollections(Long userId, Integer page,

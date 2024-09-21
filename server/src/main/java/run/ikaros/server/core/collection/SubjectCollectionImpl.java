@@ -181,8 +181,6 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0");
         return checkUserIdExists(userId)
             .then(subjectRepository.findById(subjectId))
-            .switchIfEmpty(Mono.error(
-                new SubjectNotFoundException("Subject not found for id: " + subjectId)))
             .flatMap(subjectEntity -> copyProperties(subjectEntity, new SubjectCollection()))
             .flatMap(subjectCollection ->
                 subjectCollectionRepository.findByUserIdAndSubjectId(userId, subjectId)
