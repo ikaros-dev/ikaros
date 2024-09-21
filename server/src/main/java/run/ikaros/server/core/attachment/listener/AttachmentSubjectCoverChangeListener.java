@@ -81,7 +81,13 @@ public class AttachmentSubjectCoverChangeListener {
 
         return attachmentRepository.findByUrl(oldCover)
             .map(AttachmentEntity::getId)
-            .flatMapMany(attachmentReferenceRepository::deleteAllByAttachmentId)
+            .flatMap(oldCoverAttId -> attachmentReferenceRepository
+                .deleteByTypeAndAttachmentIdAndReferenceId(
+                    AttachmentReferenceType.SUBJECT,
+                    oldEntity.getId(),
+                    oldCoverAttId
+                ).doOnSuccess(unused ->
+                    log.debug("Delete attachment Reference by type and att id and sub id.")))
             // update new attachment that move to cover dir
             .then(attachmentRepository.findByTypeAndParentIdAndName(AttachmentType.Directory,
                 AttachmentConst.ROOT_DIRECTORY_ID, AttachmentConst.COVER_DIR_NAME))
@@ -91,12 +97,20 @@ public class AttachmentSubjectCoverChangeListener {
                 .map(entity -> entity.setParentId(coverDirAttId)))
             .flatMap(attachmentRepository::save)
             .map(AttachmentEntity::getId)
-            .map(attId -> AttachmentReferenceEntity.builder()
-                .type(AttachmentReferenceType.SUBJECT)
-                .attachmentId(attId)
-                .referenceId(newEntity.getId())
-                .build())
-            .flatMap(attachmentReferenceRepository::save)
+            .flatMap(attId -> attachmentReferenceRepository
+                .findByTypeAndAttachmentIdAndReferenceId(AttachmentReferenceType.SUBJECT,
+                    attId, newEntity.getId())
+                .switchIfEmpty(attachmentReferenceRepository.save(
+                    AttachmentReferenceEntity.builder()
+                        .type(AttachmentReferenceType.SUBJECT)
+                        .attachmentId(attId)
+                        .referenceId(newEntity.getId())
+                        .build()
+                ).doOnSuccess(entity ->
+                    log.debug("Create attachment Reference by type and att id and sub id: [{}].",
+                        entity)))
+            )
+
             .then();
     }
 }
