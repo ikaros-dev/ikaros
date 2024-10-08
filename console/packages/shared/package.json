@@ -40,7 +40,7 @@
   "homepage": "https://github.com/ikaros-dev/ikaros/blob/master/console/packages/shared#readme",
   "license": "AGPL-3.0",
   "devDependencies": {
-    "vite-plugin-dts": "^2.3.0"
+    "vite-plugin-dts": "^4.2.3"
   },
   "peerDependencies": {
     "vue": "^3.2.37",
