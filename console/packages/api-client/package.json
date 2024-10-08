@@ -63,7 +63,7 @@
     "axios": "^1.6.8",
     "bumpp": "^8.2.1",
     "typescript": "^4.9.5",
-    "unbuild": "^0.7.6",
+    "unbuild": "^2.0.0",
     "vitest": "^0.18.1"
   }
 }
