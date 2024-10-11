@@ -260,25 +260,35 @@ onMounted(getSettingFromServer);
 					</el-button>
 				</el-form-item>
 			</el-tab-pane>
-			<!-- <el-tab-pane label="远端配置">
-				<el-alert
-					title="此功能尚不稳定，不建议开启。"
-					type="warning"
-					show-icon
-				/>
-				<el-form-item label="启用远端">
-					<el-switch
-						v-model="setting.REMOTE_ENABLE"
-						inline-prompt
-						size="large"
-						active-text="启用"
-						inactive-text="禁用"
+			<el-tab-pane label="代码注入">
+				<el-form-item label="全局Header">
+					<el-input
+						v-model="setting.GLOBAL_HEADER"
+						style="max-width: 600px"
+						:autosize="{ minRows: 10 }"
+						maxlength="2000"
+						rows="10"
+						show-word-limit
+						type="textarea"
 					/>
 				</el-form-item>
+				<el-form-item label="全局Footer">
+					<el-input
+						v-model="setting.GLOBAL_FOOTER"
+						style="max-width: 600px"
+						:autosize="{ minRows: 10 }"
+						maxlength="2000"
+						rows="10"
+						show-word-limit
+						type="textarea"
+					/>
+				</el-form-item>
+
 				<el-form-item>
 					<el-button type="primary" @click="updateSetting">保存</el-button>
 				</el-form-item>
 			</el-tab-pane>
+			<!-- 
 			<el-tab-pane label="用户设置">
 				<el-form-item label="开放注册">
 					<el-switch
@@ -295,36 +305,7 @@ onMounted(getSettingFromServer);
 					<el-button type="primary" @click="updateSetting">保存</el-button>
 				</el-form-item>
 			</el-tab-pane>
-			<el-tab-pane label="代码注入">
-				<el-form-item label="全局Header">
-					<el-input
-						v-model="setting.GLOBAL_HEADER"
-						style="max-width: 600px"
-						:autosize="{ minRows: 10 }"
-						maxlength="2000"
-						rows="10"
-						show-word-limit
-						type="textarea"
-						disabled
-					/>
-				</el-form-item>
-				<el-form-item label="全局Footer">
-					<el-input
-						v-model="setting.GLOBAL_FOOTER"
-						style="max-width: 600px"
-						:autosize="{ minRows: 10 }"
-						maxlength="2000"
-						rows="10"
-						show-word-limit
-						type="textarea"
-						disabled
-					/>
-				</el-form-item>
-
-				<el-form-item>
-					<el-button type="primary" @click="updateSetting">保存</el-button>
-				</el-form-item>
-			</el-tab-pane> -->
+			 -->
 		</el-tabs>
 	</el-form>
 </template>
