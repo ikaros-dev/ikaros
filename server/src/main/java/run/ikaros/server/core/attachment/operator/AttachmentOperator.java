@@ -32,11 +32,6 @@ public class AttachmentOperator implements AttachmentOperate {
     }
 
     @Override
-    public Mono<Void> removeById(Long attachmentId) {
-        return service.removeById(attachmentId);
-    }
-
-    @Override
     public Mono<Attachment> upload(AttachmentUploadCondition uploadCondition) {
         return service.upload(uploadCondition);
     }
@@ -50,12 +45,6 @@ public class AttachmentOperator implements AttachmentOperate {
     public Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type,
                                                          @Nullable Long parentId, String name) {
         return service.findByTypeAndParentIdAndName(type, parentId, name);
-    }
-
-    @Override
-    public Mono<Void> removeByTypeAndParentIdAndName(AttachmentType type, @Nullable Long parentId,
-                                                     String name) {
-        return service.removeByTypeAndParentIdAndName(type, parentId, name);
     }
 
     @Override

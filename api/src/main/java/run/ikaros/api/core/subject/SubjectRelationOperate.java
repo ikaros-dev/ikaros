@@ -12,5 +12,4 @@ public interface SubjectRelationOperate extends AllowPluginOperate {
 
     Mono<SubjectRelation> createSubjectRelation(SubjectRelation subjectRelation);
 
-    Mono<SubjectRelation> removeSubjectRelation(SubjectRelation subjectRelation);
 }

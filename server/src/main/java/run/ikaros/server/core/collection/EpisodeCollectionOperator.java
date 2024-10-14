@@ -22,11 +22,6 @@ public class EpisodeCollectionOperator implements EpisodeCollectionOperate {
     }
 
     @Override
-    public Mono<EpisodeCollection> remove(Long userId, Long episodeId) {
-        return service.remove(userId, episodeId);
-    }
-
-    @Override
     public Mono<EpisodeCollection> findByUserIdAndEpisodeId(Long userId, Long episodeId) {
         return service.findByUserIdAndEpisodeId(userId, episodeId);
     }
