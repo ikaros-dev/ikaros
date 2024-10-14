@@ -18,9 +18,10 @@ public class DefaultTagOperator implements TagOperate {
         this.tagService = tagService;
     }
 
+
     @Override
-    public Flux<Tag> findAll(TagType type, Long masterId, Long userId, String name) {
-        return tagService.findAll(type, masterId, userId, name);
+    public Flux<Tag> findAll(TagType type, Long masterId, String name) {
+        return tagService.findAll(type, masterId, null, name);
     }
 
     @Override
