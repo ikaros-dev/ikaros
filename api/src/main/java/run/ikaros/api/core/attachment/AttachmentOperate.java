@@ -13,18 +13,12 @@ public interface AttachmentOperate extends AllowPluginOperate {
 
     Mono<PagingWrap<Attachment>> listByCondition(AttachmentSearchCondition searchCondition);
 
-    Mono<Void> removeById(Long attachmentId);
-
     Mono<Attachment> upload(AttachmentUploadCondition uploadCondition);
 
     Mono<Attachment> findById(Long attachmentId);
 
     Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type, @Nullable Long parentId,
                                                   String name);
-
-    Mono<Void> removeByTypeAndParentIdAndName(
-        AttachmentType type, @Nullable Long parentId, String name);
-
 
     Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name);
 

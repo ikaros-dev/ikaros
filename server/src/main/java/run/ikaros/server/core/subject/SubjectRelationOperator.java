@@ -34,8 +34,4 @@ public class SubjectRelationOperator implements SubjectRelationOperate {
         return subjectRelationService.createSubjectRelation(subjectRelation);
     }
 
-    @Override
-    public Mono<SubjectRelation> removeSubjectRelation(SubjectRelation subjectRelation) {
-        return subjectRelationService.removeSubjectRelation(subjectRelation);
-    }
 }

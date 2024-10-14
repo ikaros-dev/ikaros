@@ -51,11 +51,6 @@ public class SubjectOperator implements SubjectOperate {
     }
 
     @Override
-    public Mono<Void> removeById(Long id) {
-        return subjectService.deleteById(id);
-    }
-
-    @Override
     public Mono<Subject> syncByPlatform(@Nullable Long subjectId, SubjectSyncPlatform platform,
                                         String platformId) {
         return syncPlatformService.sync(subjectId, platform, platformId);

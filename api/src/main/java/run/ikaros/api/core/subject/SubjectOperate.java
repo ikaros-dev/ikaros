@@ -19,7 +19,6 @@ public interface SubjectOperate extends AllowPluginOperate {
 
     Mono<Void> update(Subject subject);
 
-    Mono<Void> removeById(Long id);
 
     Mono<Subject> syncByPlatform(@Nullable Long subjectId, SubjectSyncPlatform platform,
                                  String platformId);

@@ -38,11 +38,6 @@ public class SubjectSyncPlatformOperator implements SubjectSyncPlatformOperate {
     }
 
     @Override
-    public Mono<Void> remove(SubjectSync subjectSync) {
-        return service.remove(subjectSync);
-    }
-
-    @Override
     public Flux<SubjectSync> findSubjectSyncsBySubjectId(long subjectId) {
         return service.findSubjectSyncsBySubjectId(subjectId);
     }

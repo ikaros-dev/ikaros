@@ -30,18 +30,6 @@ public class AttachmentReferenceOperator implements AttachmentReferenceOperate {
     }
 
     @Override
-    public Mono<Void> removeById(Long attachmentRefId) {
-        return service.removeById(attachmentRefId);
-    }
-
-    @Override
-    public Mono<Void> removeByTypeAndAttachmentIdAndReferenceId(AttachmentReferenceType type,
-                                                                Long attachmentId,
-                                                                Long referenceId) {
-        return service.removeByTypeAndAttachmentIdAndReferenceId(type, attachmentId, referenceId);
-    }
-
-    @Override
     public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds) {
         return service.matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds);
     }

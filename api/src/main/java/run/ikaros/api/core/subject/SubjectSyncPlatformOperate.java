@@ -14,8 +14,6 @@ public interface SubjectSyncPlatformOperate extends AllowPluginOperate {
 
     Mono<SubjectSync> save(SubjectSync subjectSync);
 
-    Mono<Void> remove(SubjectSync subjectSync);
-
     Flux<SubjectSync> findSubjectSyncsBySubjectId(long subjectId);
 
     Mono<SubjectSync> findSubjectSyncBySubjectIdAndPlatform(long subjectId,

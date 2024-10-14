@@ -23,11 +23,6 @@ public class SubjectCollectionOperator implements SubjectCollectionOperate {
     }
 
     @Override
-    public Mono<Void> unCollect(Long userId, Long subjectId) {
-        return service.unCollect(userId, subjectId);
-    }
-
-    @Override
     public Mono<SubjectCollection> findCollection(Long userId, Long subjectId) {
         return service.findCollection(userId, subjectId);
     }
