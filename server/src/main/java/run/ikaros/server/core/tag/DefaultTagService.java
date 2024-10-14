@@ -17,6 +17,7 @@ import run.ikaros.api.core.tag.Tag;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.TagType;
+import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.store.entity.TagEntity;
 import run.ikaros.server.store.repository.TagRepository;
 
@@ -25,10 +26,17 @@ import run.ikaros.server.store.repository.TagRepository;
 public class DefaultTagService implements TagService {
     private final TagRepository tagRepository;
     private final R2dbcEntityTemplate r2dbcEntityTemplate;
+    private final UserService userService;
 
-    public DefaultTagService(TagRepository tagRepository, R2dbcEntityTemplate r2dbcEntityTemplate) {
+    /**
+     * Construct.
+     */
+    public DefaultTagService(TagRepository tagRepository,
+                             R2dbcEntityTemplate r2dbcEntityTemplate,
+                             UserService userService) {
         this.tagRepository = tagRepository;
         this.r2dbcEntityTemplate = r2dbcEntityTemplate;
+        this.userService = userService;
     }
 
     @Override
@@ -76,8 +84,9 @@ public class DefaultTagService implements TagService {
         Assert.notNull(tag.getType(), "'type' must not null.");
         Assert.isTrue(tag.getMasterId() >= 0, "'masterId' must >=0.");
         Assert.hasText(tag.getName(), "'name' must has text.");
-        return Mono.just(tag)
-            .flatMap(tag1 -> copyProperties(tag1, new TagEntity()))
+        return userService.getUserIdFromSecurityContext()
+            .map(tag::setUserId)
+            .flatMap(t -> copyProperties(t, new TagEntity()))
             .flatMap(tagRepository::save)
             .flatMap(tagEntity -> copyProperties(tagEntity, tag));
     }
