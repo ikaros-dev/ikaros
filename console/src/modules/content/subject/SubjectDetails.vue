@@ -745,7 +745,7 @@ onMounted(fetchDatas);
 								v-for="tag in tags"
 								:key="tag.id"
 								closable
-								style="margin-right: 5px"
+								style="margin-right: 5px;margin-top: 5px;"
 								:disable-transitions="false"
 								@close="onTagRemove(tag)"
 							>
