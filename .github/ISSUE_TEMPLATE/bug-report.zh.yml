@@ -41,7 +41,7 @@ body:
     id: runtimeEnvironment
     attributes:
       label: 运行环境
-      description: 描述下您的运行环境
+      description: 描述下您的运行环境，可在Console的关于页面右上角复制环境信息。
       placeholder: >
         请提供问题发生时的运行环境，
         操作系统：
