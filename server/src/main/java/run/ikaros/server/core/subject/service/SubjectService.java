@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Subject;
-import run.ikaros.api.core.subject.SubjectMeta;
 import run.ikaros.api.core.subject.vo.FindSubjectCondition;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.wrap.PagingWrap;
@@ -17,8 +16,9 @@ public interface SubjectService {
     Mono<Subject> findByBgmId(@Nonnull Long subjectId, Long bgmtvId);
 
     Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull Long subjectId,
-                                     @Nonnull SubjectSyncPlatform subjectSyncPlatform,
-                                     @NotBlank String platformId);
+                                                          @Nonnull
+                                                          SubjectSyncPlatform subjectSyncPlatform,
+                                                          @NotBlank String platformId);
 
     Flux<Subject> findByPlatformAndPlatformId(@Nonnull SubjectSyncPlatform subjectSyncPlatform,
                                               @NotBlank String platformId);
@@ -35,9 +35,9 @@ public interface SubjectService {
     @Transactional
     Mono<Void> deleteById(Long id);
 
-    Mono<PagingWrap<SubjectMeta>> findAllByPageable(PagingWrap<Subject> pagingWrap);
+    Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pagingWrap);
 
-    Mono<PagingWrap<SubjectMeta>> listEntitiesByCondition(FindSubjectCondition condition);
+    Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition);
 
     Mono<Void> deleteAll();
 }

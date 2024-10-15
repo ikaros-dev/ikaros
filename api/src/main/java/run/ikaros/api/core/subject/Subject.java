@@ -5,14 +5,12 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.store.enums.SubjectType;
 
 @Data
@@ -38,16 +36,4 @@ public class Subject {
     private Boolean nsfw;
     private LocalDateTime airTime;
     private String cover;
-    private List<Episode> episodes;
-    @JsonProperty("total_episodes")
-    private Long totalEpisodes;
-    /**
-     * 已经绑定附件的剧集数量.
-     */
-    @JsonProperty("matching_episode")
-    private Long matchingEpisodes;
-    @JsonProperty("collection_status")
-    private CollectionType collectionType;
-    private List<SubjectSync> syncs;
-    private boolean canRead;
 }

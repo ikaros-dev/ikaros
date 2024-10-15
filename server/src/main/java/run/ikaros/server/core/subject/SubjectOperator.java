@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Subject;
-import run.ikaros.api.core.subject.SubjectMeta;
 import run.ikaros.api.core.subject.SubjectOperate;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.wrap.PagingWrap;
@@ -33,7 +32,7 @@ public class SubjectOperator implements SubjectOperate {
     }
 
     @Override
-    public Flux<SubjectMeta> findAllByPageable(PagingWrap<Subject> pagingWrap) {
+    public Flux<Subject> findAllByPageable(PagingWrap<Subject> pagingWrap) {
         return subjectService.findAllByPageable(pagingWrap)
             .map(PagingWrap::getItems)
             .flatMapMany(subjects -> Flux.fromStream(subjects.stream()));
