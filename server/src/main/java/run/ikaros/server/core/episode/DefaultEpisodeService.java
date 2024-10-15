@@ -47,6 +47,19 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
+    public Mono<Long> countBySubjectId(Long subjectId) {
+        Assert.isTrue(subjectId >= 0, "'episodeId' must >= 0.");
+        return episodeRepository.countBySubjectId(subjectId);
+    }
+
+    @Override
+    public Mono<Long> countMatchingBySubjectId(Long subjectId) {
+        Assert.isTrue(subjectId >= 0, "'episodeId' must >= 0.");
+        return attachmentReferenceRepository
+            .countByTypeAndReferenceId(AttachmentReferenceType.EPISODE, subjectId);
+    }
+
+    @Override
     public Flux<EpisodeResource> findResourcesById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
         return attachmentReferenceRepository

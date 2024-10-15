@@ -10,5 +10,12 @@ public interface EpisodeService {
 
     Mono<Episode> findById(Long episodeId);
 
+    Mono<Long> countBySubjectId(Long subjectId);
+
+    /**
+     * 当前条目已经绑定附件的剧集数量.
+     */
+    Mono<Long> countMatchingBySubjectId(Long subjectId);
+
     Flux<EpisodeResource> findResourcesById(Long episodeId);
 }
