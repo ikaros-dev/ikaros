@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import {apiClient} from '@/utils/api-client';
 import {formatDate} from '@/utils/date';
-import {ElDescriptions, ElDescriptionsItem, ElImage} from 'element-plus';
+import {copyValue2Clipboard, objectToMap} from '@/utils/string-util';
+import {ElButton, ElDescriptions, ElDescriptionsItem, ElImage, ElMessage} from 'element-plus';
 import {onMounted, ref} from 'vue';
 
 const actuatorInfo = ref();
@@ -15,6 +16,22 @@ const airTimeDateFormatter = (time) => {
 	return formatDate(new Date(time), 'yyyy-MM-dd');
 };
 
+
+const onBasicInfoCopyButtonClick = ()=>{
+	var map = objectToMap(actuatorInfo.value);
+
+	let result = '';
+
+	map.forEach((value, key) => {
+		result += `${key}:${value}\n`;
+	});
+
+	copyValue2Clipboard(result)
+	.then(()=>{
+		ElMessage.success('Copy To Clipboard Success.')
+	})
+}
+
 onMounted(fetchActuatorInfo);
 </script>
 <template>
@@ -26,6 +43,9 @@ onMounted(fetchActuatorInfo);
 		size="large"
 		border
 	>
+		<template #extra>
+			<el-button @click="onBasicInfoCopyButtonClick">Copy</el-button>	
+		</template>
 		<!-- git -->
 		<el-descriptions-item>
 			<template #label> Git Branch</template>
