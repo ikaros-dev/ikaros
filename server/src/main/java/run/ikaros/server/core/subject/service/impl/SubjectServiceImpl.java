@@ -25,7 +25,6 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.vo.FindSubjectCondition;
 import run.ikaros.api.infra.exception.NotFoundException;
@@ -101,18 +100,6 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     private boolean getSubjectCanReadByEpisodes(List<Episode> episodes) {
         if (episodes == null || episodes.isEmpty()) {
             return false;
-        }
-
-        for (Episode episode : episodes) {
-            List<EpisodeResource> resources = episode.getResources();
-            if (resources == null || resources.isEmpty()) {
-                return false;
-            }
-            EpisodeResource episodeResource = resources.get(0);
-            if (!episodeResource.isCanRead()) {
-                return false;
-            }
-
         }
 
         return true;

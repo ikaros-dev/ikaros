@@ -13,7 +13,6 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.core.subject.EpisodeMeta;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
@@ -39,7 +38,7 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .required(true)
                         .implementation(Long.class))
-                    .response(Builder.responseBuilder().implementation(EpisodeMeta.class)))
+                    .response(Builder.responseBuilder().implementation(Episode.class)))
 
             .GET("/episode/{id}", this::findById,
                 builder -> builder.operationId("FindEpisodeById")

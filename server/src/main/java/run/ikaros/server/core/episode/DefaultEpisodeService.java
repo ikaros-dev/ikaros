@@ -8,7 +8,6 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.core.subject.EpisodeMeta;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
@@ -34,20 +33,17 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
-    public Mono<EpisodeMeta> findMetaById(Long episodeId) {
+    public Mono<Episode> findMetaById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
         return episodeRepository.findById(episodeId)
-            .flatMap(episodeEntity -> copyProperties(episodeEntity, new EpisodeMeta()));
+            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
     }
 
     @Override
     public Mono<Episode> findById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
         return episodeRepository.findById(episodeId)
-            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
-            .flatMap(episode ->
-                findResourcesById(episodeId).collectList()
-                    .map(episode::setResources));
+            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
     }
 
     @Override

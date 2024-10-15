@@ -2,7 +2,6 @@ package run.ikaros.api.core.subject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,8 +26,6 @@ public class Episode {
     private LocalDateTime airTime;
     private Float sequence;
     private EpisodeGroup group;
-
-    private List<EpisodeResource> resources;
 
     /**
      * Create a default episode instance.
