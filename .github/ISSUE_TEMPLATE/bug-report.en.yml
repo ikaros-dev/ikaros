@@ -39,7 +39,7 @@ body:
   - type: textarea
     attributes:
       label: Runtime environment
-      description: Describe what runtime environment.
+      description: Describe what runtime environment, you can copy the environment information from the top-right corner of the About page in the Console.
       placeholder: >
         Please provide the Runtime environment in which the problem occurred,
         os:
