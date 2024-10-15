@@ -43,6 +43,14 @@ const fetchSubjectByRouterQuery = () => {
 			| 'OTHER';
 	}
 
+	if (route.query.page !== undefined) {
+		findSubjectsCondition.value.page = route.query.page as unknown as number;
+	}
+
+	if (route.query.size !== undefined) {
+		findSubjectsCondition.value.size = route.query.size as unknown as number;
+	}
+
 	// console.log('findSubjectsCondition', findSubjectsCondition.value);
 	fetchSubjects();
 };
@@ -119,6 +127,14 @@ watch(findSubjectsCondition.value, () => {
 	const type = findSubjectsCondition.value.type;
 	if (type !== route.query.type) {
 		query.type = type;
+	}
+	const page = findSubjectsCondition.value.page;
+	if (page !== query.page) {
+		query.page = page;
+	}
+	const size = findSubjectsCondition.value.size;
+	if (size !== query.size) {
+		query.size = size;
 	}
 	router.push({ path: route.path, query });
 });
