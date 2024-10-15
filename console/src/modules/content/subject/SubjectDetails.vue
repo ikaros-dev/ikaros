@@ -90,6 +90,7 @@ const fetchSubjectById = async () => {
 			deleteMatchingSubjectButtonDisable.value = false;
 		}
 		if (subject.value.episodes) {
+			subject.value.episodes = subject.value.episodes.sort((a, b) => (a.sequence??0) - (b.sequence??0));
 			loadEpisodeGroupLabels();
 		}
 	}
