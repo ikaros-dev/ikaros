@@ -12,13 +12,6 @@
  * Do not edit the class manually.
  */
 
-// May contain unused imports in some cases
-// @ts-ignore
-import { Episode } from "./episode";
-// May contain unused imports in some cases
-// @ts-ignore
-import { SubjectSync } from "./subject-sync";
-
 /**
  *
  * @export
@@ -75,46 +68,10 @@ export interface Subject {
   cover?: string;
   /**
    *
-   * @type {Array<Episode>}
-   * @memberof Subject
-   */
-  episodes?: Array<Episode>;
-  /**
-   *
-   * @type {Array<SubjectSync>}
-   * @memberof Subject
-   */
-  syncs?: Array<SubjectSync>;
-  /**
-   *
-   * @type {boolean}
-   * @memberof Subject
-   */
-  canRead?: boolean;
-  /**
-   *
    * @type {string}
    * @memberof Subject
    */
   name_cn?: string;
-  /**
-   *
-   * @type {number}
-   * @memberof Subject
-   */
-  total_episodes?: number;
-  /**
-   *
-   * @type {number}
-   * @memberof Subject
-   */
-  matching_episode?: number;
-  /**
-   *
-   * @type {string}
-   * @memberof Subject
-   */
-  collection_status?: SubjectCollectionStatusEnum;
 }
 
 export const SubjectTypeEnum = {
@@ -129,13 +86,3 @@ export const SubjectTypeEnum = {
 
 export type SubjectTypeEnum =
   (typeof SubjectTypeEnum)[keyof typeof SubjectTypeEnum];
-export const SubjectCollectionStatusEnum = {
-  Wish: "WISH",
-  Doing: "DOING",
-  Done: "DONE",
-  Shelve: "SHELVE",
-  Discard: "DISCARD",
-} as const;
-
-export type SubjectCollectionStatusEnum =
-  (typeof SubjectCollectionStatusEnum)[keyof typeof SubjectCollectionStatusEnum];

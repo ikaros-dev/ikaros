@@ -118,12 +118,12 @@ export const V1alpha1UserApiAxiosParamCreator = function (
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    deleteById: async (
+    deleteById1: async (
       id: string,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
-      assertParamExists("deleteById", "id", id);
+      assertParamExists("deleteById1", "id", id);
       const localVarPath = `/api/v1alpha1/user/id/{id}`.replace(
         `{${"id"}}`,
         encodeURIComponent(String(id))
@@ -475,13 +475,13 @@ export const V1alpha1UserApiFp = function (configuration?: Configuration) {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async deleteById(
+    async deleteById1(
       id: string,
       options?: AxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.deleteById(
+      const localVarAxiosArgs = await localVarAxiosParamCreator.deleteById1(
         id,
         options
       );
@@ -634,16 +634,16 @@ export const V1alpha1UserApiFactory = function (
     },
     /**
      * Delete user by id..
-     * @param {V1alpha1UserApiDeleteByIdRequest} requestParameters Request parameters.
+     * @param {V1alpha1UserApiDeleteById1Request} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    deleteById(
-      requestParameters: V1alpha1UserApiDeleteByIdRequest,
+    deleteById1(
+      requestParameters: V1alpha1UserApiDeleteById1Request,
       options?: AxiosRequestConfig
     ): AxiosPromise<void> {
       return localVarFp
-        .deleteById(requestParameters.id, options)
+        .deleteById1(requestParameters.id, options)
         .then((request) => request(axios, basePath));
     },
     /**
@@ -737,15 +737,15 @@ export interface V1alpha1UserApiChangeUserRoleRequest {
 }
 
 /**
- * Request parameters for deleteById operation in V1alpha1UserApi.
+ * Request parameters for deleteById1 operation in V1alpha1UserApi.
  * @export
- * @interface V1alpha1UserApiDeleteByIdRequest
+ * @interface V1alpha1UserApiDeleteById1Request
  */
-export interface V1alpha1UserApiDeleteByIdRequest {
+export interface V1alpha1UserApiDeleteById1Request {
   /**
    *
    * @type {string}
-   * @memberof V1alpha1UserApiDeleteById
+   * @memberof V1alpha1UserApiDeleteById1
    */
   readonly id: string;
 }
@@ -835,17 +835,17 @@ export class V1alpha1UserApi extends BaseAPI {
 
   /**
    * Delete user by id..
-   * @param {V1alpha1UserApiDeleteByIdRequest} requestParameters Request parameters.
+   * @param {V1alpha1UserApiDeleteById1Request} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof V1alpha1UserApi
    */
-  public deleteById(
-    requestParameters: V1alpha1UserApiDeleteByIdRequest,
+  public deleteById1(
+    requestParameters: V1alpha1UserApiDeleteById1Request,
     options?: AxiosRequestConfig
   ) {
     return V1alpha1UserApiFp(this.configuration)
-      .deleteById(requestParameters.id, options)
+      .deleteById1(requestParameters.id, options)
       .then((request) => request(this.axios, this.basePath));
   }
 

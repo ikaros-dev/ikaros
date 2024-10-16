@@ -73,16 +73,16 @@ const loadSubjectRelations = async () => {
 	}
 };
 interface SubjectRelationTabItem {
-	type:SubjectRelationRelationTypeEnum,
-	count:number,
-	label:string
+	type: SubjectRelationRelationTypeEnum;
+	count: number;
+	label: string;
 }
 const subjectRelationTabItems = ref<SubjectRelationTabItem[]>([]);
-const loadSubjectRelationTabItems = ()=>{
+const loadSubjectRelationTabItems = () => {
 	if (!(subjectRelations.value instanceof Array)) return;
 	// convert count map
 	const countMap = new Map<SubjectRelationRelationTypeEnum, number>();
-	subjectRelations.value.forEach(e => {
+	subjectRelations.value.forEach((e) => {
 		const type = e.relation_type;
 		if (countMap.has(type)) {
 			let count = countMap.get(type) as number;
@@ -96,18 +96,19 @@ const loadSubjectRelationTabItems = ()=>{
 	countMap.forEach((val, key) => {
 		subjectRelationTabItems.value.push({
 			type: key,
-			label: t('module.subject.relaction.type.' + key)
-			+ '(' + val + ')',
+			label: t('module.subject.relaction.type.' + key) + '(' + val + ')',
 			count: val,
 		});
 	});
 	console.debug('subjectRelationTabItems', subjectRelationTabItems.value);
 	if (subjectRelationTabItems.value.length > 0) {
-		activeTabName.value = subjectRelationTabItems.value[0].label
+		activeTabName.value = subjectRelationTabItems.value[0].label;
 	}
-}
-const typeRelSubjectMap = ref<Map<SubjectRelationRelationTypeEnum, Subject[]>>(new Map())
-const loadTypeRelSubjectMap = async ()=>{
+};
+const typeRelSubjectMap = ref<Map<SubjectRelationRelationTypeEnum, Subject[]>>(
+	new Map()
+);
+const loadTypeRelSubjectMap = async () => {
 	if (!(subjectRelations.value instanceof Array)) return;
 	typeRelSubjectMap.value.clear();
 	await subjectRelations.value.forEach(async (subRel) => {
@@ -120,7 +121,7 @@ const loadTypeRelSubjectMap = async ()=>{
 		});
 		typeRelSubjectMap.value.set(type, subjects);
 	});
-}
+};
 
 const subjectRelationPostDialogVisible = ref(false);
 
@@ -234,7 +235,11 @@ onMounted(() => {
 
 		<br />
 
-		<el-tabs v-if="subjectRelationTabItems && subjectRelationTabItems.length > 0" v-model="activeTabName" type="border-card" >
+		<el-tabs
+			v-if="subjectRelationTabItems && subjectRelationTabItems.length > 0"
+			v-model="activeTabName"
+			type="border-card"
+		>
 			<el-tab-pane
 				v-for="item in subjectRelationTabItems"
 				:key="item.type"
@@ -243,7 +248,7 @@ onMounted(() => {
 			>
 				<el-row :gutter="10" justify="start" align="middle">
 					<el-col
-						v-for="sub in (typeRelSubjectMap?.get(item.type))"
+						v-for="sub in typeRelSubjectMap?.get(item.type)"
 						:key="sub.id"
 						:xs="24"
 						:sm="12"
@@ -262,7 +267,6 @@ onMounted(() => {
 				</el-row>
 			</el-tab-pane>
 		</el-tabs>
-
 	</el-dialog>
 </template>
 

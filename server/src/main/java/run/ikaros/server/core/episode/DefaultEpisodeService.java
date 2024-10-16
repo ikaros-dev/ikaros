@@ -2,15 +2,16 @@ package run.ikaros.server.core.episode;
 
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.core.subject.EpisodeMeta;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
@@ -33,21 +34,59 @@ public class DefaultEpisodeService implements EpisodeService {
         this.attachmentRepository = attachmentRepository;
     }
 
+
     @Override
-    public Mono<EpisodeMeta> findMetaById(Long episodeId) {
-        Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
-        return episodeRepository.findById(episodeId)
-            .flatMap(episodeEntity -> copyProperties(episodeEntity, new EpisodeMeta()));
+    public Mono<Episode> save(Episode episode) {
+        Assert.notNull(episode, "episode must not be null");
+        Long episodeId = episode.getId();
+        if (episodeId != null && episodeId > 0) {
+            return episodeRepository.findById(episodeId)
+                .flatMap(entity -> copyProperties(episode, entity))
+                .flatMap(episodeRepository::save)
+                .flatMap(e -> copyProperties(e, episode));
+        } else {
+            return copyProperties(episode, new EpisodeEntity())
+                .flatMap(episodeRepository::save)
+                .flatMap(e -> copyProperties(e, episode));
+        }
     }
 
     @Override
     public Mono<Episode> findById(Long episodeId) {
-        Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
+        Assert.isTrue(episodeId != null && episodeId > 0, "episode id must >= 0.");
         return episodeRepository.findById(episodeId)
-            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
-            .flatMap(episode ->
-                findResourcesById(episodeId).collectList()
-                    .map(episode::setResources));
+            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
+    }
+
+    @Override
+    public Flux<Episode> findAllBySubjectId(Long subjectId) {
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+        return episodeRepository.findAllBySubjectId(subjectId)
+            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
+    }
+
+    @Override
+    public Mono<Void> deleteById(Long episodeId) {
+        Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
+        return episodeRepository.deleteById(episodeId);
+    }
+
+    @Override
+    public Mono<Long> countBySubjectId(Long subjectId) {
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+        return episodeRepository.countBySubjectId(subjectId);
+    }
+
+    @Override
+    public Mono<Long> countMatchingBySubjectId(Long subjectId) {
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+        return episodeRepository.findAllBySubjectId(subjectId)
+            .flatMap(entity -> attachmentReferenceRepository.existsByTypeAndReferenceId(
+                AttachmentReferenceType.EPISODE, entity.getId()))
+            .filter(exists -> exists)
+            .collectList()
+            .map(List::size)
+            .map(Long::valueOf);
     }
 
     @Override

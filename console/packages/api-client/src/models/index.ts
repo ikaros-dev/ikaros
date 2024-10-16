@@ -9,7 +9,6 @@ export * from "./config-map";
 export * from "./create-user-req-params";
 export * from "./episode";
 export * from "./episode-collection";
-export * from "./episode-meta";
 export * from "./episode-resource";
 export * from "./jwt-apply-param";
 export * from "./link";

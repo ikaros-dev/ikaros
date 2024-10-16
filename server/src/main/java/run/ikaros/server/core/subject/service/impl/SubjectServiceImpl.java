@@ -5,17 +5,14 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
@@ -28,13 +25,9 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subject.Subject;
-import run.ikaros.api.core.subject.SubjectMeta;
-import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.core.subject.vo.FindSubjectCondition;
 import run.ikaros.api.infra.exception.NotFoundException;
-import run.ikaros.api.infra.utils.ReactiveBeanUtils;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
@@ -101,61 +94,12 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     public Mono<Subject> findById(Long id) {
         Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.findById(id)
-            .switchIfEmpty(
-                Mono.error(new NotFoundException("Not found subject record by id: " + id)))
-            .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject()))
-            .checkpoint("FindSubjectEntityById")
-
-            .flatMap(subject -> episodeRepository
-                .findAllBySubjectIdOrderByGroupDescSequenceAscAirTimeAscCreateTimeAsc(
-                    subject.getId())
-                .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
-                .flatMap(episode -> attachmentReferenceRepository
-                    .findAllByTypeAndReferenceIdOrderByTypeAscAttachmentIdAsc(
-                        AttachmentReferenceType.EPISODE, episode.getId())
-                    .flatMap(attachmentReferenceEntity ->
-                        attachmentRepository.findById(attachmentReferenceEntity.getAttachmentId())
-                            .map(attachmentEntity -> EpisodeResource.builder()
-                                .episodeId(episode.getId())
-                                .attachmentId(attachmentEntity.getId())
-                                .parentAttachmentId(attachmentEntity.getParentId())
-                                .name(attachmentEntity.getName())
-                                .url(attachmentEntity.getUrl())
-                                .canRead(true)
-                                .build())
-                    ).collectList()
-                    .map(episode::setResources))
-                .collectList()
-                .map(episodes -> subject
-                    .setTotalEpisodes((long) episodes.size())
-                    .setEpisodes(episodes)
-                    .setCanRead(getSubjectCanReadByEpisodes(episodes)))
-                .flatMap(sub -> findMatchingEpisodeCount(sub.getId())
-                    .map(sub::setMatchingEpisodes))
-                .switchIfEmpty(Mono.just(subject)))
-            .checkpoint("FindEpisodeEntitiesBySubjectId")
-
-            .flatMap(subject -> subjectSyncRepository.findAllBySubjectId(subject.getId())
-                .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, new SubjectSync()))
-                .collectList().map(subject::setSyncs))
-            .checkpoint("FindSyncEntitiesBySubjectId");
+            .flatMap(subjectEntity -> copyProperties(subjectEntity, new Subject()));
     }
 
     private boolean getSubjectCanReadByEpisodes(List<Episode> episodes) {
         if (episodes == null || episodes.isEmpty()) {
             return false;
-        }
-
-        for (Episode episode : episodes) {
-            List<EpisodeResource> resources = episode.getResources();
-            if (resources == null || resources.isEmpty()) {
-                return false;
-            }
-            EpisodeResource episodeResource = resources.get(0);
-            if (!episodeResource.isCanRead()) {
-                return false;
-            }
-
         }
 
         return true;
@@ -209,57 +153,11 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     @Override
     public synchronized Mono<Subject> create(Subject subject) {
         Assert.notNull(subject, "'subject' must not be null.");
-        final AtomicReference<Long> subjectId = new AtomicReference<>(-1L);
-        return Mono.just(subject)
-            .filter(sub -> Objects.nonNull(sub.getType()))
-            .switchIfEmpty(
-                Mono.error(new IllegalArgumentException("subject type must not be null")))
-            .checkpoint("AssertParams")
-
-            .flatMap(sub -> copyProperties(sub, new SubjectEntity()))
+        Assert.notNull(subject.getType(), "'subject.type' must not be null.");
+        return copyProperties(subject, new SubjectEntity())
             .flatMap(subjectRepository::save)
             .doOnNext(entity -> applicationContext.publishEvent(new SubjectAddEvent(this, entity)))
-            .map(subjectEntity -> {
-                subjectId.set(subjectEntity.getId());
-                return subjectEntity;
-            })
-            .flatMap(subjectEntity -> copyProperties(subjectEntity, subject))
-            .checkpoint("CreateSubjectEntity")
-
-            .map(sub -> Objects.isNull(subject.getEpisodes())
-                ? new ArrayList<Episode>() : subject.getEpisodes())
-            .filter(Objects::nonNull)
-            .filter(episodes -> !episodes.isEmpty())
-            .switchIfEmpty(Mono.just(List.of(Episode.defaultEpisode(subject.getId()))))
-            .flatMapMany(episodes -> Flux.fromStream(episodes.stream()))
-            .flatMap(episode -> copyProperties(episode, new EpisodeEntity()))
-            .map(entity -> entity.setSubjectId(subjectId.get()))
-            .flatMap(entity ->
-                episodeRepository.findBySubjectIdAndGroupAndSequence(subjectId.get(),
-                        entity.getGroup(), entity.getSequence())
-                    .switchIfEmpty(episodeRepository.save(entity)))
-            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()))
-            .collectList()
-            .map(subject::setEpisodes)
-            .checkpoint("CreateEpisodeEntities")
-
-            .map(sub -> Objects.isNull(subject.getSyncs())
-                ? new ArrayList<SubjectSync>() : subject.getSyncs())
-            .filter(Objects::nonNull)
-            .switchIfEmpty(Mono.just(new ArrayList<>()))
-            .flatMapMany(subjectSyncs -> Flux.fromStream(subjectSyncs.stream()))
-            .flatMap(subjectSync -> copyProperties(subjectSync, new SubjectSyncEntity()))
-            .map(entity -> entity.setSubjectId(subjectId.get()))
-            .flatMap(subjectSyncRepository::save)
-            .onErrorResume(DuplicateKeyException.class, e -> {
-                log.warn("duplicate key when save subject sync record, exception msg: {}",
-                    e.getMessage());
-                return Mono.empty();
-            })
-            .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity, new SubjectSync()))
-            .collectList()
-            .map(subject::setSyncs)
-            .checkpoint("CreateSubjectSyncEntities");
+            .flatMap(subjectEntity -> copyProperties(subjectEntity, subject));
     }
 
     private Mono<SubjectEntity> publishSubjectUpdateEvent(SubjectEntity subjectEntity) {
@@ -276,11 +174,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     @Override
     public Mono<Void> update(Subject subject) {
         Assert.notNull(subject, "'subject' must not null.");
-        Long id = subject.getId();
-        Assert.isTrue(id > 0, "'subject id' must gt 0.");
-        AtomicReference<Long> subjectId = new AtomicReference<>(id);
-        return Mono.just(subject)
-            .flatMap(sub -> copyProperties(sub, new SubjectEntity()))
+        Assert.isTrue(subject.getId() > 0, "'subject id' must gt 0.");
+        return copyProperties(subject, new SubjectEntity())
             .flatMap(this::publishSubjectUpdateEvent)
             .flatMap(entity -> {
                 Map<SqlIdentifier, Object> map = new HashMap<>();
@@ -295,7 +190,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 map.put(SqlIdentifier.unquoted("air_time"), entity.getAirTime());
                 return Mono.just(map)
                     .flatMap(columnsToUpdate -> template
-                        .update(Query.query(where("id").is(subjectId.get())),
+                        .update(Query.query(where("id").is(entity.getId())),
                             Update.from(columnsToUpdate),
                             SubjectEntity.class))
                     .filter(count -> count > 0)
@@ -303,25 +198,9 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                         "Update subject entity fail for id: " + entity.getId())));
             })
             .doOnSuccess(count
-                -> log.debug("Update subject entity success for id=[{}]", subjectId.get()))
+                -> log.debug("Update subject entity success for count=[{}]", count))
             .checkpoint("UpdateSubjectEntity")
 
-            // 剧集的更新逻辑是: 移除原有的所有剧集记录,再创建新的剧集记录.
-            .then(episodeRepository.deleteAllBySubjectId(subjectId.get()))
-            .then(Mono.justOrEmpty(subject.getEpisodes()))
-            .flatMapMany(episodes -> Flux.fromStream(episodes.stream()))
-            .flatMap(episode -> copyProperties(episode, new EpisodeEntity()))
-            .map(entity -> entity.setSubjectId(subjectId.get()))
-            .flatMap(episodeRepository::save)
-            .checkpoint("UpdateEpisodeEntities")
-
-            // 条目同步的更新逻辑是: 不存在则新增，存在则忽略
-            .then(Mono.justOrEmpty(subject.getSyncs()))
-            .flatMapMany(subjectSyncs -> Flux.fromStream(subjectSyncs.stream()))
-            .flatMap(subjectSync -> copyProperties(subjectSync, new SubjectSyncEntity()))
-            .map(entity -> entity.setSubjectId(subjectId.get()))
-            .flatMap(this::updateSubjectSyncEntity)
-            .checkpoint("UpdateSubjectSyncEntities")
             .then();
     }
 
@@ -374,31 +253,22 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    public Mono<PagingWrap<SubjectMeta>> findAllByPageable(PagingWrap<Subject> pagingWrap) {
-        Assert.notNull(pagingWrap, "'pagingWrap' must not be null");
-        Assert.isTrue(pagingWrap.getPage() > 0, "'pagingWrap' page must gt 0");
-        Assert.isTrue(pagingWrap.getSize() > 0, "'pagingWrap' size must gt 0");
-        return Mono.just(pagingWrap)
-            .flatMap(pagingWrap1 ->
-                subjectRepository.findAllByOrderByAirTimeDesc(
-                        PageRequest.of(pagingWrap1.getPage() - 1, pagingWrap1.getSize()))
-                    .map(BaseEntity::getId)
-                    .flatMap(subjectRepository::findById)
-                    .flatMap(
-                        subject -> ReactiveBeanUtils.copyProperties(subject, new SubjectMeta()))
-                    .flatMap(subjectMeta -> findMatchingEpisodeCount(subjectMeta.getId())
-                        .map(subjectMeta::setMatchingEpisodes))
-                    .flatMap(subjectMeta -> episodeRepository.countBySubjectId(subjectMeta.getId())
-                        .map(subjectMeta::setTotalEpisodes))
-                    .collectList()
-                    .flatMap(subjects -> subjectRepository.count()
-                        .flatMap(total -> Mono.just(
-                            new PagingWrap<>(pagingWrap1.getPage(), pagingWrap1.getSize(), total,
-                                subjects)))));
+    public Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pw) {
+        Assert.notNull(pw, "'pagingWrap' must not be null");
+        Assert.isTrue(pw.getPage() > 0, "'pagingWrap' page must gt 0");
+        Assert.isTrue(pw.getSize() > 0, "'pagingWrap' size must gt 0");
+        return subjectRepository.findAllByOrderByAirTimeDesc(
+                PageRequest.of(pw.getPage() - 1, pw.getSize()))
+            .flatMap(entity -> copyProperties(entity, new Subject()))
+            .collectList()
+            .flatMap(subjects -> subjectRepository.count()
+                .flatMap(total -> Mono.just(
+                    new PagingWrap<>(pw.getPage(), pw.getSize(), total,
+                        subjects))));
     }
 
     @Override
-    public Mono<PagingWrap<SubjectMeta>> listEntitiesByCondition(FindSubjectCondition condition) {
+    public Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition) {
         Assert.notNull(condition, "'condition' must not null.");
         condition.initDefaultIfNull();
         Integer page = condition.getPage();
@@ -444,11 +314,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
 
         return subjectEntityFlux.map(BaseEntity::getId)
             .flatMap(subjectRepository::findById)
-            .flatMap(subject -> ReactiveBeanUtils.copyProperties(subject, new SubjectMeta()))
-            .flatMap(subjectMeta -> findMatchingEpisodeCount(subjectMeta.getId())
-                .map(subjectMeta::setMatchingEpisodes))
-            .flatMap(subjectMeta -> episodeRepository.countBySubjectId(subjectMeta.getId())
-                .map(subjectMeta::setTotalEpisodes))
+            .flatMap(entity -> copyProperties(entity, new Subject()))
             .collectList()
             .flatMap(subjects -> countMono
                 .map(count -> new PagingWrap<>(page, size, count, subjects)));

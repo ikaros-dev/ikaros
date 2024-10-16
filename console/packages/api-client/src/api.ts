@@ -19,6 +19,7 @@ export * from "./api/v1alpha1-attachment-api";
 export * from "./api/v1alpha1-attachment-reference-api";
 export * from "./api/v1alpha1-attachment-relation-api";
 export * from "./api/v1alpha1-authority-api";
+export * from "./api/v1alpha1-collection-api";
 export * from "./api/v1alpha1-collection-episode-api";
 export * from "./api/v1alpha1-collection-subject-api";
 export * from "./api/v1alpha1-episode-api";

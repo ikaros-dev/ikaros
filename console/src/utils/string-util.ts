@@ -30,26 +30,29 @@ export const formatFileSize = (value): string => {
 	return size + ' ' + unitArr[index];
 };
 
-
 export const objectToMap = (obj: any, parentKey = ''): Map<string, any> => {
 	const result = new Map<string, any>();
-  
+
 	for (const key in obj) {
-	  if (Object.prototype.hasOwnProperty.call(obj, key)) {
-		const newKey = parentKey ? `${parentKey}.${key}` : key;
-  
-		// 如果属性值是对象，递归处理
-		if (typeof obj[key] === 'object' && !Array.isArray(obj[key]) && obj[key] !== null) {
-		  const nestedMap = objectToMap(obj[key], newKey);
-		  nestedMap.forEach((value, nestedKey) => {
-			result.set(nestedKey, value); // 合并子Map到父Map
-		  });
-		} else {
-		  result.set(newKey, obj[key]); // 终止条件：遇到非对象类型
+		if (Object.prototype.hasOwnProperty.call(obj, key)) {
+			const newKey = parentKey ? `${parentKey}.${key}` : key;
+
+			// 如果属性值是对象，递归处理
+			if (
+				typeof obj[key] === 'object' &&
+				!Array.isArray(obj[key]) &&
+				obj[key] !== null
+			) {
+				const nestedMap = objectToMap(obj[key], newKey);
+				nestedMap.forEach((value, nestedKey) => {
+					result.set(nestedKey, value); // 合并子Map到父Map
+				});
+			} else {
+				result.set(newKey, obj[key]); // 终止条件：遇到非对象类型
+			}
 		}
-	  }
 	}
-  
+
 	return result;
 };
 

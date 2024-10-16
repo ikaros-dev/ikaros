@@ -2,6 +2,7 @@ package run.ikaros.server.core.subject.endpoint;
 
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.apiresponse.Builder;
@@ -16,6 +17,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.core.subject.SubjectSyncAction;
 import run.ikaros.api.core.subject.vo.PostSubjectSyncCondition;
 import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
@@ -68,6 +70,21 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
                     .response(Builder.responseBuilder()
                         .implementation(Subject.class))
             )
+
+            .GET("/subject/syncs/subjectId/{id}", this::findSubjectSyncsBySubjectId,
+                builder -> builder.operationId("GetSubjectSyncsBySubjectId")
+                    .tag(tag).description("Get subject syncs by subject id.")
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .description("Subject id")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(Builder.responseBuilder()
+                        .description("Subject syncs by subject id.")
+                        .implementationArray(SubjectSync.class))
+            )
+
             .build();
     }
 
@@ -103,5 +120,13 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
                         + subjectId + ", platform=" + platform.name()
                         + ", platformId=" + platformId
                         + ", exception message=" + err.getMessage()));
+    }
+
+    private Mono<ServerResponse> findSubjectSyncsBySubjectId(ServerRequest request) {
+        String id = request.pathVariable("id");
+        long subjectId = Long.parseLong(id);
+        return service.findSubjectSyncsBySubjectId(subjectId)
+            .collectList()
+            .flatMap(list -> ServerResponse.ok().bodyValue(list));
     }
 }

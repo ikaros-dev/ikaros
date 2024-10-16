@@ -13,7 +13,7 @@ public interface SubjectOperate extends AllowPluginOperate {
 
     Mono<Subject> findById(Long id);
 
-    Flux<SubjectMeta> findAllByPageable(PagingWrap<Subject> pagingWrap);
+    Flux<Subject> findAllByPageable(PagingWrap<Subject> pagingWrap);
 
     Mono<Subject> create(Subject subject);
 

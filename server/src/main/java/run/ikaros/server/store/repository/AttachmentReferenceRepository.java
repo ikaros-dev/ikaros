@@ -33,6 +33,9 @@ public interface AttachmentReferenceRepository
     Flux<AttachmentReferenceEntity> findAllByTypeAndReferenceId(AttachmentReferenceType type,
                                                                 Long referenceId);
 
+    Mono<Long> countByTypeAndReferenceId(AttachmentReferenceType type,
+                                         Long referenceId);
+
     Flux<AttachmentReferenceEntity> findAllByTypeAndReferenceIdOrderByTypeAscAttachmentIdAsc(
         AttachmentReferenceType type, Long referenceId);
 

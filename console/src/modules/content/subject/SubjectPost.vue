@@ -39,8 +39,8 @@ const subject = ref<Subject>({
 	type: SubjectTypeEnum.Anime,
 	nsfw: false,
 	name_cn: '',
-	episodes: [],
 });
+const episodes = ref<Episode[]>([]);
 
 const subjectRuleFormRules = reactive<FormRules>({
 	name: [
@@ -90,22 +90,23 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid, fields) => {
 		if (valid) {
-			await apiClient.subject
-				.createSubject({
-					subject: subject.value,
-				})
-				.then(() => {
-					router.push(
-						'/subjects?name=' +
-							base64Encode(encodeURI(subject.value.name)) +
-							'&nameCn=' +
-							base64Encode(encodeURI(subject.value.name_cn as string)) +
-							'&nsfw=' +
-							subject.value.nsfw +
-							'&type=' +
-							subject.value.type
-					);
-				});
+			const { data } = await apiClient.subject.createSubject({
+				subject: subject.value,
+			});
+			await episodes.value.forEach(async (e) => {
+				e.subject_id = data.id as number;
+				await apiClient.episode.postEpisode({ episode: e });
+			});
+			router.push(
+				'/subjects?name=' +
+					base64Encode(encodeURI(subject.value.name)) +
+					'&nameCn=' +
+					base64Encode(encodeURI(subject.value.name_cn as string)) +
+					'&nsfw=' +
+					subject.value.nsfw +
+					'&type=' +
+					subject.value.type
+			);
 		} else {
 			console.log('error submit!', fields);
 			ElMessage.error(t('module.subject.post.message.form-rule.validate-fail'));
@@ -116,7 +117,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 const episodePostDialogVisible = ref(false);
 const onEpisodePostDialogCloseWithEpsiode = (ep: Episode) => {
 	console.log('receive episode: ', ep);
-	subject.value.episodes?.push(ep);
+	episodes.value?.push(ep);
 };
 
 const airTimeDateFormatter = (row) => {
@@ -124,9 +125,9 @@ const airTimeDateFormatter = (row) => {
 };
 
 const removeCurrentRowEpisode = (ep: Episode) => {
-	const index: number = subject.value.episodes?.indexOf(ep) as number;
+	const index: number = episodes.value?.indexOf(ep) as number;
 	if (index && index < 0) return;
-	subject.value.episodes?.splice(index, 1);
+	episodes.value?.splice(index, 1);
 };
 
 const currentEpisode = ref<Episode>();
@@ -262,7 +263,7 @@ const oepnCropperjsDialog = () => {
 				/>
 
 				<el-form-item :label="t('module.subject.post.label.episodes')">
-					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
+					<el-table :data="episodes" @row-dblclick="showEpisodeDetails">
 						<el-table-column
 							:label="t('module.subject.post.label.episode-table.group')"
 							prop="group"

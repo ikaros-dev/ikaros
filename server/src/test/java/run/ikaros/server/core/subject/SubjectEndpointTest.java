@@ -106,8 +106,6 @@ class SubjectEndpointTest {
             .nameCn("第一集")
             .group(EpisodeGroup.MAIN)
             .build());
-        subject.setEpisodes(episodes)
-            .setTotalEpisodes((long) episodes.size());
         return subject;
     }
 

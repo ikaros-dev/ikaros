@@ -2,7 +2,7 @@
 import {apiClient} from '@/utils/api-client';
 import {formatDate} from '@/utils/date';
 import {copyValue2Clipboard, objectToMap} from '@/utils/string-util';
-import {ElButton, ElDescriptions, ElDescriptionsItem, ElImage, ElMessage} from 'element-plus';
+import {ElButton, ElDescriptions, ElDescriptionsItem, ElImage, ElMessage,} from 'element-plus';
 import {onMounted, ref} from 'vue';
 
 const actuatorInfo = ref();
@@ -16,8 +16,7 @@ const airTimeDateFormatter = (time) => {
 	return formatDate(new Date(time), 'yyyy-MM-dd');
 };
 
-
-const onBasicInfoCopyButtonClick = ()=>{
+const onBasicInfoCopyButtonClick = () => {
 	var map = objectToMap(actuatorInfo.value);
 
 	let result = '';
@@ -26,11 +25,10 @@ const onBasicInfoCopyButtonClick = ()=>{
 		result += `${key}:${value}\n`;
 	});
 
-	copyValue2Clipboard(result)
-	.then(()=>{
-		ElMessage.success('Copy To Clipboard Success.')
-	})
-}
+	copyValue2Clipboard(result).then(() => {
+		ElMessage.success('Copy To Clipboard Success.');
+	});
+};
 
 onMounted(fetchActuatorInfo);
 </script>
@@ -44,7 +42,7 @@ onMounted(fetchActuatorInfo);
 		border
 	>
 		<template #extra>
-			<el-button @click="onBasicInfoCopyButtonClick">Copy</el-button>	
+			<el-button @click="onBasicInfoCopyButtonClick">Copy</el-button>
 		</template>
 		<!-- git -->
 		<el-descriptions-item>

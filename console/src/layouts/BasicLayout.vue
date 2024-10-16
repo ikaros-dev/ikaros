@@ -33,18 +33,19 @@ const handleGlobalSearchKeybinding = (e: KeyboardEvent) => {
 const headerDom = ref();
 const footerDom = ref();
 
-const loadGlobalHeader = ()=>{
+const loadGlobalHeader = () => {
 	if (settingStore.globalHeader) {
-		var headerDiv = document.createElement("div");
+		var headerDiv = document.createElement('div');
 		headerDiv.innerHTML = settingStore.globalHeader;
 		headerDom.value.appendChild(headerDiv);
 		// 获取所有的 <script> 标签
-		const scriptElements = headerDiv.querySelectorAll<HTMLScriptElement>('script');
-		
+		const scriptElements =
+			headerDiv.querySelectorAll<HTMLScriptElement>('script');
+
 		// 提取并加载每个 script 的 src
-		scriptElements.forEach(script => {
+		scriptElements.forEach((script) => {
 			const src = script.getAttribute('src');
-			
+
 			// 如果存在 src 属性
 			if (src) {
 				// 创建一个新的 script 标签
@@ -57,7 +58,9 @@ const loadGlobalHeader = ()=>{
 					const attributes = script.attributes;
 					for (let i = 0; i < attributes.length; i++) {
 						const attr = attributes[i];
-						console.debug(`Attribute Name: ${attr.name}, Attribute Value: ${attr.value}`);
+						console.debug(
+							`Attribute Name: ${attr.name}, Attribute Value: ${attr.value}`
+						);
 						newScript.setAttribute(attr.name, attr.value);
 					}
 				}
@@ -67,22 +70,23 @@ const loadGlobalHeader = ()=>{
 			}
 		});
 	}
-}
+};
 
-const loadGolbalFooter = ()=>{
+const loadGolbalFooter = () => {
 	if (settingStore.globalFooter) {
-		var fotterDiv = document.createElement("div");
+		var fotterDiv = document.createElement('div');
 		fotterDiv.innerHTML = settingStore.globalFooter;
 		footerDom.value.appendChild(fotterDiv);
-		
+
 		// 获取所有的 <script> 标签
-		const scriptElements = fotterDiv.querySelectorAll<HTMLScriptElement>('script');
-  
+		const scriptElements =
+			fotterDiv.querySelectorAll<HTMLScriptElement>('script');
+
 		// 提取并加载每个 script 的 src
-		scriptElements.forEach(script => {
+		scriptElements.forEach((script) => {
 			console.debug('script', script);
 			const src = script.getAttribute('src');
-			
+
 			// 如果存在 src 属性
 			if (src) {
 				// 创建一个新的 script 标签
@@ -95,17 +99,19 @@ const loadGolbalFooter = ()=>{
 					const attributes = script.attributes;
 					for (let i = 0; i < attributes.length; i++) {
 						const attr = attributes[i];
-						console.debug(`Attribute Name: ${attr.name}, Attribute Value: ${attr.value}`);
+						console.debug(
+							`Attribute Name: ${attr.name}, Attribute Value: ${attr.value}`
+						);
 						newScript.setAttribute(attr.name, attr.value);
 					}
 				}
-				
+
 				// 将新的 script 标签添加到 <head> 中，开始加载
 				footerDom.value.appendChild(newScript);
 			}
 		});
 	}
-}
+};
 
 onMounted(() => {
 	document.addEventListener('keydown', handleGlobalSearchKeybinding);

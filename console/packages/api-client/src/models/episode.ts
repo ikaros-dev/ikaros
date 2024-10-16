@@ -12,10 +12,6 @@
  * Do not edit the class manually.
  */
 
-// May contain unused imports in some cases
-// @ts-ignore
-import { EpisodeResource } from "./episode-resource";
-
 /**
  *
  * @export
@@ -52,12 +48,6 @@ export interface Episode {
    * @memberof Episode
    */
   group?: EpisodeGroupEnum;
-  /**
-   *
-   * @type {Array<EpisodeResource>}
-   * @memberof Episode
-   */
-  resources?: Array<EpisodeResource>;
   /**
    *
    * @type {number}

@@ -106,7 +106,7 @@ const changeUserEnableStatus = async (userEntity: UserEntity) => {
 const doDeleteUser = async (userId) => {
 	console.debug('userId', userId);
 	if (!userId) return;
-	await apiClient.user.deleteById({ id: userId });
+	await apiClient.user.deleteById1({ id: userId });
 	ElMessage.success('Delete user success for userId=' + userId);
 	await fetchUsers();
 };
