@@ -29,9 +29,9 @@ public class EpisodeEndpoint implements CoreEndpoint {
     public RouterFunction<ServerResponse> endpoint() {
         var tag = OpenApiConst.CORE_VERSION + "/episode";
         return SpringdocRouteBuilder.route()
-            .GET("/episode/{id}", this::findById,
-                builder -> builder.operationId("FindEpisodeById")
-                    .tag(tag).description("Find episode by episode id.")
+            .GET("/episode/{id}", this::getById,
+                builder -> builder.operationId("GetById")
+                    .tag(tag).description("Get episode by episode id.")
                     .parameter(parameterBuilder()
                         .name("id")
                         .description("Episode id")
@@ -40,9 +40,9 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .implementation(Long.class))
                     .response(Builder.responseBuilder().implementation(Episode.class)))
 
-            .GET("/episodes/subjectId/{id}", this::findAllBySubjectId,
-                builder -> builder.operationId("FindEpisodeById")
-                    .tag(tag).description("Find episodes by subject id.")
+            .GET("/episodes/subjectId/{id}", this::getAllBySubjectId,
+                builder -> builder.operationId("getAllBySubjectId")
+                    .tag(tag).description("Get all by subject id.")
                     .parameter(parameterBuilder()
                         .name("id")
                         .description("Subject id")
@@ -52,9 +52,9 @@ public class EpisodeEndpoint implements CoreEndpoint {
                     .response(Builder.responseBuilder().implementationArray(Episode.class))
             )
 
-            .GET("/episode/attachment/refs/{id}", this::findAttachmentRefsById,
-                builder -> builder.operationId("FindEpisodeAttachmentRefsById")
-                    .tag(tag).description("Find episode all attachment refs by episode id.")
+            .GET("/episode/attachment/refs/{id}", this::getAttachmentRefsById,
+                builder -> builder.operationId("GetAttachmentRefsById")
+                    .tag(tag).description("Get attachment refs by episode id.")
                     .parameter(parameterBuilder()
                         .name("id")
                         .description("Episode id")
@@ -65,9 +65,9 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .description("Episode resource list.")
                         .implementationArray(EpisodeResource.class)))
 
-            .GET("/episode/count/total/subjectId/{id}", this::countTotalBySubjectId,
-                builder -> builder.operationId("CountEpisodeById")
-                    .tag(tag).description("Count episode by subject id.")
+            .GET("/episode/count/total/subjectId/{id}", this::getCountTotalBySubjectId,
+                builder -> builder.operationId("GetCountTotalBySubjectId")
+                    .tag(tag).description("Get count total by subject id.")
                     .parameter(parameterBuilder()
                         .name("id")
                         .description("Subject id")
@@ -80,9 +80,9 @@ public class EpisodeEndpoint implements CoreEndpoint {
                     )
             )
 
-            .GET("/episode/count/matching/subjectId/{id}", this::countMatchingBySubjectId,
-                builder -> builder.operationId("CountEpisodeById")
-                    .tag(tag).description("Count episode by subject id.")
+            .GET("/episode/count/matching/subjectId/{id}", this::getCountMatchingBySubjectId,
+                builder -> builder.operationId("GetCountMatchingBySubjectId")
+                    .tag(tag).description("Get count matching by subject id.")
                     .parameter(parameterBuilder()
                         .name("id")
                         .description("Subject id")
@@ -98,28 +98,28 @@ public class EpisodeEndpoint implements CoreEndpoint {
             .build();
     }
 
-    private Mono<ServerResponse> countTotalBySubjectId(ServerRequest request) {
+    private Mono<ServerResponse> getCountTotalBySubjectId(ServerRequest request) {
         String id = request.pathVariable("id");
         Long subjectId = Long.valueOf(id);
         return episodeService.countBySubjectId(subjectId)
             .flatMap(count -> ServerResponse.ok().bodyValue(count));
     }
 
-    private Mono<ServerResponse> countMatchingBySubjectId(ServerRequest request) {
+    private Mono<ServerResponse> getCountMatchingBySubjectId(ServerRequest request) {
         String id = request.pathVariable("id");
         Long subjectId = Long.valueOf(id);
         return episodeService.countMatchingBySubjectId(subjectId)
             .flatMap(count -> ServerResponse.ok().bodyValue(count));
     }
 
-    private Mono<ServerResponse> findById(ServerRequest request) {
+    private Mono<ServerResponse> getById(ServerRequest request) {
         String id = request.pathVariable("id");
         Long episodeId = Long.valueOf(id);
         return episodeService.findById(episodeId)
             .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
     }
 
-    private Mono<ServerResponse> findAllBySubjectId(ServerRequest request) {
+    private Mono<ServerResponse> getAllBySubjectId(ServerRequest request) {
         String id = request.pathVariable("id");
         Long subjectId = Long.valueOf(id);
         return episodeService.findAllBySubjectId(subjectId)
@@ -127,7 +127,7 @@ public class EpisodeEndpoint implements CoreEndpoint {
             .flatMap(episodes -> ServerResponse.ok().bodyValue(episodes));
     }
 
-    private Mono<ServerResponse> findAttachmentRefsById(ServerRequest request) {
+    private Mono<ServerResponse> getAttachmentRefsById(ServerRequest request) {
         String id = request.pathVariable("id");
         Long episodeId = Long.valueOf(id);
         return episodeService.findResourcesById(episodeId)
