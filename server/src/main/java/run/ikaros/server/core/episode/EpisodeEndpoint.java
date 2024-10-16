@@ -161,13 +161,13 @@ public class EpisodeEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> postEpisode(ServerRequest request) {
         return request.bodyToMono(Episode.class)
-            .flatMap(episodeService::create)
+            .flatMap(episodeService::save)
             .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
     }
 
     private Mono<ServerResponse> putEpisode(ServerRequest request) {
         return request.bodyToMono(Episode.class)
-            .flatMap(episodeService::update)
+            .flatMap(episodeService::save)
             .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
     }
 

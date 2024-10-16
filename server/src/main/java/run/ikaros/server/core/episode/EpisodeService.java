@@ -1,14 +1,14 @@
 package run.ikaros.server.core.episode;
 
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 
 public interface EpisodeService {
-    Mono<Episode> create(Episode episode);
-
-    Mono<Episode> update(Episode episode);
+    @Transactional
+    Mono<Episode> save(Episode episode);
 
     Mono<Episode> findById(Long episodeId);
 

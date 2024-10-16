@@ -36,26 +36,24 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
-    public Mono<Episode> create(Episode episode) {
+    public Mono<Episode> save(Episode episode) {
         Assert.notNull(episode, "episode must not be null");
-        return copyProperties(episode, new EpisodeEntity())
-            .flatMap(episodeRepository::save)
-            .flatMap(e -> copyProperties(e, episode));
-    }
-
-    @Override
-    public Mono<Episode> update(Episode episode) {
-        Assert.notNull(episode, "episode must not be null");
-        Assert.isTrue(episode.getId() > 0, "episode id must gt 0.");
-        final Long episodeId = episode.getId();
-        return copyProperties(episode, new EpisodeEntity())
-            .flatMap(episodeRepository::save)
-            .flatMap(e -> copyProperties(e, episode));
+        Long episodeId = episode.getId();
+        if (episodeId != null && episodeId > 0) {
+            return episodeRepository.findById(episodeId)
+                .flatMap(entity -> copyProperties(episode, entity))
+                .flatMap(episodeRepository::save)
+                .flatMap(e -> copyProperties(e, episode));
+        } else {
+            return copyProperties(episode, new EpisodeEntity())
+                .flatMap(episodeRepository::save)
+                .flatMap(e -> copyProperties(e, episode));
+        }
     }
 
     @Override
     public Mono<Episode> findById(Long episodeId) {
-        Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
+        Assert.isTrue(episodeId != null && episodeId > 0, "episode id must >= 0.");
         return episodeRepository.findById(episodeId)
             .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
     }
