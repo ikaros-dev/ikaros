@@ -29,6 +29,28 @@ public class EpisodeEndpoint implements CoreEndpoint {
     public RouterFunction<ServerResponse> endpoint() {
         var tag = OpenApiConst.CORE_VERSION + "/episode";
         return SpringdocRouteBuilder.route()
+            .POST("/episode", this::postEpisode,
+                builder -> builder.operationId("PostEpisode")
+                    .tag(tag).description("Post episode.")
+                    .parameter(parameterBuilder()
+                        .name("episode")
+                        .description("Episode to post.")
+                        .implementation(Episode.class))
+                    .response(Builder.responseBuilder()
+                        .implementation(Episode.class))
+                )
+
+            .PUT("/episode", this::putEpisode,
+                builder -> builder.operationId("PutEpisode")
+                    .tag(tag).description("Put episode.")
+                    .parameter(parameterBuilder()
+                        .name("episode")
+                        .description("Episode to put.")
+                        .implementation(Episode.class))
+                    .response(Builder.responseBuilder()
+                        .implementation(Episode.class))
+                )
+
             .GET("/episode/{id}", this::getById,
                 builder -> builder.operationId("GetById")
                     .tag(tag).description("Get episode by episode id.")
@@ -116,6 +138,18 @@ public class EpisodeEndpoint implements CoreEndpoint {
         String id = request.pathVariable("id");
         Long episodeId = Long.valueOf(id);
         return episodeService.findById(episodeId)
+            .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
+    }
+
+    private Mono<ServerResponse> postEpisode(ServerRequest request) {
+        return request.bodyToMono(Episode.class)
+            .flatMap(episodeService::create)
+            .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
+    }
+
+    private Mono<ServerResponse> putEpisode(ServerRequest request) {
+        return request.bodyToMono(Episode.class)
+            .flatMap(episodeService::update)
             .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
     }
 

@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
@@ -33,6 +34,24 @@ public class DefaultEpisodeService implements EpisodeService {
         this.attachmentRepository = attachmentRepository;
     }
 
+
+    @Override
+    public Mono<Episode> create(Episode episode) {
+        Assert.notNull(episode, "episode must not be null");
+        return copyProperties(episode, new EpisodeEntity())
+            .flatMap(episodeRepository::save)
+            .flatMap(e -> copyProperties(e, episode));
+    }
+
+    @Override
+    public Mono<Episode> update(Episode episode) {
+        Assert.notNull(episode, "episode must not be null");
+        Assert.isTrue(episode.getId() > 0, "episode id must gt 0.");
+        final Long episodeId = episode.getId();
+        return copyProperties(episode, new EpisodeEntity())
+            .flatMap(episodeRepository::save)
+            .flatMap(e -> copyProperties(e, episode));
+    }
 
     @Override
     public Mono<Episode> findById(Long episodeId) {

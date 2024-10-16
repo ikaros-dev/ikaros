@@ -6,6 +6,10 @@ import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 
 public interface EpisodeService {
+    Mono<Episode> create(Episode episode);
+
+    Mono<Episode> update(Episode episode);
+
     Mono<Episode> findById(Long episodeId);
 
     Flux<Episode> findAllBySubjectId(Long subjectId);
