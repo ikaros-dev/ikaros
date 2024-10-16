@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
@@ -62,6 +63,16 @@ public class DefaultEpisodeService implements EpisodeService {
     public Flux<Episode> findAllBySubjectId(Long subjectId) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         return episodeRepository.findAllBySubjectId(subjectId)
+            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
+    }
+
+    @Override
+    public Mono<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
+                                                            Float sequence) {
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+        Assert.notNull(group, "'group' must not be null");
+        Assert.isTrue(sequence >= 0, "'sequence' must >= 0.");
+        return episodeRepository.findBySubjectIdAndGroupAndSequence(subjectId, group, sequence)
             .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
     }
 

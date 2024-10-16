@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeOperate;
 import run.ikaros.api.core.subject.EpisodeResource;
+import run.ikaros.api.store.enums.EpisodeGroup;
 
 @Slf4j
 @Component
@@ -30,6 +31,12 @@ public class DefaultEpisodeOperate implements EpisodeOperate {
     @Override
     public Flux<Episode> findAllBySubjectId(Long subjectId) {
         return service.findAllBySubjectId(subjectId);
+    }
+
+    @Override
+    public Mono<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
+                                                            Float sequence) {
+        return service.findBySubjectIdAndGroupAndSequence(subjectId, group, sequence);
     }
 
     @Override
