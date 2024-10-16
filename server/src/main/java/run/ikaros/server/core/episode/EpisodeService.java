@@ -5,6 +5,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
+import run.ikaros.api.store.enums.EpisodeGroup;
 
 public interface EpisodeService {
     @Transactional
@@ -13,6 +14,9 @@ public interface EpisodeService {
     Mono<Episode> findById(Long episodeId);
 
     Flux<Episode> findAllBySubjectId(Long subjectId);
+
+    Mono<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
+                                                           Float sequence);
 
     Mono<Void> deleteById(Long episodeId);
 

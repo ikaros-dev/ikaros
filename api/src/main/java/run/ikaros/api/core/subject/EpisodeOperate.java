@@ -3,6 +3,7 @@ package run.ikaros.api.core.subject;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.plugin.AllowPluginOperate;
+import run.ikaros.api.store.enums.EpisodeGroup;
 
 public interface EpisodeOperate extends AllowPluginOperate {
     Mono<Episode> save(Episode episode);
@@ -10,6 +11,9 @@ public interface EpisodeOperate extends AllowPluginOperate {
     Mono<Episode> findById(Long episodeId);
 
     Flux<Episode> findAllBySubjectId(Long subjectId);
+
+    Mono<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
+                                                     Float sequence);
 
     Mono<Long> countBySubjectId(Long subjectId);
 

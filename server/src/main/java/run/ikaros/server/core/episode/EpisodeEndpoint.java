@@ -15,6 +15,8 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
+import run.ikaros.api.infra.utils.StringUtils;
+import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -71,6 +73,29 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .required(true)
                         .implementation(Long.class))
+                    .response(Builder.responseBuilder().implementation(Episode.class)))
+
+            .GET("/episode/subjectId/{id}", this::getBySubjectIdAndGroupAndSequence,
+                builder -> builder.operationId("GetById")
+                    .tag(tag).description("Get episode by episode id.")
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .description("Subject id")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .parameter(parameterBuilder()
+                        .name("group")
+                        .description("episode group")
+                        .required(true)
+                        .in(ParameterIn.QUERY)
+                        .implementation(EpisodeGroup.class))
+                    .parameter(parameterBuilder()
+                        .name("sequence")
+                        .description("episode sequence")
+                        .required(true)
+                        .in(ParameterIn.QUERY)
+                        .implementation(EpisodeGroup.class))
                     .response(Builder.responseBuilder().implementation(Episode.class)))
 
             .GET("/episodes/subjectId/{id}", this::getAllBySubjectId,
@@ -156,6 +181,16 @@ public class EpisodeEndpoint implements CoreEndpoint {
         String id = request.pathVariable("id");
         Long episodeId = Long.valueOf(id);
         return episodeService.findById(episodeId)
+            .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
+    }
+
+    private Mono<ServerResponse> getBySubjectIdAndGroupAndSequence(ServerRequest request) {
+        String id = request.pathVariable("id");
+        Long subjectId = StringUtils.isNotBlank(id) ? Long.parseLong(id) : -1L;
+        EpisodeGroup group =
+            EpisodeGroup.valueOf(request.queryParam("group").orElse(EpisodeGroup.MAIN.name()));
+        Float sequence = Float.valueOf(request.queryParam("sequence").orElse("0"));
+        return episodeService.findBySubjectIdAndGroupAndSequence(subjectId, group, sequence)
             .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
     }
 
