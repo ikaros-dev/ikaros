@@ -131,11 +131,11 @@ watch(findSubjectsCondition.value, () => {
 	}
 	const page = findSubjectsCondition.value.page;
 	if (page !== query.page) {
-		query.page = page;
+		query.page = page as number;
 	}
 	const size = findSubjectsCondition.value.size;
 	if (size !== query.size) {
-		query.size = size;
+		query.size = size as number;
 	}
 	router.push({ path: route.path, query });
 });
