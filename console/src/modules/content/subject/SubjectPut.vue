@@ -128,8 +128,8 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 				episode.subject_id = subject.value.id as number;
 				await apiClient.episode.putEpisode({episode: episode});
 			};
-			for (var episode of removeEpisodes.value) {
-				
+			for (var remEp of removeEpisodes.value) {
+				await apiClient.episode.deleteById({id: remEp.id as number});
 			};
 			removeEpisodes.value = [];
 			ElMessage.success(
