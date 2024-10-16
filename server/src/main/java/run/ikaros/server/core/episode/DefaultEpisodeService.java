@@ -41,14 +41,21 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
+    public Flux<Episode> findAllBySubjectId(Long subjectId) {
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+        return episodeRepository.findAllBySubjectId(subjectId)
+            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
+    }
+
+    @Override
     public Mono<Long> countBySubjectId(Long subjectId) {
-        Assert.isTrue(subjectId >= 0, "'episodeId' must >= 0.");
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         return episodeRepository.countBySubjectId(subjectId);
     }
 
     @Override
     public Mono<Long> countMatchingBySubjectId(Long subjectId) {
-        Assert.isTrue(subjectId >= 0, "'episodeId' must >= 0.");
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         return attachmentReferenceRepository
             .countByTypeAndReferenceId(AttachmentReferenceType.EPISODE, subjectId);
     }

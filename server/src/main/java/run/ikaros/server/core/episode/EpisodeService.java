@@ -8,6 +8,8 @@ import run.ikaros.api.core.subject.EpisodeResource;
 public interface EpisodeService {
     Mono<Episode> findById(Long episodeId);
 
+    Flux<Episode> findAllBySubjectId(Long subjectId);
+
     Mono<Long> countBySubjectId(Long subjectId);
 
     /**

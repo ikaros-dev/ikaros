@@ -40,6 +40,18 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .implementation(Long.class))
                     .response(Builder.responseBuilder().implementation(Episode.class)))
 
+            .GET("/episodes/subjectId/{id}", this::findAllBySubjectId,
+                builder -> builder.operationId("FindEpisodeById")
+                    .tag(tag).description("Find episodes by subject id.")
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .description("Subject id")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(Builder.responseBuilder().implementationArray(Episode.class))
+            )
+
             .GET("/episode/attachment/refs/{id}", this::findAttachmentRefsById,
                 builder -> builder.operationId("FindEpisodeAttachmentRefsById")
                     .tag(tag).description("Find episode all attachment refs by episode id.")
@@ -105,6 +117,14 @@ public class EpisodeEndpoint implements CoreEndpoint {
         Long episodeId = Long.valueOf(id);
         return episodeService.findById(episodeId)
             .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
+    }
+
+    private Mono<ServerResponse> findAllBySubjectId(ServerRequest request) {
+        String id = request.pathVariable("id");
+        Long subjectId = Long.valueOf(id);
+        return episodeService.findAllBySubjectId(subjectId)
+            .collectList()
+            .flatMap(episodes -> ServerResponse.ok().bodyValue(episodes));
     }
 
     private Mono<ServerResponse> findAttachmentRefsById(ServerRequest request) {
