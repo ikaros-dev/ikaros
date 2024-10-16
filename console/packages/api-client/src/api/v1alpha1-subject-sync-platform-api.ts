@@ -39,6 +39,8 @@ import {
 } from "../base";
 // @ts-ignore
 import { Subject } from "../models";
+// @ts-ignore
+import { SubjectSync } from "../models";
 /**
  * V1alpha1SubjectSyncPlatformApi - axios parameter creator
  * @export
@@ -47,6 +49,59 @@ export const V1alpha1SubjectSyncPlatformApiAxiosParamCreator = function (
   configuration?: Configuration
 ) {
   return {
+    /**
+     * Get subject syncs by subject id.
+     * @param {number} id Subject id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getSubjectSyncsBySubjectId: async (
+      id: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("getSubjectSyncsBySubjectId", "id", id);
+      const localVarPath = `/api/v1alpha1/subject/syncs/subjectId/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
     /**
      * Sync subject and platform by platform name and platform id, create subject when params not contain subject id, update exists subject when params contain subject id.
      * @param {'BGM_TV' | 'TMDB' | 'AniDB' | 'TVDB' | 'VNDB' | 'DOU_BAN' | 'OTHER'} platform Platform.
@@ -142,6 +197,30 @@ export const V1alpha1SubjectSyncPlatformApiFp = function (
     V1alpha1SubjectSyncPlatformApiAxiosParamCreator(configuration);
   return {
     /**
+     * Get subject syncs by subject id.
+     * @param {number} id Subject id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getSubjectSyncsBySubjectId(
+      id: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<SubjectSync>>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.getSubjectSyncsBySubjectId(id, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
      * Sync subject and platform by platform name and platform id, create subject when params not contain subject id, update exists subject when params contain subject id.
      * @param {'BGM_TV' | 'TMDB' | 'AniDB' | 'TVDB' | 'VNDB' | 'DOU_BAN' | 'OTHER'} platform Platform.
      * @param {string} platformId Platform id
@@ -196,6 +275,20 @@ export const V1alpha1SubjectSyncPlatformApiFactory = function (
   const localVarFp = V1alpha1SubjectSyncPlatformApiFp(configuration);
   return {
     /**
+     * Get subject syncs by subject id.
+     * @param {V1alpha1SubjectSyncPlatformApiGetSubjectSyncsBySubjectIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getSubjectSyncsBySubjectId(
+      requestParameters: V1alpha1SubjectSyncPlatformApiGetSubjectSyncsBySubjectIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<SubjectSync>> {
+      return localVarFp
+        .getSubjectSyncsBySubjectId(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
      * Sync subject and platform by platform name and platform id, create subject when params not contain subject id, update exists subject when params contain subject id.
      * @param {V1alpha1SubjectSyncPlatformApiSyncSubjectAndPlatformRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -217,6 +310,20 @@ export const V1alpha1SubjectSyncPlatformApiFactory = function (
     },
   };
 };
+
+/**
+ * Request parameters for getSubjectSyncsBySubjectId operation in V1alpha1SubjectSyncPlatformApi.
+ * @export
+ * @interface V1alpha1SubjectSyncPlatformApiGetSubjectSyncsBySubjectIdRequest
+ */
+export interface V1alpha1SubjectSyncPlatformApiGetSubjectSyncsBySubjectIdRequest {
+  /**
+   * Subject id
+   * @type {number}
+   * @memberof V1alpha1SubjectSyncPlatformApiGetSubjectSyncsBySubjectId
+   */
+  readonly id: number;
+}
 
 /**
  * Request parameters for syncSubjectAndPlatform operation in V1alpha1SubjectSyncPlatformApi.
@@ -267,6 +374,22 @@ export interface V1alpha1SubjectSyncPlatformApiSyncSubjectAndPlatformRequest {
  * @extends {BaseAPI}
  */
 export class V1alpha1SubjectSyncPlatformApi extends BaseAPI {
+  /**
+   * Get subject syncs by subject id.
+   * @param {V1alpha1SubjectSyncPlatformApiGetSubjectSyncsBySubjectIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1SubjectSyncPlatformApi
+   */
+  public getSubjectSyncsBySubjectId(
+    requestParameters: V1alpha1SubjectSyncPlatformApiGetSubjectSyncsBySubjectIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1SubjectSyncPlatformApiFp(this.configuration)
+      .getSubjectSyncsBySubjectId(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
   /**
    * Sync subject and platform by platform name and platform id, create subject when params not contain subject id, update exists subject when params contain subject id.
    * @param {V1alpha1SubjectSyncPlatformApiSyncSubjectAndPlatformRequest} requestParameters Request parameters.
