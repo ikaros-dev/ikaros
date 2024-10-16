@@ -44,6 +44,14 @@ watch(route, () => {
 	fetchSubjectById();
 });
 
+const subject = ref<Subject>({
+	name: '',
+	type: SubjectTypeEnum.Anime,
+	nsfw: false,
+	name_cn: '',
+});
+const episodes = ref<Episode[]>([]);
+
 // eslint-disable-next-line no-unused-vars
 const fetchSubjectById = async () => {
 	if (subject.value.id) {
@@ -52,15 +60,12 @@ const fetchSubjectById = async () => {
 		});
 		subject.value = data;
 	}
+	await fetchEpisodes();
 };
-
-const subject = ref<Subject>({
-	name: '',
-	type: SubjectTypeEnum.Anime,
-	nsfw: false,
-	name_cn: '',
-	episodes: [],
-});
+const fetchEpisodes = async () => {
+	const {data} = await apiClient.episode.getAllBySubjectId({id: subject.value.id as number});
+	episodes.value = data;
+}
 
 const subjectRuleFormRules = reactive<FormRules>({
 	name: [
@@ -132,6 +137,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 					);
 					subjectStore.clearSubjectCacheById(subject.value.id as number);
 				});
+				
 		} else {
 			console.log('error submit!', fields);
 			ElMessage.error(t('module.subject.put.message.form-rule.validate-fail'));
@@ -142,7 +148,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 const episodePostDialogVisible = ref(false);
 const onEpisodePostDialogCloseWithEpsiode = (ep: Episode) => {
 	// console.log('receive episode: ', ep);
-	subject.value.episodes?.push(ep);
+	episodes.value?.push(ep);
 };
 
 const airTimeDateFormatter = (row) => {
@@ -150,9 +156,9 @@ const airTimeDateFormatter = (row) => {
 };
 
 const removeCurrentRowEpisode = (ep: Episode) => {
-	const index: number = subject.value.episodes?.indexOf(ep) as number;
+	const index: number = episodes.value?.indexOf(ep) as number;
 	if (index && index < 0) return;
-	subject.value.episodes?.splice(index, 1);
+	episodes.value?.splice(index, 1);
 };
 
 const currentEpisode = ref<Episode>();
@@ -321,7 +327,7 @@ onMounted(() => {
 				/>
 
 				<el-form-item :label="t('module.subject.put.label.episodes')">
-					<el-table :data="subject.episodes" @row-dblclick="showEpisodeDetails">
+					<el-table :data="episodes" @row-dblclick="showEpisodeDetails">
 						<el-table-column
 							:label="t('module.subject.put.label.episode-table.group')"
 							prop="group"
