@@ -1062,6 +1062,7 @@ onMounted(fetchDatas);
 		v-model:visible="episodeDetailsDialogVisible"
 		v-model:ep="currentEpisode"
 		v-model:multiResource="episodeHasMultiResource"
+		@close="fetchEpisodeResources"
 		@removeEpisodeFilesBind="fetchSubjectById"
 	/>
 

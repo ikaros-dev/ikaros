@@ -250,6 +250,9 @@ const getArtplayerInstance = (art: Artplayer) => {
 const currentVideoAttachment = ref<Attachment>({
 	id: 0,
 });
+const onDialogClose = ()=>{
+	emit('close');
+}
 </script>
 
 <template>
@@ -260,6 +263,7 @@ const currentVideoAttachment = ref<Attachment>({
 	<el-dialog
 		v-model="dialogVisible"
 		:title="t('module.subject.dialog.episode.details.title')"
+		@close="onDialogClose"
 		width="70%"
 	>
 		<el-descriptions border :column="1">
