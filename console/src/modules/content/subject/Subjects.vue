@@ -13,7 +13,7 @@ const router = useRouter();
 const route = useRoute();
 const { t } = useI18n();
 
-const fetchSubjectByRouterQuery = () => {
+const fetchSubjectByRouterQuery = async () => {
 	// console.log('route.query', route.query);
 
 	if (route.query.name !== undefined) {
@@ -52,7 +52,7 @@ const fetchSubjectByRouterQuery = () => {
 	}
 
 	// console.log('findSubjectsCondition', findSubjectsCondition.value);
-	fetchSubjects();
+	await fetchSubjects();
 };
 
 watch(route, () => {
@@ -98,6 +98,7 @@ const fetchSubjects = async () => {
 	findSubjectsCondition.value.size = data.size;
 	findSubjectsCondition.value.total = data.total;
 	subjects.value = data.items as Subject[];
+	await fetchEpisodePercentags();
 };
 
 const subjectSyncDialogVisible = ref(false);
@@ -139,13 +140,24 @@ watch(findSubjectsCondition.value, () => {
 	router.push({ path: route.path, query });
 });
 
+interface EpisodeCountPercentage {
+	subjectId: number;
+	percentage: number;
+}
+
+const episodeCountPercentages= ref<EpisodeCountPercentage[]>([])
+const fetchEpisodePercentags = async()=>{
+	await subjects.value.forEach(async (sub) => {
+		var subId = sub.id as number;
+		// var total = await apiClient.episode.cou
+	})
+}
 const episodeAttsPercentage = (subject: Subject): number => {
 	// console.debug('subject', subject);
-	return (
-		((subject.matching_episode as number) /
-			(subject.total_episodes as number)) *
-		100
-	);
+	var subjectId = subject.id as number;
+	return episodeCountPercentages.value
+	.find(e => e.subjectId === subjectId)?.percentage ?? 0;
+
 };
 
 onMounted(fetchSubjectByRouterQuery);
