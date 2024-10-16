@@ -51,6 +51,7 @@ const subject = ref<Subject>({
 	name_cn: '',
 });
 const episodes = ref<Episode[]>([]);
+const removeEpisodes = ref<Episode[]>([]);
 
 // eslint-disable-next-line no-unused-vars
 const fetchSubjectById = async () => {
@@ -120,13 +121,17 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 				.updateSubject({
 					subject: subject.value,
 				});
-			console.debug('subject', subject.value);
-			console.debug('episodes', episodes.value);
+			// console.debug('subject', subject.value);
+			// console.debug('episodes', episodes.value);
 			for (var episode of episodes.value) {
-				console.debug('episode', episode);
+				// console.debug('episode', episode);
 				episode.subject_id = subject.value.id as number;
 				await apiClient.episode.putEpisode({episode: episode});
 			};
+			for (var episode of removeEpisodes.value) {
+				
+			};
+			removeEpisodes.value = [];
 			ElMessage.success(
 					t('module.subject.put.message.form-rule.update-success', {
 						name: subject.value.name,
@@ -165,6 +170,7 @@ const removeCurrentRowEpisode = (ep: Episode) => {
 	const index: number = episodes.value?.indexOf(ep) as number;
 	if (index && index < 0) return;
 	episodes.value?.splice(index, 1);
+	removeEpisodes.value.push(ep);
 };
 
 const currentEpisode = ref<Episode>();
