@@ -166,9 +166,7 @@ const fetchEpisodePercentags = async()=>{
 const episodeAttsPercentage = (subject: Subject): number => {
 	// console.debug('subject', subject);
 	var subjectId = subject.id as number;
-	return episodeCountPercentages.value
-	.find(e => e.subjectId === subjectId)?.percentage ?? 0;
-
+	return episodeCountPercentages.value.find(e => e.subjectId === subjectId)?.percentage ?? 0;
 };
 
 onMounted(fetchSubjectByRouterQuery);

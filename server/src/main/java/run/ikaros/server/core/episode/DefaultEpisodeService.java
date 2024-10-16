@@ -2,6 +2,7 @@ package run.ikaros.server.core.episode;
 
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -56,8 +57,13 @@ public class DefaultEpisodeService implements EpisodeService {
     @Override
     public Mono<Long> countMatchingBySubjectId(Long subjectId) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
-        return attachmentReferenceRepository
-            .countByTypeAndReferenceId(AttachmentReferenceType.EPISODE, subjectId);
+        return episodeRepository.findAllBySubjectId(subjectId)
+            .flatMap(entity -> attachmentReferenceRepository.existsByTypeAndReferenceId(
+                AttachmentReferenceType.EPISODE, entity.getId()))
+            .filter(exists -> exists)
+            .collectList()
+            .map(List::size)
+            .map(Long::valueOf);
     }
 
     @Override
