@@ -145,28 +145,31 @@ interface EpisodeCountPercentage {
 	percentage: number;
 }
 
-const episodeCountPercentages= ref<EpisodeCountPercentage[]>([])
-const fetchEpisodePercentags = async()=>{
+const episodeCountPercentages = ref<EpisodeCountPercentage[]>([]);
+const fetchEpisodePercentags = async () => {
 	await subjects.value.forEach(async (sub) => {
 		var subId = sub.id as number;
 		var totalRsp = await apiClient.episode.getCountTotalBySubjectId({
-			id: subId
+			id: subId,
 		});
 		var countRsp = await apiClient.episode.getCountMatchingBySubjectId({
-			id: subId
+			id: subId,
 		});
 		var percentage = (countRsp.data / totalRsp.data) * 100;
 		episodeCountPercentages.value.push({
 			subjectId: subId,
-			percentage: percentage
-		})
-	})
+			percentage: percentage,
+		});
+	});
 	// console.debug('episodeCountPercentages', episodeCountPercentages.value);
-}
+};
 const episodeAttsPercentage = (subject: Subject): number => {
 	// console.debug('subject', subject);
 	var subjectId = subject.id as number;
-	return episodeCountPercentages.value.find(e => e.subjectId === subjectId)?.percentage ?? 0;
+	return (
+		episodeCountPercentages.value.find((e) => e.subjectId === subjectId)
+			?.percentage ?? 0
+	);
 };
 
 onMounted(fetchSubjectByRouterQuery);

@@ -65,9 +65,11 @@ const fetchSubjectById = async () => {
 };
 const fetchEpisodes = async () => {
 	if (!subject.value || !subject.value.id) return;
-	const {data} = await apiClient.episode.getAllBySubjectId({id: subject.value.id as number});
+	const { data } = await apiClient.episode.getAllBySubjectId({
+		id: subject.value.id as number,
+	});
 	episodes.value = data;
-}
+};
 
 const subjectRuleFormRules = reactive<FormRules>({
 	name: [
@@ -117,26 +119,25 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid, fields) => {
 		if (valid) {
-			await apiClient.subject
-				.updateSubject({
-					subject: subject.value,
-				});
+			await apiClient.subject.updateSubject({
+				subject: subject.value,
+			});
 			// console.debug('subject', subject.value);
 			// console.debug('episodes', episodes.value);
 			for (var episode of episodes.value) {
 				// console.debug('episode', episode);
 				episode.subject_id = subject.value.id as number;
-				await apiClient.episode.putEpisode({episode: episode});
-			};
+				await apiClient.episode.putEpisode({ episode: episode });
+			}
 			for (var remEp of removeEpisodes.value) {
-				await apiClient.episode.deleteById({id: remEp.id as number});
-			};
+				await apiClient.episode.deleteById({ id: remEp.id as number });
+			}
 			removeEpisodes.value = [];
 			ElMessage.success(
-					t('module.subject.put.message.form-rule.update-success', {
-						name: subject.value.name,
-					})
-				);
+				t('module.subject.put.message.form-rule.update-success', {
+					name: subject.value.name,
+				})
+			);
 			subjectStore.clearSubjectCacheById(subject.value.id as number);
 			router.push(
 				'/subjects?name=' +
@@ -148,7 +149,6 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 					'&type=' +
 					subject.value.type
 			);
-				
 		} else {
 			console.log('error submit!', fields);
 			ElMessage.error(t('module.subject.put.message.form-rule.validate-fail'));

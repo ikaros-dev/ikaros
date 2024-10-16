@@ -39,7 +39,7 @@ const props = withDefaults(
 
 const episode = ref<Episode>({});
 
-watch(props, async(newVal) => {
+watch(props, async (newVal) => {
 	// console.log(newVal);
 	episode.value = newVal.ep as Episode;
 	await fetchEpisodeResources();
@@ -84,11 +84,11 @@ const dialogVisible = computed({
 
 const removeEpisodeAllAttachmentRefs = async () => {
 	// @ts-ignore
-	if (
-		!episodeResources.value
-	) {
+	if (!episodeResources.value) {
 		ElMessage.warning(
-			t('module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.waring')
+			t(
+				'module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.waring'
+			)
 		);
 		return;
 	}
@@ -204,7 +204,7 @@ const fetchEpisodeResources = async () => {
 	});
 	episodeResources.value = data;
 	var multiResource =
-	episodeResources.value && episodeResources.value.length > 1;
+		episodeResources.value && episodeResources.value.length > 1;
 	emit('update:multiResource', multiResource);
 };
 
@@ -250,9 +250,9 @@ const getArtplayerInstance = (art: Artplayer) => {
 const currentVideoAttachment = ref<Attachment>({
 	id: 0,
 });
-const onDialogClose = ()=>{
+const onDialogClose = () => {
 	emit('close');
-}
+};
 </script>
 
 <template>
@@ -263,8 +263,8 @@ const onDialogClose = ()=>{
 	<el-dialog
 		v-model="dialogVisible"
 		:title="t('module.subject.dialog.episode.details.title')"
-		@close="onDialogClose"
 		width="70%"
+		@close="onDialogClose"
 	>
 		<el-descriptions border :column="1">
 			<el-descriptions-item

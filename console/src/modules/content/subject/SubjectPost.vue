@@ -90,13 +90,12 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid, fields) => {
 		if (valid) {
-			const {data} = await apiClient.subject
-				.createSubject({
-					subject: subject.value,
-				});
+			const { data } = await apiClient.subject.createSubject({
+				subject: subject.value,
+			});
 			await episodes.value.forEach(async (e) => {
 				e.subject_id = data.id as number;
-				await apiClient.episode.postEpisode({episode: e});
+				await apiClient.episode.postEpisode({ episode: e });
 			});
 			router.push(
 				'/subjects?name=' +

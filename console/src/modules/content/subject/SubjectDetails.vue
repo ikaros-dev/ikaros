@@ -93,8 +93,10 @@ const fetchSubjectById = async () => {
 	}
 };
 
-const fetchEpisodes = async()=>{
-	const {data} = await apiClient.episode.getAllBySubjectId({id: subject.value.id as number});
+const fetchEpisodes = async () => {
+	const { data } = await apiClient.episode.getAllBySubjectId({
+		id: subject.value.id as number,
+	});
 	episodes.value = data;
 	if (!episodes.value || episodes.value.length === 0) {
 		batchMatchingSubjectButtonDisable.value = true;
@@ -104,29 +106,30 @@ const fetchEpisodes = async()=>{
 		deleteMatchingSubjectButtonDisable.value = false;
 	}
 	if (episodes.value) {
-		episodes.value = episodes.value.sort((a, b) => (a.sequence??0) - (b.sequence??0));
+		episodes.value = episodes.value.sort(
+			(a, b) => (a.sequence ?? 0) - (b.sequence ?? 0)
+		);
 		loadEpisodeGroupLabels();
 	}
 	// console.debug('episodes', episodes.value);
-}
+};
 
-const fetchEpisodeResources = async()=>{
+const fetchEpisodeResources = async () => {
 	// console.debug('episodes', episodes.value);
 	episodeResources.value = [];
 	episodes.value.forEach(async (episode) => {
 		var ep = episode as Episode;
 		// console.debug('ep', ep);
 		if (ep.id) {
-			const {data} = await apiClient.episode.getAttachmentRefsById({
-				id: ep.id as number
-			})
-			data.forEach(res => {
+			const { data } = await apiClient.episode.getAttachmentRefsById({
+				id: ep.id as number,
+			});
+			data.forEach((res) => {
 				if (res) episodeResources.value.push(res);
 			});
 		}
 	});
-	
-}
+};
 
 // eslint-disable-next-line no-unused-vars
 const infoMap = ref<Map<string, string>>();
@@ -194,8 +197,11 @@ const currentEpisode = ref<Episode>();
 const showEpisodeDetails = (ep: Episode) => {
 	currentEpisode.value = ep;
 	episodeDetailsDialogVisible.value = true;
-	const resources:EpisodeResource[]  = episodeResources.value.filter(e => e.episodeId === ep.id);
-	episodeHasMultiResource.value = (resources && resources.length > 1) as boolean;
+	const resources: EpisodeResource[] = episodeResources.value.filter(
+		(e) => e.episodeId === ep.id
+	);
+	episodeHasMultiResource.value = (resources &&
+		resources.length > 1) as boolean;
 };
 
 const episodeDetailsDialogVisible = ref(false);
@@ -373,8 +379,10 @@ const udpateEpisodeCollectionProgress = async (
 	isFinish: boolean,
 	episode: Episode
 ) => {
-	if (!(subjectCollection.value.id)) {
-		ElMessage.warning(t('module.subject.episode.collect.message.operate.mark-finish-notcollect'));
+	if (!subjectCollection.value.id) {
+		ElMessage.warning(
+			t('module.subject.episode.collect.message.operate.mark-finish-notcollect')
+		);
 		return;
 	}
 	await apiClient.collectionEpisode.updateCollectionEpisodeFinish({
@@ -553,8 +561,8 @@ const deleteBatchingAttachments = async () => {
 		await apiClient.attachmentRef.removeAllByTypeAndReferenceId({
 			attachmentReference: {
 				type: 'EPISODE',
-				referenceId: ep.id
-			}
+				referenceId: ep.id,
+			},
 		});
 	});
 	batchCancenMatchingSubjectButtonLoading.value = false;
@@ -565,7 +573,9 @@ const deleteBatchingAttachments = async () => {
 };
 
 const isEpisodeBindResource = (episode: Episode): boolean | undefined => {
-	const resources:EpisodeResource[]  = episodeResources.value.filter(e => e.episodeId === episode.id);
+	const resources: EpisodeResource[] = episodeResources.value.filter(
+		(e) => e.episodeId === episode.id
+	);
 	// console.debug('episodeResources.value', episodeResources.value);
 	// console.debug('episode', episode);
 	// console.debug('resources', resources);
@@ -580,20 +590,20 @@ interface EpisdoeGroupItem {
 
 const episodeGroupItems = ref<EpisdoeGroupItem[]>([]);
 const doPushEpGroupItems = (
-	group:EpisodeGroupEnum, 
-	groupCountMap:Map<EpisodeGroupEnum, number>,
-	epGroupItems: EpisdoeGroupItem[])=>{
+	group: EpisodeGroupEnum,
+	groupCountMap: Map<EpisodeGroupEnum, number>,
+	epGroupItems: EpisdoeGroupItem[]
+) => {
 	if (!groupCountMap.has(group)) return;
 	const count = groupCountMap.get(group) as number;
 	epGroupItems.push({
-		group:group,
+		group: group,
 		count: count,
-		label: t(
-			'module.subject.episode.group.' + group.toString()
-		) + '(' + count + ')'
+		label:
+			t('module.subject.episode.group.' + group.toString()) + '(' + count + ')',
 	});
 	groupCountMap.delete(group);
-}
+};
 const loadEpisodeGroupLabels = () => {
 	const groupCountMap = new Map<EpisodeGroupEnum, number>();
 	console.debug('subject', subject.value);
@@ -619,14 +629,17 @@ const loadEpisodeGroupLabels = () => {
 	doPushEpGroupItems(EpisodeGroupEnum.EndingSong, groupCountMap, epGroupItems);
 
 	// SP
-	doPushEpGroupItems(EpisodeGroupEnum.SpecialPromotion, groupCountMap, epGroupItems);
+	doPushEpGroupItems(
+		EpisodeGroupEnum.SpecialPromotion,
+		groupCountMap,
+		epGroupItems
+	);
 
 	// remaining
 	groupCountMap.forEach((val, key) => {
 		epGroupItems.push({
 			group: key,
-			label: t('module.subject.episode.group.' + key)
-			+ '(' + val + ')',
+			label: t('module.subject.episode.group.' + key) + '(' + val + ')',
 			count: val,
 		});
 	});
@@ -635,12 +648,13 @@ const loadEpisodeGroupLabels = () => {
 };
 
 const subjectSyncs = ref<SubjectSync[]>([]);
-const fetchSubjectSyncs = async ()=>{
-	const {data} = await apiClient.subjectSyncPlatform.getSubjectSyncsBySubjectId({
-		id: subject.value.id as number
-	});
+const fetchSubjectSyncs = async () => {
+	const { data } =
+		await apiClient.subjectSyncPlatform.getSubjectSyncsBySubjectId({
+			id: subject.value.id as number,
+		});
 	subjectSyncs.value = data;
-}
+};
 
 onMounted(fetchDatas);
 </script>
@@ -790,7 +804,7 @@ onMounted(fetchDatas);
 								v-for="tag in tags"
 								:key="tag.id"
 								closable
-								style="margin-right: 5px;margin-top: 5px;"
+								style="margin-right: 5px; margin-top: 5px"
 								:disable-transitions="false"
 								@close="onTagRemove(tag)"
 							>
@@ -801,11 +815,16 @@ onMounted(fetchDatas);
 								ref="newTagInputRef"
 								v-model="newTag.name"
 								size="small"
-								style="max-width: 80px;"
+								style="max-width: 80px"
 								@blur="onNewTagNameChange"
 								@keydown.enter="onNewTagNameChange"
 							/>
-							<el-button v-else size="small" style="margin-top: 5px;" @click="showNewTagInput">
+							<el-button
+								v-else
+								size="small"
+								style="margin-top: 5px"
+								@click="showNewTagInput"
+							>
 								{{ t('module.subject.details.text.button.add-tag') }}
 							</el-button>
 						</el-descriptions-item>
@@ -894,9 +913,7 @@ onMounted(fetchDatas);
 							:label="item.label"
 						>
 							<el-table
-								:data="
-									episodes?.filter((ep) => ep.group === item.group)
-								"
+								:data="episodes?.filter((ep) => ep.group === item.group)"
 								@row-dblclick="showEpisodeDetails"
 							>
 								<el-table-column
