@@ -316,6 +316,110 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
         options: localVarRequestOptions,
       };
     },
+    /**
+     * Post episode.
+     * @param {Episode} [episode] Episode to post.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    postEpisode: async (
+      episode?: Episode,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/episode`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (episode !== undefined) {
+        localVarQueryParameter["episode"] = episode;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Put episode.
+     * @param {Episode} [episode] Episode to put.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    putEpisode: async (
+      episode?: Episode,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/episode`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (episode !== undefined) {
+        localVarQueryParameter["episode"] = episode;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
   };
 };
 
@@ -440,6 +544,52 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
         configuration
       );
     },
+    /**
+     * Post episode.
+     * @param {Episode} [episode] Episode to post.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async postEpisode(
+      episode?: Episode,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Episode>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.postEpisode(
+        episode,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Put episode.
+     * @param {Episode} [episode] Episode to put.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async putEpisode(
+      episode?: Episode,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Episode>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.putEpisode(
+        episode,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
   };
 };
 
@@ -524,6 +674,34 @@ export const V1alpha1EpisodeApiFactory = function (
         .getCountTotalBySubjectId(requestParameters.id, options)
         .then((request) => request(axios, basePath));
     },
+    /**
+     * Post episode.
+     * @param {V1alpha1EpisodeApiPostEpisodeRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    postEpisode(
+      requestParameters: V1alpha1EpisodeApiPostEpisodeRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Episode> {
+      return localVarFp
+        .postEpisode(requestParameters.episode, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Put episode.
+     * @param {V1alpha1EpisodeApiPutEpisodeRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    putEpisode(
+      requestParameters: V1alpha1EpisodeApiPutEpisodeRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Episode> {
+      return localVarFp
+        .putEpisode(requestParameters.episode, options)
+        .then((request) => request(axios, basePath));
+    },
   };
 };
 
@@ -595,6 +773,34 @@ export interface V1alpha1EpisodeApiGetCountTotalBySubjectIdRequest {
    * @memberof V1alpha1EpisodeApiGetCountTotalBySubjectId
    */
   readonly id: number;
+}
+
+/**
+ * Request parameters for postEpisode operation in V1alpha1EpisodeApi.
+ * @export
+ * @interface V1alpha1EpisodeApiPostEpisodeRequest
+ */
+export interface V1alpha1EpisodeApiPostEpisodeRequest {
+  /**
+   * Episode to post.
+   * @type {Episode}
+   * @memberof V1alpha1EpisodeApiPostEpisode
+   */
+  readonly episode?: Episode;
+}
+
+/**
+ * Request parameters for putEpisode operation in V1alpha1EpisodeApi.
+ * @export
+ * @interface V1alpha1EpisodeApiPutEpisodeRequest
+ */
+export interface V1alpha1EpisodeApiPutEpisodeRequest {
+  /**
+   * Episode to put.
+   * @type {Episode}
+   * @memberof V1alpha1EpisodeApiPutEpisode
+   */
+  readonly episode?: Episode;
 }
 
 /**
@@ -681,6 +887,38 @@ export class V1alpha1EpisodeApi extends BaseAPI {
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .getCountTotalBySubjectId(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Post episode.
+   * @param {V1alpha1EpisodeApiPostEpisodeRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1EpisodeApi
+   */
+  public postEpisode(
+    requestParameters: V1alpha1EpisodeApiPostEpisodeRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1EpisodeApiFp(this.configuration)
+      .postEpisode(requestParameters.episode, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Put episode.
+   * @param {V1alpha1EpisodeApiPutEpisodeRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1EpisodeApi
+   */
+  public putEpisode(
+    requestParameters: V1alpha1EpisodeApiPutEpisodeRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1EpisodeApiFp(this.configuration)
+      .putEpisode(requestParameters.episode, options)
       .then((request) => request(this.axios, this.basePath));
   }
 }
