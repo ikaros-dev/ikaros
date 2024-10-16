@@ -5,8 +5,10 @@ import {
   Episode,
   EpisodeCollection,
   EpisodeGroupEnum,
+  EpisodeResource,
   Subject,
   SubjectCollection,
+  SubjectSync,
   SubjectTag,
   SubjectTypeEnum,
 } from '@runikaros/api-client';
@@ -76,25 +78,55 @@ const subject = ref<Subject>({
 	name_cn: '',
 });
 
+const episodes = ref<Episode[]>([]);
+const episodeResources = ref<EpisodeResource[]>([]);
+
 // eslint-disable-next-line no-unused-vars
 const fetchSubjectById = async () => {
 	if (subject.value.id) {
 		subject.value = await subjectStore.fetchSubjectById(
 			subject.value.id as number
 		);
-		if (!subject.value.episodes || subject.value.episodes.length === 0) {
-			batchMatchingSubjectButtonDisable.value = true;
-			deleteMatchingSubjectButtonDisable.value = true;
-		} else {
-			batchMatchingSubjectButtonDisable.value = false;
-			deleteMatchingSubjectButtonDisable.value = false;
-		}
-		if (subject.value.episodes) {
-			subject.value.episodes = subject.value.episodes.sort((a, b) => (a.sequence??0) - (b.sequence??0));
-			loadEpisodeGroupLabels();
-		}
+		await fetchEpisodes();
+		await fetchEpisodeResources();
+		await fetchSubjectSyncs();
 	}
 };
+
+const fetchEpisodes = async()=>{
+	const {data} = await apiClient.episode.getAllBySubjectId({id: subject.value.id as number});
+	episodes.value = data;
+	if (!episodes.value || episodes.value.length === 0) {
+		batchMatchingSubjectButtonDisable.value = true;
+		deleteMatchingSubjectButtonDisable.value = true;
+	} else {
+		batchMatchingSubjectButtonDisable.value = false;
+		deleteMatchingSubjectButtonDisable.value = false;
+	}
+	if (episodes.value) {
+		episodes.value = episodes.value.sort((a, b) => (a.sequence??0) - (b.sequence??0));
+		loadEpisodeGroupLabels();
+	}
+	// console.debug('episodes', episodes.value);
+}
+
+const fetchEpisodeResources = async()=>{
+	// console.debug('episodes', episodes.value);
+	episodeResources.value = [];
+	episodes.value.forEach(async (episode) => {
+		var ep = episode as Episode;
+		// console.debug('ep', ep);
+		if (ep.id) {
+			const {data} = await apiClient.episode.getAttachmentRefsById({
+				id: ep.id as number
+			})
+			data.forEach(res => {
+				if (res) episodeResources.value.push(res);
+			});
+		}
+	});
+	
+}
 
 // eslint-disable-next-line no-unused-vars
 const infoMap = ref<Map<string, string>>();
@@ -162,8 +194,8 @@ const currentEpisode = ref<Episode>();
 const showEpisodeDetails = (ep: Episode) => {
 	currentEpisode.value = ep;
 	episodeDetailsDialogVisible.value = true;
-	episodeHasMultiResource.value = (currentEpisode.value.resources &&
-		currentEpisode.value.resources.length > 1) as boolean;
+	const resources:EpisodeResource[]  = episodeResources.value.filter(e => e.episodeId === ep.id);
+	episodeHasMultiResource.value = (resources && resources.length > 1) as boolean;
 };
 
 const episodeDetailsDialogVisible = ref(false);
@@ -517,7 +549,7 @@ const batchCancenMatchingSubjectButtonLoading = ref(false);
 const deleteBatchingAttachments = async () => {
 	// console.debug('deleteBatchingAttachments subject episodes', subject.value.episodes)
 	batchCancenMatchingSubjectButtonLoading.value = true;
-	await subject.value.episodes?.forEach(async (ep) => {
+	await episodes.value?.forEach(async (ep) => {
 		await apiClient.attachmentRef.removeAllByTypeAndReferenceId({
 			attachmentReference: {
 				type: 'EPISODE',
@@ -533,7 +565,11 @@ const deleteBatchingAttachments = async () => {
 };
 
 const isEpisodeBindResource = (episode: Episode): boolean | undefined => {
-	return episode.resources && episode.resources.length > 0;
+	const resources:EpisodeResource[]  = episodeResources.value.filter(e => e.episodeId === episode.id);
+	// console.debug('episodeResources.value', episodeResources.value);
+	// console.debug('episode', episode);
+	// console.debug('resources', resources);
+	return resources && resources.length > 0;
 };
 
 interface EpisdoeGroupItem {
@@ -561,7 +597,7 @@ const doPushEpGroupItems = (
 const loadEpisodeGroupLabels = () => {
 	const groupCountMap = new Map<EpisodeGroupEnum, number>();
 	console.debug('subject', subject.value);
-	subject.value.episodes?.forEach((ep) => {
+	episodes.value?.forEach((ep) => {
 		const epGroup = ep.group as EpisodeGroupEnum;
 		if (groupCountMap.get(epGroup)) {
 			let count = groupCountMap.get(epGroup) as number;
@@ -597,6 +633,14 @@ const loadEpisodeGroupLabels = () => {
 	console.debug('epGroupLabelSet', epGroupItems);
 	episodeGroupItems.value = epGroupItems;
 };
+
+const subjectSyncs = ref<SubjectSync[]>([]);
+const fetchSubjectSyncs = async ()=>{
+	const {data} = await apiClient.subjectSyncPlatform.getSubjectSyncsBySubjectId({
+		id: subject.value.id as number
+	});
+	subjectSyncs.value = data;
+}
 
 onMounted(fetchDatas);
 </script>
@@ -715,14 +759,14 @@ onMounted(fetchDatas);
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions
-						v-if="subject.syncs && subject.syncs.length > 0"
+						v-if="subjectSyncs && subjectSyncs.length > 0"
 						size="large"
 						border
 					>
 						<el-descriptions-item
 							:label="t('module.subject.details.label.sync-platform')"
 						>
-							<span v-for="(sync, index) in subject.syncs" :key="index">
+							<span v-for="(sync, index) in subjectSyncs" :key="index">
 								{{ sync.platform }} :
 								<span v-if="sync.platform === 'BGM_TV'">
 									<a
@@ -757,11 +801,11 @@ onMounted(fetchDatas);
 								ref="newTagInputRef"
 								v-model="newTag.name"
 								size="small"
-								style="max-width: 80px"
+								style="max-width: 80px;"
 								@blur="onNewTagNameChange"
 								@keydown.enter="onNewTagNameChange"
 							/>
-							<el-button v-else size="small" @click="showNewTagInput">
+							<el-button v-else size="small" style="margin-top: 5px;" @click="showNewTagInput">
 								{{ t('module.subject.details.text.button.add-tag') }}
 							</el-button>
 						</el-descriptions-item>
@@ -851,7 +895,7 @@ onMounted(fetchDatas);
 						>
 							<el-table
 								:data="
-									subject.episodes?.filter((ep) => ep.group === item.group)
+									episodes?.filter((ep) => ep.group === item.group)
 								"
 								@row-dblclick="showEpisodeDetails"
 							>

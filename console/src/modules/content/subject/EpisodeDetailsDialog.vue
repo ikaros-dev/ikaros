@@ -39,14 +39,15 @@ const props = withDefaults(
 
 const episode = ref<Episode>({});
 
-watch(props, (newVal) => {
+watch(props, async(newVal) => {
 	// console.log(newVal);
 	episode.value = newVal.ep as Episode;
-	if (episode.value?.resources) {
-		episode.value.resources?.sort(compareFun);
+	await fetchEpisodeResources();
+	if (episodeResources.value) {
+		episodeResources.value?.sort(compareFun);
 		emit(
 			'update:multiResource',
-			episode.value.resources && episode.value.resources.length > 1
+			episodeResources.value && episodeResources.value.length > 1
 		);
 		loadVideoAttachment();
 	}
@@ -84,15 +85,14 @@ const dialogVisible = computed({
 const removeEpisodeAllAttachmentRefs = async () => {
 	// @ts-ignore
 	if (
-		!episode.value ||
-		!episode.value.resources 
+		!episodeResources.value
 	) {
 		ElMessage.warning(
 			t('module.subject.dialog.episode.details.message.operate.remove-episode-all-att-refs.waring')
 		);
 		return;
 	}
-	await episode.value.resources.forEach(async (resouce) => {
+	await episodeResources.value.forEach(async (resouce) => {
 		await apiClient.attachmentRef.removeByTypeAndAttachmentIdAndReferenceId({
 			attachmentReference: {
 				type: 'EPISODE' as AttachmentReferenceTypeEnum,
@@ -196,31 +196,32 @@ const delegateBatchMatchingEpisode = async (
 		});
 };
 
+const episodeResources = ref<EpisodeResource[]>([]);
 const fetchEpisodeResources = async () => {
-	if (!episode.value.id) return;
-	const { data } = await apiClient.episode.findEpisodeAttachmentRefsById({
+	if (!episode.value) return;
+	const { data } = await apiClient.episode.getAttachmentRefsById({
 		id: episode.value.id as number,
 	});
-	episode.value.resources = data;
+	episodeResources.value = data;
 	var multiResource =
-		episode.value.resources && episode.value.resources.length > 1;
+	episodeResources.value && episodeResources.value.length > 1;
 	emit('update:multiResource', multiResource);
 };
 
 const loadVideoAttachment = async () => {
 	console.debug('loadVideoAttachment');
-	console.debug('episode.value.resources', episode.value.resources);
+	console.debug('episodeResources.value', episodeResources.value);
 	if (
-		episode.value.resources &&
-		episode.value.resources.length == 1 &&
-		isVideo(episode.value.resources[0].url as string)
+		episodeResources.value &&
+		episodeResources.value.length == 1 &&
+		isVideo(episodeResources.value[0].url as string)
 	) {
 		console.debug(
-			'episode.value.resources[0].attachmentId',
-			episode.value.resources[0].attachmentId
+			'episodeResources.value[0].attachmentId',
+			episodeResources.value[0].attachmentId
 		);
 		const { data } = await apiClient.attachment.getAttachmentById({
-			id: episode.value.resources[0].attachmentId as number,
+			id: episodeResources.value[0].attachmentId as number,
 		});
 		currentVideoAttachment.value = data;
 	} else {
@@ -290,17 +291,17 @@ const currentVideoAttachment = ref<Attachment>({
 			<el-descriptions-item
 				:label="t('module.subject.dialog.episode.details.label.resources')"
 			>
-				<div v-if="episode?.resources && episode?.resources.length > 0">
+				<div v-if="episodeResources && episodeResources.length > 0">
 					<div v-if="!props.multiResource" align="center">
 						<router-link
 							target="_blank"
 							:to="
 								'/attachments?parentId=' +
-								episode?.resources[0].parentAttachmentId +
+								episodeResources[0].parentAttachmentId +
 								'&name=' +
-								base64Encode(encodeURI(episode?.resources[0].name as string))
+								base64Encode(encodeURI(episodeResources[0].name as string))
 							"
-							>{{ episode?.resources[0].name }}</router-link
+							>{{ episodeResources[0].name }}</router-link
 						>
 						<br />
 						<!-- <video
@@ -315,8 +316,8 @@ const currentVideoAttachment = ref<Attachment>({
               }}
             </video> -->
 						<artplayer
-							v-if="isVideo(episode.resources[0].url as string)"
-							v-model:attachmentId="episode.resources[0].attachmentId"
+							v-if="isVideo(episodeResources[0].url as string)"
+							v-model:attachmentId="episodeResources[0].attachmentId"
 							style="width: 100%"
 							@getInstance="getArtplayerInstance"
 						/>
@@ -328,7 +329,7 @@ const currentVideoAttachment = ref<Attachment>({
 					</div>
 					<el-row v-else :gutter="12" :span="24">
 						<el-col
-							v-for="res in episode?.resources"
+							v-for="res in episodeResources"
 							:key="res.attachmentId"
 							:span="8"
 						>
