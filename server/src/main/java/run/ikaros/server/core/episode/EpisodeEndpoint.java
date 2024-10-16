@@ -95,7 +95,7 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .description("episode sequence")
                         .required(true)
                         .in(ParameterIn.QUERY)
-                        .implementation(EpisodeGroup.class))
+                        .implementation(Float.class))
                     .response(Builder.responseBuilder().implementation(Episode.class)))
 
             .GET("/episodes/subjectId/{id}", this::getAllBySubjectId,
