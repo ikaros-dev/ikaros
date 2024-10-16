@@ -34,7 +34,14 @@ public class DefaultEpisodeOperate implements EpisodeOperate {
     }
 
     @Override
-    public Mono<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
+    public Mono<Episode> findBySubjectIdAndGroupAndSequenceAndName(
+        Long subjectId, EpisodeGroup group, Float sequence, String name) {
+        return service.findBySubjectIdAndGroupAndSequenceAndName(
+            subjectId, group, sequence, name);
+    }
+
+    @Override
+    public Flux<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
                                                             Float sequence) {
         return service.findBySubjectIdAndGroupAndSequence(subjectId, group, sequence);
     }

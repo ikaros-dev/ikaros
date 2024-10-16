@@ -12,7 +12,10 @@ public interface EpisodeOperate extends AllowPluginOperate {
 
     Flux<Episode> findAllBySubjectId(Long subjectId);
 
-    Mono<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
+    Mono<Episode> findBySubjectIdAndGroupAndSequenceAndName(
+        Long subjectId, EpisodeGroup group, Float sequence, String name);
+
+    Flux<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
                                                      Float sequence);
 
     Mono<Long> countBySubjectId(Long subjectId);

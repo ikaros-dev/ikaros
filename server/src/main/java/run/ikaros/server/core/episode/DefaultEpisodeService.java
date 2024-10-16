@@ -67,13 +67,26 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
-    public Mono<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
+    public Mono<Episode> findBySubjectIdAndGroupAndSequenceAndName(
+        Long subjectId, EpisodeGroup group, Float sequence, String name) {
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+        Assert.notNull(group, "'group' must not be null");
+        Assert.isTrue(sequence >= 0, "'sequence' must >= 0.");
+        Assert.hasText(name, "'name' must not be empty.");
+        return episodeRepository.findBySubjectIdAndGroupAndSequenceAndName(
+                subjectId, group, sequence, name)
+            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
+    }
+
+    @Override
+    public Flux<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
                                                             Float sequence) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         Assert.notNull(group, "'group' must not be null");
         Assert.isTrue(sequence >= 0, "'sequence' must >= 0.");
-        return episodeRepository.findBySubjectIdAndGroupAndSequence(subjectId, group, sequence)
-            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
+        return episodeRepository.findBySubjectIdAndGroupAndSequence(
+            subjectId, group, sequence
+        ).flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
     }
 
     @Override
