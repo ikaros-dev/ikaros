@@ -50,6 +50,59 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
 ) {
   return {
     /**
+     * Delete episode by id.
+     * @param {number} id Episode id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteById: async (
+      id: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("deleteById", "id", id);
+      const localVarPath = `/api/v1alpha1/episode/id/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "DELETE",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * Get all by subject id.
      * @param {number} id Subject id
      * @param {*} [options] Override http request option.
@@ -318,7 +371,7 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
     },
     /**
      * Post episode.
-     * @param {Episode} [episode] Episode to post.
+     * @param {Episode} [episode] Episode
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -350,9 +403,7 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      if (episode !== undefined) {
-        localVarQueryParameter["episode"] = episode;
-      }
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions =
@@ -362,6 +413,11 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
         ...headersFromBaseOptions,
         ...options.headers,
       };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        episode,
+        localVarRequestOptions,
+        configuration
+      );
 
       return {
         url: toPathString(localVarUrlObj),
@@ -370,7 +426,7 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
     },
     /**
      * Put episode.
-     * @param {Episode} [episode] Episode to put.
+     * @param {Episode} [episode] Episode
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -402,9 +458,7 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      if (episode !== undefined) {
-        localVarQueryParameter["episode"] = episode;
-      }
+      localVarHeaderParameter["Content-Type"] = "application/json";
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions =
@@ -414,6 +468,11 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
         ...headersFromBaseOptions,
         ...options.headers,
       };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        episode,
+        localVarRequestOptions,
+        configuration
+      );
 
       return {
         url: toPathString(localVarUrlObj),
@@ -431,6 +490,29 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
   const localVarAxiosParamCreator =
     V1alpha1EpisodeApiAxiosParamCreator(configuration);
   return {
+    /**
+     * Delete episode by id.
+     * @param {number} id Episode id.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async deleteById(
+      id: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Episode>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.deleteById(
+        id,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
     /**
      * Get all by subject id.
      * @param {number} id Subject id
@@ -546,7 +628,7 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
     },
     /**
      * Post episode.
-     * @param {Episode} [episode] Episode to post.
+     * @param {Episode} [episode] Episode
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -569,7 +651,7 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
     },
     /**
      * Put episode.
-     * @param {Episode} [episode] Episode to put.
+     * @param {Episode} [episode] Episode
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -604,6 +686,20 @@ export const V1alpha1EpisodeApiFactory = function (
 ) {
   const localVarFp = V1alpha1EpisodeApiFp(configuration);
   return {
+    /**
+     * Delete episode by id.
+     * @param {V1alpha1EpisodeApiDeleteByIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    deleteById(
+      requestParameters: V1alpha1EpisodeApiDeleteByIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Episode> {
+      return localVarFp
+        .deleteById(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
     /**
      * Get all by subject id.
      * @param {V1alpha1EpisodeApiGetAllBySubjectIdRequest} requestParameters Request parameters.
@@ -706,6 +802,20 @@ export const V1alpha1EpisodeApiFactory = function (
 };
 
 /**
+ * Request parameters for deleteById operation in V1alpha1EpisodeApi.
+ * @export
+ * @interface V1alpha1EpisodeApiDeleteByIdRequest
+ */
+export interface V1alpha1EpisodeApiDeleteByIdRequest {
+  /**
+   * Episode id.
+   * @type {number}
+   * @memberof V1alpha1EpisodeApiDeleteById
+   */
+  readonly id: number;
+}
+
+/**
  * Request parameters for getAllBySubjectId operation in V1alpha1EpisodeApi.
  * @export
  * @interface V1alpha1EpisodeApiGetAllBySubjectIdRequest
@@ -782,7 +892,7 @@ export interface V1alpha1EpisodeApiGetCountTotalBySubjectIdRequest {
  */
 export interface V1alpha1EpisodeApiPostEpisodeRequest {
   /**
-   * Episode to post.
+   * Episode
    * @type {Episode}
    * @memberof V1alpha1EpisodeApiPostEpisode
    */
@@ -796,7 +906,7 @@ export interface V1alpha1EpisodeApiPostEpisodeRequest {
  */
 export interface V1alpha1EpisodeApiPutEpisodeRequest {
   /**
-   * Episode to put.
+   * Episode
    * @type {Episode}
    * @memberof V1alpha1EpisodeApiPutEpisode
    */
@@ -810,6 +920,22 @@ export interface V1alpha1EpisodeApiPutEpisodeRequest {
  * @extends {BaseAPI}
  */
 export class V1alpha1EpisodeApi extends BaseAPI {
+  /**
+   * Delete episode by id.
+   * @param {V1alpha1EpisodeApiDeleteByIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1EpisodeApi
+   */
+  public deleteById(
+    requestParameters: V1alpha1EpisodeApiDeleteByIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1EpisodeApiFp(this.configuration)
+      .deleteById(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
   /**
    * Get all by subject id.
    * @param {V1alpha1EpisodeApiGetAllBySubjectIdRequest} requestParameters Request parameters.
