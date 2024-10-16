@@ -4,10 +4,12 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.nio.charset.StandardCharsets;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.apiresponse.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -40,7 +42,7 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .implementation(Episode.class))
                     .response(Builder.responseBuilder()
                         .implementation(Episode.class))
-                )
+            )
 
             .PUT("/episode", this::putEpisode,
                 builder -> builder.operationId("PutEpisode")
@@ -50,7 +52,7 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .implementation(Episode.class))
                     .response(Builder.responseBuilder()
                         .implementation(Episode.class))
-                )
+            )
 
             .DELETE("/episode/id/{id}", this::deleteById,
                 builder -> builder.operationId("DeleteById")
@@ -96,6 +98,12 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .required(true)
                         .in(ParameterIn.QUERY)
                         .implementation(Float.class))
+                    .parameter(parameterBuilder()
+                        .name("name")
+                        .description("episode name, need base64 encode.")
+                        .required(true)
+                        .in(ParameterIn.QUERY)
+                        .implementation(String.class))
                     .response(Builder.responseBuilder().implementation(Episode.class)))
 
             .GET("/episodes/subjectId/{id}", this::getAllBySubjectId,
@@ -190,7 +198,10 @@ public class EpisodeEndpoint implements CoreEndpoint {
         EpisodeGroup group =
             EpisodeGroup.valueOf(request.queryParam("group").orElse(EpisodeGroup.MAIN.name()));
         Float sequence = Float.valueOf(request.queryParam("sequence").orElse("0"));
-        return episodeService.findBySubjectIdAndGroupAndSequence(subjectId, group, sequence)
+        String rawName = request.queryParam("name").orElse("");
+        String name = new String(Base64Utils.decodeFromString(rawName), StandardCharsets.UTF_8);
+        return episodeService.findBySubjectIdAndGroupAndSequenceAndName(
+                subjectId, group, sequence, name)
             .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
     }
 

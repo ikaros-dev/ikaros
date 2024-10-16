@@ -135,7 +135,8 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                     .switchIfEmpty(Mono.error(new AttachmentRefMatchingException(
                         "Matching fail, episode not fond by seq=" + seq
                             + " and subjectId=" + subjectId
-                            + " and ep group=" + group))))
+                            + " and ep group=" + group)))
+                    .collectList().map(episodeEntities -> episodeEntities.get(0)))
                 .flatMap(episodeEntity -> repository
                     .existsByTypeAndReferenceId(EPISODE, episodeEntity.getId())
                     .filter(exists -> !exists)
