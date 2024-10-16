@@ -90,22 +90,24 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid, fields) => {
 		if (valid) {
-			await apiClient.subject
+			const {data} = await apiClient.subject
 				.createSubject({
 					subject: subject.value,
-				})
-				.then(() => {
-					router.push(
-						'/subjects?name=' +
-							base64Encode(encodeURI(subject.value.name)) +
-							'&nameCn=' +
-							base64Encode(encodeURI(subject.value.name_cn as string)) +
-							'&nsfw=' +
-							subject.value.nsfw +
-							'&type=' +
-							subject.value.type
-					);
 				});
+			await episodes.value.forEach(async (e) => {
+				e.subject_id = data.id as number;
+				await apiClient.episode.postEpisode({episode: e});
+			});
+			router.push(
+				'/subjects?name=' +
+					base64Encode(encodeURI(subject.value.name)) +
+					'&nameCn=' +
+					base64Encode(encodeURI(subject.value.name_cn as string)) +
+					'&nsfw=' +
+					subject.value.nsfw +
+					'&type=' +
+					subject.value.type
+			);
 		} else {
 			console.log('error submit!', fields);
 			ElMessage.error(t('module.subject.post.message.form-rule.validate-fail'));

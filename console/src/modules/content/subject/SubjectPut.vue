@@ -63,6 +63,7 @@ const fetchSubjectById = async () => {
 	await fetchEpisodes();
 };
 const fetchEpisodes = async () => {
+	if (!subject.value || !subject.value.id) return;
 	const {data} = await apiClient.episode.getAllBySubjectId({id: subject.value.id as number});
 	episodes.value = data;
 }
@@ -118,25 +119,30 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 			await apiClient.subject
 				.updateSubject({
 					subject: subject.value,
-				})
-				.then(() => {
-					ElMessage.success(
-						t('module.subject.put.message.form-rule.update-success', {
-							name: subject.value.name,
-						})
-					);
-					router.push(
-						'/subjects?name=' +
-							base64Encode(encodeURI(subject.value.name)) +
-							'&nameCn=' +
-							base64Encode(encodeURI(subject.value.name_cn as string)) +
-							'&nsfw=' +
-							subject.value.nsfw +
-							'&type=' +
-							subject.value.type
-					);
-					subjectStore.clearSubjectCacheById(subject.value.id as number);
 				});
+			console.debug('subject', subject.value);
+			console.debug('episodes', episodes.value);
+			for (var episode of episodes.value) {
+				console.debug('episode', episode);
+				episode.subject_id = subject.value.id as number;
+				await apiClient.episode.putEpisode({episode: episode});
+			};
+			ElMessage.success(
+					t('module.subject.put.message.form-rule.update-success', {
+						name: subject.value.name,
+					})
+				);
+			subjectStore.clearSubjectCacheById(subject.value.id as number);
+			router.push(
+				'/subjects?name=' +
+					base64Encode(encodeURI(subject.value.name)) +
+					'&nameCn=' +
+					base64Encode(encodeURI(subject.value.name_cn as string)) +
+					'&nsfw=' +
+					subject.value.nsfw +
+					'&type=' +
+					subject.value.type
+			);
 				
 		} else {
 			console.log('error submit!', fields);

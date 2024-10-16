@@ -1,6 +1,7 @@
 package run.ikaros.server.core.episode;
 
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
+import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.extern.slf4j.Slf4j;
@@ -32,9 +33,8 @@ public class EpisodeEndpoint implements CoreEndpoint {
             .POST("/episode", this::postEpisode,
                 builder -> builder.operationId("PostEpisode")
                     .tag(tag).description("Post episode.")
-                    .parameter(parameterBuilder()
-                        .name("episode")
-                        .description("Episode to post.")
+                    .requestBody(requestBodyBuilder()
+                        .description("Episode")
                         .implementation(Episode.class))
                     .response(Builder.responseBuilder()
                         .implementation(Episode.class))
@@ -43,13 +43,24 @@ public class EpisodeEndpoint implements CoreEndpoint {
             .PUT("/episode", this::putEpisode,
                 builder -> builder.operationId("PutEpisode")
                     .tag(tag).description("Put episode.")
-                    .parameter(parameterBuilder()
-                        .name("episode")
-                        .description("Episode to put.")
+                    .requestBody(requestBodyBuilder()
+                        .description("Episode")
                         .implementation(Episode.class))
                     .response(Builder.responseBuilder()
                         .implementation(Episode.class))
                 )
+
+            .DELETE("/episode/id/{id}", this::deleteById,
+                builder -> builder.operationId("DeleteById")
+                    .tag(tag).description("Delete episode by id.")
+                    .parameter(parameterBuilder()
+                        .name("id").required(true)
+                        .in(ParameterIn.PATH)
+                        .description("Episode id.")
+                        .implementation(Long.class))
+                    .response(Builder.responseBuilder()
+                        .implementation(Episode.class))
+            )
 
             .GET("/episode/{id}", this::getById,
                 builder -> builder.operationId("GetById")
@@ -132,6 +143,13 @@ public class EpisodeEndpoint implements CoreEndpoint {
         Long subjectId = Long.valueOf(id);
         return episodeService.countMatchingBySubjectId(subjectId)
             .flatMap(count -> ServerResponse.ok().bodyValue(count));
+    }
+
+    private Mono<ServerResponse> deleteById(ServerRequest request) {
+        String id = request.pathVariable("id");
+        Long episodeId = Long.valueOf(id);
+        return episodeService.deleteById(episodeId)
+            .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {

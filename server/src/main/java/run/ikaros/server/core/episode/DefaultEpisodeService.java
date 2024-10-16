@@ -68,6 +68,12 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
+    public Mono<Void> deleteById(Long episodeId) {
+        Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
+        return episodeRepository.deleteById(episodeId);
+    }
+
+    @Override
     public Mono<Long> countBySubjectId(Long subjectId) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         return episodeRepository.countBySubjectId(subjectId);

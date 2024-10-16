@@ -14,6 +14,8 @@ public interface EpisodeService {
 
     Flux<Episode> findAllBySubjectId(Long subjectId);
 
+    Mono<Void> deleteById(Long episodeId);
+
     Mono<Long> countBySubjectId(Long subjectId);
 
     /**
