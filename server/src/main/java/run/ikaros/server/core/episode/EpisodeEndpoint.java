@@ -29,17 +29,6 @@ public class EpisodeEndpoint implements CoreEndpoint {
     public RouterFunction<ServerResponse> endpoint() {
         var tag = OpenApiConst.CORE_VERSION + "/episode";
         return SpringdocRouteBuilder.route()
-            .GET("/episode/meta/{id}", this::findMetaById,
-                builder -> builder.operationId("FindEpisodeMetaById")
-                    .tag(tag).description("Find episode meta by episode id.")
-                    .parameter(parameterBuilder()
-                        .name("id")
-                        .description("Episode id")
-                        .in(ParameterIn.PATH)
-                        .required(true)
-                        .implementation(Long.class))
-                    .response(Builder.responseBuilder().implementation(Episode.class)))
-
             .GET("/episode/{id}", this::findById,
                 builder -> builder.operationId("FindEpisodeById")
                     .tag(tag).description("Find episode by episode id.")
@@ -64,14 +53,51 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .description("Episode resource list.")
                         .implementationArray(EpisodeResource.class)))
 
+            .GET("/episode/count/total/subjectId/{id}", this::countTotalBySubjectId,
+                builder -> builder.operationId("CountEpisodeById")
+                    .tag(tag).description("Count episode by subject id.")
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .description("Subject id")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(Builder.responseBuilder()
+                        .description("Episode count for subject id.")
+                        .implementation(Long.class)
+                    )
+            )
+
+            .GET("/episode/count/matching/subjectId/{id}", this::countMatchingBySubjectId,
+                builder -> builder.operationId("CountEpisodeById")
+                    .tag(tag).description("Count episode by subject id.")
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .description("Subject id")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(Builder.responseBuilder()
+                        .description("Episode count for subject id.")
+                        .implementation(Long.class)
+                    )
+            )
+
             .build();
     }
 
-    private Mono<ServerResponse> findMetaById(ServerRequest request) {
+    private Mono<ServerResponse> countTotalBySubjectId(ServerRequest request) {
         String id = request.pathVariable("id");
-        Long episodeId = Long.valueOf(id);
-        return episodeService.findMetaById(episodeId)
-            .flatMap(episodeMeta -> ServerResponse.ok().bodyValue(episodeMeta));
+        Long subjectId = Long.valueOf(id);
+        return episodeService.countBySubjectId(subjectId)
+            .flatMap(count -> ServerResponse.ok().bodyValue(count));
+    }
+
+    private Mono<ServerResponse> countMatchingBySubjectId(ServerRequest request) {
+        String id = request.pathVariable("id");
+        Long subjectId = Long.valueOf(id);
+        return episodeService.countMatchingBySubjectId(subjectId)
+            .flatMap(count -> ServerResponse.ok().bodyValue(count));
     }
 
     private Mono<ServerResponse> findById(ServerRequest request) {

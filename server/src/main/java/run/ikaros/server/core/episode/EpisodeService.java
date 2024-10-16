@@ -6,8 +6,6 @@ import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 
 public interface EpisodeService {
-    Mono<Episode> findMetaById(Long episodeId);
-
     Mono<Episode> findById(Long episodeId);
 
     Mono<Long> countBySubjectId(Long subjectId);

@@ -32,12 +32,6 @@ public class DefaultEpisodeService implements EpisodeService {
         this.attachmentRepository = attachmentRepository;
     }
 
-    @Override
-    public Mono<Episode> findMetaById(Long episodeId) {
-        Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
-        return episodeRepository.findById(episodeId)
-            .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
-    }
 
     @Override
     public Mono<Episode> findById(Long episodeId) {
