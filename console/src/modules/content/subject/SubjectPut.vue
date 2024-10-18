@@ -114,11 +114,13 @@ const subjectRuleFormRules = reactive<FormRules>({
 	],
 });
 
+const submitBtnLoading = ref(false);
 const subjectElFormRef = ref<FormInstance>();
 const submitForm = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid, fields) => {
 		if (valid) {
+			submitBtnLoading.value = true;
 			await apiClient.subject.updateSubject({
 				subject: subject.value,
 			});
@@ -133,6 +135,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 				await apiClient.episode.deleteById({ id: remEp.id as number });
 			}
 			removeEpisodes.value = [];
+			submitBtnLoading.value = false;
 			ElMessage.success(
 				t('module.subject.put.message.form-rule.update-success', {
 					name: subject.value.name,
@@ -395,7 +398,7 @@ onMounted(() => {
 				</el-form-item>
 
 				<el-form-item>
-					<el-button plain @click="submitForm(subjectElFormRef)">
+					<el-button plain :loading="submitBtnLoading" @click="submitForm(subjectElFormRef)">
 						{{ t('module.subject.put.text.button.subject.create') }}
 					</el-button>
 				</el-form-item>

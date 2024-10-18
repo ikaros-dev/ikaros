@@ -345,7 +345,7 @@ module:
             details: 剧集详情
             remove: 删除剧集
           subject:
-            create: 创建
+            create: 更新
       message:
         form-rule:
           name:

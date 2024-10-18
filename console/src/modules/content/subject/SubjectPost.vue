@@ -85,11 +85,13 @@ const subjectRuleFormRules = reactive<FormRules>({
 	],
 });
 
+const submitBtnLoading = ref(false);
 const subjectElFormRef = ref<FormInstance>();
 const submitForm = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid, fields) => {
 		if (valid) {
+			submitBtnLoading.value = true;
 			const { data } = await apiClient.subject.createSubject({
 				subject: subject.value,
 			});
@@ -97,6 +99,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 				e.subject_id = data.id as number;
 				await apiClient.episode.postEpisode({ episode: e });
 			});
+			submitBtnLoading.value = false;
 			router.push(
 				'/subjects?name=' +
 					base64Encode(encodeURI(subject.value.name)) +
@@ -316,7 +319,7 @@ const oepnCropperjsDialog = () => {
 				</el-form-item>
 
 				<el-form-item>
-					<el-button plain @click="submitForm(subjectElFormRef)">
+					<el-button plain :loading="submitBtnLoading" @click="submitForm(subjectElFormRef)">
 						{{ t('module.subject.post.text.button.subject.create') }}
 					</el-button>
 				</el-form-item>
