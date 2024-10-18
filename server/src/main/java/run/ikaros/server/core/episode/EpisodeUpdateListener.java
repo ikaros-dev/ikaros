@@ -81,7 +81,8 @@ public class EpisodeUpdateListener {
                         entity.setCover(cover);
                         String name = StringUtils.isBlank(entity.getNameCn())
                             ? entity.getName() : entity.getNameCn();
-                        String subjectUrl = "ikaros://app/subject/" + subjectId;
+                        String subjectUrl = ikarosProperties.getExternalUrl()
+                            + "/app/link/subject/" + subjectId;
 
                         context.setVariable("subjectName", name);
                         context.setVariable("subjectCover", cover);
