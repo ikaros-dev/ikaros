@@ -2,9 +2,9 @@ package run.ikaros.server.core.episode;
 
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -24,16 +24,19 @@ public class DefaultEpisodeService implements EpisodeService {
     private final EpisodeRepository episodeRepository;
     private final AttachmentReferenceRepository attachmentReferenceRepository;
     private final AttachmentRepository attachmentRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Construct.
      */
     public DefaultEpisodeService(EpisodeRepository episodeRepository,
                                  AttachmentReferenceRepository attachmentReferenceRepository,
-                                 AttachmentRepository attachmentRepository) {
+                                 AttachmentRepository attachmentRepository,
+                                 ApplicationEventPublisher applicationEventPublisher) {
         this.episodeRepository = episodeRepository;
         this.attachmentReferenceRepository = attachmentReferenceRepository;
         this.attachmentRepository = attachmentRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
 
@@ -93,7 +96,13 @@ public class DefaultEpisodeService implements EpisodeService {
     @Override
     public Mono<Void> deleteById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
-        return episodeRepository.deleteById(episodeId);
+        return episodeRepository.findById(episodeId)
+            .flatMap(entity -> episodeRepository.delete(entity)
+                .doOnSuccess(v -> {
+                    log.debug("Remove exists episode: {}", entity);
+                    EpisodeRemoveEvent event = new EpisodeRemoveEvent(this, entity);
+                    applicationEventPublisher.publishEvent(event);
+                }));
     }
 
     @Override
@@ -137,14 +146,35 @@ public class DefaultEpisodeService implements EpisodeService {
     public Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         Assert.notNull(episodes, "'episodes' must not be null.");
-        return episodeRepository.deleteAllBySubjectId(subjectId)
-            .thenMany(Flux.fromIterable(episodes))
-            .flatMap(episode -> copyProperties(episode, new EpisodeEntity()))
-            .map(entity -> {
-                entity.setCreateTime(LocalDateTime.now());
-                entity.setUpdateTime(LocalDateTime.now());
-                return entity.setSubjectId(subjectId);
-            })
+
+        episodes.forEach(episode -> episode.setSubjectId(subjectId));
+
+        // 移除新的列表里不存在的过期剧集
+        //        return episodeRepository.findAllBySubjectId(subjectId)
+        //            .filter(entity -> {
+        //                Optional<Episode> episodeOptional = episodes.stream()
+        //                  .filter(episode -> episode.getSubjectId().equals(entity.getSubjectId())
+        //                        && episode.getSequence().equals(entity.getSequence())
+        //                        && episode.getGroup().equals(entity.getGroup())
+        //                    ).findFirst();
+        //                return episodeOptional.isEmpty();
+        //            })
+        //            .flatMap(entity -> episodeRepository.delete(entity)
+        //                .doOnSuccess(v -> {
+        //                    log.debug("Remove exists episode: {}", entity);
+        //                    EpisodeRemoveEvent event = new EpisodeRemoveEvent(this, entity);
+        //                    applicationEventPublisher.publishEvent(event);
+        //                }))
+        //            // 更新或新增剧集
+        //            .thenMany(Flux.fromIterable(episodes))
+        return Flux.fromIterable(episodes)
+            .flatMap(episode -> episodeRepository.findBySubjectIdAndGroupAndSequence(
+                    subjectId, episode.getGroup(), episode.getSequence())
+                .collectList().filter(entities -> !entities.isEmpty())
+                .map(entities -> entities.get(0))
+                .flatMap(entity -> copyProperties(episode, entity, "id"))
+                .switchIfEmpty(copyProperties(episode, new EpisodeEntity())) // 如果没找到，则新增
+            )
             .flatMap(episodeRepository::save)
             .flatMap(entity -> copyProperties(entity, new Episode()));
     }
