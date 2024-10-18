@@ -37,6 +37,18 @@ public class NotifyServiceImpl implements NotifyService {
     }
 
     @Override
+    public Mono<Void> send(String title, String template, Context context) {
+        Assert.hasText(title, "title is empty");
+        Assert.notNull(context, "context must not null");
+        String receiveAddress = mailService.getMailConfig().getReceiveAddress();
+        Assert.hasText(receiveAddress, "receive address is empty");
+        MailRequest mailRequest = new MailRequest();
+        mailRequest.setTitle(title);
+        mailRequest.setAddress(receiveAddress);
+        return mailService.send(mailRequest, template, context);
+    }
+
+    @Override
     public Mono<Void> testMail() {
         String receiveAddress = mailService.getMailConfig().getReceiveAddress();
         Assert.hasText(receiveAddress, "receive address is empty");
