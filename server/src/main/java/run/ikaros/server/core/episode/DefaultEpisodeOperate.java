@@ -1,5 +1,6 @@
 package run.ikaros.server.core.episode;
 
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -59,5 +60,10 @@ public class DefaultEpisodeOperate implements EpisodeOperate {
     @Override
     public Flux<EpisodeResource> findResourcesById(Long episodeId) {
         return service.findResourcesById(episodeId);
+    }
+
+    @Override
+    public Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes) {
+        return service.updateEpisodesWithSubjectId(subjectId, episodes);
     }
 }

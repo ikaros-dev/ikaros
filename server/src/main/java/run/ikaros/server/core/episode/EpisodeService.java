@@ -1,5 +1,6 @@
 package run.ikaros.server.core.episode;
 
+import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,4 +32,10 @@ public interface EpisodeService {
     Mono<Long> countMatchingBySubjectId(Long subjectId);
 
     Flux<EpisodeResource> findResourcesById(Long episodeId);
+
+    /**
+     * 更新条目的剧集，逻辑是删除旧的添加新的.
+     */
+    @Transactional
+    Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes);
 }
