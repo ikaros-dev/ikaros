@@ -1,5 +1,6 @@
 package run.ikaros.api.core.subject;
 
+import java.util.List;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.plugin.AllowPluginOperate;
@@ -26,4 +27,9 @@ public interface EpisodeOperate extends AllowPluginOperate {
     Mono<Long> countMatchingBySubjectId(Long subjectId);
 
     Flux<EpisodeResource> findResourcesById(Long episodeId);
+
+    /**
+     * 更新条目的剧集，逻辑是删除旧的添加新的.
+     */
+    Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes);
 }

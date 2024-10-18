@@ -342,7 +342,7 @@ module:
             remove: Delete
             edit: Edit
           subject:
-            create: Create
+            create: Update
     post:
       title: Subject Post
       message:

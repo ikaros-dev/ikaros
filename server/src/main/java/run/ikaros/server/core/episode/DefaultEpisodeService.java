@@ -2,6 +2,7 @@ package run.ikaros.server.core.episode;
 
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -130,5 +131,21 @@ public class DefaultEpisodeService implements EpisodeService {
                         .canRead(true)
                         .build())
             );
+    }
+
+    @Override
+    public Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes) {
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+        Assert.notNull(episodes, "'episodes' must not be null.");
+        return episodeRepository.deleteAllBySubjectId(subjectId)
+            .thenMany(Flux.fromIterable(episodes))
+            .flatMap(episode -> copyProperties(episode, new EpisodeEntity()))
+            .map(entity -> {
+                entity.setCreateTime(LocalDateTime.now());
+                entity.setUpdateTime(LocalDateTime.now());
+                return entity.setSubjectId(subjectId);
+            })
+            .flatMap(episodeRepository::save)
+            .flatMap(entity -> copyProperties(entity, new Episode()));
     }
 }
