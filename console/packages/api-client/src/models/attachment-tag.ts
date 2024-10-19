@@ -15,51 +15,37 @@
 /**
  *
  * @export
- * @interface Tag
+ * @interface AttachmentTag
  */
-export interface Tag {
+export interface AttachmentTag {
   /**
    *
    * @type {number}
-   * @memberof Tag
+   * @memberof AttachmentTag
    */
   id?: number;
   /**
    *
-   * @type {string}
-   * @memberof Tag
-   */
-  type?: TagTypeEnum;
-  /**
-   *
    * @type {number}
-   * @memberof Tag
+   * @memberof AttachmentTag
    */
-  masterId?: number;
+  attachmentId?: number;
   /**
    *
    * @type {string}
-   * @memberof Tag
+   * @memberof AttachmentTag
    */
   name?: string;
   /**
    *
    * @type {number}
-   * @memberof Tag
+   * @memberof AttachmentTag
    */
   userId?: number;
   /**
    *
    * @type {string}
-   * @memberof Tag
+   * @memberof AttachmentTag
    */
   createTime?: string;
 }
-
-export const TagTypeEnum = {
-  Subject: "SUBJECT",
-  Episode: "EPISODE",
-  Attachment: "ATTACHMENT",
-} as const;
-
-export type TagTypeEnum = (typeof TagTypeEnum)[keyof typeof TagTypeEnum];

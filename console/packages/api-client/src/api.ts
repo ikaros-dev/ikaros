@@ -32,7 +32,7 @@ export * from "./api/v1alpha1-security-api";
 export * from "./api/v1alpha1-static-api";
 export * from "./api/v1alpha1-subject-api";
 export * from "./api/v1alpha1-subject-relation-api";
-export * from "./api/v1alpha1-subject-sync-platform-api";
+export * from "./api/v1alpha1-subject-sync-api";
 export * from "./api/v1alpha1-tag-api";
 export * from "./api/v1alpha1-task-api";
 export * from "./api/v1alpha1-user-api";

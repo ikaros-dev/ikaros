@@ -210,16 +210,110 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
     },
     /**
      * Get episode by episode id.
-     * @param {number} id Episode id
+     * @param {number} id Subject id
+     * @param {'MAIN' | 'PROMOTION_VIDEO' | 'OPENING_SONG' | 'ENDING_SONG' | 'SPECIAL_PROMOTION' | 'SMALL_THEATER' | 'LIVE' | 'COMMERCIAL_MESSAGE' | 'ORIGINAL_SOUND_TRACK' | 'ORIGINAL_VIDEO_ANIMATION' | 'ORIGINAL_ANIMATION_DISC' | 'MUSIC_DIST1' | 'MUSIC_DIST2' | 'MUSIC_DIST3' | 'MUSIC_DIST4' | 'MUSIC_DIST5' | 'OTHER'} group episode group
+     * @param {number} sequence episode sequence
+     * @param {string} name episode name, need base64 encode.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     getById: async (
       id: number,
+      group:
+        | "MAIN"
+        | "PROMOTION_VIDEO"
+        | "OPENING_SONG"
+        | "ENDING_SONG"
+        | "SPECIAL_PROMOTION"
+        | "SMALL_THEATER"
+        | "LIVE"
+        | "COMMERCIAL_MESSAGE"
+        | "ORIGINAL_SOUND_TRACK"
+        | "ORIGINAL_VIDEO_ANIMATION"
+        | "ORIGINAL_ANIMATION_DISC"
+        | "MUSIC_DIST1"
+        | "MUSIC_DIST2"
+        | "MUSIC_DIST3"
+        | "MUSIC_DIST4"
+        | "MUSIC_DIST5"
+        | "OTHER",
+      sequence: number,
+      name: string,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getById", "id", id);
+      // verify required parameter 'group' is not null or undefined
+      assertParamExists("getById", "group", group);
+      // verify required parameter 'sequence' is not null or undefined
+      assertParamExists("getById", "sequence", sequence);
+      // verify required parameter 'name' is not null or undefined
+      assertParamExists("getById", "name", name);
+      const localVarPath = `/api/v1alpha1/episode/subjectId/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (group !== undefined) {
+        localVarQueryParameter["group"] = group;
+      }
+
+      if (sequence !== undefined) {
+        localVarQueryParameter["sequence"] = sequence;
+      }
+
+      if (name !== undefined) {
+        localVarQueryParameter["name"] = name;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get episode by episode id.
+     * @param {number} id Episode id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getById1: async (
+      id: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("getById1", "id", id);
       const localVarPath = `/api/v1alpha1/episode/{id}`.replace(
         `{${"id"}}`,
         encodeURIComponent(String(id))
@@ -560,17 +654,66 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
     },
     /**
      * Get episode by episode id.
-     * @param {number} id Episode id
+     * @param {number} id Subject id
+     * @param {'MAIN' | 'PROMOTION_VIDEO' | 'OPENING_SONG' | 'ENDING_SONG' | 'SPECIAL_PROMOTION' | 'SMALL_THEATER' | 'LIVE' | 'COMMERCIAL_MESSAGE' | 'ORIGINAL_SOUND_TRACK' | 'ORIGINAL_VIDEO_ANIMATION' | 'ORIGINAL_ANIMATION_DISC' | 'MUSIC_DIST1' | 'MUSIC_DIST2' | 'MUSIC_DIST3' | 'MUSIC_DIST4' | 'MUSIC_DIST5' | 'OTHER'} group episode group
+     * @param {number} sequence episode sequence
+     * @param {string} name episode name, need base64 encode.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     async getById(
       id: number,
+      group:
+        | "MAIN"
+        | "PROMOTION_VIDEO"
+        | "OPENING_SONG"
+        | "ENDING_SONG"
+        | "SPECIAL_PROMOTION"
+        | "SMALL_THEATER"
+        | "LIVE"
+        | "COMMERCIAL_MESSAGE"
+        | "ORIGINAL_SOUND_TRACK"
+        | "ORIGINAL_VIDEO_ANIMATION"
+        | "ORIGINAL_ANIMATION_DISC"
+        | "MUSIC_DIST1"
+        | "MUSIC_DIST2"
+        | "MUSIC_DIST3"
+        | "MUSIC_DIST4"
+        | "MUSIC_DIST5"
+        | "OTHER",
+      sequence: number,
+      name: string,
       options?: AxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Episode>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getById(
+        id,
+        group,
+        sequence,
+        name,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Get episode by episode id.
+     * @param {number} id Episode id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getById1(
+      id: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Episode>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getById1(
         id,
         options
       );
@@ -739,7 +882,27 @@ export const V1alpha1EpisodeApiFactory = function (
       options?: AxiosRequestConfig
     ): AxiosPromise<Episode> {
       return localVarFp
-        .getById(requestParameters.id, options)
+        .getById(
+          requestParameters.id,
+          requestParameters.group,
+          requestParameters.sequence,
+          requestParameters.name,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get episode by episode id.
+     * @param {V1alpha1EpisodeApiGetById1Request} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getById1(
+      requestParameters: V1alpha1EpisodeApiGetById1Request,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Episode> {
+      return localVarFp
+        .getById1(requestParameters.id, options)
         .then((request) => request(axios, basePath));
     },
     /**
@@ -850,9 +1013,61 @@ export interface V1alpha1EpisodeApiGetAttachmentRefsByIdRequest {
  */
 export interface V1alpha1EpisodeApiGetByIdRequest {
   /**
-   * Episode id
+   * Subject id
    * @type {number}
    * @memberof V1alpha1EpisodeApiGetById
+   */
+  readonly id: number;
+
+  /**
+   * episode group
+   * @type {'MAIN' | 'PROMOTION_VIDEO' | 'OPENING_SONG' | 'ENDING_SONG' | 'SPECIAL_PROMOTION' | 'SMALL_THEATER' | 'LIVE' | 'COMMERCIAL_MESSAGE' | 'ORIGINAL_SOUND_TRACK' | 'ORIGINAL_VIDEO_ANIMATION' | 'ORIGINAL_ANIMATION_DISC' | 'MUSIC_DIST1' | 'MUSIC_DIST2' | 'MUSIC_DIST3' | 'MUSIC_DIST4' | 'MUSIC_DIST5' | 'OTHER'}
+   * @memberof V1alpha1EpisodeApiGetById
+   */
+  readonly group:
+    | "MAIN"
+    | "PROMOTION_VIDEO"
+    | "OPENING_SONG"
+    | "ENDING_SONG"
+    | "SPECIAL_PROMOTION"
+    | "SMALL_THEATER"
+    | "LIVE"
+    | "COMMERCIAL_MESSAGE"
+    | "ORIGINAL_SOUND_TRACK"
+    | "ORIGINAL_VIDEO_ANIMATION"
+    | "ORIGINAL_ANIMATION_DISC"
+    | "MUSIC_DIST1"
+    | "MUSIC_DIST2"
+    | "MUSIC_DIST3"
+    | "MUSIC_DIST4"
+    | "MUSIC_DIST5"
+    | "OTHER";
+
+  /**
+   * episode sequence
+   * @type {number}
+   * @memberof V1alpha1EpisodeApiGetById
+   */
+  readonly sequence: number;
+
+  /**
+   * episode name, need base64 encode.
+   * @type {string}
+   * @memberof V1alpha1EpisodeApiGetById
+   */
+  readonly name: string;
+}
+
+/**
+ * Request parameters for getById1 operation in V1alpha1EpisodeApi.
+ * @export
+ * @interface V1alpha1EpisodeApiGetById1Request
+ */
+export interface V1alpha1EpisodeApiGetById1Request {
+  /**
+   * Episode id
+   * @type {number}
+   * @memberof V1alpha1EpisodeApiGetById1
    */
   readonly id: number;
 }
@@ -980,7 +1195,29 @@ export class V1alpha1EpisodeApi extends BaseAPI {
     options?: AxiosRequestConfig
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
-      .getById(requestParameters.id, options)
+      .getById(
+        requestParameters.id,
+        requestParameters.group,
+        requestParameters.sequence,
+        requestParameters.name,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Get episode by episode id.
+   * @param {V1alpha1EpisodeApiGetById1Request} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1EpisodeApi
+   */
+  public getById1(
+    requestParameters: V1alpha1EpisodeApiGetById1Request,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1EpisodeApiFp(this.configuration)
+      .getById1(requestParameters.id, options)
       .then((request) => request(this.axios, this.basePath));
   }
 

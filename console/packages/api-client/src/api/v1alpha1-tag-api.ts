@@ -38,6 +38,8 @@ import {
   RequiredError,
 } from "../base";
 // @ts-ignore
+import { AttachmentTag } from "../models";
+// @ts-ignore
 import { SubjectTag } from "../models";
 // @ts-ignore
 import { Tag } from "../models";
@@ -105,6 +107,64 @@ export const V1alpha1TagApiAxiosParamCreator = function (
       };
     },
     /**
+     * List attachment tags by attachment id.
+     * @param {number} attachmentId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listAttachmentTagsByAttachmentId: async (
+      attachmentId: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'attachmentId' is not null or undefined
+      assertParamExists(
+        "listAttachmentTagsByAttachmentId",
+        "attachmentId",
+        attachmentId
+      );
+      const localVarPath =
+        `/api/v1alpha1/tags/attachment/attachmentId/{attachmentId}`.replace(
+          `{${"attachmentId"}}`,
+          encodeURIComponent(String(attachmentId))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * List subject tags by subject id.
      * @param {number} subjectId
      * @param {*} [options] Override http request option.
@@ -160,7 +220,7 @@ export const V1alpha1TagApiAxiosParamCreator = function (
     },
     /**
      * List tags by condition.
-     * @param {'SUBJECT' | 'EPISODE'} [type]
+     * @param {'SUBJECT' | 'EPISODE' | 'ATTACHMENT'} [type]
      * @param {number} [masterId]
      * @param {number} [userId]
      * @param {string} [name]
@@ -168,7 +228,7 @@ export const V1alpha1TagApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     listTagsByCondition: async (
-      type?: "SUBJECT" | "EPISODE",
+      type?: "SUBJECT" | "EPISODE" | "ATTACHMENT",
       masterId?: number,
       userId?: number,
       name?: string,
@@ -230,14 +290,14 @@ export const V1alpha1TagApiAxiosParamCreator = function (
     },
     /**
      * Remove tag by condition.
-     * @param {'SUBJECT' | 'EPISODE'} [type]
+     * @param {'SUBJECT' | 'EPISODE' | 'ATTACHMENT'} [type]
      * @param {number} [masterId]
      * @param {string} [name]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     removeTagByCondition: async (
-      type?: "SUBJECT" | "EPISODE",
+      type?: "SUBJECT" | "EPISODE" | "ATTACHMENT",
       masterId?: number,
       name?: string,
       options: AxiosRequestConfig = {}
@@ -380,6 +440,33 @@ export const V1alpha1TagApiFp = function (configuration?: Configuration) {
       );
     },
     /**
+     * List attachment tags by attachment id.
+     * @param {number} attachmentId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listAttachmentTagsByAttachmentId(
+      attachmentId: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<AttachmentTag>>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listAttachmentTagsByAttachmentId(
+          attachmentId,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
      * List subject tags by subject id.
      * @param {number} subjectId
      * @param {*} [options] Override http request option.
@@ -408,7 +495,7 @@ export const V1alpha1TagApiFp = function (configuration?: Configuration) {
     },
     /**
      * List tags by condition.
-     * @param {'SUBJECT' | 'EPISODE'} [type]
+     * @param {'SUBJECT' | 'EPISODE' | 'ATTACHMENT'} [type]
      * @param {number} [masterId]
      * @param {number} [userId]
      * @param {string} [name]
@@ -416,7 +503,7 @@ export const V1alpha1TagApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async listTagsByCondition(
-      type?: "SUBJECT" | "EPISODE",
+      type?: "SUBJECT" | "EPISODE" | "ATTACHMENT",
       masterId?: number,
       userId?: number,
       name?: string,
@@ -441,14 +528,14 @@ export const V1alpha1TagApiFp = function (configuration?: Configuration) {
     },
     /**
      * Remove tag by condition.
-     * @param {'SUBJECT' | 'EPISODE'} [type]
+     * @param {'SUBJECT' | 'EPISODE' | 'ATTACHMENT'} [type]
      * @param {number} [masterId]
      * @param {string} [name]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     async removeTagByCondition(
-      type?: "SUBJECT" | "EPISODE",
+      type?: "SUBJECT" | "EPISODE" | "ATTACHMENT",
       masterId?: number,
       name?: string,
       options?: AxiosRequestConfig
@@ -518,6 +605,23 @@ export const V1alpha1TagApiFactory = function (
     ): AxiosPromise<Tag> {
       return localVarFp
         .createTag(requestParameters.tag, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * List attachment tags by attachment id.
+     * @param {V1alpha1TagApiListAttachmentTagsByAttachmentIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listAttachmentTagsByAttachmentId(
+      requestParameters: V1alpha1TagApiListAttachmentTagsByAttachmentIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<AttachmentTag>> {
+      return localVarFp
+        .listAttachmentTagsByAttachmentId(
+          requestParameters.attachmentId,
+          options
+        )
         .then((request) => request(axios, basePath));
     },
     /**
@@ -605,6 +709,20 @@ export interface V1alpha1TagApiCreateTagRequest {
 }
 
 /**
+ * Request parameters for listAttachmentTagsByAttachmentId operation in V1alpha1TagApi.
+ * @export
+ * @interface V1alpha1TagApiListAttachmentTagsByAttachmentIdRequest
+ */
+export interface V1alpha1TagApiListAttachmentTagsByAttachmentIdRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof V1alpha1TagApiListAttachmentTagsByAttachmentId
+   */
+  readonly attachmentId: number;
+}
+
+/**
  * Request parameters for listSubjectTagsBySubjectId operation in V1alpha1TagApi.
  * @export
  * @interface V1alpha1TagApiListSubjectTagsBySubjectIdRequest
@@ -626,10 +744,10 @@ export interface V1alpha1TagApiListSubjectTagsBySubjectIdRequest {
 export interface V1alpha1TagApiListTagsByConditionRequest {
   /**
    *
-   * @type {'SUBJECT' | 'EPISODE'}
+   * @type {'SUBJECT' | 'EPISODE' | 'ATTACHMENT'}
    * @memberof V1alpha1TagApiListTagsByCondition
    */
-  readonly type?: "SUBJECT" | "EPISODE";
+  readonly type?: "SUBJECT" | "EPISODE" | "ATTACHMENT";
 
   /**
    *
@@ -661,10 +779,10 @@ export interface V1alpha1TagApiListTagsByConditionRequest {
 export interface V1alpha1TagApiRemoveTagByConditionRequest {
   /**
    *
-   * @type {'SUBJECT' | 'EPISODE'}
+   * @type {'SUBJECT' | 'EPISODE' | 'ATTACHMENT'}
    * @memberof V1alpha1TagApiRemoveTagByCondition
    */
-  readonly type?: "SUBJECT" | "EPISODE";
+  readonly type?: "SUBJECT" | "EPISODE" | "ATTACHMENT";
 
   /**
    *
@@ -715,6 +833,22 @@ export class V1alpha1TagApi extends BaseAPI {
   ) {
     return V1alpha1TagApiFp(this.configuration)
       .createTag(requestParameters.tag, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * List attachment tags by attachment id.
+   * @param {V1alpha1TagApiListAttachmentTagsByAttachmentIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1TagApi
+   */
+  public listAttachmentTagsByAttachmentId(
+    requestParameters: V1alpha1TagApiListAttachmentTagsByAttachmentIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1TagApiFp(this.configuration)
+      .listAttachmentTagsByAttachmentId(requestParameters.attachmentId, options)
       .then((request) => request(this.axios, this.basePath));
   }
 
