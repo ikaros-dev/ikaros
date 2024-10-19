@@ -5,6 +5,7 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -25,6 +26,7 @@ public class DefaultEpisodeService implements EpisodeService {
     private final AttachmentReferenceRepository attachmentReferenceRepository;
     private final AttachmentRepository attachmentRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final DatabaseClient databaseClient;
 
     /**
      * Construct.
@@ -32,11 +34,13 @@ public class DefaultEpisodeService implements EpisodeService {
     public DefaultEpisodeService(EpisodeRepository episodeRepository,
                                  AttachmentReferenceRepository attachmentReferenceRepository,
                                  AttachmentRepository attachmentRepository,
-                                 ApplicationEventPublisher applicationEventPublisher) {
+                                 ApplicationEventPublisher applicationEventPublisher,
+                                 DatabaseClient databaseClient) {
         this.episodeRepository = episodeRepository;
         this.attachmentReferenceRepository = attachmentReferenceRepository;
         this.attachmentRepository = attachmentRepository;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.databaseClient = databaseClient;
     }
 
 
@@ -114,13 +118,12 @@ public class DefaultEpisodeService implements EpisodeService {
     @Override
     public Mono<Long> countMatchingBySubjectId(Long subjectId) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
-        return episodeRepository.findAllBySubjectId(subjectId)
-            .flatMap(entity -> attachmentReferenceRepository.existsByTypeAndReferenceId(
-                AttachmentReferenceType.EPISODE, entity.getId()))
-            .filter(exists -> exists)
-            .collectList()
-            .map(List::size)
-            .map(Long::valueOf);
+        return databaseClient.sql("select count(e.ID) from EPISODE e, ATTACHMENT_REFERENCE ar "
+                + "where ar.TYPE = 'EPISODE' and e.ID = ar.REFERENCE_ID "
+                + "and e.SUBJECT_ID = :subjectId")
+            .bind("subjectId", subjectId)
+            .map(row -> row.get(0, Long.class))
+            .one();
     }
 
     @Override
