@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.core.tag.AttachmentTag;
 import run.ikaros.api.core.tag.SubjectTag;
 import run.ikaros.api.core.tag.Tag;
 import run.ikaros.api.infra.utils.StringUtils;
@@ -62,6 +63,14 @@ public class TagEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder().name("subjectId").required(true)
                         .in(ParameterIn.PATH).implementation(Long.class))
                     .response(responseBuilder().implementationArray(SubjectTag.class)))
+
+            .GET("/tags/attachment/attachmentId/{attachmentId}",
+                this::listAttachmentTagsByAttachmentId,
+                builder -> builder.operationId("ListAttachmentTagsByAttachmentId")
+                    .tag(tag).description("List attachment tags by attachment id.")
+                    .parameter(parameterBuilder().name("attachmentId").required(true)
+                        .in(ParameterIn.PATH).implementation(Long.class))
+                    .response(responseBuilder().implementationArray(AttachmentTag.class)))
 
             .POST("/tag", this::create,
                 builder -> builder.operationId("CreateTag")
@@ -121,12 +130,23 @@ public class TagEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> listSubjectTagsBySubjectId(ServerRequest request) {
         String subjectIdS = request.pathVariable("subjectId");
-        Assert.hasText(subjectIdS, "'subjectId' mus has value.");
+        Assert.hasText(subjectIdS, "'subjectId' must has value.");
         Long subjectId = Long.parseLong(subjectIdS);
         return tagService.findSubjectTags(subjectId)
             .collectList()
             .flatMap(subjectTags -> ServerResponse.ok()
                 .bodyValue(subjectTags));
+    }
+
+
+    private Mono<ServerResponse> listAttachmentTagsByAttachmentId(ServerRequest request) {
+        String attachmentIdS = request.pathVariable("attachmentId");
+        Assert.hasText(attachmentIdS, "'attachmentId' must has value.");
+        Long attachmentId = Long.parseLong(attachmentIdS);
+        return tagService.findAttachmentTags(attachmentId)
+            .collectList()
+            .flatMap(attachmentTags -> ServerResponse.ok()
+                .bodyValue(attachmentTags));
     }
 
     private Mono<ServerResponse> create(ServerRequest request) {

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.tag.AttachmentTag;
 import run.ikaros.api.core.tag.SubjectTag;
 import run.ikaros.api.core.tag.Tag;
 import run.ikaros.api.infra.exception.NotFoundException;
@@ -68,6 +69,19 @@ public class DefaultTagService implements TagService {
             .map(tag -> SubjectTag.builder()
                 .id(tag.getId())
                 .subjectId(tag.getMasterId())
+                .userId(tag.getUserId())
+                .name(tag.getName())
+                .createTime(tag.getCreateTime())
+                .build());
+    }
+
+    @Override
+    public Flux<AttachmentTag> findAttachmentTags(Long attachmentId) {
+        Assert.isTrue(attachmentId >= 0, "'attachmentId' must >=0.");
+        return findAll(TagType.ATTACHMENT, attachmentId, null, null)
+            .map(tag -> AttachmentTag.builder()
+                .id(tag.getId())
+                .attachmentId(tag.getMasterId())
                 .userId(tag.getUserId())
                 .name(tag.getName())
                 .createTime(tag.getCreateTime())
