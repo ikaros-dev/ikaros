@@ -18,26 +18,24 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
-import run.ikaros.api.core.subject.SubjectSyncAction;
-import run.ikaros.api.core.subject.vo.PostSubjectSyncCondition;
 import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
-import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
+import run.ikaros.server.core.subject.service.SubjectSyncService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
 @Component
-public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
-    private final SubjectSyncPlatformService service;
+public class SubjectSyncEndpoint implements CoreEndpoint {
+    private final SubjectSyncService service;
 
-    public SubjectSyncPlatformEndpoint(SubjectSyncPlatformService service) {
+    public SubjectSyncEndpoint(SubjectSyncService service) {
         this.service = service;
     }
 
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        var tag = OpenApiConst.CORE_VERSION + "/subject/sync/platform";
+        var tag = OpenApiConst.CORE_VERSION + "/subject/sync";
         return SpringdocRouteBuilder.route()
             .POST("/subject/sync/platform", this::sync,
                 builder -> builder.operationId("SyncSubjectAndPlatform")
@@ -60,13 +58,6 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
                         .description("Platform id")
                         .required(true)
                         .implementation(String.class))
-                    .parameter(parameterBuilder()
-                        .name("action")
-                        .description("Sync action, such as PULL or MERGE, "
-                            + "default is PULL "
-                            + "PULL will override all subject meta info, "
-                            + "MERGE will update meta info that absent.")
-                        .implementation(SubjectSyncAction.class))
                     .response(Builder.responseBuilder()
                         .implementation(Subject.class))
             )
@@ -78,6 +69,25 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
                         .name("id")
                         .description("Subject id")
                         .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(Builder.responseBuilder()
+                        .description("Subject syncs by subject id.")
+                        .implementationArray(SubjectSync.class))
+            )
+
+            .GET("/subject/syncs/platform", this::getSubjectSyncsByPlatformAndPlatformId,
+                builder -> builder.operationId("GetSubjectSyncsByPlatformAndPlatformId")
+                    .tag(tag).description("Get subject syncs by subject id.")
+                    .parameter(parameterBuilder()
+                        .name("platform")
+                        .description("Platform.")
+                        .required(true)
+                        .implementation(SubjectSyncPlatform.class))
+                    .parameter(parameterBuilder()
+                        .name("platformId")
+                        .description("Platform id")
+                        .in(ParameterIn.QUERY)
                         .required(true)
                         .implementation(Long.class))
                     .response(Builder.responseBuilder()
@@ -103,16 +113,8 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
             "'platformId' must has text.");
         String platformId = platformIdOp.get();
 
-        Optional<String> actionOp = request.queryParam("action");
-        SubjectSyncAction subjectSyncAction =
-            SubjectSyncAction.valueOf(actionOp.orElse(SubjectSyncAction.PULL.name()));
 
-        PostSubjectSyncCondition condition = PostSubjectSyncCondition.builder()
-            .subjectId(subjectId).platform(platform)
-            .platformId(platformId).subjectSyncAction(subjectSyncAction)
-            .build();
-
-        return service.sync(condition)
+        return service.sync(subjectId, platform, platformId)
             .flatMap(subject -> ServerResponse.ok().bodyValue(subject))
             .onErrorResume(NoAvailableSubjectPlatformSynchronizerException.class,
                 err -> ServerResponse.status(HttpStatus.SERVICE_UNAVAILABLE)
@@ -126,6 +128,15 @@ public class SubjectSyncPlatformEndpoint implements CoreEndpoint {
         String id = request.pathVariable("id");
         long subjectId = Long.parseLong(id);
         return service.findSubjectSyncsBySubjectId(subjectId)
+            .collectList()
+            .flatMap(list -> ServerResponse.ok().bodyValue(list));
+    }
+
+    private Mono<ServerResponse> getSubjectSyncsByPlatformAndPlatformId(ServerRequest request) {
+        SubjectSyncPlatform platform = SubjectSyncPlatform.valueOf(
+            request.queryParam("platform").orElse(SubjectSyncPlatform.BGM_TV.name()));
+        Long platformId = Long.valueOf(request.queryParam("platformId").orElse("-1L"));
+        return service.findSubjectSyncsByPlatformAndPlatformId(platform, String.valueOf(platformId))
             .collectList()
             .flatMap(list -> ServerResponse.ok().bodyValue(list));
     }

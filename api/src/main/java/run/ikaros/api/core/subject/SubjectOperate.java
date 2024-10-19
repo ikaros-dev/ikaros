@@ -20,7 +20,7 @@ public interface SubjectOperate extends AllowPluginOperate {
     Mono<Void> update(Subject subject);
 
 
-    Mono<Subject> syncByPlatform(@Nullable Long subjectId, SubjectSyncPlatform platform,
+    Mono<Void> syncByPlatform(@Nullable Long subjectId, SubjectSyncPlatform platform,
                                  String platformId);
 
 
