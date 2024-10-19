@@ -5,6 +5,8 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -36,6 +38,7 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
     private final SubjectService subjectService;
     private ApplicationContext applicationContext;
     private final SubjectSyncRepository subjectSyncRepository;
+    private final Set<String> pullingPlatformIdSet = new CopyOnWriteArraySet<>();
 
     /**
      * Construct.
@@ -219,6 +222,10 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
     private Mono<Subject> syncBySubjectSynchronizer(@Nullable Long subjectId,
                                                     SubjectSyncPlatform platform,
                                                     String platformId) {
+        if (pullingPlatformIdSet.contains(platformId)) {
+            return Mono.empty();
+        }
+        pullingPlatformIdSet.add(platformId);
         return Flux.fromStream(extensionComponentsFinder.getExtensions(SubjectSynchronizer.class)
                 .stream())
             .filter(subjectSynchronizer -> platform.equals(subjectSynchronizer.getSyncPlatform()))
@@ -228,6 +235,7 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
                 "No found available subject platform synchronizer for platform-id: "
                     + platform.name() + "-" + platformId)))
             .map(subjectSynchronizes -> subjectSynchronizes.get(0))
+            .subscribeOn(Schedulers.boundedElastic())
             .flatMap(subjectSynchronizer -> subjectSynchronizer.pull(platformId))
             .onErrorResume(Exception.class, e -> {
                 String msg =
@@ -244,7 +252,7 @@ public class SubjectSyncPlatformServiceImpl implements SubjectSyncPlatformServic
                     .map(sub -> sub.setId(null)).flatMap(subjectService::create))
                 : subjectService.update(subject)
                 .then(Mono.defer(() -> subjectService.findById(subjectId))))
-            .subscribeOn(Schedulers.boundedElastic());
+            .doFinally(signalType -> pullingPlatformIdSet.remove(platformId));
     }
 
 
