@@ -4,12 +4,18 @@ import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentConst;
+import run.ikaros.api.core.attachment.AttachmentUploadCondition;
+import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.core.attachment.service.AttachmentService;
+import run.ikaros.server.core.subject.SubjectOperator;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.event.SubjectUpdateEvent;
 import run.ikaros.server.store.entity.AttachmentEntity;
@@ -17,6 +23,7 @@ import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
+import run.ikaros.server.store.repository.SubjectRepository;
 
 @Slf4j
 @Component
@@ -24,6 +31,9 @@ public class AttachmentSubjectCoverChangeListener {
     private final AttachmentRepository attachmentRepository;
     private final AttachmentService attachmentService;
     private final AttachmentReferenceRepository attachmentReferenceRepository;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final SubjectOperator subjectOperator;
+    private final SubjectRepository subjectRepository;
 
     /**
      * Construct.
@@ -31,10 +41,13 @@ public class AttachmentSubjectCoverChangeListener {
     public AttachmentSubjectCoverChangeListener(
         AttachmentRepository attachmentRepository,
         AttachmentService attachmentService,
-        AttachmentReferenceRepository attachmentReferenceRepository) {
+        AttachmentReferenceRepository attachmentReferenceRepository,
+        SubjectOperator subjectOperator, SubjectRepository subjectRepository) {
         this.attachmentRepository = attachmentRepository;
         this.attachmentService = attachmentService;
         this.attachmentReferenceRepository = attachmentReferenceRepository;
+        this.subjectOperator = subjectOperator;
+        this.subjectRepository = subjectRepository;
     }
 
 
@@ -75,7 +88,7 @@ public class AttachmentSubjectCoverChangeListener {
 
         String oldCover = oldEntity.getCover();
         String newCover = newEntity.getCover();
-        if (oldCover.equals(newCover)) {
+        if (oldCover.equals(newCover) && !oldCover.startsWith("http")) {
             return Mono.empty();
         }
 
@@ -109,6 +122,43 @@ public class AttachmentSubjectCoverChangeListener {
                 ).doOnSuccess(entity ->
                     log.debug("Create attachment Reference by type and att id and sub id: [{}].",
                         entity)))
+            )
+
+            // 当是网络url的时候，附件是找不到的，此时为空走这里的逻辑
+            // 条目三方同步会发布更新事件
+
+            .then(Mono.just(newCover))
+            .filter(StringUtils::isNotBlank)
+            .filter(url -> url.startsWith("http"))
+            .flatMap(url -> {
+                String coverFileName = StringUtils.isNotBlank(newEntity.getNameCn())
+                    ? newEntity.getNameCn() : newEntity.getName();
+                coverFileName =
+                    System.currentTimeMillis() + "-" + coverFileName
+                        + "." + FileUtils.parseFilePostfix(FileUtils.parseFileName(url));
+                byte[] bytes = restTemplate.getForObject(url, byte[].class);
+                DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
+                return attachmentService.upload(AttachmentUploadCondition.builder()
+                    .parentId(AttachmentConst.COVER_DIRECTORY_ID)
+                    .name(coverFileName)
+                    .dataBufferFlux(Mono.just(dataBufferFactory.wrap(bytes)).flux())
+                    .build());
+            })
+            .flatMap(attachment ->
+                subjectRepository.findById(newEntity.getId())
+                    .map(entity -> entity.setCover(attachment.getUrl()))
+                    .flatMap(subjectRepository::save)
+                    .flatMap(entity ->
+                        attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
+                                AttachmentReferenceType.SUBJECT, attachment.getId(), entity.getId())
+                            .switchIfEmpty(Mono.just(AttachmentReferenceEntity.builder()
+                                .type(AttachmentReferenceType.SUBJECT)
+                                .attachmentId(attachment.getId())
+                                .referenceId(entity.getId())
+                                .build()))
+                            .flatMap(attachmentReferenceRepository::save)
+                    )
+
             )
 
             .then();

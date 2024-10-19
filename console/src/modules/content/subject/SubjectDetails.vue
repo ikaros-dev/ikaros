@@ -649,10 +649,7 @@ const loadEpisodeGroupLabels = () => {
 
 const subjectSyncs = ref<SubjectSync[]>([]);
 const fetchSubjectSyncs = async () => {
-	const { data } =
-		await apiClient.subjectSync.getSubjectSyncsBySubjectId({
-			id: subject.value.id as number,
-		});
+	const { data } = await apiClient.subjectSync.getSubjectSyncsBySubjectId({id: subject.value.id as number})
 	subjectSyncs.value = data;
 };
 
