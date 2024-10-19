@@ -10,6 +10,9 @@ import run.ikaros.server.store.entity.EpisodeEntity;
 public interface EpisodeRepository extends R2dbcRepository<EpisodeEntity, Long> {
     Flux<EpisodeEntity> findAllBySubjectId(Long subjectId);
 
+    @Query(value = "select id from episode where subject_id = :subjectId")
+    Flux<Long> findAllIdBySubjectId(Long subjectId);
+
     @Query(value = "select count(id) from episode where subject_id = :subjectId")
     Mono<Long> countBySubjectId(Long subjectId);
 
