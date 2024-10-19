@@ -21,7 +21,7 @@ import {
     V1alpha1StaticApi,
     V1alpha1SubjectApi,
     V1alpha1SubjectRelationApi,
-    V1alpha1SubjectSyncPlatformApi,
+    V1alpha1SubjectSyncApi,
     V1alpha1TagApi,
     V1alpha1TaskApi,
     V1alpha1UserApi,
@@ -179,11 +179,7 @@ function setupApiClient(axios: AxiosInstance) {
 			axios
 		),
 		subject: new V1alpha1SubjectApi(undefined, baseURL, axios),
-		subjectSyncPlatform: new V1alpha1SubjectSyncPlatformApi(
-			undefined,
-			baseURL,
-			axios
-		),
+		subjectSync: new V1alpha1SubjectSyncApi(undefined, baseURL, axios),
 		indices: new V1alpha1IndicesApi(undefined, baseURL, axios),
 		task: new V1alpha1TaskApi(undefined, baseURL, axios),
 		collectionSubject: new V1alpha1CollectionSubjectApi(

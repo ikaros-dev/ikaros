@@ -84,20 +84,28 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 			if (valid) {
 				syncButtonLoading.value = true;
 				console.log('subjectSync', subjectSync.value);
-				const { data } = await apiClient.subjectSyncPlatform
+				await apiClient.subjectSync
 					.syncSubjectAndPlatform({
 						// @ts-ignore
 						platform: subjectSync.value.platform,
 						platformId: subjectSync.value.platformId,
-						// @ts-ignore
-						action: subjectSync.value.action,
 						subjectId: subjectId.value as number,
 					})
 					.finally(() => {
 						syncButtonLoading.value = false;
 					});
+				const { data } = await apiClient.subjectSync.getSubjectSyncsByPlatformAndPlatformId({
+					// @ts-ignore
+					platform: subjectSync.value.platform,
+					// @ts-ignore
+					platformId: subjectSync.value.platformId as number,
+				})
+				if (data.length > 0) {
+					const rsp = await apiClient.subject.searchSubjectById({id: data[0].subjectId as number})
+					emit('closeWithSubjectName', rsp.data);
+				}
 				dialogVisible.value = false;
-				emit('closeWithSubjectName', data);
+				// emit('closeWithSubjectName', data);
 			} else {
 				console.log('error submit!', fields);
 				ElMessage.error(t('module.subject.dialog.sync.message.validate-fail'));
