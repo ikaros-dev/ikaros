@@ -1,6 +1,7 @@
 export * from "./attachment";
 export * from "./attachment-reference";
 export * from "./attachment-relation";
+export * from "./attachment-tag";
 export * from "./author";
 export * from "./authority";
 export * from "./batch-matching-episode-attachment";
