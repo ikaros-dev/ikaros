@@ -94,8 +94,13 @@ public class DefaultTagService implements TagService {
         Assert.notNull(tag.getType(), "'type' must not null.");
         Assert.isTrue(tag.getMasterId() >= 0, "'masterId' must >=0.");
         Assert.hasText(tag.getName(), "'name' must has text.");
-        return Mono.just(tag)
-            .flatMap(t -> copyProperties(t, new TagEntity()))
+        if (Objects.isNull(tag.getUserId())) {
+            tag.setUserId(-1L);
+        }
+        return tagRepository.existsByTypeAndMasterIdAndName(
+                tag.getType(), tag.getMasterId(), tag.getName())
+            .filter(exists -> !exists)
+            .flatMap(exists -> copyProperties(tag, new TagEntity()))
             .flatMap(tagRepository::save)
             .flatMap(tagEntity -> copyProperties(tagEntity, tag));
     }

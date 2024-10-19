@@ -5,6 +5,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.core.attachment.event.EpisodeAttachmentUpdateEvent;
@@ -18,7 +19,7 @@ import run.ikaros.server.store.repository.SubjectRepository;
 
 @Slf4j
 @Component
-public class EpisodeUpdateListener {
+public class EpisodeAttachmentUpdateEventListener {
     private final AttachmentRepository attachmentRepository;
     private final EpisodeRepository episodeRepository;
     private final SubjectRepository subjectRepository;
@@ -30,10 +31,11 @@ public class EpisodeUpdateListener {
     /**
      * Construct.
      */
-    public EpisodeUpdateListener(AttachmentRepository attachmentRepository,
-                                 EpisodeRepository episodeRepository,
-                                 SubjectRepository subjectRepository,
-                                 NotifyService notifyService, IkarosProperties ikarosProperties) {
+    public EpisodeAttachmentUpdateEventListener(AttachmentRepository attachmentRepository,
+                                                EpisodeRepository episodeRepository,
+                                                SubjectRepository subjectRepository,
+                                                NotifyService notifyService,
+                                                IkarosProperties ikarosProperties) {
         this.attachmentRepository = attachmentRepository;
         this.episodeRepository = episodeRepository;
         this.subjectRepository = subjectRepository;
@@ -46,12 +48,14 @@ public class EpisodeUpdateListener {
      */
     @EventListener(EpisodeAttachmentUpdateEvent.class)
     public Mono<Void> onEpisodeAttachmentUpdateEvent(EpisodeAttachmentUpdateEvent event) {
+        log.debug("receive episode attachment update event: {}", event);
         if (!event.getNotify()) {
             return Mono.empty();
         }
         final Long attachmentId = event.getAttachmentId();
         final Long episodeId = event.getEpisodeId();
         return Mono.just(new Context())
+            .subscribeOn(Schedulers.boundedElastic())
             .flatMap(context -> attachmentRepository.findById(attachmentId)
                 .map(entity -> {
                     context.setVariable("attachment", entity);
@@ -109,17 +113,17 @@ public class EpisodeUpdateListener {
                     return Mono.empty();
                 }
 
-                StringBuilder sb = new StringBuilder("番剧《");
-                sb.append(StringUtils.isBlank(subjectEntity.getNameCn())
-                        ? subjectEntity.getName() : subjectEntity.getNameCn())
-                    .append("》第")
-                    .append(episodeEntity.getSequence())
-                    .append("集 [")
-                    .append(StringUtils.isBlank(episodeEntity.getNameCn())
-                        ? episodeEntity.getName() : episodeEntity.getNameCn())
-                    .append("] 更新了");
+                String sb = "番剧《"
+                    + (StringUtils.isBlank(subjectEntity.getNameCn())
+                    ? subjectEntity.getName() : subjectEntity.getNameCn())
+                    + "》第"
+                    + episodeEntity.getSequence()
+                    + "集 ["
+                    + (StringUtils.isBlank(episodeEntity.getNameCn())
+                    ? episodeEntity.getName() : episodeEntity.getNameCn())
+                    + "] 更新了";
 
-                return notifyService.send(sb.toString(), "mail/anime_update", context);
+                return notifyService.send(sb, "mail/anime_update", context);
             });
     }
 }
