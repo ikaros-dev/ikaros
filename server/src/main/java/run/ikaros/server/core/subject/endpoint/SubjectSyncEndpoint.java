@@ -76,6 +76,25 @@ public class SubjectSyncEndpoint implements CoreEndpoint {
                         .implementationArray(SubjectSync.class))
             )
 
+            .GET("/subject/syncs/platform", this::getSubjectSyncsByPlatformAndPlatformId,
+                builder -> builder.operationId("GetSubjectSyncsByPlatformAndPlatformId")
+                    .tag(tag).description("Get subject syncs by subject id.")
+                    .parameter(parameterBuilder()
+                        .name("platform")
+                        .description("Platform.")
+                        .required(true)
+                        .implementation(SubjectSyncPlatform.class))
+                    .parameter(parameterBuilder()
+                        .name("platformId")
+                        .description("Platform id")
+                        .in(ParameterIn.QUERY)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(Builder.responseBuilder()
+                        .description("Subject syncs by subject id.")
+                        .implementationArray(SubjectSync.class))
+            )
+
             .build();
     }
 
@@ -109,6 +128,15 @@ public class SubjectSyncEndpoint implements CoreEndpoint {
         String id = request.pathVariable("id");
         long subjectId = Long.parseLong(id);
         return service.findSubjectSyncsBySubjectId(subjectId)
+            .collectList()
+            .flatMap(list -> ServerResponse.ok().bodyValue(list));
+    }
+
+    private Mono<ServerResponse> getSubjectSyncsByPlatformAndPlatformId(ServerRequest request) {
+        SubjectSyncPlatform platform = SubjectSyncPlatform.valueOf(
+            request.queryParam("platform").orElse(SubjectSyncPlatform.BGM_TV.name()));
+        Long platformId = Long.valueOf(request.queryParam("platformId").orElse("-1L"));
+        return service.findSubjectSyncsByPlatformAndPlatformId(platform, String.valueOf(platformId))
             .collectList()
             .flatMap(list -> ServerResponse.ok().bodyValue(list));
     }
