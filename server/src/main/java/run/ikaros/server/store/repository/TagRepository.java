@@ -8,5 +8,7 @@ import run.ikaros.server.store.entity.TagEntity;
 public interface TagRepository
     extends R2dbcRepository<TagEntity, Long> {
 
+    Mono<TagEntity> findByTypeAndMasterIdAndName(TagType type, Long masterId, String name);
+
     Mono<Boolean> existsByTypeAndMasterIdAndName(TagType type, Long masterId, String name);
 }

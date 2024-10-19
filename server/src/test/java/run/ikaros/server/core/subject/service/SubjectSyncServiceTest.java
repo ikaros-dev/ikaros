@@ -12,10 +12,10 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.store.repository.SubjectSyncRepository;
 
 @SpringBootTest
-class SubjectSyncPlatformServiceTest {
+class SubjectSyncServiceTest {
 
     @Autowired
-    private SubjectSyncPlatformService subjectSyncPlatformService;
+    private SubjectSyncService subjectSyncService;
     @Autowired
     private SubjectSyncRepository subjectSyncRepository;
 
@@ -34,7 +34,7 @@ class SubjectSyncPlatformServiceTest {
             .platformId(String.valueOf(random.nextLong(1, 99999)))
             .build();
 
-        StepVerifier.create(subjectSyncPlatformService.save(subjectSync))
+        StepVerifier.create(subjectSyncService.save(subjectSync))
             .expectNextMatches(subjectSync1 ->
                 subjectSync.getSubjectId().equals(subjectSync1.getSubjectId())
                     && subjectSync.getPlatformId().equals(subjectSync1.getPlatformId())
@@ -43,7 +43,7 @@ class SubjectSyncPlatformServiceTest {
             .verifyComplete();
 
 
-        StepVerifier.create(subjectSyncPlatformService.findBySubjectIdAndPlatformAndPlatformId(
+        StepVerifier.create(subjectSyncService.findBySubjectIdAndPlatformAndPlatformId(
                 subjectSync.getSubjectId(), subjectSync.getPlatform(), subjectSync.getPlatformId()
             )).expectNextMatches(subjectSync1 ->
                 subjectSync.getSubjectId().equals(subjectSync1.getSubjectId())

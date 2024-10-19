@@ -5,31 +5,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
-import run.ikaros.api.core.subject.SubjectSyncPlatformOperate;
-import run.ikaros.api.core.subject.vo.PostSubjectSyncCondition;
+import run.ikaros.api.core.subject.SubjectSyncOperate;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
-import run.ikaros.server.core.subject.service.SubjectSyncPlatformService;
+import run.ikaros.server.core.subject.service.SubjectSyncService;
 
 @Slf4j
 @Component
-public class SubjectSyncPlatformOperator implements SubjectSyncPlatformOperate {
-    private final SubjectSyncPlatformService service;
+public class SubjectSyncOperator implements SubjectSyncOperate {
+    private final SubjectSyncService service;
 
-    public SubjectSyncPlatformOperator(SubjectSyncPlatformService service) {
+    public SubjectSyncOperator(SubjectSyncService service) {
         this.service = service;
     }
 
-    @Override
-    public Mono<Subject> sync(@Nullable Long subjectId, SubjectSyncPlatform platform,
-                              String platformId) {
-        return service.sync(subjectId, platform, platformId);
-    }
 
     @Override
-    public Mono<Subject> sync(PostSubjectSyncCondition condition) {
-        return service.sync(condition);
+    public Mono<Void> sync(@Nullable Long subjectId, SubjectSyncPlatform platform,
+                           String platformId) {
+        return service.sync(subjectId, platform, platformId);
     }
 
     @Override
