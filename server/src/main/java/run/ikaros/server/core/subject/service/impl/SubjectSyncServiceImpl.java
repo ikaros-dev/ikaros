@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -24,6 +25,7 @@ import run.ikaros.api.core.subject.SubjectSynchronizer;
 import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.TagType;
+import run.ikaros.server.core.subject.event.SubjectUpdateEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.service.SubjectSyncService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
@@ -60,6 +62,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     private final SubjectPersonRepository subjectPersonRepository;
     private ApplicationContext applicationContext;
     private final SubjectSyncRepository subjectSyncRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Construct.
@@ -72,7 +75,8 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                                   CharacterRepository characterRepository,
                                   SubjectCharacterRepository subjectCharacterRepository,
                                   PersonRepository personRepository,
-                                  SubjectPersonRepository subjectPersonRepository) {
+                                  SubjectPersonRepository subjectPersonRepository,
+                                  ApplicationEventPublisher applicationEventPublisher) {
         this.extensionComponentsFinder = extensionComponentsFinder;
         this.subjectService = subjectService;
         this.subjectSyncRepository = subjectSyncRepository;
@@ -83,6 +87,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
         this.subjectCharacterRepository = subjectCharacterRepository;
         this.personRepository = personRepository;
         this.subjectPersonRepository = subjectPersonRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     class SyncTargetExistsException extends RuntimeException {
@@ -140,7 +145,13 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                             .flatMap(entity -> copyProperties(subject, entity, "id"));
                     }
                 })
-                .flatMap(subjectRepository::save)
+                .flatMap(entity -> subjectRepository.save(entity)
+                    .map(newEntity -> {
+                        SubjectUpdateEvent event =
+                            new SubjectUpdateEvent(this, entity, newEntity);
+                        applicationEventPublisher.publishEvent(event);
+                        return newEntity;
+                    }))
                 .map(entity -> {
                     subjectIdA.set(entity.getId());
                     return entity;
