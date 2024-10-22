@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -51,6 +52,10 @@ public class GlobalExceptionHandlerConfig implements WebFilter {
 
     private static Mono<Void> writeResponse(ServerHttpResponse response,
                                             Throwable e, HttpStatus httpStatus) {
+        if (e instanceof ResponseStatusException responseStatusException
+            && responseStatusException.getStatusCode() == HttpStatus.NOT_FOUND) {
+            return Mono.empty();
+        }
         if (!(e instanceof NotFoundException)) {
             log.error("[{}] {}", e.getClass().getSimpleName(), e.getLocalizedMessage(), e);
         }

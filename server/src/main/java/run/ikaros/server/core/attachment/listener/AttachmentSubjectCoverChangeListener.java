@@ -32,7 +32,6 @@ public class AttachmentSubjectCoverChangeListener {
     private final AttachmentService attachmentService;
     private final AttachmentReferenceRepository attachmentReferenceRepository;
     private final RestTemplate restTemplate = new RestTemplate();
-    private final SubjectOperator subjectOperator;
     private final SubjectRepository subjectRepository;
 
     /**
@@ -46,7 +45,6 @@ public class AttachmentSubjectCoverChangeListener {
         this.attachmentRepository = attachmentRepository;
         this.attachmentService = attachmentService;
         this.attachmentReferenceRepository = attachmentReferenceRepository;
-        this.subjectOperator = subjectOperator;
         this.subjectRepository = subjectRepository;
     }
 
