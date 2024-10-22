@@ -1,5 +1,6 @@
 package run.ikaros.server.core.subject.service.impl;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import jakarta.annotation.Nullable;
@@ -10,25 +11,34 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.attachment.Attachment;
+import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.character.Character;
 import run.ikaros.api.core.person.Person;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.core.subject.SubjectSynchronizer;
 import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
+import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.TagType;
-import run.ikaros.server.core.subject.event.SubjectUpdateEvent;
+import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.service.SubjectSyncService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
+import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.CharacterEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
@@ -38,6 +48,7 @@ import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.entity.SubjectPersonEntity;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
 import run.ikaros.server.store.entity.TagEntity;
+import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.CharacterRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.PersonRepository;
@@ -62,7 +73,10 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     private final SubjectPersonRepository subjectPersonRepository;
     private ApplicationContext applicationContext;
     private final SubjectSyncRepository subjectSyncRepository;
+    private final AttachmentReferenceRepository attachmentReferenceRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final AttachmentService attachmentService;
 
     /**
      * Construct.
@@ -76,7 +90,9 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                                   SubjectCharacterRepository subjectCharacterRepository,
                                   PersonRepository personRepository,
                                   SubjectPersonRepository subjectPersonRepository,
-                                  ApplicationEventPublisher applicationEventPublisher) {
+                                  AttachmentReferenceRepository attachmentReferenceRepository,
+                                  ApplicationEventPublisher applicationEventPublisher,
+                                  AttachmentService attachmentService) {
         this.extensionComponentsFinder = extensionComponentsFinder;
         this.subjectService = subjectService;
         this.subjectSyncRepository = subjectSyncRepository;
@@ -87,7 +103,9 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
         this.subjectCharacterRepository = subjectCharacterRepository;
         this.personRepository = personRepository;
         this.subjectPersonRepository = subjectPersonRepository;
+        this.attachmentReferenceRepository = attachmentReferenceRepository;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.attachmentService = attachmentService;
     }
 
     class SyncTargetExistsException extends RuntimeException {
@@ -154,13 +172,8 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                     }
                     return entity;
                 })
-                .flatMap(entity -> subjectRepository.save(entity)
-                    .map(newEntity -> {
-                        SubjectUpdateEvent event =
-                            new SubjectUpdateEvent(this, entity, newEntity);
-                        applicationEventPublisher.publishEvent(event);
-                        return newEntity;
-                    }))
+                .flatMap(subjectRepository::save)
+                // .flatMap(this::downloadCoverAndSaveRef)
                 .map(entity -> {
                     subjectIdA.set(entity.getId());
                     return entity;
@@ -181,7 +194,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
 
         // 保存剧集信息
         Mono<List<EpisodeEntity>> episodesMono =
-            syncEntityMono.then(Mono.just(synchronizer))
+            syncEntityMono.map(subjectSyncEntity -> synchronizer)
                 .map(synchronizer1 -> synchronizer1.fetchEpisodesWithPlatformId(platformId))
                 .map(episodes -> {
                     if (episodes == null) {
@@ -213,7 +226,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
 
         // 保存标签信息
         Mono<List<TagEntity>> tagsMono =
-            episodesMono.then(Mono.just(synchronizer))
+            episodesMono.map(episodeEntities -> synchronizer)
                 .map(synchronizer1 -> synchronizer1.fetchTagsWithPlatformId(platformId))
                 .map(tags -> {
                     if (tags == null) {
@@ -236,7 +249,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
 
         // 保存角色信息
         Mono<List<SubjectCharacterEntity>> scMono =
-            tagsMono.then(Mono.just(synchronizer))
+            tagsMono.map(tagEntities -> synchronizer)
                 .map(synchronizer1 -> {
                     List<Character> characters =
                         synchronizer1.fetchCharactersWithPlatformId(platformId);
@@ -261,9 +274,8 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                 .collectList();
 
         // 保存人物信息
-
         Mono<List<SubjectPersonEntity>> spMono =
-            scMono.then(Mono.just(synchronizer))
+            scMono.map(subjectCharacterEntities -> synchronizer)
                 .map(synchronizer1 -> {
                     List<Person> people = synchronizer1.fetchPersonsWithPlatformId(platformId);
                     log.debug("fetch  persons {} from platform-id: {}-{}", people, platform,
@@ -286,8 +298,51 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                 .flatMap(subjectPersonRepository::save)
                 .collectList();
 
-        return spMono.then()
+        return spMono.map(subjectPersonEntities -> subjectIdA.get())
+            .flatMap(subjectRepository::findById)
+            .flatMap(this::downloadCoverAndSaveRef)
+            .then()
+
             .onErrorResume(SyncTargetExistsException.class, e -> Mono.empty());
+    }
+
+    private Mono<SubjectEntity> downloadCoverAndSaveRef(SubjectEntity entity) {
+        final String url = entity.getCover();
+        if (StringUtils.isBlank(url) || !url.startsWith("http")) {
+            return Mono.just(entity);
+        }
+        byte[] bytes;
+        try {
+            bytes = restTemplate.getForObject(url, byte[].class);
+        } catch (Exception e) {
+            log.warn("down cover fail for subject:{}", entity);
+            return Mono.just(entity);
+        }
+        DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
+        String coverFileName = StringUtils.isNotBlank(entity.getNameCn())
+            ? entity.getNameCn() : entity.getName();
+        coverFileName =
+            System.currentTimeMillis() + "-" + coverFileName
+                + "." + FileUtils.parseFilePostfix(FileUtils.parseFileName(url));
+        return attachmentService.upload(AttachmentUploadCondition.builder()
+                .parentId(COVER_DIRECTORY_ID)
+                .name(coverFileName)
+                .dataBufferFlux(Mono.just(dataBufferFactory.wrap(bytes)).flux())
+                .build())
+            .flatMap(attachment -> saveCoverAndAttRef(attachment, entity));
+    }
+
+    private Mono<SubjectEntity> saveCoverAndAttRef(Attachment attachment, SubjectEntity entity) {
+        entity.setCover(attachment.getUrl());
+        return attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
+                AttachmentReferenceType.SUBJECT, attachment.getId(), entity.getId())
+            .switchIfEmpty(Mono.just(AttachmentReferenceEntity.builder()
+                .type(AttachmentReferenceType.SUBJECT)
+                .attachmentId(attachment.getId())
+                .referenceId(entity.getId())
+                .build()))
+            .flatMap(attachmentReferenceRepository::save)
+            .flatMap(attRefEn -> subjectRepository.save(entity));
     }
 
     @Override
