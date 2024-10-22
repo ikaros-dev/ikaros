@@ -13,14 +13,22 @@ import run.ikaros.server.custom.scheme.SchemeInitializedEvent;
 public class IndicesInitializer {
 
     private final IndicesService indicesService;
+    private final IndicesProperties indicesProperties;
 
-    public IndicesInitializer(IndicesService indicesService) {
+    public IndicesInitializer(IndicesService indicesService, IndicesProperties indicesProperties) {
         this.indicesService = indicesService;
+        this.indicesProperties = indicesProperties;
     }
 
+    /**
+     * Init indices.
+     */
     @Async
     @EventListener(SchemeInitializedEvent.class)
     public void whenSchemeInitialized(SchemeInitializedEvent event) throws InterruptedException {
+        if (!indicesProperties.getInitializer().isEnabled()) {
+            return;
+        }
         initSubjectIndices();
     }
 
