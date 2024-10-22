@@ -10,7 +10,11 @@ import run.ikaros.server.store.entity.SubjectEntity;
 
 public interface SubjectRepository extends R2dbcRepository<SubjectEntity, Long> {
 
-    @NotNull Mono<Boolean> existsById(@NotNull Long id);
+    @NotNull
+    Mono<Boolean> existsById(@NotNull Long id);
+
+    Mono<SubjectEntity> findByNsfwAndTypeAndNameAndSummary(Boolean nsfw, SubjectType type,
+                                                           String name, String summary);
 
     Flux<SubjectEntity> findAllBy(Pageable pageable);
 

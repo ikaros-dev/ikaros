@@ -145,6 +145,15 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                             .flatMap(entity -> copyProperties(subject, entity, "id"));
                     }
                 })
+                .map(entity -> {
+                    if (entity.getCreateTime() == null) {
+                        entity.setCreateTime(LocalDateTime.now());
+                    }
+                    if (entity.getUpdateTime() == null) {
+                        entity.setUpdateTime(LocalDateTime.now());
+                    }
+                    return entity;
+                })
                 .flatMap(entity -> subjectRepository.save(entity)
                     .map(newEntity -> {
                         SubjectUpdateEvent event =
