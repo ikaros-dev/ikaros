@@ -1,5 +1,7 @@
 package run.ikaros.server.core.attachment.listener;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
+
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -9,11 +11,9 @@ import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
-import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.subject.SubjectOperator;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
@@ -101,51 +101,25 @@ public class AttachmentSubjectCoverChangeListener {
                     oldCoverAttId
                 ).doOnSuccess(unused ->
                     log.debug("Delete attachment Reference by type and att id and sub id.")))
-            // update new attachment that move to cover dir
-            .then(attachmentRepository.findByTypeAndParentIdAndName(AttachmentType.Directory,
-                AttachmentConst.ROOT_DIRECTORY_ID, AttachmentConst.COVER_DIR_NAME))
-            .map(AttachmentEntity::getId)
-            .flatMap(coverDirAttId -> attachmentRepository.findByUrl(newCover)
-                .filter(entity -> !coverDirAttId.equals(entity.getParentId()))
-                .map(entity -> entity.setParentId(coverDirAttId)))
-            .flatMap(attachmentRepository::save)
-            .map(AttachmentEntity::getId)
-            .flatMap(attId -> attachmentReferenceRepository
-                .findByTypeAndAttachmentIdAndReferenceId(AttachmentReferenceType.SUBJECT,
-                    attId, newEntity.getId())
-                .switchIfEmpty(attachmentReferenceRepository.save(
-                    AttachmentReferenceEntity.builder()
-                        .type(AttachmentReferenceType.SUBJECT)
-                        .attachmentId(attId)
-                        .referenceId(newEntity.getId())
-                        .build()
-                ).doOnSuccess(entity ->
-                    log.debug("Create attachment Reference by type and att id and sub id: [{}].",
-                        entity)))
-            )
 
             // 当是网络url的时候，附件是找不到的，此时为空走这里的逻辑
             // 条目三方同步会发布更新事件
-
             .then(Mono.just(newCover))
             .filter(StringUtils::isNotBlank)
             .filter(url -> url.startsWith("http"))
             .flatMap(url -> {
-                String coverFileName = StringUtils.isNotBlank(newEntity.getNameCn())
-                    ? newEntity.getNameCn() : newEntity.getName();
-                coverFileName =
-                    System.currentTimeMillis() + "-" + coverFileName
-                        + "." + FileUtils.parseFilePostfix(FileUtils.parseFileName(url));
                 byte[] bytes = restTemplate.getForObject(url, byte[].class);
                 DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
                 return attachmentService.upload(AttachmentUploadCondition.builder()
-                    .parentId(AttachmentConst.COVER_DIRECTORY_ID)
-                    .name(coverFileName)
+                    .parentId(COVER_DIRECTORY_ID)
+                    .name(getCoverName(newEntity))
                     .dataBufferFlux(Mono.just(dataBufferFactory.wrap(bytes)).flux())
                     .build());
             })
             .flatMap(attachment ->
-                subjectRepository.findById(newEntity.getId())
+                subjectRepository.findByNsfwAndTypeAndNameAndSummary(
+                        newEntity.getNsfw(), newEntity.getType(),
+                        newEntity.getName(), newEntity.getSummary())
                     .map(entity -> entity.setCover(attachment.getUrl()))
                     .flatMap(subjectRepository::save)
                     .flatMap(entity ->
@@ -161,6 +135,30 @@ public class AttachmentSubjectCoverChangeListener {
 
             )
 
+            .then(moveCover2CoverDir(newEntity))
+
             .then();
     }
+
+    private String getCoverName(SubjectEntity subjectEntity) {
+        final String url = subjectEntity.getCover();
+        String coverFileName = StringUtils.isNotBlank(subjectEntity.getNameCn())
+            ? subjectEntity.getNameCn() : subjectEntity.getName();
+        coverFileName =
+            System.currentTimeMillis() + "-" + coverFileName
+                + "." + FileUtils.parseFilePostfix(FileUtils.parseFileName(url));
+        return coverFileName;
+    }
+
+    /**
+     * update new attachment that move to cover dir.
+     */
+    private Mono<AttachmentEntity> moveCover2CoverDir(SubjectEntity newEntity) {
+        return attachmentRepository.findByUrl(newEntity.getCover())
+            .filter(entity -> !entity.getParentId().equals(COVER_DIRECTORY_ID))
+            .map(entity -> entity.setParentId(COVER_DIRECTORY_ID)
+                .setName(getCoverName(newEntity)))
+            .flatMap(attachmentRepository::save);
+    }
 }
+
