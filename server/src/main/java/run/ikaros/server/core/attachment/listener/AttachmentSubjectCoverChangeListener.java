@@ -2,6 +2,7 @@ package run.ikaros.server.core.attachment.listener;
 
 import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +12,7 @@ import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
@@ -18,6 +20,7 @@ import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.subject.SubjectOperator;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.event.SubjectUpdateEvent;
+import run.ikaros.server.infra.utils.ByteArrUtils;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
@@ -105,8 +108,16 @@ public class AttachmentSubjectCoverChangeListener {
             .then(Mono.just(newCover))
             .filter(StringUtils::isNotBlank)
             .filter(url -> url.startsWith("http"))
+            .publishOn(Schedulers.boundedElastic())
             .flatMap(url -> {
                 byte[] bytes = restTemplate.getForObject(url, byte[].class);
+                if (bytes == null || !ByteArrUtils.isBinaryData(bytes)) {
+                    log.warn("Download subject cover fail for url: {}", url);
+                    if (ByteArrUtils.isStringData(bytes)) {
+                        log.warn("Response: {}", new String(bytes, StandardCharsets.UTF_8));
+                    }
+                    return Mono.empty();
+                }
                 DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
                 return attachmentService.upload(AttachmentUploadCondition.builder()
                     .parentId(COVER_DIRECTORY_ID)
