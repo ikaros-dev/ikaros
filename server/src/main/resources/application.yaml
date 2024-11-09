@@ -18,12 +18,6 @@ ikaros:
     keep-alive-time: 0
     queue-count: 10000
 
-  cache:
-    redis:
-      enable: false
-      host: localhost
-      port: 6379
-      timeout: 10000
 
 server:
   port: 9999
@@ -49,8 +43,6 @@ spring:
     clean-disabled: true
     url: jdbc:h2:file:${ikaros.work-dir}/database/ikaros
 
-  cache:
-    type: simple
   data:
     redis:
       repositories:
@@ -59,6 +51,7 @@ spring:
       port: ${ikaros.cache.redis.port:6379}
       connect-timeout: ${ikaros.cache.redis.timeout:10000}
       client-name: ikaros
+      password: ${ikaros.cache.redis.password:}
 
 springdoc:
   api-docs:

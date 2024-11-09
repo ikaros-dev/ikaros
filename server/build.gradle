@@ -70,10 +70,6 @@ dependencies {
     implementation "org.flywaydb:flyway-core:$flywaydb"
     implementation "io.micrometer:micrometer-registry-prometheus"
 
-    implementation "org.springframework.boot:spring-boot-starter-cache"
-
-    implementation "org.springframework.boot:spring-boot-starter-data-redis"
-
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'

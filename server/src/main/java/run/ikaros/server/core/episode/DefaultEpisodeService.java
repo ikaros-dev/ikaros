@@ -4,6 +4,7 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
@@ -128,6 +129,7 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
+    @Cacheable(value = "EpisodeService.findResourcesById", key = "#episodeId")
     public Flux<EpisodeResource> findResourcesById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
         return attachmentReferenceRepository
