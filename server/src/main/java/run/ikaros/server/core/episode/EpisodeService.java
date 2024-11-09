@@ -20,7 +20,7 @@ public interface EpisodeService {
         Long subjectId, EpisodeGroup group, Float sequence, String name);
 
     Flux<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
-                                                           Float sequence);
+                                                     Float sequence);
 
     Mono<Void> deleteById(Long episodeId);
 
