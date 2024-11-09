@@ -1,20 +1,22 @@
 package run.ikaros.server.cache;
 
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import run.ikaros.api.cache.CacheType;
 
 @Configuration
-@EnableCaching
+@EnableConfigurationProperties(CacheProperties.class)
 public class CacheConfiguration {
     /**
      * 内存缓存配置.
      */
     @Bean
-    public CacheManager simpleCacheManager() {
-        return new ConcurrentMapCacheManager();
+    public ReactiveCacheManager reactiveCacheManager(CacheProperties cacheProperties) {
+        if (CacheType.Redis.equals(cacheProperties.getType())) {
+            return new RedisReactiveCacheManager();
+        }
+        return new MemoryReactiveCacheManager();
     }
 
 }

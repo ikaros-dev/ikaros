@@ -4,15 +4,15 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.cache.CacheEvict;
+import run.ikaros.api.cache.CachePut;
+import run.ikaros.api.cache.Cacheable;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
@@ -166,8 +166,7 @@ public class DefaultEpisodeService implements EpisodeService {
         "episodesWithSubjectIdAndGroupAndSeq",
         "episodeCountWithSubjectId", "episodeMatchingCountWithSubjectId",
         "episodesWithId"
-    },
-        allEntries = true)
+    })
     public Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         Assert.notNull(episodes, "'episodes' must not be null.");
