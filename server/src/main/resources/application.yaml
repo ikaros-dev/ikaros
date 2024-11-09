@@ -18,6 +18,7 @@ ikaros:
     keep-alive-time: 0
     queue-count: 10000
 
+
 server:
   port: 9999
   compression:
@@ -41,6 +42,16 @@ spring:
     sql-migration-separator: __
     clean-disabled: true
     url: jdbc:h2:file:${ikaros.work-dir}/database/ikaros
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+      host: ${ikaros.cache.redis.host:localhost}
+      port: ${ikaros.cache.redis.port:6379}
+      connect-timeout: ${ikaros.cache.redis.timeout:10000}
+      client-name: ikaros
+      password: ${ikaros.cache.redis.password:}
 
 springdoc:
   api-docs:
