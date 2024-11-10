@@ -116,6 +116,12 @@ public class CacheAspect {
                             .flatMap(bool -> Mono.empty())
                     );
             }))
+            .map(o -> {
+                if (o instanceof Integer integer) {
+                    return integer.longValue();
+                }
+                return o;
+            })
             .filter(o -> !"null".equals(o));
     }
 

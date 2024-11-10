@@ -9,6 +9,9 @@ import java.lang.annotation.Target;
 import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.core.annotation.AliasFor;
 
+/**
+ * 数字类型返回值，统一用 Mono Long 接收.
+ */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
