@@ -4,6 +4,8 @@ import reactor.core.publisher.Mono;
 
 public interface ReactiveCacheManager {
 
+    Mono<Boolean> containsKey(String key);
+
     Mono<Object> get(String key);
 
     Mono<Boolean> put(String key, Object value);

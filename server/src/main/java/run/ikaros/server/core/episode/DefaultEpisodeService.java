@@ -14,6 +14,8 @@ import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.infra.utils.ReflectUtils;
 import run.ikaros.api.store.enums.EpisodeGroup;
+import run.ikaros.server.cache.FluxCacheable;
+import run.ikaros.server.cache.MonoCacheable;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
@@ -61,6 +63,7 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
+    @MonoCacheable(value = "episode:id:", key = "#episodeId")
     public Mono<Episode> findById(Long episodeId) {
         Assert.isTrue(episodeId != null && episodeId > 0, "episode id must >= 0.");
         return episodeRepository.findById(episodeId)
@@ -128,6 +131,7 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
+    @FluxCacheable(value = "episode_resources:episodeId:", key = "#episodeId")
     public Flux<EpisodeResource> findResourcesById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
         return databaseClient.sql("select att_ref.ATTACHMENT_ID as attachment_id, "

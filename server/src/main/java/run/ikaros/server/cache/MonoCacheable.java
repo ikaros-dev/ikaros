@@ -14,7 +14,7 @@ import org.springframework.core.annotation.AliasFor;
 @Inherited
 @Documented
 @Reflective
-public @interface Cacheable {
+public @interface MonoCacheable {
 
     /**
      * 缓存命名空间.

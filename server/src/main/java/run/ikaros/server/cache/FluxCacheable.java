@@ -14,7 +14,8 @@ import org.springframework.core.annotation.AliasFor;
 @Inherited
 @Documented
 @Reflective
-public @interface CacheEvict {
+public @interface FluxCacheable {
+
     /**
      * 缓存命名空间.
      */

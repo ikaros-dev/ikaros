@@ -12,6 +12,11 @@ public class RedisReactiveCacheManager implements ReactiveCacheManager {
     }
 
     @Override
+    public Mono<Boolean> containsKey(String key) {
+        return redisTemplate.hasKey(key);
+    }
+
+    @Override
     public Mono<Object> get(String key) {
         return redisTemplate.opsForValue().get(key);
     }
