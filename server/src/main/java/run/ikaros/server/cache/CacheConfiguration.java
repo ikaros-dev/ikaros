@@ -11,6 +11,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import run.ikaros.server.cache.condition.CacheMemoryEnableCondition;
 import run.ikaros.server.cache.condition.CacheRedisEnableCondition;
+import run.ikaros.server.infra.utils.JsonUtils;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(CacheProperties.class)
@@ -41,7 +42,7 @@ public class CacheConfiguration {
         RedisSerializationContext.RedisSerializationContextBuilder<String, Object> builder =
             RedisSerializationContext.newSerializationContext();
         GenericJackson2JsonRedisSerializer objectSerializer =
-            new GenericJackson2JsonRedisSerializer();
+            new GenericJackson2JsonRedisSerializer(JsonUtils.getObjectMapper());
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         builder.key(stringRedisSerializer);
         builder.value(objectSerializer);
