@@ -43,6 +43,7 @@ models/batch-matching-subject-episodes-attachment.ts
 models/config-map.ts
 models/create-user-req-params.ts
 models/episode-collection.ts
+models/episode-record.ts
 models/episode-resource.ts
 models/episode.ts
 models/index.ts

@@ -62,16 +62,10 @@ export interface SubjectHint {
   type?: SubjectHintTypeEnum;
   /**
    *
-   * @type {number}
-   * @memberof SubjectHint
-   */
-  airTime?: number;
-  /**
-   *
    * @type {string}
    * @memberof SubjectHint
    */
-  cover?: string;
+  airTime?: string;
 }
 
 export const SubjectHintTypeEnum = {

@@ -33,6 +33,7 @@ import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.event.SubjectUpdateEvent;
@@ -220,6 +221,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> deleteById(Long id) {
         Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.existsById(id)
@@ -321,6 +323,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> deleteAll() {
         return subjectRepository.findAll()
             .map(BaseEntity::getId)

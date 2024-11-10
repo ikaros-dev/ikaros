@@ -11,6 +11,7 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
+import run.ikaros.api.core.subject.EpisodeRecord;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.infra.utils.ReflectUtils;
 import run.ikaros.api.store.enums.EpisodeGroup;
@@ -49,7 +50,6 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
-    @MonoCacheEvict
     public Mono<Episode> save(Episode episode) {
         Assert.notNull(episode, "episode must not be null");
         Long episodeId = episode.getId();
@@ -79,6 +79,17 @@ public class DefaultEpisodeService implements EpisodeService {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         return episodeRepository.findAllBySubjectId(subjectId)
             .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
+    }
+
+    @Override
+    @FluxCacheable(value = "episodeRecords:subjectId:", key = "#subjectId")
+    public Flux<EpisodeRecord> findRecordsBySubjectId(Long subjectId) {
+        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+        return findAllBySubjectId(subjectId)
+            .flatMap(episode -> findResourcesById(episode.getId())
+                .collectList()
+                .flatMap(resources -> Mono.just(new EpisodeRecord(episode, resources)))
+            );
     }
 
     @Override
@@ -142,7 +153,7 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
-    @FluxCacheable(value = "episode_resources:episodeId:", key = "#episodeId")
+    @FluxCacheable(value = "episode_resources:episodeId", key = "#episodeId")
     public Flux<EpisodeResource> findResourcesById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
         return databaseClient.sql("select att_ref.ATTACHMENT_ID as attachment_id, "
