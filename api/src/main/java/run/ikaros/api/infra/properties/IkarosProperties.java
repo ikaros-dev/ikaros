@@ -21,4 +21,5 @@ public class IkarosProperties {
     @NotNull
     private URI externalUrl;
     private Boolean showTheme;
+    private Boolean enableRedis;
 }
