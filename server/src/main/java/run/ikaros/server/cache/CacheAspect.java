@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -17,27 +18,32 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.server.cache.annotation.FluxCacheEvict;
+import run.ikaros.server.cache.annotation.FluxCacheable;
+import run.ikaros.server.cache.annotation.MonoCacheEvict;
+import run.ikaros.server.cache.annotation.MonoCacheable;
 
 @Aspect
 @Component
+@ConditionalOnProperty(value = "ikaros.cache.enable", havingValue = "true")
 public class CacheAspect {
 
 
-    @Pointcut("@annotation(run.ikaros.server.cache.MonoCacheable) "
+    @Pointcut("@annotation(run.ikaros.server.cache.annotation.MonoCacheable) "
         + "&& execution(public reactor.core.publisher.Mono *(..))")
     public void monoCacheableMethods() {
     }
 
-    @Pointcut("@annotation(run.ikaros.server.cache.FluxCacheable) "
+    @Pointcut("@annotation(run.ikaros.server.cache.annotation.FluxCacheable) "
         + "&& execution(public reactor.core.publisher.Flux *(..))")
     public void fluxCacheableMethods() {
     }
 
-    @Pointcut("@annotation(run.ikaros.server.cache.MonoCacheEvict)")
+    @Pointcut("@annotation(run.ikaros.server.cache.annotation.MonoCacheEvict)")
     public void monoCacheEvictMethods() {
     }
 
-    @Pointcut("@annotation(run.ikaros.server.cache.FluxCacheEvict)")
+    @Pointcut("@annotation(run.ikaros.server.cache.annotation.FluxCacheEvict)")
     public void fluxCacheEvictMethods() {
     }
 

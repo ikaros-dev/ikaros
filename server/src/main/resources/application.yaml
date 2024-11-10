@@ -3,6 +3,7 @@ ikaros:
   work-dir: ${user.home}/.ikaros
   show-theme: true
   cache:
+    enable: false
     type: memory
     redis:
       host: localhost

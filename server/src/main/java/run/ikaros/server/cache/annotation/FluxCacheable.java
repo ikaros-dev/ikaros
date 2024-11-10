@@ -1,4 +1,4 @@
-package run.ikaros.server.cache;
+package run.ikaros.server.cache.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -9,18 +9,13 @@ import java.lang.annotation.Target;
 import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.core.annotation.AliasFor;
 
-/**
- * 当 value或者cacheNames 和 key 啥都不填，代表清空缓存
- * .
- *
- * @see CacheAspect#monoCacheEvictMethods()
- */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
 @Reflective
-public @interface MonoCacheEvict {
+public @interface FluxCacheable {
+
     /**
      * 缓存命名空间.
      */

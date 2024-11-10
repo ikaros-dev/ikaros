@@ -1,4 +1,4 @@
-package run.ikaros.server.cache;
+package run.ikaros.server.cache.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
