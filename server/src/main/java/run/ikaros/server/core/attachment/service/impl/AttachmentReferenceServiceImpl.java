@@ -17,6 +17,7 @@ import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
 import run.ikaros.api.infra.utils.RegexUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.EpisodeGroup;
+import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.core.attachment.event.AttachmentReferenceSaveEvent;
 import run.ikaros.server.core.attachment.event.EpisodeAttachmentUpdateEvent;
 import run.ikaros.server.core.attachment.service.AttachmentReferenceService;
@@ -99,12 +100,14 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds) {
         return matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds,
             EpisodeGroup.MAIN, false);
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
                                                             EpisodeGroup group) {
         return matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds,
@@ -112,6 +115,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
                                                             boolean notify) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
@@ -121,6 +125,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
                                                             EpisodeGroup group, boolean notify) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
@@ -164,6 +169,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> matchingAttachmentsForEpisode(Long episodeId, Long[] attachmentIds) {
         Assert.isTrue(episodeId > 0, "'episodeId' must gt 0.");
         Assert.notNull(attachmentIds, "'attachmentIds' must not null.");

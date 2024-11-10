@@ -1,18 +1,39 @@
 ikaros:
   show-theme: true
+  enable-redis: true
   security:
     # 30 day for local dev token expire
     jwt-expiration-time: 18144000000
+  indices:
+    initializer:
+      enabled: false
+
+
+
 
   plugin:
     runtime-mode: development
+    auto-start-plugin: true
     fixed-plugin-path:
-    #      - C:\Users\li-guohao\GitRepo\ikaros-dev\plugin-bgmtv
-    #      - C:\Users\li-guohao\GitRepo\ikaros-dev\plugin-alist
-    #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-local-files-import
+      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-bgmtv
+    #      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-mikan
+    #      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-alist
+    #      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-starter
+    #      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-local-files-import
+    #      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-alist
     #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-jellyfin
-    #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-mikan
     #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-baidupan
+
+
+#spring:
+#  r2dbc:
+#    url: r2dbc:pool:postgresql://192.168.13.102:5432/ikaros
+#    username: ikaros
+#    password: openpostgresql
+#  flyway:
+#    url: jdbc:postgresql://192.168.13.102:5432/ikaros
+#    locations: classpath:db/postgresql/migration
+
 
 logging:
   level:
@@ -25,3 +46,12 @@ logging:
     org.hibernate.SQL: INFO
     org.hibernate.type.descriptor.sql.BasicBinder: INFO
     org.springframework.r2dbc.core.DefaultDatabaseClient: INFO
+
+spring:
+  jpa:
+    show-sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:

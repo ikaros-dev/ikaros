@@ -228,9 +228,9 @@ public class EpisodeEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> getAttachmentRefsById(ServerRequest request) {
         String id = request.pathVariable("id");
         Long episodeId = Long.valueOf(id);
-        return episodeService.findResourcesById(episodeId)
-            .collectList()
-            .flatMap(episodeResources -> ServerResponse.ok().bodyValue(episodeResources));
+        return ServerResponse.ok()
+            .body(episodeService.findResourcesById(episodeId), EpisodeResource.class);
+
     }
 
 }
