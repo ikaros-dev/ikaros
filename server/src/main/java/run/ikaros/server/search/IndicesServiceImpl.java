@@ -29,8 +29,7 @@ public class IndicesServiceImpl implements IndicesService {
     public Mono<Void> rebuildSubjectIndices() {
         return subjectRepository.findAll()
             .flatMap(ReactiveSubjectDocConverter::fromEntity)
-            .limitRate(10)
-            .buffer(50)
+            .collectList()
             .handle((subjectDocs, sink) -> {
                 try {
                     subjectSearchService.rebuild(subjectDocs);
