@@ -32,6 +32,7 @@ import run.ikaros.api.core.subject.SubjectSynchronizer;
 import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.TagType;
 import run.ikaros.server.core.attachment.service.AttachmentService;
@@ -49,6 +50,7 @@ import run.ikaros.server.store.entity.SubjectPersonEntity;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
 import run.ikaros.server.store.entity.TagEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
+import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.CharacterRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.PersonRepository;
@@ -71,6 +73,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     private final SubjectCharacterRepository subjectCharacterRepository;
     private final PersonRepository personRepository;
     private final SubjectPersonRepository subjectPersonRepository;
+    private final AttachmentRepository attachmentRepository;
     private ApplicationContext applicationContext;
     private final SubjectSyncRepository subjectSyncRepository;
     private final AttachmentReferenceRepository attachmentReferenceRepository;
@@ -92,7 +95,8 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                                   SubjectPersonRepository subjectPersonRepository,
                                   AttachmentReferenceRepository attachmentReferenceRepository,
                                   ApplicationEventPublisher applicationEventPublisher,
-                                  AttachmentService attachmentService) {
+                                  AttachmentService attachmentService,
+                                  AttachmentRepository attachmentRepository) {
         this.extensionComponentsFinder = extensionComponentsFinder;
         this.subjectService = subjectService;
         this.subjectSyncRepository = subjectSyncRepository;
@@ -106,6 +110,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
         this.attachmentReferenceRepository = attachmentReferenceRepository;
         this.applicationEventPublisher = applicationEventPublisher;
         this.attachmentService = attachmentService;
+        this.attachmentRepository = attachmentRepository;
     }
 
     class SyncTargetExistsException extends RuntimeException {
@@ -324,11 +329,14 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
         coverFileName =
             System.currentTimeMillis() + "-" + coverFileName
                 + "." + FileUtils.parseFilePostfix(FileUtils.parseFileName(url));
-        return attachmentService.upload(AttachmentUploadCondition.builder()
+        return attachmentRepository.findByTypeAndParentIdAndName(
+                AttachmentType.File, COVER_DIRECTORY_ID, coverFileName
+            ).flatMap(attEnt -> copyProperties(attEnt, new Attachment()))
+            .switchIfEmpty(attachmentService.upload(AttachmentUploadCondition.builder()
                 .parentId(COVER_DIRECTORY_ID)
                 .name(coverFileName)
                 .dataBufferFlux(Mono.just(dataBufferFactory.wrap(bytes)).flux())
-                .build())
+                .build()))
             .flatMap(attachment -> saveCoverAndAttRef(attachment, entity));
     }
 

@@ -50,7 +50,6 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
-    @MonoCacheEvict
     public Mono<Episode> save(Episode episode) {
         Assert.notNull(episode, "episode must not be null");
         Long episodeId = episode.getId();
@@ -154,7 +153,7 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
-    @FluxCacheable(value = "episode_resources:episodeId:", key = "#episodeId")
+    @FluxCacheable(value = "episode_resources:episodeId", key = "#episodeId")
     public Flux<EpisodeResource> findResourcesById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
         return databaseClient.sql("select att_ref.ATTACHMENT_ID as attachment_id, "

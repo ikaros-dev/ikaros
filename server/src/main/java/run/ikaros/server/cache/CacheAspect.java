@@ -39,11 +39,13 @@ public class CacheAspect {
     public void fluxCacheableMethods() {
     }
 
-    @Pointcut("@annotation(run.ikaros.server.cache.annotation.MonoCacheEvict)")
+    @Pointcut("@annotation(run.ikaros.server.cache.annotation.MonoCacheEvict) "
+        + "&& execution(public reactor.core.publisher.Mono *(..))")
     public void monoCacheEvictMethods() {
     }
 
-    @Pointcut("@annotation(run.ikaros.server.cache.annotation.FluxCacheEvict)")
+    @Pointcut("@annotation(run.ikaros.server.cache.annotation.FluxCacheEvict) "
+        + "&& execution(public reactor.core.publisher.Flux *(..))")
     public void fluxCacheEvictMethods() {
     }
 

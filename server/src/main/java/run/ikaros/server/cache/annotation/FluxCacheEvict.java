@@ -12,6 +12,7 @@ import run.ikaros.server.cache.CacheAspect;
 
 /**
  * 当 value或者cacheNames 和 key 啥都不填，代表清空缓存
+ * 目前不能和事务注解共用
  * .
  *
  * @see CacheAspect#fluxCacheEvictMethods()

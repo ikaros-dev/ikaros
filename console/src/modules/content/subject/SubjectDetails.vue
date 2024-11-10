@@ -5,6 +5,7 @@ import {
   Episode,
   EpisodeCollection,
   EpisodeGroupEnum,
+  EpisodeRecord,
   EpisodeResource,
   Subject,
   SubjectCollection,
@@ -78,8 +79,9 @@ const subject = ref<Subject>({
 	name_cn: '',
 });
 
-const episodes = ref<Episode[]>([]);
-const episodeResources = ref<EpisodeResource[]>([]);
+const episodeRecords = ref<EpisodeRecord[]>([])
+// const episodes = ref<Episode[]>([]);
+// const episodeResources = ref<EpisodeResource[]>([]);
 
 // eslint-disable-next-line no-unused-vars
 const fetchSubjectById = async () => {
@@ -87,49 +89,49 @@ const fetchSubjectById = async () => {
 		subject.value = await subjectStore.fetchSubjectById(
 			subject.value.id as number
 		);
-		await fetchEpisodes();
-		await fetchEpisodeResources();
+		await fetchEpisodeRecords();
 		await fetchSubjectSyncs();
 	}
 };
 
-const fetchEpisodes = async () => {
-	const { data } = await apiClient.episode.getAllBySubjectId({
+const fetchEpisodeRecords = async () => {
+	const { data } = await apiClient.episode.getRecordsBySubjectId({
 		id: subject.value.id as number,
 	});
-	episodes.value = data;
-	if (!episodes.value || episodes.value.length === 0) {
+	episodeRecords.value = data;
+	if (!episodeRecords.value || episodeRecords.value.length === 0) {
 		batchMatchingSubjectButtonDisable.value = true;
 		deleteMatchingSubjectButtonDisable.value = true;
 	} else {
 		batchMatchingSubjectButtonDisable.value = false;
 		deleteMatchingSubjectButtonDisable.value = false;
 	}
-	if (episodes.value) {
-		episodes.value = episodes.value.sort(
-			(a, b) => (a.sequence ?? 0) - (b.sequence ?? 0)
+
+	if (episodeRecords.value) {
+		episodeRecords.value = episodeRecords.value.sort(
+			(a, b) => (a.episode?.sequence ?? 0) - (b.episode?.sequence ?? 0)
 		);
 		loadEpisodeGroupLabels();
 	}
-	// console.debug('episodes', episodes.value);
-};
+}
 
-const fetchEpisodeResources = async () => {
-	// console.debug('episodes', episodes.value);
-	episodeResources.value = [];
-	episodes.value.forEach(async (episode) => {
-		var ep = episode as Episode;
-		// console.debug('ep', ep);
-		if (ep.id) {
-			const { data } = await apiClient.episode.getAttachmentRefsById({
-				id: ep.id as number,
-			});
-			data.forEach((res) => {
-				if (res) episodeResources.value.push(res);
-			});
-		}
-	});
-};
+
+// const fetchEpisodeResources = async () => {
+// 	// console.debug('episodes', episodes.value);
+// 	episodeResources.value = [];
+// 	episodes.value.forEach(async (episode) => {
+// 		var ep = episode as Episode;
+// 		// console.debug('ep', ep);
+// 		if (ep.id) {
+// 			const { data } = await apiClient.episode.getAttachmentRefsById({
+// 				id: ep.id as number,
+// 			});
+// 			data.forEach((res) => {
+// 				if (res) episodeResources.value.push(res);
+// 			});
+// 		}
+// 	});
+// };
 
 // eslint-disable-next-line no-unused-vars
 const infoMap = ref<Map<string, string>>();
@@ -190,16 +192,14 @@ watch(subject, () => {
 // eslint-disable-next-line no-unused-vars
 const airTimeDateFormatter = (row) => {
 	// console.log('row', row);
-	return formatDate(new Date(row.air_time), 'yyyy-MM-dd');
+	return formatDate(new Date(row.episode.air_time), 'yyyy-MM-dd');
 };
 
 const currentEpisode = ref<Episode>();
-const showEpisodeDetails = (ep: Episode) => {
-	currentEpisode.value = ep;
+const showEpisodeDetails = (record: EpisodeRecord) => {
+	currentEpisode.value = record.episode;
 	episodeDetailsDialogVisible.value = true;
-	const resources: EpisodeResource[] = episodeResources.value.filter(
-		(e) => e.episodeId === ep.id
-	);
+	const resources: EpisodeResource[] = record.resources ?? [];
 	episodeHasMultiResource.value = (resources &&
 		resources.length > 1) as boolean;
 };
@@ -557,11 +557,11 @@ const batchCancenMatchingSubjectButtonLoading = ref(false);
 const deleteBatchingAttachments = async () => {
 	// console.debug('deleteBatchingAttachments subject episodes', subject.value.episodes)
 	batchCancenMatchingSubjectButtonLoading.value = true;
-	await episodes.value?.forEach(async (ep) => {
+	await episodeRecords.value?.forEach(async (record) => {
 		await apiClient.attachmentRef.removeAllByTypeAndReferenceId({
 			attachmentReference: {
 				type: 'EPISODE',
-				referenceId: ep.id,
+				referenceId: record.episode?.id,
 			},
 		});
 	});
@@ -572,10 +572,8 @@ const deleteBatchingAttachments = async () => {
 	fetchDatas();
 };
 
-const isEpisodeBindResource = (episode: Episode): boolean | undefined => {
-	const resources: EpisodeResource[] = episodeResources.value.filter(
-		(e) => e.episodeId === episode.id
-	);
+const isEpisodeBindResource = (record: EpisodeRecord): boolean | undefined => {
+	const resources: EpisodeResource[] = record.resources ?? [];
 	// console.debug('episodeResources.value', episodeResources.value);
 	// console.debug('episode', episode);
 	// console.debug('resources', resources);
@@ -607,8 +605,8 @@ const doPushEpGroupItems = (
 const loadEpisodeGroupLabels = () => {
 	const groupCountMap = new Map<EpisodeGroupEnum, number>();
 	console.debug('subject', subject.value);
-	episodes.value?.forEach((ep) => {
-		const epGroup = ep.group as EpisodeGroupEnum;
+	episodeRecords.value?.forEach((record) => {
+		const epGroup = record.episode?.group as EpisodeGroupEnum;
 		if (groupCountMap.get(epGroup)) {
 			let count = groupCountMap.get(epGroup) as number;
 			count++;
@@ -910,26 +908,26 @@ onMounted(fetchDatas);
 							:label="item.label"
 						>
 							<el-table
-								:data="episodes?.filter((ep) => ep.group === item.group)"
+								:data="episodeRecords?.filter((record) => record?.episode?.group === item.group)"
 								@row-dblclick="showEpisodeDetails"
 							>
 								<el-table-column
 									:label="t('module.subject.details.episode.label.sequence')"
-									prop="sequence"
+									prop="episode.sequence"
 									width="80px"
 									sortable
 								/>
 								<el-table-column
 									:label="t('module.subject.details.episode.label.name')"
-									prop="name"
+									prop="episode.name"
 								/>
 								<el-table-column
 									:label="t('module.subject.details.episode.label.name_cn')"
-									prop="name_cn"
+									prop="episode.name_cn"
 								/>
 								<el-table-column
 									:label="t('module.subject.details.episode.label.air_time')"
-									prop="air_time"
+									prop="episode.air_time"
 									sortable
 									:formatter="airTimeDateFormatter"
 								/>
@@ -1076,7 +1074,7 @@ onMounted(fetchDatas);
 		v-model:visible="episodeDetailsDialogVisible"
 		v-model:ep="currentEpisode"
 		v-model:multiResource="episodeHasMultiResource"
-		@close="fetchEpisodeResources"
+		@close="fetchEpisodeRecords"
 		@removeEpisodeFilesBind="fetchSubjectById"
 	/>
 
