@@ -33,7 +33,7 @@ public class IndicesServiceImpl implements IndicesService {
             .buffer(50)
             .handle((subjectDocs, sink) -> {
                 try {
-                    subjectSearchService.rebuild(subjectDocs);
+                    subjectSearchService.rebuild(subjectDocs, false);
                 } catch (Exception e) {
                     log.error("Rebuild subject indices fail, msg: {}", e.getMessage(), e);
                 }

@@ -13,4 +13,6 @@ public interface SubjectSearchService extends IndicesSearchService {
     void updateDocument(List<SubjectDoc> subjectDocs) throws Exception;
 
     void rebuild(List<SubjectDoc> subjectDocs) throws IOException;
+
+    void rebuild(List<SubjectDoc> subjectDocs, boolean clear) throws IOException;
 }

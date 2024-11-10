@@ -130,10 +130,17 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
 
     @Override
     public void rebuild(List<SubjectDoc> subjectDocs) throws IOException {
+        rebuild(subjectDocs, true);
+    }
+
+    @Override
+    public void rebuild(List<SubjectDoc> subjectDocs, boolean clear) throws IOException {
         var writeConfig = new IndexWriterConfig(analyzer);
         writeConfig.setOpenMode(CREATE_OR_APPEND);
         try (var writer = new IndexWriter(subjectIndexDir, writeConfig)) {
-            writer.deleteAll();
+            if (clear) {
+                writer.deleteAll();
+            }
             subjectDocs.forEach(subjectDoc -> {
                 var doc = this.convert(subjectDoc);
                 try {
