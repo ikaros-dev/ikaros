@@ -4,8 +4,6 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
@@ -47,12 +45,6 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
-    @CacheEvict(value = {"episodeWithId", "episodesWithSubjectId",
-        "episodeWithSubjectIdAndGroupAndSeqAndName",
-        "episodesWithSubjectIdAndGroupAndSeq",
-        "episodeCountWithSubjectId", "episodeMatchingCountWithSubjectId",
-        "episodesWithId", "episodeWithName"
-    }, allEntries = true)
     public Mono<Episode> save(Episode episode) {
         Assert.notNull(episode, "episode must not be null");
         Long episodeId = episode.getId();
@@ -69,7 +61,6 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
-    @Cacheable(value = "episodeWithId", key = "#episodeId")
     public Mono<Episode> findById(Long episodeId) {
         Assert.isTrue(episodeId != null && episodeId > 0, "episode id must >= 0.");
         return episodeRepository.findById(episodeId)
@@ -77,7 +68,6 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
-    @Cacheable(value = "episodesWithSubjectId", key = "#subjectId")
     public Flux<Episode> findAllBySubjectId(Long subjectId) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         return episodeRepository.findAllBySubjectId(subjectId)
@@ -85,8 +75,6 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
-    @Cacheable(value = "episodeWithSubjectIdAndGroupAndSeqAndName",
-        key = "#subjectId + '-' + #group + '-' + #name")
     public Mono<Episode> findBySubjectIdAndGroupAndSequenceAndName(
         Long subjectId, EpisodeGroup group, Float sequence, String name) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
@@ -99,8 +87,6 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
-    @Cacheable(value = "episodesWithSubjectIdAndGroupAndSeq",
-        key = "#subjectId + '-' + #group + '-' + #sequence")
     public Flux<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
                                                             Float sequence) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
@@ -112,7 +98,6 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
-    @CacheEvict(value = "episodeWithId", key = "#episodeId")
     public Mono<Void> deleteById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
         return episodeRepository.findById(episodeId)
@@ -125,14 +110,12 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
-    @Cacheable(value = "episodeCountWithSubjectId", key = "#subjectId")
     public Mono<Long> countBySubjectId(Long subjectId) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         return episodeRepository.countBySubjectId(subjectId);
     }
 
     @Override
-    @Cacheable(value = "episodeMatchingCountWithSubjectId", key = "#subjectId")
     public Mono<Long> countMatchingBySubjectId(Long subjectId) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         return databaseClient.sql("select count(e.ID) from EPISODE e, ATTACHMENT_REFERENCE ar "
@@ -145,7 +128,6 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
-    @Cacheable(value = "episodesWithId", key = "#episodeId")
     public Flux<EpisodeResource> findResourcesById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
         return attachmentReferenceRepository
@@ -165,12 +147,6 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
-    @CacheEvict(value = {"episodeWithId", "episodesWithSubjectId",
-        "episodeWithSubjectIdAndGroupAndSeqAndName",
-        "episodesWithSubjectIdAndGroupAndSeq",
-        "episodeCountWithSubjectId", "episodeMatchingCountWithSubjectId",
-        "episodesWithId", "episodeWithName"
-    }, allEntries = true)
     public Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         Assert.notNull(episodes, "'episodes' must not be null.");
