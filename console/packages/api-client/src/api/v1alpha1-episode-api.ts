@@ -40,6 +40,8 @@ import {
 // @ts-ignore
 import { Episode } from "../models";
 // @ts-ignore
+import { EpisodeRecord } from "../models";
+// @ts-ignore
 import { EpisodeResource } from "../models";
 /**
  * V1alpha1EpisodeApi - axios parameter creator
@@ -464,6 +466,60 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
       };
     },
     /**
+     * Get episode records by subject id.
+     * @param {number} id Subject id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getRecordsBySubjectId: async (
+      id: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("getRecordsBySubjectId", "id", id);
+      const localVarPath =
+        `/api/v1alpha1/episode/records/subjectId/{id}`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(id))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * Post episode.
      * @param {Episode} [episode] Episode
      * @param {*} [options] Override http request option.
@@ -770,6 +826,30 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
       );
     },
     /**
+     * Get episode records by subject id.
+     * @param {number} id Subject id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getRecordsBySubjectId(
+      id: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<EpisodeRecord>>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.getRecordsBySubjectId(id, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
      * Post episode.
      * @param {Episode} [episode] Episode
      * @param {*} [options] Override http request option.
@@ -931,6 +1011,20 @@ export const V1alpha1EpisodeApiFactory = function (
     ): AxiosPromise<number> {
       return localVarFp
         .getCountTotalBySubjectId(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get episode records by subject id.
+     * @param {V1alpha1EpisodeApiGetRecordsBySubjectIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getRecordsBySubjectId(
+      requestParameters: V1alpha1EpisodeApiGetRecordsBySubjectIdRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<EpisodeRecord>> {
+      return localVarFp
+        .getRecordsBySubjectId(requestParameters.id, options)
         .then((request) => request(axios, basePath));
     },
     /**
@@ -1101,6 +1195,20 @@ export interface V1alpha1EpisodeApiGetCountTotalBySubjectIdRequest {
 }
 
 /**
+ * Request parameters for getRecordsBySubjectId operation in V1alpha1EpisodeApi.
+ * @export
+ * @interface V1alpha1EpisodeApiGetRecordsBySubjectIdRequest
+ */
+export interface V1alpha1EpisodeApiGetRecordsBySubjectIdRequest {
+  /**
+   * Subject id
+   * @type {number}
+   * @memberof V1alpha1EpisodeApiGetRecordsBySubjectId
+   */
+  readonly id: number;
+}
+
+/**
  * Request parameters for postEpisode operation in V1alpha1EpisodeApi.
  * @export
  * @interface V1alpha1EpisodeApiPostEpisodeRequest
@@ -1250,6 +1358,22 @@ export class V1alpha1EpisodeApi extends BaseAPI {
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .getCountTotalBySubjectId(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Get episode records by subject id.
+   * @param {V1alpha1EpisodeApiGetRecordsBySubjectIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1EpisodeApi
+   */
+  public getRecordsBySubjectId(
+    requestParameters: V1alpha1EpisodeApiGetRecordsBySubjectIdRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1EpisodeApiFp(this.configuration)
+      .getRecordsBySubjectId(requestParameters.id, options)
       .then((request) => request(this.axios, this.basePath));
   }
 
