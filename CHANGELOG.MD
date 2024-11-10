@@ -4,6 +4,10 @@
 
 # 0.20.2
 
+## 新特性
+
+- 添加接口 EpisodeGetRecordsBySubjectId #730
+
 ## 问题修复
 
 - ObjectMapper的默认日期转化问题 #729

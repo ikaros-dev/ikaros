@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Episode;
+import run.ikaros.api.core.subject.EpisodeRecord;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.EpisodeGroup;
@@ -107,7 +108,7 @@ public class EpisodeEndpoint implements CoreEndpoint {
                     .response(Builder.responseBuilder().implementation(Episode.class)))
 
             .GET("/episodes/subjectId/{id}", this::getAllBySubjectId,
-                builder -> builder.operationId("getAllBySubjectId")
+                builder -> builder.operationId("GetAllBySubjectId")
                     .tag(tag).description("Get all by subject id.")
                     .parameter(parameterBuilder()
                         .name("id")
@@ -116,6 +117,18 @@ public class EpisodeEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(Long.class))
                     .response(Builder.responseBuilder().implementationArray(Episode.class))
+            )
+
+            .GET("/episode/records/subjectId/{id}", this::getRecordsBySubjectId,
+                builder -> builder.operationId("GetRecordsBySubjectId")
+                    .tag(tag).description("Get episode records by subject id.")
+                    .parameter(parameterBuilder()
+                        .name("id")
+                        .description("Subject id")
+                        .in(ParameterIn.PATH)
+                        .required(true)
+                        .implementation(Long.class))
+                    .response(Builder.responseBuilder().implementationArray(EpisodeRecord.class))
             )
 
             .GET("/episode/attachment/refs/{id}", this::getAttachmentRefsById,
@@ -221,6 +234,14 @@ public class EpisodeEndpoint implements CoreEndpoint {
         String id = request.pathVariable("id");
         Long subjectId = Long.valueOf(id);
         return episodeService.findAllBySubjectId(subjectId)
+            .collectList()
+            .flatMap(episodes -> ServerResponse.ok().bodyValue(episodes));
+    }
+
+    private Mono<ServerResponse> getRecordsBySubjectId(ServerRequest request) {
+        String id = request.pathVariable("id");
+        Long subjectId = Long.valueOf(id);
+        return episodeService.findRecordsBySubjectId(subjectId)
             .collectList()
             .flatMap(episodes -> ServerResponse.ok().bodyValue(episodes));
     }
