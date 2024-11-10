@@ -48,7 +48,7 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
-    @CachePut(value = "episodeWithId", key = "#episode.id")
+    @CachePut(value = "episodeWithName", key = "#episode.name")
     public Mono<Episode> save(Episode episode) {
         Assert.notNull(episode, "episode must not be null");
         Long episodeId = episode.getId();
@@ -165,7 +165,7 @@ public class DefaultEpisodeService implements EpisodeService {
         "episodeWithSubjectIdAndGroupAndSeqAndName",
         "episodesWithSubjectIdAndGroupAndSeq",
         "episodeCountWithSubjectId", "episodeMatchingCountWithSubjectId",
-        "episodesWithId"
+        "episodesWithId", "episodeWithName"
     },
         allEntries = true)
     public Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes) {
