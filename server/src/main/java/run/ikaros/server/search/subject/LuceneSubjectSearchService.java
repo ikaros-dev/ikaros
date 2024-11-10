@@ -5,6 +5,7 @@ import static org.apache.lucene.document.Field.Store.NO;
 import static org.apache.lucene.document.Field.Store.YES;
 import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE_OR_APPEND;
 import static run.ikaros.api.constant.StringConst.SPACE;
+import static run.ikaros.server.infra.utils.TimeUtils.formatTimestamp;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleFragmenter;
@@ -62,7 +64,8 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
      */
     public LuceneSubjectSearchService(IkarosProperties ikarosProperties) throws IOException {
         analyzer = new IKAnalyzer(true);
-        var subjectIdxPath = ikarosProperties.getWorkDir().resolve("indices/subjects");
+        var subjectIdxPath = ikarosProperties.getWorkDir()
+            .resolve("indices").resolve("subjects");
         subjectIndexDir = FSDirectory.open(subjectIdxPath);
     }
 
@@ -179,6 +182,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
         doc.add(new StringField("name", subjectDoc.getName(), YES));
         if (StringUtils.hasText(subjectDoc.getNameCn())) {
             doc.add(new StringField("nameCn", subjectDoc.getNameCn(), YES));
+            doc.add(new StringField("namecn", subjectDoc.getNameCn(), YES));
         }
         if (StringUtils.hasText(subjectDoc.getInfobox())) {
             doc.add(new TextField("infobox", subjectDoc.getInfobox(), YES));
@@ -188,8 +192,8 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
         }
         doc.add(new StringField("nsfw", String.valueOf(subjectDoc.getNsfw()), YES));
         doc.add(new StringField("type", String.valueOf(subjectDoc.getType()), YES));
-        doc.add(new StringField("airTime", String.valueOf(subjectDoc.getAirTime()), YES));
-        doc.add(new StringField("cover", String.valueOf(subjectDoc.getCover()), YES));
+        doc.add(new StringField("airTime", formatTimestamp(subjectDoc.getAirTime()), YES));
+        doc.add(new StringField("airtime", formatTimestamp(subjectDoc.getAirTime()), YES));
         var content = Jsoup.clean(
             stripToEmpty(String.valueOf(subjectDoc.getId())) + SPACE
                 + stripToEmpty(subjectDoc.getName()) + SPACE
@@ -197,9 +201,8 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                 + stripToEmpty(subjectDoc.getInfobox()) + SPACE
                 + stripToEmpty(subjectDoc.getSummary()) + SPACE
                 + subjectDoc.getNsfw() + SPACE
-                + subjectDoc.getNsfw() + SPACE
                 + subjectDoc.getType() + SPACE
-                + subjectDoc.getAirTime() + SPACE,
+                + formatTimestamp(subjectDoc.getAirTime()) + SPACE,
             Safelist.none());
         doc.add(new StoredField("content", content));
         doc.add(new TextField("searchable", subjectDoc.getName() + content, NO));
@@ -214,12 +217,19 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
             doc.get("infobox"), doc.get("summary"),
             Boolean.valueOf(doc.get("nsfw")),
             SubjectType.valueOf(doc.get("type")),
-            Long.parseLong(doc.get("airTime")),
-            doc.get("cover")
+            doc.get("airTime")
         );
     }
 
     private Query buildQuery(String keyword) throws ParseException {
+        if (keyword.contains(":")) {
+            String[] split = keyword.split(":");
+            if (split.length == 2) {
+                String field = split[0].trim().toLowerCase();
+                String value = split[1].trim();
+                return new TermQuery(new Term(field, value));
+            }
+        }
         return buildQuery("searchable", keyword);
     }
 
