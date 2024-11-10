@@ -12,7 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
-import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.api.infra.utils.ReflectUtils;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
@@ -130,20 +130,19 @@ public class DefaultEpisodeService implements EpisodeService {
     @Override
     public Flux<EpisodeResource> findResourcesById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
-        return attachmentReferenceRepository
-            .findAllByTypeAndReferenceIdOrderByTypeAscAttachmentIdAsc(
-                AttachmentReferenceType.EPISODE, episodeId)
-            .flatMap(attachmentReferenceEntity ->
-                attachmentRepository.findById(attachmentReferenceEntity.getAttachmentId())
-                    .map(attachmentEntity -> EpisodeResource.builder()
-                        .episodeId(episodeId)
-                        .attachmentId(attachmentEntity.getId())
-                        .parentAttachmentId(attachmentEntity.getParentId())
-                        .name(attachmentEntity.getName())
-                        .url(attachmentEntity.getUrl())
-                        .canRead(true)
-                        .build())
-            );
+        return databaseClient.sql("select att_ref.ATTACHMENT_ID as attachment_id, "
+                + "att.PARENT_ID as parent_attachment_id, "
+                + "att_ref.REFERENCE_ID as episode_id, "
+                + "att.URL as url, "
+                + "att.NAME as name "
+                + "from ATTACHMENT_REFERENCE att_ref, ATTACHMENT att "
+                + "where att_ref.TYPE = 'EPISODE' and att_ref.REFERENCE_ID = :episodeId "
+                + "and att_ref.ATTACHMENT_ID = att.ID "
+                + "order by att_ref.TYPE, att_ref.ATTACHMENT_ID")
+            .bind("episodeId", episodeId)
+            .fetch()
+            .all()
+            .map(row -> ReflectUtils.mapToClass(row, EpisodeResource.class, true));
     }
 
     @Override
