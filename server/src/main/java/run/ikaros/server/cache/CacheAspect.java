@@ -132,7 +132,8 @@ public class CacheAspect {
             Arrays.stream(fluxCacheable.value())
                 .map(namespace -> namespace + cacheKeyPostfix).toList();
         return Flux.fromStream(cacheKeys.stream())
-            .concatMap(key -> cm.get(key).filter(Objects::nonNull))
+            .concatMap(key -> cm.get(key)
+                .filter(Objects::nonNull))
             .next()
             // 缓存中不存在
             .switchIfEmpty(Mono.defer(() -> {
