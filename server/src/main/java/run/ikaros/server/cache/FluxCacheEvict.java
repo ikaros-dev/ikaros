@@ -9,6 +9,12 @@ import java.lang.annotation.Target;
 import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.core.annotation.AliasFor;
 
+/**
+ * 当 value或者cacheNames 和 key 啥都不填，代表清空缓存
+ * .
+ *
+ * @see CacheAspect#fluxCacheEvictMethods()
+ */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited

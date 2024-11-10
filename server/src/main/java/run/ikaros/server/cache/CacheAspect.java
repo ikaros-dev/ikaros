@@ -172,11 +172,16 @@ public class CacheAspect {
     public Mono<?> aroundMonoMethodsWithAnnotationCacheable(
         ProceedingJoinPoint joinPoint, MonoCacheEvict monoCacheEvict
     ) throws Throwable {
+        Object proceed = joinPoint.proceed();
+        if (monoCacheEvict.value().length == 0
+            && "".equals(monoCacheEvict.key())) {
+            return cm.clear()
+                .flatMap(s -> (Mono<?>) proceed);
+        }
         final String cacheKeyPostfix = parseSpelExpression(monoCacheEvict.key(), joinPoint);
         final List<String> cacheKeys =
             Arrays.stream(monoCacheEvict.value())
                 .map(namespace -> namespace + cacheKeyPostfix).toList();
-        Object proceed = joinPoint.proceed();
         return Flux.fromStream(cacheKeys.stream())
             .flatMap(cm::remove)
             .next()
@@ -192,18 +197,21 @@ public class CacheAspect {
     public Flux<?> aroundMonoMethodsWithAnnotationCacheable(
         ProceedingJoinPoint joinPoint, FluxCacheEvict fluxCacheEvict
     ) throws Throwable {
+        Object proceed = joinPoint.proceed();
+        if (fluxCacheEvict.value().length == 0
+            && "".equals(fluxCacheEvict.key())) {
+            return cm.clear()
+                .flatMapMany(s -> (Flux<?>) proceed);
+        }
         final String cacheKeyPostfix = parseSpelExpression(fluxCacheEvict.key(), joinPoint);
         final List<String> cacheKeys =
             Arrays.stream(fluxCacheEvict.value())
                 .map(namespace -> namespace + cacheKeyPostfix).toList();
-        Object proceed = joinPoint.proceed();
         return Flux.fromStream(cacheKeys.stream())
             .flatMap(cm::remove)
             .next()
             .flatMapMany(bool -> (Flux<?>) proceed);
     }
-
-
 
 
 }
