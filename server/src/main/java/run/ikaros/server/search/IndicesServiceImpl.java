@@ -29,13 +29,13 @@ public class IndicesServiceImpl implements IndicesService {
     public Mono<Void> rebuildSubjectIndices() {
         return subjectRepository.findAll()
             .flatMap(ReactiveSubjectDocConverter::fromEntity)
-            .limitRate(100)
-            .buffer(100)
+            .limitRate(10)
+            .buffer(50)
             .handle((subjectDocs, sink) -> {
                 try {
                     subjectSearchService.rebuild(subjectDocs);
                 } catch (Exception e) {
-                    sink.error(new RuntimeException(e));
+                    log.error("Rebuild subject indices fail, msg: {}", e.getMessage(), e);
                 }
             })
             .then();
