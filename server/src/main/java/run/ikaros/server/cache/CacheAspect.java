@@ -83,7 +83,7 @@ public class CacheAspect {
      */
     @Around("monoCacheableMethods() && @annotation(monoCacheable)")
     public Mono<?> aroundMonoMethodsWithAnnotationCacheable(
-        ProceedingJoinPoint joinPoint, MonoCacheable monoCacheable) {
+        ProceedingJoinPoint joinPoint, MonoCacheable monoCacheable) throws Throwable {
         final String cacheKeyPostfix = parseSpelExpression(monoCacheable.key(), joinPoint);
         final List<String> cacheKeys =
             Arrays.stream(monoCacheable.value())
@@ -99,13 +99,20 @@ public class CacheAspect {
                 } catch (Throwable e) {
                     return Mono.error(e);
                 }
-                return ((Mono<?>) proceed).flatMap(val ->
-                    Flux.fromIterable(cacheKeys)
-                        .flatMap(k -> cm.put(k, val))
-                        .collectList()
-                        .flatMap(list -> Mono.just(val))
-                );
-            }));
+                return ((Mono<?>) proceed)
+                    .flatMap(val ->
+                        Flux.fromIterable(cacheKeys)
+                            .flatMap(k -> cm.put(k, val))
+                            .collectList()
+                            .flatMap(list -> Mono.just(val))
+                    ).switchIfEmpty(
+                        Flux.fromIterable(cacheKeys)
+                            .flatMap(k -> cm.put(k, "null"))
+                            .collectList()
+                            .flatMap(bool -> Mono.empty())
+                    );
+            }))
+            .filter(o -> !"null".equals(o));
     }
 
     /**
@@ -115,15 +122,13 @@ public class CacheAspect {
      */
     @Around("fluxCacheableMethods() && @annotation(fluxCacheable)")
     public Flux<?> aroundMonoMethodsWithAnnotationCacheable(
-        ProceedingJoinPoint joinPoint, FluxCacheable fluxCacheable) {
+        ProceedingJoinPoint joinPoint, FluxCacheable fluxCacheable) throws Throwable {
         final String cacheKeyPostfix = parseSpelExpression(fluxCacheable.key(), joinPoint);
         final List<String> cacheKeys =
             Arrays.stream(fluxCacheable.value())
                 .map(namespace -> namespace + cacheKeyPostfix).toList();
         return Flux.fromStream(cacheKeys.stream())
-            .concatMap(key -> {
-                return cm.get(key).filter(Objects::nonNull);
-            })
+            .concatMap(key -> cm.get(key).filter(Objects::nonNull))
             .next()
             // 缓存中不存在
             .switchIfEmpty(Mono.defer(() -> {
@@ -141,9 +146,15 @@ public class CacheAspect {
                             .flatMap(k -> cm.put(k, vals))
                             .collectList()
                             .flatMap(list -> Mono.just(vals))
+                    ).switchIfEmpty(
+                        Flux.fromIterable(cacheKeys)
+                            .flatMap(k -> cm.put(k, List.of()))
+                            .collectList()
+                            .flatMap(bool -> Mono.empty())
                     );
             }))
             .map(o -> (List<?>) o)
+            .filter(list -> !list.isEmpty())
             // 缓存中存的是集合
             .flatMapMany(Flux::fromIterable);
     }

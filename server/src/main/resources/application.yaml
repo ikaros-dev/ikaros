@@ -2,7 +2,14 @@ ikaros:
   external-url: "http://${server.address:localhost}:${server.port}"
   work-dir: ${user.home}/.ikaros
   show-theme: true
-  enable-redis: false
+  cache:
+    type: memory
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      expiration-time: 259200000
+      timeout: 10000
 
   security:
     # 3 day for token expire

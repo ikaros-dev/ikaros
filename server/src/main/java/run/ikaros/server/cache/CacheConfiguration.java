@@ -1,6 +1,7 @@
 package run.ikaros.server.cache;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
@@ -10,13 +11,29 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnProperty(value = "ikaros.enable-redis", havingValue = "true")
-public class RedisConfiguration {
+@EnableConfigurationProperties(CacheProperties.class)
+public class CacheConfiguration {
+
+
+    @Bean
+    @ConditionalOnProperty(value = "ikaros.cache.type", havingValue = "memory")
+    public ReactiveCacheManager memoryReactiveCacheManager() {
+        return new MemoryReactiveCacheManager();
+    }
+
+    @Bean
+    @ConditionalOnProperty(value = "ikaros.cache.type", havingValue = "redis")
+    public ReactiveCacheManager redisReactiveCacheManager(
+        ReactiveRedisTemplate<String, Object> reactiveRedisTemplate
+    ) {
+        return new RedisReactiveCacheManager(reactiveRedisTemplate);
+    }
 
     /**
      * Redis reactive template.
      */
     @Bean
+    @ConditionalOnProperty(value = "ikaros.cache.type", havingValue = "redis")
     public ReactiveRedisTemplate<String, Object> reactiveRedisTemplate(
         ReactiveRedisConnectionFactory connectionFactory) {
         RedisSerializationContext.RedisSerializationContextBuilder<String, Object> builder =
@@ -31,10 +48,4 @@ public class RedisConfiguration {
         return new ReactiveRedisTemplate<>(connectionFactory, builder.build());
     }
 
-    @Bean
-    public ReactiveCacheManager reactiveCacheManager(
-        ReactiveRedisTemplate<String, Object> reactiveRedisTemplate
-    ) {
-        return new RedisReactiveCacheManager(reactiveRedisTemplate);
-    }
 }
