@@ -5,7 +5,6 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -48,7 +47,12 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
-    @CachePut(value = "episodeWithName", key = "#episode.name")
+    @CacheEvict(value = {"episodeWithId", "episodesWithSubjectId",
+        "episodeWithSubjectIdAndGroupAndSeqAndName",
+        "episodesWithSubjectIdAndGroupAndSeq",
+        "episodeCountWithSubjectId", "episodeMatchingCountWithSubjectId",
+        "episodesWithId", "episodeWithName"
+    }, allEntries = true)
     public Mono<Episode> save(Episode episode) {
         Assert.notNull(episode, "episode must not be null");
         Long episodeId = episode.getId();
@@ -166,8 +170,7 @@ public class DefaultEpisodeService implements EpisodeService {
         "episodesWithSubjectIdAndGroupAndSeq",
         "episodeCountWithSubjectId", "episodeMatchingCountWithSubjectId",
         "episodesWithId", "episodeWithName"
-    },
-        allEntries = true)
+    }, allEntries = true)
     public Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes) {
         Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
         Assert.notNull(episodes, "'episodes' must not be null.");
