@@ -7,7 +7,7 @@ RUN java -Djarmode=layertools -jar application.jar extract
 ###########################################################
 
 FROM eclipse-temurin:17-jre
-MAINTAINER li-guohao <git@liguohao.cn>
+MAINTAINER chivehao <chivehao@ikaros.run>
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
 COPY --from=builder application/spring-boot-loader/ ./
