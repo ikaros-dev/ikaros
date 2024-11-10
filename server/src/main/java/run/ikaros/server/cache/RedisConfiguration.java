@@ -35,4 +35,11 @@ public class RedisConfiguration {
         builder.hashValue(jsonRedisSerializer);
         return new ReactiveRedisTemplate<>(connectionFactory, builder.build());
     }
+
+    @Bean
+    public ReactiveCacheManager reactiveCacheManager(
+        ReactiveRedisTemplate<String, Object> reactiveRedisTemplate
+    ) {
+        return new RedisReactiveCacheManager(reactiveRedisTemplate);
+    }
 }
