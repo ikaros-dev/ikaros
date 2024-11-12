@@ -14,6 +14,10 @@
 
 - 添加接口 EpisodeGetRecordsBySubjectId #730
 
+## 优化
+
+- SubjectHit添加封面cover字段
+
 ## 问题修复
 
 - ObjectMapper的默认日期转化问题 #729
