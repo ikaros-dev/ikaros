@@ -5,6 +5,8 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -281,7 +283,9 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         String nameCnLike = "%" + nameCn + "%";
         Boolean nsfw = condition.getNsfw();
         final SubjectType type = condition.getType();
+        final String time = condition.getTime();
         final Boolean airTimeDesc = condition.getAirTimeDesc();
+        final Boolean updateTimeDesc = condition.getUpdateTimeDesc();
 
         final PageRequest pageRequest = PageRequest.of(page - 1, size);
 
@@ -302,13 +306,58 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             criteria = criteria.and("type").is(type);
         }
 
+        if (StringUtils.isNotBlank(time)) {
+            if (time.indexOf('-') > 0) {
+                // 日期范围，例如；2000.9-2010.8
+                String[] split = time.split("-");
+                String first = split[0];
+                String second = split[1];
+                LocalDateTime startTime;
+                if (first.indexOf(".") > 0) {
+                    String[] split1 = first.split("\\.");
+                    startTime =
+                        Year.parse(split1[0]).atMonth(Integer.parseInt(split1[1])).atDay(1)
+                            .atStartOfDay();
+                } else {
+                    startTime = Year.parse(first).atMonth(1).atDay(1).atStartOfDay();
+                }
+                LocalDateTime endTime;
+                if (second.indexOf(".") > 0) {
+                    String[] split2 = second.split("\\.");
+                    endTime =
+                        Year.parse(split2[0]).atMonth(Integer.parseInt(split2[1])).atDay(1)
+                            .atStartOfDay().plusMonths(1);
+                } else {
+                    endTime = Year.parse(second).atDay(1).atStartOfDay().plusMonths(1);
+                }
+                criteria = criteria.and(Criteria.where("air_time").between(startTime, endTime));
+            } else {
+                // 单个类型，例如：2020.8
+                if (time.indexOf('.') > 0) {
+                    String[] split = time.split("\\.");
+                    LocalDateTime startTime =
+                        Year.parse(split[0]).atMonth(Integer.parseInt(split[1])).atDay(1)
+                            .atStartOfDay();
+                    criteria = criteria.and(
+                        Criteria.where("air_time").between(startTime, startTime.plusMonths(1)));
+                } else {
+                    LocalDateTime startTime = Year.parse(time).atMonth(1).atDay(1).atStartOfDay();
+                    criteria = criteria.and(
+                        Criteria.where("air_time").between(startTime, startTime.plusYears(1)));
+                }
+            }
+        }
+
         Query query = Query.query(criteria)
-            .sort(Sort.by(airTimeDesc
-                ? Sort.Order.desc("air_time")
-                : Sort.Order.asc("air_time")))
             .sort(Sort.by(Sort.Order.asc("name")))
             .sort(Sort.by(Sort.Order.asc("type")))
             .sort(Sort.by(Sort.Order.asc("nsfw")))
+            .sort(Sort.by(updateTimeDesc
+                ? Sort.Order.desc("update_time")
+                : Sort.Order.asc("update_time")))
+            .sort(Sort.by(airTimeDesc
+                ? Sort.Order.desc("air_time")
+                : Sort.Order.asc("air_time")))
             .with(pageRequest);
 
         Flux<SubjectEntity> subjectEntityFlux = template.select(query, SubjectEntity.class);

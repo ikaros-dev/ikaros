@@ -101,20 +101,20 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .implementation(Boolean.class))
                     .parameter(parameterBuilder()
                         .name("type")
-                        .description("条目类型E")
+                        .description("条目类型")
                         .implementation(SubjectType.class))
-                    // .parameter(parameterBuilder()
-                    //     .name("year")
-                    //     .implementation(Integer.class)
-                    //     .description("放送年"))
-                    // .parameter(parameterBuilder()
-                    //     .name("month")
-                    //     .implementation(Integer.class)
-                    //     .description("放送月"))
+                    .parameter(parameterBuilder()
+                        .name("time")
+                        .implementation(String.class)
+                        .description("时间范围，格式范围类型: 2000.9-2010.8 或者 单个类型2020.8"))
                     .parameter(parameterBuilder()
                         .name("airTimeDesc")
                         .implementation(Boolean.class)
                         .description("是否根据放送时间倒序，新番在列表前面。默认为 true."))
+                    .parameter(parameterBuilder()
+                        .name("updateTimeDesc")
+                        .implementation(Boolean.class)
+                        .description("是否根据更新时间倒序，默认为 true."))
                     .response(responseBuilder().implementation(PagingWrap.class))
             )
 
@@ -181,25 +181,19 @@ public class SubjectEndpoint implements CoreEndpoint {
         final SubjectType type = typeOp.isPresent() && StringUtils.hasText(typeOp.get())
             ? SubjectType.valueOf(typeOp.get())
             : null;
-        // Optional<String> yearOp = request.queryParam("year");
-        // final Integer year = yearOp.isPresent() && StringUtils.hasText(yearOp.get())
-        //     ? Integer.valueOf(yearOp.get())
-        //     : null;
-        // Optional<String> monthOp = request.queryParam("month");
-        // final Integer month = monthOp.isPresent() && StringUtils.hasText(monthOp.get())
-        //     ? Integer.valueOf(monthOp.get())
-        //     : null;
-        Optional<String> airTimeDescOp = request.queryParam("airTimeDesc");
-        final Boolean airTimeDesc =
-            airTimeDescOp.isPresent() && StringUtils.hasText(airTimeDescOp.get())
-                ? Boolean.valueOf(airTimeDescOp.get())
-                : null;
+        String time = request.queryParam("time").orElse("");
+        boolean airTimeDesc =
+            Boolean.parseBoolean(request.queryParam("airTimeDesc")
+                .orElse(Boolean.TRUE.toString()));
+        boolean updateTimeDesc =
+            Boolean.parseBoolean(request.queryParam("updateTimeDesc")
+                .orElse(Boolean.FALSE.toString()));
 
         FindSubjectCondition findSubjectCondition = FindSubjectCondition.builder()
             .page(page).size(size).name(name).nameCn(nameCn)
-            .nsfw(nsfw).type(type)
-            // .year(year).month(month)
-            .airTimeDesc(airTimeDesc).build();
+            .nsfw(nsfw).type(type).time(time)
+            .airTimeDesc(airTimeDesc)
+            .updateTimeDesc(updateTimeDesc).build();
         return subjectService.listEntitiesByCondition(findSubjectCondition)
             .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
     }

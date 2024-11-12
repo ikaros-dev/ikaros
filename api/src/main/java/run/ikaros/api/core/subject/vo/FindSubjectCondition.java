@@ -21,12 +21,15 @@ public class FindSubjectCondition {
     private String nameCn;
     private Boolean nsfw;
     private SubjectType type;
-    private Integer year;
-    private Integer month;
+    private String time;
     /**
      * default is true.
      */
     private Boolean airTimeDesc;
+    /**
+     * default is false.
+     */
+    private Boolean updateTimeDesc;
 
     /**
      * init default if field value is null.
