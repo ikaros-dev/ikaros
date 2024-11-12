@@ -8,15 +8,15 @@
 
 - 条目条件查询索引优化 #664
 
+## 优化
+
+- SubjectHit添加封面cover字段
+
 # 0.20.2
 
 ## 新特性
 
 - 添加接口 EpisodeGetRecordsBySubjectId #730
-
-## 优化
-
-- SubjectHit添加封面cover字段
 
 ## 问题修复
 
