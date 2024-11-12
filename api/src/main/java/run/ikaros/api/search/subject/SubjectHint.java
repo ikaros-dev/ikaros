@@ -9,6 +9,7 @@ public record SubjectHint(
     String nameCn,
     String infobox,
     String summary,
+    String cover,
     Boolean nsfw,
     SubjectType type,
     String airTime

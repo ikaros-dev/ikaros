@@ -190,6 +190,9 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
         if (StringUtils.hasText(subjectDoc.getSummary())) {
             doc.add(new TextField("summary", subjectDoc.getSummary(), YES));
         }
+        if (StringUtils.hasText(subjectDoc.getCover())) {
+            doc.add(new TextField("cover", subjectDoc.getCover(), YES));
+        }
         doc.add(new StringField("nsfw", String.valueOf(subjectDoc.getNsfw()), YES));
         doc.add(new StringField("type", String.valueOf(subjectDoc.getType()), YES));
         doc.add(new StringField("airTime", formatTimestamp(subjectDoc.getAirTime()), YES));
@@ -215,6 +218,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
             Long.parseLong(doc.get("id")),
             doc.get("name"), doc.get("nameCn"),
             doc.get("infobox"), doc.get("summary"),
+            doc.get("cover"),
             Boolean.valueOf(doc.get("nsfw")),
             SubjectType.valueOf(doc.get("type")),
             doc.get("airTime")
