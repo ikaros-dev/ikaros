@@ -4,6 +4,7 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
@@ -18,6 +19,8 @@ import run.ikaros.api.core.tag.Tag;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.store.enums.TagType;
+import run.ikaros.server.core.tag.event.TagCreateEvent;
+import run.ikaros.server.core.tag.event.TagRemoveEvent;
 import run.ikaros.server.store.entity.TagEntity;
 import run.ikaros.server.store.repository.TagRepository;
 
@@ -26,14 +29,17 @@ import run.ikaros.server.store.repository.TagRepository;
 public class DefaultTagService implements TagService {
     private final TagRepository tagRepository;
     private final R2dbcEntityTemplate r2dbcEntityTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Construct.
      */
     public DefaultTagService(TagRepository tagRepository,
-                             R2dbcEntityTemplate r2dbcEntityTemplate) {
+                             R2dbcEntityTemplate r2dbcEntityTemplate,
+                             ApplicationEventPublisher eventPublisher) {
         this.tagRepository = tagRepository;
         this.r2dbcEntityTemplate = r2dbcEntityTemplate;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -102,6 +108,8 @@ public class DefaultTagService implements TagService {
             .filter(exists -> !exists)
             .flatMap(exists -> copyProperties(tag, new TagEntity()))
             .flatMap(tagRepository::save)
+            .doOnSuccess(savedTag ->
+                eventPublisher.publishEvent(new TagCreateEvent(this, savedTag)))
             .flatMap(tagEntity -> copyProperties(tagEntity, tag));
     }
 
@@ -120,7 +128,9 @@ public class DefaultTagService implements TagService {
         Assert.isTrue(tagId >= 0, "'tagId' must >=0.");
         return tagRepository.findById(tagId)
             .switchIfEmpty(Mono.error(new NotFoundException("Tag not found for id = " + tagId)))
-            .map(TagEntity::getId)
-            .flatMap(tagRepository::deleteById);
+            .flatMap(tagEntity -> tagRepository.deleteById(tagEntity.getId())
+                .doOnSuccess(unused ->
+                    eventPublisher.publishEvent(new TagRemoveEvent(this, tagEntity)))
+            );
     }
 }

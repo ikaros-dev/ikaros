@@ -124,7 +124,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                 }
             });
         } catch (AlreadyClosedException alreadyClosedException) {
-            log.warn("can not rebuild indies for dir has closed.");
+            log.warn("can not update indies for dir has closed.");
         }
     }
 
@@ -134,6 +134,9 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
         writeConfig.setOpenMode(CREATE_OR_APPEND);
         try (var writer = new IndexWriter(subjectIndexDir, writeConfig)) {
             writer.deleteAll();
+            if (log.isDebugEnabled()) {
+                log.debug("Delete all before rebuild documents.");
+            }
             subjectDocs.forEach(subjectDoc -> {
                 var doc = this.convert(subjectDoc);
                 try {
@@ -141,7 +144,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                             String.valueOf(subjectDoc.getId())),
                         doc);
                     if (log.isDebugEnabled()) {
-                        log.debug("Updated document({}) with sequence number {} returned",
+                        log.debug("Rebuild document({}) with sequence number {} returned",
                             subjectDoc.getName(), seqNum);
                     }
                 } catch (Exception e) {
@@ -149,7 +152,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                 }
             });
         } catch (AlreadyClosedException alreadyClosedException) {
-            log.warn("can not rebuild indies for dir has closed.");
+            log.warn("Can not rebuild indies for dir has closed.");
         }
     }
 
