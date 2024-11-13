@@ -124,7 +124,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                 }
             });
         } catch (AlreadyClosedException alreadyClosedException) {
-            log.warn("can not rebuild indies for dir has closed.");
+            log.warn("can not update indies for dir has closed.");
         }
     }
 
@@ -134,6 +134,9 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
         writeConfig.setOpenMode(CREATE_OR_APPEND);
         try (var writer = new IndexWriter(subjectIndexDir, writeConfig)) {
             writer.deleteAll();
+            if (log.isDebugEnabled()) {
+                log.debug("Delete all before rebuild documents.");
+            }
             subjectDocs.forEach(subjectDoc -> {
                 var doc = this.convert(subjectDoc);
                 try {
@@ -141,7 +144,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                             String.valueOf(subjectDoc.getId())),
                         doc);
                     if (log.isDebugEnabled()) {
-                        log.debug("Updated document({}) with sequence number {} returned",
+                        log.debug("Rebuild document({}) with sequence number {} returned",
                             subjectDoc.getName(), seqNum);
                     }
                 } catch (Exception e) {
@@ -149,7 +152,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                 }
             });
         } catch (AlreadyClosedException alreadyClosedException) {
-            log.warn("can not rebuild indies for dir has closed.");
+            log.warn("Can not rebuild indies for dir has closed.");
         }
     }
 
@@ -193,6 +196,15 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
         if (StringUtils.hasText(subjectDoc.getCover())) {
             doc.add(new TextField("cover", subjectDoc.getCover(), YES));
         }
+        var tags = "";
+        if (subjectDoc.getTags() != null && !subjectDoc.getTags().isEmpty()) {
+            StringBuilder sb = new StringBuilder(tags);
+            for (String tag : subjectDoc.getTags()) {
+                sb.append(stripToEmpty(tag)).append(SPACE);
+                doc.add(new StringField("tag", tag, YES));
+            }
+            tags = sb.toString();
+        }
         doc.add(new StringField("nsfw", String.valueOf(subjectDoc.getNsfw()), YES));
         doc.add(new StringField("type", String.valueOf(subjectDoc.getType()), YES));
         doc.add(new StringField("airTime", formatTimestamp(subjectDoc.getAirTime()), YES));
@@ -205,7 +217,8 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                 + stripToEmpty(subjectDoc.getSummary()) + SPACE
                 + subjectDoc.getNsfw() + SPACE
                 + subjectDoc.getType() + SPACE
-                + formatTimestamp(subjectDoc.getAirTime()) + SPACE,
+                + formatTimestamp(subjectDoc.getAirTime()) + SPACE
+                + tags + SPACE,
             Safelist.none());
         doc.add(new StoredField("content", content));
         doc.add(new TextField("searchable", subjectDoc.getName() + content, NO));

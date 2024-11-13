@@ -79,7 +79,7 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 
 ## 本地开发
 
-在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win-dev,local`
+在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win-dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,win-dev,local`
 
 这里的`local`请先确保您已经进行了上面的`application-local.yaml.example`实例文件复制移动重命名
 
