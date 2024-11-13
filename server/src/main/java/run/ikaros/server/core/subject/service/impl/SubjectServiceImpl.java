@@ -356,12 +356,12 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         Query query = Query.query(criteria);
 
         if (updateTimeDesc) {
-            query = query.sort(Sort.by(Sort.Order.desc("update_time")));
+            query = query.sort(Sort.by(Sort.Order.desc("update_time").nullsLast()));
         }
 
         query = query
-            .sort(Sort.by(airTimeDesc ? Sort.Order.desc("air_time")
-                : Sort.Order.asc("air_time")))
+            .sort(Sort.by(airTimeDesc ? Sort.Order.desc("air_time").nullsLast()
+                : Sort.Order.asc("air_time").nullsLast()))
             .sort(Sort.by(Sort.Order.asc("name")))
             .with(pageRequest);
 
