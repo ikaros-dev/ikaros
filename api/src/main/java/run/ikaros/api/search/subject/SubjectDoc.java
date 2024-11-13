@@ -1,5 +1,6 @@
 package run.ikaros.api.search.subject;
 
+import java.util.List;
 import lombok.Data;
 import run.ikaros.api.store.enums.SubjectType;
 
@@ -14,4 +15,5 @@ public class SubjectDoc {
     private Boolean nsfw;
     private Long airTime;
     private String cover;
+    private List<String> tags;
 }
