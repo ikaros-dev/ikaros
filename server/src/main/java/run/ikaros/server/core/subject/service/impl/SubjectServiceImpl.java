@@ -348,16 +348,16 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             }
         }
 
-        Query query = Query.query(criteria)
-            .sort(Sort.by(Sort.Order.asc("name")))
-            .sort(Sort.by(Sort.Order.asc("type")))
-            .sort(Sort.by(Sort.Order.asc("nsfw")))
-            .sort(Sort.by(updateTimeDesc
-                ? Sort.Order.desc("update_time")
-                : Sort.Order.asc("update_time")))
-            .sort(Sort.by(airTimeDesc
-                ? Sort.Order.desc("air_time")
+        Query query = Query.query(criteria);
+
+        if (updateTimeDesc) {
+            query = query.sort(Sort.by(Sort.Order.desc("update_time")));
+        }
+
+        query = query
+            .sort(Sort.by(airTimeDesc ? Sort.Order.desc("air_time")
                 : Sort.Order.asc("air_time")))
+            .sort(Sort.by(Sort.Order.asc("name")))
             .with(pageRequest);
 
         Flux<SubjectEntity> subjectEntityFlux = template.select(query, SubjectEntity.class);
