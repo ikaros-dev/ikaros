@@ -158,6 +158,10 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         Assert.notNull(subject, "'subject' must not be null.");
         Assert.notNull(subject.getType(), "'subject.type' must not be null.");
         return copyProperties(subject, new SubjectEntity())
+            .map(subjectEntity -> {
+                subjectEntity.setUpdateTime(LocalDateTime.now());
+                return subjectEntity;
+            })
             .flatMap(subjectRepository::save)
             .doOnNext(entity -> applicationContext.publishEvent(new SubjectAddEvent(this, entity)))
             .flatMap(subjectEntity -> copyProperties(subjectEntity, subject));
@@ -182,7 +186,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .flatMap(this::publishSubjectUpdateEvent)
             .flatMap(entity -> {
                 Map<SqlIdentifier, Object> map = new HashMap<>();
-                map.put(SqlIdentifier.unquoted("update_time"), entity.getUpdateTime());
+                map.put(SqlIdentifier.unquoted("update_time"),
+                    entity.getUpdateTime() == null ? LocalDateTime.now() : entity.getUpdateTime());
                 map.put(SqlIdentifier.unquoted("name"), entity.getName());
                 map.put(SqlIdentifier.unquoted("nameCn"), entity.getNameCn());
                 map.put(SqlIdentifier.unquoted("cover"), entity.getCover());
