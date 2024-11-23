@@ -13,6 +13,7 @@ export * from "./episode-collection";
 export * from "./episode-record";
 export * from "./episode-resource";
 export * from "./jwt-apply-param";
+export * from "./jwt-apply-response";
 export * from "./link";
 export * from "./paging-wrap";
 export * from "./plugin";

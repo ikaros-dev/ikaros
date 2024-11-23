@@ -9,6 +9,7 @@ interface UserStoreState {
 	currentUser?: User;
 	isAnonymous: boolean;
 	jwtToken?: string;
+	refreshToken?:string,
 }
 
 export const useUserStore = defineStore('user', {
@@ -17,6 +18,7 @@ export const useUserStore = defineStore('user', {
 		currentUser: undefined,
 		isAnonymous: true,
 		jwtToken: undefined,
+		refreshToken: undefined,
 	}),
 	actions: {
 		async fetchCurrentUser() {

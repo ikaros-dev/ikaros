@@ -39,6 +39,8 @@ import {
 } from "../base";
 // @ts-ignore
 import { JwtApplyParam } from "../models";
+// @ts-ignore
+import { JwtApplyResponse } from "../models";
 /**
  * V1alpha1SecurityApi - axios parameter creator
  * @export
@@ -102,6 +104,61 @@ export const V1alpha1SecurityApiAxiosParamCreator = function (
         options: localVarRequestOptions,
       };
     },
+    /**
+     * Refresh access token with refresh token.
+     * @param {string} [body] Refresh token.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    refreshToken: async (
+      body?: string,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/security/auth/token/jwt/refresh`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "PUT",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        body,
+        localVarRequestOptions,
+        configuration
+      );
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
   };
 };
 
@@ -123,10 +180,36 @@ export const V1alpha1SecurityApiFp = function (configuration?: Configuration) {
       jwtApplyParam?: JwtApplyParam,
       options?: AxiosRequestConfig
     ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<JwtApplyResponse>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.applyJwtToken(
         jwtApplyParam,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Refresh access token with refresh token.
+     * @param {string} [body] Refresh token.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async refreshToken(
+      body?: string,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.refreshToken(
+        body,
         options
       );
       return createRequestFunction(
@@ -159,9 +242,23 @@ export const V1alpha1SecurityApiFactory = function (
     applyJwtToken(
       requestParameters: V1alpha1SecurityApiApplyJwtTokenRequest = {},
       options?: AxiosRequestConfig
-    ): AxiosPromise<string> {
+    ): AxiosPromise<JwtApplyResponse> {
       return localVarFp
         .applyJwtToken(requestParameters.jwtApplyParam, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Refresh access token with refresh token.
+     * @param {V1alpha1SecurityApiRefreshTokenRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    refreshToken(
+      requestParameters: V1alpha1SecurityApiRefreshTokenRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<string> {
+      return localVarFp
+        .refreshToken(requestParameters.body, options)
         .then((request) => request(axios, basePath));
     },
   };
@@ -179,6 +276,20 @@ export interface V1alpha1SecurityApiApplyJwtTokenRequest {
    * @memberof V1alpha1SecurityApiApplyJwtToken
    */
   readonly jwtApplyParam?: JwtApplyParam;
+}
+
+/**
+ * Request parameters for refreshToken operation in V1alpha1SecurityApi.
+ * @export
+ * @interface V1alpha1SecurityApiRefreshTokenRequest
+ */
+export interface V1alpha1SecurityApiRefreshTokenRequest {
+  /**
+   * Refresh token.
+   * @type {string}
+   * @memberof V1alpha1SecurityApiRefreshToken
+   */
+  readonly body?: string;
 }
 
 /**
@@ -201,6 +312,22 @@ export class V1alpha1SecurityApi extends BaseAPI {
   ) {
     return V1alpha1SecurityApiFp(this.configuration)
       .applyJwtToken(requestParameters.jwtApplyParam, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Refresh access token with refresh token.
+   * @param {V1alpha1SecurityApiRefreshTokenRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1SecurityApi
+   */
+  public refreshToken(
+    requestParameters: V1alpha1SecurityApiRefreshTokenRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1SecurityApiFp(this.configuration)
+      .refreshToken(requestParameters.body, options)
       .then((request) => request(this.axios, this.basePath));
   }
 }

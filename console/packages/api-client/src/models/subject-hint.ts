@@ -50,6 +50,12 @@ export interface SubjectHint {
   summary?: string;
   /**
    *
+   * @type {string}
+   * @memberof SubjectHint
+   */
+  cover?: string;
+  /**
+   *
    * @type {boolean}
    * @memberof SubjectHint
    */
