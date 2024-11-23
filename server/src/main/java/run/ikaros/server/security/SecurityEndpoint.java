@@ -57,6 +57,14 @@ public class SecurityEndpoint implements CoreEndpoint {
                         .implementation(JwtApplyResponse.class)
                         .description("Jwt token response."))
             )
+            .PUT("/security/auth/token/jwt/refresh", this::refreshToken,
+                builder -> builder.operationId("RefreshToken")
+                    .tag(tag).description("Refresh access token with refresh token.")
+                    .requestBody(requestBodyBuilder().implementation(String.class)
+                        .description("Refresh token."))
+                    .response(responseBuilder().implementation(String.class)
+                        .description("New access token."))
+            )
             .build();
     }
 
@@ -76,5 +84,9 @@ public class SecurityEndpoint implements CoreEndpoint {
             .flatMap(token -> ServerResponse.ok().bodyValue(token))
             .onErrorResume(UserNotFoundException.class,
                 e -> Mono.error(new UserAuthenticationException(e.getLocalizedMessage(), e)));
+    }
+
+    private Mono<ServerResponse> refreshToken(ServerRequest request) {
+        return ServerResponse.ok().bodyValue("");
     }
 }

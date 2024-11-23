@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.security.SecurityProperties;
 
 @Slf4j
@@ -24,7 +25,7 @@ public class JwtAuthenticationProvider {
     public JwtAuthenticationProvider(SecurityProperties securityProperties) {
         this.securityProperties = securityProperties;
         secretKey = Base64.getEncoder().encodeToString(
-            securityProperties.getJwtSecretKey().getBytes(StandardCharsets.UTF_8));
+            StringUtils.generateRandomStr(512).getBytes(StandardCharsets.UTF_8));
     }
 
     /**
