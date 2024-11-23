@@ -21,7 +21,7 @@ public class SecurityProperties {
 
     @Data
     public static class Expiry {
-        private Integer accessTokenDay = 1;
+        private Integer accessTokenDay = 3;
         private Integer refreshTokenMonth = 3;
     }
 

@@ -14,7 +14,7 @@ ikaros:
 
   security:
     expiry:
-      access-token-day: 1
+      access-token-day: 3
       refresh-token-month: 3
 
   plugin:
