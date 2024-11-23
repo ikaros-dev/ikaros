@@ -7,7 +7,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+import run.ikaros.api.infra.exception.security.InvalidTokenException;
+import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.security.SecurityProperties;
 
 @Slf4j
@@ -15,7 +19,8 @@ import run.ikaros.server.security.SecurityProperties;
 public class JwtAuthenticationProvider {
     private final SecurityProperties securityProperties;
     private final String secretKey;
-    private final long expirationTime; // 1 d
+    private Long accessTokenExpiry = 0L;
+    private Long refreshTokenExpiry = 0L;
 
     /**
      * Construct instance.
@@ -23,17 +28,48 @@ public class JwtAuthenticationProvider {
     public JwtAuthenticationProvider(SecurityProperties securityProperties) {
         this.securityProperties = securityProperties;
         secretKey = Base64.getEncoder().encodeToString(
-            securityProperties.getJwtSecretKey().getBytes(StandardCharsets.UTF_8));
-        expirationTime = securityProperties.getJwtExpirationTime();
+            StringUtils.generateRandomStr(512).getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * generateToken and convert to {@link JwtApplyResponse}.
+     */
+    public Mono<JwtApplyResponse> generateJwtResp(UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        SecurityProperties.Expiry expiry = securityProperties.getExpiry();
+        Integer accessTokenDay = expiry.getAccessTokenDay();
+        Integer refreshTokenMonth = expiry.getRefreshTokenMonth();
+        int dayOfMs = 24 * 60 * 60 * 1000;
+        accessTokenExpiry = (long) (accessTokenDay * dayOfMs);
+        refreshTokenExpiry = (long) refreshTokenMonth * dayOfMs * 30;
+        String accessToken = generateToken(username, accessTokenExpiry);
+        String refreshToken = generateToken(username, refreshTokenExpiry);
+        return Mono.just(JwtApplyResponse.builder()
+            .username(username)
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build());
+    }
+
+    /**
+     * 刷新token.
+     *
+     * @return 新的accessToken
+     */
+    public Mono<String> refreshToken(String refreshToken) {
+        if (!validateToken(refreshToken)) {
+            return Mono.error(new InvalidTokenException("Invalid token"));
+        }
+        return Mono.just(generateToken(extractUsername(refreshToken), accessTokenExpiry));
     }
 
     /**
      * generateToken.
      */
-    public String generateToken(String username) {
+    private String generateToken(String username, long milliseconds) {
         return Jwts.builder()
             .setSubject(username)
-            .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+            .setExpiration(new Date(System.currentTimeMillis() + milliseconds))
             .signWith(SignatureAlgorithm.HS512, secretKey)
             .compact();
     }

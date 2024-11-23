@@ -10,14 +10,13 @@ import org.springframework.validation.annotation.Validated;
 public class SecurityProperties {
 
     private final Initializer initializer = new Initializer();
-    private String jwtSecretKey = """
-        平和な日常ってやつは、一瞬にして壊されるんだ！
-        自分がどうしたいか、自分がどうなりたいか、それが一番大事なんだ！
-        私はあなたのエンジェロイド。あなたの命令をなんでも聞きます。
-        どんなに辛いことがあっても、笑顔で乗り越えるのが俺の流儀だ！
-        君と出会えたこと、それが私の奇跡です。
-        """;
-    private Long jwtExpirationTime = (long) (3 * 24 * 60 * 60 * 1000); // 3day
+    private final Expiry expiry = new Expiry();
+
+    @Data
+    public static class Expiry {
+        private Integer accessTokenDay = 3;
+        private Integer refreshTokenMonth = 3;
+    }
 
     @Data
     public static class Initializer {

@@ -13,8 +13,9 @@ ikaros:
       timeout: 10000
 
   security:
-    # 3 day for token expire
-    jwt-expiration-time: 259200000
+    expiry:
+      access-token-day: 3
+      refresh-token-month: 3
 
   plugin:
     runtime-mode: deployment

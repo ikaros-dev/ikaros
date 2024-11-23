@@ -48,6 +48,7 @@ models/episode-resource.ts
 models/episode.ts
 models/index.ts
 models/jwt-apply-param.ts
+models/jwt-apply-response.ts
 models/link.ts
 models/paging-wrap.ts
 models/plugin-load-location-file-system.ts

@@ -9,6 +9,7 @@ interface UserStoreState {
 	currentUser?: User;
 	isAnonymous: boolean;
 	jwtToken?: string;
+	refreshToken?:string,
 }
 
 export const useUserStore = defineStore('user', {
@@ -17,6 +18,7 @@ export const useUserStore = defineStore('user', {
 		currentUser: undefined,
 		isAnonymous: true,
 		jwtToken: undefined,
+		refreshToken: undefined,
 	}),
 	actions: {
 		async fetchCurrentUser() {
@@ -49,10 +51,12 @@ export const useUserStore = defineStore('user', {
 					},
 				});
 				if (status === 200) {
-					this.jwtToken = data;
+					this.jwtToken = data.accessToken;
+					this.refreshToken = data.refreshToken;
 					this.isAnonymous = false;
 				} else {
 					this.jwtToken = undefined;
+					this.refreshToken = undefined;
 					this.isAnonymous = true;
 				}
 			} catch (e) {
@@ -62,6 +66,7 @@ export const useUserStore = defineStore('user', {
 		},
 		jwtTokenLogout() {
 			this.jwtToken = undefined;
+			this.refreshToken = undefined;
 			this.isAnonymous = true;
 			this.currentUser = undefined;
 		},

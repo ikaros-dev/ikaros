@@ -20,6 +20,7 @@ import run.ikaros.api.infra.exception.security.UserAuthenticationException;
 import run.ikaros.api.infra.exception.user.UserNotFoundException;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.security.authentication.jwt.JwtApplyParam;
+import run.ikaros.server.security.authentication.jwt.JwtApplyResponse;
 import run.ikaros.server.security.authentication.jwt.JwtAuthenticationProvider;
 import run.ikaros.server.security.authentication.jwt.JwtReactiveAuthenticationManager;
 
@@ -53,8 +54,16 @@ public class SecurityEndpoint implements CoreEndpoint {
                         .implementation(JwtApplyParam.class)
                         .description("Apply JWT token params"))
                     .response(responseBuilder()
-                        .implementation(String.class)
-                        .description("Token"))
+                        .implementation(JwtApplyResponse.class)
+                        .description("Jwt token response."))
+            )
+            .PUT("/security/auth/token/jwt/refresh", this::refreshToken,
+                builder -> builder.operationId("RefreshToken")
+                    .tag(tag).description("Refresh access token with refresh token.")
+                    .requestBody(requestBodyBuilder().implementation(String.class)
+                        .description("Refresh token."))
+                    .response(responseBuilder().implementation(String.class)
+                        .description("New access token."))
             )
             .build();
     }
@@ -71,10 +80,15 @@ public class SecurityEndpoint implements CoreEndpoint {
             .map(UserDetails::getUsername)
             .map(String::valueOf)
             .flatMap(userDetailsService::findByUsername)
-            .map(UserDetails::getUsername)
-            .map(jwtAuthenticationProvider::generateToken)
+            .flatMap(jwtAuthenticationProvider::generateJwtResp)
             .flatMap(token -> ServerResponse.ok().bodyValue(token))
             .onErrorResume(UserNotFoundException.class,
                 e -> Mono.error(new UserAuthenticationException(e.getLocalizedMessage(), e)));
+    }
+
+    private Mono<ServerResponse> refreshToken(ServerRequest request) {
+        return request.bodyToMono(String.class)
+            .flatMap(jwtAuthenticationProvider::refreshToken)
+            .flatMap(accessToken -> ServerResponse.ok().bodyValue(accessToken));
     }
 }

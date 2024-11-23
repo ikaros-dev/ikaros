@@ -1,6 +1,11 @@
 package run.ikaros.api.infra.utils;
 
+import java.security.SecureRandom;
+
 public class StringUtils {
+    private static final String CHARACTERS
+        = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+=<>?";
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
      * upper str first char.
@@ -43,6 +48,25 @@ public class StringUtils {
      */
     public static String addLikeChar(String str) {
         return "%" + str + "%";
+    }
+
+
+    /**
+     * 生成指定长度的字符串.
+     *
+     * @param length 字符串长度
+     * @return 随机生成的字符串
+     */
+    public static String generateRandomStr(int length) {
+        if (length <= 0) {
+            throw new IllegalArgumentException("字符串长度必须大于 0");
+        }
+
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(CHARACTERS.charAt(RANDOM.nextInt(CHARACTERS.length())));
+        }
+        return sb.toString();
     }
 
 }
