@@ -6,7 +6,8 @@
 
 ## 新特性
 
-
+- 优化SecurityProperties结构
+- token申请同时返回refreshToken
 
 # 0.20.5
 

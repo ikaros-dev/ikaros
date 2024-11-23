@@ -7,7 +7,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 import run.ikaros.server.security.SecurityProperties;
 
 @Slf4j
@@ -15,7 +17,6 @@ import run.ikaros.server.security.SecurityProperties;
 public class JwtAuthenticationProvider {
     private final SecurityProperties securityProperties;
     private final String secretKey;
-    private final long expirationTime; // 1 d
 
     /**
      * Construct instance.
@@ -24,16 +25,33 @@ public class JwtAuthenticationProvider {
         this.securityProperties = securityProperties;
         secretKey = Base64.getEncoder().encodeToString(
             securityProperties.getJwtSecretKey().getBytes(StandardCharsets.UTF_8));
-        expirationTime = securityProperties.getJwtExpirationTime();
+    }
+
+    /**
+     * generateToken and convert to {@link JwtApplyResponse}.
+     */
+    public Mono<JwtApplyResponse> generateJwtResp(UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        SecurityProperties.Expiry expiry = securityProperties.getExpiry();
+        Integer accessTokenDay = expiry.getAccessTokenDay();
+        Integer refreshTokenMonth = expiry.getRefreshTokenMonth();
+        int dayOfMs = 24 * 60 * 60 * 1000;
+        String accessToken = generateToken(username, accessTokenDay * dayOfMs);
+        String refreshToken = generateToken(username, (long) refreshTokenMonth * dayOfMs * 30);
+        return Mono.just(JwtApplyResponse.builder()
+            .username(username)
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build());
     }
 
     /**
      * generateToken.
      */
-    public String generateToken(String username) {
+    private String generateToken(String username, long milliseconds) {
         return Jwts.builder()
             .setSubject(username)
-            .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+            .setExpiration(new Date(System.currentTimeMillis() + milliseconds))
             .signWith(SignatureAlgorithm.HS512, secretKey)
             .compact();
     }

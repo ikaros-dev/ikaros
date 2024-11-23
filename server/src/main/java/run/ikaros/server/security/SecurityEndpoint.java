@@ -20,6 +20,7 @@ import run.ikaros.api.infra.exception.security.UserAuthenticationException;
 import run.ikaros.api.infra.exception.user.UserNotFoundException;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.security.authentication.jwt.JwtApplyParam;
+import run.ikaros.server.security.authentication.jwt.JwtApplyResponse;
 import run.ikaros.server.security.authentication.jwt.JwtAuthenticationProvider;
 import run.ikaros.server.security.authentication.jwt.JwtReactiveAuthenticationManager;
 
@@ -53,8 +54,8 @@ public class SecurityEndpoint implements CoreEndpoint {
                         .implementation(JwtApplyParam.class)
                         .description("Apply JWT token params"))
                     .response(responseBuilder()
-                        .implementation(String.class)
-                        .description("Token"))
+                        .implementation(JwtApplyResponse.class)
+                        .description("Jwt token response."))
             )
             .build();
     }
@@ -71,8 +72,7 @@ public class SecurityEndpoint implements CoreEndpoint {
             .map(UserDetails::getUsername)
             .map(String::valueOf)
             .flatMap(userDetailsService::findByUsername)
-            .map(UserDetails::getUsername)
-            .map(jwtAuthenticationProvider::generateToken)
+            .flatMap(jwtAuthenticationProvider::generateJwtResp)
             .flatMap(token -> ServerResponse.ok().bodyValue(token))
             .onErrorResume(UserNotFoundException.class,
                 e -> Mono.error(new UserAuthenticationException(e.getLocalizedMessage(), e)));
