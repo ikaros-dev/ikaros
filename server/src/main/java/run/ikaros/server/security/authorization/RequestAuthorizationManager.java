@@ -26,13 +26,10 @@ public class RequestAuthorizationManager
         final ServerHttpRequest request = object.getExchange().getRequest();
         final String path = request.getURI().getPath();
         final HttpMethod method = request.getMethod();
-        boolean urlStartWithApiStatic = path
-            .startsWith("/api/" + CORE_VERSION + "/static/");
-        if (urlStartWithApiStatic) {
-            return authentication.map(auth -> new AuthorizationDecision(true));
-        }
-
-        if (path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/apply")) {
+        if (path.startsWith("/api/" + CORE_VERSION + "/static/")
+            || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/apply")
+            || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/refresh")
+        ) {
             return authentication.map(auth -> new AuthorizationDecision(true));
         }
 

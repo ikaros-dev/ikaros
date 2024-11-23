@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.infra.exception.security.InvalidTokenException;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.security.SecurityProperties;
 
@@ -18,6 +19,8 @@ import run.ikaros.server.security.SecurityProperties;
 public class JwtAuthenticationProvider {
     private final SecurityProperties securityProperties;
     private final String secretKey;
+    private Long accessTokenExpiry = 0L;
+    private Long refreshTokenExpiry = 0L;
 
     /**
      * Construct instance.
@@ -37,13 +40,27 @@ public class JwtAuthenticationProvider {
         Integer accessTokenDay = expiry.getAccessTokenDay();
         Integer refreshTokenMonth = expiry.getRefreshTokenMonth();
         int dayOfMs = 24 * 60 * 60 * 1000;
-        String accessToken = generateToken(username, accessTokenDay * dayOfMs);
-        String refreshToken = generateToken(username, (long) refreshTokenMonth * dayOfMs * 30);
+        accessTokenExpiry = (long) (accessTokenDay * dayOfMs);
+        refreshTokenExpiry = (long) refreshTokenMonth * dayOfMs * 30;
+        String accessToken = generateToken(username, accessTokenExpiry);
+        String refreshToken = generateToken(username, refreshTokenExpiry);
         return Mono.just(JwtApplyResponse.builder()
             .username(username)
             .accessToken(accessToken)
             .refreshToken(refreshToken)
             .build());
+    }
+
+    /**
+     * 刷新token.
+     *
+     * @return 新的accessToken
+     */
+    public Mono<String> refreshToken(String refreshToken) {
+        if (!validateToken(refreshToken)) {
+            return Mono.error(new InvalidTokenException("Invalid token"));
+        }
+        return Mono.just(generateToken(extractUsername(refreshToken), accessTokenExpiry));
     }
 
     /**

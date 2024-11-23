@@ -87,6 +87,8 @@ public class SecurityEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> refreshToken(ServerRequest request) {
-        return ServerResponse.ok().bodyValue("");
+        return request.bodyToMono(String.class)
+            .flatMap(jwtAuthenticationProvider::refreshToken)
+            .flatMap(accessToken -> ServerResponse.ok().bodyValue(accessToken));
     }
 }
