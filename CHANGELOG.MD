@@ -9,6 +9,10 @@
 - 优化SecurityProperties结构
 - token申请同时返回refreshToken
 
+## 问题修复
+
+- Console的登录页申请令牌接口适配
+
 # 0.20.5
 
 # 新特性

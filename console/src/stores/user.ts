@@ -51,10 +51,12 @@ export const useUserStore = defineStore('user', {
 					},
 				});
 				if (status === 200) {
-					this.jwtToken = data;
+					this.jwtToken = data.accessToken;
+					this.refreshToken = data.refreshToken;
 					this.isAnonymous = false;
 				} else {
 					this.jwtToken = undefined;
+					this.refreshToken = undefined;
 					this.isAnonymous = true;
 				}
 			} catch (e) {
@@ -64,6 +66,7 @@ export const useUserStore = defineStore('user', {
 		},
 		jwtTokenLogout() {
 			this.jwtToken = undefined;
+			this.refreshToken = undefined;
 			this.isAnonymous = true;
 			this.currentUser = undefined;
 		},
