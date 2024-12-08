@@ -1,35 +1,39 @@
 <script setup lang="ts">
-import {reactive, ref} from 'vue';
-import {Episode, Subject, SubjectTypeEnum} from '@runikaros/api-client';
+import { reactive, ref } from 'vue';
+import { Episode, Subject, SubjectTypeEnum } from '@runikaros/api-client';
 import EpisodePostDialog from './EpisodePostDialog.vue';
-import {Picture} from '@element-plus/icons-vue';
-import {formatDate} from '@/utils/date';
-import {apiClient} from '@/utils/api-client';
+import { Picture } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/date';
+import { apiClient } from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import CropperjsDialog from '@/components/image/CropperjsDialog.vue';
-import {useRouter} from 'vue-router';
+import { useRouter } from 'vue-router';
 import {
-  ElButton,
-  ElCol,
-  ElDatePicker,
-  ElForm,
-  ElFormItem,
-  ElImage,
-  ElInput,
-  ElMessage,
-  ElRadio,
-  ElRadioGroup,
-  ElRow,
-  ElSwitch,
-  ElTable,
-  ElTableColumn,
-  FormInstance,
-  FormRules,
+	ElButton,
+	ElCol,
+	ElDatePicker,
+	ElForm,
+	ElFormItem,
+	ElImage,
+	ElInput,
+	ElMessage,
+	ElRadio,
+	ElRadioGroup,
+	ElRow,
+	ElSwitch,
+	ElTable,
+	ElTableColumn,
+	FormInstance,
+	FormRules,
 } from 'element-plus';
-import {episodeGroupLabelMap, subjectTypeAliasMap, subjectTypes,} from '@/modules/common/constants';
+import {
+	episodeGroupLabelMap,
+	subjectTypeAliasMap,
+	subjectTypes,
+} from '@/modules/common/constants';
 import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
-import {base64Encode} from '@/utils/string-util';
-import {useI18n} from 'vue-i18n';
+import { base64Encode } from '@/utils/string-util';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -319,7 +323,11 @@ const oepnCropperjsDialog = () => {
 				</el-form-item>
 
 				<el-form-item>
-					<el-button plain :loading="submitBtnLoading" @click="submitForm(subjectElFormRef)">
+					<el-button
+						plain
+						:loading="submitBtnLoading"
+						@click="submitForm(subjectElFormRef)"
+					>
 						{{ t('module.subject.post.text.button.subject.create') }}
 					</el-button>
 				</el-form-item>

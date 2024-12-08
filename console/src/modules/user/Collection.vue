@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
-import {SubjectCollection} from '@runikaros/api-client';
-import {apiClient} from '@/utils/api-client';
-import {ElCol, ElForm, ElFormItem, ElOption, ElPagination, ElRow, ElSelect, ElSwitch,} from 'element-plus';
+import { onMounted, ref } from 'vue';
+import { SubjectCollection } from '@runikaros/api-client';
+import { apiClient } from '@/utils/api-client';
+import {
+	ElCol,
+	ElForm,
+	ElFormItem,
+	ElOption,
+	ElPagination,
+	ElRow,
+	ElSelect,
+	ElSwitch,
+} from 'element-plus';
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
-import {useI18n} from 'vue-i18n';
+import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 

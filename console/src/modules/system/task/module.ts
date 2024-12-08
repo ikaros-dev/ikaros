@@ -1,7 +1,7 @@
-import {definePlugin} from '@runikaros/shared';
+import { definePlugin } from '@runikaros/shared';
 import Tasks from './Tasks.vue';
-import {MostlyCloudy} from '@element-plus/icons-vue';
-import {markRaw} from 'vue';
+import { MostlyCloudy } from '@element-plus/icons-vue';
+import { markRaw } from 'vue';
 import TaskDetails from './TaskDetails.vue';
 
 export default definePlugin({

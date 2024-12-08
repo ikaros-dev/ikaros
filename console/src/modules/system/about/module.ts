@@ -1,6 +1,6 @@
-import {definePlugin} from '@runikaros/shared';
-import {markRaw} from 'vue';
-import {Ship} from '@element-plus/icons-vue';
+import { definePlugin } from '@runikaros/shared';
+import { markRaw } from 'vue';
+import { Ship } from '@element-plus/icons-vue';
 import About from './About.vue';
 
 export default definePlugin({

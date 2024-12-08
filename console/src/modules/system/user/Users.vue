@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import {apiClient} from '@/utils/api-client';
-import {WarningFilled} from '@element-plus/icons-vue';
-import {Role, User, UserEntity} from '@runikaros/api-client';
-import {onMounted, reactive, ref} from 'vue';
+import { apiClient } from '@/utils/api-client';
+import { WarningFilled } from '@element-plus/icons-vue';
+import { Role, User, UserEntity } from '@runikaros/api-client';
+import { onMounted, reactive, ref } from 'vue';
 import {
-  ElButton,
-  ElCol,
-  ElDialog,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElMessage,
-  ElOption,
-  ElPopconfirm,
-  ElRow,
-  ElSelect,
-  ElSwitch,
-  ElTable,
-  ElTableColumn,
-  FormInstance,
-  FormRules,
+	ElButton,
+	ElCol,
+	ElDialog,
+	ElForm,
+	ElFormItem,
+	ElInput,
+	ElMessage,
+	ElOption,
+	ElPopconfirm,
+	ElRow,
+	ElSelect,
+	ElSwitch,
+	ElTable,
+	ElTableColumn,
+	FormInstance,
+	FormRules,
 } from 'element-plus';
 
 const users = ref<User[]>([]);

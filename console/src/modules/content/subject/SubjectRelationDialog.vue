@@ -1,14 +1,28 @@
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue';
-import {Subject, SubjectRelation, SubjectRelationRelationTypeEnum, SubjectTypeEnum,} from '@runikaros/api-client';
-import {apiClient} from '@/utils/api-client';
-import {useRoute} from 'vue-router';
+import { computed, onMounted, ref } from 'vue';
+import {
+	Subject,
+	SubjectRelation,
+	SubjectRelationRelationTypeEnum,
+	SubjectTypeEnum,
+} from '@runikaros/api-client';
+import { apiClient } from '@/utils/api-client';
+import { useRoute } from 'vue-router';
 import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLink.vue';
-import {ElButton, ElCol, ElDescriptions, ElDescriptionsItem, ElDialog, ElRow, ElTabPane, ElTabs,} from 'element-plus';
+import {
+	ElButton,
+	ElCol,
+	ElDescriptions,
+	ElDescriptionsItem,
+	ElDialog,
+	ElRow,
+	ElTabPane,
+	ElTabs,
+} from 'element-plus';
 import SubjectRelationPostDialog from './SubjectRelationPostDialog.vue';
 import SubjectRelationDeleteDialog from './SubjectRelationDeleteDialog.vue';
-import {useSubjectStore} from '@/stores/subject';
-import {useI18n} from 'vue-i18n';
+import { useSubjectStore } from '@/stores/subject';
+import { useI18n } from 'vue-i18n';
 
 const subjectStore = useSubjectStore();
 const { t } = useI18n();

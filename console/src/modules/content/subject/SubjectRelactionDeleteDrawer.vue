@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {Subject, SubjectRelation} from '@runikaros/api-client';
-import {computed, ref} from 'vue';
-import {ElDrawer, ElTable, ElTableColumn} from 'element-plus';
-import {useSubjectStore} from '@/stores/subject';
-import {useI18n} from 'vue-i18n';
+import { Subject, SubjectRelation } from '@runikaros/api-client';
+import { computed, ref } from 'vue';
+import { ElDrawer, ElTable, ElTableColumn } from 'element-plus';
+import { useSubjectStore } from '@/stores/subject';
+import { useI18n } from 'vue-i18n';
 
 const subjectStore = useSubjectStore();
 const { t } = useI18n();

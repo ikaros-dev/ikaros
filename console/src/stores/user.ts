@@ -1,15 +1,15 @@
-import {defineStore} from 'pinia';
+import { defineStore } from 'pinia';
 
-import type {User} from '@runikaros/api-client';
-import {JwtApplyParamAuthTypeEnum} from '@runikaros/api-client';
-import {apiClient, setApiClientJwtToken} from '@/utils/api-client';
+import type { User } from '@runikaros/api-client';
+import { JwtApplyParamAuthTypeEnum } from '@runikaros/api-client';
+import { apiClient, setApiClientJwtToken } from '@/utils/api-client';
 
 interface UserStoreState {
 	authType: JwtApplyParamAuthTypeEnum;
 	currentUser?: User;
 	isAnonymous: boolean;
 	jwtToken?: string;
-	refreshToken?:string,
+	refreshToken?: string;
 }
 
 export const useUserStore = defineStore('user', {

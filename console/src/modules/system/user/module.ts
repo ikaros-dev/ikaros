@@ -1,6 +1,6 @@
-import {definePlugin} from '@runikaros/shared';
-import {UserFilled} from '@element-plus/icons-vue';
-import {markRaw} from 'vue';
+import { definePlugin } from '@runikaros/shared';
+import { UserFilled } from '@element-plus/icons-vue';
+import { markRaw } from 'vue';
 import Users from './Users.vue';
 
 export default definePlugin({

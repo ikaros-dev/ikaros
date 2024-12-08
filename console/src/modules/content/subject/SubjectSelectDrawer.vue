@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue';
-import {Subject} from '@runikaros/api-client';
-import {apiClient} from '@/utils/api-client';
-import {base64Encode} from '@/utils/string-util';
+import { computed, onMounted, ref } from 'vue';
+import { Subject } from '@runikaros/api-client';
+import { apiClient } from '@/utils/api-client';
+import { base64Encode } from '@/utils/string-util';
 import {
-  ElCol,
-  ElDrawer,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElOption,
-  ElPagination,
-  ElRow,
-  ElSelect,
-  ElTable,
-  ElTableColumn,
+	ElCol,
+	ElDrawer,
+	ElForm,
+	ElFormItem,
+	ElInput,
+	ElOption,
+	ElPagination,
+	ElRow,
+	ElSelect,
+	ElTable,
+	ElTableColumn,
 } from 'element-plus';
-import {useI18n} from 'vue-i18n';
+import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 

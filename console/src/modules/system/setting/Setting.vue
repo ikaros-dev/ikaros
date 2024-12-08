@@ -1,9 +1,19 @@
 <script setup lang="ts">
-import {apiClient} from '@/utils/api-client';
-import {onMounted, reactive, ref, watch} from 'vue';
-import {ElButton, ElForm, ElFormItem, ElInput, ElMessage, ElSwitch, ElTabPane, ElTabs, FormRules,} from 'element-plus';
-import {useSettingStore} from '@/stores/setting';
-import {useI18n} from 'vue-i18n';
+import { apiClient } from '@/utils/api-client';
+import { onMounted, reactive, ref, watch } from 'vue';
+import {
+	ElButton,
+	ElForm,
+	ElFormItem,
+	ElInput,
+	ElMessage,
+	ElSwitch,
+	ElTabPane,
+	ElTabs,
+	FormRules,
+} from 'element-plus';
+import { useSettingStore } from '@/stores/setting';
+import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 

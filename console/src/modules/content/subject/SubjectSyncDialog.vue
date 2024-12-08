@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import {usePluginModuleStore} from '@/stores/plugin';
-import {apiClient} from '@/utils/api-client';
-import {PluginModule} from '@runikaros/shared';
-import {Subject} from '@runikaros/api-client';
+import { usePluginModuleStore } from '@/stores/plugin';
+import { apiClient } from '@/utils/api-client';
+import { PluginModule } from '@runikaros/shared';
+import { Subject } from '@runikaros/api-client';
 import {
-  ElButton,
-  ElDialog,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElMessage,
-  ElOption,
-  ElSelect,
-  FormInstance,
-  FormRules,
+	ElButton,
+	ElDialog,
+	ElForm,
+	ElFormItem,
+	ElInput,
+	ElMessage,
+	ElOption,
+	ElSelect,
+	FormInstance,
+	FormRules,
 } from 'element-plus';
-import {computed, onMounted, reactive, ref} from 'vue';
-import {useI18n} from 'vue-i18n';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
@@ -94,14 +94,17 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 					.finally(() => {
 						syncButtonLoading.value = false;
 					});
-				const { data } = await apiClient.subjectSync.getSubjectSyncsByPlatformAndPlatformId({
-					// @ts-ignore
-					platform: subjectSync.value.platform,
-					// @ts-ignore
-					platformId: subjectSync.value.platformId as number,
-				})
+				const { data } =
+					await apiClient.subjectSync.getSubjectSyncsByPlatformAndPlatformId({
+						// @ts-ignore
+						platform: subjectSync.value.platform,
+						// @ts-ignore
+						platformId: subjectSync.value.platformId as number,
+					});
 				if (data.length > 0) {
-					const rsp = await apiClient.subject.searchSubjectById({id: data[0].subjectId as number})
+					const rsp = await apiClient.subject.searchSubjectById({
+						id: data[0].subjectId as number,
+					});
 					emit('closeWithSubjectName', rsp.data);
 				}
 				dialogVisible.value = false;

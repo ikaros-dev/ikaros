@@ -1,36 +1,45 @@
 <script setup lang="ts">
-import {onMounted, reactive, ref, watch} from 'vue';
-import {Attachment, Episode, Subject, SubjectTypeEnum,} from '@runikaros/api-client';
+import { onMounted, reactive, ref, watch } from 'vue';
+import {
+	Attachment,
+	Episode,
+	Subject,
+	SubjectTypeEnum,
+} from '@runikaros/api-client';
 import EpisodePostDialog from './EpisodePostDialog.vue';
 import EpisodePutDialog from './EpisodePutDialog.vue';
-import {Picture} from '@element-plus/icons-vue';
-import {formatDate} from '@/utils/date';
-import {apiClient} from '@/utils/api-client';
+import { Picture } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/date';
+import { apiClient } from '@/utils/api-client';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
-import {useRoute, useRouter} from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import {
-  ElButton,
-  ElCol,
-  ElDatePicker,
-  ElForm,
-  ElFormItem,
-  ElImage,
-  ElInput,
-  ElMessage,
-  ElRadio,
-  ElRadioGroup,
-  ElRow,
-  ElSwitch,
-  ElTable,
-  ElTableColumn,
-  FormInstance,
-  FormRules,
+	ElButton,
+	ElCol,
+	ElDatePicker,
+	ElForm,
+	ElFormItem,
+	ElImage,
+	ElInput,
+	ElMessage,
+	ElRadio,
+	ElRadioGroup,
+	ElRow,
+	ElSwitch,
+	ElTable,
+	ElTableColumn,
+	FormInstance,
+	FormRules,
 } from 'element-plus';
-import {episodeGroupLabelMap, subjectTypeAliasMap, subjectTypes,} from '@/modules/common/constants';
+import {
+	episodeGroupLabelMap,
+	subjectTypeAliasMap,
+	subjectTypes,
+} from '@/modules/common/constants';
 import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
-import {base64Encode} from '@/utils/string-util';
-import {useSubjectStore} from '@/stores/subject';
-import {useI18n} from 'vue-i18n';
+import { base64Encode } from '@/utils/string-util';
+import { useSubjectStore } from '@/stores/subject';
+import { useI18n } from 'vue-i18n';
 import CropperjsDialog from '@/components/image/CropperjsDialog.vue';
 
 const router = useRouter();
@@ -398,7 +407,11 @@ onMounted(() => {
 				</el-form-item>
 
 				<el-form-item>
-					<el-button plain :loading="submitBtnLoading" @click="submitForm(subjectElFormRef)">
+					<el-button
+						plain
+						:loading="submitBtnLoading"
+						@click="submitForm(subjectElFormRef)"
+					>
 						{{ t('module.subject.put.text.button.subject.create') }}
 					</el-button>
 				</el-form-item>

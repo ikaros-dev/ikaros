@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import {useRoute} from 'vue-router';
-import {onMounted, ref, watch} from 'vue';
-import {Authority} from '@runikaros/api-client';
-import {apiClient} from '@/utils/api-client';
-import {WarningFilled} from '@element-plus/icons-vue';
+import { useRoute } from 'vue-router';
+import { onMounted, ref, watch } from 'vue';
+import { Authority } from '@runikaros/api-client';
+import { apiClient } from '@/utils/api-client';
+import { WarningFilled } from '@element-plus/icons-vue';
 import {
-  ElButton,
-  ElDialog,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElMessage,
-  ElOption,
-  ElPagination,
-  ElPopconfirm,
-  ElSelect,
-  ElTable,
-  ElTableColumn,
+	ElButton,
+	ElDialog,
+	ElForm,
+	ElFormItem,
+	ElInput,
+	ElMessage,
+	ElOption,
+	ElPagination,
+	ElPopconfirm,
+	ElSelect,
+	ElTable,
+	ElTableColumn,
 } from 'element-plus';
 
 const route = useRoute();

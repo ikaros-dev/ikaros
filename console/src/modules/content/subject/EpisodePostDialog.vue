@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import {Episode} from '@runikaros/api-client';
+import { Episode } from '@runikaros/api-client';
 import {
-  ElButton,
-  ElDatePicker,
-  ElDialog,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElMessage,
-  ElOption,
-  ElSelect,
-  FormInstance,
-  FormRules,
+	ElButton,
+	ElDatePicker,
+	ElDialog,
+	ElForm,
+	ElFormItem,
+	ElInput,
+	ElMessage,
+	ElOption,
+	ElSelect,
+	FormInstance,
+	FormRules,
 } from 'element-plus';
-import {computed, reactive, ref} from 'vue';
-import {episodeGroupLabelMap, episodeGroups,} from '@/modules/common/constants';
-import {useI18n} from 'vue-i18n';
+import { computed, reactive, ref } from 'vue';
+import {
+	episodeGroupLabelMap,
+	episodeGroups,
+} from '@/modules/common/constants';
+import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 

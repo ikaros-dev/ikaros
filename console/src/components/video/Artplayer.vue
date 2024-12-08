@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref, watch} from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import Artplayer from 'artplayer';
 import SubtitlesOctopus from '@/libs/JavascriptSubtitlesOctopus/subtitles-octopus.js';
-import {useFontStore} from '@/stores/font';
-import {Attachment} from '@runikaros/api-client';
-import {apiClient} from '@/utils/api-client';
-import type {Setting} from 'artplayer/types/setting';
-import {subtitleNameChineseMap} from '@/modules/common/constants';
+import { useFontStore } from '@/stores/font';
+import { Attachment } from '@runikaros/api-client';
+import { apiClient } from '@/utils/api-client';
+import type { Setting } from 'artplayer/types/setting';
+import { subtitleNameChineseMap } from '@/modules/common/constants';
 
 const beseUrl = import.meta.env.BASE_URL;
 const subtitlesOctopusWorkJsPath =

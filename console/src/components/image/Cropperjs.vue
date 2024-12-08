@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
-import {onMounted, ref, watch} from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const props = withDefaults(
 	defineProps<{

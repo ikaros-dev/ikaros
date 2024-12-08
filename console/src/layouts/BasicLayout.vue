@@ -2,12 +2,12 @@
 import Aside from './Aside.vue';
 import Header from './Header.vue';
 import variables from '@/styles/variables.module.scss';
-import {useLayoutStore} from '@/stores/layout';
+import { useLayoutStore } from '@/stores/layout';
 import GlobalSearchDialog from '@/components/global-search/GlobalSearchDialog.vue';
-import {computed, onMounted, onUnmounted, ref} from 'vue';
-import {ElAside, ElCard, ElContainer, ElHeader, ElMain} from 'element-plus';
-import {RouterView} from 'vue-router';
-import {useSettingStore} from '@/stores/setting';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { ElAside, ElCard, ElContainer, ElHeader, ElMain } from 'element-plus';
+import { RouterView } from 'vue-router';
+import { useSettingStore } from '@/stores/setting';
 
 const layoutStore = useLayoutStore();
 const settingStore = useSettingStore();
