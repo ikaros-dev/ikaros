@@ -44,5 +44,8 @@ public class SubjectCollectionEntity {
 
     private String comment;
 
+    /**
+     * Subject score, from 0 to 100.
+     */
     private Integer score;
 }

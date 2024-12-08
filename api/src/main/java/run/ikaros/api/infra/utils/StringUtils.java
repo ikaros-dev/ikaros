@@ -69,4 +69,15 @@ public class StringUtils {
         return sb.toString();
     }
 
+    /**
+     * 判断是否经过Base64编码.
+     *
+     * @param str 字符串
+     * @return 是否
+     */
+    public static boolean isBase64Encoded(String str) {
+        // 判断字符串是否符合Base64编码规则
+        String regex = "^[A-Za-z0-9+/=]+$";
+        return str.matches(regex) && str.length() % 4 == 0;
+    }
 }

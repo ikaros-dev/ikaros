@@ -77,6 +77,35 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     }
 
     @Override
+    public Mono<Void> collect(SubjectCollection subjectCollection) {
+        Assert.isTrue(subjectCollection.getUserId() >= 0, "'userId' must >= 0");
+        Assert.isTrue(subjectCollection.getSubjectId() >= 0, "'subjectId' must >= 0");
+        Assert.notNull(subjectCollection.getType(), "'type' must not null");
+        Assert.notNull(subjectCollection.getIsPrivate(), "'isPrivate' must not null");
+        if (subjectCollection.getMainEpisodeProgress() == null) {
+            subjectCollection.setMainEpisodeProgress(0);
+        }
+        if (subjectCollection.getScore() == null) {
+            subjectCollection.setScore(0);
+        }
+        Assert.isTrue(subjectCollection.getScore() >= 0 && subjectCollection.getScore() <= 100,
+            "subject collection score must between 0 and 100.");
+        return findCollection(subjectCollection.getUserId(), subjectCollection.getSubjectId())
+            .flatMap(subColl -> copyProperties(subjectCollection, subColl))
+            .switchIfEmpty(copyProperties(subjectCollection, subjectCollection))
+            .flatMap(subColl ->
+                subjectCollectionRepository.findByUserIdAndSubjectId(
+                        subColl.getUserId(), subColl.getSubjectId())
+                    .switchIfEmpty(copyProperties(subColl, new SubjectCollectionEntity())
+                        .doOnSuccess(
+                            entity -> log.info("Create new subject collection entity: {}", entity)))
+                    .flatMap(entity -> copyProperties(subColl, entity, "id"))
+            )
+            .flatMap(subjectCollectionRepository::save)
+            .then();
+    }
+
+    @Override
     public Mono<Void> collect(Long userId, Long subjectId,
                               CollectionType type, Boolean isPrivate) {
         Assert.isTrue(userId >= 0, "'userId' must >= 0");
