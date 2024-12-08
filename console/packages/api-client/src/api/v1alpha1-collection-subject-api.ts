@@ -54,6 +54,8 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
      * @param {number} subjectId Subject id.
      * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} type Collection type.
      * @param {boolean} [isPrivate] Is private, default is false.
+     * @param {string} [comment] Subject comment, with base64 encoded.
+     * @param {number} [score] Subject score, from 0 to 100.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -61,6 +63,8 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
       subjectId: number,
       type: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD",
       isPrivate?: boolean,
+      comment?: string,
+      score?: number,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
@@ -101,6 +105,14 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
 
       if (isPrivate !== undefined) {
         localVarQueryParameter["isPrivate"] = isPrivate;
+      }
+
+      if (comment !== undefined) {
+        localVarQueryParameter["comment"] = comment;
+      }
+
+      if (score !== undefined) {
+        localVarQueryParameter["score"] = score;
       }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -378,6 +390,8 @@ export const V1alpha1CollectionSubjectApiFp = function (
      * @param {number} subjectId Subject id.
      * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} type Collection type.
      * @param {boolean} [isPrivate] Is private, default is false.
+     * @param {string} [comment] Subject comment, with base64 encoded.
+     * @param {number} [score] Subject score, from 0 to 100.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -385,6 +399,8 @@ export const V1alpha1CollectionSubjectApiFp = function (
       subjectId: number,
       type: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD",
       isPrivate?: boolean,
+      comment?: string,
+      score?: number,
       options?: AxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
@@ -393,6 +409,8 @@ export const V1alpha1CollectionSubjectApiFp = function (
         subjectId,
         type,
         isPrivate,
+        comment,
+        score,
         options
       );
       return createRequestFunction(
@@ -542,6 +560,8 @@ export const V1alpha1CollectionSubjectApiFactory = function (
           requestParameters.subjectId,
           requestParameters.type,
           requestParameters.isPrivate,
+          requestParameters.comment,
+          requestParameters.score,
           options
         )
         .then((request) => request(axios, basePath));
@@ -641,6 +661,20 @@ export interface V1alpha1CollectionSubjectApiCollectSubjectRequest {
    * @memberof V1alpha1CollectionSubjectApiCollectSubject
    */
   readonly isPrivate?: boolean;
+
+  /**
+   * Subject comment, with base64 encoded.
+   * @type {string}
+   * @memberof V1alpha1CollectionSubjectApiCollectSubject
+   */
+  readonly comment?: string;
+
+  /**
+   * Subject score, from 0 to 100.
+   * @type {number}
+   * @memberof V1alpha1CollectionSubjectApiCollectSubject
+   */
+  readonly score?: number;
 }
 
 /**
@@ -750,6 +784,8 @@ export class V1alpha1CollectionSubjectApi extends BaseAPI {
         requestParameters.subjectId,
         requestParameters.type,
         requestParameters.isPrivate,
+        requestParameters.comment,
+        requestParameters.score,
         options
       )
       .then((request) => request(this.axios, this.basePath));
