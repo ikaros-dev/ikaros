@@ -4,6 +4,8 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -108,6 +110,18 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .in(ParameterIn.QUERY)
                         .implementation(Boolean.class)
                         .description("Is private, default is false."))
+                    .parameter(parameterBuilder()
+                        .name("comment")
+                        .required(false)
+                        .in(ParameterIn.QUERY)
+                        .implementation(String.class)
+                        .description("Subject comment, with base64 encoded."))
+                    .parameter(parameterBuilder()
+                        .name("score")
+                        .required(false)
+                        .in(ParameterIn.QUERY)
+                        .implementation(Integer.class)
+                        .description("Subject score, from 0 to 10."))
             )
 
             .DELETE("/collection/subject/collect", this::unCollectSubject,
@@ -186,8 +200,17 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
         CollectionType type = CollectionType.valueOf(typeOp.get());
         Optional<String> isPrivateOp = serverRequest.queryParam("isPrivate");
         Boolean isPrivate = Boolean.valueOf(isPrivateOp.orElse(Boolean.FALSE.toString()));
+        String comment = serverRequest.queryParam("comment").orElse("");
+        comment = run.ikaros.api.infra.utils.StringUtils.isBase64Encoded(comment)
+            ? new String(Base64.getDecoder().decode(comment), StandardCharsets.UTF_8)
+            : comment;
+        final String finalComment = comment;
+        Integer score = Integer.valueOf(serverRequest.queryParam("score").orElse("0"));
         return userService.getUserIdFromSecurityContext()
-            .flatMap(userId -> selfService.collect(userId, subjectId, type, isPrivate))
+            .flatMap(userId -> selfService.collect(SubjectCollection.builder()
+                .userId(userId).type(type).subjectId(subjectId).isPrivate(isPrivate)
+                .comment(finalComment).score(score)
+                .build()))
             .then(ServerResponse.ok().build())
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.badRequest().bodyValue(e.getMessage()));

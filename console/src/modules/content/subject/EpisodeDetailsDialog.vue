@@ -1,24 +1,29 @@
 <script setup lang="ts">
-import {Attachment, AttachmentReferenceTypeEnum, Episode, EpisodeResource,} from '@runikaros/api-client';
-import {computed, ref, watch} from 'vue';
 import {
-  ElButton,
-  ElCard,
-  ElCol,
-  ElDescriptions,
-  ElDescriptionsItem,
-  ElDialog,
-  ElMessage,
-  ElPopconfirm,
-  ElRow,
+	Attachment,
+	AttachmentReferenceTypeEnum,
+	Episode,
+	EpisodeResource,
+} from '@runikaros/api-client';
+import { computed, ref, watch } from 'vue';
+import {
+	ElButton,
+	ElCard,
+	ElCol,
+	ElDescriptions,
+	ElDescriptionsItem,
+	ElDialog,
+	ElMessage,
+	ElPopconfirm,
+	ElRow,
 } from 'element-plus';
-import {base64Encode} from '@/utils/string-util';
+import { base64Encode } from '@/utils/string-util';
 // eslint-disable-next-line no-unused-vars
-import {apiClient} from '@/utils/api-client';
-import {isVideo} from '@/utils/file';
-import {Close, Plus} from '@element-plus/icons-vue';
+import { apiClient } from '@/utils/api-client';
+import { isVideo } from '@/utils/file';
+import { Close, Plus } from '@element-plus/icons-vue';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
-import {useI18n} from 'vue-i18n';
+import { useI18n } from 'vue-i18n';
 import Artplayer from '@/components/video/Artplayer.vue';
 
 const { t } = useI18n();

@@ -62,6 +62,18 @@ export interface SubjectCollection {
   cover?: string;
   /**
    *
+   * @type {string}
+   * @memberof SubjectCollection
+   */
+  comment?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof SubjectCollection
+   */
+  score?: number;
+  /**
+   *
    * @type {number}
    * @memberof SubjectCollection
    */

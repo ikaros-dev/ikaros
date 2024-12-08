@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue';
+import { computed, ref } from 'vue';
 import Cropperjs from './Cropperjs.vue';
-import {ElButton, ElDialog} from 'element-plus';
-import {apiClient} from '@/utils/api-client';
-import {randomUUID} from '@/utils/id';
+import { ElButton, ElDialog } from 'element-plus';
+import { apiClient } from '@/utils/api-client';
+import { randomUUID } from '@/utils/id';
 
 const props = withDefaults(
 	defineProps<{

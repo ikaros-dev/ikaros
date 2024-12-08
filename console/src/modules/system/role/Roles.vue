@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import {apiClient} from '@/utils/api-client';
-import {Role} from '@runikaros/api-client';
-import {onMounted, ref} from 'vue';
-import {WarningFilled} from '@element-plus/icons-vue';
+import { apiClient } from '@/utils/api-client';
+import { Role } from '@runikaros/api-client';
+import { onMounted, ref } from 'vue';
+import { WarningFilled } from '@element-plus/icons-vue';
 
 import {
-  ElButton,
-  ElCol,
-  ElDialog,
-  ElInput,
-  ElMessage,
-  ElPopconfirm,
-  ElRow,
-  ElTable,
-  ElTableColumn,
+	ElButton,
+	ElCol,
+	ElDialog,
+	ElInput,
+	ElMessage,
+	ElPopconfirm,
+	ElRow,
+	ElTable,
+	ElTableColumn,
 } from 'element-plus';
-import {useRouter} from 'vue-router';
+import { useRouter } from 'vue-router';
 
 const roles = ref<Role[]>([]);
 const router = useRouter();

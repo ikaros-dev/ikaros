@@ -1,6 +1,6 @@
-import {definePlugin} from '@runikaros/shared';
-import {Ticket} from '@element-plus/icons-vue';
-import {markRaw} from 'vue';
+import { definePlugin } from '@runikaros/shared';
+import { Ticket } from '@element-plus/icons-vue';
+import { markRaw } from 'vue';
 import Roles from './Roles.vue';
 import RoleAuthorities from './RoleAuthorities.vue';
 

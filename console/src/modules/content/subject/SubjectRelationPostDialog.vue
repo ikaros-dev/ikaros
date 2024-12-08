@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue';
-import {ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElMessage, ElOption, ElSelect,} from 'element-plus';
-import {Tickets} from '@element-plus/icons-vue';
+import { computed, ref } from 'vue';
+import {
+	ElButton,
+	ElDialog,
+	ElForm,
+	ElFormItem,
+	ElInput,
+	ElMessage,
+	ElOption,
+	ElSelect,
+} from 'element-plus';
+import { Tickets } from '@element-plus/icons-vue';
 import SubjectSelectDrawer from './SubjectSelectDrawer.vue';
-import {apiClient} from '@/utils/api-client';
-import {useI18n} from 'vue-i18n';
-import {subjectRelationTypes} from '@/modules/common/constants';
+import { apiClient } from '@/utils/api-client';
+import { useI18n } from 'vue-i18n';
+import { subjectRelationTypes } from '@/modules/common/constants';
 
 const { t } = useI18n();
 

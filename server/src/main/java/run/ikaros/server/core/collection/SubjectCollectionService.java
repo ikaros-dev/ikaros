@@ -9,6 +9,9 @@ import run.ikaros.api.wrap.PagingWrap;
 public interface SubjectCollectionService {
 
     @Transactional
+    Mono<Void> collect(SubjectCollection subjectCollection);
+
+    @Transactional
     Mono<Void> collect(Long userId, Long subjectId,
                        CollectionType type, Boolean isPrivate);
 

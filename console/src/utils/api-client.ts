@@ -1,34 +1,34 @@
-import type {AxiosError, AxiosInstance} from 'axios';
+import type { AxiosError, AxiosInstance } from 'axios';
 import axios from 'axios';
-import {i18n} from '../locales';
+import { i18n } from '../locales';
 import {
-    ActuatorApi,
-    PluginIkarosRunV1alpha1PluginApi,
-    SettingIkarosRunV1alpha1ConfigmapApi,
-    V1alpha1AttachmentApi,
-    V1alpha1AttachmentReferenceApi,
-    V1alpha1AttachmentRelationApi,
-    V1alpha1AuthorityApi,
-    V1alpha1CollectionEpisodeApi,
-    V1alpha1CollectionSubjectApi,
-    V1alpha1EpisodeApi,
-    V1alpha1IndicesApi,
-    V1alpha1NotifyApi,
-    V1alpha1PluginApi,
-    V1alpha1RoleApi,
-    V1alpha1RoleAuthorityApi,
-    V1alpha1SecurityApi,
-    V1alpha1StaticApi,
-    V1alpha1SubjectApi,
-    V1alpha1SubjectRelationApi,
-    V1alpha1SubjectSyncApi,
-    V1alpha1TagApi,
-    V1alpha1TaskApi,
-    V1alpha1UserApi,
-    V1alpha1UserMeApi,
-    V1alpha1UserRoleApi,
+	ActuatorApi,
+	PluginIkarosRunV1alpha1PluginApi,
+	SettingIkarosRunV1alpha1ConfigmapApi,
+	V1alpha1AttachmentApi,
+	V1alpha1AttachmentReferenceApi,
+	V1alpha1AttachmentRelationApi,
+	V1alpha1AuthorityApi,
+	V1alpha1CollectionEpisodeApi,
+	V1alpha1CollectionSubjectApi,
+	V1alpha1EpisodeApi,
+	V1alpha1IndicesApi,
+	V1alpha1NotifyApi,
+	V1alpha1PluginApi,
+	V1alpha1RoleApi,
+	V1alpha1RoleAuthorityApi,
+	V1alpha1SecurityApi,
+	V1alpha1StaticApi,
+	V1alpha1SubjectApi,
+	V1alpha1SubjectRelationApi,
+	V1alpha1SubjectSyncApi,
+	V1alpha1TagApi,
+	V1alpha1TaskApi,
+	V1alpha1UserApi,
+	V1alpha1UserMeApi,
+	V1alpha1UserRoleApi,
 } from '@runikaros/api-client';
-import {ElMessage} from 'element-plus';
+import { ElMessage } from 'element-plus';
 
 const baseURL = import.meta.env.VITE_API_URL;
 

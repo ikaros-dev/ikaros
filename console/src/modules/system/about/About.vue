@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import {apiClient} from '@/utils/api-client';
-import {formatDate} from '@/utils/date';
-import {copyValue2Clipboard, objectToMap} from '@/utils/string-util';
-import {ElButton, ElDescriptions, ElDescriptionsItem, ElImage, ElMessage,} from 'element-plus';
-import {onMounted, ref} from 'vue';
+import { apiClient } from '@/utils/api-client';
+import { formatDate } from '@/utils/date';
+import { copyValue2Clipboard, objectToMap } from '@/utils/string-util';
+import {
+	ElButton,
+	ElDescriptions,
+	ElDescriptionsItem,
+	ElImage,
+	ElMessage,
+} from 'element-plus';
+import { onMounted, ref } from 'vue';
 
 const actuatorInfo = ref();
 const fetchActuatorInfo = async () => {

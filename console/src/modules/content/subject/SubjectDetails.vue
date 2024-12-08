@@ -1,52 +1,54 @@
 <script setup lang="ts">
 import {
-  Attachment,
-  AttachmentReferenceTypeEnum,
-  Episode,
-  EpisodeCollection,
-  EpisodeGroupEnum,
-  EpisodeRecord,
-  EpisodeResource,
-  Subject,
-  SubjectCollection,
-  SubjectSync,
-  SubjectTag,
-  SubjectTypeEnum,
+	Attachment,
+	AttachmentReferenceTypeEnum,
+	Episode,
+	EpisodeCollection,
+	EpisodeGroupEnum,
+	EpisodeRecord,
+	EpisodeResource,
+	Subject,
+	SubjectCollection,
+	SubjectSync,
+	SubjectTag,
+	SubjectTypeEnum,
 } from '@runikaros/api-client';
-import {apiClient} from '@/utils/api-client';
-import {formatDate} from '@/utils/date';
+import { apiClient } from '@/utils/api-client';
+import { formatDate } from '@/utils/date';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import router from '@/router';
-import {Check, Close} from '@element-plus/icons-vue';
+import { Check, Close } from '@element-plus/icons-vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
-import {useRoute} from 'vue-router';
-import {nextTick, onMounted, ref, watch} from 'vue';
+import { useRoute } from 'vue-router';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import {
-  ElButton,
-  ElCol,
-  ElDescriptions,
-  ElDescriptionsItem,
-  ElImage,
-  ElInput,
-  ElMessage,
-  ElOption,
-  ElPopconfirm,
-  ElRow,
-  ElSelect,
-  ElTable,
-  ElTableColumn,
-  ElTabPane,
-  ElTabs,
-  ElTag,
+	ElButton,
+	ElCol,
+	ElDescriptions,
+	ElDescriptionsItem,
+	ElImage,
+	ElInput,
+	ElMessage,
+	ElOption,
+	ElPopconfirm,
+	ElRow,
+	ElSelect,
+	ElTable,
+	ElTableColumn,
+	ElTabPane,
+	ElTabs,
+	ElTag,
+	ElRate,
 } from 'element-plus';
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
-import {useSettingStore} from '@/stores/setting';
+import { useSettingStore } from '@/stores/setting';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
-import {useSubjectStore} from '@/stores/subject';
+import { useSubjectStore } from '@/stores/subject';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 import AttachmentSelectDialog from '@/modules/content/attachment/AttachmentSelectDialog.vue';
 import SubjectCollectDialog from '@/components/modules/content/subject/SubjectCollectDialog.vue';
-import {useI18n} from 'vue-i18n';
+import { useI18n } from 'vue-i18n';
+import { scoreColors, scoreTexts } from '@/modules/common/constants';
 
 const route = useRoute();
 const settingStore = useSettingStore();
@@ -79,7 +81,7 @@ const subject = ref<Subject>({
 	name_cn: '',
 });
 
-const episodeRecords = ref<EpisodeRecord[]>([])
+const episodeRecords = ref<EpisodeRecord[]>([]);
 // const episodes = ref<Episode[]>([]);
 // const episodeResources = ref<EpisodeResource[]>([]);
 
@@ -113,8 +115,7 @@ const fetchEpisodeRecords = async () => {
 		);
 		loadEpisodeGroupLabels();
 	}
-}
-
+};
 
 // const fetchEpisodeResources = async () => {
 // 	// console.debug('episodes', episodes.value);
@@ -310,6 +311,8 @@ const updateSubjectCollection = async () => {
 			| 'DONE'
 			| 'SHELVE'
 			| 'DISCARD',
+		comment: subjectCollection.value.comment,
+		score: subjectCollection.value.score,
 	});
 	ElMessage.success(t('module.subject.collect.message.operate.update.success'));
 };
@@ -353,6 +356,14 @@ const fetchSubjectCollection = async () => {
 		subjectCollection.value = {};
 		collectButtonText.value = notCollectText;
 	}
+};
+const onSubjectCollectionScoreChange = async (value) => {
+	subjectCollection.value.score = value;
+	await updateSubjectCollection();
+};
+const onSubjectCollectionCommentChange = async (value) => {
+	subjectCollection.value.comment = value;
+	await updateSubjectCollection();
 };
 
 const episodeCollections = ref<EpisodeCollection[]>([]);
@@ -647,7 +658,9 @@ const loadEpisodeGroupLabels = () => {
 
 const subjectSyncs = ref<SubjectSync[]>([]);
 const fetchSubjectSyncs = async () => {
-	const { data } = await apiClient.subjectSync.getSubjectSyncsBySubjectId({id: subject.value.id as number})
+	const { data } = await apiClient.subjectSync.getSubjectSyncsBySubjectId({
+		id: subject.value.id as number,
+	});
 	subjectSyncs.value = data;
 };
 
@@ -767,30 +780,6 @@ onMounted(fetchDatas);
 							{{ subject.summary }}
 						</el-descriptions-item>
 					</el-descriptions>
-					<el-descriptions
-						v-if="subjectSyncs && subjectSyncs.length > 0"
-						size="large"
-						border
-					>
-						<el-descriptions-item
-							:label="t('module.subject.details.label.sync-platform')"
-						>
-							<span v-for="(sync, index) in subjectSyncs" :key="index">
-								{{ sync.platform }} :
-								<span v-if="sync.platform === 'BGM_TV'">
-									<a
-										:href="'https://bgm.tv/subject/' + sync.platformId"
-										target="_blank"
-									>
-										{{ sync.platformId }}
-									</a>
-								</span>
-								<span v-else>
-									{{ sync.platformId }}
-								</span>
-							</span>
-						</el-descriptions-item>
-					</el-descriptions>
 					<el-descriptions size="large" border>
 						<el-descriptions-item
 							:label="t('module.subject.details.label.tag')"
@@ -824,6 +813,55 @@ onMounted(fetchDatas);
 							</el-button>
 						</el-descriptions-item>
 					</el-descriptions>
+					<el-descriptions
+						v-if="subjectSyncs && subjectSyncs.length > 0"
+						size="large"
+						border
+					>
+						<el-descriptions-item
+							:label="t('module.subject.details.label.sync-platform')"
+						>
+							<span v-for="(sync, index) in subjectSyncs" :key="index">
+								{{ sync.platform }} :
+								<span v-if="sync.platform === 'BGM_TV'">
+									<a
+										:href="'https://bgm.tv/subject/' + sync.platformId"
+										target="_blank"
+									>
+										{{ sync.platformId }}
+									</a>
+								</span>
+								<span v-else>
+									{{ sync.platformId }}
+								</span>
+							</span>
+						</el-descriptions-item>
+					</el-descriptions>
+					<el-descriptions size="large" :column="2" border>
+						<el-descriptions-item label="我的评分">
+							<el-rate
+								v-if="
+									subjectCollection &&
+									subjectCollection.score != undefined &&
+									subjectCollection.score >= 0
+								"
+								v-model="subjectCollection.score"
+								clearable
+								show-text
+								:max="10"
+								:colors="scoreColors"
+								:texts="scoreTexts"
+								@change="onSubjectCollectionScoreChange"
+							/>
+							<span v-else> 无评分信息 </span>
+						</el-descriptions-item>
+						<el-descriptions-item label="我的评论">
+							<el-input
+								v-model="subjectCollection.comment"
+								@change="onSubjectCollectionCommentChange"
+							/>
+						</el-descriptions-item>
+					</el-descriptions>
 					<el-descriptions size="large" border>
 						<el-descriptions-item
 							:label="t('module.subject.details.label.collect-status')"
@@ -842,8 +880,12 @@ onMounted(fetchDatas);
 										  )) +
 									t(
 										'module.subject.details.cancel-collect-popconfirm.title-postfix'
-									)
+									) +
+									(subjectCollection && subjectCollection.type
+										? '条目收藏中您的评分和评论会一起删除！'
+										: '')
 								"
+								width="200px"
 								@confirm="changeSubjectCollectState"
 							>
 								<template #reference>
@@ -872,6 +914,7 @@ onMounted(fetchDatas);
 								v-if="subjectCollection && subjectCollection.type"
 								v-model="subjectCollection.type"
 								placeholder="Select"
+								style="width: 100px"
 								@change="updateSubjectCollection"
 							>
 								<el-option
@@ -908,7 +951,11 @@ onMounted(fetchDatas);
 							:label="item.label"
 						>
 							<el-table
-								:data="episodeRecords?.filter((record) => record?.episode?.group === item.group)"
+								:data="
+									episodeRecords?.filter(
+										(record) => record?.episode?.group === item.group
+									)
+								"
 								@row-dblclick="showEpisodeDetails"
 							>
 								<el-table-column

@@ -1,27 +1,35 @@
 <script setup lang="ts">
-import {Attachment} from '@runikaros/api-client';
-import {computed, onMounted, ref} from 'vue';
-import {apiClient} from '@/utils/api-client';
-import {base64Encode, formatFileSize} from '@/utils/string-util';
+import { Attachment } from '@runikaros/api-client';
+import { computed, onMounted, ref } from 'vue';
+import { apiClient } from '@/utils/api-client';
+import { base64Encode, formatFileSize } from '@/utils/string-util';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import AttachmentDirectoryTreeSelect from '@/components/modules/content/attachment/AttachmentDirectoryTreeSelect.vue';
 import moment from 'moment';
-import {isImage, isVideo, isVoice} from '@/utils/file';
+import { isImage, isVideo, isVoice } from '@/utils/file';
 
-import {Document, Film, Folder, Headset, Picture, Search, Upload,} from '@element-plus/icons-vue';
 import {
-  ElButton,
-  ElCol,
-  ElDialog,
-  ElFormItem,
-  ElIcon,
-  ElInput,
-  ElPagination,
-  ElRow,
-  ElTable,
-  ElTableColumn,
+	Document,
+	Film,
+	Folder,
+	Headset,
+	Picture,
+	Search,
+	Upload,
+} from '@element-plus/icons-vue';
+import {
+	ElButton,
+	ElCol,
+	ElDialog,
+	ElFormItem,
+	ElIcon,
+	ElInput,
+	ElPagination,
+	ElRow,
+	ElTable,
+	ElTableColumn,
 } from 'element-plus';
-import {useI18n} from 'vue-i18n';
+import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 

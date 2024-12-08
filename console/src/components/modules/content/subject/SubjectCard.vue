@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {ElCard, ElProgress} from 'element-plus';
-import {computed, onMounted, ref, watch} from 'vue';
+import { ElCard, ElProgress } from 'element-plus';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const props = withDefaults(
 	defineProps<{

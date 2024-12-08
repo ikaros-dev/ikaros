@@ -51,4 +51,9 @@ public class SubjectCollection {
     private String cover;
     @JsonProperty("air_time")
     private LocalDateTime airTime;
+    private String comment;
+    /**
+     * Subject score, from 0 to 10.
+     */
+    private Integer score;
 }

@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue';
-import {ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElMessage, ElPopconfirm,} from 'element-plus';
-import {Tickets} from '@element-plus/icons-vue';
+import { computed, ref } from 'vue';
+import {
+	ElButton,
+	ElDialog,
+	ElForm,
+	ElFormItem,
+	ElInput,
+	ElMessage,
+	ElPopconfirm,
+} from 'element-plus';
+import { Tickets } from '@element-plus/icons-vue';
 import SubjectRelactionDeleteDrawer from './SubjectRelactionDeleteDrawer.vue';
-import {SubjectRelation} from '@runikaros/api-client';
-import {apiClient} from '@/utils/api-client';
-import {useSubjectStore} from '@/stores/subject';
-import {useI18n} from 'vue-i18n';
+import { SubjectRelation } from '@runikaros/api-client';
+import { apiClient } from '@/utils/api-client';
+import { useSubjectStore } from '@/stores/subject';
+import { useI18n } from 'vue-i18n';
 
 const subjectStore = useSubjectStore();
 const { t } = useI18n();
