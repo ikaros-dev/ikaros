@@ -53,7 +53,7 @@ public class SubjectCollection {
     private LocalDateTime airTime;
     private String comment;
     /**
-     * Subject score, from 0 to 100.
+     * Subject score, from 0 to 10.
      */
     private Integer score;
 }

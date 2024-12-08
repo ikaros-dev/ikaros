@@ -121,7 +121,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .required(false)
                         .in(ParameterIn.QUERY)
                         .implementation(Integer.class)
-                        .description("Subject score, from 0 to 100."))
+                        .description("Subject score, from 0 to 10."))
             )
 
             .DELETE("/collection/subject/collect", this::unCollectSubject,

@@ -88,8 +88,8 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
         if (subjectCollection.getScore() == null) {
             subjectCollection.setScore(0);
         }
-        Assert.isTrue(subjectCollection.getScore() >= 0 && subjectCollection.getScore() <= 100,
-            "subject collection score must between 0 and 100.");
+        Assert.isTrue(subjectCollection.getScore() >= 0 && subjectCollection.getScore() <= 10,
+            "subject collection score must between 0 and 10.");
         return findCollection(subjectCollection.getUserId(), subjectCollection.getSubjectId())
             .flatMap(subColl -> copyProperties(subjectCollection, subColl))
             .switchIfEmpty(copyProperties(subjectCollection, subjectCollection))
