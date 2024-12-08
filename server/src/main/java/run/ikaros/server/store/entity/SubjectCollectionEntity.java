@@ -41,4 +41,8 @@ public class SubjectCollectionEntity {
      */
     @Column("is_private")
     private Boolean isPrivate;
+
+    private String comment;
+
+    private Integer score;
 }
