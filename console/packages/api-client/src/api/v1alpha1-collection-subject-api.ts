@@ -55,7 +55,7 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
      * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} type Collection type.
      * @param {boolean} [isPrivate] Is private, default is false.
      * @param {string} [comment] Subject comment, with base64 encoded.
-     * @param {number} [score] Subject score, from 0 to 100.
+     * @param {number} [score] Subject score, from 0 to 10.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -391,7 +391,7 @@ export const V1alpha1CollectionSubjectApiFp = function (
      * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} type Collection type.
      * @param {boolean} [isPrivate] Is private, default is false.
      * @param {string} [comment] Subject comment, with base64 encoded.
-     * @param {number} [score] Subject score, from 0 to 100.
+     * @param {number} [score] Subject score, from 0 to 10.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -670,7 +670,7 @@ export interface V1alpha1CollectionSubjectApiCollectSubjectRequest {
   readonly comment?: string;
 
   /**
-   * Subject score, from 0 to 100.
+   * Subject score, from 0 to 10.
    * @type {number}
    * @memberof V1alpha1CollectionSubjectApiCollectSubject
    */

@@ -68,6 +68,12 @@ export interface Subject {
   cover?: string;
   /**
    *
+   * @type {number}
+   * @memberof Subject
+   */
+  score?: number;
+  /**
+   *
    * @type {string}
    * @memberof Subject
    */

@@ -170,6 +170,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
      * @param {string} [time] 时间范围，格式范围类型: 2000.9-2010.8 或者 单个类型2020.8
      * @param {boolean} [airTimeDesc] 是否根据放送时间倒序，新番在列表前面。默认为 true.
      * @param {boolean} [updateTimeDesc] 是否根据更新时间倒序，默认为 true.
+     * @param {boolean} [scoreDesc] 是否根据评分倒序，默认为空.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -183,6 +184,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
       time?: string,
       airTimeDesc?: boolean,
       updateTimeDesc?: boolean,
+      scoreDesc?: boolean,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/subjects/condition`;
@@ -243,6 +245,10 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
 
       if (updateTimeDesc !== undefined) {
         localVarQueryParameter["updateTimeDesc"] = updateTimeDesc;
+      }
+
+      if (scoreDesc !== undefined) {
+        localVarQueryParameter["scoreDesc"] = scoreDesc;
       }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -491,6 +497,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
      * @param {string} [time] 时间范围，格式范围类型: 2000.9-2010.8 或者 单个类型2020.8
      * @param {boolean} [airTimeDesc] 是否根据放送时间倒序，新番在列表前面。默认为 true.
      * @param {boolean} [updateTimeDesc] 是否根据更新时间倒序，默认为 true.
+     * @param {boolean} [scoreDesc] 是否根据评分倒序，默认为空.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -504,6 +511,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
       time?: string,
       airTimeDesc?: boolean,
       updateTimeDesc?: boolean,
+      scoreDesc?: boolean,
       options?: AxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
@@ -519,6 +527,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
           time,
           airTimeDesc,
           updateTimeDesc,
+          scoreDesc,
           options
         );
       return createRequestFunction(
@@ -662,6 +671,7 @@ export const V1alpha1SubjectApiFactory = function (
           requestParameters.time,
           requestParameters.airTimeDesc,
           requestParameters.updateTimeDesc,
+          requestParameters.scoreDesc,
           options
         )
         .then((request) => request(axios, basePath));
@@ -818,6 +828,13 @@ export interface V1alpha1SubjectApiListSubjectsByConditionRequest {
    * @memberof V1alpha1SubjectApiListSubjectsByCondition
    */
   readonly updateTimeDesc?: boolean;
+
+  /**
+   * 是否根据评分倒序，默认为空.
+   * @type {boolean}
+   * @memberof V1alpha1SubjectApiListSubjectsByCondition
+   */
+  readonly scoreDesc?: boolean;
 }
 
 /**
@@ -930,6 +947,7 @@ export class V1alpha1SubjectApi extends BaseAPI {
         requestParameters.time,
         requestParameters.airTimeDesc,
         requestParameters.updateTimeDesc,
+        requestParameters.scoreDesc,
         options
       )
       .then((request) => request(this.axios, this.basePath));
