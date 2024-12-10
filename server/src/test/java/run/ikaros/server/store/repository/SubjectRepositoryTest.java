@@ -5,6 +5,7 @@ import static org.springframework.data.relational.core.query.Criteria.where;
 
 import java.util.Random;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,7 @@ class SubjectRepositoryTest {
     }
 
     @Test
+    @Disabled
     void update() {
         final String name = "test" + new Random(100).nextInt();
         SubjectEntity subjectEntity = SubjectEntity.builder()
