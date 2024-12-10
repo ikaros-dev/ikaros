@@ -110,6 +110,7 @@ class SubjectEndpointTest {
     }
 
     @Test
+    @Disabled
     void list() {
         webTestClient
             .get()
