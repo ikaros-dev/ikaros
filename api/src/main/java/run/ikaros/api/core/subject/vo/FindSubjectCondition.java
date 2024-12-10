@@ -30,6 +30,10 @@ public class FindSubjectCondition {
      * default is false.
      */
     private Boolean updateTimeDesc;
+    /**
+     * default is null.
+     */
+    private Boolean scoreDesc;
 
     /**
      * init default if field value is null.
