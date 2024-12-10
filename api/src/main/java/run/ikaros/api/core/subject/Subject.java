@@ -36,4 +36,8 @@ public class Subject {
     private Boolean nsfw;
     private LocalDateTime airTime;
     private String cover;
+    /**
+     * Subject score, from 0 to 10.
+     */
+    private Double score;
 }
