@@ -360,13 +360,12 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             query = query.sort(Sort.by(Sort.Order.desc("update_time").nullsLast()));
         }
 
-        // todo 目前无这个字段，评分需要根据所有用户的条目收藏进行综合计算
-        // if (Objects.nonNull(scoreDesc)) {
-        //     query = query.sort(
-        //         scoreDesc ? Sort.by(Sort.Order.desc("score").nullsLast())
-        //             : Sort.by(Sort.Order.asc("score").nullsLast())
-        //     );
-        // }
+        if (Objects.nonNull(scoreDesc)) {
+            query = query.sort(
+                scoreDesc ? Sort.by(Sort.Order.desc("score").nullsLast())
+                    : Sort.by(Sort.Order.asc("score").nullsLast())
+            );
+        }
 
         query = query
             .sort(Sort.by(airTimeDesc ? Sort.Order.desc("air_time").nullsLast()
