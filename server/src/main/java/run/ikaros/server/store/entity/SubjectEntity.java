@@ -39,4 +39,9 @@ public class SubjectEntity extends BaseEntity {
     private String cover;
     @Column("air_time")
     private LocalDateTime airTime;
+
+    /**
+     * Subject score, from 0 to 10.
+     */
+    private Double score;
 }
