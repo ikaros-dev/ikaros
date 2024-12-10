@@ -24,6 +24,7 @@ import run.ikaros.api.infra.exception.user.UserNotFoundException;
 import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.collection.event.SubjectCollectionScoreUpdateEvent;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeCollectionEntity;
 import run.ikaros.server.store.entity.SubjectCollectionEntity;
@@ -88,6 +89,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
         if (subjectCollection.getScore() == null) {
             subjectCollection.setScore(0);
         }
+        final int newScore = subjectCollection.getScore();
         Assert.isTrue(subjectCollection.getScore() >= 0 && subjectCollection.getScore() <= 10,
             "subject collection score must between 0 and 10.");
         return findCollection(subjectCollection.getUserId(), subjectCollection.getSubjectId())
@@ -97,8 +99,21 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                 subjectCollectionRepository.findByUserIdAndSubjectId(
                         subColl.getUserId(), subColl.getSubjectId())
                     .switchIfEmpty(copyProperties(subColl, new SubjectCollectionEntity())
-                        .doOnSuccess(
-                            entity -> log.info("Create new subject collection entity: {}", entity)))
+                        .doOnSuccess(entity -> {
+                            log.info("Create new subject collection entity: {}", entity);
+                            SubjectCollectionScoreUpdateEvent event
+                                = new SubjectCollectionScoreUpdateEvent(
+                                this, entity.getSubjectId());
+                            applicationEventPublisher.publishEvent(event);
+                        }))
+                    .doOnNext(entity -> {
+                        if (entity.getScore() != newScore) {
+                            SubjectCollectionScoreUpdateEvent event
+                                = new SubjectCollectionScoreUpdateEvent(
+                                this, entity.getSubjectId());
+                            applicationEventPublisher.publishEvent(event);
+                        }
+                    })
                     .flatMap(entity -> copyProperties(subColl, entity, "id"))
             )
             .flatMap(subjectCollectionRepository::save)

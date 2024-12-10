@@ -115,6 +115,10 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .name("updateTimeDesc")
                         .implementation(Boolean.class)
                         .description("是否根据更新时间倒序，默认为 true."))
+                    .parameter(parameterBuilder()
+                        .name("scoreDesc")
+                        .implementation(Boolean.class)
+                        .description("是否根据评分倒序，默认为空."))
                     .response(responseBuilder().implementation(PagingWrap.class))
             )
 
@@ -188,12 +192,20 @@ public class SubjectEndpoint implements CoreEndpoint {
         boolean updateTimeDesc =
             Boolean.parseBoolean(request.queryParam("updateTimeDesc")
                 .orElse(Boolean.FALSE.toString()));
+        Optional<String> scoreDescOp = request.queryParam("scoreDesc");
+        Boolean scoreDesc = null;
+        if (scoreDescOp.isPresent() && !scoreDescOp.get().isEmpty()) {
+            scoreDesc =
+                Boolean.parseBoolean(scoreDescOp.get());
+        }
 
         FindSubjectCondition findSubjectCondition = FindSubjectCondition.builder()
             .page(page).size(size).name(name).nameCn(nameCn)
             .nsfw(nsfw).type(type).time(time)
             .airTimeDesc(airTimeDesc)
-            .updateTimeDesc(updateTimeDesc).build();
+            .updateTimeDesc(updateTimeDesc)
+            .scoreDesc(scoreDesc)
+            .build();
         return subjectService.listEntitiesByCondition(findSubjectCondition)
             .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
     }

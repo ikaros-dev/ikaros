@@ -814,14 +814,28 @@ onMounted(fetchDatas);
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions
-						v-if="subjectSyncs && subjectSyncs.length > 0"
 						size="large"
+						:column="2"
 						border
 					>
 						<el-descriptions-item
+								label="综合评分"
+							>
+							<span
+								v-if="
+									subject.score != undefined &&
+									subject.score >= 0
+								"
+								v-text="subject.score"
+							/>
+							<span v-else> 无评分信息 </span>
+						</el-descriptions-item>
+						<el-descriptions-item
+							
 							:label="t('module.subject.details.label.sync-platform')"
 						>
-							<span v-for="(sync, index) in subjectSyncs" :key="index">
+							<span v-if="subjectSyncs && subjectSyncs.length > 0">
+								<span v-for="(sync, index) in subjectSyncs" :key="index">
 								{{ sync.platform }} :
 								<span v-if="sync.platform === 'BGM_TV'">
 									<a
@@ -835,6 +849,11 @@ onMounted(fetchDatas);
 									{{ sync.platformId }}
 								</span>
 							</span>
+							</span>
+							<span v-else>
+								无三方平台同步信息
+							</span>
+							
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions size="large" :column="2" border>

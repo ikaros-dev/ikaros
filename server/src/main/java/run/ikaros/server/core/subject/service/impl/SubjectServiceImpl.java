@@ -291,6 +291,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         final String time = condition.getTime();
         final Boolean airTimeDesc = condition.getAirTimeDesc();
         final Boolean updateTimeDesc = condition.getUpdateTimeDesc();
+        final Boolean scoreDesc = condition.getScoreDesc();
 
         final PageRequest pageRequest = PageRequest.of(page - 1, size);
 
@@ -357,6 +358,13 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
 
         if (updateTimeDesc) {
             query = query.sort(Sort.by(Sort.Order.desc("update_time").nullsLast()));
+        }
+
+        if (Objects.nonNull(scoreDesc)) {
+            query = query.sort(
+                scoreDesc ? Sort.by(Sort.Order.desc("score").nullsLast())
+                    : Sort.by(Sort.Order.asc("score").nullsLast())
+            );
         }
 
         query = query
