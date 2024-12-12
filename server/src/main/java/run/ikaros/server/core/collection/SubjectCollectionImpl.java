@@ -107,7 +107,8 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                             applicationEventPublisher.publishEvent(event);
                         }))
                     .doOnNext(entity -> {
-                        if (entity.getScore() != newScore) {
+                        if (entity != null && entity.getScore() != null
+                            && newScore != entity.getScore()) {
                             SubjectCollectionScoreUpdateEvent event
                                 = new SubjectCollectionScoreUpdateEvent(
                                 this, entity.getSubjectId());
