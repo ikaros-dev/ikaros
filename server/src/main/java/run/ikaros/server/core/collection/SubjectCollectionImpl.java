@@ -24,6 +24,7 @@ import run.ikaros.api.infra.exception.user.UserNotFoundException;
 import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.collection.event.SubjectCollectionCreateEvent;
 import run.ikaros.server.core.collection.event.SubjectCollectionScoreUpdateEvent;
 import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeCollectionEntity;
@@ -105,6 +106,10 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                                 = new SubjectCollectionScoreUpdateEvent(
                                 this, entity.getSubjectId());
                             applicationEventPublisher.publishEvent(event);
+                            SubjectCollectionCreateEvent newEvent
+                                = new SubjectCollectionCreateEvent(this,
+                                entity.getSubjectId(), subColl.getUserId());
+                            applicationEventPublisher.publishEvent(newEvent);
                         }))
                     .doOnNext(entity -> {
                         if (entity != null && entity.getScore() != null
@@ -169,7 +174,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                                 .episodeId(episodeId)
                                 .finish(false)
                                 .build())
-                            .doOnSuccess(entity -> log.info(
+                            .doOnSuccess(entity -> log.debug(
                                 "Create new episode collection "
                                     + "for userId is [{}] and episode id is [{}]",
                                 userId, entity.getEpisodeId())))
