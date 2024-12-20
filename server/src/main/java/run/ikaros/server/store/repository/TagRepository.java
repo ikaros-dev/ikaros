@@ -17,4 +17,7 @@ public interface TagRepository
 
     Mono<Boolean> existsByTypeAndMasterIdAndUserIdAndName(
         TagType type, Long masterId, Long userId, String name);
+
+    Mono<Boolean> existsByTypeAndUserIdAndName(
+        TagType type, Long userId, String name);
 }

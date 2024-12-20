@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import run.ikaros.api.store.enums.TagType;
 
+/**
+ * 标签，用户可以在同一类型的标签里共享，比如条目类型的标签可以多个条目共享.
+ */
 @Data
 @Builder
 @NoArgsConstructor

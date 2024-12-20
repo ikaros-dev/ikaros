@@ -103,8 +103,8 @@ public class DefaultTagService implements TagService {
         if (Objects.isNull(tag.getUserId())) {
             tag.setUserId(-1L);
         }
-        return tagRepository.existsByTypeAndMasterIdAndUserIdAndName(
-                tag.getType(), tag.getMasterId(), tag.getUserId(), tag.getName())
+        return tagRepository.existsByTypeAndUserIdAndName(
+                tag.getType(), tag.getUserId(), tag.getName())
             .filter(exists -> !exists)
             .flatMap(exists -> copyProperties(tag, new TagEntity()))
             .flatMap(tagRepository::save)
