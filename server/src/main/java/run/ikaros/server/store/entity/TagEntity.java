@@ -29,7 +29,7 @@ public class TagEntity {
     @Column("create_time")
     private LocalDateTime createTime;
     /**
-     * 十六进制字符串.
+     * 十六进制字符串颜色，与条目无关，与标签名一对一，与用户ID关联.
      */
     private String color;
 }
