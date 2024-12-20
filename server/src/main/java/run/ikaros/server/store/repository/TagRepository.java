@@ -14,4 +14,10 @@ public interface TagRepository
     Mono<TagEntity> findByTypeAndMasterIdAndName(TagType type, Long masterId, String name);
 
     Mono<Boolean> existsByTypeAndMasterIdAndName(TagType type, Long masterId, String name);
+
+    Mono<Boolean> existsByTypeAndMasterIdAndUserIdAndName(
+        TagType type, Long masterId, Long userId, String name);
+
+    Mono<Boolean> existsByTypeAndUserIdAndName(
+        TagType type, Long userId, String name);
 }
