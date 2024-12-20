@@ -28,4 +28,8 @@ public class TagEntity {
     private Long userId;
     @Column("create_time")
     private LocalDateTime createTime;
+    /**
+     * 十六进制字符串.
+     */
+    private String color;
 }
