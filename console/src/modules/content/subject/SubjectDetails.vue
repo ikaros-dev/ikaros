@@ -12,7 +12,6 @@ import {
 	SubjectSync,
 	SubjectTag,
 	SubjectTypeEnum,
-	Tag,
 } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
@@ -670,8 +669,8 @@ const fetchSubjectSyncs = async () => {
 };
 
 const subjectTagEditDialogVisible = ref(false);
-const currentSelectSubjectTagForEdit = ref<Tag>();
-const onTagContextMenu = (e : MouseEvent, tag: Tag) => {
+const currentSelectSubjectTagForEdit = ref<SubjectTag>();
+const onTagContextMenu = (e : MouseEvent, tag: SubjectTag) => {
 	e.preventDefault();
 	ContextMenu.showContextMenu({
 		x: e.x,
@@ -824,6 +823,7 @@ onMounted(fetchDatas);
 								closable
 								style="margin-right: 5px; margin-top: 5px"
 								:disable-transitions="false"
+								:color="tag.color"
 								@close="onTagRemove(tag)"
 								@contextmenu="onTagContextMenu($event, tag)"
 							>
