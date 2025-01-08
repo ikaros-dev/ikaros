@@ -104,10 +104,16 @@ public class DefaultTagService implements TagService {
         if (Objects.isNull(tag.getUserId())) {
             tag.setUserId(-1L);
         }
-        return tagRepository.existsByTypeAndUserIdAndName(
+        return tagRepository.findAllByTypeAndUserIdAndName(
                 tag.getType(), tag.getUserId(), tag.getName())
-            .filter(exists -> !exists)
-            .flatMap(exists -> copyProperties(tag, new TagEntity()))
+            .map(tagEntity -> tagEntity.setColor(
+                StringUtils.isNotBlank(tag.getColor()) ? tag.getColor() : tagEntity.getColor()))
+            .flatMap(tagRepository::save)
+            .then(tagRepository.findByTypeAndMasterIdAndUserIdAndName(
+                tag.getType(), tag.getMasterId(), tag.getUserId(), tag.getName()
+            ))
+            .switchIfEmpty(Mono.just(new TagEntity()))
+            .flatMap(tagEntity -> copyProperties(tag, tagEntity))
             .flatMap(tagRepository::save)
             .doOnSuccess(savedTag ->
                 eventPublisher.publishEvent(new TagCreateEvent(this, savedTag)))

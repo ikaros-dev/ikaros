@@ -11,7 +11,12 @@ public interface TagRepository
 
     Flux<TagEntity> findAllByTypeAndMasterId(TagType type, Long masterId);
 
+    Flux<TagEntity> findAllByTypeAndUserIdAndName(TagType type, Long userId, String name);
+
     Mono<TagEntity> findByTypeAndMasterIdAndName(TagType type, Long masterId, String name);
+
+    Mono<TagEntity> findByTypeAndMasterIdAndUserIdAndName(
+        TagType type, Long masterId, Long userId, String name);
 
     Mono<Boolean> existsByTypeAndMasterIdAndName(TagType type, Long masterId, String name);
 
