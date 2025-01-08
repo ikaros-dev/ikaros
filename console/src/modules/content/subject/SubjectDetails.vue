@@ -17,10 +17,10 @@ import { apiClient } from '@/utils/api-client';
 import { formatDate } from '@/utils/date';
 import EpisodeDetailsDialog from './EpisodeDetailsDialog.vue';
 import router from '@/router';
-import { Check, Close } from '@element-plus/icons-vue';
+import { Check, Close, EditPen } from '@element-plus/icons-vue';
 import SubjectSyncDialog from './SubjectSyncDialog.vue';
 import { useRoute } from 'vue-router';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { h, nextTick, onMounted, ref, watch } from 'vue';
 import {
 	ElButton,
 	ElCol,
@@ -43,12 +43,16 @@ import {
 import SubjectRemoteActionDialog from './SubjectRemoteActionDialog.vue';
 import { useSettingStore } from '@/stores/setting';
 import SubjectRelationDialog from './SubjectRelationDialog.vue';
+import SubjectTagEditDialog from './SubjectTagEditDialog.vue';
 import { useSubjectStore } from '@/stores/subject';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 import AttachmentSelectDialog from '@/modules/content/attachment/AttachmentSelectDialog.vue';
 import SubjectCollectDialog from '@/components/modules/content/subject/SubjectCollectDialog.vue';
 import { useI18n } from 'vue-i18n';
 import { scoreColors, scoreTexts } from '@/modules/common/constants';
+
+import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css';
+import ContextMenu from '@imengyu/vue3-context-menu';
 
 const route = useRoute();
 const settingStore = useSettingStore();
@@ -664,6 +668,30 @@ const fetchSubjectSyncs = async () => {
 	subjectSyncs.value = data;
 };
 
+const subjectTagEditDialogVisible = ref(false);
+const currentSelectSubjectTagForEdit = ref<SubjectTag>();
+const onTagContextMenu = (e : MouseEvent, tag: SubjectTag) => {
+	e.preventDefault();
+	ContextMenu.showContextMenu({
+		x: e.x,
+		y: e.y,
+		minWidth: 320,
+		items: [
+			{
+				label:
+					'编辑标签['+tag.name+']',
+				divided: 'down',
+				icon: h(EditPen, { style: 'height: 14px' }),
+				onClick: () => {
+					currentSelectSubjectTagForEdit.value = tag;
+					subjectTagEditDialogVisible.value = true;
+				},
+			},
+			
+		],
+	});
+}
+
 onMounted(fetchDatas);
 </script>
 
@@ -695,6 +723,11 @@ onMounted(fetchDatas);
 		v-model:visible="subjectCollectDialogVisible"
 		v-model:subjectId="subject.id"
 		@close="fetchSubjectCollection"
+	/>
+
+	<SubjectTagEditDialog
+		v-model:visible="subjectTagEditDialogVisible"
+		v-model:tag="currentSelectSubjectTagForEdit"
 	/>
 
 	<el-row>
@@ -790,7 +823,9 @@ onMounted(fetchDatas);
 								closable
 								style="margin-right: 5px; margin-top: 5px"
 								:disable-transitions="false"
+								:color="tag.color"
 								@close="onTagRemove(tag)"
+								@contextmenu="onTagContextMenu($event, tag)"
 							>
 								{{ tag.name }}
 							</el-tag>
