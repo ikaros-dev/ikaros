@@ -48,4 +48,10 @@ export interface SubjectTag {
    * @memberof SubjectTag
    */
   createTime?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubjectTag
+   */
+  color?: string;
 }

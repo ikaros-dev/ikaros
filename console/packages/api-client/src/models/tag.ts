@@ -54,6 +54,12 @@ export interface Tag {
    * @memberof Tag
    */
   createTime?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Tag
+   */
+  color?: string;
 }
 
 export const TagTypeEnum = {
