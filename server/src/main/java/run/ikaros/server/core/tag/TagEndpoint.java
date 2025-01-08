@@ -151,7 +151,7 @@ public class TagEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> create(ServerRequest request) {
         return request.bodyToMono(Tag.class)
             .flatMap(tag -> userService.getUserIdFromSecurityContext()
-                .map(tag::setMasterId))
+                .map(tag::setUserId))
             .flatMap(tagService::create)
             .flatMap(tag -> ServerResponse.ok().bodyValue(tag));
     }
