@@ -53,10 +53,12 @@ import { scoreColors, scoreTexts } from '@/modules/common/constants';
 
 import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css';
 import ContextMenu from '@imengyu/vue3-context-menu';
+import { useUserStore } from '@/stores/user';
 
 const route = useRoute();
 const settingStore = useSettingStore();
 const subjectStore = useSubjectStore();
+const userStore = useUserStore();
 const { t } = useI18n();
 
 const refreshSubjectRelactionDialog = ref(true);
@@ -557,6 +559,7 @@ const onNewTagNameChange = async () => {
 			type: 'SUBJECT',
 			masterId: subject.value.id,
 			name: newTag.value.name,
+			userId: userStore.currentUser?.entity?.id,
 		},
 	});
 	ElMessage.success(
