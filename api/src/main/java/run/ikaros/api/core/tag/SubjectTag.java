@@ -19,4 +19,10 @@ public class SubjectTag {
     private String name;
     private Long userId;
     private LocalDateTime createTime;
+    /**
+     * 十六进制字符串颜色，与条目无关，与标签名一对一，与用户ID关联.
+     *
+     * @see Tag
+     */
+    private String color;
 }
