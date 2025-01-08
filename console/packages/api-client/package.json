@@ -1,6 +1,6 @@
 {
   "name": "@runikaros/api-client",
-  "version": "20.9.1",
+  "version": "20.9.2",
   "description": "Project ikaros console api-client package",
   "type": "module",
   "scripts": {
