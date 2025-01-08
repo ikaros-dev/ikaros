@@ -5,7 +5,6 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import java.security.Principal;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -151,11 +150,8 @@ public class TagEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> create(ServerRequest request) {
         return request.bodyToMono(Tag.class)
-            .flatMap(tag -> request.principal()
-                .map(Principal::getName)
-                .flatMap(userService::getUserByUsername)
-                .map(user -> user.entity().getId())
-                .map(tag::setUserId))
+            .flatMap(tag -> userService.getUserIdFromSecurityContext()
+                .map(tag::setMasterId))
             .flatMap(tagService::create)
             .flatMap(tag -> ServerResponse.ok().bodyValue(tag));
     }
