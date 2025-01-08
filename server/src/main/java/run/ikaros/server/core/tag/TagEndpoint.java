@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -151,7 +152,9 @@ public class TagEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> create(ServerRequest request) {
         return request.bodyToMono(Tag.class)
             .flatMap(tag -> userService.getUserIdFromSecurityContext()
-                .map(tag::setUserId))
+                .map(tag::setUserId)
+                .onErrorResume(AuthenticationCredentialsNotFoundException.class,
+                    e -> Mono.just(tag)))
             .flatMap(tagService::create)
             .flatMap(tag -> ServerResponse.ok().bodyValue(tag));
     }
