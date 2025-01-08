@@ -73,6 +73,10 @@ jobs:
             ${{ runner.os }}-pnpm-
       - name: Reduce pnpm concurrency
         run: pnpm config set fetch-retries 5 && pnpm config set fetch-timeout 60000 && pnpm config set max-concurrent-requests 6
+      - name: Use npm mirror
+        run: |
+          npm config set registry https://registry.npmmirror.com
+          pnpm config set registry https://registry.npmmirror.com
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build console with npm
