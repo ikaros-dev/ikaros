@@ -29,6 +29,21 @@ jobs:
       - name: Clean with gradle
         run: |
           ./gradlew clean
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Cache pnpm store
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+      - name: Reduce pnpm concurrency
+        run: pnpm config set fetch-retries 5 && pnpm config set fetch-timeout 60000 && pnpm config set max-concurrent-requests 6
+      - name: Use npm mirror
+        run: |
+          npm config set registry https://registry.npmmirror.com
+          pnpm config set registry https://registry.npmmirror.com
       - name: Build console with npm
         run: |
           ./gradlew buildFrontend -x test
