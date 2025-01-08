@@ -78,6 +78,7 @@ public class DefaultTagService implements TagService {
                 .userId(tag.getUserId())
                 .name(tag.getName())
                 .createTime(tag.getCreateTime())
+                .color(tag.getColor())
                 .build());
     }
 

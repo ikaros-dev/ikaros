@@ -44,7 +44,7 @@ public class TagChangeEventListener {
             return Mono.empty();
         }
         TagEntity tagEntity = event.getEntity();
-        if (tagEntity.getType() != TagType.SUBJECT) {
+        if (tagEntity == null || tagEntity.getType() != TagType.SUBJECT) {
             return Mono.empty();
         }
         Long subjectId = tagEntity.getMasterId();
