@@ -29,6 +29,8 @@ jobs:
       - name: Clean with gradle
         run: |
           ./gradlew clean
+      - name: Install pnpm
+        run: npm install -g pnpm
       - name: Build console with npm
         run: |
           ./gradlew buildFrontend -x test
