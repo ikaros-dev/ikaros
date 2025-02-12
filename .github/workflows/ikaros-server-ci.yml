@@ -38,7 +38,7 @@ jobs:
       - name: Check code style
         run: ./gradlew check -x test
       - name: Upload build dir if current step run failed.
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
           # Artifact name
@@ -99,7 +99,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./server/build/reports/jacoco/test/jacocoTestReport.xml
       - name: Upload build dir if current step run failed.
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
           # Artifact name
