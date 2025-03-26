@@ -29,13 +29,6 @@
 - 插件支持: ikaros 本体只提供最为基础的功能，其它附加功能由插件提供
 - 客户端支持: 各个主流平台的客户端，包括不限于 Windows, 安卓
 
-# demo
-
-<https://demo.ikaros.run/console/>
-
-用户名: demo
-密码: demo
-
 # 文档
 
 请看：https://docs.ikaros.run/
@@ -71,9 +64,6 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
 # 感谢
 
-<img width=100 src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo.">
-
-- Intellij 的开源许可
 - 项目中用到的所有开源项目
 - 参考的所有开源项目
 
