@@ -29,7 +29,7 @@ public class CollectionEndpoint implements CoreEndpoint {
         var tag = OpenApiConst.CORE_VERSION + "/collection";
         return SpringdocRouteBuilder.route()
 
-            .GET("/collection/subjectId/{id}", this::getTypeBySubjectId,
+            .GET("/collection/type/subjectId/{id}", this::getTypeBySubjectId,
                 builder -> builder.operationId("GetTypeBySubjectId")
                     .tag(tag).description("Get collection type by subject id.")
                     .parameter(parameterBuilder()
