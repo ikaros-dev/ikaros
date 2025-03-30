@@ -46,4 +46,6 @@ public class EpisodeCollection {
     private Integer sequence;
     @JsonProperty("ep_group")
     private EpisodeGroup group;
+    @JsonProperty("update_time")
+    private LocalDateTime updateTime;
 }

@@ -12,7 +12,10 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.core.collection.vo.FindCollectionCondition;
+import run.ikaros.api.store.enums.CollectionCategory;
 import run.ikaros.api.store.enums.CollectionType;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -29,7 +32,7 @@ public class CollectionEndpoint implements CoreEndpoint {
         var tag = OpenApiConst.CORE_VERSION + "/collection";
         return SpringdocRouteBuilder.route()
 
-            .GET("/collection/subjectId/{id}", this::getTypeBySubjectId,
+            .GET("/collection/type/subjectId/{id}", this::getTypeBySubjectId,
                 builder -> builder.operationId("GetTypeBySubjectId")
                     .tag(tag).description("Get collection type by subject id.")
                     .parameter(parameterBuilder()
@@ -40,6 +43,35 @@ public class CollectionEndpoint implements CoreEndpoint {
                         .implementation(CollectionType.class))
             )
 
+            .GET("/collections/condition", this::getCollectionsWithCondition,
+                builder -> builder.operationId("GetCollectionsWithCondition")
+                    .tag(tag).description("Get collections with conditions.")
+                    .parameter(parameterBuilder()
+                        .name("category").description("Collection category, default is EPISODE.")
+                        .implementation(CollectionCategory.class))
+                    .parameter(parameterBuilder()
+                        .name("type")
+                        .description("Collection type, default is null.")
+                        .implementation(CollectionType.class))
+                    .parameter(parameterBuilder()
+                        .name("page")
+                        .description("第几页，从1开始, 默认为1.")
+                        .implementation(Integer.class))
+                    .parameter(parameterBuilder()
+                        .name("size")
+                        .description("每页条数，默认为10.")
+                        .implementation(Integer.class))
+                    .parameter(parameterBuilder()
+                        .name("time")
+                        .implementation(String.class)
+                        .description("时间范围，格式范围类型: 2000.9-2010.8 或者 单个类型2020.8"))
+                    .parameter(parameterBuilder()
+                        .name("updateTimeDesc")
+                        .implementation(Boolean.class)
+                        .description("是否根据更新时间倒序，默认为 true."))
+                    .response(responseBuilder().implementation(PagingWrap.class))
+            )
+
             .build();
     }
 
@@ -48,5 +80,24 @@ public class CollectionEndpoint implements CoreEndpoint {
         Long subjectId = Long.parseLong(id);
         return collectionService.findTypeBySubjectId(subjectId)
             .flatMap(collectionType -> ServerResponse.ok().bodyValue(collectionType));
+    }
+
+    private Mono<ServerResponse> getCollectionsWithCondition(ServerRequest serverRequest) {
+        CollectionCategory category = CollectionCategory.valueOf(
+            serverRequest.queryParam("category").orElse(CollectionCategory.EPISODE.name()));
+        CollectionType type = serverRequest.queryParam("type").map(CollectionType::valueOf)
+            .orElse(null);
+        int page = serverRequest.queryParam("page").map(Integer::parseInt).orElse(1);
+        int size = serverRequest.queryParam("size").map(Integer::parseInt).orElse(10);
+        String time = serverRequest.queryParam("time").orElse(null);
+        boolean updateTimeDesc = serverRequest.queryParam("updateTimeDesc")
+            .map(Boolean::parseBoolean).orElse(false);
+        FindCollectionCondition condition = FindCollectionCondition
+            .builder().page(page).size(size)
+            .category(category).type(type).time(time).updateTimeDesc(updateTimeDesc)
+            .build();
+
+        return collectionService.listCollectionsByCondition(condition)
+            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
     }
 }
