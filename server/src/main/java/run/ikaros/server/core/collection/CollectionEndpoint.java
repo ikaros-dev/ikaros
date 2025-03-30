@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.core.collection.vo.FindCollectionCondition;
 import run.ikaros.api.store.enums.CollectionCategory;
 import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -46,11 +47,11 @@ public class CollectionEndpoint implements CoreEndpoint {
                 builder -> builder.operationId("GetCollectionsWithCondition")
                     .tag(tag).description("Get collections with conditions.")
                     .parameter(parameterBuilder()
-                        .name("category").description("Collection category")
+                        .name("category").description("Collection category, default is EPISODE.")
                         .implementation(CollectionCategory.class))
                     .parameter(parameterBuilder()
                         .name("type")
-                        .description("Collection type, default is not done.")
+                        .description("Collection type, default is null.")
                         .implementation(CollectionType.class))
                     .parameter(parameterBuilder()
                         .name("page")
@@ -60,15 +61,6 @@ public class CollectionEndpoint implements CoreEndpoint {
                         .name("size")
                         .description("每页条数，默认为10.")
                         .implementation(Integer.class))
-                    .parameter(parameterBuilder()
-                        .name("keyword")
-                        .description("经过Basic64编码的关键词，"
-                            + "不同类型模糊查询不同字段，一般是条目名称或者剧集名称字段。")
-                        .implementation(String.class))
-                    .parameter(parameterBuilder()
-                        .name("nsfw")
-                        .description("Not Safe/Suitable For Work. default is false.")
-                        .implementation(Boolean.class))
                     .parameter(parameterBuilder()
                         .name("time")
                         .implementation(String.class)
@@ -91,7 +83,21 @@ public class CollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getCollectionsWithCondition(ServerRequest serverRequest) {
-        // todo impl collection search endpoint
-        return Mono.empty();
+        CollectionCategory category = CollectionCategory.valueOf(
+            serverRequest.queryParam("category").orElse(CollectionCategory.EPISODE.name()));
+        CollectionType type = serverRequest.queryParam("type").map(CollectionType::valueOf)
+            .orElse(null);
+        int page = serverRequest.queryParam("page").map(Integer::parseInt).orElse(1);
+        int size = serverRequest.queryParam("size").map(Integer::parseInt).orElse(10);
+        String time = serverRequest.queryParam("time").orElse(null);
+        boolean updateTimeDesc = serverRequest.queryParam("updateTimeDesc")
+            .map(Boolean::parseBoolean).orElse(false);
+        FindCollectionCondition condition = FindCollectionCondition
+            .builder().page(page).size(size)
+            .category(category).type(type).time(time).updateTimeDesc(updateTimeDesc)
+            .build();
+
+        return collectionService.listCollectionsByCondition(condition)
+            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
     }
 }
