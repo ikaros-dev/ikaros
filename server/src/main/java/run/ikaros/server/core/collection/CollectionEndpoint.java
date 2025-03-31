@@ -64,7 +64,7 @@ public class CollectionEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder()
                         .name("time")
                         .implementation(String.class)
-                        .description("时间范围，格式范围类型: 2000.9-2010.8 或者 单个类型2020.8"))
+                        .description("时间范围，格式: 开始时间戳-结束时间戳"))
                     .parameter(parameterBuilder()
                         .name("updateTimeDesc")
                         .implementation(Boolean.class)

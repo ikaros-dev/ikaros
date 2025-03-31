@@ -2,8 +2,9 @@ package run.ikaros.server.core.collection;
 
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.Year;
+import java.time.ZoneId;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -78,45 +79,16 @@ public class DefaultCollectionService implements CollectionService {
         if (CollectionCategory.EPISODE == condition.getCategory()
             && StringUtils.isNotBlank(time)
         ) {
-            if (time.indexOf('-') > 0) {
-                // 日期范围，例如；2000.9-2010.8
-                String[] split = time.split("-");
-                String first = split[0];
-                String second = split[1];
-                LocalDateTime startTime;
-                if (first.indexOf(".") > 0) {
-                    String[] split1 = first.split("\\.");
-                    startTime =
-                        Year.parse(split1[0]).atMonth(Integer.parseInt(split1[1])).atDay(1)
-                            .atStartOfDay();
-                } else {
-                    startTime = Year.parse(first).atMonth(1).atDay(1).atStartOfDay();
-                }
-                LocalDateTime endTime;
-                if (second.indexOf(".") > 0) {
-                    String[] split2 = second.split("\\.");
-                    endTime =
-                        Year.parse(split2[0]).atMonth(Integer.parseInt(split2[1])).atDay(1)
-                            .atStartOfDay().plusMonths(1);
-                } else {
-                    endTime = Year.parse(second).atDay(1).atStartOfDay().plusMonths(1);
-                }
-                criteria = criteria.and(Criteria.where("update_time").between(startTime, endTime));
-            } else {
-                // 单个类型，例如：2020.8
-                if (time.indexOf('.') > 0) {
-                    String[] split = time.split("\\.");
-                    LocalDateTime startTime =
-                        Year.parse(split[0]).atMonth(Integer.parseInt(split[1])).atDay(1)
-                            .atStartOfDay();
-                    criteria = criteria.and(
-                        Criteria.where("update_time").between(startTime, startTime.plusMonths(1)));
-                } else {
-                    LocalDateTime startTime = Year.parse(time).atMonth(1).atDay(1).atStartOfDay();
-                    criteria = criteria.and(
-                        Criteria.where("update_time").between(startTime, startTime.plusYears(1)));
-                }
-            }
+            String[] split = time.split("-");
+            String first = split[0];
+            String second = split[1];
+            LocalDateTime startTime = Instant.ofEpochMilli(Long.parseLong(first))
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+            LocalDateTime endTime = Instant.ofEpochMilli(Long.parseLong(second))
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+            criteria = criteria.and(Criteria.where("update_time").between(startTime, endTime));
         }
 
         Query query = Query.query(criteria);
