@@ -356,7 +356,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
 
         Query query = Query.query(criteria);
 
-        if (updateTimeDesc) {
+        if (Objects.nonNull(updateTimeDesc) && updateTimeDesc) {
             query = query.sort(Sort.by(Sort.Order.desc("update_time").nullsLast()));
         }
 
