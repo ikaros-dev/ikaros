@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.vo.FindSubjectCondition;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.core.attachment.service.AttachmentRelationService;
+import run.ikaros.server.core.episode.EpisodeService;
 import run.ikaros.server.core.statics.StaticService;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.theme.ThemeService;
@@ -20,6 +21,7 @@ import run.ikaros.server.theme.ThemeService;
 public class SubjectController {
 
     private final SubjectService subjectService;
+    private final EpisodeService episodeService;
     private final ThemeService themeService;
     private final AttachmentRelationService attachmentRelationService;
     private final StaticService staticService;
@@ -27,10 +29,12 @@ public class SubjectController {
     /**
      * Construct.
      */
-    public SubjectController(SubjectService subjectService, ThemeService themeService,
+    public SubjectController(SubjectService subjectService, EpisodeService episodeService,
+                             ThemeService themeService,
                              AttachmentRelationService attachmentRelationService,
                              StaticService staticService) {
         this.subjectService = subjectService;
+        this.episodeService = episodeService;
         this.themeService = themeService;
         this.attachmentRelationService = attachmentRelationService;
         this.staticService = staticService;
@@ -64,28 +68,11 @@ public class SubjectController {
                                  @RequestParam("episode") Float epSeq, Model model) {
         return subjectService.findById(id)
             .map(subject -> model.addAttribute("subject", subject))
+            .flatMap(m -> episodeService.findRecordsBySubjectId(id).collectList()
+                .map(episodeRecords -> m.addAttribute("episodeRecords", episodeRecords)))
             .flatMap(m1 -> staticService.listStaticsFonts().collectList()
                 .map(fonts -> m1.addAttribute("fonts", fonts)))
             .then(themeService.getCurrentTheme())
             .map(theme -> theme + "/" + "subject-details");
     }
-
-    //    private Mono<Subject> addEpisodesResourcesAttachmentIdSubtitleMap2Model(Subject subject,
-    //                                                                            Model model) {
-    //        return Mono.just(new ArrayList<VideoSubtitle>())
-    //            .flatMap(videoSubtitleList -> Flux.fromStream(subject.getEpisodes().stream())
-    //                .filter(episode -> Objects.nonNull(episode.getResources())
-    //                    && !episode.getResources().isEmpty())
-    //                .map(episode -> episode.getResources().get(0).getAttachmentId())
-    //                .flatMap(attachmentId ->
-    //                    attachmentRelationService.findAttachmentVideoSubtitles(attachmentId)
-    //                        .collectList()
-    //                        .map(videoSubtitles -> {
-    //                            videoSubtitleList.addAll(videoSubtitles);
-    //                            return videoSubtitles;
-    //                        }))
-    //                .then(Mono.just(videoSubtitleList)))
-    //     .map(videoSubtitleList -> model.addAttribute("videoSubtitleList", videoSubtitleList))
-    //      .then(Mono.just(subject));
-    //    }
 }
