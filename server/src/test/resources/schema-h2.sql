@@ -96,6 +96,8 @@ create table if not exists subject_collection
     type             varchar(255) not null,
     main_ep_progress int8         not null,
     is_private       bool         not null,
+    comment          varchar(5000) null,
+    score            int8         null,
     constraint user_subject_id_uk unique (user_id, subject_id),
     constraint subject_collection_pkey primary key (id)
 );
@@ -217,6 +219,7 @@ create table if not exists subject
     summary       varchar(50000) null,
     nsfw          bool           not null,
     air_time      timestamp(6)   null,
+    score           DOUBLE          null,
     constraint subject_pkey primary key (id)
 );
 
@@ -341,6 +344,7 @@ create table if not exists tag
     name        varchar(255) not null,
     user_id     int8         not null,
     create_time timestamp(6) null,
+    color varchar(200) null,
     constraint tag_pkey primary key (id)
 );
 
@@ -361,13 +365,3 @@ create table if not exists role_authority
     authority_id int8 not null,
     constraint role_authority_pkey primary key (id)
 );
-
--- V0.20.7_0001__DML_SUBJECT_COLLECTION_COLUMN.SQL
-alter table subject_collection add column comment varchar(5000);
-alter table subject_collection add column score int8;
-
--- V0.20.7_0002__DML_SUBJECT_COLUMN.SQL
-alter table subject add column score DOUBLE;
-
--- V0.20.9_0001__DML_TAG_COLUMN.SQL
-alter table tag add column color varchar(200);
