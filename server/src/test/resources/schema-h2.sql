@@ -361,3 +361,13 @@ create table if not exists role_authority
     authority_id int8 not null,
     constraint role_authority_pkey primary key (id)
 );
+
+-- V0.20.7_0001__DML_SUBJECT_COLLECTION_COLUMN.SQL
+alter table subject_collection add column comment varchar(5000);
+alter table subject_collection add column score int8;
+
+-- V0.20.7_0002__DML_SUBJECT_COLUMN.SQL
+alter table subject add column score DOUBLE;
+
+-- V0.20.9_0001__DML_TAG_COLUMN.SQL
+alter table tag add column color varchar(200);
