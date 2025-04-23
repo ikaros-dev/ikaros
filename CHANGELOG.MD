@@ -8,6 +8,7 @@
 
 - 修复updateTime的空指针问题
 - 修复默认主题条目详情页保证基本播放
+- github wf setup jdk fail
 
 ## 测试
 
