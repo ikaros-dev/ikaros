@@ -382,19 +382,19 @@ const fetchEpisodeCollections = async () => {
 		);
 	episodeCollections.value = data;
 };
-const getEpisodeCollectionByEpisodeId = (episode: Episode) => {
-	if (!episodeCollections.value || !episode) {
+const getEpisodeCollectionByEpisodeId = (episodeRecord: EpisodeRecord) => {
+	if (!episodeCollections.value || !episodeRecord) {
 		return undefined;
 	}
 	var result = episodeCollections.value.find(
-		(ele) => ele?.episode_id === episode.id
+		(ele) => ele?.episode_id === episodeRecord?.episode?.id
 	);
 	// console.log('result', result);
 	return result;
 };
 const udpateEpisodeCollectionProgress = async (
 	isFinish: boolean,
-	episode: Episode
+	episodeRecord: EpisodeRecord
 ) => {
 	if (!subjectCollection.value.id) {
 		ElMessage.warning(
@@ -402,8 +402,9 @@ const udpateEpisodeCollectionProgress = async (
 		);
 		return;
 	}
+	// console.debug('udpateEpisodeCollectionProgress episode id', episodeRecord?.episode?.id);
 	await apiClient.collectionEpisode.updateCollectionEpisodeFinish({
-		episodeId: episode.id as number,
+		episodeId: episodeRecord?.episode?.id as number,
 		finish: isFinish,
 	});
 	ElMessage.success(
