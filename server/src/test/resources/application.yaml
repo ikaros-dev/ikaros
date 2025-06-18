@@ -3,7 +3,7 @@ ikaros:
   work-dir: ${user.dir}/build/
   plugin:
     runtime-mode: development
-    system-version: 0.11.7
+    system-version: 0.21.0
   task:
     core-pool-size: 4
     maximum-pool-size: 40

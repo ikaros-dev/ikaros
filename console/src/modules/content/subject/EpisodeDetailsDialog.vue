@@ -25,8 +25,10 @@ import { Close, Plus } from '@element-plus/icons-vue';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 import { useI18n } from 'vue-i18n';
 import Artplayer from '@/components/video/Artplayer.vue';
+import { useUserStore } from '@/stores/user';
 
 const { t } = useI18n();
+const userStore = useUserStore();
 
 const props = withDefaults(
 	defineProps<{
@@ -303,6 +305,7 @@ const onDialogClose = () => {
 				<div v-if="episodeResources && episodeResources.length > 0">
 					<div v-if="!props.multiResource" align="center">
 						<router-link
+							v-if="userStore.roleHasMaster()" 
 							target="_blank"
 							:to="
 								'/attachments?parentId=' +
@@ -312,6 +315,7 @@ const onDialogClose = () => {
 							"
 							>{{ episodeResources[0].name }}</router-link
 						>
+						<span v-else>{{ episodeResources[0].name }}</span>
 						<br />
 						<!-- <video
               v-if="isVideo(episode.resources[0].url as string)"
@@ -344,6 +348,7 @@ const onDialogClose = () => {
 						>
 							<el-card shadow="hover">
 								<router-link
+									v-if="userStore.roleHasMaster()" 
 									target="_blank"
 									:to="
 									'/attachments?parentId=' +
@@ -356,7 +361,10 @@ const onDialogClose = () => {
 										{{ res.name }}
 									</span>
 								</router-link>
-								<span style="float: right">
+								<span v-else>
+									{{ res.name }}
+								</span>
+								<span  style="float: right">
 									<el-popconfirm
 										:title="
 											t(
@@ -381,7 +389,7 @@ const onDialogClose = () => {
 			</el-descriptions-item>
 		</el-descriptions>
 
-		<template #footer>
+		<template v-if="userStore.roleHasMaster()" #footer>
 			<el-button
 				plain
 				:icon="Plus"

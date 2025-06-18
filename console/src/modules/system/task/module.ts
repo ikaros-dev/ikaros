@@ -21,6 +21,7 @@ export default definePlugin({
 						group: 'system',
 						icon: markRaw(MostlyCloudy),
 						priority: 0,
+						admin: true,
 					},
 				},
 			},

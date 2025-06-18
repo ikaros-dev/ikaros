@@ -21,6 +21,7 @@ export default definePlugin({
 						group: 'system',
 						icon: markRaw(Ticket),
 						priority: 1,
+						admin: true,
 					},
 				},
 			},

@@ -18,9 +18,11 @@ import {
 	ElSelect,
 } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+import { useUserStore } from '@/stores/user';
 
 const router = useRouter();
 const route = useRoute();
+const userStore = useUserStore();
 const { t } = useI18n();
 
 const fetchSubjectByRouterQuery = async () => {
@@ -284,6 +286,7 @@ onMounted(fetchSubjectByRouterQuery);
 		</el-col>
 
 		<el-col
+			v-if="userStore.roleHasMaster()"
 			:xs="24"
 			:sm="24"
 			:md="24"
