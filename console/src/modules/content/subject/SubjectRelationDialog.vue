@@ -23,8 +23,10 @@ import SubjectRelationPostDialog from './SubjectRelationPostDialog.vue';
 import SubjectRelationDeleteDialog from './SubjectRelationDeleteDialog.vue';
 import { useSubjectStore } from '@/stores/subject';
 import { useI18n } from 'vue-i18n';
+import { useUserStore } from '@/stores/user';
 
 const subjectStore = useSubjectStore();
+const userStore = useUserStore();
 const { t } = useI18n();
 const route = useRoute();
 
@@ -233,7 +235,7 @@ onMounted(() => {
 
 		<br />
 
-		<el-row>
+		<el-row v-if="userStore.roleHasMaster()">
 			<el-col :span="24">
 				<el-button @click="subjectRelationPostDialogVisible = true">
 					{{ t('module.subject.relaction.dialog.main.button.add') }}
