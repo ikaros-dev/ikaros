@@ -9,7 +9,6 @@ import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import run.ikaros.api.store.enums.AttachmentDriverType;
 
 @Data
 @Builder
@@ -25,9 +24,10 @@ public class AttachmentDriverEntity {
      */
     private boolean enable;
     /**
-     * attachment driver type, default is {@link AttachmentDriverType}.
+     * attachment driver type, such as LOCAL, CLOUD115 .......
      */
-    private AttachmentDriverType type;
+    @Column("driver_type")
+    private String driverType;
     @Column("mount_path")
     private String mountPath;
     private Long order;
