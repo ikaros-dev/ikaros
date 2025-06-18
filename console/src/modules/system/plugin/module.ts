@@ -21,6 +21,7 @@ export default definePlugin({
 						group: 'system',
 						icon: markRaw(Connection),
 						priority: 98,
+						admin: true,
 					},
 				},
 			},

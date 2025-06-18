@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia';
 
-import type { User } from '@runikaros/api-client';
+import type { Role, User } from '@runikaros/api-client';
 import { JwtApplyParamAuthTypeEnum } from '@runikaros/api-client';
 import { apiClient, setApiClientJwtToken } from '@/utils/api-client';
 
 interface UserStoreState {
 	authType: JwtApplyParamAuthTypeEnum;
 	currentUser?: User;
+	currentRoles?: Role[];
 	isAnonymous: boolean;
 	jwtToken?: string;
 	refreshToken?: string;
@@ -30,6 +31,7 @@ export const useUserStore = defineStore('user', {
 				if (status === 200) {
 					this.currentUser = data;
 					this.isAnonymous = false;
+					await this.fetchCurrentRole();
 					// console.log('current user: ', this.currentUser)
 				} else {
 					this.jwtToken = undefined;
@@ -70,6 +72,13 @@ export const useUserStore = defineStore('user', {
 			this.isAnonymous = true;
 			this.currentUser = undefined;
 		},
+		async fetchCurrentRole() {
+			const {data} = await apiClient.userRole.getRolesForUser({userId: String(this.currentUser?.entity?.id ?? -1)});
+			this.currentRoles = data
+		},
+		roleHasMaster() {
+			return this.currentRoles?.some((item) => item.name === "MASTER");
+		}
 	},
 	persist: {
 		enabled: true,

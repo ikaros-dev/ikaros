@@ -21,6 +21,7 @@ export default definePlugin({
 						group: 'content',
 						icon: markRaw(FolderIcon),
 						priority: 0,
+						admin: true,
 					},
 				},
 			},

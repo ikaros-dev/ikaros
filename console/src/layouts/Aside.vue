@@ -7,9 +7,11 @@ import { coreMenuGroups } from '@/router/routes.config';
 import { i18n } from '@/locales';
 import { onMounted, ref } from 'vue';
 import { ElMenu, ElMenuItem, ElIcon, ElMenuItemGroup } from 'element-plus';
+import { useUserStore } from '@/stores/user';
 
 const t = i18n.global.t;
 const layoutStore = useLayoutStore();
+const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -40,6 +42,10 @@ const generateMenus = () => {
 		if (!menu) {
 			return acc;
 		}
+
+		// filter admin menus
+		if (menu.admin && !userStore.roleHasMaster()) return acc;
+
 		const group = acc.find((item) => item.id === menu.group);
 		const childRoute = route.children[0];
 		const childMetaMenu = childRoute?.meta?.menu;

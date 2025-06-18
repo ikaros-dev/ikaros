@@ -22,4 +22,5 @@ export interface MenuItemType {
 	icon?: Component;
 	meta?: Record<string, unknown>;
 	children?: MenuItemType[];
+	admin?: boolean;
 }
