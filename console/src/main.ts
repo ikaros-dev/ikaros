@@ -199,18 +199,21 @@ async function initApp() {
 		loadCoreModules();
 		const userStore = useUserStore();
 		await userStore.fetchCurrentUser();
-		const settingStore = useSettingStore();
-		await settingStore.fetchSystemSetting();
+		if (userStore.roleHasMaster()) {
+			const settingStore = useSettingStore();
+			await settingStore.fetchSystemSetting();
 
-		if (userStore.isAnonymous) {
-			return;
-		}
+			if (userStore.isAnonymous) {
+				return;
+			}
 
-		try {
-			await loadPluginModules();
-		} catch (e) {
-			console.error('Failed to load plugins', e);
+			try {
+				await loadPluginModules();
+			} catch (e) {
+				console.error('Failed to load plugins', e);
+			}
 		}
+		
 	} catch (e) {
 		console.log('Init app fail: ', e);
 	} finally {

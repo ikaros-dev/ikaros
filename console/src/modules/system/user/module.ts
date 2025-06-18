@@ -20,6 +20,7 @@ export default definePlugin({
 						group: 'system',
 						icon: markRaw(UserFilled),
 						priority: 2,
+						admin: true,
 					},
 				},
 			},
