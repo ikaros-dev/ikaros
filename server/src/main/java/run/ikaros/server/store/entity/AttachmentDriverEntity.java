@@ -30,6 +30,11 @@ public class AttachmentDriverEntity {
     private String driverType;
     @Column("mount_path")
     private String mountPath;
+    /**
+     * driver remote relative path or sub dir id, null or empty is root dir.
+     */
+    @Column("remote_path")
+    private String remotePath;
     private Long order;
     private String comment;
     @Column("refresh_token")
