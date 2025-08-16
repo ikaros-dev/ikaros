@@ -50,6 +50,7 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
+    @MonoCacheEvict(value = "episode:id:", key = "#episode.id")
     public Mono<Episode> save(Episode episode) {
         Assert.notNull(episode, "episode must not be null");
         Long episodeId = episode.getId();

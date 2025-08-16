@@ -36,6 +36,7 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.cache.annotation.MonoCacheEvict;
+import run.ikaros.server.cache.annotation.MonoCacheable;
 import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.event.SubjectUpdateEvent;
@@ -94,6 +95,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheable(value = "subject:id:", key = "#id")
     public Mono<Subject> findById(Long id) {
         Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.findById(id)
@@ -109,6 +111,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict(value = "subject:id:", key = "#subjectId")
     public Mono<Subject> findByBgmId(@Nonnull Long subjectId, Long bgmtvId) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.isTrue(bgmtvId > 0, "'bgmtvId' must gt 0.");
@@ -123,6 +126,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict(value = "subject:id:", key = "#subjectId")
     public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull Long subjectId,
                                                                  @Nonnull SubjectSyncPlatform
                                                                      platform,
@@ -154,6 +158,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheable
     public synchronized Mono<Subject> create(Subject subject) {
         Assert.notNull(subject, "'subject' must not be null.");
         Assert.notNull(subject.getType(), "'subject.type' must not be null.");
@@ -179,6 +184,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> update(Subject subject) {
         Assert.notNull(subject, "'subject' must not null.");
         Assert.isTrue(subject.getId() > 0, "'subject id' must gt 0.");
@@ -228,7 +234,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheEvict
+    @MonoCacheEvict(value = "subject:id:", key = "#id")
     public Mono<Void> deleteById(Long id) {
         Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.existsById(id)
