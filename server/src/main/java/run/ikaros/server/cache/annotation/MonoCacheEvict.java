@@ -14,7 +14,7 @@ import run.ikaros.server.cache.CacheAspect;
  * 当 value或者cacheNames 和 key 啥都不填，代表清空缓存，
  * 请加在接口具体实现类的方法上，不要加在接口的方法上.
  *
- * @see CacheAspect#monoCacheEvictMethods()
+ * @see CacheAspect#aroundMonoMethodsWithAnnotationCacheEvict
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

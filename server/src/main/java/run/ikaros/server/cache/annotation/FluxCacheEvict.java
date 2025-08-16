@@ -15,7 +15,7 @@ import run.ikaros.server.cache.CacheAspect;
  * 请加在接口具体实现类的方法上，不要加在接口的方法上.
  * .
  *
- * @see CacheAspect#fluxCacheEvictMethods()
+ * @see CacheAspect#aroundFluxMethodsWithAnnotationCacheEvict
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

@@ -184,7 +184,7 @@ public class CacheAspect {
      * .
      */
     @Around("fluxCacheableMethods() && @annotation(fluxCacheable)")
-    public Flux<?> aroundMonoMethodsWithAnnotationCacheable(
+    public Flux<?> aroundFluxMethodsWithAnnotationCacheable(
         ProceedingJoinPoint joinPoint, FluxCacheable fluxCacheable) throws Throwable {
         final String cacheKeyPostfix = parseSpelExpression(fluxCacheable.key(), joinPoint);
         final List<String> cacheKeys =
@@ -229,7 +229,7 @@ public class CacheAspect {
      * .
      */
     @Around("monoCacheEvictMethods() && @annotation(monoCacheEvict)")
-    public Mono<?> aroundMonoMethodsWithAnnotationCacheable(
+    public Mono<?> aroundMonoMethodsWithAnnotationCacheEvict(
         ProceedingJoinPoint joinPoint, MonoCacheEvict monoCacheEvict
     ) throws Throwable {
         Object proceed = joinPoint.proceed();
@@ -254,7 +254,7 @@ public class CacheAspect {
      * .
      */
     @Around("fluxCacheEvictMethods() && @annotation(fluxCacheEvict)")
-    public Flux<?> aroundMonoMethodsWithAnnotationCacheable(
+    public Flux<?> aroundFluxMethodsWithAnnotationCacheEvict(
         ProceedingJoinPoint joinPoint, FluxCacheEvict fluxCacheEvict
     ) throws Throwable {
         Object proceed = joinPoint.proceed();
