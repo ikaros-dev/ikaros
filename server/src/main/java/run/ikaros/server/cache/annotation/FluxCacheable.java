@@ -8,7 +8,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.core.annotation.AliasFor;
+import run.ikaros.server.cache.CacheAspect;
 
+/**
+ * 当 value或者cacheNames 和 key 啥都不填，
+ * 请加在接口具体实现类的方法上，不要加在接口的方法上.
+ * .
+ *
+ * @see CacheAspect
+ */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited

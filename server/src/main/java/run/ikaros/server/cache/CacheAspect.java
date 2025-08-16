@@ -12,6 +12,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -27,6 +29,7 @@ import run.ikaros.server.cache.annotation.MonoCacheable;
 @Slf4j
 @Aspect
 @Component
+@Order(Ordered.LOWEST_PRECEDENCE - 1)
 @ConditionalOnProperty(value = "ikaros.cache.enable", havingValue = "true")
 public class CacheAspect {
 
