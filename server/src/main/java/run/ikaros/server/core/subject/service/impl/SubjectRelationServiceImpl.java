@@ -11,6 +11,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.SubjectRelation;
 import run.ikaros.api.store.enums.SubjectRelationType;
+import run.ikaros.server.cache.annotation.FluxCacheable;
+import run.ikaros.server.cache.annotation.MonoCacheEvict;
+import run.ikaros.server.cache.annotation.MonoCacheable;
 import run.ikaros.server.core.subject.SubjectRelationCourt;
 import run.ikaros.server.core.subject.service.SubjectRelationService;
 import run.ikaros.server.store.entity.SubjectEntity;
@@ -31,6 +34,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
 
 
     @Override
+    @FluxCacheable(cacheNames = "subject:relations:", key = "#subjectId")
     public Flux<SubjectRelation> findAllBySubjectId(Long subjectId) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt zero.");
         return subjectRelationRepository.findAllBySubjectId(subjectId)
@@ -59,6 +63,8 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
     }
 
     @Override
+    @MonoCacheable(cacheNames = "subject:relation:",
+        key = "#subjectId.toString() + ' ' + #relationType.toString()")
     public Mono<SubjectRelation> findBySubjectIdAndType(Long subjectId,
                                                         SubjectRelationType relationType) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt zero.");
@@ -75,6 +81,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<SubjectRelation> createSubjectRelation(SubjectRelation subjectRelation) {
         Assert.notNull(subjectRelation, "'subjectRelation' must not be null.");
         final Long masterSubjectId = subjectRelation.getSubject();
@@ -113,6 +120,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<SubjectRelation> removeSubjectRelation(SubjectRelation subjectRelation) {
         Assert.notNull(subjectRelation, "'subjectRelation' must not be null.");
         Assert.isTrue(subjectRelation.getSubject() > 0, "'subjectRelation' must not be null.");

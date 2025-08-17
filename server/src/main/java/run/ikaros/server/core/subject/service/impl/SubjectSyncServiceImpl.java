@@ -35,6 +35,9 @@ import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.TagType;
+import run.ikaros.server.cache.annotation.FluxCacheable;
+import run.ikaros.server.cache.annotation.MonoCacheEvict;
+import run.ikaros.server.cache.annotation.MonoCacheable;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.service.SubjectSyncService;
@@ -117,6 +120,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> sync(@Nullable Long subjectId, SubjectSyncPlatform platform,
                            String platformId) {
         Assert.notNull(platform, "'platform' must not null.");
@@ -354,6 +358,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<SubjectSync> save(SubjectSync subjectSync) {
         log.debug("save: {}", subjectSync);
         return subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
@@ -377,12 +382,14 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> remove(SubjectSync subjectSync) {
         return copyProperties(subjectSync, SubjectSyncEntity.builder().build())
             .flatMap(subjectSyncRepository::delete);
     }
 
     @Override
+    @FluxCacheable(value = "subject:syncs:", key = "#subjectId")
     public Flux<SubjectSync> findSubjectSyncsBySubjectId(long subjectId) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         return subjectSyncRepository.findAllBySubjectId(subjectId)
@@ -391,6 +398,8 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     }
 
     @Override
+    @MonoCacheable(cacheNames = "subject:sync:",
+        key = "#subjectId.toString() + ' ' + #platform.toString()")
     public Mono<SubjectSync> findSubjectSyncBySubjectIdAndPlatform(long subjectId,
                                                                    SubjectSyncPlatform platform) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
@@ -401,6 +410,8 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     }
 
     @Override
+    @FluxCacheable(cacheNames = "subject:syncs:",
+        key = "#platform.toString() + ' ' + #platformId.toString()")
     public Flux<SubjectSync> findSubjectSyncsByPlatformAndPlatformId(SubjectSyncPlatform platform,
                                                                      String platformId) {
         Assert.notNull(platform, "'platform' must not null.");
@@ -411,6 +422,9 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     }
 
     @Override
+    @MonoCacheable(cacheNames = "subject:sync:",
+        key = "#subjectId.toString() + ' ' + #platform.toString()"
+            + "+ ' ' + #platformId.toString()")
     public Mono<SubjectSync> findBySubjectIdAndPlatformAndPlatformId(Long subjectId,
                                                                      SubjectSyncPlatform platform,
                                                                      String platformId) {

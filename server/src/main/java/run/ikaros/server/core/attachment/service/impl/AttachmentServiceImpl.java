@@ -51,6 +51,8 @@ import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.SystemVarUtils;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.cache.annotation.MonoCacheEvict;
+import run.ikaros.server.cache.annotation.MonoCacheable;
 import run.ikaros.server.core.attachment.event.AttachmentRemoveEvent;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentEntity;
@@ -88,6 +90,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<AttachmentEntity> saveEntity(AttachmentEntity attachmentEntity) {
         Assert.notNull(attachmentEntity, "'attachmentEntity' must not be null.");
         return findPathByParentId(attachmentEntity.getParentId(), attachmentEntity.getName())
@@ -97,6 +100,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Attachment> save(Attachment attachment) {
         Assert.notNull(attachment, "'attachment' must not be null.");
         attachment.setParentId(Optional.ofNullable(attachment.getParentId())
@@ -128,6 +132,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheable(value = "attachment:entities:", key = "#searchCondition.toString()")
     public Mono<PagingWrap<AttachmentEntity>> listEntitiesByCondition(
         AttachmentSearchCondition searchCondition) {
         Assert.notNull(searchCondition, "'condition' must no null.");
@@ -182,6 +187,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheable(value = "attachments:", key = "#searchCondition.toString()")
     public Mono<PagingWrap<Attachment>> listByCondition(AttachmentSearchCondition searchCondition) {
         Assert.notNull(searchCondition, "'condition' must no null.");
         return listEntitiesByCondition(searchCondition)
@@ -292,6 +298,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> removeById(Long attachmentId) {
         Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
         if (AttachmentConst.COVER_DIRECTORY_ID.equals(attachmentId)
@@ -308,6 +315,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> removeByIdForcibly(Long attachmentId) {
         Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
         return repository.findById(attachmentId)
@@ -318,6 +326,7 @@ public class AttachmentServiceImpl implements AttachmentService {
 
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> removeByTypeAndParentIdAndName(AttachmentType type,
                                                      @Nullable Long parentId, String name) {
         Assert.notNull(type, "'type' must not null.");
@@ -331,6 +340,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Attachment> upload(AttachmentUploadCondition uploadCondition) {
         Assert.notNull(uploadCondition, "'uploadCondition' must not null.");
         String name = uploadCondition.getName();
@@ -377,6 +387,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheable(value = "attachment:id:", key = "#attachmentId")
     public Mono<Attachment> findById(Long attachmentId) {
         Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
         return repository.findById(attachmentId)
@@ -384,6 +395,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheable(value = "attachment:id:",
+        key = "#type.toString() + ' ' + (#parentId?.toString() ?: '') + ' ' + #name")
     public Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type,
                                                          @Nullable Long parentId, String name) {
         Assert.notNull(type, "'type' must not null.");
@@ -455,6 +468,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> receiveAndHandleFragmentUploadChunkFile(String unique,
                                                               @Nonnull Long uploadLength,
                                                               @Nonnull Long uploadOffset,
@@ -581,6 +595,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> revertFragmentUploadFile(String unique) {
         Assert.hasText(unique, "'unique' must has text.");
         log.debug("exec revertUploadChunkFileAndDir method for unique={}", unique);
@@ -601,6 +616,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name) {
         Assert.hasText(name, "'name' must has text.");
         final Long fParentId =
@@ -622,6 +638,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheable(value = "attachments:", key = "#id")
     public Mono<List<Attachment>> findAttachmentPathDirsById(Long id) {
         Assert.isTrue(id >= 0, "'id' must >= 0.");
         return findPathDirs(id, new ArrayList<>())
@@ -638,6 +655,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheable(value = "attachment:exists:",
+        key = "(#parentId?.toString() ?: '') + ' ' + #name")
     public Mono<Boolean> existsByParentIdAndName(@Nullable Long parentId, String name) {
         Assert.hasText(name, "'name' must has text.");
         if (Objects.isNull(parentId)) {
@@ -647,6 +666,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheable(value = "attachment:exists:",
+        key = "#type.toString() + ' ' + (#parentId?.toString() ?: '') + ' ' + #name")
     public Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
                                                         @Nullable Long parentId,
                                                         String name) {
