@@ -50,7 +50,7 @@ public class DefaultEpisodeService implements EpisodeService {
 
 
     @Override
-    @MonoCacheEvict(value = "episode:id:", key = "#episode.id")
+    @MonoCacheEvict
     public Mono<Episode> save(Episode episode) {
         Assert.notNull(episode, "episode must not be null");
         Long episodeId = episode.getId();
@@ -121,7 +121,7 @@ public class DefaultEpisodeService implements EpisodeService {
     }
 
     @Override
-    @MonoCacheEvict(value = "episode:id:", key = "#episodeId")
+    @MonoCacheEvict
     public Mono<Void> deleteById(Long episodeId) {
         Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
         return episodeRepository.findById(episodeId)

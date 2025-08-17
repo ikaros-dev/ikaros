@@ -95,7 +95,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheable(value = "subject:id:", key = "#id")
+    @MonoCacheable(value = "subject:", key = "#id")
     public Mono<Subject> findById(Long id) {
         Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.findById(id)
@@ -111,7 +111,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheEvict(value = "subject:id:", key = "#subjectId")
+    @MonoCacheEvict
     public Mono<Subject> findByBgmId(@Nonnull Long subjectId, Long bgmtvId) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.isTrue(bgmtvId > 0, "'bgmtvId' must gt 0.");
@@ -126,7 +126,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheEvict(value = "subject:id:", key = "#subjectId")
+    @MonoCacheEvict
     public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull Long subjectId,
                                                                  @Nonnull SubjectSyncPlatform
                                                                      platform,
@@ -140,6 +140,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict
     public Flux<Subject> findByPlatformAndPlatformId(
         @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
@@ -150,6 +151,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheable(value = "subject:",
+        key = "#subjectSyncPlatform.toString() + ' ' #platformId.toString()")
     public Mono<Boolean> existsByPlatformAndPlatformId(
         @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
@@ -158,7 +161,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheable
+    @MonoCacheEvict
     public synchronized Mono<Subject> create(Subject subject) {
         Assert.notNull(subject, "'subject' must not be null.");
         Assert.notNull(subject.getType(), "'subject.type' must not be null.");
@@ -234,7 +237,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheEvict(value = "subject:id:", key = "#id")
+    @MonoCacheEvict(value = "subject:", key = "#id")
     public Mono<Void> deleteById(Long id) {
         Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.existsById(id)
@@ -268,6 +271,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheable(value = "subjects:", key = "#pw.page + ' ' + #pw.size")
     public Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pw) {
         Assert.notNull(pw, "'pagingWrap' must not be null");
         Assert.isTrue(pw.getPage() > 0, "'pagingWrap' page must gt 0");
@@ -283,6 +287,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheable(value = "subjects:", key = "#condition.toString()")
     public Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition) {
         Assert.notNull(condition, "'condition' must not null.");
         condition.initDefaultIfNull();

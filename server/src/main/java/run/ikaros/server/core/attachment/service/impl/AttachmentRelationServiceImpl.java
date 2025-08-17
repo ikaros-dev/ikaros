@@ -12,6 +12,9 @@ import run.ikaros.api.core.attachment.AttachmentRelation;
 import run.ikaros.api.core.attachment.VideoSubtitle;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.store.enums.AttachmentRelationType;
+import run.ikaros.server.cache.annotation.FluxCacheEvict;
+import run.ikaros.server.cache.annotation.FluxCacheable;
+import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.core.attachment.service.AttachmentRelationService;
 import run.ikaros.server.core.attachment.vo.PostAttachmentRelationsParam;
 import run.ikaros.server.store.entity.AttachmentRelationEntity;
@@ -33,6 +36,7 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
 
 
     @Override
+    @FluxCacheable(value = "attachment:relations:", key = "#type + ' ' + #attachmentId")
     public Flux<AttachmentRelation> findAllByTypeAndAttachmentId(AttachmentRelationType type,
                                                                  Long attachmentId) {
         Assert.notNull(type, "'type' must not null.");
@@ -44,10 +48,11 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
     }
 
     @Override
+    @FluxCacheable(value = "attachment:video_subtitles:attachmentId:", key = "#attachmentId")
     public Flux<VideoSubtitle> findAttachmentVideoSubtitles(Long attachmentId) {
         Assert.isTrue(attachmentId > 0, "'attachmentId' must > 0.");
         return repository.findAllByTypeAndAttachmentId(
-            AttachmentRelationType.VIDEO_SUBTITLE, attachmentId)
+                AttachmentRelationType.VIDEO_SUBTITLE, attachmentId)
             .map(AttachmentRelationEntity::getRelationAttachmentId)
             .flatMap(attachmentRepository::findById)
             .map(attachmentEntity -> VideoSubtitle.builder()
@@ -59,6 +64,7 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<AttachmentRelation> putAttachmentRelation(AttachmentRelation attachmentRelation) {
         Assert.notNull(attachmentRelation, "'attachmentRelation' must not be null.");
         Long attachmentId = attachmentRelation.getAttachmentId();
@@ -81,6 +87,7 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
     }
 
     @Override
+    @FluxCacheEvict
     public Flux<AttachmentRelation> putAttachmentRelations(
         PostAttachmentRelationsParam postAttachmentRelationsParam) {
 
@@ -88,7 +95,7 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
             "'postAttachmentRelationsParam' must not be null.");
 
         final Long masterId = postAttachmentRelationsParam.getMasterId();
-        final  AttachmentRelationType type = postAttachmentRelationsParam.getType();
+        final AttachmentRelationType type = postAttachmentRelationsParam.getType();
         final List<Long> relationIds = postAttachmentRelationsParam.getRelationIds();
 
         Assert.isTrue(masterId > 0, "'masterId' must > 0.");
@@ -106,6 +113,7 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<AttachmentRelation> deleteAttachmentRelation(
         AttachmentRelation attachmentRelation) {
         Assert.notNull(attachmentRelation, "'attachmentRelation' must not be null.");
