@@ -31,8 +31,8 @@ public class AttachmentDriver {
     @Schema(requiredMode = REQUIRED, defaultValue = "LOCAL")
     private AttachmentDriverType type;
     private String name;
-    @JsonProperty("mount_path")
-    private String mountPath;
+    @JsonProperty("mount_name")
+    private String mountName;
     /**
      * driver remote relative path or sub dir id, null or empty is root dir.
      */

@@ -11,7 +11,7 @@ create table if not exists attachment_driver
     enable          bool           null,
     d_type          varchar(255)   not null,
     d_name          varchar(255)   null,
-    mount_path      varchar(255)   null,
+    mount_name      varchar(255)   null,
     remote_path     varchar(255)   null,
     d_order         int8           null,
     d_comment       varchar(255)   null,

@@ -31,8 +31,8 @@ public class AttachmentDriverEntity {
     private AttachmentDriverType type;
     @Column("d_name")
     private String name;
-    @Column("mount_path")
-    private String mountPath;
+    @Column("mount_name")
+    private String mountName;
     /**
      * driver remote relative path or sub dir id, null or empty is root dir.
      */
