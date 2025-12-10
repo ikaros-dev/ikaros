@@ -18,7 +18,7 @@ public class Attachment {
     private Long parentId;
     private AttachmentType type;
     /**
-     * HTTP path, format: driver_id://relactive_path
+     * HTTP path, format: driver_id://remote_path
      * .
      */
     private String url;

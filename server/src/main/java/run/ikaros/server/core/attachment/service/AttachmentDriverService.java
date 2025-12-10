@@ -14,4 +14,8 @@ public interface AttachmentDriverService {
     Mono<AttachmentDriver> findById(Long id);
 
     Mono<AttachmentDriver> findByTypeAndName(String type, String name);
+
+    Mono<Void> enable(Long driverId);
+
+    Mono<Void> disable(Long driverId);
 }

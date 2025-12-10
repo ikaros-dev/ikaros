@@ -40,6 +40,26 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                     .response(responseBuilder().implementation(AttachmentDriver.class))
             )
 
+            .PUT("/attachment/driver/enable/id/{id}", this::enableDriver,
+                builder -> builder.operationId("EnableDriver")
+                    .tag(tag).description("Enable attachment driver.")
+                    .parameter(parameterBuilder().name("id")
+                        .in(ParameterIn.PATH)
+                        .description("AttachmentDriver ID")
+                        .required(true)
+                        .implementation(Long.class))
+            )
+
+            .PUT("/attachment/driver/disable/id/{id}", this::disableDriver,
+                builder -> builder.operationId("EnableDriver")
+                    .tag(tag).description("Disable attachment driver.")
+                    .parameter(parameterBuilder().name("id")
+                        .in(ParameterIn.PATH)
+                        .description("AttachmentDriver ID")
+                        .required(true)
+                        .implementation(Long.class))
+            )
+
             .DELETE("/attachment/driver/id/{id}", this::deleteById,
                 builder -> builder.tag(tag)
                     .operationId("DeleteAttachmentDriverById")
@@ -128,5 +148,18 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
             .flatMap(driver -> ServerResponse.ok().bodyValue(driver));
     }
 
+    private Mono<ServerResponse> enableDriver(ServerRequest request) {
+        String id = request.pathVariable("id");
+        return service.enable(Long.valueOf(id))
+            .then(ServerResponse.ok()
+                .bodyValue("Enable success"));
+    }
+
+    private Mono<ServerResponse> disableDriver(ServerRequest request) {
+        String id = request.pathVariable("id");
+        return service.disable(Long.valueOf(id))
+            .then(ServerResponse.ok()
+                .bodyValue("Disable success"));
+    }
 
 }

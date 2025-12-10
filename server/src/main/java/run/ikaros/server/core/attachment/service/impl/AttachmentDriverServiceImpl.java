@@ -9,6 +9,8 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.exception.AttachmentDriverRemoveException;
+import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
+import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
 import run.ikaros.server.core.attachment.service.AttachmentDriverService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
@@ -17,12 +19,12 @@ import run.ikaros.server.store.repository.AttachmentDriverRepository;
 @Service
 public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private final AttachmentDriverRepository repository;
-    private final ApplicationEventPublisher applicationEventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     public AttachmentDriverServiceImpl(AttachmentDriverRepository repository,
-                                       ApplicationEventPublisher applicationEventPublisher) {
+                                       ApplicationEventPublisher eventPublisher) {
         this.repository = repository;
-        this.applicationEventPublisher = applicationEventPublisher;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -47,6 +49,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     @Override
     public Mono<Void> removeByTypeAndName(String type, String name) {
         Assert.notNull(type, "'type' must not null.");
+        name = name.trim();
         return repository.deleteByTypeAndName(type, name)
             .filter(count -> count > 0)
             .switchIfEmpty(Mono.error(new AttachmentDriverRemoveException(
@@ -64,7 +67,32 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     @Override
     public Mono<AttachmentDriver> findByTypeAndName(String type, String name) {
         Assert.notNull(type, "'type' must not null.");
+        name = name.trim();
         return repository.findByTypeAndName(type, name)
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
     }
+
+    @Override
+    public Mono<Void> enable(Long driverId) {
+        Assert.notNull(driverId, "'driverId' must not null.");
+        return repository.findById(driverId)
+            .map(entity -> entity.setEnable(true))
+            .flatMap(repository::save)
+            .doOnSuccess(entity ->
+                eventPublisher.publishEvent(new AttachmentDriverEnableEvent(this, entity)))
+            .then();
+    }
+
+    @Override
+    public Mono<Void> disable(Long driverId) {
+        Assert.notNull(driverId, "'driverId' must not null.");
+        return repository.findById(driverId)
+            .map(entity -> entity.setEnable(false))
+            .flatMap(repository::save)
+            .doOnSuccess(entity ->
+                eventPublisher.publishEvent(new AttachmentDriverDisableEvent(this, entity)))
+            .then();
+    }
+
+
 }
