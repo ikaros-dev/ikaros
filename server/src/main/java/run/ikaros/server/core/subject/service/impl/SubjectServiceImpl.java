@@ -36,6 +36,7 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.cache.annotation.MonoCacheEvict;
+import run.ikaros.server.cache.annotation.MonoCacheable;
 import run.ikaros.server.core.subject.event.SubjectAddEvent;
 import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.core.subject.event.SubjectUpdateEvent;
@@ -94,6 +95,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheable(value = "subject:", key = "#id")
     public Mono<Subject> findById(Long id) {
         Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.findById(id)
@@ -109,6 +111,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Subject> findByBgmId(@Nonnull Long subjectId, Long bgmtvId) {
         Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.isTrue(bgmtvId > 0, "'bgmtvId' must gt 0.");
@@ -123,6 +126,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull Long subjectId,
                                                                  @Nonnull SubjectSyncPlatform
                                                                      platform,
@@ -136,6 +140,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict
     public Flux<Subject> findByPlatformAndPlatformId(
         @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
@@ -146,6 +151,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheable(value = "subject:",
+        key = "#subjectSyncPlatform.toString() + ' ' #platformId.toString()")
     public Mono<Boolean> existsByPlatformAndPlatformId(
         @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
@@ -154,6 +161,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict
     public synchronized Mono<Subject> create(Subject subject) {
         Assert.notNull(subject, "'subject' must not be null.");
         Assert.notNull(subject.getType(), "'subject.type' must not be null.");
@@ -179,6 +187,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> update(Subject subject) {
         Assert.notNull(subject, "'subject' must not null.");
         Assert.isTrue(subject.getId() > 0, "'subject id' must gt 0.");
@@ -228,7 +237,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheEvict
+    @MonoCacheEvict(value = "subject:", key = "#id")
     public Mono<Void> deleteById(Long id) {
         Assert.isTrue(id > 0, "'id' must gt 0.");
         return subjectRepository.existsById(id)
@@ -262,6 +271,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheable(value = "subjects:", key = "#pw.page + ' ' + #pw.size")
     public Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pw) {
         Assert.notNull(pw, "'pagingWrap' must not be null");
         Assert.isTrue(pw.getPage() > 0, "'pagingWrap' page must gt 0");
@@ -277,6 +287,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
+    @MonoCacheable(value = "subjects:", key = "#condition.toString()")
     public Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition) {
         Assert.notNull(condition, "'condition' must not null.");
         condition.initDefaultIfNull();

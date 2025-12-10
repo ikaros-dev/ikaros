@@ -10,9 +10,11 @@ import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.core.annotation.AliasFor;
 
 /**
- * 数字类型返回值，统一用 Mono Long 接收
- * 目前不能和事务注解共用
+ * 数字类型返回值，统一用 Mono Long 接收，
+ * 请加在接口具体实现类的方法上，不要加在接口的方法上.
  * .
+ *
+ * @see run.ikaros.server.cache.CacheAspect#aroundMonoMethodsWithAnnotationCacheable
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

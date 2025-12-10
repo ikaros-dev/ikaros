@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -23,8 +26,10 @@ import run.ikaros.server.cache.annotation.FluxCacheable;
 import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.cache.annotation.MonoCacheable;
 
+@Slf4j
 @Aspect
 @Component
+@Order(Ordered.LOWEST_PRECEDENCE - 1)
 @ConditionalOnProperty(value = "ikaros.cache.enable", havingValue = "true")
 public class CacheAspect {
 
@@ -101,36 +106,76 @@ public class CacheAspect {
             Arrays.stream(monoCacheable.value())
                 .map(namespace -> namespace + cacheKeyPostfix).toList();
         return Flux.fromStream(cacheKeys.stream())
-            .concatMap(key -> cm.get(key).filter(Objects::nonNull))
+            .concatMap(key -> {
+                long cacheLookupStart = System.nanoTime();
+                return cm.get(key)
+                    .filter(Objects::nonNull)
+                    .doOnNext(value -> {
+                        long duration = (System.nanoTime() - cacheLookupStart);
+                        log.debug("Cache hit - key: {}, value: {}, lookupTime: {}ns",
+                            key, value, duration);
+                    })
+                    .switchIfEmpty(Mono.defer(() -> {
+                        long duration = (System.nanoTime() - cacheLookupStart);
+                        log.debug("Cache miss - key: {}, lookupTime: {}ns", key, duration);
+                        return Mono.empty();
+                    }));
+            })
             .next()
             // 缓存中不存在
             .switchIfEmpty(Mono.defer(() -> {
+                long allCacheMissTime = System.nanoTime();
+                log.debug("All cache keys missed - keys: {}", cacheKeys);
                 Object proceed;
                 try {
+                    long methodInvokeStart = System.nanoTime();
+                    log.debug("Proceeding to original method...");
                     proceed = joinPoint.proceed(joinPoint.getArgs());
+                    long methodDuration = (System.nanoTime() - methodInvokeStart);
+                    log.debug("Original method execution time: {}ns", methodDuration);
                 } catch (Throwable e) {
+                    long failTime = (System.nanoTime() - allCacheMissTime);
+                    log.error("Original method invocation failed after {}ns", failTime, e);
                     return Mono.error(e);
                 }
                 return ((Mono<?>) proceed)
-                    .flatMap(val ->
-                        Flux.fromIterable(cacheKeys)
+                    .doOnNext(val -> log.debug("Original method returned value: {}", val))
+                    .flatMap(val -> {
+                        long cacheUpdateStart = System.nanoTime();
+                        return Flux.fromIterable(cacheKeys)
+                            .doOnNext(k -> log.debug("Caching value for key: {}", k))
                             .flatMap(k -> cm.put(k, val))
                             .next()
-                            .flatMap(list -> Mono.just(val))
-                    ).switchIfEmpty(
+                            .doOnNext(result -> {
+                                long duration = (System.nanoTime() - cacheUpdateStart);
+                                log.debug("Cache update completed in {}ns", duration);
+                            })
+                            .flatMap(list -> Mono.just(val));
+                    })
+                    .switchIfEmpty(
                         Flux.fromIterable(cacheKeys)
+                            .doOnNext(k -> log.debug("Caching null value for key: {}", k))
                             .flatMap(k -> cm.put(k, "null"))
                             .next()
-                            .flatMap(bool -> Mono.empty())
+                            .then(Mono.empty())
                     );
             }))
             .map(o -> {
-                if (o instanceof Integer integer) {
-                    return integer.longValue();
-                }
-                return o;
+                long mappingStart = System.nanoTime();
+                log.debug("Processing result - type: {}, value: {}",
+                    o.getClass().getSimpleName(), o);
+                Object result = o instanceof Integer integer ? integer.longValue() : o;
+                long duration = (System.nanoTime() - mappingStart);
+                log.debug("Type conversion completed in {}ns", duration);
+                return result;
             })
-            .filter(o -> !"null".equals(o));
+            .filter(o -> {
+                boolean isNotNull = !"null".equals(o);
+                if (!isNotNull) {
+                    log.debug("Filtering out null value");
+                }
+                return isNotNull;
+            });
     }
 
     /**
@@ -139,7 +184,7 @@ public class CacheAspect {
      * .
      */
     @Around("fluxCacheableMethods() && @annotation(fluxCacheable)")
-    public Flux<?> aroundMonoMethodsWithAnnotationCacheable(
+    public Flux<?> aroundFluxMethodsWithAnnotationCacheable(
         ProceedingJoinPoint joinPoint, FluxCacheable fluxCacheable) throws Throwable {
         final String cacheKeyPostfix = parseSpelExpression(fluxCacheable.key(), joinPoint);
         final List<String> cacheKeys =
@@ -184,7 +229,7 @@ public class CacheAspect {
      * .
      */
     @Around("monoCacheEvictMethods() && @annotation(monoCacheEvict)")
-    public Mono<?> aroundMonoMethodsWithAnnotationCacheable(
+    public Mono<?> aroundMonoMethodsWithAnnotationCacheEvict(
         ProceedingJoinPoint joinPoint, MonoCacheEvict monoCacheEvict
     ) throws Throwable {
         Object proceed = joinPoint.proceed();
@@ -209,7 +254,7 @@ public class CacheAspect {
      * .
      */
     @Around("fluxCacheEvictMethods() && @annotation(fluxCacheEvict)")
-    public Flux<?> aroundMonoMethodsWithAnnotationCacheable(
+    public Flux<?> aroundFluxMethodsWithAnnotationCacheEvict(
         ProceedingJoinPoint joinPoint, FluxCacheEvict fluxCacheEvict
     ) throws Throwable {
         Object proceed = joinPoint.proceed();

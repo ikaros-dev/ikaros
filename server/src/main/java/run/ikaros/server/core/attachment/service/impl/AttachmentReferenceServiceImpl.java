@@ -17,6 +17,7 @@ import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
 import run.ikaros.api.infra.utils.RegexUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.EpisodeGroup;
+import run.ikaros.server.cache.annotation.FluxCacheable;
 import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.core.attachment.event.AttachmentReferenceSaveEvent;
 import run.ikaros.server.core.attachment.event.EpisodeAttachmentUpdateEvent;
@@ -49,6 +50,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
 
 
     @Override
+    @MonoCacheEvict
     public Mono<AttachmentReference> save(AttachmentReference attachmentReference) {
         Assert.notNull(attachmentReference, "'attachmentReference' must not null.");
         return checkAttachmentRef(attachmentReference)
@@ -67,6 +69,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
 
 
     @Override
+    @FluxCacheable(value = "attachment:references:", key = "#type + ' ' + #attachmentId")
     public Flux<AttachmentReference> findAllByTypeAndAttachmentId(AttachmentReferenceType type,
                                                                   Long attachmentId) {
         Assert.notNull(type, "'type' must not null.");
@@ -76,11 +79,13 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> removeById(Long attachmentRefId) {
         return repository.deleteById(attachmentRefId);
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> removeAllByTypeAndReferenceId(AttachmentReferenceType type,
                                                     Long referenceId) {
         Assert.notNull(type, "'type' must not null.");
@@ -89,6 +94,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> removeByTypeAndAttachmentIdAndReferenceId(AttachmentReferenceType type,
                                                                 Long attachmentId,
                                                                 Long referenceId) {
