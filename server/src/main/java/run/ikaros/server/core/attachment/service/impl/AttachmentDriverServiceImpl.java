@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentDriver;
+import run.ikaros.api.core.attachment.exception.AttachmentDriverRemoveException;
 import run.ikaros.server.core.attachment.service.AttachmentDriverService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
@@ -34,6 +35,36 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                 .doOnSuccess(entity ->
                     log.debug("Created attachment driver with type={} and name={}",
                         entity.getType(), entity.getName())))
+            .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
+    }
+
+    @Override
+    public Mono<Void> removeById(Long id) {
+        Assert.notNull(id, "'id' must not null.");
+        return repository.deleteById(id);
+    }
+
+    @Override
+    public Mono<Void> removeByTypeAndName(String type, String name) {
+        Assert.notNull(type, "'type' must not null.");
+        return repository.deleteByTypeAndName(type, name)
+            .filter(count -> count > 0)
+            .switchIfEmpty(Mono.error(new AttachmentDriverRemoveException(
+                "Remove attachment driver fail for type=" + type + " and name=" + name)))
+            .then();
+    }
+
+    @Override
+    public Mono<AttachmentDriver> findById(Long id) {
+        Assert.notNull(id, "'id' must not null.");
+        return repository.findById(id)
+            .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
+    }
+
+    @Override
+    public Mono<AttachmentDriver> findByTypeAndName(String type, String name) {
+        Assert.notNull(type, "'type' must not null.");
+        return repository.findByTypeAndName(type, name)
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
     }
 }
