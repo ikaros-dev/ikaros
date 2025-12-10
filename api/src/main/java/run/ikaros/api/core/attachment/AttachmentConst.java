@@ -8,4 +8,5 @@ public interface AttachmentConst {
     String ROOT_DIR_NAME = "/";
     String COVER_DIR_NAME = "Covers";
     String DOWNLOAD_DIR_NAME = "Downloads";
+    String DRIVER_URL_SPLIT_STR = "://";
 }

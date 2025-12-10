@@ -43,9 +43,9 @@ public class AttachmentDriverDisableListener {
         }
 
         return service.findByTypeAndParentIdAndName(
-                AttachmentType.Driver, ROOT_DIRECTORY_ID, mountName
+                AttachmentType.Driver_Directory, ROOT_DIRECTORY_ID, mountName
             ).map(Attachment::getId)
-            .flatMap(service::removeByIdForcibly);
+            .flatMap(service::removeByIdOnlyRecords);
     }
 
 }

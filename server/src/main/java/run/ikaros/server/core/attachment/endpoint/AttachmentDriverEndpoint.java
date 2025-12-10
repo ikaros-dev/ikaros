@@ -4,17 +4,23 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
+import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.store.enums.AttachmentDriverType;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentDriverService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
@@ -111,6 +117,33 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .implementation(AttachmentDriver.class))
             )
 
+            .GET("/attachments/driver/condition", this::listByCondition,
+                builder -> builder.operationId("ListAttachmentsByCondition")
+                    .tag(tag).description("List attachments by condition.")
+                    .parameter(parameterBuilder()
+                        .name("page")
+                        .description("第几页，从1开始, 默认为1.")
+                        .implementation(Integer.class))
+                    .parameter(parameterBuilder()
+                        .name("size")
+                        .description("每页条数，默认为10.")
+                        .implementation(Integer.class))
+                    .parameter(parameterBuilder()
+                        .name("name")
+                        .description("经过Basic64编码的附件名称，附件名称字段模糊查询。")
+                        .implementation(String.class))
+                    .parameter(parameterBuilder()
+                        .name("parentId")
+                        .description("附件的父附件ID，父附件一般时目录类型。"))
+                    .parameter(parameterBuilder()
+                        .name("refresh")
+                        .description("是否从驱动拉取最新数据,默认false.如果为false可能拉取的不是最新的数据，"
+                            + "可通过此参数设置未true在查询前刷新数据，操作比较耗时不推荐，"
+                            + "更推荐通过刷新接口去主动刷新数据。")
+                        .example("false")
+                        .implementation(Boolean.class))
+                    .response(responseBuilder().implementation(PagingWrap.class))
+            )
             .build();
     }
 
@@ -160,6 +193,38 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
         return service.disable(Long.valueOf(id))
             .then(ServerResponse.ok()
                 .bodyValue("Disable success"));
+    }
+
+    private Mono<ServerResponse> listByCondition(ServerRequest request) {
+        Optional<String> pageOp = request.queryParam("page");
+        if (pageOp.isEmpty()) {
+            pageOp = Optional.of("1");
+        }
+        final Integer page = Integer.valueOf(pageOp.get());
+
+        Optional<String> sizeOp = request.queryParam("size");
+        if (sizeOp.isEmpty()) {
+            sizeOp = Optional.of("10");
+        }
+        final Integer size = Integer.valueOf(sizeOp.get());
+
+        Optional<String> nameOp = request.queryParam("name");
+        final String name = nameOp.isPresent() && StringUtils.hasText(nameOp.get())
+            ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
+            : "";
+
+        Optional<String> parentIdOp = request.queryParam("parentId");
+        Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
+
+        final Boolean refresh =
+            Boolean.valueOf(request.queryParam("refresh").orElse("false"));
+
+        return Mono.just(AttachmentSearchCondition.builder()
+                .page(page).size(size).refresh(refresh)
+                .name(name).parentId(parentId)
+                .build())
+            .flatMap(service::listEntitiesByCondition)
+            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
     }
 
 }

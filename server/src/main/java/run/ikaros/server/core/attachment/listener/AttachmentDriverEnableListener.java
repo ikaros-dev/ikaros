@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.listener;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_URL_SPLIT_STR;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARENT_ID;
 
@@ -46,14 +47,14 @@ public class AttachmentDriverEnableListener {
         }
 
         return service.findByTypeAndParentIdAndName(
-                AttachmentType.Driver, ROOT_DIRECTORY_PARENT_ID, mountName)
+                AttachmentType.Driver_Directory, ROOT_DIRECTORY_PARENT_ID, mountName)
             .switchIfEmpty(
                 service.save(Attachment.builder()
                     .parentId(ROOT_DIRECTORY_ID)
-                    .type(AttachmentType.Driver)
+                    .type(AttachmentType.Driver_Directory)
                     .name(mountName)
                     .updateTime(LocalDateTime.now())
-                    .url(driver.getId() + "://" + driver.getRemotePath())
+                    .url(driver.getId() + DRIVER_URL_SPLIT_STR + driver.getRemotePath())
                     .fsPath(driver.getRemotePath()).path("")
                     .build()))
             .then();

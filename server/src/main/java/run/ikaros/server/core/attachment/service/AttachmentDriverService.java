@@ -1,7 +1,10 @@
 package run.ikaros.server.core.attachment.service;
 
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentDriver;
+import run.ikaros.api.core.attachment.AttachmentSearchCondition;
+import run.ikaros.api.wrap.PagingWrap;
 
 public interface AttachmentDriverService {
 
@@ -18,4 +21,9 @@ public interface AttachmentDriverService {
     Mono<Void> enable(Long driverId);
 
     Mono<Void> disable(Long driverId);
+
+    Mono<PagingWrap<Attachment>> listEntitiesByCondition(
+        AttachmentSearchCondition attachmentSearchCondition);
+
+    Mono<Void> refresh(Long attachmentId);
 }

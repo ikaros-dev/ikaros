@@ -3,5 +3,6 @@ package run.ikaros.api.store.enums;
 public enum AttachmentType {
     File,
     Directory,
-    Driver
+    Driver_File,
+    Driver_Directory,
 }
