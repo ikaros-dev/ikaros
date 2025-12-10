@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.store.enums.AttachmentType;
+import run.ikaros.server.config.DynamicDirectoryResolver;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
@@ -18,9 +19,12 @@ import run.ikaros.server.store.entity.AttachmentDriverEntity;
 @Component
 public class AttachmentDriverDisableListener {
     private final AttachmentService service;
+    private final DynamicDirectoryResolver dynamicDirectoryResolver;
 
-    public AttachmentDriverDisableListener(AttachmentService service) {
+    public AttachmentDriverDisableListener(AttachmentService service,
+                                           DynamicDirectoryResolver dynamicDirectoryResolver) {
         this.service = service;
+        this.dynamicDirectoryResolver = dynamicDirectoryResolver;
     }
 
     /**
@@ -41,6 +45,8 @@ public class AttachmentDriverDisableListener {
         if (!StringUtils.hasText(mountName)) {
             mountName = driver.getType().name();
         }
+
+        dynamicDirectoryResolver.removeDirectoryMapping(driver.getMountName());
 
         return service.findByTypeAndParentIdAndName(
                 AttachmentType.Driver_Directory, ROOT_DIRECTORY_ID, mountName

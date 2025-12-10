@@ -419,7 +419,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     @MonoCacheable(value = "attachment:id:", key = "#attachmentId")
     public Mono<Attachment> findById(Long attachmentId) {
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
+        Assert.isTrue(attachmentId >= 0, "'attachmentId' must gt -1.");
         return repository.findById(attachmentId)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }

@@ -1,6 +1,7 @@
 package run.ikaros.server.security.authorization;
 
 import static run.ikaros.api.constant.OpenApiConst.CORE_VERSION;
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class RequestAuthorizationManager
         if (path.startsWith("/api/" + CORE_VERSION + "/static/")
             || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/apply")
             || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/refresh")
+            || path.startsWith(DRIVER_STATIC_RESOURCE_PREFIX) // todo 后续可能考虑对本地映射文件鉴权
         ) {
             return authentication.map(auth -> new AuthorizationDecision(true));
         }

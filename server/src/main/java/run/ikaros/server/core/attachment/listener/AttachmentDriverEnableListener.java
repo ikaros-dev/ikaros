@@ -6,24 +6,37 @@ import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARE
 
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
+import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
+import run.ikaros.server.config.DynamicDirectoryResolver;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
+import run.ikaros.server.store.repository.AttachmentDriverRepository;
 
 @Slf4j
 @Component
 public class AttachmentDriverEnableListener {
     private final AttachmentService service;
+    private final DynamicDirectoryResolver dynamicDirectoryResolver;
+    private final AttachmentDriverRepository driverRepository;
 
-    public AttachmentDriverEnableListener(AttachmentService service) {
+    /**
+     * Construct.
+     */
+    public AttachmentDriverEnableListener(AttachmentService service,
+                                          DynamicDirectoryResolver dynamicDirectoryResolver,
+                                          AttachmentDriverRepository driverRepository) {
         this.service = service;
+        this.dynamicDirectoryResolver = dynamicDirectoryResolver;
+        this.driverRepository = driverRepository;
     }
 
     /**
@@ -46,6 +59,9 @@ public class AttachmentDriverEnableListener {
             mountName = driver.getType().name();
         }
 
+        dynamicDirectoryResolver.addDirectoryMapping(driver.getMountName(),
+            driver.getRemotePath());
+
         return service.findByTypeAndParentIdAndName(
                 AttachmentType.Driver_Directory, ROOT_DIRECTORY_PARENT_ID, mountName)
             .switchIfEmpty(
@@ -57,6 +73,22 @@ public class AttachmentDriverEnableListener {
                     .url(driver.getId() + DRIVER_URL_SPLIT_STR + driver.getRemotePath())
                     .fsPath(driver.getRemotePath()).path("")
                     .build()))
+            .then();
+    }
+
+    /**
+     * 初始化操作,查询启用中的附件驱动，添加静态资源映射
+     * .
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public Mono<Void> initialize() {
+        return driverRepository
+            .findAllByTypeAndEnable(AttachmentDriverType.LOCAL.name(), true)
+            .map(driver -> {
+                dynamicDirectoryResolver.addDirectoryMapping(driver.getMountName(),
+                    driver.getRemotePath());
+                return driver;
+            })
             .then();
     }
 
