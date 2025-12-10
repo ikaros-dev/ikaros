@@ -9,7 +9,8 @@ create table if not exists attachment_driver
 (
     id              int8           not null default nextval('attachment_driver_seq'),
     enable          bool           null,
-    driver_type     varchar(255)   not null,
+    d_type          varchar(255)   not null,
+    d_name          varchar(255)   null,
     mount_path      varchar(255)   null,
     remote_path     varchar(255)   null,
     d_order         int8           null,

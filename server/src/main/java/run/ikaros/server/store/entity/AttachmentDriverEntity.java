@@ -26,8 +26,10 @@ public class AttachmentDriverEntity {
     /**
      * attachment driver type, such as LOCAL, CLOUD115 .......
      */
-    @Column("driver_type")
-    private String driverType;
+    @Column("d_type")
+    private String type;
+    @Column("d_name")
+    private String name;
     @Column("mount_path")
     private String mountPath;
     /**
