@@ -35,7 +35,9 @@ public class AttachmentDriverEntity {
      */
     @Column("remote_path")
     private String remotePath;
+    @Column("d_order")
     private Long order;
+    @Column("d_comment")
     private String comment;
     @Column("refresh_token")
     private String refreshToken;
