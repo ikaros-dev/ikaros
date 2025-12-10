@@ -37,6 +37,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                 .doOnSuccess(entity ->
                     log.debug("Created attachment driver with type={} and name={}",
                         entity.getType(), entity.getName())))
+            .flatMap(entity -> copyProperties(driver, entity, "id"))
+            .flatMap(repository::save)
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
     }
 
