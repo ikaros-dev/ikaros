@@ -1,6 +1,7 @@
 package run.ikaros.server.core.attachment.listener;
 
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
+import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARENT_ID;
 
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
@@ -9,19 +10,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
+import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
-import run.ikaros.server.store.entity.AttachmentEntity;
-import run.ikaros.server.store.repository.AttachmentRepository;
 
 @Slf4j
 @Component
 public class AttachmentDriverEnableListener {
-    private final AttachmentRepository repository;
+    private final AttachmentService service;
 
-    public AttachmentDriverEnableListener(AttachmentRepository repository) {
-        this.repository = repository;
+    public AttachmentDriverEnableListener(AttachmentService service) {
+        this.service = service;
     }
 
     /**
@@ -44,20 +45,18 @@ public class AttachmentDriverEnableListener {
             mountName = driver.getType().name();
         }
 
-        return repository.findByTypeAndParentIdAndName(
-                AttachmentType.Driver, ROOT_DIRECTORY_ID, mountName)
+        return service.findByTypeAndParentIdAndName(
+                AttachmentType.Driver, ROOT_DIRECTORY_PARENT_ID, mountName)
             .switchIfEmpty(
-                // 目录不存在则创建
-                repository.save(AttachmentEntity.builder()
+                service.save(Attachment.builder()
                     .parentId(ROOT_DIRECTORY_ID)
                     .type(AttachmentType.Driver)
                     .name(mountName)
                     .updateTime(LocalDateTime.now())
                     .url(driver.getId() + "://" + driver.getRemotePath())
                     .fsPath("").path("")
-                    .build())
-            ) // 返回最后一级目录
-            .then(Mono.empty());
+                    .build()))
+            .then();
     }
 
 }

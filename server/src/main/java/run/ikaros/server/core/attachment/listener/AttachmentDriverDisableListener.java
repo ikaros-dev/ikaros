@@ -8,19 +8,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
+import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
-import run.ikaros.server.store.entity.AttachmentEntity;
-import run.ikaros.server.store.repository.AttachmentRepository;
 
 @Slf4j
 @Component
 public class AttachmentDriverDisableListener {
-    private final AttachmentRepository repository;
+    private final AttachmentService service;
 
-    public AttachmentDriverDisableListener(AttachmentRepository repository) {
-        this.repository = repository;
+    public AttachmentDriverDisableListener(AttachmentService service) {
+        this.service = service;
     }
 
     /**
@@ -42,12 +42,10 @@ public class AttachmentDriverDisableListener {
             mountName = driver.getType().name();
         }
 
-
-        return repository.findByTypeAndParentIdAndName(
-                AttachmentType.Driver, ROOT_DIRECTORY_ID, mountName)
-            .map(AttachmentEntity::getId)
-            .flatMap(repository::deleteById)
-            .then(Mono.empty());
+        return service.findByTypeAndParentIdAndName(
+                AttachmentType.Driver, ROOT_DIRECTORY_ID, mountName
+            ).map(Attachment::getId)
+            .flatMap(service::removeByIdForcibly);
     }
 
 }
