@@ -54,7 +54,7 @@ public class AttachmentDriverEnableListener {
                     .name(mountName)
                     .updateTime(LocalDateTime.now())
                     .url(driver.getId() + "://" + driver.getRemotePath())
-                    .fsPath("").path("")
+                    .fsPath(driver.getRemotePath()).path("")
                     .build()))
             .then();
     }
