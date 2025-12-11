@@ -44,4 +44,5 @@ public class AttachmentEntity {
     private Long size;
     @Column("update_time")
     private LocalDateTime updateTime;
+    private Boolean deleted;
 }

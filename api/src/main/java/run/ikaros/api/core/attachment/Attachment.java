@@ -36,4 +36,5 @@ public class Attachment {
     private String name;
     private Long size;
     private LocalDateTime updateTime;
+    private Boolean deleted;
 }

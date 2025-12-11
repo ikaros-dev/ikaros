@@ -49,8 +49,6 @@ public class AttachmentDriverEnableListener {
         Assert.notNull(event, "Attachment driver event cannot be null");
         AttachmentDriverEntity driver = event.getEntity();
         Assert.notNull(driver, "Attachment driver cannot be null");
-        // 路径可能是多级的，
-        // 单级直接创建目录返回，多级需要按顺序创建目录
         String mountName = driver.getMountName();
         if (!StringUtils.hasText(mountName)) {
             mountName = driver.getName();
@@ -64,15 +62,17 @@ public class AttachmentDriverEnableListener {
 
         return service.findByTypeAndParentIdAndName(
                 AttachmentType.Driver_Directory, ROOT_DIRECTORY_PARENT_ID, mountName)
-            .switchIfEmpty(
-                service.save(Attachment.builder()
-                    .parentId(ROOT_DIRECTORY_ID)
-                    .type(AttachmentType.Driver_Directory)
-                    .name(mountName)
-                    .updateTime(LocalDateTime.now())
-                    .url(driver.getId() + DRIVER_URL_SPLIT_STR + driver.getRemotePath())
-                    .fsPath(driver.getRemotePath()).path("")
-                    .build()))
+            .switchIfEmpty(Mono.just(Attachment.builder()
+                .parentId(ROOT_DIRECTORY_ID)
+                .type(AttachmentType.Driver_Directory)
+                .name(mountName)
+                .updateTime(LocalDateTime.now())
+                .url(driver.getId() + DRIVER_URL_SPLIT_STR + driver.getRemotePath())
+                .fsPath(driver.getRemotePath()).path("")
+                .deleted(Boolean.FALSE)
+                .build()))
+            .map(attachment -> attachment.setDeleted(Boolean.FALSE))
+            .flatMap(service::save)
             .then();
     }
 

@@ -192,6 +192,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                 .fsPath(f.getAbsolutePath())
                 .size(f.isFile() ? file.length() : 0)
                 .updateTime(LocalDateTime.now())
+                .deleted(false)
                 .build())
             .flatMap(attachmentService::saveEntity);
     }

@@ -172,6 +172,11 @@ public class AttachmentServiceImpl implements AttachmentService {
             criteria = criteria.and("name").like(nameKeyWordLike);
         }
 
+        criteria = criteria.and(Criteria.where("deleted").is(false)
+            .or(Criteria.where("deleted").isNull()));
+
+
+
         Query query = Query.query(criteria)
             .sort(Sort.by(Sort.Order.asc("type")))
             .sort(Sort.by(Sort.Order.asc("name")))
@@ -304,7 +309,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMapMany(repository::findAllByParentId)
             .flatMap(this::removeChildrenAttachmentOnlyRecords)
             .switchIfEmpty(Mono.just(attachmentEntity))
-            .flatMap(this::deleteEntity)
+            .flatMap(this::deleteEntityWithLogic)
             .then(Mono.just(attachmentEntity));
     }
 
@@ -317,6 +322,10 @@ public class AttachmentServiceImpl implements AttachmentService {
                 log.debug("publish AttachmentRemoveEvent for attachment entity: [{}]",
                     attachmentEntity);
             });
+    }
+
+    private Mono<Void> deleteEntityWithLogic(AttachmentEntity attachmentEntity) {
+        return saveEntity(attachmentEntity.setDeleted(true)).then();
     }
 
     @Override
@@ -348,10 +357,10 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public Mono<Void> removeByIdOnlyRecords(Long attachmentId) {
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
+        Assert.isTrue(attachmentId >= 0, "'attachmentId' must gt 0.");
         return repository.findById(attachmentId)
             .flatMap(this::removeChildrenAttachmentOnlyRecords)
-            .flatMap(this::deleteEntity);
+            .flatMap(this::deleteEntityWithLogic);
     }
 
 
