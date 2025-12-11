@@ -4,6 +4,7 @@ import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARENT_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import static run.ikaros.api.store.enums.AttachmentType.Directory;
+import static run.ikaros.api.store.enums.AttachmentType.Driver_Directory;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -93,8 +94,14 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheEvict
     public Mono<AttachmentEntity> saveEntity(AttachmentEntity attachmentEntity) {
         Assert.notNull(attachmentEntity, "'attachmentEntity' must not be null.");
-        return findPathByParentId(attachmentEntity.getParentId(), attachmentEntity.getName())
-            .map(attachmentEntity::setPath)
+        return repository.findByTypeAndParentIdAndName(attachmentEntity.getType(),
+                attachmentEntity.getParentId(), attachmentEntity.getName())
+            .switchIfEmpty(findPathByParentId(
+                attachmentEntity.getParentId(),
+                attachmentEntity.getName())
+                .map(attachmentEntity::setPath))
+            .flatMap(entity ->
+                copyProperties(attachmentEntity, entity, "id", "path"))
             .map(entity -> entity.setUpdateTime(LocalDateTime.now()))
             .flatMap(repository::save);
     }
@@ -164,6 +171,11 @@ public class AttachmentServiceImpl implements AttachmentService {
             String nameKeyWordLike = "%" + nameKeyWord + "%";
             criteria = criteria.and("name").like(nameKeyWordLike);
         }
+
+        criteria = criteria.and(Criteria.where("deleted").is(false)
+            .or(Criteria.where("deleted").isNull()));
+
+
 
         Query query = Query.query(criteria)
             .sort(Sort.by(Sort.Order.asc("type")))
@@ -276,13 +288,28 @@ public class AttachmentServiceImpl implements AttachmentService {
         AttachmentEntity attachmentEntity) {
         return Mono.just(attachmentEntity)
             .map(AttachmentEntity::getType)
-            .filter(Directory::equals)
+            .filter(attachmentType -> Directory.equals(attachmentType)
+                || Driver_Directory.equals(attachmentType))
             .map(eq -> attachmentEntity.getId())
             .flatMapMany(repository::findAllByParentId)
             .flatMap(this::removeChildrenAttachmentForcibly)
             .switchIfEmpty(Mono.just(attachmentEntity))
             .map(this::removeFileSystemFile)
             .flatMap(this::deleteEntity)
+            .then(Mono.just(attachmentEntity));
+    }
+
+    private Mono<AttachmentEntity> removeChildrenAttachmentOnlyRecords(
+        AttachmentEntity attachmentEntity) {
+        return Mono.just(attachmentEntity)
+            .map(AttachmentEntity::getType)
+            .filter(attachmentType -> Directory.equals(attachmentType)
+                || Driver_Directory.equals(attachmentType))
+            .map(eq -> attachmentEntity.getId())
+            .flatMapMany(repository::findAllByParentId)
+            .flatMap(this::removeChildrenAttachmentOnlyRecords)
+            .switchIfEmpty(Mono.just(attachmentEntity))
+            .flatMap(this::deleteEntityWithLogic)
             .then(Mono.just(attachmentEntity));
     }
 
@@ -295,6 +322,10 @@ public class AttachmentServiceImpl implements AttachmentService {
                 log.debug("publish AttachmentRemoveEvent for attachment entity: [{}]",
                     attachmentEntity);
             });
+    }
+
+    private Mono<Void> deleteEntityWithLogic(AttachmentEntity attachmentEntity) {
+        return saveEntity(attachmentEntity.setDeleted(true)).then();
     }
 
     @Override
@@ -322,6 +353,14 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(this::removeChildrenAttachmentForcibly)
             .map(this::removeFileSystemFile)
             .flatMap(this::deleteEntity);
+    }
+
+    @Override
+    public Mono<Void> removeByIdOnlyRecords(Long attachmentId) {
+        Assert.isTrue(attachmentId >= 0, "'attachmentId' must gt 0.");
+        return repository.findById(attachmentId)
+            .flatMap(this::removeChildrenAttachmentOnlyRecords)
+            .flatMap(this::deleteEntityWithLogic);
     }
 
 
@@ -389,7 +428,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     @MonoCacheable(value = "attachment:id:", key = "#attachmentId")
     public Mono<Attachment> findById(Long attachmentId) {
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
+        Assert.isTrue(attachmentId >= 0, "'attachmentId' must gt -1.");
         return repository.findById(attachmentId)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }

@@ -20,4 +20,6 @@ public class AttachmentSearchCondition {
     private String name;
     @Schema(implementation = AttachmentType.class, description = "附件类型。")
     private AttachmentType type;
+    @Schema(implementation = Boolean.class, description = "查询前是否刷新。")
+    private Boolean refresh;
 }

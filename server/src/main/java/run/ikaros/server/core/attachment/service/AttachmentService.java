@@ -33,6 +33,13 @@ public interface AttachmentService {
 
     Mono<Void> removeByIdForcibly(Long attachmentId);
 
+    /**
+     * 只删除数据库里的表纪录，不涉及文件系统.
+     *
+     * @param attachmentId 附件ID
+     */
+    Mono<Void> removeByIdOnlyRecords(Long attachmentId);
+
     Mono<Void> removeByTypeAndParentIdAndName(
         AttachmentType type, @Nullable Long parentId, String name);
 

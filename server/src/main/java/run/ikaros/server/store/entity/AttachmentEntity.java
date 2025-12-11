@@ -24,7 +24,8 @@ public class AttachmentEntity {
     private Long parentId;
     private AttachmentType type;
     /**
-     * HTTP path.
+     * HTTP path, format: driver_id://remote_path
+     * .
      */
     private String url;
     /**
@@ -43,4 +44,5 @@ public class AttachmentEntity {
     private Long size;
     @Column("update_time")
     private LocalDateTime updateTime;
+    private Boolean deleted;
 }

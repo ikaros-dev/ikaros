@@ -25,7 +25,7 @@ public interface SecurityConst {
 
     // String LOGIN_PAGE_PATH = "/console/#/login";
 
-    String[] SECURITY_MATCHER_PATHS = new String[]{
+    String[] SECURITY_MATCHER_PATHS = new String[] {
         "/api/**", "/apis/**", "/login", "/logout"
     };
 
