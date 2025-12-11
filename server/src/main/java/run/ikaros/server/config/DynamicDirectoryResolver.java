@@ -80,7 +80,14 @@ public class DynamicDirectoryResolver implements ResourceResolver {
         List<? extends Resource> locations,
         ResourceResolverChain chain) {
 
+
         requestPath = URLDecoder.decode(requestPath, StandardCharsets.UTF_8);
+        requestPath = requestPath.replace("%20", " ")
+                .replace("%2F", "/")
+            .replace("%3A", ":")
+            .replace("%3F", "?")
+            .replace("%26", "&")
+            .replace("%23", "#");
         log.debug("请求路径: {}", requestPath);
 
         // 遍历所有目录映射
