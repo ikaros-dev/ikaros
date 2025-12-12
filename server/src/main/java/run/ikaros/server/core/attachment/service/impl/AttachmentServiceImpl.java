@@ -701,7 +701,9 @@ public class AttachmentServiceImpl implements AttachmentService {
         Assert.isTrue(id >= 0, "'id' must >= 0.");
         return findPathDirs(id, new ArrayList<>())
             .flatMap(attEntities -> repository.findById(id)
-                .filter(attachmentEntity -> Directory.equals(attachmentEntity.getType()))
+                .filter(attachmentEntity ->
+                    (Directory.equals(attachmentEntity.getType()))
+                        || (Driver_Directory.equals(attachmentEntity.getType())))
                 .flatMap(entity -> {
                     attEntities.add(attEntities.size(), entity);
                     return Mono.just(attEntities);
