@@ -6,6 +6,7 @@ import {
 	PluginIkarosRunV1alpha1PluginApi,
 	SettingIkarosRunV1alpha1ConfigmapApi,
 	V1alpha1AttachmentApi,
+	V1alpha1AttachmentDriverApi,
 	V1alpha1AttachmentReferenceApi,
 	V1alpha1AttachmentRelationApi,
 	V1alpha1AuthorityApi,
@@ -178,6 +179,7 @@ function setupApiClient(axios: AxiosInstance) {
 			baseURL,
 			axios
 		),
+		attachmentDriver: new V1alpha1AttachmentDriverApi(undefined, baseURL, axios),
 		subject: new V1alpha1SubjectApi(undefined, baseURL, axios),
 		subjectSync: new V1alpha1SubjectSyncApi(undefined, baseURL, axios),
 		indices: new V1alpha1IndicesApi(undefined, baseURL, axios),
