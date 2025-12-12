@@ -1,23 +1,31 @@
 package run.ikaros.server.core.attachment.service.impl;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_URL_SPLIT_STR;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
+import static run.ikaros.api.store.enums.AttachmentDriverType.LOCAL;
 
 import java.util.List;
+import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentRelation;
 import run.ikaros.api.core.attachment.VideoSubtitle;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.store.enums.AttachmentRelationType;
+import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.cache.annotation.FluxCacheEvict;
 import run.ikaros.server.cache.annotation.FluxCacheable;
 import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.core.attachment.service.AttachmentRelationService;
 import run.ikaros.server.core.attachment.vo.PostAttachmentRelationsParam;
+import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.AttachmentRelationEntity;
+import run.ikaros.server.store.repository.AttachmentDriverRepository;
 import run.ikaros.server.store.repository.AttachmentRelationRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
@@ -26,12 +34,18 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 public class AttachmentRelationServiceImpl implements AttachmentRelationService {
     private final AttachmentRelationRepository repository;
     private final AttachmentRepository attachmentRepository;
+    private final AttachmentDriverRepository driverRepository;
 
 
+    /**
+     * Construct.
+     */
     public AttachmentRelationServiceImpl(
-        AttachmentRelationRepository repository, AttachmentRepository attachmentRepository) {
+        AttachmentRelationRepository repository, AttachmentRepository attachmentRepository,
+        AttachmentDriverRepository driverRepository) {
         this.repository = repository;
         this.attachmentRepository = attachmentRepository;
+        this.driverRepository = driverRepository;
     }
 
 
@@ -47,6 +61,29 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
                 attachmentRelationEntity, new AttachmentRelation()));
     }
 
+    /**
+     * 返回结果时转化下URL
+     * .
+     */
+    private Mono<AttachmentEntity> convertDriverUrlWhenTypeStartWithDriver(
+        AttachmentEntity attachment) {
+        AttachmentType type = attachment.getType();
+        final String oldUrl = attachment.getUrl();
+        if (type == null || oldUrl == null || !oldUrl.contains(DRIVER_URL_SPLIT_STR)) {
+            return Mono.just(attachment);
+        }
+
+        if (type.toString().toUpperCase(Locale.ROOT).startsWith("DRIVER")) {
+            Long driverId = Long.valueOf(oldUrl.split(AttachmentConst.DRIVER_URL_SPLIT_STR)[0]);
+            final String newUrl = DRIVER_STATIC_RESOURCE_PREFIX + attachment.getPath();
+            return driverRepository.findById(driverId)
+                .filter(driver -> LOCAL.equals(driver.getType()))
+                .map(driver -> attachment.setUrl(newUrl));
+        }
+        return Mono.just(attachment);
+    }
+
+
     @Override
     @FluxCacheable(value = "attachment:video_subtitles:attachmentId:", key = "#attachmentId")
     public Flux<VideoSubtitle> findAttachmentVideoSubtitles(Long attachmentId) {
@@ -55,6 +92,7 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
                 AttachmentRelationType.VIDEO_SUBTITLE, attachmentId)
             .map(AttachmentRelationEntity::getRelationAttachmentId)
             .flatMap(attachmentRepository::findById)
+            .flatMap(this::convertDriverUrlWhenTypeStartWithDriver)
             .map(attachmentEntity -> VideoSubtitle.builder()
                 .masterAttachmentId(attachmentId)
                 .attachmentId(attachmentEntity.getId())
