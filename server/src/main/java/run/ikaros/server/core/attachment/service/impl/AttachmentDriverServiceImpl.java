@@ -135,14 +135,14 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     @Override
     public Mono<Void> refresh(Long attachmentId) {
         Assert.notNull(attachmentId, "'attachmentId' must not null.");
-        return attachmentService.findById(attachmentId)
+        return attachmentService.findEntityById(attachmentId)
             .filter(attachment ->
                 attachment.getType() != null
                     && attachment.getType().name().toUpperCase(Locale.ROOT).startsWith("DRIVER_"))
             .flatMap(this::refreshRemoteFileSystem);
     }
 
-    private Mono<Void> refreshRemoteFileSystem(Attachment attachment) {
+    private Mono<Void> refreshRemoteFileSystem(AttachmentEntity attachment) {
         final Long pid = attachment.getId();
         String url = attachment.getUrl();
         Long driverId = Long.parseLong(url.substring(0, url.indexOf(DRIVER_URL_SPLIT_STR)));
@@ -179,7 +179,6 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         if (files == null) {
             return Flux.empty();
         }
-
 
 
         return Flux.fromArray(files)

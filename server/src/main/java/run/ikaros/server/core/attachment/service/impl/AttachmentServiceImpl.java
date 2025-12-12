@@ -1,9 +1,11 @@
 package run.ikaros.server.core.attachment.service.impl;
 
 import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_URL_SPLIT_STR;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARENT_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
+import static run.ikaros.api.store.enums.AttachmentDriverType.LOCAL;
 import static run.ikaros.api.store.enums.AttachmentType.Directory;
 import static run.ikaros.api.store.enums.AttachmentType.Driver_Directory;
 
@@ -59,6 +61,7 @@ import run.ikaros.server.cache.annotation.MonoCacheable;
 import run.ikaros.server.core.attachment.event.AttachmentRemoveEvent;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentEntity;
+import run.ikaros.server.store.repository.AttachmentDriverRepository;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRelationRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
@@ -73,6 +76,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     private final IkarosProperties ikarosProperties;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final AttachmentRepository attachmentRepository;
+    private final AttachmentDriverRepository driverRepository;
 
     /**
      * Construct.
@@ -82,7 +86,8 @@ public class AttachmentServiceImpl implements AttachmentService {
                                  AttachmentRelationRepository relationRepository,
                                  R2dbcEntityTemplate template, IkarosProperties ikarosProperties,
                                  ApplicationEventPublisher applicationEventPublisher,
-                                 AttachmentRepository attachmentRepository) {
+                                 AttachmentRepository attachmentRepository,
+                                 AttachmentDriverRepository driverRepository) {
         this.repository = repository;
         this.referenceRepository = referenceRepository;
         this.relationRepository = relationRepository;
@@ -90,6 +95,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         this.ikarosProperties = ikarosProperties;
         this.applicationEventPublisher = applicationEventPublisher;
         this.attachmentRepository = attachmentRepository;
+        this.driverRepository = driverRepository;
     }
 
     @Override
@@ -195,7 +201,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                 .map(attEntity::setPath)
                 .flatMap(attachmentRepository::save)
                 .switchIfEmpty(Mono.just(attEntity)))
-            .map(this::convertDriverUrlWhenTypeStartWithDriver)
+            .flatMap(this::convertDriverUrlWhenTypeStartWithDriver)
             .collectList()
             .map(attachmentEntities -> new PagingWrap<>(page, size, total, attachmentEntities)));
     }
@@ -217,16 +223,22 @@ public class AttachmentServiceImpl implements AttachmentService {
      * 返回结果时转化下URL
      * .
      */
-    private AttachmentEntity convertDriverUrlWhenTypeStartWithDriver(
+    private Mono<AttachmentEntity> convertDriverUrlWhenTypeStartWithDriver(
         AttachmentEntity attachment) {
         AttachmentType type = attachment.getType();
-        if (type == null) {
-            return attachment;
+        final String oldUrl = attachment.getUrl();
+        if (type == null || oldUrl == null || !oldUrl.contains(DRIVER_URL_SPLIT_STR)) {
+            return Mono.just(attachment);
         }
+
         if (type.toString().toUpperCase(Locale.ROOT).startsWith("DRIVER")) {
-            return attachment.setUrl(DRIVER_STATIC_RESOURCE_PREFIX + attachment.getPath());
+            Long driverId = Long.valueOf(oldUrl.split(AttachmentConst.DRIVER_URL_SPLIT_STR)[0]);
+            final String newUrl = DRIVER_STATIC_RESOURCE_PREFIX + attachment.getPath();
+            return driverRepository.findById(driverId)
+                .filter(driver -> LOCAL.equals(driver.getType()))
+                .map(driver -> attachment.setUrl(newUrl));
         }
-        return attachment;
+        return Mono.just(attachment);
     }
 
     private Mono<AttachmentEntity> checkChildAttachmentRefNotExists(
@@ -449,7 +461,14 @@ public class AttachmentServiceImpl implements AttachmentService {
     public Mono<Attachment> findById(Long attachmentId) {
         Assert.isTrue(attachmentId >= 0, "'attachmentId' must gt -1.");
         return repository.findById(attachmentId)
+            .flatMap(this::convertDriverUrlWhenTypeStartWithDriver)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
+    }
+
+    @Override
+    public Mono<AttachmentEntity> findEntityById(Long attachmentId) {
+        Assert.isTrue(attachmentId >= 0, "'attachmentId' must gt -1.");
+        return repository.findById(attachmentId);
     }
 
     @Override
@@ -463,6 +482,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             parentId = AttachmentConst.ROOT_DIRECTORY_ID;
         }
         return repository.findByTypeAndParentIdAndName(type, parentId, name)
+            .flatMap(this::convertDriverUrlWhenTypeStartWithDriver)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }
 

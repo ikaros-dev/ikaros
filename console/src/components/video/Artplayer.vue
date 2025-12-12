@@ -40,6 +40,7 @@ const fetchAttachment = async () => {
 	const { data } = await apiClient.attachment.getAttachmentById({
 		id: props.attachmentId,
 	});
+	data.url = encodeURI(data?.url ?? "")
 	attachment.value = data;
 };
 
@@ -84,7 +85,7 @@ const getVideoSubtitles = async () => {
 			default:
 				simpleName === 'SC' || simpleName === 'sc' || simpleName == 'JPSC',
 			html: getSubtitleChineseSimpleNameBySimpleName(simpleName),
-			url: data![index].url as string,
+			url: encodeURI(data![index].url as string),
 		};
 		artSubtitles.value.push(artSubtitle);
 	}

@@ -26,6 +26,8 @@ public interface AttachmentService {
 
     Mono<Attachment> findById(Long attachmentId);
 
+    Mono<AttachmentEntity> findEntityById(Long attachmentId);
+
     Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type, @Nullable Long parentId,
                                                   String name);
 
