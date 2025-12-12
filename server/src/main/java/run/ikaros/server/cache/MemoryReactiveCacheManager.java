@@ -31,6 +31,17 @@ public class MemoryReactiveCacheManager implements ReactiveCacheManager {
     }
 
     @Override
+    public Mono<Boolean> removePrefix(String keyPrefix) {
+        boolean result = true;
+        for (String key : cacheMap.keySet()) {
+            if (key.startsWith(keyPrefix)) {
+                result = cacheMap.remove(key) != null;
+            }
+        }
+        return Mono.just(result);
+    }
+
+    @Override
     public Mono<String> clear() {
         cacheMap.clear();
         return Mono.just("SUCCESS");
