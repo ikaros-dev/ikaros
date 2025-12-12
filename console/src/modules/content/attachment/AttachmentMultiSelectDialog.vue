@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Attachment } from '@runikaros/api-client';
+import { Attachment, AttachmentTypeEnum } from '@runikaros/api-client';
 import { computed, onMounted, ref } from 'vue';
 import { apiClient } from '@/utils/api-client';
 import { base64Encode, formatFileSize } from '@/utils/string-util';
@@ -70,7 +70,7 @@ const attachmentCondition = ref({
 	total: 10,
 	parentId: undefined,
 	name: '',
-	type: 'File',
+	// type: 'File',
 });
 
 const attachments = ref<Attachment[]>([]);
@@ -80,9 +80,9 @@ const fetchAttachments = async () => {
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
 		parentId: attachmentCondition.value.parentId as any as string,
-		type: attachmentCondition.value.type as 'File' | 'Directory',
 	});
 	attachments.value = data.items;
+	attachments.value = attachments.value.filter(att => att.type == AttachmentTypeEnum.File || att?.type == AttachmentTypeEnum.DriverFile)	
 	attachmentCondition.value.page = data.page;
 	attachmentCondition.value.size = data.size;
 	attachmentCondition.value.total = data.total;

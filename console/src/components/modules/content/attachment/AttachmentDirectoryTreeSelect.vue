@@ -45,19 +45,20 @@ const loadDirectoryNodes = async (node, resolve) => {
 	}
 	if (node.isLeaf) return resolve([]);
 	const { data } = await apiClient.attachment.listAttachmentsByCondition({
-		type: 'Directory',
 		parentId: parentId as any as string,
 		page: 1,
 		size: 999999,
 	});
 	const attachments: Attachment[] = data.items;
-	const dirNodes: DirNode[] = attachments.map((attachment) => {
-		let node: DirNode = {
-			value: attachment.id as number,
-			label: attachment.name as string,
-		};
-		return node;
-	});
+	const dirNodes: DirNode[] = attachments
+		.filter(att => att.type == 'Directory' || att?.type == 'Driver_Directory')	
+		.map((attachment) => {
+			let node: DirNode = {
+				value: attachment.id as number,
+				label: attachment.name as string,
+			};
+			return node;
+		});
 	resolve(dirNodes);
 };
 
