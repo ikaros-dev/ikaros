@@ -663,7 +663,7 @@ const onAttachmentDetailDrawerClose = () => {
 							size="25"
 							style="position: relative; top: 7px; margin: 0 5px 0 0px"
 						>
-							<Folder v-if="'Directory' === scoped.row.type" />
+							<Folder v-if="('Directory' === scoped.row.type) || ('Driver_Directory' === scoped.row.type)" />
 							<span v-else>
 								<Picture v-if="isImage(scoped.row.name)" />
 								<Headset v-else-if="isVoice(scoped.row.name)" />
