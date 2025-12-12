@@ -14,7 +14,6 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
-import run.ikaros.server.cache.ReactiveCacheManager;
 import run.ikaros.server.config.DynamicDirectoryResolver;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
@@ -28,19 +27,16 @@ public class AttachmentDriverEnableListener {
     private final AttachmentRepository attachmentRepository;
     private final DynamicDirectoryResolver dynamicDirectoryResolver;
     private final AttachmentDriverRepository driverRepository;
-    private final ReactiveCacheManager cacheManager;
 
     /**
      * Construct.
      */
     public AttachmentDriverEnableListener(AttachmentRepository attachmentRepository,
                                           DynamicDirectoryResolver dynamicDirectoryResolver,
-                                          AttachmentDriverRepository driverRepository,
-                                          ReactiveCacheManager cacheManager) {
+                                          AttachmentDriverRepository driverRepository) {
         this.attachmentRepository = attachmentRepository;
         this.dynamicDirectoryResolver = dynamicDirectoryResolver;
         this.driverRepository = driverRepository;
-        this.cacheManager = cacheManager;
     }
 
     /**
@@ -78,7 +74,6 @@ public class AttachmentDriverEnableListener {
                 .build()))
             .map(attachment -> attachment.setUrl(driverIdUrl).setDeleted(Boolean.FALSE))
             .flatMap(attachmentRepository::save)
-            .then(cacheManager.remove(""))
             .then();
     }
 
