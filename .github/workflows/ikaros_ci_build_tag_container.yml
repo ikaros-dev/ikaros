@@ -63,3 +63,4 @@ jobs:
           push: true
           tags: |
             ikarosrun/ikaros:${{  github.ref_name }}
+            ikarosrun/ikaros:latest
