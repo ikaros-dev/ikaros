@@ -12,5 +12,7 @@ public interface ReactiveCacheManager {
 
     Mono<Boolean> remove(String key);
 
+    Mono<Boolean> removePrefix(String keyPrefix);
+
     Mono<String> clear();
 }

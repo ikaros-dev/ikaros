@@ -32,6 +32,13 @@ public class RedisReactiveCacheManager implements ReactiveCacheManager {
     }
 
     @Override
+    public Mono<Boolean> removePrefix(String keyPrefix) {
+        return redisTemplate.keys(keyPrefix + "**")
+        .flatMap(redisTemplate::delete)
+        .then(Mono.just(true));
+    }
+
+    @Override
     public Mono<String> clear() {
         return redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushAll();

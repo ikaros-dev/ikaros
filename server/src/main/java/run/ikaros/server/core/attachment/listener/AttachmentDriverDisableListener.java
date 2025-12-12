@@ -8,23 +8,30 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.config.DynamicDirectoryResolver;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
+import run.ikaros.server.store.entity.AttachmentEntity;
+import run.ikaros.server.store.repository.AttachmentRepository;
 
 @Slf4j
 @Component
 public class AttachmentDriverDisableListener {
-    private final AttachmentService service;
+    private final AttachmentRepository attachmentRepository;
     private final DynamicDirectoryResolver dynamicDirectoryResolver;
+    private final AttachmentService attachmentService;
 
-    public AttachmentDriverDisableListener(AttachmentService service,
-                                           DynamicDirectoryResolver dynamicDirectoryResolver) {
-        this.service = service;
+    /**
+     * Construct.
+     */
+    public AttachmentDriverDisableListener(AttachmentRepository attachmentRepository,
+                                           DynamicDirectoryResolver dynamicDirectoryResolver,
+                                           AttachmentService attachmentService) {
+        this.attachmentRepository = attachmentRepository;
         this.dynamicDirectoryResolver = dynamicDirectoryResolver;
+        this.attachmentService = attachmentService;
     }
 
     /**
@@ -48,10 +55,10 @@ public class AttachmentDriverDisableListener {
 
         dynamicDirectoryResolver.removeDirectoryMapping(driver.getMountName());
 
-        return service.findByTypeAndParentIdAndName(
+        return attachmentRepository.findByTypeAndParentIdAndName(
                 AttachmentType.Driver_Directory, ROOT_DIRECTORY_ID, mountName
-            ).map(Attachment::getId)
-            .flatMap(service::removeByIdOnlyRecords);
+            ).map(AttachmentEntity::getId)
+            .flatMap(attachmentService::removeByIdOnlyRecords);
     }
 
 }
