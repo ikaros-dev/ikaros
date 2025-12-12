@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.service.impl;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARENT_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
@@ -23,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -176,7 +178,6 @@ public class AttachmentServiceImpl implements AttachmentService {
             .or(Criteria.where("deleted").isNull()));
 
 
-
         Query query = Query.query(criteria)
             .sort(Sort.by(Sort.Order.asc("type")))
             .sort(Sort.by(Sort.Order.asc("name")))
@@ -194,6 +195,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                 .map(attEntity::setPath)
                 .flatMap(attachmentRepository::save)
                 .switchIfEmpty(Mono.just(attEntity)))
+            .map(this::convertDriverUrlWhenTypeStartWithDriver)
             .collectList()
             .map(attachmentEntities -> new PagingWrap<>(page, size, total, attachmentEntities)));
     }
@@ -208,6 +210,23 @@ public class AttachmentServiceImpl implements AttachmentService {
                 .collectList()
                 .map(attachments -> new PagingWrap<>(pagingWrap.getPage(), pagingWrap.getSize(),
                     pagingWrap.getTotal(), attachments)));
+    }
+
+
+    /**
+     * 返回结果时转化下URL
+     * .
+     */
+    private AttachmentEntity convertDriverUrlWhenTypeStartWithDriver(
+        AttachmentEntity attachment) {
+        AttachmentType type = attachment.getType();
+        if (type == null) {
+            return attachment;
+        }
+        if (type.toString().toUpperCase(Locale.ROOT).startsWith("DRIVER")) {
+            return attachment.setUrl(DRIVER_STATIC_RESOURCE_PREFIX + attachment.getPath());
+        }
+        return attachment;
     }
 
     private Mono<AttachmentEntity> checkChildAttachmentRefNotExists(
@@ -682,7 +701,9 @@ public class AttachmentServiceImpl implements AttachmentService {
         Assert.isTrue(id >= 0, "'id' must >= 0.");
         return findPathDirs(id, new ArrayList<>())
             .flatMap(attEntities -> repository.findById(id)
-                .filter(attachmentEntity -> Directory.equals(attachmentEntity.getType()))
+                .filter(attachmentEntity ->
+                    (Directory.equals(attachmentEntity.getType()))
+                        || (Driver_Directory.equals(attachmentEntity.getType())))
                 .flatMap(entity -> {
                     attEntities.add(attEntities.size(), entity);
                     return Mono.just(attEntities);

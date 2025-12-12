@@ -258,7 +258,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                 .page(page).size(size).type(type)
                 .name(name).parentId(parentId)
                 .build())
-            .flatMap(attachmentService::listEntitiesByCondition)
+            .flatMap(attachmentService::listByCondition)
             .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
     }
 

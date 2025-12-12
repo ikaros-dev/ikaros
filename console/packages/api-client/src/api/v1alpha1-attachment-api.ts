@@ -318,7 +318,7 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
      * List attachments by condition.
      * @param {number} [page] 第几页，从1开始, 默认为1.
      * @param {number} [size] 每页条数，默认为10.
-     * @param {'File' | 'Directory'} [type] 附件类型。
+     * @param {'File' | 'Directory' | 'Driver_File' | 'Driver_Directory'} [type] 附件类型。
      * @param {string} [name] 经过Basic64编码的附件名称，附件名称字段模糊查询。
      * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
      * @param {*} [options] Override http request option.
@@ -327,7 +327,7 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
     listAttachmentsByCondition: async (
       page?: number,
       size?: number,
-      type?: "File" | "Directory",
+      type?: "File" | "Directory" | "Driver_File" | "Driver_Directory",
       name?: string,
       parentId?: string,
       options: AxiosRequestConfig = {}
@@ -793,7 +793,7 @@ export const V1alpha1AttachmentApiFp = function (
      * List attachments by condition.
      * @param {number} [page] 第几页，从1开始, 默认为1.
      * @param {number} [size] 每页条数，默认为10.
-     * @param {'File' | 'Directory'} [type] 附件类型。
+     * @param {'File' | 'Directory' | 'Driver_File' | 'Driver_Directory'} [type] 附件类型。
      * @param {string} [name] 经过Basic64编码的附件名称，附件名称字段模糊查询。
      * @param {string} [parentId] 附件的父附件ID，父附件一般时目录类型。
      * @param {*} [options] Override http request option.
@@ -802,7 +802,7 @@ export const V1alpha1AttachmentApiFp = function (
     async listAttachmentsByCondition(
       page?: number,
       size?: number,
-      type?: "File" | "Directory",
+      type?: "File" | "Directory" | "Driver_File" | "Driver_Directory",
       name?: string,
       parentId?: string,
       options?: AxiosRequestConfig
@@ -1185,10 +1185,10 @@ export interface V1alpha1AttachmentApiListAttachmentsByConditionRequest {
 
   /**
    * 附件类型。
-   * @type {'File' | 'Directory'}
+   * @type {'File' | 'Directory' | 'Driver_File' | 'Driver_Directory'}
    * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
    */
-  readonly type?: "File" | "Directory";
+  readonly type?: "File" | "Directory" | "Driver_File" | "Driver_Directory";
 
   /**
    * 经过Basic64编码的附件名称，附件名称字段模糊查询。

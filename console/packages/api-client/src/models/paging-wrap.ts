@@ -43,23 +43,17 @@ export interface PagingWrap {
    */
   items: Array<object>;
   /**
-   * Indicates whether current page is the first page.
-   * @type {boolean}
-   * @memberof PagingWrap
-   */
-  firstPage: boolean;
-  /**
    * Indicates whether current page is the last page.
    * @type {boolean}
    * @memberof PagingWrap
    */
   lastPage: boolean;
   /**
-   * Indicates total pages.
-   * @type {number}
+   * Indicates whether current page is the first page.
+   * @type {boolean}
    * @memberof PagingWrap
    */
-  totalPages: number;
+  firstPage: boolean;
   /**
    * Indicates whether current page has previous page.
    * @type {boolean}
@@ -72,4 +66,10 @@ export interface PagingWrap {
    * @memberof PagingWrap
    */
   hasPrevious: boolean;
+  /**
+   * Indicates total pages.
+   * @type {number}
+   * @memberof PagingWrap
+   */
+  totalPages: number;
 }

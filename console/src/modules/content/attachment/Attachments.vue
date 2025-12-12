@@ -81,6 +81,20 @@ const fetchAttachments = async () => {
 	attachmentCondition.value.total = data.total;
 	await updateBreadcrumbByParentPath();
 };
+const fetchDriverAttachments = async () => {
+	const { data } = await apiClient.attachmentDriver.listAttachmentsByCondition1({
+		page: attachmentCondition.value.page,
+		size: attachmentCondition.value.size,
+		name: base64Encode(attachmentCondition.value.name),
+		parentId: attachmentCondition.value.parentId as any as string,
+		refresh: true,
+	});
+	attachments.value = data.items;
+	attachmentCondition.value.page = data.page;
+	attachmentCondition.value.size = data.size;
+	attachmentCondition.value.total = data.total;
+	await updateBreadcrumbByParentPath();
+}
 
 const updateBreadcrumbByParentPath = async () => {
 	const { data } = await apiClient.attachment.getAttachmentPathDirsById({
@@ -148,7 +162,16 @@ const entryAttachment = async (attachment) => {
 			id: attachment.id,
 		});
 		await fetchAttachments();
-	} else {
+	} else if (attachment.type === 'Driver_Directory') {
+		attachmentCondition.value.parentId = attachment.id;
+		paths.value.push({
+			name: attachment.name,
+			parentId: attachment.parentId,
+			id: attachment.id,
+		});
+		await fetchDriverAttachments();
+	}
+	 else {
 		currentSelectionAttachment.value = attachment;
 		attachmentDetailDrawerVisible.value = true;
 	}
@@ -315,7 +338,7 @@ const onRowContextmenu = (row, column, event) => {
 		items: [
 			{
 				label:
-					currentSelectionAttachment.value?.type === 'Directory'
+					(currentSelectionAttachment.value?.type === 'Directory' || currentSelectionAttachment.value?.type == 'Driver_Directory')
 						? t('module.attachment.contextmenu.entry')
 						: t('module.attachment.contextmenu.details'),
 				divided: 'down',
@@ -640,12 +663,12 @@ const onAttachmentDetailDrawerClose = () => {
 							size="25"
 							style="position: relative; top: 7px; margin: 0 5px 0 0px"
 						>
-							<Folder v-if="'Directory' === scoped.row.type" />
+							<Folder v-if="('Directory' === scoped.row.type) || ('Driver_Directory' === scoped.row.type)" :color="scoped.row.type === 'Driver_Directory' ? 'skyblue': 'default'"/>
 							<span v-else>
-								<Picture v-if="isImage(scoped.row.name)" />
-								<Headset v-else-if="isVoice(scoped.row.name)" />
-								<Film v-else-if="isVideo(scoped.row.name)" />
-								<Document v-else />
+								<Picture v-if="isImage(scoped.row.name)" :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
+								<Headset v-else-if="isVoice(scoped.row.name)" :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
+								<Film v-else-if="isVideo(scoped.row.name)" :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
+								<Document v-else  :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
 							</span>
 						</el-icon>
 						<!-- &nbsp;&nbsp; -->
