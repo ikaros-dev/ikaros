@@ -45,4 +45,6 @@ public class AttachmentEntity {
     @Column("update_time")
     private LocalDateTime updateTime;
     private Boolean deleted;
+    @Column("driver_id")
+    private Long driverId;
 }

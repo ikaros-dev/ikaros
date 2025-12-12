@@ -37,4 +37,5 @@ public class Attachment {
     private Long size;
     private LocalDateTime updateTime;
     private Boolean deleted;
+    private Long driverId;
 }

@@ -179,7 +179,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
         }
 
         // add dynamic resource resolver
-        registry.addResourceHandler(DRIVER_STATIC_RESOURCE_PREFIX + "**")
+        registry.addResourceHandler(DRIVER_STATIC_RESOURCE_PREFIX + "/**")
             .setCacheControl(cacheControl)
             .setUseLastModified(true)
             .resourceChain(true)
