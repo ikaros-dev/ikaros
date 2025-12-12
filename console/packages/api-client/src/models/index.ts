@@ -1,4 +1,5 @@
 export * from "./attachment";
+export * from "./attachment-driver";
 export * from "./attachment-reference";
 export * from "./attachment-relation";
 export * from "./attachment-tag";

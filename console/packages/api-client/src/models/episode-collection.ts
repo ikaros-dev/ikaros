@@ -96,6 +96,12 @@ export interface EpisodeCollection {
    * @memberof EpisodeCollection
    */
   ep_group?: EpisodeCollectionEpGroupEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof EpisodeCollection
+   */
+  update_time?: string;
 }
 
 export const EpisodeCollectionEpGroupEnum = {

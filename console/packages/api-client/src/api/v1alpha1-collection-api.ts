@@ -37,6 +37,8 @@ import {
   BaseAPI,
   RequiredError,
 } from "../base";
+// @ts-ignore
+import { PagingWrap } from "../models";
 /**
  * V1alpha1CollectionApi - axios parameter creator
  * @export
@@ -45,6 +47,88 @@ export const V1alpha1CollectionApiAxiosParamCreator = function (
   configuration?: Configuration
 ) {
   return {
+    /**
+     * Get collections with conditions.
+     * @param {'SUBJECT' | 'EPISODE'} [category] Collection category, default is EPISODE.
+     * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} [type] Collection type, default is null.
+     * @param {number} [page] 第几页，从1开始, 默认为1.
+     * @param {number} [size] 每页条数，默认为10.
+     * @param {string} [time] 时间范围，格式: 开始时间戳-结束时间戳
+     * @param {boolean} [updateTimeDesc] 是否根据更新时间倒序，默认为 true.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getCollectionsWithCondition: async (
+      category?: "SUBJECT" | "EPISODE",
+      type?: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD",
+      page?: number,
+      size?: number,
+      time?: string,
+      updateTimeDesc?: boolean,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/collections/condition`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (category !== undefined) {
+        localVarQueryParameter["category"] = category;
+      }
+
+      if (type !== undefined) {
+        localVarQueryParameter["type"] = type;
+      }
+
+      if (page !== undefined) {
+        localVarQueryParameter["page"] = page;
+      }
+
+      if (size !== undefined) {
+        localVarQueryParameter["size"] = size;
+      }
+
+      if (time !== undefined) {
+        localVarQueryParameter["time"] = time;
+      }
+
+      if (updateTimeDesc !== undefined) {
+        localVarQueryParameter["updateTimeDesc"] = updateTimeDesc;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
     /**
      * Get collection type by subject id.
      * @param {number} id Subject id
@@ -57,10 +141,11 @@ export const V1alpha1CollectionApiAxiosParamCreator = function (
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getTypeBySubjectId", "id", id);
-      const localVarPath = `/api/v1alpha1/collection/subjectId/{id}`.replace(
-        `{${"id"}}`,
-        encodeURIComponent(String(id))
-      );
+      const localVarPath =
+        `/api/v1alpha1/collection/type/subjectId/{id}`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(id))
+        );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -112,6 +197,45 @@ export const V1alpha1CollectionApiFp = function (
     V1alpha1CollectionApiAxiosParamCreator(configuration);
   return {
     /**
+     * Get collections with conditions.
+     * @param {'SUBJECT' | 'EPISODE'} [category] Collection category, default is EPISODE.
+     * @param {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'} [type] Collection type, default is null.
+     * @param {number} [page] 第几页，从1开始, 默认为1.
+     * @param {number} [size] 每页条数，默认为10.
+     * @param {string} [time] 时间范围，格式: 开始时间戳-结束时间戳
+     * @param {boolean} [updateTimeDesc] 是否根据更新时间倒序，默认为 true.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getCollectionsWithCondition(
+      category?: "SUBJECT" | "EPISODE",
+      type?: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD",
+      page?: number,
+      size?: number,
+      time?: string,
+      updateTimeDesc?: boolean,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.getCollectionsWithCondition(
+          category,
+          type,
+          page,
+          size,
+          time,
+          updateTimeDesc,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
      * Get collection type by subject id.
      * @param {number} id Subject id
      * @param {*} [options] Override http request option.
@@ -147,6 +271,28 @@ export const V1alpha1CollectionApiFactory = function (
   const localVarFp = V1alpha1CollectionApiFp(configuration);
   return {
     /**
+     * Get collections with conditions.
+     * @param {V1alpha1CollectionApiGetCollectionsWithConditionRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getCollectionsWithCondition(
+      requestParameters: V1alpha1CollectionApiGetCollectionsWithConditionRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<PagingWrap> {
+      return localVarFp
+        .getCollectionsWithCondition(
+          requestParameters.category,
+          requestParameters.type,
+          requestParameters.page,
+          requestParameters.size,
+          requestParameters.time,
+          requestParameters.updateTimeDesc,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
      * Get collection type by subject id.
      * @param {V1alpha1CollectionApiGetTypeBySubjectIdRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -162,6 +308,55 @@ export const V1alpha1CollectionApiFactory = function (
     },
   };
 };
+
+/**
+ * Request parameters for getCollectionsWithCondition operation in V1alpha1CollectionApi.
+ * @export
+ * @interface V1alpha1CollectionApiGetCollectionsWithConditionRequest
+ */
+export interface V1alpha1CollectionApiGetCollectionsWithConditionRequest {
+  /**
+   * Collection category, default is EPISODE.
+   * @type {'SUBJECT' | 'EPISODE'}
+   * @memberof V1alpha1CollectionApiGetCollectionsWithCondition
+   */
+  readonly category?: "SUBJECT" | "EPISODE";
+
+  /**
+   * Collection type, default is null.
+   * @type {'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD'}
+   * @memberof V1alpha1CollectionApiGetCollectionsWithCondition
+   */
+  readonly type?: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD";
+
+  /**
+   * 第几页，从1开始, 默认为1.
+   * @type {number}
+   * @memberof V1alpha1CollectionApiGetCollectionsWithCondition
+   */
+  readonly page?: number;
+
+  /**
+   * 每页条数，默认为10.
+   * @type {number}
+   * @memberof V1alpha1CollectionApiGetCollectionsWithCondition
+   */
+  readonly size?: number;
+
+  /**
+   * 时间范围，格式: 开始时间戳-结束时间戳
+   * @type {string}
+   * @memberof V1alpha1CollectionApiGetCollectionsWithCondition
+   */
+  readonly time?: string;
+
+  /**
+   * 是否根据更新时间倒序，默认为 true.
+   * @type {boolean}
+   * @memberof V1alpha1CollectionApiGetCollectionsWithCondition
+   */
+  readonly updateTimeDesc?: boolean;
+}
 
 /**
  * Request parameters for getTypeBySubjectId operation in V1alpha1CollectionApi.
@@ -184,6 +379,30 @@ export interface V1alpha1CollectionApiGetTypeBySubjectIdRequest {
  * @extends {BaseAPI}
  */
 export class V1alpha1CollectionApi extends BaseAPI {
+  /**
+   * Get collections with conditions.
+   * @param {V1alpha1CollectionApiGetCollectionsWithConditionRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1CollectionApi
+   */
+  public getCollectionsWithCondition(
+    requestParameters: V1alpha1CollectionApiGetCollectionsWithConditionRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1CollectionApiFp(this.configuration)
+      .getCollectionsWithCondition(
+        requestParameters.category,
+        requestParameters.type,
+        requestParameters.page,
+        requestParameters.size,
+        requestParameters.time,
+        requestParameters.updateTimeDesc,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
   /**
    * Get collection type by subject id.
    * @param {V1alpha1CollectionApiGetTypeBySubjectIdRequest} requestParameters Request parameters.

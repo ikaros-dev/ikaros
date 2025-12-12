@@ -72,11 +72,19 @@ export interface Attachment {
    * @memberof Attachment
    */
   updateTime?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof Attachment
+   */
+  deleted?: boolean;
 }
 
 export const AttachmentTypeEnum = {
   File: "File",
   Directory: "Directory",
+  DriverFile: "Driver_File",
+  DriverDirectory: "Driver_Directory",
 } as const;
 
 export type AttachmentTypeEnum =
