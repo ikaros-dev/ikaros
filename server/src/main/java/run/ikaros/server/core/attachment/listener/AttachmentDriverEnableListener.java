@@ -1,6 +1,6 @@
 package run.ikaros.server.core.attachment.listener;
 
-import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_URL_SPLIT_STR;
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARENT_ID;
 
@@ -12,29 +12,29 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.config.DynamicDirectoryResolver;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
+import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
-import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
-import run.ikaros.server.store.repository.AttachmentRepository;
 
 @Slf4j
 @Component
 public class AttachmentDriverEnableListener {
-    private final AttachmentRepository attachmentRepository;
+    private final AttachmentService attachmentService;
     private final DynamicDirectoryResolver dynamicDirectoryResolver;
     private final AttachmentDriverRepository driverRepository;
 
     /**
      * Construct.
      */
-    public AttachmentDriverEnableListener(AttachmentRepository attachmentRepository,
+    public AttachmentDriverEnableListener(AttachmentService attachmentService,
                                           DynamicDirectoryResolver dynamicDirectoryResolver,
                                           AttachmentDriverRepository driverRepository) {
-        this.attachmentRepository = attachmentRepository;
+        this.attachmentService = attachmentService;
         this.dynamicDirectoryResolver = dynamicDirectoryResolver;
         this.driverRepository = driverRepository;
     }
@@ -57,23 +57,23 @@ public class AttachmentDriverEnableListener {
             mountName = driver.getType().name();
         }
 
-        dynamicDirectoryResolver.addDirectoryMapping(driver.getMountName(),
-            driver.getRemotePath());
+        dynamicDirectoryResolver.addDirectoryMapping(driver.getMountName(), driver.getRemotePath());
 
-        final String driverIdUrl = driver.getId() + DRIVER_URL_SPLIT_STR + driver.getRemotePath();
-        return attachmentRepository.findByTypeAndParentIdAndName(
+        return attachmentService.findByTypeAndParentIdAndName(
                 AttachmentType.Driver_Directory, ROOT_DIRECTORY_PARENT_ID, mountName)
-            .switchIfEmpty(Mono.just(AttachmentEntity.builder()
+            .switchIfEmpty(Mono.just(Attachment.builder()
                 .parentId(ROOT_DIRECTORY_ID)
                 .type(AttachmentType.Driver_Directory)
                 .name(mountName)
                 .updateTime(LocalDateTime.now())
-                .url(driverIdUrl)
-                .fsPath(driver.getRemotePath()).path("")
+                .url(DRIVER_STATIC_RESOURCE_PREFIX + "/" +  mountName)
+                .driverId(driver.getId())
+                .fsPath(driver.getRemotePath())
+                .path("/" + mountName)
                 .deleted(Boolean.FALSE)
                 .build()))
-            .map(attachment -> attachment.setUrl(driverIdUrl).setDeleted(Boolean.FALSE))
-            .flatMap(attachmentRepository::save)
+            .map(attachment -> attachment.setDeleted(Boolean.FALSE))
+            .flatMap(attachmentService::save)
             .then();
     }
 

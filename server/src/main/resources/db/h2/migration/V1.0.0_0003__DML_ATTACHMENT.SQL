@@ -1,0 +1,1 @@
+alter table attachment add column driver_id int8 null;

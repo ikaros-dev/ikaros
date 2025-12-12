@@ -1,6 +1,6 @@
 package run.ikaros.server.core.attachment.service.impl;
 
-import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_URL_SPLIT_STR;
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.io.File;
@@ -27,11 +27,13 @@ import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
+import run.ikaros.server.store.repository.AttachmentRepository;
 
 @Slf4j
 @Service
 public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private final AttachmentDriverRepository repository;
+    private final AttachmentRepository attachmentRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final AttachmentService attachmentService;
 
@@ -39,9 +41,11 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
      * .
      */
     public AttachmentDriverServiceImpl(AttachmentDriverRepository repository,
+                                       AttachmentRepository attachmentRepository,
                                        ApplicationEventPublisher eventPublisher,
                                        AttachmentService attachmentService) {
         this.repository = repository;
+        this.attachmentRepository = attachmentRepository;
         this.eventPublisher = eventPublisher;
         this.attachmentService = attachmentService;
     }
@@ -145,8 +149,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private Mono<Void> refreshRemoteFileSystem(AttachmentEntity attachment) {
         final Long pid = attachment.getId();
         String url = attachment.getUrl();
-        Long driverId = Long.parseLong(url.substring(0, url.indexOf(DRIVER_URL_SPLIT_STR)));
-        String remotePath = url.substring(url.indexOf(DRIVER_URL_SPLIT_STR) + 1);
+        Long driverId = attachment.getDriverId();
+        String remotePath = attachment.getFsPath();
         return repository.findById(driverId)
             .flatMapMany(attachmentDriverEntity ->
                 fetchAndUpdateEntities(attachmentDriverEntity, pid, remotePath))
@@ -180,19 +184,19 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             return Flux.empty();
         }
 
-
         return Flux.fromArray(files)
             .map(f -> AttachmentEntity.builder()
                 .parentId(pid)
                 .type(f.isFile() ? AttachmentType.Driver_File : AttachmentType.Driver_Directory)
                 .name(f.getName())
-                .url(driver.getId() + DRIVER_URL_SPLIT_STR + f.getAbsolutePath())
                 .path(f.getPath())
                 .fsPath(f.getAbsolutePath())
                 .size(f.isFile() ? file.length() : 0)
                 .updateTime(LocalDateTime.now())
                 .deleted(false)
                 .build())
+            .flatMap(attachmentService::saveEntity)
+            .map(entity -> entity.setUrl(DRIVER_STATIC_RESOURCE_PREFIX + entity.getPath()))
             .flatMap(attachmentService::saveEntity);
     }
 
