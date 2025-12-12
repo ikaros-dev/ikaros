@@ -11,6 +11,7 @@ create table if not exists attachment
     size        int8          null,
     update_time timestamp(6)  null,
     deleted     bool          null,
+    driver_id        int8          null,
     constraint type_parent_name_uk unique (type, parent_id, name),
     constraint attachment_pkey primary key (id)
 );
