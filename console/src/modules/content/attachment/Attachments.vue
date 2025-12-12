@@ -663,12 +663,12 @@ const onAttachmentDetailDrawerClose = () => {
 							size="25"
 							style="position: relative; top: 7px; margin: 0 5px 0 0px"
 						>
-							<Folder v-if="('Directory' === scoped.row.type) || ('Driver_Directory' === scoped.row.type)" />
+							<Folder v-if="('Directory' === scoped.row.type) || ('Driver_Directory' === scoped.row.type)" :color="scoped.row.type === 'Driver_Directory' ? 'skyblue': 'default'"/>
 							<span v-else>
-								<Picture v-if="isImage(scoped.row.name)" />
-								<Headset v-else-if="isVoice(scoped.row.name)" />
-								<Film v-else-if="isVideo(scoped.row.name)" />
-								<Document v-else />
+								<Picture v-if="isImage(scoped.row.name)" :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
+								<Headset v-else-if="isVoice(scoped.row.name)" :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
+								<Film v-else-if="isVideo(scoped.row.name)" :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
+								<Document v-else  :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
 							</span>
 						</el-icon>
 						<!-- &nbsp;&nbsp; -->
