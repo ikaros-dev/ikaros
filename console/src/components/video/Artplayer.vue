@@ -40,6 +40,7 @@ const fetchAttachment = async () => {
 	const { data } = await apiClient.attachment.getAttachmentById({
 		id: props.attachmentId,
 	});
+	data.url = encodeURI(data?.url ?? "")
 	attachment.value = data;
 };
 

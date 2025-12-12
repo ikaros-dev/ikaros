@@ -19,6 +19,7 @@ import { isImage, isVideo, isVoice } from '@/utils/file';
 import { Edit } from '@element-plus/icons-vue';
 import Artplayer from '@/components/video/Artplayer.vue';
 import AttachmentRelationsDialog from './AttachmentRelationsDialog.vue';
+import { getCompleteFileUrl } from '@/utils/url-tuils';
 
 const { t } = useI18n();
 
@@ -125,14 +126,6 @@ const handleUpdateName = async () => {
 	}
 };
 
-const getCompleteFileUrl = (reactiveUrl: string | undefined): string => {
-	var curPageUrl = window.location.href;
-	var pathName = window.location.pathname;
-	var localhostPath = curPageUrl.substring(0, curPageUrl.indexOf(pathName));
-	return reactiveUrl?.startsWith('http')
-		? reactiveUrl
-		: localhostPath + reactiveUrl;
-};
 
 const handleClose = (done: () => void) => {
 	done();
@@ -260,7 +253,7 @@ const getArtplayerInstance = (art: Artplayer) => {
 						{{ file.path }}
 					</el-descriptions-item>
 					<el-descriptions-item v-if="file.url" label="URL">
-						<a :href="file.url" target="_blank">{{ file.url }}</a>
+						<a :href="encodeURI(file.url)" target="_blank">{{ file.url }}</a>
 					</el-descriptions-item>
 					<el-descriptions-item
 						v-if="file.fsPath"

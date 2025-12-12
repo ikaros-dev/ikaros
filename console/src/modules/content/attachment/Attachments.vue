@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, h, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Attachment } from '@runikaros/api-client';
+import { Attachment, AttachmentTypeEnum } from '@runikaros/api-client';
 import { isImage, isVideo, isVoice } from '@/utils/file';
 import moment from 'moment';
 import { apiClient } from '@/utils/api-client';
@@ -53,6 +53,7 @@ import {
 	ElMessageBox,
 } from 'element-plus';
 import router from '@/router';
+import { getCompleteFileUrl } from '@/utils/url-tuils';
 
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
@@ -378,12 +379,12 @@ const onRowContextmenu = (row, column, event) => {
 			{
 				label: t('module.attachment.contextmenu.copy_url'),
 				divided: 'down',
-				disabled: currentSelectionAttachment.value?.type !== 'File',
+				disabled: (currentSelectionAttachment.value?.type !== AttachmentTypeEnum.File) && (AttachmentTypeEnum.DriverFile !== currentSelectionAttachment.value?.type),
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
 					const name = currentSelectionAttachment.value?.name as string;
 					const url = currentSelectionAttachment.value?.url as string;
-					await copyValue(url);
+					await copyValue(encodeURI(getCompleteFileUrl(url)));
 					ElMessage.success(
 						t('module.attachment.message.operate.copy_url', { name: name })
 					);
