@@ -3,8 +3,6 @@ package run.ikaros.server.core.attachment.service.impl;
 import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
-import java.io.File;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +23,7 @@ import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentDriverRemoveException;
 import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
-import run.ikaros.api.infra.exception.FeatureNotImplException;
 import run.ikaros.api.store.enums.AttachmentDriverType;
-import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
@@ -35,7 +31,6 @@ import run.ikaros.server.core.attachment.service.AttachmentDriverService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
-import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
@@ -229,57 +224,6 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             .flatMap(attachmentService::save)
             .map(att -> att.setUrl(DRIVER_STATIC_RESOURCE_PREFIX + att.getPath()))
             .flatMap(attachmentService::save);
-        // switch (type) {
-        //     case LOCAL -> {
-        //         return fetchAndUpdateEntitiesWithTypeIsLocal(driver, pid, remotePath);
-        //     }
-        //     case WEBDAV -> {
-        //         return fetchAndUpdateEntitiesWithTypeIsWebdav(driver, pid, remotePath);
-        //     }
-        //     case CUSTOM -> {
-        //         return fetchAndUpdateEntitiesWithTypeIsCustom(driver, pid, remotePath);
-        //     }
-        //     default -> {
-        //         return Flux.empty();
-        //     }
-        // }
-    }
-
-    private Flux<AttachmentEntity> fetchAndUpdateEntitiesWithTypeIsLocal(
-        AttachmentDriverEntity driver, Long pid, String remotePath) {
-        File file = new File(remotePath);
-        File[] files = file.listFiles();
-        if (files == null) {
-            return Flux.empty();
-        }
-
-        return Flux.fromArray(files)
-            .map(f -> AttachmentEntity.builder()
-                .parentId(pid)
-                .type(f.isFile() ? AttachmentType.Driver_File : AttachmentType.Driver_Directory)
-                .name(f.getName())
-                .path(f.getPath())
-                .fsPath(f.getAbsolutePath())
-                .size(f.isFile() ? file.length() : 0)
-                .updateTime(LocalDateTime.now())
-                .deleted(false)
-                .driverId(driver.getId())
-                .build())
-            .flatMap(attachmentService::saveEntity)
-            .map(entity -> entity.setUrl(DRIVER_STATIC_RESOURCE_PREFIX + entity.getPath()))
-            .flatMap(attachmentService::saveEntity);
-    }
-
-    private Flux<AttachmentEntity> fetchAndUpdateEntitiesWithTypeIsWebdav(
-        AttachmentDriverEntity driver, Long pid, String remotePath) {
-        // todo impl webdav fs fetch
-        return Flux.error(new FeatureNotImplException());
-    }
-
-    private Flux<AttachmentEntity> fetchAndUpdateEntitiesWithTypeIsCustom(
-        AttachmentDriverEntity driver, Long pid, String remotePath) {
-        // todo impl custom fs fetch
-        return Flux.error(new FeatureNotImplException());
     }
 
 }
