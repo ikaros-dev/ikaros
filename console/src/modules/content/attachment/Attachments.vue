@@ -72,7 +72,7 @@ const attachmentCondition = ref({
 
 const attachments = ref<Attachment[]>([]);
 const fetchAttachments = async () => {
-	const { data } = await apiClient.attachment.listAttachmentsByCondition({
+	const { data } = await apiClient.attachment.listAttachmentsByCondition1({
 		page: attachmentCondition.value.page,
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
@@ -85,7 +85,7 @@ const fetchAttachments = async () => {
 	await updateBreadcrumbByParentPath();
 };
 const fetchDriverAttachments = async () => {
-	const { data } = await apiClient.attachmentDriver.listAttachmentsByCondition1({
+	const { data } = await apiClient.attachmentDriver.listAttachmentsByCondition({
 		page: attachmentCondition.value.page,
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
