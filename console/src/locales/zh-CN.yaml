@@ -229,6 +229,7 @@ module:
       mkdir: 新建目录
       move_atts: 批量移动
       refresh: 刷新
+      driver: 驱动
     popconfirm:
       title: 您确定批量删除附件吗？
       btn: 批量删除
@@ -283,6 +284,9 @@ module:
         operate:
           batch-match-subject-episodes-atts: 批量匹配条目所有剧集和多资源成功
           batch-match-episode-atts: 批量匹单个剧集和多资源成功
+    driver:
+        title: 附件驱动
+        sidebar: 附件驱动
   subject:
     title: 条目
     sidebar: 条目

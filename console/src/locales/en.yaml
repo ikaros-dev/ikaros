@@ -237,6 +237,7 @@ module:
       mkdir: Crate
       move_atts: Batch move
       refresh: Refresh
+      driver: Driver
     popconfirm:
       title: Are you sure to delete attachments in bulk?
       btn: Batch delete
@@ -296,6 +297,9 @@ module:
         operate:
           batch-match-subject-episodes-atts: Batch match entries for all episodes and multiple resources success
           batch-match-episode-atts: Batch match single episode and multi-attachments success
+    driver:
+      title: Attachment Drivers
+      sidebar: Attachment Drivers
   subject:
     title: Subjects
     sidebar: Subjects

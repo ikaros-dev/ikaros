@@ -34,6 +34,7 @@ import {
 	CopyDocument,
 	Download,
 	Refresh,
+	MostlyCloudy,
 } from '@element-plus/icons-vue';
 import {
 	ElRow,
@@ -601,6 +602,9 @@ const onAttachmentDetailDrawerClose = () => {
 			</el-button>
 			<el-button :icon="Refresh"  :loading="refreshButtonLoading" @click="refreshCurrentDir">
 				{{ t('module.attachment.btn.refresh') }}
+			</el-button>
+			<el-button :icon="MostlyCloudy" >
+				{{ t('module.attachment.btn.driver') }}
 			</el-button>
 
 			<el-button

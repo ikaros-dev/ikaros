@@ -2,6 +2,7 @@ import { definePlugin } from '@runikaros/shared';
 import { markRaw } from 'vue';
 import { Folder as FolderIcon } from '@element-plus/icons-vue';
 import Attachments from './Attachments.vue';
+import AttachmentDrivers from './AttachmentDrivers.vue'
 
 // <el-icon><MessageBox /></el-icon>
 export default definePlugin({
@@ -23,6 +24,23 @@ export default definePlugin({
 						priority: 0,
 						admin: true,
 					},
+				},
+			},
+		},
+		{
+			parentName: 'Root',
+			route: {
+				path: '/attachment/drivers',
+				name: 'AttachmentDrivers',
+				component: AttachmentDrivers,
+				meta: {
+					title: 'module.attachment.driver.title',
+					hidden: true,
+					menu: {
+						name: 'module.attachment.driver.sidebar',
+						hidden: true,
+						admin: true,
+					}
 				},
 			},
 		},
