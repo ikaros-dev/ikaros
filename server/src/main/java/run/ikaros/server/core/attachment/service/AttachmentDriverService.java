@@ -22,8 +22,12 @@ public interface AttachmentDriverService {
 
     Mono<Void> disable(Long driverId);
 
-    Mono<PagingWrap<Attachment>> listEntitiesByCondition(
+    Mono<PagingWrap<Attachment>> listAttachmentsByCondition(
         AttachmentSearchCondition attachmentSearchCondition);
 
     Mono<Void> refresh(Long attachmentId);
+
+    Mono<PagingWrap<AttachmentDriver>> listDriversByCondition(
+        Integer page, Integer pageSize
+    );
 }
