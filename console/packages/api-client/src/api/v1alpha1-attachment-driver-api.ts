@@ -104,13 +104,13 @@ export const V1alpha1AttachmentDriverApiAxiosParamCreator = function (
     },
     /**
      * Delete attachment driver by type and name.
-     * @param {'LOCAL' | 'WEBDAV' | 'PAN115' | 'CUSTOM'} type AttachmentDriver type
+     * @param {'LOCAL' | 'WEBDAV' | 'CUSTOM'} type AttachmentDriver type
      * @param {string} name AttachmentDriver name
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     deleteByTypeAndName: async (
-      type: "LOCAL" | "WEBDAV" | "PAN115" | "CUSTOM",
+      type: "LOCAL" | "WEBDAV" | "CUSTOM",
       name: string,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
@@ -327,13 +327,13 @@ export const V1alpha1AttachmentDriverApiAxiosParamCreator = function (
     },
     /**
      * Get attachment driver by type and name.
-     * @param {'LOCAL' | 'WEBDAV' | 'PAN115' | 'CUSTOM'} type AttachmentDriver type
+     * @param {'LOCAL' | 'WEBDAV' | 'CUSTOM'} type AttachmentDriver type
      * @param {string} name AttachmentDriver name
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     getByTypeAndName: async (
-      type: "LOCAL" | "WEBDAV" | "PAN115" | "CUSTOM",
+      type: "LOCAL" | "WEBDAV" | "CUSTOM",
       name: string,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
@@ -612,13 +612,13 @@ export const V1alpha1AttachmentDriverApiFp = function (
     },
     /**
      * Delete attachment driver by type and name.
-     * @param {'LOCAL' | 'WEBDAV' | 'PAN115' | 'CUSTOM'} type AttachmentDriver type
+     * @param {'LOCAL' | 'WEBDAV' | 'CUSTOM'} type AttachmentDriver type
      * @param {string} name AttachmentDriver name
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     async deleteByTypeAndName(
-      type: "LOCAL" | "WEBDAV" | "PAN115" | "CUSTOM",
+      type: "LOCAL" | "WEBDAV" | "CUSTOM",
       name: string,
       options?: AxiosRequestConfig
     ): Promise<
@@ -709,13 +709,13 @@ export const V1alpha1AttachmentDriverApiFp = function (
     },
     /**
      * Get attachment driver by type and name.
-     * @param {'LOCAL' | 'WEBDAV' | 'PAN115' | 'CUSTOM'} type AttachmentDriver type
+     * @param {'LOCAL' | 'WEBDAV' | 'CUSTOM'} type AttachmentDriver type
      * @param {string} name AttachmentDriver name
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     async getByTypeAndName(
-      type: "LOCAL" | "WEBDAV" | "PAN115" | "CUSTOM",
+      type: "LOCAL" | "WEBDAV" | "CUSTOM",
       name: string,
       options?: AxiosRequestConfig
     ): Promise<
@@ -1007,10 +1007,10 @@ export interface V1alpha1AttachmentDriverApiDeleteAttachmentDriverByIdRequest {
 export interface V1alpha1AttachmentDriverApiDeleteByTypeAndNameRequest {
   /**
    * AttachmentDriver type
-   * @type {'LOCAL' | 'WEBDAV' | 'PAN115' | 'CUSTOM'}
+   * @type {'LOCAL' | 'WEBDAV' | 'CUSTOM'}
    * @memberof V1alpha1AttachmentDriverApiDeleteByTypeAndName
    */
-  readonly type: "LOCAL" | "WEBDAV" | "PAN115" | "CUSTOM";
+  readonly type: "LOCAL" | "WEBDAV" | "CUSTOM";
 
   /**
    * AttachmentDriver name
@@ -1070,10 +1070,10 @@ export interface V1alpha1AttachmentDriverApiGetAttachmentDriverByIdRequest {
 export interface V1alpha1AttachmentDriverApiGetByTypeAndNameRequest {
   /**
    * AttachmentDriver type
-   * @type {'LOCAL' | 'WEBDAV' | 'PAN115' | 'CUSTOM'}
+   * @type {'LOCAL' | 'WEBDAV' | 'CUSTOM'}
    * @memberof V1alpha1AttachmentDriverApiGetByTypeAndName
    */
-  readonly type: "LOCAL" | "WEBDAV" | "PAN115" | "CUSTOM";
+  readonly type: "LOCAL" | "WEBDAV" | "CUSTOM";
 
   /**
    * AttachmentDriver name

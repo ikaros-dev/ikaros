@@ -1,0 +1,1 @@
+alter table attachment add column sha1 varchar(255) null;

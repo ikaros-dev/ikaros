@@ -47,4 +47,5 @@ public class AttachmentEntity {
     private Boolean deleted;
     @Column("driver_id")
     private Long driverId;
+    private String sha1;
 }

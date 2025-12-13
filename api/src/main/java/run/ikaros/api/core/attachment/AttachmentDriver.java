@@ -25,9 +25,6 @@ public class AttachmentDriver {
      * enable current attachment driver.
      */
     private boolean enable;
-    /**
-     * attachment driver type, such as LOCAL, CLOUD115 .......
-     */
     @Schema(requiredMode = REQUIRED, defaultValue = "LOCAL")
     private AttachmentDriverType type;
     private String name;

@@ -242,6 +242,11 @@ const getArtplayerInstance = (art: Artplayer) => {
 						{{ formatFileSize(file.size) }}
 					</el-descriptions-item>
 					<el-descriptions-item
+						label="SHA1"
+					>
+						{{ file.sha1 }}
+					</el-descriptions-item>
+					<el-descriptions-item
 						:label="t('module.attachment.details.descItemLabel.updateTime')"
 					>
 						{{ file.updateTime }}

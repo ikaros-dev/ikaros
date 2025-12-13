@@ -84,6 +84,12 @@ export interface Attachment {
    * @memberof Attachment
    */
   driverId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Attachment
+   */
+  sha1?: string;
 }
 
 export const AttachmentTypeEnum = {
