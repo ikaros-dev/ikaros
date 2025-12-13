@@ -506,6 +506,11 @@ const refreshCurrentDir = async () => {
 	
 }
 
+const toAttachmentDrivers = () => {
+	router.push('/attachment/drivers');
+}
+
+
 watch(
 	() => route.query,
 	(newValue) => {
@@ -603,7 +608,7 @@ const onAttachmentDetailDrawerClose = () => {
 			<el-button :icon="Refresh"  :loading="refreshButtonLoading" @click="refreshCurrentDir">
 				{{ t('module.attachment.btn.refresh') }}
 			</el-button>
-			<el-button :icon="MostlyCloudy" >
+			<el-button :icon="MostlyCloudy" @click="toAttachmentDrivers">
 				{{ t('module.attachment.btn.driver') }}
 			</el-button>
 
