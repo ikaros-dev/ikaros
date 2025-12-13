@@ -236,6 +236,7 @@ module:
       upload: Upload
       mkdir: Crate
       move_atts: Batch move
+      refresh: Refresh
     popconfirm:
       title: Are you sure to delete attachments in bulk?
       btn: Batch delete

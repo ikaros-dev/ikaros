@@ -33,6 +33,7 @@ import {
 	Position,
 	CopyDocument,
 	Download,
+	Refresh,
 } from '@element-plus/icons-vue';
 import {
 	ElRow,
@@ -476,6 +477,33 @@ const onDirSelected = async (targetDirid: number) => {
 	await fetchAttachments();
 };
 
+const currentParentAttachment = ref<Attachment>({})
+const fetchCurrentParentAttachment = async () => {
+	if (!(attachmentCondition.value.parentId)) return
+	var attId = attachmentCondition.value.parentId
+	const {data} = await apiClient.attachment.getAttachmentById({id: attId})
+	currentParentAttachment.value = data
+}
+
+const refreshButtonLoading = ref(false)
+const refreshCurrentDir = async () => {
+	try {
+		refreshButtonLoading.value = true
+		await fetchCurrentParentAttachment()
+		var type = currentParentAttachment.value.type
+		if (type && type === 'Driver_Directory') {
+			await fetchDriverAttachments()
+		} else {
+			await fetchAttachments()
+		}
+	} catch (error) {
+		console.error(error)
+	} finally {
+		refreshButtonLoading.value = false
+	}
+	
+}
+
 watch(
 	() => route.query,
 	(newValue) => {
@@ -488,6 +516,7 @@ watch(
 				attachmentCondition.value.parentId = parseInt(
 					newValue.parentId as string
 				);
+				fetchCurrentParentAttachment()
 			}
 			fetchAttachments();
 		}
@@ -566,6 +595,9 @@ const onAttachmentDetailDrawerClose = () => {
 			</el-button>
 			<el-button :icon="FolderAdd" @click="dialogFolderVisible = true">
 				{{ t('module.attachment.btn.mkdir') }}
+			</el-button>
+			<el-button :icon="Refresh"  :loading="refreshButtonLoading" @click="refreshCurrentDir">
+				{{ t('module.attachment.btn.refresh') }}
 			</el-button>
 
 			<el-button

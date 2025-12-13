@@ -228,6 +228,7 @@ module:
       upload: 上传附件
       mkdir: 新建目录
       move_atts: 批量移动
+      refresh: 刷新
     popconfirm:
       title: 您确定批量删除附件吗？
       btn: 批量删除
