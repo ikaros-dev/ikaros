@@ -22,6 +22,7 @@ import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentDriverRemoveException;
+import run.ikaros.api.infra.exception.FeatureNotImplException;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -238,13 +239,13 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private Flux<AttachmentEntity> fetchAndUpdateEntitiesWithTypeIsWebdav(
         AttachmentDriverEntity driver, Long pid, String remotePath) {
         // todo impl webdav fs fetch
-        return Flux.empty();
+        return Flux.error(new FeatureNotImplException());
     }
 
     private Flux<AttachmentEntity> fetchAndUpdateEntitiesWithTypeIsCustom(
         AttachmentDriverEntity driver, Long pid, String remotePath) {
         // todo impl custom fs fetch
-        return Flux.empty();
+        return Flux.error(new FeatureNotImplException());
     }
 
 }
