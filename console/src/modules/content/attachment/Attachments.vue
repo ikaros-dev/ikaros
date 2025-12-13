@@ -158,7 +158,7 @@ const entryAttachment = async (attachment) => {
 	// console.log('attachment', attachment);
 	// console.log('attachment id:', attachment.id);
 	// console.log('attachment name:', attachment.name);
-	if ('Directory' === attachment.type) {
+	if ('Directory' === attachment.type || 'Driver_Directory' == attachment.type) {
 		attachmentCondition.value.parentId = attachment.id;
 		paths.value.push({
 			name: attachment.name,
@@ -166,16 +166,7 @@ const entryAttachment = async (attachment) => {
 			id: attachment.id,
 		});
 		await fetchAttachments();
-	} else if (attachment.type === 'Driver_Directory') {
-		attachmentCondition.value.parentId = attachment.id;
-		paths.value.push({
-			name: attachment.name,
-			parentId: attachment.parentId,
-			id: attachment.id,
-		});
-		await fetchDriverAttachments();
-	}
-	 else {
+	} else {
 		currentSelectionAttachment.value = attachment;
 		attachmentDetailDrawerVisible.value = true;
 	}

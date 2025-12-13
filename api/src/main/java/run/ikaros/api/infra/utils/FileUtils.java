@@ -389,4 +389,26 @@ public class FileUtils {
         log.debug("current url={}", url);
         return url;
     }
+
+    /**
+     * 计算SHA1的值
+     * .
+     */
+    public static String calculateSha1(String filePath)
+        throws IOException, NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+
+        try (FileInputStream fis = new FileInputStream(filePath)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                digest.update(buffer, 0, bytesRead);
+            }
+        }
+
+        byte[] sha1Bytes = digest.digest();
+        return bytesToHex(sha1Bytes);
+    }
+
 }
