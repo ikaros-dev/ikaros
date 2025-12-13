@@ -148,6 +148,7 @@ const onBreadcrumbClick = async (path) => {
 		paths.value.splice(index + 1);
 	}
 	attachmentCondition.value.parentId = path.id;
+	await fetchCurrentParentAttachment();
 	await fetchAttachments();
 	// console.log('parentId', attachmentCondition.value.parentId);
 };
@@ -587,7 +588,9 @@ const onAttachmentDetailDrawerClose = () => {
 
 	<el-row>
 		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-			<el-button plain @click="attachmentUploadDrawerVisible = true">
+			<el-button plain 
+				:disabled="currentParentAttachment.type && currentParentAttachment.type === 'Driver_Directory'"
+				@click="attachmentUploadDrawerVisible = true" >
 				<el-icon>
 					<Upload />
 				</el-icon>
