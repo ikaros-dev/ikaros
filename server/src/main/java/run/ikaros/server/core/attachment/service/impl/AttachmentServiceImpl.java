@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -754,7 +755,9 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private AttachmentEntity removeFileSystemFile(AttachmentEntity attachmentEntity) {
-        if (Directory.equals(attachmentEntity.getType())) {
+        if (Directory.equals(attachmentEntity.getType())
+            || attachmentEntity.getType().toString()
+            .toUpperCase(Locale.ROOT).startsWith("DRIVER")) {
             return attachmentEntity;
         }
         String fsPath = attachmentEntity.getFsPath();
