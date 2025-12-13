@@ -82,26 +82,12 @@ public class RequestAuthorizationManager
                     }
                 }
 
-                if (AuthorityType.API.equals(type)) {
+                if (AuthorityType.API.equals(type) || AuthorityType.APIS.equals(type)) {
 
-                    if (authTarget(target, path, granted)) {
+                    if (authTarget(target, path, granted)
+                        && authMethod(author, method, granted)) {
                         granted = true;
                         continue;
-                    }
-
-                    if (Authorization.Target.ALL.equals(target)
-                        && Authorization.Authority.HTTP_ALL.equals(author)) {
-                        granted = true;
-                        continue;
-                    }
-
-                    if (!Authorization.Authority.ALL.equals(author) && author.startsWith("HTTP")) {
-                        if (author.contains(method.name())) {
-                            if (authTarget(target, path, granted)) {
-                                granted = true;
-                                continue;
-                            }
-                        }
                     }
                 }
 
@@ -117,6 +103,10 @@ public class RequestAuthorizationManager
     }
 
     private boolean authTarget(String target, String path, boolean granted) {
+        if (!granted && Authorization.Target.ALL.equals(target)) {
+            return true;
+        }
+
         if (target.contains("/**")) {
             String apiPrefix = target.substring(0, target.lastIndexOf("/**"));
             if (!granted && path.contains(apiPrefix)) {
@@ -128,6 +118,22 @@ public class RequestAuthorizationManager
             if (!granted && path.equalsIgnoreCase(target)) {
                 return true;
             }
+        }
+        return granted;
+    }
+
+    private boolean authMethod(String author, HttpMethod method, boolean granted) {
+        if (!granted && Authorization.Authority.ALL.equals(author)) {
+            return true;
+        }
+        if (!author.contains("HTTP")) {
+            return granted;
+        }
+        if (!granted && author.contains("_**")) {
+            return true;
+        }
+        if (!granted && author.contains(method.name())) {
+            return true;
         }
         return granted;
     }

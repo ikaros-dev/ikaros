@@ -33,6 +33,8 @@ import {
 	Position,
 	CopyDocument,
 	Download,
+	Refresh,
+	MostlyCloudy,
 } from '@element-plus/icons-vue';
 import {
 	ElRow,
@@ -70,7 +72,7 @@ const attachmentCondition = ref({
 
 const attachments = ref<Attachment[]>([]);
 const fetchAttachments = async () => {
-	const { data } = await apiClient.attachment.listAttachmentsByCondition({
+	const { data } = await apiClient.attachment.listAttachmentsByCondition1({
 		page: attachmentCondition.value.page,
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
@@ -83,7 +85,7 @@ const fetchAttachments = async () => {
 	await updateBreadcrumbByParentPath();
 };
 const fetchDriverAttachments = async () => {
-	const { data } = await apiClient.attachmentDriver.listAttachmentsByCondition1({
+	const { data } = await apiClient.attachmentDriver.listAttachmentsByCondition({
 		page: attachmentCondition.value.page,
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
@@ -147,6 +149,7 @@ const onBreadcrumbClick = async (path) => {
 		paths.value.splice(index + 1);
 	}
 	attachmentCondition.value.parentId = path.id;
+	await fetchCurrentParentAttachment();
 	await fetchAttachments();
 	// console.log('parentId', attachmentCondition.value.parentId);
 };
@@ -476,6 +479,38 @@ const onDirSelected = async (targetDirid: number) => {
 	await fetchAttachments();
 };
 
+const currentParentAttachment = ref<Attachment>({})
+const fetchCurrentParentAttachment = async () => {
+	if (!(attachmentCondition.value.parentId)) return
+	var attId = attachmentCondition.value.parentId
+	const {data} = await apiClient.attachment.getAttachmentById({id: attId})
+	currentParentAttachment.value = data
+}
+
+const refreshButtonLoading = ref(false)
+const refreshCurrentDir = async () => {
+	try {
+		refreshButtonLoading.value = true
+		await fetchCurrentParentAttachment()
+		var type = currentParentAttachment.value.type
+		if (type && type === 'Driver_Directory') {
+			await fetchDriverAttachments()
+		} else {
+			await fetchAttachments()
+		}
+	} catch (error) {
+		console.error(error)
+	} finally {
+		refreshButtonLoading.value = false
+	}
+	
+}
+
+const toAttachmentDrivers = () => {
+	router.push('/attachment/drivers');
+}
+
+
 watch(
 	() => route.query,
 	(newValue) => {
@@ -488,6 +523,7 @@ watch(
 				attachmentCondition.value.parentId = parseInt(
 					newValue.parentId as string
 				);
+				fetchCurrentParentAttachment()
 			}
 			fetchAttachments();
 		}
@@ -558,7 +594,9 @@ const onAttachmentDetailDrawerClose = () => {
 
 	<el-row>
 		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-			<el-button plain @click="attachmentUploadDrawerVisible = true">
+			<el-button plain 
+				:disabled="currentParentAttachment.type && currentParentAttachment.type === 'Driver_Directory'"
+				@click="attachmentUploadDrawerVisible = true" >
 				<el-icon>
 					<Upload />
 				</el-icon>
@@ -566,6 +604,12 @@ const onAttachmentDetailDrawerClose = () => {
 			</el-button>
 			<el-button :icon="FolderAdd" @click="dialogFolderVisible = true">
 				{{ t('module.attachment.btn.mkdir') }}
+			</el-button>
+			<el-button :icon="Refresh"  :loading="refreshButtonLoading" @click="refreshCurrentDir">
+				{{ t('module.attachment.btn.refresh') }}
+			</el-button>
+			<el-button :icon="MostlyCloudy" @click="toAttachmentDrivers">
+				{{ t('module.attachment.btn.driver') }}
 			</el-button>
 
 			<el-button

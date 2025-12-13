@@ -78,6 +78,12 @@ export interface Attachment {
    * @memberof Attachment
    */
   deleted?: boolean;
+  /**
+   *
+   * @type {number}
+   * @memberof Attachment
+   */
+  driverId?: number;
 }
 
 export const AttachmentTypeEnum = {

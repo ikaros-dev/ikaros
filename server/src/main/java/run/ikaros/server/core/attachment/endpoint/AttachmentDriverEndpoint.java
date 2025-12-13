@@ -117,7 +117,21 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .implementation(AttachmentDriver.class))
             )
 
-            .GET("/attachments/driver/condition", this::listByCondition,
+            .GET("/attachment/drivers/condition", this::listDriversByCondition,
+                builder -> builder.operationId("ListDriversByCondition")
+                    .tag(tag).description("List attachment drivers by condition.")
+                    .parameter(parameterBuilder()
+                        .name("page")
+                        .description("第几页，从1开始, 默认为1.")
+                        .implementation(Integer.class))
+                    .parameter(parameterBuilder()
+                        .name("size")
+                        .description("每页条数，默认为10.")
+                        .implementation(Integer.class))
+                    .response(responseBuilder().implementation(PagingWrap.class))
+            )
+
+            .GET("/attachment/driver/attachments/condition", this::listAttachmentsByCondition,
                 builder -> builder.operationId("ListAttachmentsByCondition")
                     .tag(tag).description("List attachments by condition.")
                     .parameter(parameterBuilder()
@@ -195,7 +209,24 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                 .bodyValue("Disable success"));
     }
 
-    private Mono<ServerResponse> listByCondition(ServerRequest request) {
+    private Mono<ServerResponse> listDriversByCondition(ServerRequest request) {
+        Optional<String> pageOp = request.queryParam("page");
+        if (pageOp.isEmpty()) {
+            pageOp = Optional.of("1");
+        }
+        final Integer page = Integer.valueOf(pageOp.get());
+
+        Optional<String> sizeOp = request.queryParam("size");
+        if (sizeOp.isEmpty()) {
+            sizeOp = Optional.of("10");
+        }
+        final Integer size = Integer.valueOf(sizeOp.get());
+
+        return service.listDriversByCondition(page, size)
+            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
+    }
+
+    private Mono<ServerResponse> listAttachmentsByCondition(ServerRequest request) {
         Optional<String> pageOp = request.queryParam("page");
         if (pageOp.isEmpty()) {
             pageOp = Optional.of("1");
@@ -223,7 +254,7 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                 .page(page).size(size).refresh(refresh)
                 .name(name).parentId(parentId)
                 .build())
-            .flatMap(service::listEntitiesByCondition)
+            .flatMap(service::listAttachmentsByCondition)
             .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
     }
 

@@ -8,6 +8,11 @@ import java.time.LocalDateTime;
 import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -37,17 +42,21 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private final ApplicationEventPublisher eventPublisher;
     private final AttachmentService attachmentService;
 
+    private final R2dbcEntityTemplate template;
+
     /**
      * .
      */
     public AttachmentDriverServiceImpl(AttachmentDriverRepository repository,
                                        AttachmentRepository attachmentRepository,
                                        ApplicationEventPublisher eventPublisher,
-                                       AttachmentService attachmentService) {
+                                       AttachmentService attachmentService,
+                                       R2dbcEntityTemplate template) {
         this.repository = repository;
         this.attachmentRepository = attachmentRepository;
         this.eventPublisher = eventPublisher;
         this.attachmentService = attachmentService;
+        this.template = template;
     }
 
     @Override
@@ -120,7 +129,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     @Override
-    public Mono<PagingWrap<Attachment>> listEntitiesByCondition(
+    public Mono<PagingWrap<Attachment>> listAttachmentsByCondition(
         AttachmentSearchCondition attachmentSearchCondition) {
         Assert.notNull(attachmentSearchCondition, "'attachmentSearchCondition' must not null.");
         Boolean refresh = attachmentSearchCondition.getRefresh();
@@ -144,6 +153,31 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                 attachment.getType() != null
                     && attachment.getType().name().toUpperCase(Locale.ROOT).startsWith("DRIVER_"))
             .flatMap(this::refreshRemoteFileSystem);
+    }
+
+    @Override
+    public Mono<PagingWrap<AttachmentDriver>> listDriversByCondition(Integer page,
+                                                                     Integer pageSize) {
+        if (page == null || page <= 0) {
+            page = 1;
+        }
+        if (pageSize == null || pageSize <= 0) {
+            pageSize = 10;
+        }
+        final PageRequest pageRequest = PageRequest.of(page - 1, pageSize);
+
+        Integer finalPage = page;
+        Integer finalPageSize = pageSize;
+
+        Query query = Query.query(Criteria.empty())
+            .sort(Sort.by(Sort.Order.desc("d_order")))
+            .with(pageRequest);
+
+        return template.select(query, AttachmentDriverEntity.class)
+            .flatMap(entity -> copyProperties(entity, new AttachmentDriver()))
+            .collectList()
+            .flatMap(attachments -> template.count(query, AttachmentDriverEntity.class)
+                .map(total -> new PagingWrap<>(finalPage, finalPageSize, total, attachments)));
     }
 
     private Mono<Void> refreshRemoteFileSystem(AttachmentEntity attachment) {
@@ -194,6 +228,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                 .size(f.isFile() ? file.length() : 0)
                 .updateTime(LocalDateTime.now())
                 .deleted(false)
+                .driverId(driver.getId())
                 .build())
             .flatMap(attachmentService::saveEntity)
             .map(entity -> entity.setUrl(DRIVER_STATIC_RESOURCE_PREFIX + entity.getPath()))

@@ -397,7 +397,7 @@ export const V1alpha1AttachmentDriverApiAxiosParamCreator = function (
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    listAttachmentsByCondition1: async (
+    listAttachmentsByCondition: async (
       page?: number,
       size?: number,
       name?: string,
@@ -405,7 +405,7 @@ export const V1alpha1AttachmentDriverApiAxiosParamCreator = function (
       refresh?: boolean,
       options: AxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
-      const localVarPath = `/api/v1alpha1/attachments/driver/condition`;
+      const localVarPath = `/api/v1alpha1/attachment/driver/attachments/condition`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -447,6 +447,64 @@ export const V1alpha1AttachmentDriverApiAxiosParamCreator = function (
 
       if (refresh !== undefined) {
         localVarQueryParameter["refresh"] = refresh;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * List attachment drivers by condition.
+     * @param {number} [page] 第几页，从1开始, 默认为1.
+     * @param {number} [size] 每页条数，默认为10.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listDriversByCondition: async (
+      page?: number,
+      size?: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/attachment/drivers/condition`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (page !== undefined) {
+        localVarQueryParameter["page"] = page;
+      }
+
+      if (size !== undefined) {
+        localVarQueryParameter["size"] = size;
       }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -685,7 +743,7 @@ export const V1alpha1AttachmentDriverApiFp = function (
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async listAttachmentsByCondition1(
+    async listAttachmentsByCondition(
       page?: number,
       size?: number,
       name?: string,
@@ -696,12 +754,39 @@ export const V1alpha1AttachmentDriverApiFp = function (
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.listAttachmentsByCondition1(
+        await localVarAxiosParamCreator.listAttachmentsByCondition(
           page,
           size,
           name,
           parentId,
           refresh,
+          options
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * List attachment drivers by condition.
+     * @param {number} [page] 第几页，从1开始, 默认为1.
+     * @param {number} [size] 每页条数，默认为10.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listDriversByCondition(
+      page?: number,
+      size?: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listDriversByCondition(
+          page,
+          size,
           options
         );
       return createRequestFunction(
@@ -846,21 +931,39 @@ export const V1alpha1AttachmentDriverApiFactory = function (
     },
     /**
      * List attachments by condition.
-     * @param {V1alpha1AttachmentDriverApiListAttachmentsByCondition1Request} requestParameters Request parameters.
+     * @param {V1alpha1AttachmentDriverApiListAttachmentsByConditionRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    listAttachmentsByCondition1(
-      requestParameters: V1alpha1AttachmentDriverApiListAttachmentsByCondition1Request = {},
+    listAttachmentsByCondition(
+      requestParameters: V1alpha1AttachmentDriverApiListAttachmentsByConditionRequest = {},
       options?: AxiosRequestConfig
     ): AxiosPromise<PagingWrap> {
       return localVarFp
-        .listAttachmentsByCondition1(
+        .listAttachmentsByCondition(
           requestParameters.page,
           requestParameters.size,
           requestParameters.name,
           requestParameters.parentId,
           requestParameters.refresh,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * List attachment drivers by condition.
+     * @param {V1alpha1AttachmentDriverApiListDriversByConditionRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listDriversByCondition(
+      requestParameters: V1alpha1AttachmentDriverApiListDriversByConditionRequest = {},
+      options?: AxiosRequestConfig
+    ): AxiosPromise<PagingWrap> {
+      return localVarFp
+        .listDriversByCondition(
+          requestParameters.page,
+          requestParameters.size,
           options
         )
         .then((request) => request(axios, basePath));
@@ -981,45 +1084,66 @@ export interface V1alpha1AttachmentDriverApiGetByTypeAndNameRequest {
 }
 
 /**
- * Request parameters for listAttachmentsByCondition1 operation in V1alpha1AttachmentDriverApi.
+ * Request parameters for listAttachmentsByCondition operation in V1alpha1AttachmentDriverApi.
  * @export
- * @interface V1alpha1AttachmentDriverApiListAttachmentsByCondition1Request
+ * @interface V1alpha1AttachmentDriverApiListAttachmentsByConditionRequest
  */
-export interface V1alpha1AttachmentDriverApiListAttachmentsByCondition1Request {
+export interface V1alpha1AttachmentDriverApiListAttachmentsByConditionRequest {
   /**
    * 第几页，从1开始, 默认为1.
    * @type {number}
-   * @memberof V1alpha1AttachmentDriverApiListAttachmentsByCondition1
+   * @memberof V1alpha1AttachmentDriverApiListAttachmentsByCondition
    */
   readonly page?: number;
 
   /**
    * 每页条数，默认为10.
    * @type {number}
-   * @memberof V1alpha1AttachmentDriverApiListAttachmentsByCondition1
+   * @memberof V1alpha1AttachmentDriverApiListAttachmentsByCondition
    */
   readonly size?: number;
 
   /**
    * 经过Basic64编码的附件名称，附件名称字段模糊查询。
    * @type {string}
-   * @memberof V1alpha1AttachmentDriverApiListAttachmentsByCondition1
+   * @memberof V1alpha1AttachmentDriverApiListAttachmentsByCondition
    */
   readonly name?: string;
 
   /**
    * 附件的父附件ID，父附件一般时目录类型。
    * @type {string}
-   * @memberof V1alpha1AttachmentDriverApiListAttachmentsByCondition1
+   * @memberof V1alpha1AttachmentDriverApiListAttachmentsByCondition
    */
   readonly parentId?: string;
 
   /**
    * 是否从驱动拉取最新数据,默认false.如果为false可能拉取的不是最新的数据，可通过此参数设置未true在查询前刷新数据，操作比较耗时不推荐，更推荐通过刷新接口去主动刷新数据。
    * @type {boolean}
-   * @memberof V1alpha1AttachmentDriverApiListAttachmentsByCondition1
+   * @memberof V1alpha1AttachmentDriverApiListAttachmentsByCondition
    */
   readonly refresh?: boolean;
+}
+
+/**
+ * Request parameters for listDriversByCondition operation in V1alpha1AttachmentDriverApi.
+ * @export
+ * @interface V1alpha1AttachmentDriverApiListDriversByConditionRequest
+ */
+export interface V1alpha1AttachmentDriverApiListDriversByConditionRequest {
+  /**
+   * 第几页，从1开始, 默认为1.
+   * @type {number}
+   * @memberof V1alpha1AttachmentDriverApiListDriversByCondition
+   */
+  readonly page?: number;
+
+  /**
+   * 每页条数，默认为10.
+   * @type {number}
+   * @memberof V1alpha1AttachmentDriverApiListDriversByCondition
+   */
+  readonly size?: number;
 }
 
 /**
@@ -1145,22 +1269,42 @@ export class V1alpha1AttachmentDriverApi extends BaseAPI {
 
   /**
    * List attachments by condition.
-   * @param {V1alpha1AttachmentDriverApiListAttachmentsByCondition1Request} requestParameters Request parameters.
+   * @param {V1alpha1AttachmentDriverApiListAttachmentsByConditionRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof V1alpha1AttachmentDriverApi
    */
-  public listAttachmentsByCondition1(
-    requestParameters: V1alpha1AttachmentDriverApiListAttachmentsByCondition1Request = {},
+  public listAttachmentsByCondition(
+    requestParameters: V1alpha1AttachmentDriverApiListAttachmentsByConditionRequest = {},
     options?: AxiosRequestConfig
   ) {
     return V1alpha1AttachmentDriverApiFp(this.configuration)
-      .listAttachmentsByCondition1(
+      .listAttachmentsByCondition(
         requestParameters.page,
         requestParameters.size,
         requestParameters.name,
         requestParameters.parentId,
         requestParameters.refresh,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * List attachment drivers by condition.
+   * @param {V1alpha1AttachmentDriverApiListDriversByConditionRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentDriverApi
+   */
+  public listDriversByCondition(
+    requestParameters: V1alpha1AttachmentDriverApiListDriversByConditionRequest = {},
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentDriverApiFp(this.configuration)
+      .listDriversByCondition(
+        requestParameters.page,
+        requestParameters.size,
         options
       )
       .then((request) => request(this.axios, this.basePath));

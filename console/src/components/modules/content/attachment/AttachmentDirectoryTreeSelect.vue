@@ -44,7 +44,7 @@ const loadDirectoryNodes = async (node, resolve) => {
 		parentId = 0;
 	}
 	if (node.isLeaf) return resolve([]);
-	const { data } = await apiClient.attachment.listAttachmentsByCondition({
+	const { data } = await apiClient.attachment.listAttachmentsByCondition1({
 		parentId: parentId as any as string,
 		page: 1,
 		size: 999999,

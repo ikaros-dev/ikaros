@@ -324,7 +324,7 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    listAttachmentsByCondition: async (
+    listAttachmentsByCondition1: async (
       page?: number,
       size?: number,
       type?: "File" | "Directory" | "Driver_File" | "Driver_Directory",
@@ -799,7 +799,7 @@ export const V1alpha1AttachmentApiFp = function (
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async listAttachmentsByCondition(
+    async listAttachmentsByCondition1(
       page?: number,
       size?: number,
       type?: "File" | "Directory" | "Driver_File" | "Driver_Directory",
@@ -810,7 +810,7 @@ export const V1alpha1AttachmentApiFp = function (
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.listAttachmentsByCondition(
+        await localVarAxiosParamCreator.listAttachmentsByCondition1(
           page,
           size,
           type,
@@ -1015,16 +1015,16 @@ export const V1alpha1AttachmentApiFactory = function (
     },
     /**
      * List attachments by condition.
-     * @param {V1alpha1AttachmentApiListAttachmentsByConditionRequest} requestParameters Request parameters.
+     * @param {V1alpha1AttachmentApiListAttachmentsByCondition1Request} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    listAttachmentsByCondition(
-      requestParameters: V1alpha1AttachmentApiListAttachmentsByConditionRequest = {},
+    listAttachmentsByCondition1(
+      requestParameters: V1alpha1AttachmentApiListAttachmentsByCondition1Request = {},
       options?: AxiosRequestConfig
     ): AxiosPromise<PagingWrap> {
       return localVarFp
-        .listAttachmentsByCondition(
+        .listAttachmentsByCondition1(
           requestParameters.page,
           requestParameters.size,
           requestParameters.type,
@@ -1164,43 +1164,43 @@ export interface V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest {
 }
 
 /**
- * Request parameters for listAttachmentsByCondition operation in V1alpha1AttachmentApi.
+ * Request parameters for listAttachmentsByCondition1 operation in V1alpha1AttachmentApi.
  * @export
- * @interface V1alpha1AttachmentApiListAttachmentsByConditionRequest
+ * @interface V1alpha1AttachmentApiListAttachmentsByCondition1Request
  */
-export interface V1alpha1AttachmentApiListAttachmentsByConditionRequest {
+export interface V1alpha1AttachmentApiListAttachmentsByCondition1Request {
   /**
    * 第几页，从1开始, 默认为1.
    * @type {number}
-   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition1
    */
   readonly page?: number;
 
   /**
    * 每页条数，默认为10.
    * @type {number}
-   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition1
    */
   readonly size?: number;
 
   /**
    * 附件类型。
    * @type {'File' | 'Directory' | 'Driver_File' | 'Driver_Directory'}
-   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition1
    */
   readonly type?: "File" | "Directory" | "Driver_File" | "Driver_Directory";
 
   /**
    * 经过Basic64编码的附件名称，附件名称字段模糊查询。
    * @type {string}
-   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition1
    */
   readonly name?: string;
 
   /**
    * 附件的父附件ID，父附件一般时目录类型。
    * @type {string}
-   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition
+   * @memberof V1alpha1AttachmentApiListAttachmentsByCondition1
    */
   readonly parentId?: string;
 }
@@ -1380,17 +1380,17 @@ export class V1alpha1AttachmentApi extends BaseAPI {
 
   /**
    * List attachments by condition.
-   * @param {V1alpha1AttachmentApiListAttachmentsByConditionRequest} requestParameters Request parameters.
+   * @param {V1alpha1AttachmentApiListAttachmentsByCondition1Request} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof V1alpha1AttachmentApi
    */
-  public listAttachmentsByCondition(
-    requestParameters: V1alpha1AttachmentApiListAttachmentsByConditionRequest = {},
+  public listAttachmentsByCondition1(
+    requestParameters: V1alpha1AttachmentApiListAttachmentsByCondition1Request = {},
     options?: AxiosRequestConfig
   ) {
     return V1alpha1AttachmentApiFp(this.configuration)
-      .listAttachmentsByCondition(
+      .listAttachmentsByCondition1(
         requestParameters.page,
         requestParameters.size,
         requestParameters.type,
