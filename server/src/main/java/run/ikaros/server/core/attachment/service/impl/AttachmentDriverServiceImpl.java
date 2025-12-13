@@ -194,6 +194,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                 .size(f.isFile() ? file.length() : 0)
                 .updateTime(LocalDateTime.now())
                 .deleted(false)
+                .driverId(driver.getId())
                 .build())
             .flatMap(attachmentService::saveEntity)
             .map(entity -> entity.setUrl(DRIVER_STATIC_RESOURCE_PREFIX + entity.getPath()))
