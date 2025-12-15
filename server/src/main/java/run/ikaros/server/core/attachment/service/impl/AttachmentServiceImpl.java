@@ -43,20 +43,25 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentConst;
+import run.ikaros.api.core.attachment.AttachmentDriver;
+import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
 import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.core.attachment.exception.AttachmentUploadException;
+import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.SystemVarUtils;
+import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.cache.annotation.MonoCacheable;
 import run.ikaros.server.core.attachment.event.AttachmentRemoveEvent;
 import run.ikaros.server.core.attachment.service.AttachmentService;
+import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
@@ -74,6 +79,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final AttachmentRepository attachmentRepository;
     private final AttachmentDriverRepository driverRepository;
+    private final ExtensionComponentsFinder extensionComponentsFinder;
 
     /**
      * Construct.
@@ -84,7 +90,8 @@ public class AttachmentServiceImpl implements AttachmentService {
                                  R2dbcEntityTemplate template, IkarosProperties ikarosProperties,
                                  ApplicationEventPublisher applicationEventPublisher,
                                  AttachmentRepository attachmentRepository,
-                                 AttachmentDriverRepository driverRepository) {
+                                 AttachmentDriverRepository driverRepository,
+                                 ExtensionComponentsFinder extensionComponentsFinder) {
         this.repository = repository;
         this.referenceRepository = referenceRepository;
         this.relationRepository = relationRepository;
@@ -93,6 +100,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         this.applicationEventPublisher = applicationEventPublisher;
         this.attachmentRepository = attachmentRepository;
         this.driverRepository = driverRepository;
+        this.extensionComponentsFinder = extensionComponentsFinder;
     }
 
     @Override
@@ -729,6 +737,60 @@ public class AttachmentServiceImpl implements AttachmentService {
             parentId = AttachmentConst.ROOT_DIRECTORY_ID;
         }
         return repository.existsByTypeAndParentIdAndName(type, parentId, name);
+    }
+
+    private AttachmentDriverFetcher getAttDriverFetcher(
+        AttachmentDriverType type, String driverName
+    ) {
+        Assert.notNull(type, "'type' must not be null.");
+        Assert.hasText(driverName, "'driverName' must has text.");
+        return extensionComponentsFinder.getExtensions(AttachmentDriverFetcher.class)
+            .stream()
+            .filter(fetcher -> type.equals(fetcher.getDriverType()))
+            .filter(fetcher -> driverName.equals(fetcher.getDriverName()))
+            .findFirst()
+            .orElseThrow(() -> new NoAvailableAttDriverFetcherException(
+                "No found available attachment driver fetcher for type: "
+                    + type.name() + " driverName: " + driverName
+            ));
+    }
+
+    @Override
+    public Mono<String> getDownloadUrl(Long aid) {
+        Assert.isTrue(aid >= 0, "'aid' must >= 0.");
+        return repository.findById(aid)
+            .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
+                .startsWith("DRIVER_"))
+            .map(AttachmentEntity::getDriverId)
+            .flatMap(driverRepository::findById)
+            .flatMap(driverEntity -> copyProperties(driverEntity, new AttachmentDriver()))
+            .flatMap(driver -> {
+                AttachmentDriverFetcher driverFetcher =
+                    getAttDriverFetcher(driver.getType(), driver.getName());
+                return repository.findById(aid)
+                    .flatMap(entity -> copyProperties(entity, new Attachment()))
+                    .map(driverFetcher::parseDownloadUrl);
+            })
+            .switchIfEmpty(repository.findById(aid).map(AttachmentEntity::getUrl));
+    }
+
+    @Override
+    public Mono<String> getReadUrl(Long aid) {
+        Assert.isTrue(aid >= 0, "'aid' must >= 0.");
+        return repository.findById(aid)
+            .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
+                .startsWith("DRIVER_"))
+            .map(AttachmentEntity::getDriverId)
+            .flatMap(driverRepository::findById)
+            .flatMap(driverEntity -> copyProperties(driverEntity, new AttachmentDriver()))
+            .flatMap(driver -> {
+                AttachmentDriverFetcher driverFetcher =
+                    getAttDriverFetcher(driver.getType(), driver.getName());
+                return repository.findById(aid)
+                    .flatMap(entity -> copyProperties(entity, new Attachment()))
+                    .map(driverFetcher::parseReadUrl);
+            })
+            .switchIfEmpty(repository.findById(aid).map(AttachmentEntity::getUrl));
     }
 
     private Mono<List<AttachmentEntity>> findPathDirs(long id, List<AttachmentEntity> entities) {

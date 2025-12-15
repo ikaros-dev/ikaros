@@ -25,7 +25,7 @@ public class AttachmentDriverEntity {
      */
     private boolean enable;
     /**
-     * attachment driver type, such as LOCAL, CLOUD115 .......
+     * attachment driver type, such as LOCAL .......
      */
     @Column("d_type")
     private AttachmentDriverType type;
