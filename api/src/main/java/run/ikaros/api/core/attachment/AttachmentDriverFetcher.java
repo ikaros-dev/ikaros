@@ -11,7 +11,9 @@ public interface AttachmentDriverFetcher extends ExtensionPoint {
 
     String getDriverName();
 
-    void setDriver(AttachmentDriver driver);
+    List<Attachment> getChildren(Long driverId, Long parentAttId, String remotePath);
 
-    List<Attachment> getChildAttachments(Long pid, String remotePath);
+    String parseReadUrl(Attachment attachment);
+
+    String parseDownloadUrl(Attachment attachment);
 }

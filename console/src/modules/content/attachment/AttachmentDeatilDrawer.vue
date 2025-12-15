@@ -163,7 +163,7 @@ const getArtplayerInstance = (art: Artplayer) => {
 			<el-col :lg="24" :md="24" :sm="24" :xl="24" :xs="24">
 				<div class="attach-detail-img pb-3">
 					<a
-						v-if="isImage(file.url as string)"
+						v-if="isImage(file.name as string)"
 						:href="getCompleteFileUrl(file.url)"
 						target="_blank"
 					>
@@ -174,7 +174,7 @@ const getArtplayerInstance = (art: Artplayer) => {
 						/>
 					</a>
 					<artplayer
-						v-else-if="isVideo(file.url as string)"
+						v-else-if="isVideo(file.name as string)"
 						ref="artplayerRef"
 						v-model:attachmentId="file.id"
 						style="width: 100%"
@@ -189,7 +189,7 @@ const getArtplayerInstance = (art: Artplayer) => {
 						{{ t('module.attachment.details.message.hint.videoFormat') }}
 					</video> -->
 					<audio
-						v-else-if="isVoice(file.url as string)"
+						v-else-if="isVoice(file.name as string)"
 						controls
 						:volume="0.3"
 						:src="getCompleteFileUrl(file.url)"

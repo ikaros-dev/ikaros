@@ -216,9 +216,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private Flux<Attachment> fetchAndUpdateEntities(
         AttachmentDriver driver, Long pid, String remotePath) {
         AttachmentDriverType type = driver.getType();
-        AttachmentDriverFetcher attDriverFetcher = getAttDriverFetcher(type, driver.getName());
-        attDriverFetcher.setDriver(driver);
-        List<Attachment> attachments = attDriverFetcher.getChildAttachments(pid, remotePath);
+        AttachmentDriverFetcher driverFetcher = getAttDriverFetcher(type, driver.getName());
+        List<Attachment> attachments = driverFetcher.getChildren(driver.getId(), pid, remotePath);
 
         return Flux.fromStream(attachments.stream())
             .flatMap(attachmentService::save)

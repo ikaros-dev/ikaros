@@ -315,6 +315,113 @@ export const V1alpha1AttachmentApiAxiosParamCreator = function (
       };
     },
     /**
+     * Get download url.
+     * @param {number} id Download url.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getDownloadUrl: async (
+      id: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("getDownloadUrl", "id", id);
+      const localVarPath =
+        `/api/v1alpha1/attachment/url/download/id/{id}`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(id))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get read url.
+     * @param {number} id Read url.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getReadUrl: async (
+      id: number,
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("getReadUrl", "id", id);
+      const localVarPath = `/api/v1alpha1/attachment/url/read/id/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * List attachments by condition.
      * @param {number} [page] 第几页，从1开始, 默认为1.
      * @param {number} [size] 每页条数，默认为10.
@@ -790,6 +897,52 @@ export const V1alpha1AttachmentApiFp = function (
       );
     },
     /**
+     * Get download url.
+     * @param {number} id Download url.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getDownloadUrl(
+      id: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getDownloadUrl(
+        id,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
+     * Get read url.
+     * @param {number} id Read url.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getReadUrl(
+      id: number,
+      options?: AxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
+    > {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getReadUrl(
+        id,
+        options
+      );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
      * List attachments by condition.
      * @param {number} [page] 第几页，从1开始, 默认为1.
      * @param {number} [size] 每页条数，默认为10.
@@ -1014,6 +1167,34 @@ export const V1alpha1AttachmentApiFactory = function (
         .then((request) => request(axios, basePath));
     },
     /**
+     * Get download url.
+     * @param {V1alpha1AttachmentApiGetDownloadUrlRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getDownloadUrl(
+      requestParameters: V1alpha1AttachmentApiGetDownloadUrlRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<string> {
+      return localVarFp
+        .getDownloadUrl(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get read url.
+     * @param {V1alpha1AttachmentApiGetReadUrlRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getReadUrl(
+      requestParameters: V1alpha1AttachmentApiGetReadUrlRequest,
+      options?: AxiosRequestConfig
+    ): AxiosPromise<string> {
+      return localVarFp
+        .getReadUrl(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
      * List attachments by condition.
      * @param {V1alpha1AttachmentApiListAttachmentsByCondition1Request} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -1159,6 +1340,34 @@ export interface V1alpha1AttachmentApiGetAttachmentPathDirsByIdRequest {
    * Attachment id.
    * @type {number}
    * @memberof V1alpha1AttachmentApiGetAttachmentPathDirsById
+   */
+  readonly id: number;
+}
+
+/**
+ * Request parameters for getDownloadUrl operation in V1alpha1AttachmentApi.
+ * @export
+ * @interface V1alpha1AttachmentApiGetDownloadUrlRequest
+ */
+export interface V1alpha1AttachmentApiGetDownloadUrlRequest {
+  /**
+   * Download url.
+   * @type {number}
+   * @memberof V1alpha1AttachmentApiGetDownloadUrl
+   */
+  readonly id: number;
+}
+
+/**
+ * Request parameters for getReadUrl operation in V1alpha1AttachmentApi.
+ * @export
+ * @interface V1alpha1AttachmentApiGetReadUrlRequest
+ */
+export interface V1alpha1AttachmentApiGetReadUrlRequest {
+  /**
+   * Read url.
+   * @type {number}
+   * @memberof V1alpha1AttachmentApiGetReadUrl
    */
   readonly id: number;
 }
@@ -1375,6 +1584,38 @@ export class V1alpha1AttachmentApi extends BaseAPI {
   ) {
     return V1alpha1AttachmentApiFp(this.configuration)
       .getAttachmentPathDirsById(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Get download url.
+   * @param {V1alpha1AttachmentApiGetDownloadUrlRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public getDownloadUrl(
+    requestParameters: V1alpha1AttachmentApiGetDownloadUrlRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .getDownloadUrl(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Get read url.
+   * @param {V1alpha1AttachmentApiGetReadUrlRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentApi
+   */
+  public getReadUrl(
+    requestParameters: V1alpha1AttachmentApiGetReadUrlRequest,
+    options?: AxiosRequestConfig
+  ) {
+    return V1alpha1AttachmentApiFp(this.configuration)
+      .getReadUrl(requestParameters.id, options)
       .then((request) => request(this.axios, this.basePath));
   }
 

@@ -62,4 +62,8 @@ public interface AttachmentService {
 
     Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
                                                  @Nullable Long parentId, String name);
+
+    Mono<String> getDownloadUrl(Long aid);
+
+    Mono<String> getReadUrl(Long aid);
 }

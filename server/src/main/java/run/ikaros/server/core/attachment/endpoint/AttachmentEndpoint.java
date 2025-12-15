@@ -182,6 +182,26 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("Unique id.")
                         .implementation(String.class)))
 
+            .GET("/attachment/url/download/id/{id}", this::getDownloadUrl,
+                builder -> builder.operationId("GetDownloadUrl")
+                    .tag(tag).description("Get download url.")
+                    .parameter(parameterBuilder()
+                        .in(ParameterIn.PATH)
+                        .name("id")
+                        .description("Download url.")
+                        .implementation(Long.class))
+                    .response(responseBuilder().implementation(String.class)))
+
+            .GET("/attachment/url/read/id/{id}", this::getReadUrl,
+                builder -> builder.operationId("GetReadUrl")
+                    .tag(tag).description("Get read url.")
+                    .parameter(parameterBuilder()
+                        .in(ParameterIn.PATH)
+                        .name("id")
+                        .description("Read url.")
+                        .implementation(Long.class))
+                    .response(responseBuilder().implementation(String.class)))
+
 
             .build();
     }
@@ -387,5 +407,17 @@ public class AttachmentEndpoint implements CoreEndpoint {
         return request.bodyToMono(String.class)
             .flatMap(attachmentService::revertFragmentUploadFile)
             .then(ServerResponse.ok().bodyValue("SUCCESS"));
+    }
+
+    private Mono<ServerResponse> getDownloadUrl(ServerRequest request) {
+        String id = request.pathVariable("id");
+        return attachmentService.getDownloadUrl(Long.parseLong(id))
+            .flatMap(url -> ServerResponse.ok().bodyValue(url));
+    }
+
+    private Mono<ServerResponse> getReadUrl(ServerRequest request) {
+        String id = request.pathVariable("id");
+        return attachmentService.getReadUrl(Long.parseLong(id))
+            .flatMap(url -> ServerResponse.ok().bodyValue(url));
     }
 }
