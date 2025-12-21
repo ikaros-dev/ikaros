@@ -21,7 +21,6 @@ import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
-import run.ikaros.api.core.attachment.exception.AttachmentDriverRemoveException;
 import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -99,18 +98,24 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     @Override
     public Mono<Void> removeById(Long id) {
         Assert.notNull(id, "'id' must not null.");
-        return repository.deleteById(id);
+        return repository.findById(id)
+            .map(entity -> {
+                eventPublisher.publishEvent(new AttachmentDriverDisableEvent(this, entity));
+                return entity.getId();
+            })
+            .flatMap(repository::deleteById);
     }
 
     @Override
     public Mono<Void> removeByTypeAndName(String type, String name) {
         Assert.notNull(type, "'type' must not null.");
         name = name.trim();
-        return repository.deleteByTypeAndName(type, name)
-            .filter(count -> count > 0)
-            .switchIfEmpty(Mono.error(new AttachmentDriverRemoveException(
-                "Remove attachment driver fail for type=" + type + " and name=" + name)))
-            .then();
+        return repository.findByTypeAndName(type, name)
+            .map(entity -> {
+                eventPublisher.publishEvent(new AttachmentDriverDisableEvent(this, entity));
+                return entity.getId();
+            })
+            .flatMap(repository::deleteById);
     }
 
     @Override
