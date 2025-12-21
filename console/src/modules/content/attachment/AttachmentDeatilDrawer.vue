@@ -148,6 +148,7 @@ const artplayerRef = ref();
 const getArtplayerInstance = (art: Artplayer) => {
 	artplayer.value = art;
 };
+
 </script>
 
 <template>

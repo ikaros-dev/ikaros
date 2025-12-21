@@ -23,6 +23,7 @@ import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
 import run.ikaros.api.store.enums.AttachmentDriverType;
+import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
@@ -179,7 +180,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             .filter(attachment ->
                 attachment.getType() != null
                     && attachment.getType().name().toUpperCase(Locale.ROOT).startsWith("DRIVER_"))
-            .flatMap(this::refreshRemoteFileSystem);
+            .flatMap(attachment -> refreshRemoteFileSystem(attachment, attachment.getDriverId()));
     }
 
     @Override
@@ -207,15 +208,18 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                 .map(total -> new PagingWrap<>(finalPage, finalPageSize, total, attachments)));
     }
 
-    private Mono<Void> refreshRemoteFileSystem(Attachment attachment) {
+    private Mono<Void> refreshRemoteFileSystem(Attachment attachment, Long driverId) {
         final Long pid = attachment.getId();
         String url = attachment.getUrl();
-        Long driverId = attachment.getDriverId();
         String remotePath = attachment.getFsPath();
         return repository.findById(driverId)
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()))
             .flatMapMany(attachmentDriverEntity ->
                 fetchAndUpdateEntities(attachmentDriverEntity, pid, remotePath))
+            .filter(att ->
+                att.getType() == AttachmentType.Directory
+                    || att.getType() == AttachmentType.Driver_Directory)
+            .flatMap(att1 -> refreshRemoteFileSystem(att1, driverId))
             .then();
     }
 

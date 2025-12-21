@@ -43,18 +43,13 @@ const chageAttDriverEnable = async (rowIndex, attDriver) => {
       await apiClient.attachmentDriver.enableDriver({
         id: attDriver.id
       })
-      .finally(()=>{
-        isEnableButtonLoading.value = false
-      })
   } else {
       await apiClient.attachmentDriver.enableDriver1({
         id: attDriver.id
       })
-      .finally(()=>{
-        isEnableButtonLoading.value = false
-      })
   }
   await fetchAttDrivers()
+  isEnableButtonLoading.value = false
 }
 
 
@@ -65,10 +60,8 @@ const deleteAttDriver = async (rowIndex, attDriver) => {
   await apiClient.attachmentDriver.deleteAttachmentDriverById({
         id: attDriver.id
       })
-      .finally(()=>{
-        isDeleteButtonLoading.value = false
-      })
   await fetchAttDrivers()
+  isDeleteButtonLoading.value = false
 }
 
 
