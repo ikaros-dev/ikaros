@@ -39,7 +39,6 @@ const isEnableButtonLoading = ref(false)
 const chageAttDriverEnable = async (rowIndex, attDriver) => {
   // console.debug('chageAttDriverEnable', 'rowIndex', rowIndex, 'attDriver', attDriver)
   isEnableButtonLoading.value = true
-  
   if (attDriver.enable) {
       await apiClient.attachmentDriver.enableDriver({
         id: attDriver.id
@@ -56,13 +55,20 @@ const chageAttDriverEnable = async (rowIndex, attDriver) => {
       })
   }
   await fetchAttDrivers()
-  isEnableButtonLoading.value = false
-  
 }
 
 
+const isDeleteButtonLoading = ref(false)
 const deleteAttDriver = async (rowIndex, attDriver) => {
   console.debug('deleteAttDriver', 'rowIndex', rowIndex, 'attDriver', attDriver)
+  isDeleteButtonLoading.value = true
+  await apiClient.attachmentDriver.deleteAttachmentDriverById({
+        id: attDriver.id
+      })
+      .finally(()=>{
+        isDeleteButtonLoading.value = false
+      })
+  await fetchAttDrivers()
 }
 
 
@@ -131,7 +137,7 @@ onMounted(fetchAttDrivers);
               @confirm="deleteAttDriver(scope.$index, scope.row)"
             >
               <template #reference>
-                <el-button type="danger">
+                <el-button type="danger" :loading="isDeleteButtonLoading" >
                   {{ t('module.attachment.driver.table.colum.label.operation.delete') }}
                 </el-button>
               </template>
