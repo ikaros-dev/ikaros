@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
-import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
 
@@ -56,12 +54,11 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
             try {
                 size = Files.size(Path.of(f.toURI()));
                 if (f.isFile()) {
-                    sha1 = FileUtils.calculateSha1(f.getAbsolutePath());
+                    // sha1 = FileUtils.calculateSha1(f.getAbsolutePath());
+                    sha1 = "";
                 }
             } catch (IOException ioException) {
                 log.warn("File size error: {}", ioException.getMessage());
-            } catch (NoSuchAlgorithmException e) {
-                log.warn("File sha1 error: {}", e.getMessage());
             }
 
             Attachment attachment = Attachment.builder()
