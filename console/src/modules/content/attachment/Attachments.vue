@@ -725,7 +725,7 @@ const onAttachmentDetailDrawerClose = () => {
 					width="130"
 				>
 					<template #default="scoped">
-						<span v-if="scoped.row.type === 'File'">
+						<span v-if="(scoped.row.type !== 'Directory') && (scoped.row.type !== 'Driver_Directory')">
 							{{ formatFileSize(scoped.row.size) }}
 						</span>
 					</template>
