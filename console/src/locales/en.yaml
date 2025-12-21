@@ -300,6 +300,26 @@ module:
     driver:
       title: Attachment Drivers
       sidebar: Attachment Drivers
+      table:
+        colum:
+          label:
+            type: Type
+            name: Name
+            mount_name: Mount Name
+            mount_remote_path: Remote Path
+            comment: Comment
+            enable: Enable
+            operations: Operations
+            operation:
+              enable: Enable
+              disable: Disable
+              delete: Delete
+              popconfirm:
+                title: Are you sure you want to delete this driver?
+                disable_title: Are you sure you want to disable the current driver?
+                enable_title: Are you sure you want to enable the current driver?
+      button:
+        new: New
   subject:
     title: Subjects
     sidebar: Subjects
