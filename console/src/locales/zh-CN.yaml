@@ -287,6 +287,9 @@ module:
     driver:
       title: 附件驱动
       sidebar: 附件驱动
+      post:
+        title: 新建附件驱动
+        sidebar: 新建附件驱动
       table:
         colum:
           label:

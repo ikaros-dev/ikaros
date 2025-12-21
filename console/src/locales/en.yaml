@@ -300,6 +300,9 @@ module:
     driver:
       title: Attachment Drivers
       sidebar: Attachment Drivers
+      post:
+        title: New Attachment Driver
+        sidebar: New Attachment Driver
       table:
         colum:
           label:

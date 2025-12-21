@@ -17,11 +17,12 @@ import {
   ElSwitch,
   ElPopconfirm,
 } from 'element-plus';
+import { useRouter } from 'vue-router';
 
 
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
-
+const router = useRouter();
 
 const attDrivers = ref<AttachmentDriver[]>()
 const fetchAttDrivers = async() => {
@@ -33,8 +34,6 @@ const fetchAttDrivers = async() => {
     console.debug('attDrivers', attDrivers.value)
 }
 
-
-const dialogDriverAddVisible = ref(false)
 
 const isEnableButtonLoading = ref(false)
 const chageAttDriverEnable = async (rowIndex, attDriver) => {
@@ -73,7 +72,7 @@ onMounted(fetchAttDrivers);
 <template>
   <el-row>
 		<el-col :span="24">
-      <el-button :icon="FolderAdd" @click="dialogDriverAddVisible = true">
+      <el-button :icon="FolderAdd" @click="router.push('/attachment/driver/post')">
         {{ t('module.attachment.driver.button.new') }}
 			</el-button>
     </el-col>

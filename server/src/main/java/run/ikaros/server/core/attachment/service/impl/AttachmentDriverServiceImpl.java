@@ -84,7 +84,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         Assert.notNull(driver.getType(), "'driver type' must not null.");
         AttachmentDriverFetcher attDriverFetcher =
             getAttDriverFetcher(driver.getType(), driver.getName());
-        return repository.findByTypeAndName(driver.getType().toString(), driver.getName())
+        return repository.findByTypeAndNameAndMountName(
+                driver.getType().toString(), driver.getName(), driver.getMountName())
             .switchIfEmpty(Mono.defer(() -> copyProperties(driver, new AttachmentDriverEntity())
                     .flatMap(repository::save))
                 .doOnSuccess(entity ->

@@ -9,6 +9,9 @@ public interface AttachmentDriverRepository
     extends R2dbcRepository<AttachmentDriverEntity, Long> {
     Mono<AttachmentDriverEntity> findByTypeAndName(String type, String name);
 
+    Mono<AttachmentDriverEntity> findByTypeAndNameAndMountName(
+        String type, String name, String mountName);
+
     Mono<Long> deleteByTypeAndName(String type, String name);
 
     Flux<AttachmentDriverEntity> findAllByTypeAndEnable(String type, boolean enable);
