@@ -23,7 +23,6 @@ import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
 import run.ikaros.api.store.enums.AttachmentDriverType;
-import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
@@ -216,10 +215,10 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()))
             .flatMapMany(attachmentDriverEntity ->
                 fetchAndUpdateEntities(attachmentDriverEntity, pid, remotePath))
-            .filter(att ->
-                att.getType() == AttachmentType.Directory
-                    || att.getType() == AttachmentType.Driver_Directory)
-            .flatMap(att1 -> refreshRemoteFileSystem(att1, driverId))
+            // .filter(att ->
+            //     att.getType() == AttachmentType.Directory
+            //         || att.getType() == AttachmentType.Driver_Directory)
+            // .flatMap(att1 -> refreshRemoteFileSystem(att1, driverId))
             .then();
     }
 
