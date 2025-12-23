@@ -41,8 +41,9 @@ const fetchAttachment = async () => {
 		id: props.attachmentId,
 	});
 	const rsp = await apiClient.attachment.getReadUrl({id: data.id as number})
-	data.url = encodeURI(rsp.data ?? "")
-	// data.url = encodeURI(data?.url ?? "")
+	if (!rsp.data.startsWith('http')) {
+		data.url = encodeURI(rsp.data ?? "")
+	}
 	attachment.value = data;
 };
 
