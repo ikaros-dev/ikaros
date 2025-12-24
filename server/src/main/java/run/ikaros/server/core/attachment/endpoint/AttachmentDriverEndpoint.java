@@ -135,7 +135,8 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
             .GET("/attachment/drivers/fetchers", this::listDriversFetchers,
                 builder -> builder.operationId("ListDriversFetchers")
                     .tag(tag).description("List attachment drivers fetchers.")
-                    .response(responseBuilder().implementation(AttachmentDriverFetcherVo[].class))
+                    .response(responseBuilder()
+                        .implementationArray(AttachmentDriverFetcherVo.class))
             )
 
             .GET("/attachment/driver/attachments/condition", this::listAttachmentsByCondition,

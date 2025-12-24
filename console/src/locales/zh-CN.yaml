@@ -308,6 +308,8 @@ module:
                 title: 你确定要删除该驱动吗？
                 disable_title: 你确定要禁用当前驱动吗？
                 enable_title: 你确定要启用当前驱动吗？
+            access_token: 访问令牌
+            refresh_token: 刷新令牌
       button:
         new: 新建
   subject:
