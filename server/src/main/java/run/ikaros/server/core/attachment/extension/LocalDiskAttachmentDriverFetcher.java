@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.pf4j.Extension;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.infra.utils.FileUtils;
@@ -39,7 +41,7 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
     }
 
     @Override
-    public List<Attachment> getChildren(Long driverId, Long parentAttId, String remotePath) {
+    public Flux<Attachment> getChildren(Long driverId, Long parentAttId, String remotePath) {
         Assert.isTrue(driverId >= 0, "driverId must be greater than or equal to zero.");
         Assert.isTrue(parentAttId >= 0, "driverId must be greater than or equal to zero.");
         Assert.hasText(remotePath, "remotePath must not be empty.");
@@ -47,7 +49,7 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
         Path path = Paths.get(remotePath);
         File[] files = path.toFile().listFiles();
         if (files == null) {
-            return List.of();
+            return Flux.empty();
         }
         List<Attachment> attachments = new ArrayList<>();
         for (File f : files) {
@@ -69,6 +71,7 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
                 .type(f.isFile() ? AttachmentType.Driver_File : AttachmentType.Driver_Directory)
                 .name(f.getName())
                 .path(f.getPath())
+                .url(f.getPath())
                 .fsPath(f.getAbsolutePath())
                 .size(size)
                 .sha1(sha1)
@@ -79,19 +82,19 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
             attachments.add(attachment);
         }
 
-        return attachments;
+        return Flux.fromStream(attachments.stream());
     }
 
     @Override
-    public String parseReadUrl(Attachment attachment) {
+    public Mono<String> parseReadUrl(Attachment attachment) {
         Assert.notNull(attachment, "Attachment must not be null.");
-        return DRIVER_STATIC_RESOURCE_PREFIX + attachment.getPath();
+        return Mono.just(DRIVER_STATIC_RESOURCE_PREFIX + attachment.getPath());
     }
 
     @Override
-    public String parseDownloadUrl(Attachment attachment) {
+    public Mono<String> parseDownloadUrl(Attachment attachment) {
         Assert.notNull(attachment, "Attachment must not be null.");
-        return DRIVER_STATIC_RESOURCE_PREFIX + attachment.getPath();
+        return parseReadUrl(attachment);
     }
 
 

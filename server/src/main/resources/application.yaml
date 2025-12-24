@@ -20,7 +20,7 @@ ikaros:
   plugin:
     runtime-mode: deployment
     plugins-root: ${ikaros.work-dir}/plugins
-    system-version: 1.0.0
+    system-version: 1.0.4
 
   task:
     core-pool-size: 4
