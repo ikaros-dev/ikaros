@@ -26,6 +26,7 @@ import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
 import run.ikaros.server.core.attachment.service.AttachmentDriverService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
+import run.ikaros.server.core.attachment.vo.AttachmentDriverFetcherVo;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
@@ -203,6 +204,19 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             .collectList()
             .flatMap(attachments -> template.count(query, AttachmentDriverEntity.class)
                 .map(total -> new PagingWrap<>(finalPage, finalPageSize, total, attachments)));
+    }
+
+    @Override
+    public Flux<AttachmentDriverFetcherVo> listDriversFetchers() {
+        return Flux.fromStream(
+                extensionComponentsFinder.getExtensions(AttachmentDriverFetcher.class)
+                    .stream())
+            .map(fetcher -> {
+                AttachmentDriverFetcherVo fetcherVo = new AttachmentDriverFetcherVo();
+                fetcherVo.setName(fetcher.getDriverName());
+                fetcherVo.setType(fetcher.getDriverType());
+                return fetcherVo;
+            });
     }
 
     private Mono<Void> refreshRemoteFileSystem(Attachment attachment, Long driverId) {

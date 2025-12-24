@@ -14,6 +14,7 @@
 
 export * from "./api/actuator-api";
 export * from "./api/plugin-ikaros-run-v1alpha1-plugin-api";
+export * from "./api/run-ikaros-plugin-pan115-v1-attachmentpancustom-api";
 export * from "./api/setting-ikaros-run-v1alpha1-configmap-api";
 export * from "./api/v1alpha1-attachment-api";
 export * from "./api/v1alpha1-attachment-driver-api";

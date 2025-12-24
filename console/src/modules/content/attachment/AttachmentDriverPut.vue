@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import { AttachmentDriver, AttachmentDriverFetcherVo, AttachmentDriverTypeEnum } from '@runikaros/api-client';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import {ElRow, ElCol, ElForm, ElFormItem, ElInput, ElButton, ElMessage, ElSelect, ElOption, FormRules, FormInstance,} from 'element-plus';
 import { apiClient } from '@/utils/api-client';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
+
+watch(route, () => {
+	//@ts-ignore
+	driver.value.id = route.params.id as number;
+	fetchAttachmentDriverWithId();
+});
 
 const driver = ref<AttachmentDriver>({
 	type: AttachmentDriverTypeEnum.Local,
@@ -18,9 +25,15 @@ const driver = ref<AttachmentDriver>({
 	remote_path: '',
 	comment: '',
 })
+const fetchAttachmentDriverWithId = async() => {
+	//@ts-ignore
+	var attDriId = route.params.id as number;
+	const { data } = await apiClient.attachmentDriver.getAttachmentDriverById({id: attDriId})
+	driver.value = data
+}
 
 const driverBtnLoading = ref(false)
-const driverElFormRef = ref<FormInstance>()
+const driverElFormRef = ref()
 const driverFormRules = reactive<FormRules>({
 	type: [
 		{
@@ -51,12 +64,11 @@ const driverFormRules = reactive<FormRules>({
 		}
 	],
 })
-const submitForm = async () => {
-	console.debug('submitForm', 'driverElFormRef', driverElFormRef.value)
-	if (!driverElFormRef.value) return;
-	await driverElFormRef.value.validate(async (valid, fields) => {
+const submitForm = async (driverElForm: FormInstance | undefined) => {
+	if (!driverElForm) return;
+	await driverElForm.validate(async (valid, fields) => {
 		if (valid) {
-			console.debug('submitForm', 'driverElFormRef', driverElFormRef.value)
+			console.debug('submitForm', 'driverElForm', driverElForm)
 			driverBtnLoading.value = true
 			apiClient.attachmentDriver.saveAttachmentDriver({
 				attachmentDriver: driver.value
@@ -66,7 +78,7 @@ const submitForm = async () => {
 				router.push('/attachment/drivers')
 			})
 			.catch((err)=>{
-				console.error('AttachmentDriverPost', 'submitForm', 'err', err)
+				console.error('AttachmentDriverPut', 'submitForm', 'err', err)
 				ElMessage.error('New Fail.')
 			})
 			.finally(()=>{
@@ -101,7 +113,10 @@ const onTypeSelectChange = ()=>{
 	driver.value.name = ''
 	updateTypeNames()
 }
-onMounted(fetchAttachmentDriverFetchers)
+onMounted(()=>{
+	fetchAttachmentDriverWithId()
+	fetchAttachmentDriverFetchers()
+})
 </script>
 
 <template>
@@ -145,9 +160,9 @@ onMounted(fetchAttachmentDriverFetchers)
 					<el-button
 						plain
 						:loading="driverBtnLoading"
-						@click="submitForm()"
+						@click="submitForm(driverElFormRef)"
 					>
-						{{ t('module.subject.post.text.button.subject.create') }}
+						{{ t('module.attachment.driver.put.text.button.subject.update') }}
 					</el-button>
 				</el-form-item>
 			</el-form>
