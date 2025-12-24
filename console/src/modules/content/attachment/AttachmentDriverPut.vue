@@ -138,7 +138,7 @@ onMounted(()=>{
 				<el-form-item :label="t('module.attachment.driver.table.colum.label.name')" prop="name">
 					<!-- <el-input v-model="driver.name" disabled /> -->
 					<el-select v-model="driver.name" @visible-change="onVisibleChage" >
-						<el-option v-for="typeName in typeNames" :key="typeName" :label="typeName" :value="typeName" />
+						<el-option v-for="(index, typeName) in typeNames" :key="typeName" :label="typeName" :value="typeName" />
 					</el-select>
 				</el-form-item>
 				<el-form-item :label="t('module.attachment.driver.table.colum.label.mount_name')" prop="mount_name">
