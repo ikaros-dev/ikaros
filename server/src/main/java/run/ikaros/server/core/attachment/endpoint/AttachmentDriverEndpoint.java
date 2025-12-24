@@ -22,6 +22,7 @@ import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentDriverService;
+import run.ikaros.server.core.attachment.vo.AttachmentDriverFetcherVo;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -131,6 +132,12 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                     .response(responseBuilder().implementation(PagingWrap.class))
             )
 
+            .GET("/attachment/drivers/fetchers", this::listDriversFetchers,
+                builder -> builder.operationId("ListDriversFetchers")
+                    .tag(tag).description("List attachment drivers fetchers.")
+                    .response(responseBuilder().implementation(AttachmentDriverFetcherVo[].class))
+            )
+
             .GET("/attachment/driver/attachments/condition", this::listAttachmentsByCondition,
                 builder -> builder.operationId("ListAttachmentsByCondition")
                     .tag(tag).description("List attachments by condition.")
@@ -224,6 +231,12 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
 
         return service.listDriversByCondition(page, size)
             .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
+    }
+
+    private Mono<ServerResponse> listDriversFetchers(ServerRequest request) {
+        return service.listDriversFetchers()
+            .collectList()
+            .flatMap(fetchers -> ServerResponse.ok().bodyValue(fetchers));
     }
 
     private Mono<ServerResponse> listAttachmentsByCondition(ServerRequest request) {

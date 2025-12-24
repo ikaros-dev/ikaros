@@ -1,10 +1,13 @@
 package run.ikaros.server.core.attachment.service;
 
+import java.util.Optional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.attachment.vo.AttachmentDriverFetcherVo;
 
 public interface AttachmentDriverService {
 
@@ -30,4 +33,6 @@ public interface AttachmentDriverService {
     Mono<PagingWrap<AttachmentDriver>> listDriversByCondition(
         Integer page, Integer pageSize
     );
+
+    Flux<AttachmentDriverFetcherVo> listDriversFetchers();
 }
