@@ -3,6 +3,7 @@
 api.ts
 api/actuator-api.ts
 api/plugin-ikaros-run-v1alpha1-plugin-api.ts
+api/run-ikaros-plugin-pan115-v1-attachmentpancustom-api.ts
 api/setting-ikaros-run-v1alpha1-configmap-api.ts
 api/v1alpha1-attachment-api.ts
 api/v1alpha1-attachment-driver-api.ts
@@ -33,7 +34,9 @@ common.ts
 configuration.ts
 git_push.sh
 index.ts
+models/attachment-driver-fetcher-vo.ts
 models/attachment-driver.ts
+models/attachment-pan-custom.ts
 models/attachment-reference.ts
 models/attachment-relation.ts
 models/attachment-tag.ts

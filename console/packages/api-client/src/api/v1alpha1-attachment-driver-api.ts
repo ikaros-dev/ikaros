@@ -40,6 +40,8 @@ import {
 // @ts-ignore
 import { AttachmentDriver } from "../models";
 // @ts-ignore
+import { AttachmentDriverFetcherVo } from "../models";
+// @ts-ignore
 import { PagingWrap } from "../models";
 /**
  * V1alpha1AttachmentDriverApi - axios parameter creator
@@ -522,6 +524,52 @@ export const V1alpha1AttachmentDriverApiAxiosParamCreator = function (
       };
     },
     /**
+     * List attachment drivers fetchers.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listDriversFetchers: async (
+      options: AxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1alpha1/attachment/drivers/fetchers`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * Save attachment driver.
      * @param {AttachmentDriver} [attachmentDriver]
      * @param {*} [options] Override http request option.
@@ -797,6 +845,28 @@ export const V1alpha1AttachmentDriverApiFp = function (
       );
     },
     /**
+     * List attachment drivers fetchers.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listDriversFetchers(
+      options?: AxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<Array<AttachmentDriverFetcherVo>>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listDriversFetchers(options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration
+      );
+    },
+    /**
      * Save attachment driver.
      * @param {AttachmentDriver} [attachmentDriver]
      * @param {*} [options] Override http request option.
@@ -966,6 +1036,18 @@ export const V1alpha1AttachmentDriverApiFactory = function (
           requestParameters.size,
           options
         )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * List attachment drivers fetchers.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listDriversFetchers(
+      options?: AxiosRequestConfig
+    ): AxiosPromise<Array<AttachmentDriverFetcherVo>> {
+      return localVarFp
+        .listDriversFetchers(options)
         .then((request) => request(axios, basePath));
     },
     /**
@@ -1307,6 +1389,18 @@ export class V1alpha1AttachmentDriverApi extends BaseAPI {
         requestParameters.size,
         options
       )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * List attachment drivers fetchers.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1alpha1AttachmentDriverApi
+   */
+  public listDriversFetchers(options?: AxiosRequestConfig) {
+    return V1alpha1AttachmentDriverApiFp(this.configuration)
+      .listDriversFetchers(options)
       .then((request) => request(this.axios, this.basePath));
   }
 

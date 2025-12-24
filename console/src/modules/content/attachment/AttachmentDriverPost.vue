@@ -40,6 +40,11 @@ const submitForm = async (driverElForm) => {
 	})
 }
 
+const attDriverFetchers = ref([])
+const fetchAttachmentDriverFetchers = async() => {
+	const { data } = await apiClient.attachmentDriver.listDriversFetchers()
+}
+
 const attachmentDrivers = ref<AttachmentDriver[]>()
 const fetchAttachmentDrivers = async() => {
 	const { data } = await apiClient.attachmentDriver.listDriversByCondition({page: 1, size: 999})
