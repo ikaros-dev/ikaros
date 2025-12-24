@@ -1,6 +1,5 @@
 package run.ikaros.server.core.attachment.service;
 
-import java.util.Optional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
