@@ -93,7 +93,7 @@ onMounted(fetchAttDrivers);
             <el-switch v-model="scope.row.enable" disabled />
           </template>
         </el-table-column>
-        <el-table-column :label="t('module.attachment.driver.table.colum.label.operations')"  width="200">
+        <el-table-column :label="t('module.attachment.driver.table.colum.label.operations')"  width="300">
           <template #default="scope">
             <el-popconfirm
               :title="
@@ -119,6 +119,10 @@ onMounted(fetchAttDrivers);
                 </el-button>
               </template>
             </el-popconfirm>
+
+            <el-button @click="router.push('/attachment/driver/put/' + scope.row.id)">
+              {{ t('module.attachment.driver.table.colum.label.operation.edit') }}
+            </el-button>
 
 
             <el-popconfirm

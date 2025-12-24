@@ -290,6 +290,16 @@ module:
       post:
         title: 新建附件驱动
         sidebar: 新建附件驱动
+        message:
+          form-rule:
+            type:
+              required: 请选择附件驱动类型
+            name:
+              required: 请选择附件驱动名称
+            mount_name:
+              required: 请输入附件驱动挂载名称
+            remote_path:
+              required: 请输入附件驱动远端路径或目录ID
       table:
         colum:
           label:
@@ -308,10 +318,18 @@ module:
                 title: 你确定要删除该驱动吗？
                 disable_title: 你确定要禁用当前驱动吗？
                 enable_title: 你确定要启用当前驱动吗？
+              edit: 编辑
             access_token: 访问令牌
             refresh_token: 刷新令牌
       button:
         new: 新建
+      put:
+        title: 编辑附件驱动
+        sidebar: 编辑附件驱动
+        text:
+          button:
+            subject:
+              update: 更新
   subject:
     title: 条目
     sidebar: 条目

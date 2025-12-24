@@ -303,6 +303,16 @@ module:
       post:
         title: New Attachment Driver
         sidebar: New Attachment Driver
+        message:
+          form-rule:
+            type:
+              required: Please select the attachment driver type
+            name:
+              required: Please select the attachment driver name
+            mount_name:
+              required: Please enter the name of the attachment driver mount
+            remote_path:
+              required: Please enter the attachment driver remote path
       table:
         colum:
           label:
@@ -321,10 +331,18 @@ module:
                 title: Are you sure you want to delete this driver?
                 disable_title: Are you sure you want to disable the current driver?
                 enable_title: Are you sure you want to enable the current driver?
+              edit: Edit
             access_token: AccessToken
             refresh_token: RefreshToken
       button:
         new: New
+      put:
+        title: Edit Attachment Driver
+        sidebar: Edit Attachment Driver
+        text:
+          button:
+            subject:
+              update: Update
   subject:
     title: Subjects
     sidebar: Subjects
