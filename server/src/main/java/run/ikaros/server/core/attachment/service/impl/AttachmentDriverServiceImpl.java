@@ -1,9 +1,7 @@
 package run.ikaros.server.core.attachment.service.impl;
 
-import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
-import java.util.List;
 import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -215,6 +213,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()))
             .flatMapMany(attachmentDriverEntity ->
                 fetchAndUpdateEntities(attachmentDriverEntity, pid, remotePath))
+            // 递归的话太慢了，目前只刷新当前目录下的文件或者文件夹
             // .filter(att ->
             //     att.getType() == AttachmentType.Directory
             //         || att.getType() == AttachmentType.Driver_Directory)
@@ -224,13 +223,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
 
     private Flux<Attachment> fetchAndUpdateEntities(
         AttachmentDriver driver, Long pid, String remotePath) {
-        AttachmentDriverType type = driver.getType();
-        AttachmentDriverFetcher driverFetcher = getAttDriverFetcher(type, driver.getName());
-        List<Attachment> attachments = driverFetcher.getChildren(driver.getId(), pid, remotePath);
-
-        return Flux.fromStream(attachments.stream())
-            .flatMap(attachmentService::save)
-            .map(att -> att.setUrl(DRIVER_STATIC_RESOURCE_PREFIX + att.getPath()))
+        return getAttDriverFetcher(driver.getType(), driver.getName())
+            .getChildren(driver.getId(), pid, remotePath)
             .flatMap(attachmentService::save);
     }
 
