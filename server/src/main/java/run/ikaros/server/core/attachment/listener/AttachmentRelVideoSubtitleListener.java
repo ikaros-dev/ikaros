@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.listener;
 
+import static run.ikaros.api.store.enums.AttachmentType.Driver_File;
 import static run.ikaros.api.store.enums.AttachmentType.File;
 
 import lombok.extern.slf4j.Slf4j;
@@ -86,10 +87,13 @@ public class AttachmentRelVideoSubtitleListener {
         String attachmentName = attachmentEntity.getName();
         String postfix = FileUtils.parseFilePostfix(attachmentName);
         attachmentName = attachmentName.substring(0, attachmentName.indexOf(postfix));
-        return attachmentRepository.findAllByTypeAndNameLike(File,
-                attachmentName + "%")
+        return attachmentRepository.findAllByTypeAndNameLike(Driver_File, attachmentName + "%")
             .filter(entity ->
                 (entity.getName().endsWith("ass") || entity.getName().endsWith("ssa")))
+            .switchIfEmpty(attachmentRepository.findAllByTypeAndNameLike(File,
+                    attachmentName + "%")
+                .filter(entity ->
+                    (entity.getName().endsWith("ass") || entity.getName().endsWith("ssa"))))
             .map(entity -> VideoSubtitle.builder()
                 .masterAttachmentId(attachmentEntity.getId())
                 .attachmentId(entity.getId())
