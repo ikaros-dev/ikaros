@@ -49,6 +49,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
@@ -799,7 +800,13 @@ public class AttachmentServiceImpl implements AttachmentService {
                     .flatMap(entity -> copyProperties(entity, new Attachment()))
                     .flatMap(driverFetcher::parseReadUrl);
             })
-            .switchIfEmpty(repository.findById(aid).map(AttachmentEntity::getUrl));
+            .switchIfEmpty(repository.findById(aid)
+                .map(att -> {
+                    final String url = att.getUrl();
+                    return url.startsWith("http")
+                        ? url
+                        : OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX + '/' + att.getId();
+                }));
     }
 
     @Override
