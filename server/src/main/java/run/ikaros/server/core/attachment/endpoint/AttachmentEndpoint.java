@@ -5,7 +5,6 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.content.Builder.contentBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
-import static org.springframework.util.FileCopyUtils.BUFFER_SIZE;
 import static org.springframework.web.reactive.function.BodyExtractors.toMultipartData;
 import static org.springframework.web.reactive.function.server.RequestPredicates.contentType;
 
@@ -14,24 +13,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousFileChannel;
-import java.nio.channels.CompletionHandler;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -49,8 +39,6 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebInputException;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.constant.OpenApiConst;
@@ -226,17 +214,6 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("Attachment id.")
                         .implementation(Long.class))
                     .response(responseBuilder().implementation(String.class)))
-
-            .GET("/attachment/stream/read/filename/{filename}", this::getReadStream,
-                builder -> builder.operationId("GetReadStream")
-                    .tag(tag).description("Get read stream.")
-                    .parameter(parameterBuilder()
-                        .in(ParameterIn.PATH)
-                        .name("filename")
-                        .description("Attachment filename.")
-                        .implementation(String.class))
-                    .response(responseBuilder().implementation(String.class)))
-
 
             .build();
     }
@@ -531,158 +508,4 @@ public class AttachmentEndpoint implements CoreEndpoint {
         return contentType;
     }
 
-    private Mono<ServerResponse> getReadStream(ServerRequest request) {
-        return streamVideo(request);
-        // return ServerResponse.ok().build();
-    }
-
-
-    private static final long CHUNK_SIZE = 1024 * 1024; // 1MB chunks
-
-    /**
-     * T.
-     */
-    public Mono<ServerResponse> streamVideo(ServerRequest request) {
-        final String filename = request.pathVariable("filename");
-        final String postfix = FileUtils.parseFilePostfix(filename);
-        // filename = Arrays.toString(Base64.getDecoder().decode(filename));
-        Path filePath = Paths.get("C:\\Users\\chivehao\\Videos\\PlayerTest", filename);
-
-        if (!Files.exists(filePath)) {
-            return ServerResponse.notFound().build();
-        }
-
-        return Mono.fromCallable(() -> {
-            long fileSize = Files.size(filePath);
-            String rangeHeader = request.headers().firstHeader(HttpHeaders.RANGE);
-
-            if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
-                return handlePartialContent(filePath, rangeHeader, fileSize);
-            }
-
-            return handleFullContent(filePath, fileSize);
-        }).flatMap(response -> response);
-    }
-
-    private Mono<ServerResponse> handlePartialContent(Path videoPath,
-                                                      String rangeHeader,
-                                                      long fileSize) {
-        try {
-            String range = rangeHeader.substring(6);
-            String[] ranges = range.split("-");
-
-            long start = Long.parseLong(ranges[0]);
-            long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : fileSize - 1;
-
-            // 确保范围有效
-            if (start < 0 || end >= fileSize || start > end) {
-                return ServerResponse.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
-                    .header(HttpHeaders.CONTENT_RANGE, "bytes */" + fileSize)
-                    .build();
-            }
-
-            long contentLength = end - start + 1;
-
-            // 创建自定义的读取逻辑
-            Flux<DataBuffer> body = Flux.create(sink -> {
-                try {
-                    AsynchronousFileChannel channel = AsynchronousFileChannel.open(
-                        videoPath, StandardOpenOption.READ);
-
-                    AtomicLong position = new AtomicLong(start);
-                    ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
-
-                    readChunk(channel, buffer, position.get(), end, sink, () -> {
-                        try {
-                            channel.close();
-                        } catch (IOException e) {
-                            sink.error(e);
-                        }
-                    });
-
-                } catch (IOException e) {
-                    sink.error(e);
-                }
-            });
-
-            return ServerResponse.status(HttpStatus.PARTIAL_CONTENT)
-                .header(HttpHeaders.CONTENT_TYPE, "video/mp4")
-                .header(HttpHeaders.ACCEPT_RANGES, "bytes")
-                .header(HttpHeaders.CONTENT_RANGE,
-                    String.format("bytes %d-%d/%d", start, end, fileSize))
-                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength))
-                .body(body, DataBuffer.class);
-
-        } catch (Exception e) {
-            return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .bodyValue("处理范围请求失败: " + e.getMessage());
-        }
-    }
-
-    private void readChunk(AsynchronousFileChannel channel,
-                           ByteBuffer buffer,
-                           long position,
-                           long end,
-                           FluxSink<DataBuffer> sink,
-                           Runnable onComplete) {
-
-        if (position > end) {
-            sink.complete();
-            onComplete.run();
-            return;
-        }
-
-        long bytesToRead = Math.min(buffer.capacity(), end - position + 1);
-
-        channel.read(buffer, position, buffer, new CompletionHandler<Integer, ByteBuffer>() {
-            @Override
-            public void completed(Integer result, ByteBuffer attachment) {
-                if (result == -1) {
-                    sink.complete();
-                    onComplete.run();
-                    return;
-                }
-
-                attachment.flip();
-                byte[] data = new byte[attachment.remaining()];
-                attachment.get(data);
-
-                DataBuffer dataBuffer = new DefaultDataBufferFactory().wrap(data);
-                sink.next(dataBuffer);
-
-                // 准备读取下一块
-                attachment.clear();
-                readChunk(channel, attachment, position + result, end, sink, onComplete);
-            }
-
-            @Override
-            public void failed(Throwable exc, ByteBuffer attachment) {
-                sink.error(exc);
-                onComplete.run();
-            }
-        });
-    }
-
-    private Mono<ServerResponse> handleFullContent(Path videoPath, long fileSize) {
-        Flux<DataBuffer> body = org.springframework.core.io.buffer.DataBufferUtils
-            .readAsynchronousFileChannel(
-                () -> AsynchronousFileChannel.open(videoPath, StandardOpenOption.READ),
-                new DefaultDataBufferFactory(),
-                BUFFER_SIZE
-            );
-
-        String postfix = FileUtils.parseFilePostfix(videoPath.toFile().getAbsolutePath());
-        String contentType = "";
-        if (FileUtils.isDocument(postfix)) {
-            contentType = "text/plain; charset=utf-8";
-        } else {
-            contentType = "video/mp4";
-        }
-
-        return ServerResponse.ok()
-            .header(HttpHeaders.CONTENT_TYPE, contentType)
-            .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileSize))
-            .header(HttpHeaders.ACCEPT_RANGES, "bytes")
-            .body(body, DataBuffer.class);
-    }
 }
