@@ -54,7 +54,7 @@ public class AttachmentDriver {
     private Double requestLimit;
 
     @JsonProperty("user_id")
-    private String userId;
+    private Long userId;
     @JsonProperty("user_name")
     private String username;
     private String avatar;

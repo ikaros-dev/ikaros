@@ -111,6 +111,10 @@ public class FileUtils {
         return VOICES.contains(parseFilePostfix(url));
     }
 
+    public static boolean isImage(String url) {
+        return IMAGES.contains(parseFilePostfix(url));
+    }
+
     public enum Hash {
         MD5("MD5"),
         SHA1("SHA1"),

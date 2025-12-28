@@ -24,7 +24,7 @@ public interface FileConst {
         };
 
         String[] DOCUMENTS = {
-            "txt", "doc", "docx", "ppt", "xlsx", "pptx", "ass"
+            "txt", "doc", "docx", "ppt", "xlsx", "pptx", "ass", "md", "mdc"
         };
         String[] VOICES = {
             "mp3", "wma", "wav", "ape", "flac", "ogg", "aac"

@@ -7,6 +7,7 @@ import java.util.List;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
+import run.ikaros.api.core.attachment.AttachmentStreamVo;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -66,4 +67,6 @@ public interface AttachmentService {
     Mono<String> getDownloadUrl(Long aid);
 
     Mono<String> getReadUrl(Long aid);
+
+    Mono<AttachmentStreamVo> getStreamById(long aid);
 }

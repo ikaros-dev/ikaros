@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.service.impl;
 
+import static org.springframework.util.FileCopyUtils.BUFFER_SIZE;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARENT_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
@@ -15,8 +16,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
@@ -46,6 +50,7 @@ import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
+import run.ikaros.api.core.attachment.AttachmentStreamVo;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
 import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
@@ -792,6 +797,73 @@ public class AttachmentServiceImpl implements AttachmentService {
             })
             .switchIfEmpty(repository.findById(aid).map(AttachmentEntity::getUrl));
     }
+
+    @Override
+    public Mono<AttachmentStreamVo> getStreamById(long aid) {
+        Assert.isTrue(aid >= 0, "'aid' must >= 0.");
+        return repository.findById(aid)
+            .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
+                .startsWith("DRIVER_"))
+            .map(AttachmentEntity::getDriverId)
+            .flatMap(driverRepository::findById)
+            .flatMap(driverEntity -> copyProperties(driverEntity, new AttachmentDriver()))
+            .flatMap(driver -> {
+                AttachmentDriverFetcher driverFetcher =
+                    getAttDriverFetcher(driver.getType(), driver.getName());
+                return repository.findById(aid)
+                    .flatMap(entity -> copyProperties(entity, new Attachment()))
+                    .map(att -> {
+                        Flux<DataBuffer> dataBufferFlux = driverFetcher.getSteam(att);
+                        String postfix = FileUtils.parseFilePostfix(att.getName());
+                        String contentType = buildContentType(postfix);
+                        AttachmentStreamVo streamVo = new AttachmentStreamVo();
+                        streamVo.setContextLength(att.getSize());
+                        streamVo.setContextType(contentType);
+                        streamVo.setDataBufferFlux(dataBufferFlux);
+                        return streamVo;
+                    });
+            })
+            .switchIfEmpty(repository.findById(aid).map(att -> {
+                File file = new File(att.getFsPath());
+                Path path = Path.of(file.toURI());
+                long size = 0;
+                try {
+                    size = Files.size(path);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                String postfix = FileUtils.parseFilePostfix(att.getUrl());
+                String contentType = buildContentType(postfix);
+                AttachmentStreamVo streamVo = new AttachmentStreamVo();
+                streamVo.setContextLength(size);
+                streamVo.setContextType(contentType);
+                Flux<DataBuffer> dataBufferFlux =
+                    org.springframework.core.io.buffer.DataBufferUtils
+                        .readAsynchronousFileChannel(
+                            () -> AsynchronousFileChannel.open(path,
+                                StandardOpenOption.READ),
+                            new DefaultDataBufferFactory(),
+                            BUFFER_SIZE
+                        );
+                streamVo.setDataBufferFlux(dataBufferFlux);
+                return streamVo;
+            }));
+    }
+
+    private String buildContentType(String postfix) {
+        String contentType = "";
+        if (FileUtils.isDocument(postfix)) {
+            contentType = "text/plain; charset=utf-8";
+        } else if (FileUtils.isImage(postfix)) {
+            contentType = "image/" + postfix;
+        } else if (FileUtils.isVoice(postfix)) {
+            contentType = "audio/mpeg";
+        } else {
+            contentType = "video/mp4";
+        }
+        return contentType;
+    }
+
 
     private Mono<List<AttachmentEntity>> findPathDirs(long id, List<AttachmentEntity> entities) {
         if (ROOT_DIRECTORY_PARENT_ID.equals(id)) {

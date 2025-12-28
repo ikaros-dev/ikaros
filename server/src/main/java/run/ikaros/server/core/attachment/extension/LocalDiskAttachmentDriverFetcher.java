@@ -1,18 +1,24 @@
 package run.ikaros.server.core.attachment.extension;
 
+import static org.springframework.util.FileCopyUtils.BUFFER_SIZE;
 import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.Extension;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
@@ -95,6 +101,22 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
     public Mono<String> parseDownloadUrl(Attachment attachment) {
         Assert.notNull(attachment, "Attachment must not be null.");
         return parseReadUrl(attachment);
+    }
+
+    @Override
+    public Flux<DataBuffer> getSteam(Attachment att) {
+        String fsPath = att.getFsPath();
+        File file = new File(fsPath);
+        URI uri = file.toURI();
+        Path path = Path.of(uri);
+        return org.springframework.core.io.buffer.DataBufferUtils
+            .readAsynchronousFileChannel(
+                () -> AsynchronousFileChannel.open(path,
+                    StandardOpenOption.READ),
+                new DefaultDataBufferFactory(),
+                BUFFER_SIZE
+            );
+
     }
 
 
