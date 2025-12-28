@@ -4,9 +4,12 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+import org.springframework.core.io.buffer.DataBuffer;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
+import run.ikaros.api.core.attachment.AttachmentStreamVo;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -66,4 +69,10 @@ public interface AttachmentService {
     Mono<String> getDownloadUrl(Long aid);
 
     Mono<String> getReadUrl(Long aid);
+
+    Mono<AttachmentStreamVo> getStreamById(long aid);
+
+    Mono<Flux<DataBuffer>> getStreamByIdWithRange(long aid, long start, long end);
+
+    Mono<Flux<DataBuffer>> getStreamByIdWithoutRange(long aid);
 }

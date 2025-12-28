@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.service.impl;
 
+import static run.ikaros.api.constant.OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.List;
@@ -63,7 +64,7 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
                 .masterAttachmentId(attachmentId)
                 .attachmentId(attachmentEntity.getId())
                 .name(attachmentEntity.getName())
-                .url(attachmentEntity.getUrl())
+                .url(ATT_STREAM_ENDPOINT_PREFIX + '/' + attachmentEntity.getId())
                 .build());
     }
 

@@ -59,7 +59,7 @@ public class AttachmentDriverEntity {
     private Double requestLimit;
 
     @Column("user_id")
-    private String userId;
+    private Long userId;
     @Column("user_name")
     private String username;
     private String avatar;

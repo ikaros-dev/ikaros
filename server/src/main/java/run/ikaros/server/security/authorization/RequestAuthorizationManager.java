@@ -30,6 +30,7 @@ public class RequestAuthorizationManager
         if (path.startsWith("/api/" + CORE_VERSION + "/static/")
             || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/apply")
             || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/refresh")
+            || path.startsWith("/api/" + CORE_VERSION + "/attachment/stream")
             || path.startsWith(DRIVER_STATIC_RESOURCE_PREFIX + '/') // todo 后续可能考虑对本地映射文件鉴权
         ) {
             return authentication.map(auth -> new AuthorizationDecision(true));
