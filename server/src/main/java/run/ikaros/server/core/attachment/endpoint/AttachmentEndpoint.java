@@ -458,18 +458,77 @@ public class AttachmentEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> getStreamById(ServerRequest request) {
         final String id = request.pathVariable("id");
-        return Mono.fromCallable(() ->
-            attachmentService.getStreamById(Long.parseLong(id))
-                .flatMap(streamVo -> {
-                    Flux<DataBuffer> body = streamVo.getDataBufferFlux();
-                    String contentType = streamVo.getContextType();
-                    Long contextLength = streamVo.getContextLength();
-                    return ServerResponse.ok()
-                        .header(HttpHeaders.CONTENT_TYPE, contentType)
-                        .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(contextLength))
-                        // .header(HttpHeaders.ACCEPT_RANGES, "bytes")
-                        .body(body, DataBuffer.class);
-                })).flatMap(response -> response);
+        return Mono.fromCallable(() -> {
+            Mono<Attachment> attMono =
+                attachmentService.findById(Long.valueOf(id));
+            String rangeHeader = request.headers().firstHeader(HttpHeaders.RANGE);
+            if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
+                return attMono
+                    .flatMap(att -> doGetPartialContentRsp(Long.valueOf(id), att.getSize(),
+                        att.getName(), rangeHeader));
+                // return handlePartialContent(filePath, rangeHeader, fileSize);
+            }
+            return attMono.flatMap(att ->
+                doGetFullContentRsp(Long.valueOf(id), att.getSize(), att.getName()));
+            // return handleFullContent(filePath, fileSize);
+        }).flatMap(response -> response);
+    }
+
+    private Mono<ServerResponse> doGetPartialContentRsp(
+        Long aid, Long fileSize, String fileName, String rangeHeader) {
+        try {
+            String range = rangeHeader.substring(6);
+            String[] ranges = range.split("-");
+
+            long start = Long.parseLong(ranges[0]);
+            long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : fileSize - 1;
+
+            // 确保范围有效
+            if (start < 0 || end >= fileSize || start > end) {
+                return ServerResponse.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                    .header(HttpHeaders.CONTENT_RANGE, "bytes */" + fileSize)
+                    .build();
+            }
+
+            long contentLength = end - start + 1;
+            String contentType = buildContentType(FileUtils.parseFilePostfix(fileName));
+
+            return attachmentService.getStreamByIdWithRange(aid, start, end)
+                .flatMap(body -> ServerResponse.status(HttpStatus.PARTIAL_CONTENT)
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                    .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                    .header(HttpHeaders.CONTENT_RANGE,
+                        String.format("bytes %d-%d/%d", start, end, fileSize))
+                    .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength))
+                    .body(body, DataBuffer.class));
+        } catch (Exception e) {
+            return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .bodyValue("处理范围请求失败: " + e.getMessage());
+        }
+    }
+
+    private Mono<ServerResponse> doGetFullContentRsp(Long aid, Long fileSize, String fileName) {
+        String contentType = buildContentType(FileUtils.parseFilePostfix(fileName));
+        return attachmentService.getStreamByIdWithoutRange(aid)
+            .flatMap(body -> ServerResponse.ok()
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
+                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileSize))
+                .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                .body(body, DataBuffer.class));
+    }
+
+    private String buildContentType(String postfix) {
+        String contentType = "";
+        if (FileUtils.isDocument(postfix)) {
+            contentType = "text/plain; charset=utf-8";
+        } else if (FileUtils.isImage(postfix)) {
+            contentType = "image/" + postfix;
+        } else if (FileUtils.isVoice(postfix)) {
+            contentType = "audio/mpeg";
+        } else {
+            contentType = "video/mp4";
+        }
+        return contentType;
     }
 
     private Mono<ServerResponse> getReadStream(ServerRequest request) {
