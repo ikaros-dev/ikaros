@@ -868,7 +868,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                     getAttDriverFetcher(driver.getType(), driver.getName());
                 return repository.findById(aid)
                     .flatMap(entity -> copyProperties(entity, new Attachment()))
-                    .map(driverFetcher::getSteam);
+                    .map(att -> driverFetcher.getSteam(att, start, end));
             })
             .switchIfEmpty(repository.findById(aid)
                 .map(att -> {

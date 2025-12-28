@@ -20,4 +20,6 @@ public interface AttachmentDriverFetcher extends ExtensionPoint {
     Mono<String> parseDownloadUrl(Attachment attachment);
 
     Flux<DataBuffer> getSteam(Attachment attachment);
+
+    Flux<DataBuffer> getSteam(Attachment attachment, long start, long end);
 }
