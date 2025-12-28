@@ -429,8 +429,8 @@ public class AttachmentEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> getReadUrl(ServerRequest request) {
         String id = request.pathVariable("id");
-        String url = OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX + '/' + id;
-        return ServerResponse.ok().bodyValue(url);
+        return attachmentService.getReadUrl(Long.valueOf(id))
+            .flatMap(url -> ServerResponse.ok().bodyValue(url));
     }
 
     private Mono<ServerResponse> getStreamById(ServerRequest request) {
