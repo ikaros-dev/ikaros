@@ -1,5 +1,7 @@
 package run.ikaros.server.core.migration;
 
+import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.parameter.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -12,6 +14,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -34,7 +37,16 @@ public class MigrationEndpoint implements CoreEndpoint {
                         .name("name")
                         .description("Table name.")
                         .example("subject"))
+                    .response(responseBuilder()
+                        .implementationArray(DataBuffer.class))
             )
+            .GET("/migration/databse/tables/export", this::exportDatabaseTables,
+                builder -> builder.operationId("ExportDatabaseTables")
+                    .tag(tag).description("ExportDatabaseTables")
+                    .response(responseBuilder()
+                        .implementationArray(DataBuffer.class))
+            )
+
 
             .build();
     }
@@ -46,6 +58,18 @@ public class MigrationEndpoint implements CoreEndpoint {
             .header("Content-Type", "text/csv; charset=UTF-8")
             .header("Content-Disposition",
                 "attachment; filename=\"" + name + ".csv\"")
+            .header("Transfer-Encoding", "chunked")
+            .body(csvStream, DataBuffer.class);
+    }
+
+
+    private Mono<ServerResponse> exportDatabaseTables(ServerRequest request) {
+        Flux<DataBuffer> csvStream = service.exportDatabaseTables();
+        String name = UuidV7Utils.generate();
+        return ServerResponse.ok()
+            .header("Content-Type", "application/zip; charset=UTF-8")
+            .header("Content-Disposition",
+                "attachment; filename=\"" + name + ".zip\"")
             .header("Transfer-Encoding", "chunked")
             .body(csvStream, DataBuffer.class);
     }

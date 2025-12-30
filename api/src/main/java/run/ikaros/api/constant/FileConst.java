@@ -5,6 +5,7 @@ public interface FileConst {
      * File import(upload) dir name in work dir.
      */
     String DEFAULT_DIR_NAME = "files";
+    String DEFAULT_CACHE_DIR_NAME = "caches";
     String DEFAULT_IMPORT_DIR_NAME = "links";
     Long DEFAULT_FOLDER_ROOT_ID = 0L;
     String DEFAULT_FOLDER_ROOT_NAME = "root";
