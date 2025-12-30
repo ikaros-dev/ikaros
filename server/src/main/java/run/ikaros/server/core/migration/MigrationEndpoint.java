@@ -30,7 +30,7 @@ public class MigrationEndpoint implements CoreEndpoint {
     public RouterFunction<ServerResponse> endpoint() {
         var tag = OpenApiConst.CORE_VERSION + "/migration";
         return SpringdocRouteBuilder.route()
-            .GET("/migration/databse/table/export", this::exportDatabaseTable,
+            .GET("/migration/export/databse/table", this::exportDatabaseTable,
                 builder -> builder.operationId("ExportDatabaseTable")
                     .tag(tag).description("ExportDatabaseTable")
                     .parameter(Builder.parameterBuilder()
@@ -40,7 +40,7 @@ public class MigrationEndpoint implements CoreEndpoint {
                     .response(responseBuilder()
                         .implementationArray(DataBuffer.class))
             )
-            .GET("/migration/databse/tables/export", this::exportDatabaseTables,
+            .GET("/migration/export/databse/tables", this::exportDatabaseTables,
                 builder -> builder.operationId("ExportDatabaseTables")
                     .tag(tag).description("ExportDatabaseTables")
                     .response(responseBuilder()
