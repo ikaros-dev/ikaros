@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,9 +18,9 @@ import org.springframework.data.relational.core.mapping.Table;
 @Accessors(chain = true)
 public class UserRoleEntity {
     @Id
-    private Long id;
+    private UUID id;
     @Column("user_id")
-    private Long userId;
+    private UUID userId;
     @Column("role_id")
-    private Long roleId;
+    private UUID roleId;
 }

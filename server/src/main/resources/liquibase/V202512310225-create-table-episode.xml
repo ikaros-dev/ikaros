@@ -23,11 +23,15 @@
             <column name="air_time" type="TIMESTAMP(6)"/>
             <column name="sequence" type="INT8"/>
             <column name="ep_group" type="VARCHAR(50)"/>
+            <column name="sequence" type="REAL">
+                <constraints nullable="true" />
+            </column>
         </createTable>
-        <createIndex tableName="episode" indexName="subject_group_seq_uk" unique="true">
+        <createIndex tableName="episode" indexName="subject_group_seq_name_uk" unique="true">
             <column name="subject_id" />
             <column name="ep_group" />
             <column name="sequence" />
+            <column name="name" />
         </createIndex>
     </changeSet>
 </databaseChangeLog>

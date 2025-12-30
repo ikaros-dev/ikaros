@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +20,7 @@ import run.ikaros.api.store.enums.TaskStatus;
 @Accessors(chain = true)
 public class TaskEntity {
     @Id
-    private Long id;
+    private UUID id;
     private String name;
     private TaskStatus status;
     @Column("create_time")

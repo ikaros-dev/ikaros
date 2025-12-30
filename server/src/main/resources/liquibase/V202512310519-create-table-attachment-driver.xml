@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="V202512310519" author="Chivehao">
+        <comment>Create `attachment_driver` table</comment>
+        <createTable tableName="attachment_driver">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="enable" type="BOOL"/>
+            <column name="d_type" type="varchar(100)">
+                <constraints nullable="false" />
+            </column>
+            <column name="d_name" type="varchar(100)"/>
+            <column name="mount_name" type="varchar(255)"/>
+            <column name="remote_path" type="varchar(1000)"/>
+            <column name="d_order" type="INT8"/>
+            <column name="d_comment" type="varchar(255)"/>
+            <column name="refresh_token" type="varchar(255)"/>
+            <column name="access_token" type="varchar(255)"/>
+            <column name="expire_time" type="TIMESTAMP(6)"/>
+            <column name="list_page_size" type="INT8"/>
+            <column name="root_dir_id" type="varchar(255)"/>
+            <column name="request_limit" type="INT8"/>
+            <column name="user_id" type="varchar(255)"/>
+            <column name="user_name" type="varchar(255)"/>
+            <column name="avatar" type="varchar(1000)"/>
+            <column name="space_total" type="INT8"/>
+            <column name="space_use" type="INT8"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

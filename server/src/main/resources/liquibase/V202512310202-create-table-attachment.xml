@@ -18,6 +18,9 @@
             <column name="name" type="VARCHAR(255)"/>
             <column name="size" type="INT8"/>
             <column name="update_time" type="TIMESTAMP(6)"/>
+            <column name="deleted" type="BOOL"/>
+            <column name="driver_id" type="UUID"/>
+            <column name="sha1" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

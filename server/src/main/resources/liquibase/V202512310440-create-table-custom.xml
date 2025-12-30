@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="V202512310440" author="Chivehao">
+        <comment>Create `custom` table</comment>
+        <createTable tableName="custom">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="c_group" type="VARCHAR(255)"/>
+            <column name="version" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+        </createTable>
+        <createIndex tableName="custom" indexName="custom_gvkn" unique="true">
+            <column name="c_group" />
+            <column name="version" />
+            <column name="kind" />
+            <column name="name" />
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

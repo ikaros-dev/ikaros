@@ -37,5 +37,18 @@
     <include file="liquibase/V202512310239-create-table-subject-character.xml"/>
     <include file="liquibase/V202512310242-create-table-subject.xml"/>
     <include file="liquibase/V202512310244-create-table-subject-person.xml"/>
+    <include file="liquibase/V202512310244-create-table-subject-person.xml"/>
+    <include file="liquibase/V202512310437-create-table-subject-sync.xml"/>
+    <include file="liquibase/V202512310440-create-table-custom.xml"/>
+    <include file="liquibase/V202512310444-create-table-custom-metadata.xml"/>
+    <include file="liquibase/V202512310447-create-table-tag.xml"/>
+    <include file="liquibase/V202512310450-create-table-task.xml"/>
+    <include file="liquibase/V202512310452-create-table-user-role.xml"/>
+    <include file="liquibase/V202512310455-create-table-role-authority.xml"/>
+    <!--<include file="liquibase/V202512310458-insert-into-attachment.xml"/>-->
+    <include file="liquibase/V202512310502-create-table-episode-list.xml"/>
+    <include file="liquibase/V202512310505-create-table-episode-list-episode.xml"/>
+    <include file="liquibase/V202512310507-create-table-episode-list-collection.xml"/>
+    <include file="liquibase/V202512310519-create-table-attachment-driver.xml"/>
 
 </databaseChangeLog>

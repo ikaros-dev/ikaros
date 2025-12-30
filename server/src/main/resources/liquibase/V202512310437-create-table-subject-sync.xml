@@ -4,9 +4,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                             https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
-    <changeSet id="V202512310242" author="Chivehao">
-        <comment>Create `subject` table</comment>
-        <createTable tableName="subject">
+    <changeSet id="V202512310437" author="Chivehao">
+        <comment>Create `subject_sync` table</comment>
+        <createTable tableName="subject_sync">
             <column name="id" type="UUID">
                 <constraints primaryKey="true"/>
             </column>
@@ -16,17 +16,14 @@
             <column name="update_time" type="TIMESTAMP(6)"/>
             <column name="update_uid" type="UUID"/>
             <column name="ol_version" type="INT8"/>
-            <column name="type" type="VARCHAR(255)"/>
-            <column name="name" type="VARCHAR(255)"/>
-            <column name="name_cn" type="VARCHAR(255)"/>
-            <column name="cover" type="VARCHAR(10000)"/>
-            <column name="infobox" type="VARCHAR(50000)"/>
-            <column name="summary" type="VARCHAR(50000)"/>
-            <column name="nsfw" type="BOOL"/>
-            <column name="air_time" type="TIMESTAMP(6)"/>
-            <column name="score" type="DOUBLE PRECISION">
-                <constraints nullable="true" />
-            </column>
+            <column name="subject_id" type="UUID"/>
+            <column name="platform" type="VARCHAR(255)"/>
+            <column name="platform_id" type="VARCHAR(255)"/>
+            <column name="sync_time" type="TIMESTAMP(6)"/>
         </createTable>
+        <createIndex tableName="subject_sync" indexName="platform_pid_ukey" unique="true">
+            <column name="platform" />
+            <column name="platform_id" />
+        </createIndex>
     </changeSet>
 </databaseChangeLog>

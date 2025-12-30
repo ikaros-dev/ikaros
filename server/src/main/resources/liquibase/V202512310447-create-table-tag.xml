@@ -4,19 +4,18 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                             https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
-    <changeSet id="V202512310223" author="Chivehao">
-        <comment>Create `subject_collection` table</comment>
-        <createTable tableName="subject_collection">
+    <changeSet id="V202512310447" author="Chivehao">
+        <comment>Create `tag` table</comment>
+        <createTable tableName="tag">
             <column name="id" type="UUID">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="user_id" type="UUID"/>
-            <column name="subject_id" type="UUID"/>
             <column name="type" type="VARCHAR(255)"/>
-            <column name="main_ep_progress" type="INT8"/>
-            <column name="is_private" type="BOOL"/>
-            <column name="comment" type="VARCHAR(5000)"/>
-            <column name="score" type="INT8"/>
+            <column name="master_id" type="UUID"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="user_id" type="UUID"/>
+            <column name="create_time" type="TIMESTAMP(6)"/>
+            <column name="color" type="VARCHAR(200)"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>
