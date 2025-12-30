@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="V202512310134" author="Chivehao">
+        <comment>Create `ikuser` table</comment>
+        <createTable tableName="ikuser">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="create_time" type="TIMESTAMP(6)"/>
+            <column name="create_uid" type="UUID"/>
+            <column name="delete_status" type="BOOL"/>
+            <column name="update_time" type="TIMESTAMP(6)"/>
+            <column name="update_uid" type="UUID"/>
+            <column name="ol_version" type="INT8"/>
+            <column name="avatar" type="VARCHAR(255)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="enable" type="BOOL"/>
+            <column name="introduce" type="VARCHAR(50000)"/>
+            <column name="nickname" type="VARCHAR(255)"/>
+            <column name="non_locked" type="BOOL"/>
+            <column name="password" type="VARCHAR(255)"/>
+            <column name="site" type="VARCHAR(255)"/>
+            <column name="telephone" type="VARCHAR(255)"/>
+            <column name="username" type="VARCHAR(255)">
+                <constraints unique="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

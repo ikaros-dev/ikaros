@@ -1,6 +1,7 @@
 package run.ikaros.api.infra.utils;
 
 import com.github.f4b6a3.uuid.UuidCreator;
+import java.util.UUID;
 
 public class UuidV7Utils {
     /**
@@ -13,7 +14,7 @@ public class UuidV7Utils {
     /**
      * 直接生成 UUID 对象，便于存储或进一步处理.
      */
-    public static java.util.UUID generateUuid() {
+    public static UUID generateUuid() {
         return UuidCreator.getTimeOrderedEpoch();
     }
 }

@@ -44,14 +44,8 @@ spring:
     username: admin
     password: 123456
 
-  flyway:
-    locations: classpath:db/h2/migration
-    baseline-version: 0.13.0_0000
-    enabled: true
-    encoding: UTF-8
-    sql-migration-separator: __
-    clean-disabled: true
-    url: jdbc:h2:file:${ikaros.work-dir}/database/ikaros
+  liquibase:
+    change-log: classpath*:/liquibase/changelog.xml
 
   data:
     redis:

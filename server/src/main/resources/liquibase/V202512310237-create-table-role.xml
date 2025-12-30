@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="V202512310237" author="Chivehao">
+        <comment>Create `role` table</comment>
+        <createTable tableName="role">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="create_time" type="TIMESTAMP(6)"/>
+            <column name="create_uid" type="UUID"/>
+            <column name="delete_status" type="BOOL"/>
+            <column name="update_time" type="TIMESTAMP(6)"/>
+            <column name="update_uid" type="UUID"/>
+            <column name="ol_version" type="INT8"/>
+            <column name="parent_id" type="UUID"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(50000)"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

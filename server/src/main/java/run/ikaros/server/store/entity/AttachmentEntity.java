@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,9 +20,9 @@ import run.ikaros.api.store.enums.AttachmentType;
 @Table(name = "attachment")
 public class AttachmentEntity {
     @Id
-    private Long id;
+    private UUID id;
     @Column("parent_id")
-    private Long parentId;
+    private UUID parentId;
     private AttachmentType type;
     /**
      * HTTP path, format: driver_id://remote_path

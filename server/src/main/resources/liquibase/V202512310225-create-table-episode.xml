@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="V202512310225" author="Chivehao">
+        <comment>Create `episode` table</comment>
+        <createTable tableName="episode">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="create_time" type="TIMESTAMP(6)"/>
+            <column name="create_uid" type="UUID"/>
+            <column name="delete_status" type="BOOL"/>
+            <column name="update_time" type="TIMESTAMP(6)"/>
+            <column name="update_uid" type="UUID"/>
+            <column name="ol_version" type="INT8"/>
+            <column name="subject_id" type="UUID"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="name_cn" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(50000)"/>
+            <column name="air_time" type="TIMESTAMP(6)"/>
+            <column name="sequence" type="INT8"/>
+            <column name="ep_group" type="VARCHAR(50)"/>
+        </createTable>
+        <createIndex tableName="episode" indexName="subject_group_seq_uk" unique="true">
+            <column name="subject_id" />
+            <column name="ep_group" />
+            <column name="sequence" />
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -48,7 +48,9 @@ dependencies {
     api "org.apache.lucene:lucene-backward-codecs"
     api 'cn.shenyanchao.ik-analyzer:ik-analyzer'
 
-    runtimeOnly 'io.r2dbc:r2dbc-h2'
+    // liquibase
+    api 'io.github.daggerok:liquibase-r2dbc-spring-boot-starter'
+
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.postgresql:r2dbc-postgresql'
 
