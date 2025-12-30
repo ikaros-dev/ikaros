@@ -3,6 +3,7 @@ package run.ikaros.server.core.attachment.service.impl;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.Locale;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -95,7 +96,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     @Override
-    public Mono<Void> removeById(Long id) {
+    public Mono<Void> removeById(UUID id) {
         Assert.notNull(id, "'id' must not null.");
         return repository.findById(id)
             .map(entity -> {
@@ -118,7 +119,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     @Override
-    public Mono<AttachmentDriver> findById(Long id) {
+    public Mono<AttachmentDriver> findById(UUID id) {
         Assert.notNull(id, "'id' must not null.");
         return repository.findById(id)
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
@@ -133,7 +134,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     @Override
-    public Mono<Void> enable(Long driverId) {
+    public Mono<Void> enable(UUID driverId) {
         Assert.notNull(driverId, "'driverId' must not null.");
         return repository.findById(driverId)
             .map(entity -> entity.setEnable(true))
@@ -144,7 +145,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     @Override
-    public Mono<Void> disable(Long driverId) {
+    public Mono<Void> disable(UUID driverId) {
         Assert.notNull(driverId, "'driverId' must not null.");
         return repository.findById(driverId)
             .map(entity -> entity.setEnable(false))
@@ -160,7 +161,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         Assert.notNull(attachmentSearchCondition, "'attachmentSearchCondition' must not null.");
         Boolean refresh = attachmentSearchCondition.getRefresh();
         Assert.notNull(refresh, "'refresh' must not null.");
-        Long parentId = attachmentSearchCondition.getParentId();
+        UUID parentId = attachmentSearchCondition.getParentId();
         if (parentId == null) {
             parentId = AttachmentConst.ROOT_DIRECTORY_ID;
         }
@@ -172,7 +173,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     @Override
-    public Mono<Void> refresh(Long attachmentId) {
+    public Mono<Void> refresh(UUID attachmentId) {
         Assert.notNull(attachmentId, "'attachmentId' must not null.");
         return attachmentService.findById(attachmentId)
             .filter(attachment ->
@@ -219,8 +220,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             });
     }
 
-    private Mono<Void> refreshRemoteFileSystem(Attachment attachment, Long driverId) {
-        final Long pid = attachment.getId();
+    private Mono<Void> refreshRemoteFileSystem(Attachment attachment, UUID driverId) {
+        final UUID pid = attachment.getId();
         String url = attachment.getUrl();
         String remotePath = attachment.getFsPath();
         return repository.findById(driverId)
@@ -236,7 +237,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     private Flux<Attachment> fetchAndUpdateEntities(
-        AttachmentDriver driver, Long pid, String remotePath) {
+        AttachmentDriver driver, UUID pid, String remotePath) {
         return getAttDriverFetcher(driver.getType(), driver.getName())
             .getChildren(driver.getId(), pid, remotePath)
             .flatMap(attachmentService::save);

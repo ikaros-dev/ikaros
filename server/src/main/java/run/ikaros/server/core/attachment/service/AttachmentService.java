@@ -32,7 +32,7 @@ public interface AttachmentService {
 
     Mono<AttachmentEntity> findEntityById(UUID attachmentId);
 
-    Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type, @Nullable Long parentId,
+    Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type, @Nullable UUID parentId,
                                                   String name);
 
     Mono<Void> removeById(UUID attachmentId);
@@ -47,33 +47,33 @@ public interface AttachmentService {
     Mono<Void> removeByIdOnlyRecords(UUID attachmentId);
 
     Mono<Void> removeByTypeAndParentIdAndName(
-        AttachmentType type, @Nullable Long parentId, String name);
+        AttachmentType type, @Nullable UUID parentId, String name);
 
     Mono<Void> receiveAndHandleFragmentUploadChunkFile(@NotBlank String unique,
                                                        @Nonnull Long uploadLength,
                                                        @Nonnull Long uploadOffset,
                                                        @NotBlank String uploadName,
                                                        byte[] bytes,
-                                                       @Nullable Long parentId);
+                                                       @Nullable UUID parentId);
 
     Mono<Void> revertFragmentUploadFile(@NotBlank String unique);
 
-    Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name);
+    Mono<Attachment> createDirectory(@Nullable UUID parentId, @NotBlank String name);
 
-    Mono<List<Attachment>> findAttachmentPathDirsById(Long id);
+    Mono<List<Attachment>> findAttachmentPathDirsById(UUID id);
 
-    Mono<Boolean> existsByParentIdAndName(@Nullable Long parentId, String name);
+    Mono<Boolean> existsByParentIdAndName(@Nullable UUID parentId, String name);
 
     Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
-                                                 @Nullable Long parentId, String name);
+                                                 @Nullable UUID parentId, String name);
 
-    Mono<String> getDownloadUrl(Long aid);
+    Mono<String> getDownloadUrl(UUID aid);
 
-    Mono<String> getReadUrl(Long aid);
+    Mono<String> getReadUrl(UUID aid);
 
-    Mono<AttachmentStreamVo> getStreamById(long aid);
+    Mono<AttachmentStreamVo> getStreamById(UUID aid);
 
-    Mono<Flux<DataBuffer>> getStreamByIdWithRange(long aid, long start, long end);
+    Mono<Flux<DataBuffer>> getStreamByIdWithRange(UUID aid, long start, long end);
 
-    Mono<Flux<DataBuffer>> getStreamByIdWithoutRange(long aid);
+    Mono<Flux<DataBuffer>> getStreamByIdWithoutRange(UUID aid);
 }

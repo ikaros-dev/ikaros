@@ -54,7 +54,7 @@ public class DefaultEpisodeService implements EpisodeService {
     public Mono<Episode> save(Episode episode) {
         Assert.notNull(episode, "episode must not be null");
         Long episodeId = episode.getId();
-        if (episodeId != null && episodeId > 0) {
+        if (episodeId != null) {
             return episodeRepository.findById(episodeId)
                 .flatMap(entity -> copyProperties(episode, entity))
                 .flatMap(episodeRepository::save)

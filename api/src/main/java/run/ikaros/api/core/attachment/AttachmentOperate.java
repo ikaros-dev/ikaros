@@ -2,6 +2,7 @@ package run.ikaros.api.core.attachment;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.plugin.AllowPluginOperate;
 import run.ikaros.api.store.enums.AttachmentType;
@@ -15,15 +16,15 @@ public interface AttachmentOperate extends AllowPluginOperate {
 
     Mono<Attachment> upload(AttachmentUploadCondition uploadCondition);
 
-    Mono<Attachment> findById(Long attachmentId);
+    Mono<Attachment> findById(UUID attachmentId);
 
-    Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type, @Nullable Long parentId,
+    Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type, @Nullable UUID parentId,
                                                   String name);
 
-    Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name);
+    Mono<Attachment> createDirectory(@Nullable UUID parentId, @NotBlank String name);
 
-    Mono<Boolean> existsByParentIdAndName(@Nullable Long parentId, String name);
+    Mono<Boolean> existsByParentIdAndName(@Nullable UUID parentId, String name);
 
     Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
-                                                 @Nullable Long parentId, String name);
+                                                 @Nullable UUID parentId, String name);
 }

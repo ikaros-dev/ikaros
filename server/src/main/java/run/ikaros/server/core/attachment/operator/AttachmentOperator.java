@@ -1,6 +1,7 @@
 package run.ikaros.server.core.attachment.operator;
 
 import jakarta.annotation.Nullable;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -37,29 +38,29 @@ public class AttachmentOperator implements AttachmentOperate {
     }
 
     @Override
-    public Mono<Attachment> findById(Long attachmentId) {
+    public Mono<Attachment> findById(UUID attachmentId) {
         return service.findById(attachmentId);
     }
 
     @Override
     public Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type,
-                                                         @Nullable Long parentId, String name) {
+                                                         @Nullable UUID parentId, String name) {
         return service.findByTypeAndParentIdAndName(type, parentId, name);
     }
 
     @Override
-    public Mono<Attachment> createDirectory(@Nullable Long parentId, String name) {
+    public Mono<Attachment> createDirectory(@Nullable UUID parentId, String name) {
         return service.createDirectory(parentId, name);
     }
 
     @Override
-    public Mono<Boolean> existsByParentIdAndName(@Nullable Long parentId, String name) {
+    public Mono<Boolean> existsByParentIdAndName(@Nullable UUID parentId, String name) {
         return service.existsByParentIdAndName(parentId, name);
     }
 
     @Override
     public Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
-                                                        @Nullable Long parentId, String name) {
+                                                        @Nullable UUID parentId, String name) {
         return service.existsByTypeAndParentIdAndName(type, parentId, name);
     }
 }

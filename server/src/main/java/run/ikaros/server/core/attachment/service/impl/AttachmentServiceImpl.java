@@ -782,8 +782,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
-    public Mono<String> getReadUrl(Long aid) {
-        Assert.isTrue(aid >= 0, "'aid' must >= 0.");
+    public Mono<String> getReadUrl(UUID aid) {
         return repository.findById(aid)
             .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
                 .startsWith("DRIVER_"))
@@ -807,8 +806,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
-    public Mono<AttachmentStreamVo> getStreamById(long aid) {
-        Assert.isTrue(aid >= 0, "'aid' must >= 0.");
+    public Mono<AttachmentStreamVo> getStreamById(UUID aid) {
         return repository.findById(aid)
             .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
                 .startsWith("DRIVER_"))
@@ -859,8 +857,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
-    public Mono<Flux<DataBuffer>> getStreamByIdWithRange(long aid, long start, long end) {
-        Assert.isTrue(aid >= 0, "'aid' must >= 0.");
+    public Mono<Flux<DataBuffer>> getStreamByIdWithRange(UUID aid, long start, long end) {
         return repository.findById(aid)
             .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
                 .startsWith("DRIVER_"))
@@ -947,8 +944,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
-    public Mono<Flux<DataBuffer>> getStreamByIdWithoutRange(long aid) {
-        Assert.isTrue(aid >= 0, "'aid' must >= 0.");
+    public Mono<Flux<DataBuffer>> getStreamByIdWithoutRange(UUID aid) {
         return repository.findById(aid)
             .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
                 .startsWith("DRIVER_"))

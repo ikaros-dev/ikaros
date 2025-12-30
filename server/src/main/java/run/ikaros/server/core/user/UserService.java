@@ -2,6 +2,7 @@ package run.ikaros.server.core.user;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -60,5 +61,5 @@ public interface UserService {
 
     Mono<User> getUserFromSecurityContext();
 
-    Mono<Long> getUserIdFromSecurityContext();
+    Mono<UUID> getUserIdFromSecurityContext();
 }

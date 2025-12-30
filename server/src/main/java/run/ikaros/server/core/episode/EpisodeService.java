@@ -1,6 +1,7 @@
 package run.ikaros.server.core.episode;
 
 import java.util.List;
+import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,32 +14,32 @@ public interface EpisodeService {
     @Transactional
     Mono<Episode> save(Episode episode);
 
-    Mono<Episode> findById(Long episodeId);
+    Mono<Episode> findById(UUID episodeId);
 
-    Flux<Episode> findAllBySubjectId(Long subjectId);
+    Flux<Episode> findAllBySubjectId(UUID subjectId);
 
-    Flux<EpisodeRecord> findRecordsBySubjectId(Long subjectId);
+    Flux<EpisodeRecord> findRecordsBySubjectId(UUID subjectId);
 
     Mono<Episode> findBySubjectIdAndGroupAndSequenceAndName(
-        Long subjectId, EpisodeGroup group, Float sequence, String name);
+        UUID subjectId, EpisodeGroup group, Float sequence, String name);
 
-    Flux<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
+    Flux<Episode> findBySubjectIdAndGroupAndSequence(UUID subjectId, EpisodeGroup group,
                                                      Float sequence);
 
-    Mono<Void> deleteById(Long episodeId);
+    Mono<Void> deleteById(UUID episodeId);
 
-    Mono<Long> countBySubjectId(Long subjectId);
+    Mono<Long> countBySubjectId(UUID subjectId);
 
     /**
      * 当前条目已经绑定附件的剧集数量.
      */
-    Mono<Long> countMatchingBySubjectId(Long subjectId);
+    Mono<Long> countMatchingBySubjectId(UUID subjectId);
 
-    Flux<EpisodeResource> findResourcesById(Long episodeId);
+    Flux<EpisodeResource> findResourcesById(UUID episodeId);
 
     /**
      * 更新条目的剧集，逻辑是删除旧的添加新的.
      */
     @Transactional
-    Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes);
+    Flux<Episode> updateEpisodesWithSubjectId(UUID subjectId, List<Episode> episodes);
 }

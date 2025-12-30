@@ -1,5 +1,6 @@
 package run.ikaros.server.core.authority;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
@@ -72,8 +73,7 @@ public class DefaultAuthorityService implements AuthorityService {
     }
 
     @Override
-    public Mono<Void> deleteById(Long id) {
-        Assert.isTrue(id >= 0, "id must not be negative");
+    public Mono<Void> deleteById(UUID id) {
         return authorityRepository.deleteById(id);
     }
 
