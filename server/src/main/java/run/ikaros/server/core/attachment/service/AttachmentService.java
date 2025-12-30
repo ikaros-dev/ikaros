@@ -4,6 +4,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,23 +28,23 @@ public interface AttachmentService {
 
     Mono<PagingWrap<Attachment>> listByCondition(AttachmentSearchCondition searchCondition);
 
-    Mono<Attachment> findById(Long attachmentId);
+    Mono<Attachment> findById(UUID attachmentId);
 
-    Mono<AttachmentEntity> findEntityById(Long attachmentId);
+    Mono<AttachmentEntity> findEntityById(UUID attachmentId);
 
     Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type, @Nullable Long parentId,
                                                   String name);
 
-    Mono<Void> removeById(Long attachmentId);
+    Mono<Void> removeById(UUID attachmentId);
 
-    Mono<Void> removeByIdForcibly(Long attachmentId);
+    Mono<Void> removeByIdForcibly(UUID attachmentId);
 
     /**
      * 只删除数据库里的表纪录，不涉及文件系统.
      *
      * @param attachmentId 附件ID
      */
-    Mono<Void> removeByIdOnlyRecords(Long attachmentId);
+    Mono<Void> removeByIdOnlyRecords(UUID attachmentId);
 
     Mono<Void> removeByTypeAndParentIdAndName(
         AttachmentType type, @Nullable Long parentId, String name);

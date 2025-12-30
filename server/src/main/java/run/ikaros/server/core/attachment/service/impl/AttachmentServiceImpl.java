@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -135,7 +136,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         Assert.notNull(attachment, "'attachment' must not be null.");
         attachment.setParentId(Optional.ofNullable(attachment.getParentId())
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID));
-        final Long newParentId = attachment.getParentId();
+        final UUID newParentId = attachment.getParentId();
         Mono<AttachmentEntity> attachmentEntityMono =
             Objects.isNull(attachment.getId())
                 ? copyProperties(attachment, new AttachmentEntity())
@@ -150,7 +151,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private Mono<AttachmentEntity> updatePathWhenNewParentId(AttachmentEntity attachmentEntity,
-                                                             Long newParentId) {
+                                                             UUID newParentId) {
         if (Objects.equals(newParentId, attachmentEntity.getParentId())) {
             return Mono.just(attachmentEntity);
         }
@@ -251,7 +252,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             .then(Mono.just(attachmentEntity));
     }
 
-    private Mono<Long> checkAttachmentRefNotExists(Long attachmentId) {
+    private Mono<UUID> checkAttachmentRefNotExists(UUID attachmentId) {
         return repository.findById(attachmentId)
             .flatMap(this::checkChildAttachmentRefNotExists)
             .flatMap(entity -> referenceRepository.existsByAttachmentId(entity.getId())
@@ -281,7 +282,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             .then(Mono.just(attachmentEntity));
     }
 
-    private Mono<Long> checkAttachmentRelNotExists(Long attachmentId) {
+    private Mono<Long> checkAttachmentRelNotExists(UUID attachmentId) {
         return repository.findById(attachmentId)
             .flatMap(this::checkChildAttachmentRelNotExists)
             .flatMap(entity -> relationRepository.existsByAttachmentId(entity.getId())
@@ -353,8 +354,8 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> removeById(Long attachmentId) {
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
+    public Mono<Void> removeById(UUID attachmentId) {
+        Assert.notNull(attachmentId, "'attachmentId' must not null.");
         if (AttachmentConst.COVER_DIRECTORY_ID.equals(attachmentId)
             || AttachmentConst.DOWNLOAD_DIRECTORY_ID.equals(attachmentId)) {
             return Mono.error(new AttachmentRemoveException(
@@ -370,8 +371,8 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> removeByIdForcibly(Long attachmentId) {
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
+    public Mono<Void> removeByIdForcibly(UUID attachmentId) {
+        Assert.notNull(attachmentId, "'attachmentId' must not null.");
         return repository.findById(attachmentId)
             .flatMap(this::removeChildrenAttachmentForcibly)
             .map(this::removeFileSystemFile)
@@ -379,8 +380,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
-    public Mono<Void> removeByIdOnlyRecords(Long attachmentId) {
-        Assert.isTrue(attachmentId >= 0, "'attachmentId' must gt 0.");
+    public Mono<Void> removeByIdOnlyRecords(UUID attachmentId) {
+        Assert.notNull(attachmentId, "'attachmentId' must not null.");
         return repository.findById(attachmentId)
             .flatMap(this::removeChildrenAttachmentOnlyRecords)
             .flatMap(this::deleteEntityWithLogic);
@@ -390,7 +391,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     @MonoCacheEvict
     public Mono<Void> removeByTypeAndParentIdAndName(AttachmentType type,
-                                                     @Nullable Long parentId, String name) {
+                                                     @Nullable UUID parentId, String name) {
         Assert.notNull(type, "'type' must not null.");
         Assert.hasText(name, "'name' must has text.");
         if (Objects.isNull(parentId)) {
@@ -408,7 +409,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         String name = uploadCondition.getName();
         final Boolean isAutoReName =
             Optional.ofNullable(uploadCondition.getIsAutoReName()).orElse(true);
-        Long parentId = Optional.ofNullable(uploadCondition.getParentId())
+        UUID parentId = Optional.ofNullable(uploadCondition.getParentId())
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID);
 
         // build file upload path
@@ -450,15 +451,13 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     @MonoCacheable(value = "attachment:id:", key = "#attachmentId")
-    public Mono<Attachment> findById(Long attachmentId) {
-        Assert.isTrue(attachmentId >= 0, "'attachmentId' must gt -1.");
+    public Mono<Attachment> findById(UUID attachmentId) {
         return repository.findById(attachmentId)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }
 
     @Override
-    public Mono<AttachmentEntity> findEntityById(Long attachmentId) {
-        Assert.isTrue(attachmentId >= 0, "'attachmentId' must gt -1.");
+    public Mono<AttachmentEntity> findEntityById(UUID attachmentId) {
         return repository.findById(attachmentId);
     }
 
@@ -466,7 +465,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheable(value = "attachment:id:",
         key = "#type.toString() + ' ' + (#parentId?.toString() ?: '') + ' ' + #name")
     public Mono<Attachment> findByTypeAndParentIdAndName(AttachmentType type,
-                                                         @Nullable Long parentId, String name) {
+                                                         @Nullable UUID parentId, String name) {
         Assert.notNull(type, "'type' must not null.");
         Assert.hasText(name, "'name' must has text.");
         if (Objects.isNull(parentId)) {
@@ -541,7 +540,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                                                               @Nonnull Long uploadLength,
                                                               @Nonnull Long uploadOffset,
                                                               String uploadName, byte[] bytes,
-                                                              @Nullable Long parentId) {
+                                                              @Nullable UUID parentId) {
         Assert.hasText(unique, "'unique' must has text.");
         Assert.notNull(uploadLength, "'uploadLength' must not null.");
         Assert.notNull(uploadOffset, "'uploadOffset' must not null.");
@@ -584,7 +583,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             }
             tempChunkFileCacheDir.delete();
 
-            Long finalParentId = parentId;
+            UUID finalParentId = parentId;
             return
                 // rename if  exists same file.
                 repository.existsByTypeAndParentIdAndName(
@@ -685,9 +684,9 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     @MonoCacheEvict
-    public Mono<Attachment> createDirectory(@Nullable Long parentId, @NotBlank String name) {
+    public Mono<Attachment> createDirectory(@Nullable UUID parentId, @NotBlank String name) {
         Assert.hasText(name, "'name' must has text.");
-        final Long fParentId =
+        final UUID fParentId =
             Optional.ofNullable(parentId).orElse(AttachmentConst.ROOT_DIRECTORY_ID);
         return repository.existsById(fParentId)
             .filter(exists -> exists)
@@ -707,8 +706,7 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     @MonoCacheable(value = "attachments:", key = "#id")
-    public Mono<List<Attachment>> findAttachmentPathDirsById(Long id) {
-        Assert.isTrue(id >= 0, "'id' must >= 0.");
+    public Mono<List<Attachment>> findAttachmentPathDirsById(UUID id) {
         return findPathDirs(id, new ArrayList<>())
             .flatMap(attEntities -> repository.findById(id)
                 .filter(attachmentEntity ->
@@ -727,7 +725,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     @MonoCacheable(value = "attachment:exists:",
         key = "(#parentId?.toString() ?: '') + ' ' + #name")
-    public Mono<Boolean> existsByParentIdAndName(@Nullable Long parentId, String name) {
+    public Mono<Boolean> existsByParentIdAndName(@Nullable UUID parentId, String name) {
         Assert.hasText(name, "'name' must has text.");
         if (Objects.isNull(parentId)) {
             parentId = AttachmentConst.ROOT_DIRECTORY_ID;
@@ -739,7 +737,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheable(value = "attachment:exists:",
         key = "#type.toString() + ' ' + (#parentId?.toString() ?: '') + ' ' + #name")
     public Mono<Boolean> existsByTypeAndParentIdAndName(AttachmentType type,
-                                                        @Nullable Long parentId,
+                                                        @Nullable UUID parentId,
                                                         String name) {
         Assert.notNull(type, "'type' must not null.");
         Assert.hasText(name, "'name' must has text.");
@@ -766,8 +764,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
-    public Mono<String> getDownloadUrl(Long aid) {
-        Assert.isTrue(aid >= 0, "'aid' must >= 0.");
+    public Mono<String> getDownloadUrl(UUID aid) {
         return repository.findById(aid)
             .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
                 .startsWith("DRIVER_"))
@@ -994,7 +991,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
 
-    private Mono<List<AttachmentEntity>> findPathDirs(long id, List<AttachmentEntity> entities) {
+    private Mono<List<AttachmentEntity>> findPathDirs(UUID id, List<AttachmentEntity> entities) {
         if (ROOT_DIRECTORY_PARENT_ID.equals(id)) {
             Collections.reverse(entities);
             return Mono.just(entities);
@@ -1008,7 +1005,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             });
     }
 
-    private Mono<String> findPathByParentId(Long parentId, String name) {
+    private Mono<String> findPathByParentId(UUID parentId, String name) {
         if (ROOT_DIRECTORY_ID.equals(parentId)) {
             return Mono.just('/' + name);
         }
