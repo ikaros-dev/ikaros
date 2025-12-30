@@ -54,19 +54,16 @@ public class DefaultMigrationService implements MigrationService {
                 Map<String, Object> row = new HashMap<>(tuple.getT2());
                 row.putIfAbsent("uuid", UuidV7Utils.generate());
                 return Flux.defer(() -> {
-                    String csvLine;
+                    String csvLine = convertRowToCsv(row) + "\n";
                     if (index == 0) {
                         // 第一行：表头
-                        csvLine = String.join(",", row.keySet()) + "\n";
-                    } else {
-                        // 数据行
-                        csvLine = convertRowToCsv(row) + "\n";
+                        csvLine = String.join(",", row.keySet()) + "\n" + csvLine;
                     }
                     return Flux.just(
                         dataBufferFactory.wrap(csvLine.getBytes(StandardCharsets.UTF_8)));
                 });
             })
-            .startWith(dataBufferFactory.wrap("".getBytes()));
+            .startWith(dataBufferFactory.wrap("".getBytes(StandardCharsets.UTF_8)));
     }
 
     @Override
