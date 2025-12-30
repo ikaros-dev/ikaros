@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +21,7 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 @EqualsAndHashCode(callSuper = true)
 public class SubjectSyncEntity extends BaseEntity {
     @Column("subject_id")
-    private Long subjectId;
+    private UUID subjectId;
 
     @Column("platform")
     private SubjectSyncPlatform platform;

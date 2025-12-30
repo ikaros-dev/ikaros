@@ -47,6 +47,6 @@ public class AttachmentEntity {
     private LocalDateTime updateTime;
     private Boolean deleted;
     @Column("driver_id")
-    private Long driverId;
+    private UUID driverId;
     private String sha1;
 }
