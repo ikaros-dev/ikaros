@@ -498,6 +498,9 @@ public class AttachmentEndpoint implements CoreEndpoint {
         String contentType = "";
         if (FileUtils.isDocument(postfix)) {
             contentType = "text/plain; charset=utf-8";
+            if ("csv".equalsIgnoreCase(postfix)) {
+                contentType = "text/csv; charset=utf-8";
+            }
         } else if (FileUtils.isImage(postfix)) {
             contentType = "image/" + postfix;
         } else if (FileUtils.isVoice(postfix)) {
