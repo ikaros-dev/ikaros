@@ -5,6 +5,7 @@ public interface FileConst {
      * File import(upload) dir name in work dir.
      */
     String DEFAULT_DIR_NAME = "files";
+    String DEFAULT_CACHE_DIR_NAME = "caches";
     String DEFAULT_IMPORT_DIR_NAME = "links";
     Long DEFAULT_FOLDER_ROOT_ID = 0L;
     String DEFAULT_FOLDER_ROOT_NAME = "root";
@@ -24,7 +25,9 @@ public interface FileConst {
         };
 
         String[] DOCUMENTS = {
-            "txt", "doc", "docx", "ppt", "xlsx", "pptx", "ass", "md", "mdc"
+            "txt", "doc", "docx", "ppt", "xlsx", "pptx", "ass", "md", "mdc", "log",
+            "html", "htm", "shtml", "xhtml",
+            "css", "js", "mjs", "xml", "rtf", "csv"
         };
         String[] VOICES = {
             "mp3", "wma", "wav", "ape", "flac", "ogg", "aac"

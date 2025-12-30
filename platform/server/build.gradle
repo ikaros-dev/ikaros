@@ -15,6 +15,7 @@ ext {
     jsoup = '1.15.3'
     springDocOpenAPI = "2.5.0"
     lucene = "9.5.0"
+    uuidCreator = "1.0.7"
 }
 
 javaPlatform {
@@ -26,13 +27,14 @@ dependencies {
 
     constraints {
         api "org.springdoc:springdoc-openapi-starter-webflux-ui:$springDocOpenAPI"
-        api 'org.openapi4j:openapi-schema-validator:1.0.7'
+        api "org.openapi4j:openapi-schema-validator:$uuidCreator"
 
         api "org.apache.commons:commons-lang3:$commonsLang3"
         api "org.pf4j:pf4j:$pf4j"
         api "org.jsoup:jsoup:$jsoup"
         api "org.springframework.integration:spring-integration-core"
         api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
+        api 'com.github.f4b6a3:uuid-creator:6.1.1'
 
         // Apache Lucene
         api "org.apache.lucene:lucene-core:$lucene"
