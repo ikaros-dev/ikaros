@@ -21,7 +21,6 @@
             <column name="name_cn" type="VARCHAR(255)"/>
             <column name="description" type="VARCHAR(50000)"/>
             <column name="air_time" type="TIMESTAMP(6)"/>
-            <column name="sequence" type="INT8"/>
             <column name="ep_group" type="VARCHAR(50)"/>
             <column name="sequence" type="REAL">
                 <constraints nullable="true" />
