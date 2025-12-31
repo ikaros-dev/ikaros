@@ -15,7 +15,7 @@ public interface EpisodeOperate extends AllowPluginOperate {
     Flux<Episode> findAllBySubjectId(UUID subjectId);
 
     Mono<Episode> findBySubjectIdAndGroupAndSequenceAndName(
-        Long subjectId, EpisodeGroup group, Float sequence, String name);
+        UUID subjectId, EpisodeGroup group, Float sequence, String name);
 
     Flux<Episode> findBySubjectIdAndGroupAndSequence(UUID subjectId, EpisodeGroup group,
                                                      Float sequence);

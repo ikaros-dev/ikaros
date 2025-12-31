@@ -5,6 +5,7 @@ import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuil
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.apiresponse.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -18,7 +19,7 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeRecord;
 import run.ikaros.api.core.subject.EpisodeResource;
-import run.ikaros.api.infra.utils.StringUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
@@ -178,36 +179,31 @@ public class EpisodeEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getCountTotalBySubjectId(ServerRequest request) {
-        String id = request.pathVariable("id");
-        Long subjectId = Long.valueOf(id);
+        UUID subjectId = UuidV7Utils.fromString(request.pathVariable("id"));
         return episodeService.countBySubjectId(subjectId)
             .flatMap(count -> ServerResponse.ok().bodyValue(count));
     }
 
     private Mono<ServerResponse> getCountMatchingBySubjectId(ServerRequest request) {
-        String id = request.pathVariable("id");
-        Long subjectId = Long.valueOf(id);
+        UUID subjectId = UuidV7Utils.fromString(request.pathVariable("id"));
         return episodeService.countMatchingBySubjectId(subjectId)
             .flatMap(count -> ServerResponse.ok().bodyValue(count));
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
-        String id = request.pathVariable("id");
-        Long episodeId = Long.valueOf(id);
+        UUID episodeId = UuidV7Utils.fromString(request.pathVariable("id"));
         return episodeService.deleteById(episodeId)
             .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {
-        String id = request.pathVariable("id");
-        Long episodeId = Long.valueOf(id);
+        UUID episodeId = UuidV7Utils.fromString(request.pathVariable("id"));
         return episodeService.findById(episodeId)
             .flatMap(episode -> ServerResponse.ok().bodyValue(episode));
     }
 
     private Mono<ServerResponse> getBySubjectIdAndGroupAndSequence(ServerRequest request) {
-        String id = request.pathVariable("id");
-        Long subjectId = StringUtils.isNotBlank(id) ? Long.parseLong(id) : -1L;
+        UUID subjectId = UuidV7Utils.fromString(request.pathVariable("id"));
         EpisodeGroup group =
             EpisodeGroup.valueOf(request.queryParam("group").orElse(EpisodeGroup.MAIN.name()));
         Float sequence = Float.valueOf(request.queryParam("sequence").orElse("0"));
@@ -231,24 +227,21 @@ public class EpisodeEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getAllBySubjectId(ServerRequest request) {
-        String id = request.pathVariable("id");
-        Long subjectId = Long.valueOf(id);
+        UUID subjectId = UuidV7Utils.fromString(request.pathVariable("id"));
         return episodeService.findAllBySubjectId(subjectId)
             .collectList()
             .flatMap(episodes -> ServerResponse.ok().bodyValue(episodes));
     }
 
     private Mono<ServerResponse> getRecordsBySubjectId(ServerRequest request) {
-        String id = request.pathVariable("id");
-        Long subjectId = Long.valueOf(id);
+        UUID subjectId = UuidV7Utils.fromString(request.pathVariable("id"));
         return episodeService.findRecordsBySubjectId(subjectId)
             .collectList()
             .flatMap(episodes -> ServerResponse.ok().bodyValue(episodes));
     }
 
     private Mono<ServerResponse> getAttachmentRefsById(ServerRequest request) {
-        String id = request.pathVariable("id");
-        Long episodeId = Long.valueOf(id);
+        UUID episodeId = UuidV7Utils.fromString(request.pathVariable("id"));
         return episodeService.findResourcesById(episodeId)
             .collectList()
             .flatMap(episodeResources -> ServerResponse.ok().bodyValue(episodeResources));

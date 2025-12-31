@@ -188,8 +188,8 @@ class AttachmentServiceTest {
             return false;
         }
 
-        oldAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
-        newAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
+        /// oldAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
+        // newAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
 
         boolean result = true;
         for (int i = 0; i < oldAttachments.size(); i++) {

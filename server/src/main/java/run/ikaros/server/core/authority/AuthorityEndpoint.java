@@ -4,6 +4,7 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.authority.Authority;
 import run.ikaros.api.core.authority.AuthorityCondition;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AuthorityType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -114,7 +116,7 @@ public class AuthorityEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> deleteAuthorityById(ServerRequest serverRequest) {
-        Long id = Long.valueOf(serverRequest.pathVariable("id"));
+        UUID id = UuidV7Utils.fromString((serverRequest.pathVariable("id")));
         return authorityService.deleteById(id)
             .then(ServerResponse.ok().bodyValue(id));
     }

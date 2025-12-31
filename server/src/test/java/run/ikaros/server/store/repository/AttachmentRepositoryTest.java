@@ -1,6 +1,7 @@
 package run.ikaros.server.store.repository;
 
 import java.util.List;
+import java.util.Objects;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -40,17 +41,17 @@ class AttachmentRepositoryTest {
         StepVerifier.create(repository.save(AttachmentEntity.builder()
                 .name(videoAttName).type(AttachmentType.File).path(videoAttName)
                 .build()).map(AttachmentEntity::getId))
-            .expectNextMatches(id -> id != null && id > 0)
+            .expectNextMatches(Objects::nonNull)
             .verifyComplete();
         StepVerifier.create(repository.save(AttachmentEntity.builder()
                 .name(assScSubtitleAttName).type(AttachmentType.File).path(videoAttName)
                 .build()).map(AttachmentEntity::getId))
-            .expectNextMatches(id -> id != null && id > 0)
+            .expectNextMatches(Objects::nonNull)
             .verifyComplete();
         StepVerifier.create(repository.save(AttachmentEntity.builder()
                 .name(assTcSubtitleAttName).type(AttachmentType.File).path(videoAttName)
                 .build()).map(AttachmentEntity::getId))
-            .expectNextMatches(id -> id != null && id > 0)
+            .expectNextMatches(Objects::nonNull)
             .verifyComplete();
 
 

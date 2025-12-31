@@ -6,7 +6,7 @@ import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +16,7 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.core.subject.service.SubjectService;
 
@@ -34,7 +35,7 @@ class SubjectServiceTest {
     @Test
     void findByIdWhenIdNotGtZero() {
         try {
-            subjectService.findById(Long.MIN_VALUE).block(AppConst.BLOCK_TIMEOUT);
+            subjectService.findById(UuidV7Utils.generateUuid()).block(AppConst.BLOCK_TIMEOUT);
         } catch (Exception e) {
             assertThat(e).isInstanceOf(IllegalArgumentException.class);
         }
@@ -42,14 +43,14 @@ class SubjectServiceTest {
 
     @Test
     void findByIdWhenRecordNotExists() {
-        StepVerifier.create(subjectService.findById(Long.MAX_VALUE))
+        StepVerifier.create(subjectService.findById(UuidV7Utils.generateUuid()))
             .verifyComplete();
     }
 
     @Test
     void findByIdWhenRecordExists() {
         var subject = createSubjectInstance();
-        AtomicReference<Long> subjectId = new AtomicReference<>();
+        AtomicReference<UUID> subjectId = new AtomicReference<>();
         StepVerifier.create(subjectService.create(subject))
             .expectNextMatches(sub -> {
                 subjectId.set(sub.getId());
@@ -57,7 +58,7 @@ class SubjectServiceTest {
             })
             .verifyComplete();
 
-        assertThat(subjectId.get()).isGreaterThan(0);
+        assertThat(subjectId.get()).isNotNull();
 
         // Verify findById when subject record exists
         StepVerifier.create(subjectService.findById(subjectId.get()))
@@ -70,7 +71,8 @@ class SubjectServiceTest {
     @Test
     void findByBgmIdWhenIdNotGtZero() {
         try {
-            subjectService.findByBgmId(Long.MIN_VALUE, Long.MIN_VALUE).block(BLOCK_TIMEOUT);
+            subjectService.findByBgmId(UuidV7Utils.generateUuid(), UuidV7Utils.generate())
+                .block(BLOCK_TIMEOUT);
         } catch (Exception e) {
             assertThat(e).isInstanceOf(IllegalArgumentException.class);
         }
@@ -78,15 +80,16 @@ class SubjectServiceTest {
 
     @Test
     void findByBgmIdWhenRecordNotExists() {
-        StepVerifier.create(subjectService.findByBgmId(Long.MAX_VALUE, Long.MAX_VALUE))
-            .expectErrorMessage("Not found subject by bgmtv_id: " + Long.MAX_VALUE)
+        StepVerifier.create(
+                subjectService.findByBgmId(UuidV7Utils.generateUuid(), UuidV7Utils.generate()))
+            .expectErrorMessage("Not found subject by bgmtv_id: " + UuidV7Utils.generateUuid())
             .verify();
     }
 
     @Test
     void findByBgmIdWhenSubjectExists() {
         var subject = createSubjectInstance();
-        AtomicLong subjectId = new AtomicLong();
+        AtomicReference<UUID> subjectId = new AtomicReference<>(UuidV7Utils.generateUuid());
         StepVerifier.create(subjectService.create(subject))
             .expectNextMatches(subject1 -> {
                 subjectId.set(subject1.getId());
@@ -94,7 +97,7 @@ class SubjectServiceTest {
             })
             .verifyComplete();
 
-        assertThat(subjectId.get()).isGreaterThan(0);
+        assertThat(subjectId.get()).isNotNull();
 
         // Verify findById when subject record exists
         StepVerifier.create(subjectService.findById(subjectId.get()))
@@ -105,7 +108,7 @@ class SubjectServiceTest {
             .verifyComplete();
 
         // Verify findByBgmId when subject record exists
-        StepVerifier.create(subjectService.findByBgmId(subjectId.get(), Long.MAX_VALUE))
+        StepVerifier.create(subjectService.findByBgmId(subjectId.get(), UuidV7Utils.generate()))
             .expectError(NotFoundException.class)
             .verify();
     }
@@ -132,7 +135,7 @@ class SubjectServiceTest {
 
     @Test
     void deleteByIdWhenIdNotGtZero() {
-        StepVerifier.create(subjectService.deleteById(Long.MIN_VALUE))
+        StepVerifier.create(subjectService.deleteById(UuidV7Utils.generateUuid()))
             .expectErrorMatches(throwable -> (throwable instanceof IllegalArgumentException)
                 && "'id' must gt 0.".equals(throwable.getMessage())).verify();
     }

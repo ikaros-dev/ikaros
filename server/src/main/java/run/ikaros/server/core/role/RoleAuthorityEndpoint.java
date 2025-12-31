@@ -4,6 +4,7 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.authority.Authority;
 import run.ikaros.api.core.role.RoleAuthorityReqParams;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -78,7 +80,7 @@ public class RoleAuthorityEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getAuthoritiesForRole(ServerRequest serverRequest) {
-        Long roleId = Long.valueOf(serverRequest.pathVariable("roleId"));
+        UUID roleId = UuidV7Utils.fromString(serverRequest.pathVariable("roleId"));
         return roleAuthorityService.getAuthoritiesForRole(roleId)
             .collectList()
             .flatMap(authorities -> ServerResponse.ok().bodyValue(authorities));

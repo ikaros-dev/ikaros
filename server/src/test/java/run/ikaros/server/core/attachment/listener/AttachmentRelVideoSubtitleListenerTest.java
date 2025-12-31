@@ -1,6 +1,7 @@
 package run.ikaros.server.core.attachment.listener;
 
 import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,19 +50,19 @@ class AttachmentRelVideoSubtitleListenerTest {
             .name(videoAttName).type(AttachmentType.File).path(videoAttName)
             .build();
         StepVerifier.create(repository.save(videoAtt).map(AttachmentEntity::getId))
-            .expectNextMatches(id -> id != null && id > 0)
+            .expectNextMatches(Objects::nonNull)
             .verifyComplete();
         AttachmentEntity scSubtitleAtt = AttachmentEntity.builder()
             .name(assScSubtitleAttName).type(AttachmentType.File).path(videoAttName)
             .build();
         StepVerifier.create(repository.save(scSubtitleAtt).map(AttachmentEntity::getId))
-            .expectNextMatches(id -> id != null && id > 0)
+            .expectNextMatches(Objects::nonNull)
             .verifyComplete();
         AttachmentEntity tcSubtitleAtt = AttachmentEntity.builder()
             .name(assTcSubtitleAttName).type(AttachmentType.File).path(videoAttName)
             .build();
         StepVerifier.create(repository.save(tcSubtitleAtt).map(AttachmentEntity::getId))
-            .expectNextMatches(id -> id != null && id > 0)
+            .expectNextMatches(Objects::nonNull)
             .verifyComplete();
 
         // 操作

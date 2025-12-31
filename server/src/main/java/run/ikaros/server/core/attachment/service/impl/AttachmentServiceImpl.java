@@ -175,7 +175,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             ? searchCondition.getName().split(" ")
             : new String[] {};
         final AttachmentType type = searchCondition.getType();
-        final Long parentId = searchCondition.getParentId();
+        final UUID parentId = searchCondition.getParentId();
         final PageRequest pageRequest = PageRequest.of(page - 1, size);
 
         Criteria criteria = Criteria.empty();
@@ -282,7 +282,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             .then(Mono.just(attachmentEntity));
     }
 
-    private Mono<Long> checkAttachmentRelNotExists(UUID attachmentId) {
+    private Mono<UUID> checkAttachmentRelNotExists(UUID attachmentId) {
         return repository.findById(attachmentId)
             .flatMap(this::checkChildAttachmentRelNotExists)
             .flatMap(entity -> relationRepository.existsByAttachmentId(entity.getId())

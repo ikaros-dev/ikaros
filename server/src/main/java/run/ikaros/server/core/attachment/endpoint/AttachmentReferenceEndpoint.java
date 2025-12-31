@@ -3,6 +3,7 @@ package run.ikaros.server.core.attachment.endpoint;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -13,6 +14,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.AttachmentReference;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.server.core.attachment.service.AttachmentReferenceService;
 import run.ikaros.server.core.attachment.vo.BatchMatchingEpisodeAttachment;
@@ -101,8 +103,8 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
-        String id = request.queryParam("id").orElse("-1");
-        return service.removeById(Long.parseLong(id))
+        UUID id = UuidV7Utils.fromString(request.queryParam("id").orElse(""));
+        return service.removeById(id)
             .then(ServerResponse.ok()
                 .bodyValue("Delete success"));
     }
@@ -129,11 +131,7 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
         }
         AttachmentReferenceType type = AttachmentReferenceType.valueOf(typeOp.get());
 
-        Optional<String> attachmentIdOp = request.queryParam("attachmentId");
-        if (attachmentIdOp.isEmpty()) {
-            return ServerResponse.badRequest().bodyValue("attachmentId must has value.");
-        }
-        Long attachmentId = Long.valueOf(attachmentIdOp.get());
+        UUID attachmentId = UuidV7Utils.fromString(request.queryParam("attachmentId").orElse(""));
 
         return service.findAllByTypeAndAttachmentId(type, attachmentId)
             .collectList()

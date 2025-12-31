@@ -3,6 +3,7 @@ package run.ikaros.server.core.episode;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -53,7 +54,7 @@ public class DefaultEpisodeService implements EpisodeService {
     @MonoCacheEvict
     public Mono<Episode> save(Episode episode) {
         Assert.notNull(episode, "episode must not be null");
-        Long episodeId = episode.getId();
+        UUID episodeId = episode.getId();
         if (episodeId != null) {
             return episodeRepository.findById(episodeId)
                 .flatMap(entity -> copyProperties(episode, entity))
@@ -68,24 +69,24 @@ public class DefaultEpisodeService implements EpisodeService {
 
     @Override
     @MonoCacheable(value = "episode:id:", key = "#episodeId")
-    public Mono<Episode> findById(Long episodeId) {
-        Assert.isTrue(episodeId != null && episodeId > 0, "episode id must >= 0.");
+    public Mono<Episode> findById(UUID episodeId) {
+        Assert.notNull(episodeId, "episode must not null.");
         return episodeRepository.findById(episodeId)
             .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
     }
 
     @Override
     @FluxCacheable(value = "episodes:subjectId:", key = "#subjectId")
-    public Flux<Episode> findAllBySubjectId(Long subjectId) {
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+    public Flux<Episode> findAllBySubjectId(UUID subjectId) {
+        Assert.notNull(subjectId, "subjectId must not null.");
         return episodeRepository.findAllBySubjectId(subjectId)
             .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
     }
 
     @Override
     @FluxCacheable(value = "episodeRecords:subjectId:", key = "#subjectId")
-    public Flux<EpisodeRecord> findRecordsBySubjectId(Long subjectId) {
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+    public Flux<EpisodeRecord> findRecordsBySubjectId(UUID subjectId) {
+        Assert.notNull(subjectId, "subjectId must not null.");
         return findAllBySubjectId(subjectId)
             .flatMap(episode -> findResourcesById(episode.getId())
                 .collectList()
@@ -97,8 +98,8 @@ public class DefaultEpisodeService implements EpisodeService {
     @MonoCacheable(value = "episode:subjectId_group_sequence_name",
         key = "#subjectId + #group + #sequence + #name")
     public Mono<Episode> findBySubjectIdAndGroupAndSequenceAndName(
-        Long subjectId, EpisodeGroup group, Float sequence, String name) {
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+        UUID subjectId, EpisodeGroup group, Float sequence, String name) {
+        Assert.notNull(subjectId, "subjectId must not null.");
         Assert.notNull(group, "'group' must not be null");
         Assert.isTrue(sequence >= 0, "'sequence' must >= 0.");
         Assert.hasText(name, "'name' must not be empty.");
@@ -110,9 +111,9 @@ public class DefaultEpisodeService implements EpisodeService {
     @Override
     @FluxCacheable(value = "episode:subjectId_group_sequence",
         key = "#subjectId + #group + #sequence")
-    public Flux<Episode> findBySubjectIdAndGroupAndSequence(Long subjectId, EpisodeGroup group,
+    public Flux<Episode> findBySubjectIdAndGroupAndSequence(UUID subjectId, EpisodeGroup group,
                                                             Float sequence) {
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+        Assert.notNull(subjectId, "subjectId must not null.");
         Assert.notNull(group, "'group' must not be null");
         Assert.isTrue(sequence >= 0, "'sequence' must >= 0.");
         return episodeRepository.findBySubjectIdAndGroupAndSequence(
@@ -122,8 +123,8 @@ public class DefaultEpisodeService implements EpisodeService {
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> deleteById(Long episodeId) {
-        Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
+    public Mono<Void> deleteById(UUID episodeId) {
+        Assert.notNull(episodeId, "episodeId must not null.");
         return episodeRepository.findById(episodeId)
             .flatMap(entity -> episodeRepository.delete(entity)
                 .doOnSuccess(v -> {
@@ -135,15 +136,15 @@ public class DefaultEpisodeService implements EpisodeService {
 
     @Override
     @MonoCacheable(value = "episode:count:subjectId", key = "#subjectId")
-    public Mono<Long> countBySubjectId(Long subjectId) {
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+    public Mono<Long> countBySubjectId(UUID subjectId) {
+        Assert.notNull(subjectId, "subjectId must not null.");
         return episodeRepository.countBySubjectId(subjectId);
     }
 
     @Override
     @MonoCacheable(value = "episode:countMatching:subjectId", key = "#subjectId")
-    public Mono<Long> countMatchingBySubjectId(Long subjectId) {
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+    public Mono<Long> countMatchingBySubjectId(UUID subjectId) {
+        Assert.notNull(subjectId, "'subjectId' must not null.");
         return databaseClient.sql("select count(e.ID) from EPISODE e, ATTACHMENT_REFERENCE ar "
                 + "where ar.TYPE = 'EPISODE' and e.ID = ar.REFERENCE_ID "
                 + "and e.SUBJECT_ID = :subjectId")
@@ -155,8 +156,8 @@ public class DefaultEpisodeService implements EpisodeService {
 
     @Override
     @FluxCacheable(value = "episode_resources:episodeId", key = "#episodeId")
-    public Flux<EpisodeResource> findResourcesById(Long episodeId) {
-        Assert.isTrue(episodeId >= 0, "'episodeId' must >= 0.");
+    public Flux<EpisodeResource> findResourcesById(UUID episodeId) {
+        Assert.notNull(episodeId, "'episodeId' must not null.");
         return databaseClient.sql("select att_ref.ATTACHMENT_ID as attachment_id, "
                 + "att.PARENT_ID as parent_attachment_id, "
                 + "att_ref.REFERENCE_ID as episode_id, "
@@ -174,8 +175,8 @@ public class DefaultEpisodeService implements EpisodeService {
 
     @Override
     @FluxCacheEvict
-    public Flux<Episode> updateEpisodesWithSubjectId(Long subjectId, List<Episode> episodes) {
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0.");
+    public Flux<Episode> updateEpisodesWithSubjectId(UUID subjectId, List<Episode> episodes) {
+        Assert.notNull(subjectId, "'subjectId' must not null.");
         Assert.notNull(episodes, "'episodes' must not be null.");
 
         episodes.forEach(episode -> episode.setSubjectId(subjectId));

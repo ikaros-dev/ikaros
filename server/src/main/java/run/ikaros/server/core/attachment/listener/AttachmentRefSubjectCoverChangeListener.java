@@ -4,6 +4,7 @@ import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
 
 import java.time.ZoneOffset;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
@@ -37,9 +38,9 @@ public class AttachmentRefSubjectCoverChangeListener {
     @EventListener(SubjectAddEvent.class)
     public Mono<Void> onSubjectAdd(SubjectAddEvent event) {
         SubjectEntity subjectEntity = event.getEntity();
-        Long subjectId = subjectEntity.getId();
+        UUID subjectId = subjectEntity.getId();
         String cover = subjectEntity.getCover();
-        if (Objects.isNull(subjectId) || subjectId < 0 || StringUtils.isBlank(cover)) {
+        if (Objects.isNull(subjectId) || StringUtils.isBlank(cover)) {
             return Mono.empty();
         }
         return attachmentRepository.findByUrl(cover)
@@ -70,9 +71,9 @@ public class AttachmentRefSubjectCoverChangeListener {
     @EventListener(SubjectRemoveEvent.class)
     public Mono<Void> onSubjectRemove(SubjectRemoveEvent event) {
         SubjectEntity subjectEntity = event.getEntity();
-        Long subjectId = subjectEntity.getId();
+        UUID subjectId = subjectEntity.getId();
         String cover = subjectEntity.getCover();
-        if (Objects.isNull(subjectId) || subjectId < 0 || StringUtils.isBlank(cover)) {
+        if (Objects.isNull(subjectId) || StringUtils.isBlank(cover)) {
             return Mono.empty();
         }
         return attachmentRepository.findByUrl(cover)
