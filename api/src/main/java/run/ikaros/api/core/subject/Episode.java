@@ -31,7 +31,7 @@ public class Episode {
     /**
      * Create a default episode instance.
      */
-    public static Episode defaultEpisode(Long subjectId) {
+    public static Episode defaultEpisode(UUID subjectId) {
         Episode episode = new Episode();
         episode.setAirTime(LocalDateTime.now());
         episode.setSequence(1F);

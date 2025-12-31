@@ -1,10 +1,11 @@
 package run.ikaros.api.search.subject;
 
+import java.util.UUID;
 import org.springframework.util.Assert;
 import run.ikaros.api.store.enums.SubjectType;
 
 public record SubjectHint(
-    Long id,
+    UUID id,
     String name,
     String nameCn,
     String infobox,
