@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="V202512310455" author="Chivehao">
+        <comment>Create `role_authority` table</comment>
+        <createTable tableName="role_authority">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="role_id" type="UUID"/>
+            <column name="authority_id" type="UUID"/>
+        </createTable>
+        <createIndex tableName="role_authority" indexName="role_authority_id_uk" unique="true">
+            <column name="role_id" />
+            <column name="authority_id" />
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

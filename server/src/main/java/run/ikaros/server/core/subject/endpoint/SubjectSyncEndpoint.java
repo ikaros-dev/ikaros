@@ -4,6 +4,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.apiresponse.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -19,6 +20,7 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.subject.service.SubjectSyncService;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -99,9 +101,7 @@ public class SubjectSyncEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> sync(ServerRequest request) {
-        Optional<String> subjectIdOp = request.queryParam("subjectId");
-        Long subjectId = subjectIdOp.isPresent() && StringUtils.hasText(subjectIdOp.get())
-            ? Long.valueOf(subjectIdOp.get()) : null;
+        UUID subjectId = UuidV7Utils.fromString(request.queryParam("subjectId").orElse(""));
 
         Optional<String> platformOp = request.queryParam("platform");
         Assert.isTrue(platformOp.isPresent() && StringUtils.hasText(platformOp.get()),
@@ -115,7 +115,7 @@ public class SubjectSyncEndpoint implements CoreEndpoint {
 
 
         return service.sync(subjectId, platform, platformId)
-            .flatMap(subject -> ServerResponse.ok().bodyValue(subject))
+            .flatMap(subject -> ServerResponse.ok().bodyValue(subjectId))
             .onErrorResume(NoAvailableSubjectPlatformSynchronizerException.class,
                 err -> ServerResponse.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .bodyValue("Subject platform sync fail for subjectId="
@@ -125,8 +125,7 @@ public class SubjectSyncEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> findSubjectSyncsBySubjectId(ServerRequest request) {
-        String id = request.pathVariable("id");
-        long subjectId = Long.parseLong(id);
+        UUID subjectId = UuidV7Utils.fromString(request.pathVariable("id"));
         return service.findSubjectSyncsBySubjectId(subjectId)
             .collectList()
             .flatMap(list -> ServerResponse.ok().bodyValue(list));

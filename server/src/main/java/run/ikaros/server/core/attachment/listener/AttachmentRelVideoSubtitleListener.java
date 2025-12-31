@@ -3,6 +3,7 @@ package run.ikaros.server.core.attachment.listener;
 import static run.ikaros.api.store.enums.AttachmentType.Driver_File;
 import static run.ikaros.api.store.enums.AttachmentType.File;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -44,7 +45,7 @@ public class AttachmentRelVideoSubtitleListener {
         if (!AttachmentReferenceType.EPISODE.equals(entity.getType())) {
             return Mono.empty();
         }
-        Long attachmentId = entity.getAttachmentId();
+        UUID attachmentId = entity.getAttachmentId();
 
         return findAttachmentSubtitlesAndSaveRelationIfNotExists(attachmentId);
     }
@@ -57,11 +58,11 @@ public class AttachmentRelVideoSubtitleListener {
      */
     @EventListener(EpisodeAttachmentUpdateEvent.class)
     public Mono<Void> onSubjectAdd(EpisodeAttachmentUpdateEvent event) {
-        Long attachmentId = event.getAttachmentId();
+        UUID attachmentId = event.getAttachmentId();
         return findAttachmentSubtitlesAndSaveRelationIfNotExists(attachmentId);
     }
 
-    private Mono<Void> findAttachmentSubtitlesAndSaveRelationIfNotExists(Long attachmentId) {
+    private Mono<Void> findAttachmentSubtitlesAndSaveRelationIfNotExists(UUID attachmentId) {
         return attachmentRepository.findById(attachmentId)
             .flatMapMany(this::findAllAttachmentSubtitles)
             .map(VideoSubtitle::getAttachmentId)

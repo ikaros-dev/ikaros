@@ -4,6 +4,7 @@ import static run.ikaros.api.constant.OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -42,9 +43,8 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
     @Override
     @FluxCacheable(value = "attachment:relations:", key = "#type + ' ' + #attachmentId")
     public Flux<AttachmentRelation> findAllByTypeAndAttachmentId(AttachmentRelationType type,
-                                                                 Long attachmentId) {
+                                                                 UUID attachmentId) {
         Assert.notNull(type, "'type' must not null.");
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must > 0.");
 
         return repository.findAllByTypeAndAttachmentId(type, attachmentId)
             .flatMap(attachmentRelationEntity -> copyProperties(
@@ -54,8 +54,7 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
 
     @Override
     @FluxCacheable(value = "attachment:video_subtitles:attachmentId:", key = "#attachmentId")
-    public Flux<VideoSubtitle> findAttachmentVideoSubtitles(Long attachmentId) {
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must > 0.");
+    public Flux<VideoSubtitle> findAttachmentVideoSubtitles(UUID attachmentId) {
         return repository.findAllByTypeAndAttachmentId(
                 AttachmentRelationType.VIDEO_SUBTITLE, attachmentId)
             .map(AttachmentRelationEntity::getRelationAttachmentId)
@@ -72,11 +71,9 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
     @MonoCacheEvict
     public Mono<AttachmentRelation> putAttachmentRelation(AttachmentRelation attachmentRelation) {
         Assert.notNull(attachmentRelation, "'attachmentRelation' must not be null.");
-        Long attachmentId = attachmentRelation.getAttachmentId();
+        UUID attachmentId = attachmentRelation.getAttachmentId();
         AttachmentRelationType type = attachmentRelation.getType();
-        Long relationAttachmentId = attachmentRelation.getRelationAttachmentId();
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must > 0.");
-        Assert.isTrue(relationAttachmentId > 0, "'relationAttachmentId' must > 0.");
+        UUID relationAttachmentId = attachmentRelation.getRelationAttachmentId();
         Assert.notNull(type, "'type' must not null.");
         return repository.existsByTypeAndAttachmentIdAndRelationAttachmentId(type, attachmentId,
                 relationAttachmentId)
@@ -99,11 +96,10 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
         Assert.notNull(postAttachmentRelationsParam,
             "'postAttachmentRelationsParam' must not be null.");
 
-        final Long masterId = postAttachmentRelationsParam.getMasterId();
+        final UUID masterId = postAttachmentRelationsParam.getMasterId();
         final AttachmentRelationType type = postAttachmentRelationsParam.getType();
-        final List<Long> relationIds = postAttachmentRelationsParam.getRelationIds();
+        final List<UUID> relationIds = postAttachmentRelationsParam.getRelationIds();
 
-        Assert.isTrue(masterId > 0, "'masterId' must > 0.");
         Assert.notNull(type, "'type' must not null.");
         Assert.isTrue(!relationIds.isEmpty(),
             "'relationIds' must not empty.");
@@ -122,17 +118,11 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
     public Mono<AttachmentRelation> deleteAttachmentRelation(
         AttachmentRelation attachmentRelation) {
         Assert.notNull(attachmentRelation, "'attachmentRelation' must not be null.");
-        Long id = attachmentRelation.getId();
-        if (id != null && id > 0) {
-            return repository.deleteById(id)
-                .then(Mono.just(attachmentRelation));
-        }
+        UUID id = attachmentRelation.getId();
 
         AttachmentRelationType type = attachmentRelation.getType();
-        Long relationAttachmentId = attachmentRelation.getRelationAttachmentId();
-        Long attachmentId = attachmentRelation.getAttachmentId();
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must > 0.");
-        Assert.isTrue(relationAttachmentId > 0, "'relationAttachmentId' must > 0.");
+        UUID relationAttachmentId = attachmentRelation.getRelationAttachmentId();
+        UUID attachmentId = attachmentRelation.getAttachmentId();
         Assert.notNull(type, "'type' must not null.");
         return repository
             .existsByTypeAndAttachmentIdAndRelationAttachmentId(

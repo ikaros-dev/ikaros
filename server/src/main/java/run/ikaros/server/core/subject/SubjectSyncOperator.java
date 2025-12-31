@@ -1,6 +1,7 @@
 package run.ikaros.server.core.subject;
 
 import jakarta.annotation.Nullable;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -21,7 +22,7 @@ public class SubjectSyncOperator implements SubjectSyncOperate {
 
 
     @Override
-    public Mono<Void> sync(@Nullable Long subjectId, SubjectSyncPlatform platform,
+    public Mono<Void> sync(@Nullable UUID subjectId, SubjectSyncPlatform platform,
                            String platformId) {
         return service.sync(subjectId, platform, platformId);
     }
@@ -32,12 +33,12 @@ public class SubjectSyncOperator implements SubjectSyncOperate {
     }
 
     @Override
-    public Flux<SubjectSync> findSubjectSyncsBySubjectId(long subjectId) {
+    public Flux<SubjectSync> findSubjectSyncsBySubjectId(UUID subjectId) {
         return service.findSubjectSyncsBySubjectId(subjectId);
     }
 
     @Override
-    public Mono<SubjectSync> findSubjectSyncBySubjectIdAndPlatform(long subjectId,
+    public Mono<SubjectSync> findSubjectSyncBySubjectIdAndPlatform(UUID subjectId,
                                                                    SubjectSyncPlatform platform) {
         return service.findSubjectSyncBySubjectIdAndPlatform(subjectId, platform);
     }
@@ -49,7 +50,7 @@ public class SubjectSyncOperator implements SubjectSyncOperate {
     }
 
     @Override
-    public Mono<SubjectSync> findBySubjectIdAndPlatformAndPlatformId(Long subjectId,
+    public Mono<SubjectSync> findBySubjectIdAndPlatformAndPlatformId(UUID subjectId,
                                                                      SubjectSyncPlatform platform,
                                                                      String platformId) {
         return service.findBySubjectIdAndPlatformAndPlatformId(subjectId, platform, platformId);

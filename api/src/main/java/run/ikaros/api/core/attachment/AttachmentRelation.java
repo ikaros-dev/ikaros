@@ -1,6 +1,7 @@
 package run.ikaros.api.core.attachment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,10 +15,10 @@ import run.ikaros.api.store.enums.AttachmentRelationType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class AttachmentRelation {
-    private Long id;
+    private UUID id;
     @JsonProperty("attachment_id")
-    private Long attachmentId;
+    private UUID attachmentId;
     private AttachmentRelationType type;
     @JsonProperty("relation_attachment_id")
-    private Long relationAttachmentId;
+    private UUID relationAttachmentId;
 }

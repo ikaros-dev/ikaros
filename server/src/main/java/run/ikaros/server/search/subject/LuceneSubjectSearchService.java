@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -228,7 +229,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
 
     private SubjectHint convert(Document doc, Highlighter highlighter) {
         return new SubjectHint(
-            Long.parseLong(doc.get("id")),
+            UUID.fromString(doc.get("id")),
             doc.get("name"), doc.get("nameCn"),
             doc.get("infobox"), doc.get("summary"),
             doc.get("cover"),

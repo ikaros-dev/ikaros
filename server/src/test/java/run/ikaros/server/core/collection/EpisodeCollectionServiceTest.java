@@ -2,12 +2,14 @@ package run.ikaros.server.core.collection;
 
 
 import java.util.Random;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.collection.EpisodeCollection;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.EpisodeCollectionRepository;
@@ -31,9 +33,9 @@ class EpisodeCollectionServiceTest {
 
     @Test
     void create() {
-        Long userId = new Random().nextLong(0, Long.MAX_VALUE);
-        Long episodeId = new Random().nextLong(0, Long.MAX_VALUE);
-        Long subjectId = new Random().nextLong(0, Long.MAX_VALUE);
+        UUID userId = UuidV7Utils.generateUuid();
+        UUID episodeId = UuidV7Utils.generateUuid();
+        UUID subjectId = UuidV7Utils.generateUuid();
         EpisodeGroup episodeGroup = EpisodeGroup.MAIN;
         String episodeName = String.valueOf(new Random().nextDouble());
 
@@ -73,9 +75,9 @@ class EpisodeCollectionServiceTest {
 
     @Test
     void remove() {
-        Long userId = new Random().nextLong(0, Long.MAX_VALUE);
-        Long episodeId = new Random().nextLong(0, Long.MAX_VALUE);
-        Long subjectId = new Random().nextLong(0, Long.MAX_VALUE);
+        UUID userId = UuidV7Utils.generateUuid();
+        UUID episodeId = UuidV7Utils.generateUuid();
+        UUID subjectId = UuidV7Utils.generateUuid();
         EpisodeGroup episodeGroup = EpisodeGroup.MAIN;
         String episodeName = String.valueOf(new Random().nextDouble());
 
@@ -113,9 +115,9 @@ class EpisodeCollectionServiceTest {
 
     @Test
     void updateEpisodeCollectionProgress() {
-        Long userId = new Random().nextLong(0, Long.MAX_VALUE);
-        Long episodeId = new Random().nextLong(0, Long.MAX_VALUE);
-        Long subjectId = new Random().nextLong(0, Long.MAX_VALUE);
+        UUID userId = UuidV7Utils.generateUuid();
+        UUID episodeId = UuidV7Utils.generateUuid();
+        UUID subjectId = UuidV7Utils.generateUuid();
         EpisodeGroup episodeGroup = EpisodeGroup.MAIN;
         String episodeName = String.valueOf(new Random().nextDouble());
 
@@ -157,9 +159,9 @@ class EpisodeCollectionServiceTest {
 
     @Test
     void updateEpisodeCollectionFinish() {
-        Long userId = new Random().nextLong(0, Long.MAX_VALUE);
-        Long episodeId = new Random().nextLong(0, Long.MAX_VALUE);
-        Long subjectId = new Random().nextLong(0, Long.MAX_VALUE);
+        UUID userId = UuidV7Utils.generateUuid();
+        UUID episodeId = UuidV7Utils.generateUuid();
+        UUID subjectId = UuidV7Utils.generateUuid();
         EpisodeGroup episodeGroup = EpisodeGroup.MAIN;
         String episodeName = String.valueOf(new Random().nextDouble());
 

@@ -7,6 +7,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
 import static org.springframework.web.reactive.function.BodyExtractors.toMultipartData;
 import static org.springframework.web.reactive.function.server.RequestPredicates.contentType;
+import static run.ikaros.api.core.attachment.AttachmentConst.V_ROOT_DIRECTORY_PARENT_ID;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -280,8 +281,8 @@ public class AttachmentEndpoint implements CoreEndpoint {
             ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
             : "";
 
-        Optional<String> parentIdOp = request.queryParam("parentId");
-        Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
+        UUID parentId = UUID.fromString(request.queryParam("parentId")
+            .orElse(V_ROOT_DIRECTORY_PARENT_ID));
 
         Optional<String> typeOp = request.queryParam("type");
         AttachmentType type = typeOp.map(AttachmentType::valueOf).orElse(null);
@@ -295,24 +296,24 @@ public class AttachmentEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {
-        String id = request.pathVariable("id");
-        return attachmentService.findById(Long.parseLong(id))
+        UUID id = UUID.fromString(request.pathVariable("id"));
+        return attachmentService.findById(id)
             .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
             .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
                 .bodyValue("Not found for id: " + id));
     }
 
     private Mono<ServerResponse> getAttachmentPathDirsById(ServerRequest request) {
-        String id = request.pathVariable("id");
-        return attachmentService.findAttachmentPathDirsById(Long.parseLong(id))
+        UUID id = UUID.fromString(request.pathVariable("id"));
+        return attachmentService.findAttachmentPathDirsById(id)
             .flatMap(attachments -> ServerResponse.ok().bodyValue(attachments))
             .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
                 .bodyValue("Not found for id: " + id));
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
-        String id = request.pathVariable("id");
-        return attachmentService.removeById(Long.parseLong(id))
+        UUID id = UUID.fromString(request.pathVariable("id"));
+        return attachmentService.removeById(id)
             .then(ServerResponse.ok()
                 .bodyValue("Delete success"));
     }
@@ -323,8 +324,8 @@ public class AttachmentEndpoint implements CoreEndpoint {
             ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
             : "";
 
-        Optional<String> parentIdOp = request.queryParam("parentId");
-        Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
+        UUID parentId = UUID.fromString(request.queryParam("parentId")
+            .orElse(V_ROOT_DIRECTORY_PARENT_ID));
 
         return attachmentService.createDirectory(parentId, name)
             .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
@@ -341,8 +342,8 @@ public class AttachmentEndpoint implements CoreEndpoint {
             ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
             : "";
 
-        Optional<String> parentIdOp = request.queryParam("parentId");
-        Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
+        UUID parentId = UUID.fromString(request.queryParam("parentId")
+            .orElse(V_ROOT_DIRECTORY_PARENT_ID));
 
         return attachmentService.createDirectory(parentId, name)
             .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment))
@@ -389,10 +390,10 @@ public class AttachmentEndpoint implements CoreEndpoint {
         Assert.hasText(unique, "Request path var 'unique' must has text.");
 
         List<String> parentIdList = request.headers().header("PARENT-ID");
-        Long parentId =
+        UUID parentId =
             (parentIdList.isEmpty() || "undefined".equalsIgnoreCase(parentIdList.get(0)))
                 ? null :
-                Long.parseLong(parentIdList.get(0));
+                UUID.fromString(parentIdList.get(0));
 
         return request.body(BodyExtractors.toDataBuffers())
             .publishOn(Schedulers.boundedElastic())
@@ -422,37 +423,37 @@ public class AttachmentEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getDownloadUrl(ServerRequest request) {
-        String id = request.pathVariable("id");
-        return attachmentService.getDownloadUrl(Long.parseLong(id))
+        UUID id = UUID.fromString(request.pathVariable("id"));
+        return attachmentService.getDownloadUrl(id)
             .flatMap(url -> ServerResponse.ok().bodyValue(url));
     }
 
     private Mono<ServerResponse> getReadUrl(ServerRequest request) {
-        String id = request.pathVariable("id");
-        return attachmentService.getReadUrl(Long.valueOf(id))
+        UUID id = UUID.fromString(request.pathVariable("id"));
+        return attachmentService.getReadUrl(id)
             .flatMap(url -> ServerResponse.ok().bodyValue(url));
     }
 
     private Mono<ServerResponse> getStreamById(ServerRequest request) {
-        final String id = request.pathVariable("id");
+        UUID id = UUID.fromString(request.pathVariable("id"));
         return Mono.fromCallable(() -> {
             Mono<Attachment> attMono =
-                attachmentService.findById(Long.valueOf(id));
+                attachmentService.findById(id);
             String rangeHeader = request.headers().firstHeader(HttpHeaders.RANGE);
             if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
                 return attMono
-                    .flatMap(att -> doGetPartialContentRsp(Long.valueOf(id), att.getSize(),
+                    .flatMap(att -> doGetPartialContentRsp(id, att.getSize(),
                         att.getName(), rangeHeader));
                 // return handlePartialContent(filePath, rangeHeader, fileSize);
             }
             return attMono.flatMap(att ->
-                doGetFullContentRsp(Long.valueOf(id), att.getSize(), att.getName()));
+                doGetFullContentRsp(id, att.getSize(), att.getName()));
             // return handleFullContent(filePath, fileSize);
         }).flatMap(response -> response);
     }
 
     private Mono<ServerResponse> doGetPartialContentRsp(
-        Long aid, Long fileSize, String fileName, String rangeHeader) {
+        UUID aid, Long fileSize, String fileName, String rangeHeader) {
         try {
             String range = rangeHeader.substring(6);
             String[] ranges = range.split("-");
@@ -484,7 +485,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
         }
     }
 
-    private Mono<ServerResponse> doGetFullContentRsp(Long aid, Long fileSize, String fileName) {
+    private Mono<ServerResponse> doGetFullContentRsp(UUID aid, Long fileSize, String fileName) {
         String contentType = buildContentType(FileUtils.parseFilePostfix(fileName));
         return attachmentService.getStreamByIdWithoutRange(aid)
             .flatMap(body -> ServerResponse.ok()

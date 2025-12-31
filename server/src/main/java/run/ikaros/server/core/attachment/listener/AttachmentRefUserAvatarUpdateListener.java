@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.listener;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
@@ -29,7 +30,7 @@ public class AttachmentRefUserAvatarUpdateListener {
      */
     @EventListener(UserAvatarUpdateEvent.class)
     public Mono<Void> onSubjectAdd(UserAvatarUpdateEvent event) {
-        final Long userId = event.getUserId();
+        final UUID userId = event.getUserId();
         final String oldAvatar = event.getOldAvatar();
         final String avatar = event.getAvatar();
         if (StringUtils.isBlank(avatar)) {

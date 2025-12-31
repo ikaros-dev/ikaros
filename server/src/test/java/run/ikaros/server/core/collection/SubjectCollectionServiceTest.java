@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import run.ikaros.api.core.collection.SubjectCollection;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.subject.SubjectNotFoundException;
 import run.ikaros.api.infra.exception.user.UserNotFoundException;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.security.SecurityProperties;
@@ -82,7 +84,7 @@ class SubjectCollectionServiceTest {
     }
 
 
-    private List<EpisodeEntity> randomAndSaveEpisodeEntities(Long subjectId, Integer count) {
+    private List<EpisodeEntity> randomAndSaveEpisodeEntities(UUID subjectId, Integer count) {
         List<EpisodeEntity> episodeEntities = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             String episodeName = String.valueOf(new Random().nextLong());
@@ -103,7 +105,7 @@ class SubjectCollectionServiceTest {
         return episodeEntities;
     }
 
-    private Long getDefaultUserId() {
+    private UUID getDefaultUserId() {
         String masterUsername = securityProperties.getInitializer().getMasterUsername();
         UserEntity userEntity =
             userRepository.findByUsernameAndEnableAndDeleteStatus(masterUsername, true, false)
@@ -114,8 +116,8 @@ class SubjectCollectionServiceTest {
     @Test
     void collect() {
         SubjectEntity subjectEntity = randomAndSaveSubjectEntity();
-        Long subjectId = subjectEntity.getId();
-        Long userId = getDefaultUserId();
+        UUID subjectId = subjectEntity.getId();
+        UUID userId = getDefaultUserId();
         randomAndSaveEpisodeEntities(subjectId, 10);
 
         StepVerifier.create(subjectCollectionService.findCollection(userId, subjectId))
@@ -136,8 +138,8 @@ class SubjectCollectionServiceTest {
     @Test
     void collectWithSubjectCollection() {
         SubjectEntity subjectEntity = randomAndSaveSubjectEntity();
-        Long subjectId = subjectEntity.getId();
-        Long userId = getDefaultUserId();
+        UUID subjectId = subjectEntity.getId();
+        UUID userId = getDefaultUserId();
         randomAndSaveEpisodeEntities(subjectId, 10);
 
         StepVerifier.create(subjectCollectionService.findCollection(userId, subjectId))
@@ -160,8 +162,8 @@ class SubjectCollectionServiceTest {
     @Test
     void unCollect() {
         SubjectEntity subjectEntity = randomAndSaveSubjectEntity();
-        Long subjectId = subjectEntity.getId();
-        Long userId = getDefaultUserId();
+        UUID subjectId = subjectEntity.getId();
+        UUID userId = getDefaultUserId();
         randomAndSaveEpisodeEntities(subjectId, 10);
 
         StepVerifier.create(subjectCollectionService.findCollection(userId, subjectId))
@@ -186,7 +188,7 @@ class SubjectCollectionServiceTest {
 
     @Test
     void findCollections() {
-        final Long userId = getDefaultUserId();
+        final UUID userId = getDefaultUserId();
         final int total = 100;
         for (int i = 0; i < total; i++) {
             SubjectEntity entity = SubjectEntity.builder()
@@ -200,7 +202,7 @@ class SubjectCollectionServiceTest {
             StepVerifier.create(subjectRepository.save(entity))
                 .expectNextCount(1).verifyComplete();
 
-            Long subjectId = entity.getId();
+            UUID subjectId = entity.getId();
             randomAndSaveEpisodeEntities(subjectId, 10);
 
             StepVerifier.create(subjectCollectionService.collect(userId, subjectId, WISH))
@@ -219,20 +221,25 @@ class SubjectCollectionServiceTest {
 
     @Test
     void updateMainEpisodeProgress() {
+        UUID userId = UuidV7Utils.generateUuid();
+        UUID episodeId = UuidV7Utils.generateUuid();
+        UUID subjectId = UuidV7Utils.generateUuid();
         // user id not exists
-        StepVerifier.create(subjectCollectionService.updateMainEpisodeProgress(1000L, 1000L, 0))
+        StepVerifier.create(
+                subjectCollectionService.updateMainEpisodeProgress(userId, subjectId, 0))
             .expectError(UserNotFoundException.class)
             .verify();
         // subject id not exists
         StepVerifier.create(
-                subjectCollectionService.updateMainEpisodeProgress(getDefaultUserId(), 1000L, 0))
+                subjectCollectionService
+                    .updateMainEpisodeProgress(getDefaultUserId(), subjectId, 0))
             .expectError(SubjectNotFoundException.class)
             .verify();
 
         // create data
         SubjectEntity subjectEntity = randomAndSaveSubjectEntity();
-        Long subjectId = subjectEntity.getId();
-        Long userId = getDefaultUserId();
+        subjectId = subjectEntity.getId();
+        userId  = getDefaultUserId();
         randomAndSaveEpisodeEntities(subjectId, 10);
         final int progress = new Random().nextInt(1, 9);
 

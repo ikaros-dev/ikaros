@@ -1,5 +1,6 @@
 package run.ikaros.api.core.user;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,6 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class UserRoleReqParams {
-    private Long userId;
-    private Long[] roleIds;
+    private UUID userId;
+    private UUID[] roleIds;
 }

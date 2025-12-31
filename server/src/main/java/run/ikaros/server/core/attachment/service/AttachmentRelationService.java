@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.service;
 
+import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentRelation;
@@ -9,9 +10,9 @@ import run.ikaros.server.core.attachment.vo.PostAttachmentRelationsParam;
 
 public interface AttachmentRelationService {
     Flux<AttachmentRelation> findAllByTypeAndAttachmentId(AttachmentRelationType type,
-                                                          Long attachmentId);
+                                                          UUID attachmentId);
 
-    Flux<VideoSubtitle> findAttachmentVideoSubtitles(Long attachmentId);
+    Flux<VideoSubtitle> findAttachmentVideoSubtitles(UUID attachmentId);
 
     Mono<AttachmentRelation> putAttachmentRelation(AttachmentRelation attachmentRelation);
 

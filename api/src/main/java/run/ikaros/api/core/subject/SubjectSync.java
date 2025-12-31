@@ -1,6 +1,7 @@
 package run.ikaros.api.core.subject;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,7 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class SubjectSync {
-    private Long subjectId;
+    private UUID subjectId;
     private SubjectSyncPlatform platform;
     private String platformId;
     private LocalDateTime syncTime;

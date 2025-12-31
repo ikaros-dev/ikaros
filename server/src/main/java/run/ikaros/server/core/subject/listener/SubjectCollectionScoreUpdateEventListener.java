@@ -1,5 +1,6 @@
 package run.ikaros.server.core.subject.listener;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -34,8 +35,8 @@ public class SubjectCollectionScoreUpdateEventListener {
      */
     @EventListener(SubjectCollectionScoreUpdateEvent.class)
     public Mono<Void> onSubjectCollectionScoreUpdateEvent(SubjectCollectionScoreUpdateEvent event) {
-        Long subjectId = event.getSubjectId();
-        if (subjectId == null || subjectId < 0) {
+        UUID subjectId = event.getSubjectId();
+        if (subjectId == null) {
             return Mono.empty();
         }
         log.debug("Receive event with subjectId={}.", subjectId);

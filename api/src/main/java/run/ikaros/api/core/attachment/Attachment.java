@@ -1,6 +1,7 @@
 package run.ikaros.api.core.attachment;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,8 +15,8 @@ import run.ikaros.api.store.enums.AttachmentType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class Attachment {
-    private Long id;
-    private Long parentId;
+    private UUID id;
+    private UUID parentId;
     private AttachmentType type;
     /**
      * HTTP path, format: driver_id://remote_path
@@ -37,6 +38,6 @@ public class Attachment {
     private Long size;
     private LocalDateTime updateTime;
     private Boolean deleted;
-    private Long driverId;
+    private UUID driverId;
     private String sha1;
 }

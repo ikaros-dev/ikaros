@@ -1,5 +1,6 @@
 package run.ikaros.server.core.task;
 
+import java.util.UUID;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.TaskEntity;
@@ -9,7 +10,7 @@ public interface TaskService {
 
     void updateAllRunningAndCreatedTaskStatusToCancel();
 
-    Mono<TaskEntity> findById(Long id);
+    Mono<TaskEntity> findById(UUID id);
 
     Mono<Void> submit(Task task);
 
@@ -17,7 +18,7 @@ public interface TaskService {
 
     Mono<PagingWrap<TaskEntity>> listEntitiesByCondition(FindTaskCondition findTaskCondition);
 
-    Mono<Long> getProcess(Long id);
+    Mono<Long> getProcess(UUID id);
 
     void setDefaultFieldValue(TaskEntity entity);
 }

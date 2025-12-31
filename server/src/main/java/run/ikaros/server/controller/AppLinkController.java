@@ -1,5 +1,6 @@
 package run.ikaros.server.controller;
 
+import java.util.UUID;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +26,7 @@ public class AppLinkController {
      * app 链接跳转页面.
      */
     @GetMapping("/subject/{id}")
-    public Mono<String> index(Model model, @PathVariable("id") Long subjectId) {
+    public Mono<String> index(Model model, @PathVariable("id") UUID subjectId) {
         return subjectService.findById(subjectId)
             .flatMap(subject -> {
                 String name = StringUtils.isBlank(subject.getNameCn())

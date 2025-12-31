@@ -5,6 +5,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.role.Role;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.endpoint.CoreEndpoint;
 
 @Slf4j
@@ -86,7 +88,7 @@ public class RoleEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> deleteRoleById(ServerRequest serverRequest) {
-        final Long roleId = Long.valueOf(serverRequest.pathVariable("id"));
+        final UUID roleId = UuidV7Utils.fromString(serverRequest.pathVariable("id"));
         return roleService.deleteById(roleId)
             .then(ServerResponse.ok().build());
     }

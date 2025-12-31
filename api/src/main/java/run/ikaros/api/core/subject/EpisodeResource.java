@@ -1,6 +1,7 @@
 package run.ikaros.api.core.subject;
 
 import java.util.Set;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,9 +14,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EpisodeResource {
-    private Long attachmentId;
-    private Long parentAttachmentId;
-    private Long episodeId;
+    private UUID attachmentId;
+    private UUID parentAttachmentId;
+    private UUID episodeId;
     private String url;
     private boolean canRead;
     private String name;

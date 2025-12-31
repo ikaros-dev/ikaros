@@ -1,18 +1,19 @@
 package run.ikaros.api.core.collection;
 
+import java.util.UUID;
 import reactor.core.publisher.Mono;
 
 public interface EpisodeCollectionOperate extends CollectionOperate {
-    Mono<EpisodeCollection> create(Long userId, Long episodeId);
+    Mono<EpisodeCollection> create(UUID userId, UUID episodeId);
 
-    Mono<EpisodeCollection> findByUserIdAndEpisodeId(Long userId, Long episodeId);
+    Mono<EpisodeCollection> findByUserIdAndEpisodeId(UUID userId, UUID episodeId);
 
-    Mono<Void> updateEpisodeCollectionProgress(Long userId, Long episodeId,
+    Mono<Void> updateEpisodeCollectionProgress(UUID userId, UUID episodeId,
                                                Long progress);
 
-    Mono<Void> updateEpisodeCollection(Long userId, Long episodeId,
+    Mono<Void> updateEpisodeCollection(UUID userId, UUID episodeId,
                                        Long progress, Long duration);
 
-    Mono<Void> updateEpisodeCollectionFinish(Long userId, Long episodeId,
+    Mono<Void> updateEpisodeCollectionFinish(UUID userId, UUID episodeId,
                                              Boolean finish);
 }

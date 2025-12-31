@@ -1,8 +1,8 @@
 package run.ikaros.server.core.subject;
 
 
-import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.subject.SubjectRelation;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.server.core.subject.service.SubjectRelationService;
 import run.ikaros.server.store.repository.SubjectRelationRepository;
@@ -30,14 +31,15 @@ class SubjectRelationServiceTest {
 
     @Test
     void createSubjectRelation() {
-        final long random = new Random().nextLong(1, 100000);
+        final UUID random = UuidV7Utils.generateUuid();
         SubjectRelation subjectRelation = SubjectRelation.builder()
-            .subject(Long.MAX_VALUE)
+            .subject(UuidV7Utils.generateUuid())
             .relationType(SubjectRelationType.COMIC)
-            .relationSubjects(Set.of(random, 9L))
+            .relationSubjects(Set.of(random, UuidV7Utils.generateUuid()))
             .build();
 
-        StepVerifier.create(subjectRelationService.findBySubjectIdAndType(Long.MAX_VALUE,
+        StepVerifier.create(subjectRelationService.findBySubjectIdAndType(
+                UuidV7Utils.generateUuid(),
                 SubjectRelationType.COMIC))
             .expectNextMatches(subjectRelation1 -> subjectRelation1.getRelationSubjects().isEmpty())
             .verifyComplete();
@@ -47,8 +49,9 @@ class SubjectRelationServiceTest {
                 -> subjectRelation1.getRelationSubjects().contains(random))
             .verifyComplete();
 
-        StepVerifier.create(subjectRelationService.findBySubjectIdAndType(Long.MAX_VALUE,
-                SubjectRelationType.COMIC))
+        StepVerifier.create(
+                subjectRelationService.findBySubjectIdAndType(UuidV7Utils.generateUuid(),
+                    SubjectRelationType.COMIC))
             .expectNextMatches(subjectRelation1
                 -> !subjectRelation1.getRelationSubjects().isEmpty())
             .verifyComplete();
@@ -56,15 +59,16 @@ class SubjectRelationServiceTest {
 
     @Test
     void removeSubjectRelation() {
-        final long random = new Random().nextLong(1, 100000);
+        final UUID random = UuidV7Utils.generateUuid();
         SubjectRelation subjectRelation = SubjectRelation.builder()
-            .subject(Long.MAX_VALUE)
+            .subject(UuidV7Utils.generateUuid())
             .relationType(SubjectRelationType.COMIC)
-            .relationSubjects(Set.of(random, 9L))
+            .relationSubjects(Set.of(random, UuidV7Utils.generateUuid()))
             .build();
 
-        StepVerifier.create(subjectRelationService.findBySubjectIdAndType(Long.MAX_VALUE,
-                SubjectRelationType.COMIC))
+        StepVerifier.create(
+                subjectRelationService.findBySubjectIdAndType(UuidV7Utils.generateUuid(),
+                    SubjectRelationType.COMIC))
             .expectNextMatches(subjectRelation1 -> subjectRelation1.getRelationSubjects().isEmpty())
             .verifyComplete();
 
@@ -74,15 +78,16 @@ class SubjectRelationServiceTest {
             .verifyComplete();
 
         SubjectRelation removeSubjectRelation = SubjectRelation.builder()
-            .subject(Long.MAX_VALUE)
+            .subject(UuidV7Utils.generateUuid())
             .relationType(SubjectRelationType.COMIC)
             .relationSubjects(Set.of(random))
             .build();
         StepVerifier.create(subjectRelationService.removeSubjectRelation(removeSubjectRelation))
             .expectNext(removeSubjectRelation).verifyComplete();
 
-        StepVerifier.create(subjectRelationService.findBySubjectIdAndType(Long.MAX_VALUE,
-                SubjectRelationType.COMIC))
+        StepVerifier.create(
+                subjectRelationService.findBySubjectIdAndType(UuidV7Utils.generateUuid(),
+                    SubjectRelationType.COMIC))
             .expectNextMatches(subjectRelation1
                 -> !subjectRelation1.getRelationSubjects().contains(random)
                 && subjectRelation1.getRelationSubjects().contains(9L))
@@ -92,18 +97,19 @@ class SubjectRelationServiceTest {
 
     @Test
     void findAllBySubjectId() {
-        final long random = new Random().nextLong(1, 100000);
+        final UUID random = UuidV7Utils.generateUuid();
         SubjectRelation subjectRelation = SubjectRelation.builder()
-            .subject(Long.MAX_VALUE)
+            .subject(UuidV7Utils.generateUuid())
             .relationType(SubjectRelationType.COMIC)
-            .relationSubjects(Set.of(random, 9L))
+            .relationSubjects(Set.of(random, UuidV7Utils.generateUuid()))
             .build();
 
-        StepVerifier.create(subjectRelationService.findAllBySubjectId(Long.MAX_VALUE))
+        StepVerifier.create(subjectRelationService.findAllBySubjectId(UuidV7Utils.generateUuid()))
             .expectNextCount(0).verifyComplete();
 
-        StepVerifier.create(subjectRelationService.findBySubjectIdAndType(Long.MAX_VALUE,
-                SubjectRelationType.COMIC))
+        StepVerifier.create(
+                subjectRelationService.findBySubjectIdAndType(UuidV7Utils.generateUuid(),
+                    SubjectRelationType.COMIC))
             .expectNextMatches(subjectRelation1 -> subjectRelation1.getRelationSubjects().isEmpty())
             .verifyComplete();
 
@@ -112,7 +118,7 @@ class SubjectRelationServiceTest {
                 -> subjectRelation1.getRelationSubjects().contains(random))
             .verifyComplete();
 
-        StepVerifier.create(subjectRelationService.findAllBySubjectId(Long.MAX_VALUE))
+        StepVerifier.create(subjectRelationService.findAllBySubjectId(UuidV7Utils.generateUuid()))
             .expectNext(subjectRelation)
             .verifyComplete();
 

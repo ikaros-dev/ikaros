@@ -1,6 +1,7 @@
 package run.ikaros.server.core.role.listener;
 
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -48,7 +49,7 @@ public class RoleCreatedListener {
         return Mono.empty();
     }
 
-    private Mono<Void> addMasterAuthority(Long roleId) {
+    private Mono<Void> addMasterAuthority(UUID roleId) {
         return authorityRepository.findByTypeAndTargetAndAuthority(
                 AuthorityType.ALL, SecurityConst.Authorization.Target.ALL,
                 SecurityConst.Authorization.Authority.ALL)

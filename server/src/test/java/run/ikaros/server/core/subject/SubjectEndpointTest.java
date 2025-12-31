@@ -28,6 +28,7 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.core.subject.service.SubjectService;
@@ -69,10 +70,7 @@ class SubjectEndpointTest {
 
     @Test
     void getById() {
-        var exceptId = new Random().nextLong(1, Integer.MAX_VALUE);
-        if (exceptId == 10) {
-            exceptId++;
-        }
+        var exceptId = UuidV7Utils.generateUuid();
         final var exceptSubject = Mono.just(new Subject()
             .setInfobox(String.valueOf(new Random().ints().findFirst().orElse(-1))));
 
@@ -100,7 +98,7 @@ class SubjectEndpointTest {
 
         var episodes = new ArrayList<Episode>();
         episodes.add(Episode.builder()
-            .subjectId(Long.MAX_VALUE)
+            .subjectId(UuidV7Utils.generateUuid())
             .airTime(LocalDateTime.now())
             .name("ep-01")
             .nameCn("第一集")
@@ -145,7 +143,7 @@ class SubjectEndpointTest {
                                 StandardCharsets.UTF_8),
                             Subject.class);
                     Assertions.assertThat(subject1).isNotNull();
-                    Assertions.assertThat(subject1.getId()).isNotZero();
+                    Assertions.assertThat(subject1.getId()).isNotNull();
                     subject.setId(subject1.getId());
                 });
 
@@ -205,7 +203,7 @@ class SubjectEndpointTest {
                                 StandardCharsets.UTF_8),
                             Subject.class);
                     Assertions.assertThat(subject1).isNotNull();
-                    Assertions.assertThat(subject1.getId()).isNotZero();
+                    Assertions.assertThat(subject1.getId()).isNotNull();
                     subject.setId(subject1.getId());
                 });
         } finally {
@@ -238,7 +236,7 @@ class SubjectEndpointTest {
                                 StandardCharsets.UTF_8),
                             Subject.class);
                     Assertions.assertThat(subject1).isNotNull();
-                    Assertions.assertThat(subject1.getId()).isNotZero();
+                    Assertions.assertThat(subject1.getId()).isNotNull();
                     subject.setId(subject1.getId());
                 });
         } finally {

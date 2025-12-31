@@ -2,6 +2,7 @@ package run.ikaros.server.store.entity;
 
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
@@ -22,7 +23,7 @@ public class BaseEntity {
      * base entity id, generate by identity.
      */
     @Id
-    private Long id;
+    private UUID id;
 
     /**
      * record status, it is logic delete field, has deleted is true, normal is false.
@@ -35,7 +36,7 @@ public class BaseEntity {
      */
     // @CreatedBy
     @Column("create_uid")
-    private Long createUid;
+    private UUID createUid;
 
     /**
      * record create time.
@@ -49,7 +50,7 @@ public class BaseEntity {
      */
     // @LastModifiedBy
     @Column("update_uid")
-    private Long updateUid;
+    private UUID updateUid;
 
     /**
      * record last modified time.

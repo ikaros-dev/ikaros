@@ -1,5 +1,6 @@
 package run.ikaros.api.core.attachment;
 
+import java.util.UUID;
 import org.pf4j.ExtensionPoint;
 import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
@@ -13,7 +14,7 @@ public interface AttachmentDriverFetcher extends ExtensionPoint {
 
     String getDriverName();
 
-    Flux<Attachment> getChildren(Long driverId, Long parentAttId, String remotePath);
+    Flux<Attachment> getChildren(UUID driverId, UUID parentAttId, String remotePath);
 
     Mono<String> parseReadUrl(Attachment attachment);
 

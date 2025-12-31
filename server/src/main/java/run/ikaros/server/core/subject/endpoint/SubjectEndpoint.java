@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -25,6 +26,7 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.vo.FindSubjectCondition;
 import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.subject.service.SubjectService;
@@ -230,10 +232,8 @@ public class SubjectEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {
-        String id = request.pathVariable("id");
-        return Mono.just(id)
-            .map(Long::valueOf)
-            .flatMap(subjectService::findById)
+        final UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        return subjectService.findById(id)
             .flatMap(subject -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(subject))
@@ -261,9 +261,8 @@ public class SubjectEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
-        return Mono.just(request.pathVariable("id"))
-            .map(Long::valueOf)
-            .flatMap(subjectService::deleteById)
+        final UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        return subjectService.deleteById(id)
             .then(ServerResponse.ok().build());
     }
 

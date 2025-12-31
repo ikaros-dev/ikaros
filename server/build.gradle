@@ -54,7 +54,6 @@ ext {
     pf4j = '3.9.0'
     jsoup = '1.15.3'
     springDocOpenAPI = "2.0.2"
-    flywaydb = "10.15.0"
 }
 
 dependencies {
@@ -67,21 +66,17 @@ dependencies {
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
     implementation 'org.json:json:20230227'
 
-    implementation "org.flywaydb:flyway-core:$flywaydb"
     implementation "io.micrometer:micrometer-registry-prometheus"
 
     implementation "org.springframework.boot:spring-boot-starter-data-redis-reactive"
 
     implementation("org.apache.commons:commons-csv:1.14.1")
 
+    implementation 'io.github.daggerok:liquibase-r2dbc-spring-boot-starter'
+
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
-    runtimeOnly "org.flywaydb:flyway-database-postgresql:$flywaydb"
-
-
-    // 针对logback.xml if 不工作的支持
-//    implementation 'org.codehaus.janino:janino:3.1.11'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 

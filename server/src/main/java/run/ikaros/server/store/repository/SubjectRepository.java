@@ -1,6 +1,7 @@
 package run.ikaros.server.store.repository;
 
 import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
@@ -8,10 +9,10 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.store.entity.SubjectEntity;
 
-public interface SubjectRepository extends R2dbcRepository<SubjectEntity, Long> {
+public interface SubjectRepository extends R2dbcRepository<SubjectEntity, UUID> {
 
     @NotNull
-    Mono<Boolean> existsById(@NotNull Long id);
+    Mono<Boolean> existsById(@NotNull UUID id);
 
     Mono<SubjectEntity> findByNsfwAndTypeAndNameAndSummary(Boolean nsfw, SubjectType type,
                                                            String name, String summary);

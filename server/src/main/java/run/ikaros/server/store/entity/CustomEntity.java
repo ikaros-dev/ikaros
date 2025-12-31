@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -21,7 +22,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Accessors(chain = true)
 public class CustomEntity {
     @Id
-    private Long id;
+    private UUID id;
     @Column("c_group")
     private String group;
     private String version;

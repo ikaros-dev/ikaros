@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +20,7 @@ import run.ikaros.api.store.enums.AttachmentDriverType;
 @Table(name = "attachment_driver")
 public class AttachmentDriverEntity {
     @Id
-    private Long id;
+    private UUID id;
     /**
      * enable current attachment driver.
      */
@@ -59,7 +60,7 @@ public class AttachmentDriverEntity {
     private Double requestLimit;
 
     @Column("user_id")
-    private Long userId;
+    private String userId;
     @Column("user_name")
     private String username;
     private String avatar;

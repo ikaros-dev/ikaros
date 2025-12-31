@@ -3,6 +3,7 @@ package run.ikaros.api.core.subject;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.plugin.AllowPluginOperate;
@@ -11,7 +12,7 @@ import run.ikaros.api.wrap.PagingWrap;
 
 public interface SubjectOperate extends AllowPluginOperate {
 
-    Mono<Subject> findById(Long id);
+    Mono<Subject> findById(UUID id);
 
     Flux<Subject> findAllByPageable(PagingWrap<Subject> pagingWrap);
 
@@ -20,11 +21,11 @@ public interface SubjectOperate extends AllowPluginOperate {
     Mono<Void> update(Subject subject);
 
 
-    Mono<Void> syncByPlatform(@Nullable Long subjectId, SubjectSyncPlatform platform,
+    Mono<Void> syncByPlatform(@Nullable UUID subjectId, SubjectSyncPlatform platform,
                                  String platformId);
 
 
-    Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull Long subjectId,
+    Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull UUID subjectId,
                                                           @Nonnull
                                                           SubjectSyncPlatform subjectSyncPlatform,
                                                           @NotBlank String platformId);

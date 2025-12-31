@@ -1,6 +1,7 @@
 package run.ikaros.api.core.subject;
 
 import jakarta.annotation.Nullable;
+import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,19 +17,19 @@ public interface SubjectSyncOperate extends AllowPluginOperate {
      * @param platformId 对应的平台ID
      */
     @Transactional
-    Mono<Void> sync(@Nullable Long subjectId, SubjectSyncPlatform platform, String platformId);
+    Mono<Void> sync(@Nullable UUID subjectId, SubjectSyncPlatform platform, String platformId);
 
     Mono<SubjectSync> save(SubjectSync subjectSync);
 
-    Flux<SubjectSync> findSubjectSyncsBySubjectId(long subjectId);
+    Flux<SubjectSync> findSubjectSyncsBySubjectId(UUID subjectId);
 
-    Mono<SubjectSync> findSubjectSyncBySubjectIdAndPlatform(long subjectId,
+    Mono<SubjectSync> findSubjectSyncBySubjectIdAndPlatform(UUID subjectId,
                                                             SubjectSyncPlatform platform);
 
     Flux<SubjectSync> findSubjectSyncsByPlatformAndPlatformId(SubjectSyncPlatform platform,
                                                               String platformId);
 
-    Mono<SubjectSync> findBySubjectIdAndPlatformAndPlatformId(Long subjectId,
+    Mono<SubjectSync> findBySubjectIdAndPlatformAndPlatformId(UUID subjectId,
                                                               SubjectSyncPlatform platform,
                                                               String platformId);
 }

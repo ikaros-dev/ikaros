@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,10 +19,10 @@ import run.ikaros.api.store.enums.AttachmentRelationType;
 @Table(name = "attachment_relation")
 public class AttachmentRelationEntity {
     @Id
-    private Long id;
+    private UUID id;
     @Column("attachment_id")
-    private Long attachmentId;
+    private UUID attachmentId;
     private AttachmentRelationType type;
     @Column("relation_attachment_id")
-    private Long relationAttachmentId;
+    private UUID relationAttachmentId;
 }

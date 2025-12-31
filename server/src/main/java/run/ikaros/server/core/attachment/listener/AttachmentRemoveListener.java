@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.listener;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ public class AttachmentRemoveListener {
      */
     @EventListener(AttachmentRemoveEvent.class)
     public Mono<Void> onAttachmentRemoveEvent(AttachmentRemoveEvent event) {
-        Long attId = event.getEntity().getId();
+        UUID attId = event.getEntity().getId();
         return relationRepository.deleteAllByAttachmentId(attId)
             .then(referenceRepository.deleteAllByAttachmentId(attId));
     }

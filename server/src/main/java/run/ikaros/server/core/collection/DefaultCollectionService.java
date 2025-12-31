@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -51,8 +52,7 @@ public class DefaultCollectionService implements CollectionService {
     }
 
     @Override
-    public Mono<CollectionType> findTypeBySubjectId(Long subjectId) {
-        Assert.isTrue(subjectId > 0, "subjectId must be greater than 0");
+    public Mono<CollectionType> findTypeBySubjectId(UUID subjectId) {
         return userService.getUserIdFromSecurityContext()
             .flatMap(uid -> subjectCollectionRepository.findByUserIdAndSubjectId(uid, subjectId))
             .map(SubjectCollectionEntity::getType);

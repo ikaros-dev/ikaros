@@ -1,5 +1,6 @@
 package run.ikaros.server.core.role;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -23,15 +24,15 @@ public class DefaultRoleAuthorityService implements RoleAuthorityService {
         this.authorityRepository = authorityRepository;
     }
 
-    private Mono<Authority> getAuthorityByAuthorityId(Long authorityId) {
-        Assert.isTrue(authorityId >= 0, "authorityId must be >= 0");
+    private Mono<Authority> getAuthorityByAuthorityId(UUID authorityId) {
+        Assert.notNull(authorityId, "'authorityId' must not null.");
         return authorityRepository.findById(authorityId)
             .flatMap(entity -> ReactiveBeanUtils.copyProperties(entity, new Authority()));
     }
 
     @Override
-    public Flux<Authority> addAuthoritiesForRole(Long roleId, Long[] authorityIds) {
-        Assert.isTrue(roleId >= 0, "roleId must be greater than or equal 0");
+    public Flux<Authority> addAuthoritiesForRole(UUID roleId, UUID[] authorityIds) {
+        Assert.notNull(roleId, "'roleId' must not null.");
         Assert.isTrue(authorityIds.length > 0, "authorityIds must be greater than 0");
         return Flux.fromArray(authorityIds)
             .map(authorityId -> RoleAuthorityEntity.builder()
@@ -43,8 +44,8 @@ public class DefaultRoleAuthorityService implements RoleAuthorityService {
     }
 
     @Override
-    public Mono<Void> deleteAuthoritiesForRole(Long roleId, Long[] authorityIds) {
-        Assert.isTrue(roleId >= 0, "roleId must be greater than or equal 0");
+    public Mono<Void> deleteAuthoritiesForRole(UUID roleId, UUID[] authorityIds) {
+        Assert.notNull(roleId, "'roleId' must not null.");
         Assert.isTrue(authorityIds.length > 0, "authorityIds must be greater than 0");
         return Flux.fromArray(authorityIds)
             .flatMap(authId -> roleAuthorityRepository.deleteByRoleIdAndAuthorityId(roleId, authId))
@@ -52,8 +53,8 @@ public class DefaultRoleAuthorityService implements RoleAuthorityService {
     }
 
     @Override
-    public Flux<Authority> getAuthoritiesForRole(Long roleId) {
-        Assert.isTrue(roleId >= 0, "roleId must be greater than or equal 0");
+    public Flux<Authority> getAuthoritiesForRole(UUID roleId) {
+        Assert.notNull(roleId, "'roleId' must not null.");
         return roleAuthorityRepository.findByRoleId(roleId)
             .map(RoleAuthorityEntity::getAuthorityId)
             .flatMap(this::getAuthorityByAuthorityId);

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="V202512310214" author="Chivehao">
+        <comment>Create `authority` table</comment>
+        <createTable tableName="authority">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="create_time" type="TIMESTAMP(6)"/>
+            <column name="create_uid" type="UUID"/>
+            <column name="delete_status" type="BOOL"/>
+            <column name="update_time" type="TIMESTAMP(6)"/>
+            <column name="update_uid" type="UUID"/>
+            <column name="ol_version" type="INT8"/>
+            <column name="allow" type="BOOL"/>
+            <column name="type" type="VARCHAR(100)"/>
+            <column name="target" type="VARCHAR(255)"/>
+            <column name="authority" type="VARCHAR(10000)"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

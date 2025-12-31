@@ -1,5 +1,6 @@
 package run.ikaros.server.core.episode;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,7 @@ public class EpisodeRemoveEventListener {
     @EventListener(EpisodeRemoveEvent.class)
     public Mono<Void> onEpisodeRemoveEvent(EpisodeRemoveEvent event) {
         EpisodeEntity entity = event.getEntity();
-        final Long episodeId = entity.getId();
+        final UUID episodeId = entity.getId();
         return attachmentReferenceRepository.deleteAllByTypeAndReferenceId(
             AttachmentReferenceType.EPISODE,
             episodeId

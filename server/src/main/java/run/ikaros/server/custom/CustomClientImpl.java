@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Predicate;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
@@ -89,7 +90,7 @@ public class CustomClientImpl implements CustomClient {
         if (customEntity == null) {
             throw new NotFoundException("custom not found for name=" + getNameFieldValue(custom));
         }
-        Long customEntityId = customEntity.getId();
+        UUID customEntityId = customEntity.getId();
         CustomDto customDto = CustomConverter.convertTo(custom);
         customEntity = customDto.customEntity();
         customEntity.setId(customEntityId);
@@ -152,7 +153,7 @@ public class CustomClientImpl implements CustomClient {
         Assert.isTrue(StringUtils.hasText(name), "'name' must has text");
         Assert.isTrue(StringUtils.hasText(metaName), "'metaName' must has text");
         CustomEntity customEntity = findCustomEntityOne(clazz, name);
-        Long customEntityId = customEntity.getId();
+        UUID customEntityId = customEntity.getId();
 
         CustomMetadataEntity customMetadata =
             metadataRepository.findByCustomIdAndKey(customEntityId, metaName)
@@ -169,7 +170,7 @@ public class CustomClientImpl implements CustomClient {
         Assert.notNull(custom, "'custom' must not null.");
         CustomEntity customEntity =
             findCustomEntityOne(custom.getClass(), getNameFieldValue(custom));
-        Long customEntityId = customEntity.getId();
+        UUID customEntityId = customEntity.getId();
         repository.delete(customEntity).block(BLOCK_TIMEOUT);
         metadataRepository.deleteAllByCustomId(customEntityId)
             .block(BLOCK_TIMEOUT);
@@ -198,7 +199,7 @@ public class CustomClientImpl implements CustomClient {
         if (customEntity == null) {
             throw new NotFoundException("custom not found for name=" + name);
         }
-        Long customEntityId = customEntity.getId();
+        UUID customEntityId = customEntity.getId();
         List<CustomMetadataEntity> customMetadataEntities =
             metadataRepository.findAllByCustomId(customEntityId).toStream()
                 .toList();
@@ -222,7 +223,7 @@ public class CustomClientImpl implements CustomClient {
 
         List<C> customList = new ArrayList<C>();
         for (CustomEntity customEntity : customEntities) {
-            Long customEntityId = customEntity.getId();
+            UUID customEntityId = customEntity.getId();
             List<CustomMetadataEntity> customMetadataEntities =
                 metadataRepository.findAllByCustomId(customEntityId).toStream().toList();
             CustomDto customDto = new CustomDto(customEntity, customMetadataEntities);

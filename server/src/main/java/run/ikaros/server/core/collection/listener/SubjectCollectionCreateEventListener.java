@@ -1,5 +1,6 @@
 package run.ikaros.server.core.collection.listener;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -28,8 +29,8 @@ public class SubjectCollectionCreateEventListener {
      */
     @EventListener(SubjectCollectionCreateEvent.class)
     public Mono<Void> onSubjectCollectionCreateEvent(SubjectCollectionCreateEvent event) {
-        Long subjectId = event.getSubjectId();
-        Long userId = event.getUserId();
+        UUID subjectId = event.getSubjectId();
+        UUID userId = event.getUserId();
         log.debug("Receive SubjectCollectionCreateEvent for userId={} and subjectId={}",
             userId, subjectId);
         return episodeRepository.findAllBySubjectId(subjectId)

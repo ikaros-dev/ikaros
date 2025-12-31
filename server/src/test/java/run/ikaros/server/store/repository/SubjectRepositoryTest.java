@@ -65,7 +65,7 @@ class SubjectRepositoryTest {
         StepVerifier.create(subjectRepository.save(subjectEntity))
             .expectNext(subjectEntity).verifyComplete();
 
-        assertThat(subjectEntity.getId()).isGreaterThan(0);
+        assertThat(subjectEntity.getId()).isNotNull();
 
         String newName = name + new Random(10).nextInt();
         subjectEntity.setName(newName);
@@ -86,7 +86,7 @@ class SubjectRepositoryTest {
         subjectEntity = new SubjectEntity();
         BeanUtils.copyProperties(tmpSub, subjectEntity);
 
-        assertThat(subjectEntity.getId()).isGreaterThan(0);
+        assertThat(subjectEntity.getId()).isNotNull();
 
         newName = name + new Random(10).nextInt();
         subjectEntity.setName(newName);

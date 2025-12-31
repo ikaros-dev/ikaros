@@ -2,6 +2,7 @@ package run.ikaros.server.core.subject.service;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -11,11 +12,11 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.wrap.PagingWrap;
 
 public interface SubjectService {
-    Mono<Subject> findById(Long id);
+    Mono<Subject> findById(UUID id);
 
-    Mono<Subject> findByBgmId(@Nonnull Long subjectId, Long bgmtvId);
+    Mono<Subject> findByBgmId(UUID subjectId, String bgmtvId);
 
-    Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull Long subjectId,
+    Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(UUID subjectId,
                                                           @Nonnull
                                                           SubjectSyncPlatform subjectSyncPlatform,
                                                           @NotBlank String platformId);
@@ -33,7 +34,7 @@ public interface SubjectService {
     Mono<Void> update(Subject subject);
 
     @Transactional
-    Mono<Void> deleteById(Long id);
+    Mono<Void> deleteById(UUID id);
 
     Mono<PagingWrap<Subject>> findAllByPageable(PagingWrap<Subject> pagingWrap);
 

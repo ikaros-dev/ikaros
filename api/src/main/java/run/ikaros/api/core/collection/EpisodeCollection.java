@@ -2,6 +2,7 @@ package run.ikaros.api.core.collection;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,11 +18,11 @@ import run.ikaros.api.store.enums.EpisodeGroup;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class EpisodeCollection {
-    private Long id;
+    private UUID id;
     @JsonProperty("user_id")
-    private Long userId;
+    private UUID userId;
     @JsonProperty("episode_id")
-    private Long episodeId;
+    private UUID episodeId;
     /**
      * 是否已经看过.
      */
@@ -36,7 +37,7 @@ public class EpisodeCollection {
     private Long duration;
 
     @JsonProperty("subject_id")
-    private Long subjectId;
+    private UUID subjectId;
     private String name;
     @JsonProperty("name_cn")
     private String nameCn;

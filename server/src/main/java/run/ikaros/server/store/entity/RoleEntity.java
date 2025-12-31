@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,6 @@ import org.springframework.data.relational.core.mapping.Table;
 public class RoleEntity extends BaseEntity {
     private String name;
     @Column("parent_id")
-    private Long parentId;
+    private UUID parentId;
     private String description;
 }

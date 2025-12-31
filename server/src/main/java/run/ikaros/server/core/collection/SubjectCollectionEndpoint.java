@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -180,9 +181,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> findSubjectCollection(ServerRequest serverRequest) {
-        String subjectIdStr = serverRequest.pathVariable("subjectId");
-        Assert.hasText(subjectIdStr, "'subjectId' must has text.");
-        Long subjectId = Long.valueOf(subjectIdStr);
+        UUID subjectId = UUID.fromString(serverRequest.pathVariable("subjectId"));
         return userService.getUserIdFromSecurityContext()
             .flatMap(userId -> selfService.findCollection(userId, subjectId))
             .flatMap(subjectCollection -> ServerResponse.ok().bodyValue(subjectCollection))
@@ -192,9 +191,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> collectSubject(ServerRequest serverRequest) {
-        Optional<String> subjectIdOp = serverRequest.queryParam("subjectId");
-        Assert.isTrue(subjectIdOp.isPresent(), "'subjectId' must has value.");
-        Long subjectId = Long.parseLong(subjectIdOp.get());
+        UUID subjectId = UUID.fromString(serverRequest.pathVariable("subjectId"));
         Optional<String> typeOp = serverRequest.queryParam("type");
         Assert.isTrue(typeOp.isPresent(), "'type' must has value.");
         CollectionType type = CollectionType.valueOf(typeOp.get());
@@ -217,9 +214,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> unCollectSubject(ServerRequest serverRequest) {
-        Optional<String> subjectIdOp = serverRequest.queryParam("subjectId");
-        Assert.isTrue(subjectIdOp.isPresent(), "'subjectId' must has value.");
-        Long subjectId = Long.parseLong(subjectIdOp.get());
+        UUID subjectId = UUID.fromString(serverRequest.pathVariable("subjectId"));
         return userService.getUserIdFromSecurityContext()
             .flatMap(userId -> selfService.unCollect(userId, subjectId))
             .then(ServerResponse.ok().build())
@@ -228,9 +223,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> updateSubjectCollectionMainEpProgress(ServerRequest request) {
-        String subjectIdStr = request.pathVariable("subjectId");
-        Assert.hasText(subjectIdStr, "'subjectId' must has text.");
-        Long subjectId = Long.valueOf(subjectIdStr);
+        UUID subjectId = UUID.fromString(request.pathVariable("subjectId"));
         String progressStr = request.pathVariable("progress");
         Assert.hasText(progressStr, "'progress' must has text.");
         Integer progress = Integer.valueOf(progressStr);

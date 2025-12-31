@@ -5,6 +5,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +21,7 @@ import run.ikaros.api.store.enums.AttachmentDriverType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class AttachmentDriver {
-    private Long id;
+    private UUID id;
     /**
      * enable current attachment driver.
      */
@@ -54,7 +55,7 @@ public class AttachmentDriver {
     private Double requestLimit;
 
     @JsonProperty("user_id")
-    private Long userId;
+    private UUID userId;
     @JsonProperty("user_name")
     private String username;
     private String avatar;

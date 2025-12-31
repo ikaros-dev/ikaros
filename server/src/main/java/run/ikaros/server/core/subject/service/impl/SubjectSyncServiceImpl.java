@@ -3,12 +3,12 @@ package run.ikaros.server.core.subject.service.impl;
 import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -121,7 +121,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> sync(@Nullable Long subjectId, SubjectSyncPlatform platform,
+    public Mono<Void> sync(UUID subjectId, SubjectSyncPlatform platform,
                            String platformId) {
         Assert.notNull(platform, "'platform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
@@ -150,8 +150,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
         });
 
         // 保存条目信息获取ID
-        final AtomicReference<Long> subjectIdA =
-            new AtomicReference<>(subjectId == null ? -1 : subjectId);
+        final AtomicReference<UUID> subjectIdA = new AtomicReference<>(subjectId);
         Mono<SubjectEntity> subjectEntityMono =
             existsMono.then(Mono.just(synchronizer))
                 .map(synchronizer1 -> synchronizer1.fetchSubjectWithPlatformId(platformId))
@@ -249,7 +248,8 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                         TagType.SUBJECT, subjectIdA.get(), tag.getName())
                     .switchIfEmpty(Mono.just(new TagEntity()))
                     .flatMap(entity -> copyProperties(tag, entity, "id")))
-                .map(entity -> entity.setUserId(-1L)
+                .map(entity -> entity
+                    // .setUserId(-1L)
                     .setCreateTime(LocalDateTime.now())
                     .setType(TagType.SUBJECT)
                     .setMasterId(subjectIdA.get()))
@@ -390,8 +390,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
 
     @Override
     @FluxCacheable(value = "subject:syncs:", key = "#subjectId")
-    public Flux<SubjectSync> findSubjectSyncsBySubjectId(long subjectId) {
-        Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
+    public Flux<SubjectSync> findSubjectSyncsBySubjectId(UUID subjectId) {
         return subjectSyncRepository.findAllBySubjectId(subjectId)
             .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity,
                 SubjectSync.builder().build()));
@@ -400,9 +399,8 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     @Override
     @MonoCacheable(cacheNames = "subject:sync:",
         key = "#subjectId.toString() + ' ' + #platform.toString()")
-    public Mono<SubjectSync> findSubjectSyncBySubjectIdAndPlatform(long subjectId,
+    public Mono<SubjectSync> findSubjectSyncBySubjectIdAndPlatform(UUID subjectId,
                                                                    SubjectSyncPlatform platform) {
-        Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.notNull(platform, "'platform' must not null.");
         return subjectSyncRepository.findBySubjectIdAndPlatform(subjectId, platform)
             .flatMap(subjectSyncEntity -> copyProperties(subjectSyncEntity,
@@ -425,10 +423,9 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     @MonoCacheable(cacheNames = "subject:sync:",
         key = "#subjectId.toString() + ' ' + #platform.toString()"
             + "+ ' ' + #platformId.toString()")
-    public Mono<SubjectSync> findBySubjectIdAndPlatformAndPlatformId(Long subjectId,
+    public Mono<SubjectSync> findBySubjectIdAndPlatformAndPlatformId(UUID subjectId,
                                                                      SubjectSyncPlatform platform,
                                                                      String platformId) {
-        Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.notNull(platform, "'platform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
         return subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(

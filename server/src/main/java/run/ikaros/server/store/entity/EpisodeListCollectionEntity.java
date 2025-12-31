@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,11 +19,11 @@ import org.springframework.data.relational.core.mapping.Table;
 @Accessors(chain = true)
 public class EpisodeListCollectionEntity {
     @Id
-    private Long id;
+    private UUID id;
     @Column("user_id")
-    private Long userId;
+    private UUID userId;
     @Column("episode_list_id")
-    private Long episodeListId;
+    private UUID episodeListId;
     @Column("update_time")
     private LocalDateTime updateTime;
 }

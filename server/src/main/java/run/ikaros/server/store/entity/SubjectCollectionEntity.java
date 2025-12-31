@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,11 +19,11 @@ import run.ikaros.api.store.enums.CollectionType;
 @Accessors(chain = true)
 public class SubjectCollectionEntity {
     @Id
-    private Long id;
+    private UUID id;
     @Column("user_id")
-    private Long userId;
+    private UUID userId;
     @Column("subject_id")
-    private Long subjectId;
+    private UUID subjectId;
     /**
      * collection status.
      *

@@ -16,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.Extension;
@@ -50,9 +51,7 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
     }
 
     @Override
-    public Flux<Attachment> getChildren(Long driverId, Long parentAttId, String remotePath) {
-        Assert.isTrue(driverId >= 0, "driverId must be greater than or equal to zero.");
-        Assert.isTrue(parentAttId >= 0, "driverId must be greater than or equal to zero.");
+    public Flux<Attachment> getChildren(UUID driverId, UUID parentAttId, String remotePath) {
         Assert.hasText(remotePath, "remotePath must not be empty.");
         File file = new File(remotePath);
         Path path = Paths.get(remotePath);

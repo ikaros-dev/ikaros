@@ -1,5 +1,6 @@
 package run.ikaros.server.core.episode;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -52,8 +53,8 @@ public class EpisodeAttachmentUpdateEventListener {
         if (!event.getNotify()) {
             return Mono.empty();
         }
-        final Long attachmentId = event.getAttachmentId();
-        final Long episodeId = event.getEpisodeId();
+        final UUID attachmentId = event.getAttachmentId();
+        final UUID episodeId = event.getEpisodeId();
         return Mono.just(new Context())
             .subscribeOn(Schedulers.boundedElastic())
             .flatMap(context -> attachmentRepository.findById(attachmentId)
@@ -75,7 +76,7 @@ public class EpisodeAttachmentUpdateEventListener {
                 if (!(episode instanceof EpisodeEntity episodeEntity)) {
                     return Mono.empty();
                 }
-                Long subjectId = episodeEntity.getSubjectId();
+                UUID subjectId = episodeEntity.getSubjectId();
                 return subjectRepository.findById(subjectId)
                     .map(entity -> {
                         String cover = entity.getCover();
