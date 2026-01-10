@@ -1,7 +1,7 @@
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
-    id 'org.springframework.boot' version '3.5.9' apply false
+    id 'org.springframework.boot' version '4.0.1' apply false
     id 'java-platform'
     id 'maven-publish'
 }
@@ -16,7 +16,7 @@ ext {
     springDocOpenAPI = "2.5.0"
     lucene = "9.5.0"
     uuidCreator = "1.0.7"
-    r2dbcMigrate = "3.3.0"
+    r2dbcMigrate = "4.0.1"
 }
 
 javaPlatform {

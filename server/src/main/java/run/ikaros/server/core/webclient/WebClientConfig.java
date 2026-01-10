@@ -1,15 +1,13 @@
 package run.ikaros.server.core.webclient;
 
-import org.springframework.boot.autoconfigure.http.codec.HttpCodecsProperties;
+import org.springframework.boot.http.codec.autoconfigure.HttpCodecsProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
-import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
-@EnableRetry
 @Configuration
 public class WebClientConfig {
     /**

@@ -7,6 +7,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AuthorityType;
 import run.ikaros.server.core.role.event.RoleCreatedEvent;
 import run.ikaros.server.store.entity.BaseEntity;
@@ -55,6 +56,7 @@ public class RoleCreatedListener {
                 SecurityConst.Authorization.Authority.ALL)
             .map(BaseEntity::getId)
             .map(authorityId -> RoleAuthorityEntity.builder()
+                .id(UuidV7Utils.generateUuid())
                 .authorityId(authorityId)
                 .roleId(roleId)
                 .build())

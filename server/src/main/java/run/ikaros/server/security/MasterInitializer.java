@@ -78,6 +78,12 @@ public class MasterInitializer {
                     .nickname(initializer.getMasterNickname())
                     .enable(true)
                     .build())
+                .map(userEntity -> {
+                    if (userEntity.getId() == null) {
+                        userEntity.setId(UuidV7Utils.generateUuid());
+                    }
+                    return userEntity;
+                })
                 .map(User::new)
                 .flatMap(userService::save)
                 .map(User::entity)
@@ -85,6 +91,7 @@ public class MasterInitializer {
             .flatMap(tuple2 ->
                 userRoleRepository.findByUserIdAndRoleId(tuple2.getT2(), tuple2.getT1())
                     .switchIfEmpty(Mono.just(UserRoleEntity.builder()
+                        .id(UuidV7Utils.generateUuid())
                         .userId(tuple2.getT2())
                         .roleId(tuple2.getT1())
                         .build())))

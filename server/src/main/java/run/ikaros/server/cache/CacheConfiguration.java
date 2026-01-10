@@ -6,12 +6,12 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import run.ikaros.server.cache.condition.CacheMemoryEnableCondition;
 import run.ikaros.server.cache.condition.CacheRedisEnableCondition;
-import run.ikaros.server.infra.utils.JsonUtils;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(CacheProperties.class)
@@ -41,8 +41,8 @@ public class CacheConfiguration {
         ReactiveRedisConnectionFactory connectionFactory) {
         RedisSerializationContext.RedisSerializationContextBuilder<String, Object> builder =
             RedisSerializationContext.newSerializationContext();
-        GenericJackson2JsonRedisSerializer objectSerializer =
-            new GenericJackson2JsonRedisSerializer(JsonUtils.getObjectMapper());
+        GenericJacksonJsonRedisSerializer objectSerializer =
+            new GenericJacksonJsonRedisSerializer(new ObjectMapper());
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         builder.key(stringRedisSerializer);
         builder.value(objectSerializer);

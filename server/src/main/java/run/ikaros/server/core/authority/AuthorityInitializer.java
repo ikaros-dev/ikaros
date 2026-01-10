@@ -9,6 +9,7 @@ import org.springframework.util.ReflectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AuthorityType;
 import run.ikaros.server.store.entity.AuthorityEntity;
 
@@ -71,6 +72,10 @@ public class AuthorityInitializer {
                 .authority(String.valueOf(ReflectionUtils.getField(authField, null)))
                 .target(tarFieldValue)
                 .build())
+            .map(authorityEntity -> {
+                authorityEntity.setId(UuidV7Utils.generateUuid());
+                return authorityEntity;
+            })
             .flatMap(authorityService::saveEntity)
             .then()
             ;
