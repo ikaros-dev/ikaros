@@ -2,13 +2,12 @@ package run.ikaros.server.store.repository;
 
 import java.util.UUID;
 import org.springframework.data.r2dbc.repository.Query;
-import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.store.entity.EpisodeEntity;
 
-public interface EpisodeRepository extends R2dbcRepository<EpisodeEntity, UUID> {
+public interface EpisodeRepository extends BaseRepository<EpisodeEntity> {
     Flux<EpisodeEntity> findAllBySubjectId(UUID subjectId);
 
     @Query(value = "select id from episode where subject_id = :subjectId")

@@ -2,7 +2,6 @@ package run.ikaros.server.store.repository;
 
 import java.util.UUID;
 import org.springframework.data.r2dbc.repository.Query;
-import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.store.entity.UserEntity;
 
@@ -12,7 +11,7 @@ import run.ikaros.server.store.entity.UserEntity;
  * @author: li-guohao
  * @see UserEntity
  */
-public interface UserRepository extends R2dbcRepository<UserEntity, UUID> {
+public interface UserRepository extends BaseRepository<UserEntity> {
 
     Mono<UserEntity> findByUsernameAndEnableAndDeleteStatus(String username,
                                                             Boolean enable,

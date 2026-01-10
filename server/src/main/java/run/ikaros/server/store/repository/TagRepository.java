@@ -1,14 +1,13 @@
 package run.ikaros.server.store.repository;
 
 import java.util.UUID;
-import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.TagType;
 import run.ikaros.server.store.entity.TagEntity;
 
 public interface TagRepository
-    extends R2dbcRepository<TagEntity, UUID> {
+    extends BaseRepository<TagEntity> {
 
     Flux<TagEntity> findAllByTypeAndMasterId(TagType type, UUID masterId);
 

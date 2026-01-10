@@ -1,13 +1,12 @@
 package run.ikaros.server.store.repository;
 
 import java.util.UUID;
-import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.store.entity.SubjectSyncEntity;
 
-public interface SubjectSyncRepository extends R2dbcRepository<SubjectSyncEntity, UUID> {
+public interface SubjectSyncRepository extends BaseRepository<SubjectSyncEntity> {
     Flux<SubjectSyncEntity> findByPlatformAndPlatformId(SubjectSyncPlatform platform,
                                                         String platformId);
 
