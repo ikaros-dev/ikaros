@@ -12,15 +12,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.core.subject.service.SubjectService;
 
 @SpringBootTest
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class SubjectServiceTest {
 
     @Autowired

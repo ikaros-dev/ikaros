@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.core.collection.SubjectCollection;
@@ -23,6 +25,7 @@ import run.ikaros.api.infra.exception.user.UserNotFoundException;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.security.SecurityProperties;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
@@ -34,6 +37,8 @@ import run.ikaros.server.store.repository.SubjectRepository;
 import run.ikaros.server.store.repository.UserRepository;
 
 @SpringBootTest
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class SubjectCollectionServiceTest {
 
     @Autowired

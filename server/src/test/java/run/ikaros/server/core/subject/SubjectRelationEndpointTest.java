@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
@@ -24,6 +25,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.OpenApiConst;
@@ -31,6 +33,7 @@ import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.core.subject.SubjectRelation;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectRelationType;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.store.repository.SubjectRelationRepository;
 
@@ -38,6 +41,8 @@ import run.ikaros.server.store.repository.SubjectRelationRepository;
 @Disabled
 @SpringBootTest
 @AutoConfigureWebTestClient
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class SubjectRelationEndpointTest {
 
     @Autowired
