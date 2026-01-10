@@ -10,7 +10,7 @@ public class LogoutConfigurer implements SecurityConfigurer {
 
     @Override
     public void configure(ServerHttpSecurity http) {
-        http.logout()
-            .logoutSuccessHandler(new LogoutSuccessHandler());
+        http.logout(logoutSpec ->
+            logoutSpec.logoutSuccessHandler(new LogoutSuccessHandler()));
     }
 }

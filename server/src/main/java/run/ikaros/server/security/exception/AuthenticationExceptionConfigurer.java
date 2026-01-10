@@ -10,6 +10,9 @@ import run.ikaros.server.security.authentication.SecurityConfigurer;
 public class AuthenticationExceptionConfigurer implements SecurityConfigurer {
     @Override
     public void configure(ServerHttpSecurity http) {
-        http.exceptionHandling().authenticationEntryPoint(new JsonServerAuthenticationEntryPoint());
+        http.exceptionHandling((exceptionHandlingSpec ->
+            exceptionHandlingSpec.authenticationEntryPoint(
+                new JsonServerAuthenticationEntryPoint()
+            )));
     }
 }

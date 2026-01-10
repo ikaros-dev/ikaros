@@ -21,6 +21,7 @@ public class WebClientConfig {
     @Bean
     public WebClient webClient(HttpCodecsProperties codecProperties) {
         DataSize maxInMemorySize = codecProperties.getMaxInMemorySize();
+        maxInMemorySize = maxInMemorySize == null ? DataSize.ofMegabytes(100) : maxInMemorySize;
         long bytes = maxInMemorySize.toBytes();
         final ExchangeStrategies strategies = ExchangeStrategies.builder()
             .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize((int) bytes))
