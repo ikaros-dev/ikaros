@@ -1,16 +1,16 @@
 plugins {
-    id 'org.springframework.boot' version '3.0.1'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'org.springframework.boot' version '3.5.9'
+    id 'io.spring.dependency-management' version '1.1.4'
     id "com.gorylenko.gradle-git-properties" version "2.3.2"
     id "checkstyle"
     id 'java'
     id 'jacoco'
-    id "io.freefair.lombok" version "8.0.0-rc2"
+    id "io.freefair.lombok" version "8.14.3"
     id "com.github.node-gradle.node" version "7.1.0"
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 group = "run.ikaros.server"
-sourceCompatibility = JavaVersion.VERSION_17
 
 checkstyle {
     toolVersion = "9.3"
@@ -70,9 +70,9 @@ dependencies {
 
     implementation "org.springframework.boot:spring-boot-starter-data-redis-reactive"
 
-    implementation("org.apache.commons:commons-csv:1.14.1")
+    implementation 'org.apache.commons:commons-csv:1.14.1'
 
-    implementation 'io.github.daggerok:liquibase-r2dbc-spring-boot-starter'
+    implementation 'name.nkonev.r2dbc-migrate:r2dbc-migrate-spring-boot-starter'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
@@ -83,6 +83,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers:4.0.1'
+    testImplementation 'org.testcontainers:junit-jupiter:1.21.3'
+    testImplementation 'org.testcontainers:postgresql:1.21.3'
 }
 
 
@@ -156,5 +159,8 @@ tasks.named('jacocoTestReport') {
 //            ])
 //        }))
 //    }
+}
+kotlin {
+    jvmToolchain(17)
 }
 

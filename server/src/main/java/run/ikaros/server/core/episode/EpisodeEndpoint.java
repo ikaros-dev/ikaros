@@ -4,13 +4,12 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.apiresponse.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Base64Utils;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -208,7 +207,7 @@ public class EpisodeEndpoint implements CoreEndpoint {
             EpisodeGroup.valueOf(request.queryParam("group").orElse(EpisodeGroup.MAIN.name()));
         Float sequence = Float.valueOf(request.queryParam("sequence").orElse("0"));
         String rawName = request.queryParam("name").orElse("");
-        String name = new String(Base64Utils.decodeFromString(rawName), StandardCharsets.UTF_8);
+        String name = new String(Base64.getDecoder().decode(rawName));
         return episodeService.findBySubjectIdAndGroupAndSequenceAndName(
                 subjectId, group, sequence, name)
             .flatMap(episode -> ServerResponse.ok().bodyValue(episode));

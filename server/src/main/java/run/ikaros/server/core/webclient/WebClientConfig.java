@@ -1,6 +1,6 @@
 package run.ikaros.server.core.webclient;
 
-import org.springframework.boot.autoconfigure.codec.CodecProperties;
+import org.springframework.boot.autoconfigure.http.codec.HttpCodecsProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -16,10 +16,10 @@ public class WebClientConfig {
      * Ikaros web client.
      *
      * @return {@link WebClient} instance
-     * @see CodecProperties#getMaxInMemorySize()
+     * @see HttpCodecsProperties#getMaxInMemorySize()
      */
     @Bean
-    public WebClient webClient(CodecProperties codecProperties) {
+    public WebClient webClient(HttpCodecsProperties codecProperties) {
         DataSize maxInMemorySize = codecProperties.getMaxInMemorySize();
         long bytes = maxInMemorySize.toBytes();
         final ExchangeStrategies strategies = ExchangeStrategies.builder()

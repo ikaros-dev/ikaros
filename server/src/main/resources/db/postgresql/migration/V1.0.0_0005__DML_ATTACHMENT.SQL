@@ -1,1 +1,0 @@
-ALTER TABLE attachment DROP CONSTRAINT type_parent_name_uk;

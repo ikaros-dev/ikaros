@@ -40,12 +40,10 @@ spring:
   codec:
     max-in-memory-size: 10MB
   r2dbc:
-    url: r2dbc:h2:file:///${ikaros.work-dir}/database/ikaros?MODE=MySQL&DB_CLOSE_ON_EXIT=FALSE
-    username: admin
+    url: r2dbc:pool:postgresql://localhost:5432/ikaros
+    username: ikaros
     password: 123456
 
-  liquibase:
-    change-log: classpath*:/liquibase/changelog.xml
 
   data:
     redis:

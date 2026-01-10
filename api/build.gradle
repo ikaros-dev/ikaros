@@ -23,6 +23,7 @@ dependencies {
     api 'org.springframework.boot:spring-boot-starter-webflux'
     api 'org.springframework.boot:spring-boot-starter-validation'
     api 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    api 'name.nkonev.r2dbc-migrate:r2dbc-migrate-spring-boot-starter'
     api 'com.github.f4b6a3:uuid-creator'
 
     // Spring Security
@@ -47,9 +48,6 @@ dependencies {
     api "org.apache.lucene:lucene-highlighter"
     api "org.apache.lucene:lucene-backward-codecs"
     api 'cn.shenyanchao.ik-analyzer:ik-analyzer'
-
-    // liquibase
-    api 'io.github.daggerok:liquibase-r2dbc-spring-boot-starter'
 
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.postgresql:r2dbc-postgresql'

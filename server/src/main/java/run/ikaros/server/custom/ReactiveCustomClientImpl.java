@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.Custom;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
@@ -49,14 +50,17 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .filter(Objects::nonNull)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'custom' must not null")))
             .map(CustomConverter::convertTo)
-            .flatMap(customDto -> repository.save(customDto.customEntity())
+            .flatMap(customDto -> repository.save(customDto.customEntity()
+                    .setId(UuidV7Utils.generateUuid()))
                 .flatMap(customEntity -> Mono.just(customDto)))
             .flatMap(customDto -> Mono.just(customDto.customMetadataEntityList())
                 .filter(customMetadataEntityList -> !customMetadataEntityList.isEmpty())
                 .flatMapMany(customMetadataEntityList -> Flux.fromStream(
                     customMetadataEntityList.stream()))
                 .map(customMetadataEntity ->
-                    customMetadataEntity.setCustomId(customDto.customEntity().getId()))
+                    customMetadataEntity
+                        .setId(UuidV7Utils.generateUuid())
+                        .setCustomId(customDto.customEntity().getId()))
                 .flatMap(metadataRepository::save)
                 .collectList()
                 .flatMap(customMetadataEntityList -> Mono.just(customDto)))

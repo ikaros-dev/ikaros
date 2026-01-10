@@ -1,1 +1,0 @@
-alter table attachment add column deleted bool null;
