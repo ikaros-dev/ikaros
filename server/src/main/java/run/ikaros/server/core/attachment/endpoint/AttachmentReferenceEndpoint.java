@@ -46,7 +46,7 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
                     .parameter(parameterBuilder().name("id")
                         .description("AttachmentReference ID")
                         .required(true)
-                        .implementation(Long.class)))
+                        .implementation(String.class)))
 
             .DELETE("/attachment/reference/uk", this::removeByTypeAndAttachmentIdAndReferenceId,
                 builder -> builder.operationId("RemoveByTypeAndAttachmentIdAndReferenceId")

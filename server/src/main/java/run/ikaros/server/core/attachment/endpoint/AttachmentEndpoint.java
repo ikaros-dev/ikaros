@@ -114,7 +114,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("Attachment ID")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder().implementation(Attachment.class)))
 
             .GET("/attachment/paths/{id}", this::getAttachmentPathDirsById,
@@ -203,7 +203,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .name("id")
                         .description("Read url.")
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder().implementation(String.class)))
 
             .GET("/attachment/stream/id/{id}", this::getStreamById,

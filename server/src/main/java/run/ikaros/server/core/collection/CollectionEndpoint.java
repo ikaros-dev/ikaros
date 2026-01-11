@@ -38,7 +38,7 @@ public class CollectionEndpoint implements CoreEndpoint {
                     .tag(tag).description("Get collection type by subject id.")
                     .parameter(parameterBuilder()
                         .name("id").required(true).description("Subject id")
-                        .in(ParameterIn.PATH).implementation(Long.class))
+                        .in(ParameterIn.PATH).implementation(String.class))
                     .response(responseBuilder()
                         .description("collection type.")
                         .implementation(CollectionType.class))

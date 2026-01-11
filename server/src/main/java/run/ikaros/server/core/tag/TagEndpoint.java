@@ -63,7 +63,7 @@ public class TagEndpoint implements CoreEndpoint {
                 builder -> builder.operationId("ListSubjectTagsBySubjectId")
                     .tag(tag).description("List subject tags by subject id.")
                     .parameter(parameterBuilder().name("subjectId").required(true)
-                        .in(ParameterIn.PATH).implementation(Long.class))
+                        .in(ParameterIn.PATH).implementation(String.class))
                     .response(responseBuilder().implementationArray(SubjectTag.class)))
 
             .GET("/tags/attachment/attachmentId/{attachmentId}",
@@ -71,7 +71,7 @@ public class TagEndpoint implements CoreEndpoint {
                 builder -> builder.operationId("ListAttachmentTagsByAttachmentId")
                     .tag(tag).description("List attachment tags by attachment id.")
                     .parameter(parameterBuilder().name("attachmentId").required(true)
-                        .in(ParameterIn.PATH).implementation(Long.class))
+                        .in(ParameterIn.PATH).implementation(String.class))
                     .response(responseBuilder().implementationArray(AttachmentTag.class)))
 
             .POST("/tag", this::create,
@@ -85,7 +85,7 @@ public class TagEndpoint implements CoreEndpoint {
                     .tag(tag).description("Remove tag by id.")
                     .parameter(parameterBuilder().name("id")
                         .required(true).in(ParameterIn.PATH)
-                        .implementation(Long.class)))
+                        .implementation(String.class)))
 
             .DELETE("/tag/condition", this::removeByCondition,
                 builder -> builder.operationId("RemoveTagByCondition")
@@ -95,7 +95,7 @@ public class TagEndpoint implements CoreEndpoint {
                         .implementation(TagType.class))
                     .parameter(parameterBuilder()
                         .name("masterId").required(false)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .name("name").required(false)
                         .implementation(String.class)))

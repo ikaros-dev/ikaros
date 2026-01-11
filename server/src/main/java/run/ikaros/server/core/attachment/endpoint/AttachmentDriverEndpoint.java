@@ -56,7 +56,7 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("AttachmentDriver ID")
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
             )
 
             .PUT("/attachment/driver/disable/id/{id}", this::disableDriver,
@@ -66,7 +66,7 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("AttachmentDriver ID")
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
             )
 
             .DELETE("/attachment/driver/id/{id}", this::deleteById,
@@ -77,7 +77,7 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("AttachmentDriver ID")
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
             )
 
             .GET("/attachment/driver/id/{id}", this::getById,
@@ -88,7 +88,7 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("AttachmentDriver ID")
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder().implementation(AttachmentDriver.class))
             )
 

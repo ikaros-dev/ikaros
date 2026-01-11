@@ -73,7 +73,7 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .description("Subject ID")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .description("Search single subject by id.")
                     .response(responseBuilder().implementation(Subject.class))
             )
@@ -156,7 +156,7 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .required(true)
                         .in(ParameterIn.PATH)
                         .description("Subject id")
-                        .implementation(Long.class)))
+                        .implementation(String.class)))
             .build();
     }
 
