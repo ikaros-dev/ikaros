@@ -458,7 +458,7 @@ const onRowContextmenu = (row, column, event) => {
 };
 
 const directorySelectDialogVisible = ref(false);
-const onDirSelected = async (targetDirid: number) => {
+const onDirSelected = async (targetDirid: string) => {
 	for (const attachment of selectionAttachments.value.filter(
 		(attachment) => targetDirid !== attachment.id
 	)) {
