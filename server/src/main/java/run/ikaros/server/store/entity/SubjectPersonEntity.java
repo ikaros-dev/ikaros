@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +19,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @EqualsAndHashCode(callSuper = true)
 public class SubjectPersonEntity extends BaseEntity {
     @Column("subject_id")
-    private Long subjectId;
+    private UUID subjectId;
     @Column("person_id")
-    private Long personId;
+    private UUID personId;
 }

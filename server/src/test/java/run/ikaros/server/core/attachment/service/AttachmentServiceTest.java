@@ -16,9 +16,11 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.util.StringUtils;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.FileConst;
@@ -29,13 +31,17 @@ import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.infra.utils.RandomUtils;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
 @SpringBootTest
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class AttachmentServiceTest {
     @Autowired
     AttachmentService attachmentService;
@@ -188,8 +194,8 @@ class AttachmentServiceTest {
             return false;
         }
 
-        oldAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
-        newAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
+        /// oldAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
+        // newAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
 
         boolean result = true;
         for (int i = 0; i < oldAttachments.size(); i++) {
@@ -444,30 +450,37 @@ class AttachmentServiceTest {
         final String dir2name = RandomUtils.randomString(20);
 
         final AttachmentEntity att1 = AttachmentEntity.builder()
+            .id(UuidV7Utils.generateUuid())
             .name(dir1name)
             .type(AttachmentType.Directory)
             .parentId(ROOT_DIRECTORY_ID)
             .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
             .updateTime(LocalDateTime.now())
             .build();
-        StepVerifier.create(attachmentService.saveEntity(att1))
-            .expectNextMatches(new AttachmentEntityPredicate(att1))
+        StepVerifier.create(attachmentRepository.insert(att1))
+            .expectNext(att1)
             .verifyComplete();
-        Assertions.assertThat(att1.getId()).isNotNull();
 
         final AttachmentEntity att2 = AttachmentEntity.builder()
+            .id(UuidV7Utils.generateUuid())
             .name(dir2name)
             .type(AttachmentType.Directory)
             .parentId(att1.getId())
             .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
             .updateTime(LocalDateTime.now())
             .build();
-
-        StepVerifier.create(attachmentService.saveEntity(att2))
-            .expectNextMatches(new AttachmentEntityPredicate(att2))
+        StepVerifier.create(attachmentRepository.insert(att2))
+            .expectNext(att2)
             .verifyComplete();
-        Assertions.assertThat(att2.getId()).isNotNull();
 
+
+        StepVerifier.create(attachmentService.findAttachmentPathDirsById(att2.getId())
+            .flatMapMany(attachments -> Flux.fromStream(attachments.stream()))
+            .map(Attachment::getId))
+            .expectNext(ROOT_DIRECTORY_ID)
+            .expectNext(att1.getId())
+            .expectNext(att2.getId())
+            .verifyComplete();
     }
 
     @Test

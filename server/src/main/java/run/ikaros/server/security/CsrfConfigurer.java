@@ -21,8 +21,9 @@ public class CsrfConfigurer implements SecurityConfigurer {
             new NegatedServerWebExchangeMatcher(
                 pathMatchers(SecurityConst.SECURITY_MATCHER_PATHS)));
 
-        http.csrf().csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
-            .csrfTokenRequestHandler(new ServerCsrfTokenRequestAttributeHandler())
-            .requireCsrfProtectionMatcher(csrfMatcher);
+        http.csrf(csrfSpec ->
+            csrfSpec.csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(new ServerCsrfTokenRequestAttributeHandler())
+                .requireCsrfProtectionMatcher(csrfMatcher));
     }
 }

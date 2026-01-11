@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.fn.builders.apiresponse.Builder;
@@ -21,6 +22,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.SubjectRelation;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.server.core.subject.service.SubjectRelationService;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -47,7 +49,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .name("subjectId")
                         .in(ParameterIn.PATH)
                         .description("Subject id")
-                        .implementation(Long.class)
+                        .implementation(String.class)
                         .required(true))
                     .response(Builder.responseBuilder()
                         .implementationArray(SubjectRelation.class)))
@@ -59,7 +61,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .name("subjectId")
                         .in(ParameterIn.PATH)
                         .description("Subject id")
-                        .implementation(Long.class)
+                        .implementation(String.class)
                         .required(true))
                     .parameter(parameterBuilder()
                         .name("relationType")
@@ -86,7 +88,7 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .name("subjectId")
                         .description("Subject id")
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .required(true)
                         .in(ParameterIn.QUERY)
@@ -103,11 +105,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> findAllBySubjectId(ServerRequest request) {
-        String subjectId = request.pathVariable("subjectId");
-        return Mono.just(subjectId)
-            .map(Long::valueOf)
-            .flatMap(sid -> subjectRelationService.findAllBySubjectId(sid)
-                .collectList())
+        final UUID subjectId = UuidV7Utils.fromString(request.pathVariable("subjectId"));
+        return subjectRelationService.findAllBySubjectId(subjectId)
+            .collectList()
             .filter(subjectRelations -> !subjectRelations.isEmpty())
             .flatMap(subjectRelations -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -116,9 +116,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> findBySubjectIdAndType(ServerRequest request) {
-        String subjectId = request.pathVariable("subjectId");
         String relationType = request.pathVariable("relationType");
-        return subjectRelationService.findBySubjectIdAndType(Long.valueOf(subjectId),
+        final UUID subjectId = UuidV7Utils.fromString(request.pathVariable("subjectId"));
+        return subjectRelationService.findBySubjectIdAndType(subjectId,
                 StringUtils.isNumeric(relationType)
                     ? SubjectRelationType.codeOf(Integer.valueOf(relationType))
                     : SubjectRelationType.valueOf(relationType))
@@ -141,14 +141,13 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
 
 
     private Mono<ServerResponse> removeSubjectRelation(ServerRequest request) {
-        String subjectId = request.pathVariable("subjectId");
-        Assert.hasText(subjectId, "subjectId must not be empty");
         Optional<String> relationType = request.queryParam("relation_type");
         Assert.isTrue(relationType.isPresent(), "'relation_type' must not be empty");
         Optional<String> relationSubjects = request.queryParam("relation_subjects");
         Assert.isTrue(relationSubjects.isPresent(), "'relation_subjects' must not be empty");
+        UUID subjectId = UuidV7Utils.fromString(request.pathVariable("subjectId"));
         SubjectRelation subjectRelation = SubjectRelation.builder()
-            .subject(Long.valueOf(subjectId))
+            .subject(subjectId)
             .relationType(
                 StringUtils.isNumeric(relationType.get())
                     ? SubjectRelationType.codeOf(Integer.valueOf(relationType.get()))
@@ -160,7 +159,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
                     JsonUtils.json2ObjArr(relationSubjects.get(), new TypeReference<>() {
                     }))));
         } else {
-            subjectRelation.setRelationSubjects(Set.of(Long.valueOf(relationSubjects.get())));
+            UUID relationSubId = UuidV7Utils.fromString(relationSubjects.get());
+            Assert.notNull(relationSubId, "'relationSubId' must not null.");
+            subjectRelation.setRelationSubjects(Set.of(relationSubId));
         }
 
         return Mono.just(subjectRelation)

@@ -1,5 +1,6 @@
 package run.ikaros.server.core.authority;
 
+import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.authority.Authority;
@@ -17,7 +18,7 @@ public interface AuthorityService {
 
     Mono<Authority> save(Authority authority);
 
-    Mono<Void> deleteById(Long id);
+    Mono<Void> deleteById(UUID id);
 
     Mono<PagingWrap<Authority>> findAllByCondition(AuthorityCondition authorityCondition);
 }

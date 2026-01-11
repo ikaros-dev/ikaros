@@ -3,6 +3,7 @@ package run.ikaros.server.core.collection;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.Objects;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,7 @@ import run.ikaros.api.core.collection.event.SubjectUnCollectEvent;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.subject.SubjectNotFoundException;
 import run.ikaros.api.infra.exception.user.UserNotFoundException;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.wrap.PagingWrap;
@@ -64,14 +66,14 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
-    private Mono<Boolean> checkUserIdExists(Long userId) {
+    private Mono<Boolean> checkUserIdExists(UUID userId) {
         return userRepository.existsById(userId)
             .filter(exists -> exists)
             .switchIfEmpty(
                 Mono.error(new UserNotFoundException("User not found for id=" + userId)));
     }
 
-    private Mono<Boolean> checkSubjectIdExists(Long subjectId) {
+    private Mono<Boolean> checkSubjectIdExists(UUID subjectId) {
         return subjectRepository.existsById(subjectId)
             .filter(exists -> exists)
             .switchIfEmpty(
@@ -80,10 +82,9 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
 
     @Override
     public Mono<Void> collect(SubjectCollection subjectCollection) {
-        Assert.isTrue(subjectCollection.getUserId() >= 0, "'userId' must >= 0");
-        Assert.isTrue(subjectCollection.getSubjectId() >= 0, "'subjectId' must >= 0");
-        Assert.notNull(subjectCollection.getType(), "'type' must not null");
-        Assert.notNull(subjectCollection.getIsPrivate(), "'isPrivate' must not null");
+        Assert.notNull(subjectCollection, "'subjectCollection' must not null.");
+        Assert.notNull(subjectCollection.getType(), "'type' must not null.");
+        Assert.notNull(subjectCollection.getIsPrivate(), "'isPrivate' must not null.");
         if (subjectCollection.getMainEpisodeProgress() == null) {
             subjectCollection.setMainEpisodeProgress(0);
         }
@@ -102,9 +103,8 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                     .switchIfEmpty(copyProperties(subColl, new SubjectCollectionEntity())
                         .doOnSuccess(entity -> {
                             log.info("Create new subject collection entity: {}", entity);
-                            SubjectCollectionScoreUpdateEvent event
-                                = new SubjectCollectionScoreUpdateEvent(
-                                this, entity.getSubjectId());
+                            SubjectCollectionScoreUpdateEvent event =
+                                new SubjectCollectionScoreUpdateEvent(this, entity.getSubjectId());
                             applicationEventPublisher.publishEvent(event);
                             SubjectCollectionCreateEvent newEvent
                                 = new SubjectCollectionCreateEvent(this,
@@ -114,23 +114,27 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                     .doOnNext(entity -> {
                         if (entity != null && entity.getScore() != null
                             && newScore != entity.getScore()) {
-                            SubjectCollectionScoreUpdateEvent event
-                                = new SubjectCollectionScoreUpdateEvent(
-                                this, entity.getSubjectId());
+                            SubjectCollectionScoreUpdateEvent event =
+                                new SubjectCollectionScoreUpdateEvent(this, entity.getSubjectId());
                             applicationEventPublisher.publishEvent(event);
                         }
                     })
                     .flatMap(entity -> copyProperties(subColl, entity, "id"))
             )
-            .flatMap(subjectCollectionRepository::save)
+            .flatMap(entity -> {
+                if (entity.getId() == null) {
+                    entity.setId(UuidV7Utils.generateUuid());
+                    return subjectCollectionRepository.insert(entity);
+                } else {
+                    return subjectCollectionRepository.update(entity);
+                }
+            })
             .then();
     }
 
     @Override
-    public Mono<Void> collect(Long userId, Long subjectId,
+    public Mono<Void> collect(UUID userId, UUID subjectId,
                               CollectionType type, Boolean isPrivate) {
-        Assert.isTrue(userId >= 0, "'userId' must >= 0");
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0");
         Assert.notNull(type, "'type' must not null");
         Assert.notNull(isPrivate, "'isPrivate' must not null");
         return findCollection(userId, subjectId)
@@ -183,14 +187,12 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     }
 
     @Override
-    public Mono<Void> collect(Long userId, Long subjectId, CollectionType type) {
+    public Mono<Void> collect(UUID userId, UUID subjectId, CollectionType type) {
         return collect(userId, subjectId, type, false);
     }
 
     @Override
-    public Mono<Void> unCollect(Long userId, Long subjectId) {
-        Assert.isTrue(userId >= 0, "'userId' must >= 0");
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0");
+    public Mono<Void> unCollect(UUID userId, UUID subjectId) {
         return checkUserIdExists(userId)
             .flatMap(exists -> findCollection(userId, subjectId))
             .flatMap(subjectCollection ->
@@ -226,9 +228,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     }
 
     @Override
-    public Mono<SubjectCollection> findCollection(Long userId, Long subjectId) {
-        Assert.isTrue(userId >= 0, "'userId' must >= 0");
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0");
+    public Mono<SubjectCollection> findCollection(UUID userId, UUID subjectId) {
         return checkUserIdExists(userId)
             .then(subjectRepository.findById(subjectId))
             .flatMap(subjectEntity -> copyProperties(subjectEntity, new SubjectCollection()))
@@ -239,20 +239,18 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     }
 
     @Override
-    public Mono<PagingWrap<SubjectCollection>> findCollections(Long userId, Integer page,
+    public Mono<PagingWrap<SubjectCollection>> findCollections(UUID userId, Integer page,
                                                                Integer size) {
-        Assert.isTrue(userId >= 0, "'userId' must >= 0");
         Assert.isTrue(page > 0, "'page' must > 0");
         Assert.isTrue(size > 0, "'size' must > 0");
         return findCollections(userId, page, size, null, null);
     }
 
     @Override
-    public Mono<PagingWrap<SubjectCollection>> findCollections(Long userId, Integer page,
+    public Mono<PagingWrap<SubjectCollection>> findCollections(UUID userId, Integer page,
                                                                Integer size,
                                                                CollectionType type,
                                                                Boolean isPrivate) {
-        Assert.isTrue(userId >= 0, "'userId' must >= 0");
         Assert.isTrue(page > 0, "'page' must > 0");
         Assert.isTrue(size > 0, "'size' must > 0");
 
@@ -286,9 +284,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     }
 
     @Override
-    public Mono<Void> updateMainEpisodeProgress(Long userId, Long subjectId, Integer progress) {
-        Assert.isTrue(userId >= 0, "'userId' must >= 0");
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >= 0");
+    public Mono<Void> updateMainEpisodeProgress(UUID userId, UUID subjectId, Integer progress) {
         Assert.isTrue(progress >= 0, "'progress' must >= 0");
 
         return checkUserIdExists(userId)
@@ -303,10 +299,9 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                 log.debug("Mark user subject collection progress from [{}] to [{}] "
                         + "for userId[{}] and subjectId[{}]",
                     oldProgress, progress, userId, subjectId);
-                SubjectCollectProgressChangeEvent event
-                    = new SubjectCollectProgressChangeEvent(
-                    this, userId, subjectId, oldProgress, progress
-                );
+                SubjectCollectProgressChangeEvent event =
+                    new SubjectCollectProgressChangeEvent(this, userId, subjectId, oldProgress,
+                        progress);
                 log.debug("Publish SubjectCollectProgressChangeEvent "
                         + "for userId[{}] and subjectId[{}] and progress=[{}]",
                     userId, subjectId, progress);

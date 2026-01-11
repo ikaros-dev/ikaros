@@ -3,6 +3,7 @@ package run.ikaros.server.core.attachment.service.impl;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import static run.ikaros.api.store.enums.AttachmentReferenceType.EPISODE;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import run.ikaros.api.core.attachment.exception.AttachmentRefMatchingException;
 import run.ikaros.api.infra.exception.RegexMatchingException;
 import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
 import run.ikaros.api.infra.utils.RegexUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.cache.annotation.FluxCacheable;
@@ -71,50 +73,46 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     @Override
     @FluxCacheable(value = "attachment:references:", key = "#type + ' ' + #attachmentId")
     public Flux<AttachmentReference> findAllByTypeAndAttachmentId(AttachmentReferenceType type,
-                                                                  Long attachmentId) {
+                                                                  UUID attachmentId) {
         Assert.notNull(type, "'type' must not null.");
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must > 0.");
         return repository.findAllByTypeAndAttachmentId(type, attachmentId)
             .flatMap(entity -> copyProperties(entity, new AttachmentReference()));
     }
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> removeById(Long attachmentRefId) {
+    public Mono<Void> removeById(UUID attachmentRefId) {
         return repository.deleteById(attachmentRefId);
     }
 
     @Override
     @MonoCacheEvict
     public Mono<Void> removeAllByTypeAndReferenceId(AttachmentReferenceType type,
-                                                    Long referenceId) {
+                                                    UUID referenceId) {
         Assert.notNull(type, "'type' must not null.");
-        Assert.isTrue(referenceId > 0, "'referenceId' must gt 0.");
         return repository.deleteAllByTypeAndReferenceId(type, referenceId);
     }
 
     @Override
     @MonoCacheEvict
     public Mono<Void> removeByTypeAndAttachmentIdAndReferenceId(AttachmentReferenceType type,
-                                                                Long attachmentId,
-                                                                Long referenceId) {
+                                                                UUID attachmentId,
+                                                                UUID referenceId) {
         Assert.notNull(type, "'type' must not null.");
-        Assert.isTrue(attachmentId > 0, "'attachmentId' must gt 0.");
-        Assert.isTrue(referenceId > 0, "'referenceId' must gt 0.");
         return repository.deleteByTypeAndAttachmentIdAndReferenceId(
             type, attachmentId, referenceId);
     }
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds) {
+    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(UUID subjectId, UUID[] attachmentIds) {
         return matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds,
             EpisodeGroup.MAIN, false);
     }
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
+    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(UUID subjectId, UUID[] attachmentIds,
                                                             EpisodeGroup group) {
         return matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds,
             group, false);
@@ -122,9 +120,8 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
+    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(UUID subjectId, UUID[] attachmentIds,
                                                             boolean notify) {
-        Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.notNull(attachmentIds, "'attachmentIds' must not null.");
         return matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds,
             EpisodeGroup.MAIN, notify);
@@ -132,9 +129,8 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
+    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(UUID subjectId, UUID[] attachmentIds,
                                                             EpisodeGroup group, boolean notify) {
-        Assert.isTrue(subjectId > 0, "'subjectId' must gt 0.");
         Assert.notNull(attachmentIds, "'attachmentIds' must not null.");
         return Flux.fromArray(attachmentIds)
             .flatMap(attId -> attachmentRepository.findById(attId)
@@ -152,7 +148,8 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                     .existsByTypeAndReferenceId(EPISODE, episodeEntity.getId())
                     .filter(exists -> !exists)
                     .flatMap(exists -> repository
-                        .save(AttachmentReferenceEntity.builder()
+                        .insert(AttachmentReferenceEntity.builder()
+                            .id(UuidV7Utils.generateUuid())
                             .type(EPISODE)
                             .attachmentId(entity.getId())
                             .referenceId(episodeEntity.getId())
@@ -176,8 +173,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> matchingAttachmentsForEpisode(Long episodeId, Long[] attachmentIds) {
-        Assert.isTrue(episodeId > 0, "'episodeId' must gt 0.");
+    public Mono<Void> matchingAttachmentsForEpisode(UUID episodeId, UUID[] attachmentIds) {
         Assert.notNull(attachmentIds, "'attachmentIds' must not null.");
         // check episode exists
         return episodeRepository.existsById(episodeId)
@@ -194,21 +190,26 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
             // save attachment ref records.
             .flatMapMany(attExistsList -> Flux.fromArray(attachmentIds))
             .map(attId -> AttachmentReferenceEntity.builder()
+                .id(UuidV7Utils.generateUuid())
                 .type(EPISODE).attachmentId(attId).referenceId(episodeId)
                 .build())
-            .flatMap(attachmentReferenceEntity -> repository.save(attachmentReferenceEntity)
-                .doOnSuccess(entity -> {
-                    log.info("save episode file matching "
-                            + "for attId:[{}] and episodeId:[{}]. ",
-                        entity.getAttachmentId(), entity.getReferenceId());
-                    EpisodeAttachmentUpdateEvent event =
-                        new EpisodeAttachmentUpdateEvent(this,
-                            entity.getReferenceId(),
-                            entity.getAttachmentId(), false);
-                    applicationEventPublisher.publishEvent(event);
-                    log.debug("publish event EpisodeAttachmentUpdateEvent "
-                        + "for attachmentReferenceEntity: {}", attachmentReferenceEntity);
-                }))
+            .flatMap(attachmentReferenceEntity ->
+                repository.insert(attachmentReferenceEntity)
+                    .doOnSuccess(entity -> {
+                        if (entity == null) {
+                            return;
+                        }
+                        log.info("save episode file matching "
+                                + "for attId:[{}] and episodeId:[{}]. ",
+                            entity.getAttachmentId(), entity.getReferenceId());
+                        EpisodeAttachmentUpdateEvent event =
+                            new EpisodeAttachmentUpdateEvent(this,
+                                entity.getReferenceId(),
+                                entity.getAttachmentId(), false);
+                        applicationEventPublisher.publishEvent(event);
+                        log.debug("publish event EpisodeAttachmentUpdateEvent "
+                            + "for attachmentReferenceEntity: {}", attachmentReferenceEntity);
+                    }))
             .then();
     }
 

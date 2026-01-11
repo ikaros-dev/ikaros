@@ -1,5 +1,6 @@
 package run.ikaros.api.core.attachment;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +14,8 @@ import run.ikaros.api.store.enums.AttachmentReferenceType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class AttachmentReference {
-    private Long id;
+    private UUID id;
     private AttachmentReferenceType type;
-    private Long attachmentId;
-    private Long referenceId;
+    private UUID attachmentId;
+    private UUID referenceId;
 }

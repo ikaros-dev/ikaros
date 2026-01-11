@@ -1,28 +1,28 @@
 package run.ikaros.server.store.repository;
 
-import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.TagType;
 import run.ikaros.server.store.entity.TagEntity;
 
 public interface TagRepository
-    extends R2dbcRepository<TagEntity, Long> {
+    extends BaseRepository<TagEntity> {
 
-    Flux<TagEntity> findAllByTypeAndMasterId(TagType type, Long masterId);
+    Flux<TagEntity> findAllByTypeAndMasterId(TagType type, UUID masterId);
 
-    Flux<TagEntity> findAllByTypeAndUserIdAndName(TagType type, Long userId, String name);
+    Flux<TagEntity> findAllByTypeAndUserIdAndName(TagType type, UUID userId, String name);
 
-    Mono<TagEntity> findByTypeAndMasterIdAndName(TagType type, Long masterId, String name);
+    Mono<TagEntity> findByTypeAndMasterIdAndName(TagType type, UUID masterId, String name);
 
     Mono<TagEntity> findByTypeAndMasterIdAndUserIdAndName(
-        TagType type, Long masterId, Long userId, String name);
+        TagType type, UUID masterId, UUID userId, String name);
 
-    Mono<Boolean> existsByTypeAndMasterIdAndName(TagType type, Long masterId, String name);
+    Mono<Boolean> existsByTypeAndMasterIdAndName(TagType type, UUID masterId, String name);
 
     Mono<Boolean> existsByTypeAndMasterIdAndUserIdAndName(
-        TagType type, Long masterId, Long userId, String name);
+        TagType type, UUID masterId, UUID userId, String name);
 
     Mono<Boolean> existsByTypeAndUserIdAndName(
-        TagType type, Long userId, String name);
+        TagType type, UUID userId, String name);
 }

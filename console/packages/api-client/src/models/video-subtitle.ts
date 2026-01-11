@@ -20,26 +20,26 @@
 export interface VideoSubtitle {
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof VideoSubtitle
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof VideoSubtitle
    */
-  url?: string;
+  url?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof VideoSubtitle
    */
-  master_attachment_id?: number;
+  master_attachment_id?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof VideoSubtitle
    */
-  attachment_id?: number;
+  attachment_id?: any;
 }

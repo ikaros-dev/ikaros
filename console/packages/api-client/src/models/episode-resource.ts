@@ -20,44 +20,44 @@
 export interface EpisodeResource {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof EpisodeResource
    */
-  attachmentId?: number;
+  attachmentId?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof EpisodeResource
    */
-  parentAttachmentId?: number;
+  parentAttachmentId?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof EpisodeResource
    */
-  episodeId?: number;
+  episodeId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof EpisodeResource
    */
-  url?: string;
+  url?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof EpisodeResource
    */
-  canRead?: boolean;
+  canRead?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof EpisodeResource
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {Set<string>}
+   * @type {any}
    * @memberof EpisodeResource
    */
-  tags?: Set<string>;
+  tags?: any;
 }

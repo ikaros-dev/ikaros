@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
@@ -83,8 +84,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Mono<TaskEntity> findById(Long id) {
-        Assert.isTrue(id > 0, "'id' must gt 0.");
+    public Mono<TaskEntity> findById(UUID id) {
+        Assert.notNull(id, "'id' must not null.");
         return taskRepository.findById(id);
     }
 
@@ -186,7 +187,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Mono<Long> getProcess(Long id) {
+    public Mono<Long> getProcess(UUID id) {
+        Assert.notNull(id, "'id' must not null.");
         return findById(id)
             .filter(taskEntity -> taskEntity.getTotal() != 0)
             .map(taskEntity -> 100 * taskEntity.getIndex() / taskEntity.getTotal())

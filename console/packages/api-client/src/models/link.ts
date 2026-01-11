@@ -20,14 +20,14 @@
 export interface Link {
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Link
    */
-  href?: string;
+  href?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof Link
    */
-  templated?: boolean;
+  templated?: any;
 }

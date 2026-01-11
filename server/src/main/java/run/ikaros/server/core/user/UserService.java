@@ -2,6 +2,7 @@ package run.ikaros.server.core.user;
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -35,7 +36,7 @@ public interface UserService {
 
     Mono<Boolean> existsByEmail(String email);
 
-    Mono<Void> updateUsername(Long id, String username);
+    Mono<Void> updateUsername(UUID id, String username);
 
     Mono<Void> updatePassword(@NotBlank String username, @NotBlank String oldRawPassword,
                               @NotBlank String rawPassword);
@@ -48,17 +49,17 @@ public interface UserService {
     Mono<Void> bindTelephone(@NotBlank String username, @NotBlank String telephone,
                              @NotBlank String verificationCode);
 
-    Mono<Void> changeRole(@NotBlank String username, Long roleId);
+    Mono<Void> changeRole(@NotBlank String username, UUID roleId);
 
-    Mono<Void> sendVerificationCode(Long userId, VerificationCodeType type);
+    Mono<Void> sendVerificationCode(UUID userId, VerificationCodeType type);
 
     Mono<User> create(CreateUserReqParams createUserReqParams);
 
     Flux<User> findAll();
 
-    Mono<Void> deleteById(Long id);
+    Mono<Void> deleteById(UUID id);
 
     Mono<User> getUserFromSecurityContext();
 
-    Mono<Long> getUserIdFromSecurityContext();
+    Mono<UUID> getUserIdFromSecurityContext();
 }

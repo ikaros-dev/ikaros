@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.operator;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -25,23 +26,23 @@ public class AttachmentReferenceOperator implements AttachmentReferenceOperate {
 
     @Override
     public Flux<AttachmentReference> findAllByTypeAndAttachmentId(AttachmentReferenceType type,
-                                                                  Long attachmentId) {
+                                                                  UUID attachmentId) {
         return service.findAllByTypeAndAttachmentId(type, attachmentId);
     }
 
     @Override
-    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds) {
+    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(UUID subjectId, UUID[] attachmentIds) {
         return service.matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds);
     }
 
     @Override
-    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
+    public Mono<Void> matchingAttachmentsAndSubjectEpisodes(UUID subjectId, UUID[] attachmentIds,
                                                             boolean notify) {
         return service.matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds, notify);
     }
 
     @Override
-    public Mono<Void> matchingAttachmentsForEpisode(Long episodeId, Long[] attachmentIds) {
+    public Mono<Void> matchingAttachmentsForEpisode(UUID episodeId, UUID[] attachmentIds) {
         return service.matchingAttachmentsForEpisode(episodeId, attachmentIds);
     }
 }

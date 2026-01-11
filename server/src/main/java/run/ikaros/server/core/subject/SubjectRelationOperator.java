@@ -1,5 +1,6 @@
 package run.ikaros.server.core.subject;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -19,12 +20,12 @@ public class SubjectRelationOperator implements SubjectRelationOperate {
     }
 
     @Override
-    public Flux<SubjectRelation> findAllBySubjectId(Long subjectId) {
+    public Flux<SubjectRelation> findAllBySubjectId(UUID subjectId) {
         return subjectRelationService.findAllBySubjectId(subjectId);
     }
 
     @Override
-    public Mono<SubjectRelation> findBySubjectIdAndType(Long subjectId,
+    public Mono<SubjectRelation> findBySubjectIdAndType(UUID subjectId,
                                                         SubjectRelationType relationType) {
         return subjectRelationService.findBySubjectIdAndType(subjectId, relationType);
     }

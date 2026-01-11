@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentDriverService;
@@ -54,7 +56,7 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("AttachmentDriver ID")
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
             )
 
             .PUT("/attachment/driver/disable/id/{id}", this::disableDriver,
@@ -64,7 +66,7 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("AttachmentDriver ID")
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
             )
 
             .DELETE("/attachment/driver/id/{id}", this::deleteById,
@@ -75,7 +77,7 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("AttachmentDriver ID")
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
             )
 
             .GET("/attachment/driver/id/{id}", this::getById,
@@ -86,7 +88,7 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .description("AttachmentDriver ID")
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder().implementation(AttachmentDriver.class))
             )
 
@@ -162,7 +164,6 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .description("是否从驱动拉取最新数据,默认false.如果为false可能拉取的不是最新的数据，"
                             + "可通过此参数设置未true在查询前刷新数据，操作比较耗时不推荐，"
                             + "更推荐通过刷新接口去主动刷新数据。")
-                        .example("false")
                         .implementation(Boolean.class))
                     .response(responseBuilder().implementation(PagingWrap.class))
             )
@@ -176,8 +177,8 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
-        String id = request.pathVariable("id");
-        return service.removeById(Long.parseLong(id))
+        UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        return service.removeById(id)
             .then(ServerResponse.ok()
                 .bodyValue("Delete success"));
     }
@@ -191,8 +192,8 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {
-        String id = request.pathVariable("id");
-        return service.findById(Long.parseLong(id))
+        UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        return service.findById(id)
             .flatMap(driver -> ServerResponse.ok().bodyValue(driver));
     }
 
@@ -204,15 +205,15 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> enableDriver(ServerRequest request) {
-        String id = request.pathVariable("id");
-        return service.enable(Long.valueOf(id))
+        UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        return service.enable(id)
             .then(ServerResponse.ok()
                 .bodyValue("Enable success"));
     }
 
     private Mono<ServerResponse> disableDriver(ServerRequest request) {
-        String id = request.pathVariable("id");
-        return service.disable(Long.valueOf(id))
+        UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        return service.disable(id)
             .then(ServerResponse.ok()
                 .bodyValue("Disable success"));
     }
@@ -258,8 +259,7 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
             ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
             : "";
 
-        Optional<String> parentIdOp = request.queryParam("parentId");
-        Long parentId = parentIdOp.isPresent() ? Long.parseLong(parentIdOp.get()) : null;
+        UUID parentId = UuidV7Utils.fromString(request.queryParam("parentId").orElse(""));
 
         final Boolean refresh =
             Boolean.valueOf(request.queryParam("refresh").orElse("false"));

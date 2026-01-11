@@ -20,46 +20,46 @@
 export interface Tag {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Tag
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Tag
    */
   type?: TagTypeEnum;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Tag
    */
-  masterId?: number;
+  masterId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Tag
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Tag
    */
-  userId?: number;
+  userId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Tag
    */
-  createTime?: string;
+  createTime?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Tag
    */
-  color?: string;
+  color?: any;
 }
 
 export const TagTypeEnum = {

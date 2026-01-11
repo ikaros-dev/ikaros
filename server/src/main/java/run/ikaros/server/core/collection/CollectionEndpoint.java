@@ -4,6 +4,7 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
@@ -37,7 +38,7 @@ public class CollectionEndpoint implements CoreEndpoint {
                     .tag(tag).description("Get collection type by subject id.")
                     .parameter(parameterBuilder()
                         .name("id").required(true).description("Subject id")
-                        .in(ParameterIn.PATH).implementation(Long.class))
+                        .in(ParameterIn.PATH).implementation(String.class))
                     .response(responseBuilder()
                         .description("collection type.")
                         .implementation(CollectionType.class))
@@ -76,9 +77,8 @@ public class CollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> getTypeBySubjectId(ServerRequest serverRequest) {
-        String id = serverRequest.pathVariable("id");
-        Long subjectId = Long.parseLong(id);
-        return collectionService.findTypeBySubjectId(subjectId)
+        UUID id = UUID.fromString(serverRequest.pathVariable("id"));
+        return collectionService.findTypeBySubjectId(id)
             .flatMap(collectionType -> ServerResponse.ok().bodyValue(collectionType));
     }
 

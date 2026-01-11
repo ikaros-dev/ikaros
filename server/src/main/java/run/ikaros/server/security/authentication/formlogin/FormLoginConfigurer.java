@@ -15,9 +15,8 @@ public class FormLoginConfigurer implements SecurityConfigurer {
 
     @Override
     public void configure(ServerHttpSecurity http) {
-        http.formLogin()
-            .authenticationSuccessHandler(formLoginSuccessHandler)
-            .authenticationFailureHandler(new FormLoginFailureHandler())
-        ;
+        http.formLogin(formLoginSpec ->
+            formLoginSpec.authenticationSuccessHandler(formLoginSuccessHandler)
+                .authenticationFailureHandler(new FormLoginFailureHandler()));
     }
 }

@@ -3,19 +3,20 @@ import { apiClient } from '@/utils/api-client';
 import { Attachment } from '@runikaros/api-client';
 import { computed } from 'vue';
 import { ElTreeSelect } from 'element-plus';
+import { attachmentRootId } from '@/modules/common/constants';
 
 const props = withDefaults(
 	defineProps<{
-		targetDirid: number;
+		targetDirid: string;
 	}>(),
 	{
-		targetDirid: 0,
+		targetDirid: undefined,
 	}
 );
 
 const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
-	(event: 'update:targetDirid', targetDirid: number | undefined): void;
+	(event: 'update:targetDirid', targetDirid: string | undefined): void;
 }>();
 
 const targetDirectoryId = computed({
@@ -41,11 +42,11 @@ const loadDirectoryNodes = async (node, resolve) => {
 	// console.log('node.data.value', node.data.value);
 	let parentId = node.data.value;
 	if (!parentId) {
-		parentId = 0;
+		parentId = attachmentRootId;
 	}
 	if (node.isLeaf) return resolve([]);
 	const { data } = await apiClient.attachment.listAttachmentsByCondition1({
-		parentId: parentId as any as string,
+		parentId: parentId  as string,
 		page: 1,
 		size: 999999,
 	});

@@ -20,64 +20,64 @@
 export interface Subject {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Subject
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Subject
    */
   type: SubjectTypeEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Subject
    */
-  name: string;
+  name: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Subject
    */
-  infobox?: string;
+  infobox?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Subject
    */
-  summary?: string;
+  summary?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof Subject
    */
-  nsfw: boolean;
+  nsfw: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Subject
    */
-  airTime?: string;
+  airTime?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Subject
    */
-  cover?: string;
+  cover?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Subject
    */
-  score?: number;
+  score?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Subject
    */
-  name_cn?: string;
+  name_cn?: any;
 }
 
 export const SubjectTypeEnum = {

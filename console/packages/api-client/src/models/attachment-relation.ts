@@ -20,28 +20,28 @@
 export interface AttachmentRelation {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentRelation
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentRelation
    */
   type?: AttachmentRelationTypeEnum;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentRelation
    */
-  attachment_id?: number;
+  attachment_id?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentRelation
    */
-  relation_attachment_id?: number;
+  relation_attachment_id?: any;
 }
 
 export const AttachmentRelationTypeEnum = {

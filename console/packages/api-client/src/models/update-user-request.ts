@@ -20,38 +20,38 @@
 export interface UpdateUserRequest {
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UpdateUserRequest
    */
-  username: string;
+  username: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UpdateUserRequest
    */
-  avatar?: string;
+  avatar?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UpdateUserRequest
    */
-  nickname?: string;
+  nickname?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UpdateUserRequest
    */
-  introduce?: string;
+  introduce?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UpdateUserRequest
    */
-  site?: string;
+  site?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof UpdateUserRequest
    */
-  enable?: boolean;
+  enable?: any;
 }

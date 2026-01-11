@@ -20,20 +20,20 @@
 export interface CreateUserReqParams {
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof CreateUserReqParams
    */
-  username: string;
+  username: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof CreateUserReqParams
    */
-  password?: string;
+  password?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof CreateUserReqParams
    */
-  enabled?: boolean;
+  enabled?: any;
 }

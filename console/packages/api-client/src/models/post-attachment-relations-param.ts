@@ -20,22 +20,22 @@
 export interface PostAttachmentRelationsParam {
   /**
    * Master attachment id.
-   * @type {number}
+   * @type {any}
    * @memberof PostAttachmentRelationsParam
    */
-  masterId: number;
+  masterId: any;
   /**
    * Type of attachment.
-   * @type {string}
+   * @type {any}
    * @memberof PostAttachmentRelationsParam
    */
   type: PostAttachmentRelationsParamTypeEnum;
   /**
    * Related attachment ids.
-   * @type {Array<number>}
+   * @type {any}
    * @memberof PostAttachmentRelationsParam
    */
-  relationIds: Array<number>;
+  relationIds: any;
 }
 
 export const PostAttachmentRelationsParamTypeEnum = {

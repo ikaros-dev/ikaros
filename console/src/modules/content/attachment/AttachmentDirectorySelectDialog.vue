@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { ElButton, ElDialog } from 'element-plus';
 import AttachmentDirectoryTreeSelect from '@/components/modules/content/attachment/AttachmentDirectoryTreeSelect.vue';
 import { useI18n } from 'vue-i18n';
+import { attachmentRootId } from '@/modules/common/constants';
 
 const { t } = useI18n();
 
@@ -21,7 +22,7 @@ const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 	// eslint-disable-next-line no-unused-vars
-	(event: 'closeWithTargetDirId', targetDirid: number): void;
+	(event: 'closeWithTargetDirId', targetDirid: string): void;
 }>();
 
 const dialogVisible = computed({
@@ -35,15 +36,15 @@ const dialogVisible = computed({
 
 const onClose = () => {
 	dialogVisible.value = false;
-	targetDirectoryId.value = 0;
+	targetDirectoryId.value = attachmentRootId;
 	emit('close');
 };
 
-const targetDirectoryId = ref(0);
+const targetDirectoryId = ref(attachmentRootId);
 
 const onDirectorySelectDialogButtonClick = async () => {
 	if (!targetDirectoryId.value) {
-		targetDirectoryId.value = 0;
+		targetDirectoryId.value = attachmentRootId;
 	}
 	emit('closeWithTargetDirId', targetDirectoryId.value);
 	dialogVisible.value = false;

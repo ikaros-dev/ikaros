@@ -20,56 +20,56 @@
 export interface PagingWrap {
   /**
    * Page number, starts from 1. If not set or equal to 0, it means no pagination.
-   * @type {number}
+   * @type {any}
    * @memberof PagingWrap
    */
-  page: number;
+  page: any;
   /**
    * Size of each page. If not set or equal to 0, it means no pagination.
-   * @type {number}
+   * @type {any}
    * @memberof PagingWrap
    */
-  size: number;
+  size: any;
   /**
    * Total elements.
-   * @type {number}
+   * @type {any}
    * @memberof PagingWrap
    */
-  total: number;
+  total: any;
   /**
    * A chunk of items.
-   * @type {Array<object>}
+   * @type {any}
    * @memberof PagingWrap
    */
-  items: Array<object>;
+  items: any;
   /**
    * Indicates whether current page is the last page.
-   * @type {boolean}
+   * @type {any}
    * @memberof PagingWrap
    */
-  lastPage: boolean;
+  lastPage: any;
   /**
    * Indicates whether current page is the first page.
-   * @type {boolean}
+   * @type {any}
    * @memberof PagingWrap
    */
-  firstPage: boolean;
+  firstPage: any;
   /**
    * Indicates whether current page has previous page.
-   * @type {boolean}
+   * @type {any}
    * @memberof PagingWrap
    */
-  hasNext: boolean;
+  hasNext: any;
   /**
    * Indicates whether current page has previous page.
-   * @type {boolean}
+   * @type {any}
    * @memberof PagingWrap
    */
-  hasPrevious: boolean;
+  hasPrevious: any;
   /**
    * Indicates total pages.
-   * @type {number}
+   * @type {any}
    * @memberof PagingWrap
    */
-  totalPages: number;
+  totalPages: any;
 }

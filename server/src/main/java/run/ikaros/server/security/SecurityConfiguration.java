@@ -53,12 +53,11 @@ public class SecurityConfiguration {
                                           ObjectProvider<SecurityConfigurer> securityConfigurers) {
         // main config
         http.securityMatcher(pathMatchers(SecurityConst.SECURITY_MATCHER_PATHS))
-            .authorizeExchange().anyExchange()
-            .access(new RequestAuthorizationManager())
-            .and()
-            .anonymous(spec -> {
-                spec.authorities(SecurityConst.AnonymousUser.Role);
-                spec.principal(SecurityConst.AnonymousUser.PRINCIPAL);
+            .authorizeExchange(authorizeExchangeSpec ->
+                authorizeExchangeSpec.anyExchange().access(new RequestAuthorizationManager()))
+            .anonymous(anonymousSpec -> {
+                anonymousSpec.authorities(SecurityConst.AnonymousUser.Role);
+                anonymousSpec.principal(SecurityConst.AnonymousUser.PRINCIPAL);
             });
 
         // integrate with other configurers separately
@@ -75,14 +74,16 @@ public class SecurityConfiguration {
         var mediaTypeMatcher = new MediaTypeServerWebExchangeMatcher(MediaType.TEXT_HTML);
         mediaTypeMatcher.setIgnoredMediaTypes(Set.of(MediaType.ALL));
         http.securityMatcher(new AndServerWebExchangeMatcher(pathMatcher, mediaTypeMatcher))
-            .authorizeExchange().anyExchange().permitAll().and()
-            .headers()
-            .frameOptions().mode(SAMEORIGIN)
-            .referrerPolicy().policy(STRICT_ORIGIN_WHEN_CROSS_ORIGIN).and()
-            .cache().disable().and()
-            .anonymous(spec -> {
-                spec.authorities(SecurityConst.AnonymousUser.Role);
-                spec.principal(SecurityConst.AnonymousUser.PRINCIPAL);
+            .authorizeExchange(authorizeExchangeSpec ->
+                authorizeExchangeSpec.anyExchange().permitAll())
+            .headers(headerSpec ->
+                headerSpec.frameOptions(frameOptionsSpec -> frameOptionsSpec.mode(SAMEORIGIN))
+                    .referrerPolicy(referrerPolicySpec -> referrerPolicySpec.policy(
+                        STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                    .cache(ServerHttpSecurity.HeaderSpec.CacheSpec::disable)
+            ).anonymous(anonymousSpec -> {
+                anonymousSpec.authorities(SecurityConst.AnonymousUser.Role);
+                anonymousSpec.principal(SecurityConst.AnonymousUser.PRINCIPAL);
             });
         return http.build();
     }

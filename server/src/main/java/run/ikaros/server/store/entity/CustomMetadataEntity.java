@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -18,9 +19,9 @@ import org.springframework.data.relational.core.mapping.Table;
 @Accessors(chain = true)
 public class CustomMetadataEntity {
     @Id
-    private Long id;
+    private UUID id;
     @Column("custom_id")
-    private Long customId;
+    private UUID customId;
     @Column("cm_key")
     private String key;
     @Column("cm_value")

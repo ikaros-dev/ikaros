@@ -17,6 +17,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.TaskStatus;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -116,7 +117,7 @@ public class TaskEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> getProcess(ServerRequest request) {
         return Mono.justOrEmpty(request.pathVariable("id"))
-            .map(Long::parseLong)
+            .map(UuidV7Utils::fromString)
             .flatMap(taskService::getProcess)
             .flatMap(process -> ServerResponse.ok().bodyValue(process))
             .switchIfEmpty(ServerResponse.notFound().build());
@@ -124,7 +125,7 @@ public class TaskEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> findById(ServerRequest request) {
         return Mono.justOrEmpty(request.pathVariable("id"))
-            .map(Long::parseLong)
+            .map(UuidV7Utils::fromString)
             .flatMap(taskService::findById)
             .flatMap(taskEntity -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)

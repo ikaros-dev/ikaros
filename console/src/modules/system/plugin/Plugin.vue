@@ -3,7 +3,7 @@ import { apiClient } from '@/utils/api-client';
 import { ArrowDown, More, Search } from '@element-plus/icons-vue';
 import {
 	Plugin,
-	V1alpha1PluginApiOperatePluginStateByIdRequest,
+	V1PluginApiOperatePluginStateByIdRequest,
 } from '@runikaros/api-client';
 // eslint-disable-next-line no-unused-vars
 import PluginUploadDrawer from './PluginUploadDrawer.vue';
@@ -92,7 +92,7 @@ const getPluginsFromServer = async () => {
 };
 
 const delegationPluginStateOperator = async (
-	requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest
+	requestParameters: V1PluginApiOperatePluginStateByIdRequest
 ): Promise<AxiosResponse<string, any>> => {
 	return await apiClient.corePlugin.operatePluginStateById(requestParameters);
 };

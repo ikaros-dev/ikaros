@@ -9,13 +9,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 import run.ikaros.api.store.enums.TaskStatus;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.TaskRepository;
 
 @Disabled
 @SpringBootTest
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class TaskServiceTest {
 
     @Autowired

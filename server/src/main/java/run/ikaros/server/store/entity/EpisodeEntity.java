@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +21,7 @@ import run.ikaros.api.store.enums.EpisodeGroup;
 @EqualsAndHashCode(callSuper = true)
 public class EpisodeEntity extends BaseEntity {
     @Column("subject_id")
-    private Long subjectId;
+    private UUID subjectId;
     private String name;
     @Column("name_cn")
     private String nameCn;

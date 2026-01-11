@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.authorization.ReactiveAuthorizationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,9 +22,46 @@ import run.ikaros.api.store.enums.AuthorityType;
 @Slf4j
 public class RequestAuthorizationManager
     implements ReactiveAuthorizationManager<AuthorizationContext> {
+
+    private boolean authTarget(String target, String path, boolean granted) {
+        if (!granted && Authorization.Target.ALL.equals(target)) {
+            return true;
+        }
+
+        if (target.contains("/**")) {
+            String apiPrefix = target.substring(0, target.lastIndexOf("/**"));
+            if (!granted && path.contains(apiPrefix)) {
+                return true;
+            }
+
+
+        } else {
+            if (!granted && path.equalsIgnoreCase(target)) {
+                return true;
+            }
+        }
+        return granted;
+    }
+
+    private boolean authMethod(String author, HttpMethod method, boolean granted) {
+        if (!granted && Authorization.Authority.ALL.equals(author)) {
+            return true;
+        }
+        if (!author.contains("HTTP")) {
+            return granted;
+        }
+        if (!granted && author.contains("_**")) {
+            return true;
+        }
+        if (!granted && author.contains(method.name())) {
+            return true;
+        }
+        return granted;
+    }
+
     @Override
-    public Mono<AuthorizationDecision> check(Mono<Authentication> authentication,
-                                             AuthorizationContext object) {
+    public Mono<AuthorizationResult> authorize(Mono<Authentication> authentication,
+                                               AuthorizationContext object) {
         final ServerHttpRequest request = object.getExchange().getRequest();
         final String path = request.getURI().getPath();
         final HttpMethod method = request.getMethod();
@@ -102,41 +140,4 @@ public class RequestAuthorizationManager
             return new AuthorizationDecision(granted);
         });
     }
-
-    private boolean authTarget(String target, String path, boolean granted) {
-        if (!granted && Authorization.Target.ALL.equals(target)) {
-            return true;
-        }
-
-        if (target.contains("/**")) {
-            String apiPrefix = target.substring(0, target.lastIndexOf("/**"));
-            if (!granted && path.contains(apiPrefix)) {
-                return true;
-            }
-
-
-        } else {
-            if (!granted && path.equalsIgnoreCase(target)) {
-                return true;
-            }
-        }
-        return granted;
-    }
-
-    private boolean authMethod(String author, HttpMethod method, boolean granted) {
-        if (!granted && Authorization.Authority.ALL.equals(author)) {
-            return true;
-        }
-        if (!author.contains("HTTP")) {
-            return granted;
-        }
-        if (!granted && author.contains("_**")) {
-            return true;
-        }
-        if (!granted && author.contains(method.name())) {
-            return true;
-        }
-        return granted;
-    }
-
 }

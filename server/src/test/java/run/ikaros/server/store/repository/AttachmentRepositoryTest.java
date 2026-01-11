@@ -1,27 +1,48 @@
 package run.ikaros.server.store.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
+import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentType;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.store.entity.AttachmentEntity;
 
 @SpringBootTest
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class AttachmentRepositoryTest {
 
 
     @Autowired
     AttachmentRepository repository;
 
+    @Test
+    void findById() {
+        final String name = String.valueOf(new Random().nextInt(9999));
+        AttachmentEntity att = AttachmentEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .name(name)
+            .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .type(AttachmentType.Directory)
+            .updateTime(LocalDateTime.now())
+            .path("").fsPath("")
+            .build();
+        StepVerifier.create(repository.insert(att))
+            .expectNext(att).verifyComplete();
 
-    @AfterEach
-    void tearDown() {
-        StepVerifier.create(repository.deleteAll()).verifyComplete();
+        StepVerifier.create(repository.findById(att.getId()))
+            .expectNext(att).verifyComplete();
     }
 
     @Test
@@ -40,17 +61,17 @@ class AttachmentRepositoryTest {
         StepVerifier.create(repository.save(AttachmentEntity.builder()
                 .name(videoAttName).type(AttachmentType.File).path(videoAttName)
                 .build()).map(AttachmentEntity::getId))
-            .expectNextMatches(id -> id != null && id > 0)
+            .expectNextMatches(Objects::nonNull)
             .verifyComplete();
         StepVerifier.create(repository.save(AttachmentEntity.builder()
                 .name(assScSubtitleAttName).type(AttachmentType.File).path(videoAttName)
                 .build()).map(AttachmentEntity::getId))
-            .expectNextMatches(id -> id != null && id > 0)
+            .expectNextMatches(Objects::nonNull)
             .verifyComplete();
         StepVerifier.create(repository.save(AttachmentEntity.builder()
                 .name(assTcSubtitleAttName).type(AttachmentType.File).path(videoAttName)
                 .build()).map(AttachmentEntity::getId))
-            .expectNextMatches(id -> id != null && id > 0)
+            .expectNextMatches(Objects::nonNull)
             .verifyComplete();
 
 

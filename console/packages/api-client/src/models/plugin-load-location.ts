@@ -14,7 +14,16 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import { PluginLoadLocationFileSystem } from "./plugin-load-location-file-system";
+import { PluginLoadLocationParent } from "./plugin-load-location-parent";
+// May contain unused imports in some cases
+// @ts-ignore
+import { PluginLoadLocationParentRoot } from "./plugin-load-location-parent-root";
+// May contain unused imports in some cases
+// @ts-ignore
+import { PluginLoadLocationParentRootFileName } from "./plugin-load-location-parent-root-file-name";
+// May contain unused imports in some cases
+// @ts-ignore
+import { PluginLoadLocationParentRootFileNameFileSystem } from "./plugin-load-location-parent-root-file-name-file-system";
 
 /**
  *
@@ -24,20 +33,38 @@ import { PluginLoadLocationFileSystem } from "./plugin-load-location-file-system
 export interface PluginLoadLocation {
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof PluginLoadLocation
    */
-  absolute?: boolean;
+  absolute?: any;
   /**
    *
-   * @type {PluginLoadLocationFileSystem}
+   * @type {PluginLoadLocationParent}
    * @memberof PluginLoadLocation
    */
-  fileSystem?: PluginLoadLocationFileSystem;
+  parent?: PluginLoadLocationParent;
   /**
    *
-   * @type {number}
+   * @type {PluginLoadLocationParentRoot}
    * @memberof PluginLoadLocation
    */
-  nameCount?: number;
+  root?: PluginLoadLocationParentRoot;
+  /**
+   *
+   * @type {PluginLoadLocationParentRootFileName}
+   * @memberof PluginLoadLocation
+   */
+  fileName?: PluginLoadLocationParentRootFileName;
+  /**
+   *
+   * @type {PluginLoadLocationParentRootFileNameFileSystem}
+   * @memberof PluginLoadLocation
+   */
+  fileSystem?: PluginLoadLocationParentRootFileNameFileSystem;
+  /**
+   *
+   * @type {any}
+   * @memberof PluginLoadLocation
+   */
+  nameCount?: any;
 }

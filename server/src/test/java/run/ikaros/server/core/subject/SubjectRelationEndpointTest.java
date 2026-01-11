@@ -7,29 +7,33 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.core.subject.SubjectRelation;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectRelationType;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.store.repository.SubjectRelationRepository;
 
@@ -37,6 +41,8 @@ import run.ikaros.server.store.repository.SubjectRelationRepository;
 @Disabled
 @SpringBootTest
 @AutoConfigureWebTestClient
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class SubjectRelationEndpointTest {
 
     @Autowired
@@ -45,7 +51,7 @@ class SubjectRelationEndpointTest {
     WebTestClient webTestClient;
     @Autowired
     SubjectRelationRepository subjectRelationRepository;
-    @SpyBean
+    @MockitoSpyBean
     ReactiveUserDetailsService userDetailsService;
 
     @BeforeEach
@@ -69,7 +75,7 @@ class SubjectRelationEndpointTest {
 
     @Test
     void findAllBySubjectId() {
-        final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
+        final UUID random = createSubjectRelationAndReturnOneRandomRelationSubId();
 
         webTestClient.get()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relations/" + Long.MAX_VALUE)
@@ -100,7 +106,7 @@ class SubjectRelationEndpointTest {
 
     @Test
     void createSubjectRelation() {
-        final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
+        final UUID random = createSubjectRelationAndReturnOneRandomRelationSubId();
 
         webTestClient.get()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation/"
@@ -125,12 +131,12 @@ class SubjectRelationEndpointTest {
 
     }
 
-    private long createSubjectRelationAndReturnOneRandomRelationSubId() {
-        final long random = new Random().nextLong(1, 100000);
+    private UUID createSubjectRelationAndReturnOneRandomRelationSubId() {
+        final UUID random = UuidV7Utils.generateUuid();
         SubjectRelation subjectRelation = SubjectRelation.builder()
-            .subject(Long.MAX_VALUE)
+            .subject(UuidV7Utils.generateUuid())
             .relationType(SubjectRelationType.COMIC)
-            .relationSubjects(Set.of(random, 9L))
+            .relationSubjects(Set.of(random, UuidV7Utils.generateUuid()))
             .build();
 
         webTestClient.post()
@@ -147,7 +153,7 @@ class SubjectRelationEndpointTest {
 
     @Test
     void removeSubjectRelationWhenRelationSubjectsIsArr() {
-        final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
+        final UUID random = createSubjectRelationAndReturnOneRandomRelationSubId();
 
         webTestClient.get()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation/"
@@ -207,7 +213,7 @@ class SubjectRelationEndpointTest {
 
     @Test
     void removeSubjectRelationWhenRelationSubjectsIsNum() {
-        final long random = createSubjectRelationAndReturnOneRandomRelationSubId();
+        final UUID random = createSubjectRelationAndReturnOneRandomRelationSubId();
 
         webTestClient.get()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject-relation/"

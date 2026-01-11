@@ -1,6 +1,7 @@
 package run.ikaros.api.core.attachment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,9 +15,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VideoSubtitle {
     @JsonProperty("master_attachment_id")
-    private Long masterAttachmentId;
+    private UUID masterAttachmentId;
     @JsonProperty("attachment_id")
-    private Long attachmentId;
+    private UUID attachmentId;
     private String name;
     private String url;
 }

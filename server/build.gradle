@@ -1,16 +1,16 @@
 plugins {
-    id 'org.springframework.boot' version '3.0.1'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'org.springframework.boot' version '4.0.1'
+    id 'io.spring.dependency-management' version '1.1.7'
     id "com.gorylenko.gradle-git-properties" version "2.3.2"
     id "checkstyle"
     id 'java'
     id 'jacoco'
-    id "io.freefair.lombok" version "8.0.0-rc2"
+    id "io.freefair.lombok" version "8.14.3"
     id "com.github.node-gradle.node" version "7.1.0"
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 group = "run.ikaros.server"
-sourceCompatibility = JavaVersion.VERSION_17
 
 checkstyle {
     toolVersion = "9.3"
@@ -53,8 +53,6 @@ ext {
     commonsLang3 = "3.12.0"
     pf4j = '3.9.0'
     jsoup = '1.15.3'
-    springDocOpenAPI = "2.0.2"
-    flywaydb = "10.15.0"
 }
 
 dependencies {
@@ -67,26 +65,28 @@ dependencies {
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
     implementation 'org.json:json:20230227'
 
-    implementation "org.flywaydb:flyway-core:$flywaydb"
     implementation "io.micrometer:micrometer-registry-prometheus"
 
     implementation "org.springframework.boot:spring-boot-starter-data-redis-reactive"
 
-    implementation("org.apache.commons:commons-csv:1.14.1")
+    implementation 'org.apache.commons:commons-csv:1.14.1'
+
+    implementation 'name.nkonev.r2dbc-migrate:r2dbc-migrate-spring-boot-starter'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
-    runtimeOnly "org.flywaydb:flyway-database-postgresql:$flywaydb"
-
-
-    // 针对logback.xml if 不工作的支持
-//    implementation 'org.codehaus.janino:janino:3.1.11'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-r2dbc-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-postgresql'
+    testImplementation 'org.testcontainers:testcontainers-r2dbc'
     testImplementation 'io.projectreactor:reactor-test'
 }
 
@@ -161,5 +161,8 @@ tasks.named('jacocoTestReport') {
 //            ])
 //        }))
 //    }
+}
+kotlin {
+    jvmToolchain(17)
 }
 

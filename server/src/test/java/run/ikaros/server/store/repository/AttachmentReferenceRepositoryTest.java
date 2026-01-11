@@ -1,16 +1,22 @@
 package run.ikaros.server.store.repository;
 
 
-import java.util.Random;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 
 @SpringBootTest
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class AttachmentReferenceRepositoryTest {
 
     @Autowired
@@ -22,14 +28,10 @@ class AttachmentReferenceRepositoryTest {
         StepVerifier.create(repository.deleteAll()).verifyComplete();
     }
 
-    Long randomLong() {
-        return new Random().nextLong();
-    }
-
     @Test
     void findAllByType() {
-        long attId1 = randomLong();
-        long refId1 = randomLong();
+        UUID attId1 = UuidV7Utils.generateUuid();
+        UUID refId1 = UuidV7Utils.generateUuid();
 
         AttachmentReferenceEntity attRef1 = AttachmentReferenceEntity.builder()
             .type(AttachmentReferenceType.EPISODE)

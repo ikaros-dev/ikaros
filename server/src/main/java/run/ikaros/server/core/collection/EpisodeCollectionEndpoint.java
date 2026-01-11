@@ -5,6 +5,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
@@ -41,7 +42,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .description("Episode id")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder()
                         .implementation(EpisodeCollection.class)))
 
@@ -54,7 +55,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .description("Subject id")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder()
                         .implementationArray(EpisodeCollection.class)))
 
@@ -67,7 +68,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .description("Episode id")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .name("progress")
                         .description("Episode collection progress, unit is milliseconds.")
@@ -91,7 +92,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .description("Episode id")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .name("finish")
                         .description("Episode collection finish.")
@@ -107,7 +108,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .description("Episode id")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder()
                         .implementation(EpisodeCollection.class))
             )
@@ -120,7 +121,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                         .description("Episode id")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder()
                         .implementation(EpisodeCollection.class))
             )
@@ -129,10 +130,10 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> findEpisodeCollection(ServerRequest serverRequest) {
-        String episodeId = serverRequest.pathVariable("episodeId");
+        UUID episodeId = UUID.fromString(serverRequest.pathVariable("episodeId"));
         return userService.getUserIdFromSecurityContext()
             .flatMap(userId -> episodeCollectionService
-                .findByUserIdAndEpisodeId(userId, Long.valueOf(episodeId)))
+                .findByUserIdAndEpisodeId(userId, episodeId))
             .flatMap(episodeCollection -> ServerResponse.ok()
                 .bodyValue(episodeCollection))
             .switchIfEmpty(ServerResponse.notFound().build());
@@ -140,17 +141,17 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> findEpisodeCollectionsByUserIdAndSubjectId(
         ServerRequest serverRequest) {
-        String subjectId = serverRequest.pathVariable("subjectId");
+        UUID subjectId = UUID.fromString(serverRequest.pathVariable("subjectId"));
         return userService.getUserIdFromSecurityContext()
             .flatMapMany(userId -> episodeCollectionService
-                .findAllByUserIdAndSubjectId(userId, Long.valueOf(subjectId)))
+                .findAllByUserIdAndSubjectId(userId, subjectId))
             .collectList()
             .flatMap(episodeCollections -> ServerResponse.ok()
                 .bodyValue(episodeCollections));
     }
 
     private Mono<ServerResponse> updateEpisodeCollection(ServerRequest serverRequest) {
-        String episodeId = serverRequest.pathVariable("episodeId");
+        UUID episodeId = UUID.fromString(serverRequest.pathVariable("episodeId"));
         Optional<String> progressOp = serverRequest.queryParam("progress");
         Long progress = progressOp.map(Long::valueOf).orElse(0L);
         Optional<String> durationOp = serverRequest.queryParam("duration");
@@ -159,7 +160,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
             .flatMap(userId -> episodeCollectionService
                 .updateEpisodeCollection(
                     userId,
-                    Long.valueOf(episodeId),
+                    episodeId,
                     progress, duration))
             .then(ServerResponse.ok().build())
             .onErrorResume(IllegalArgumentException.class,
@@ -167,28 +168,28 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> updateEpisodeCollectionFinish(ServerRequest serverRequest) {
-        String episodeId = serverRequest.pathVariable("episodeId");
+        UUID episodeId = UUID.fromString(serverRequest.pathVariable("episodeId"));
         String finish = serverRequest.pathVariable("finish");
         return userService.getUserIdFromSecurityContext()
             .flatMap(userId -> episodeCollectionService
                 .updateEpisodeCollectionFinish(
                     userId,
-                    Long.valueOf(episodeId),
+                    episodeId,
                     Boolean.valueOf(finish)))
             .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> create(ServerRequest serverRequest) {
-        String episodeId = serverRequest.pathVariable("episodeId");
+        UUID episodeId = UUID.fromString(serverRequest.pathVariable("episodeId"));
         return userService.getUserIdFromSecurityContext()
-            .flatMap(userId -> episodeCollectionService.create(userId, Long.valueOf(episodeId)))
+            .flatMap(userId -> episodeCollectionService.create(userId, episodeId))
             .flatMap(episodeCollection -> ServerResponse.ok().bodyValue(episodeCollection));
     }
 
     private Mono<ServerResponse> remove(ServerRequest serverRequest) {
-        String episodeId = serverRequest.pathVariable("episodeId");
+        UUID episodeId = UUID.fromString(serverRequest.pathVariable("episodeId"));
         return userService.getUserIdFromSecurityContext()
-            .flatMap(userId -> episodeCollectionService.remove(userId, Long.valueOf(episodeId)))
+            .flatMap(userId -> episodeCollectionService.remove(userId, episodeId))
             .flatMap(episodeCollection -> ServerResponse.ok().bodyValue(episodeCollection));
     }
 

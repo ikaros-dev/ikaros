@@ -1,5 +1,6 @@
 package run.ikaros.api.core.attachment;
 
+import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.plugin.AllowPluginOperate;
@@ -9,12 +10,12 @@ public interface AttachmentReferenceOperate extends AllowPluginOperate {
     Mono<AttachmentReference> save(AttachmentReference attachmentReference);
 
     Flux<AttachmentReference> findAllByTypeAndAttachmentId(
-        AttachmentReferenceType type, Long attachmentId);
+        AttachmentReferenceType type, UUID attachmentId);
 
-    Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds);
+    Mono<Void> matchingAttachmentsAndSubjectEpisodes(UUID subjectId, UUID[] attachmentIds);
 
-    Mono<Void> matchingAttachmentsAndSubjectEpisodes(Long subjectId, Long[] attachmentIds,
+    Mono<Void> matchingAttachmentsAndSubjectEpisodes(UUID subjectId, UUID[] attachmentIds,
                                                      boolean notify);
 
-    Mono<Void> matchingAttachmentsForEpisode(Long episodeId, Long[] attachmentIds);
+    Mono<Void> matchingAttachmentsForEpisode(UUID episodeId, UUID[] attachmentIds);
 }

@@ -1,5 +1,6 @@
 package run.ikaros.server.core.collection;
 
+import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.collection.SubjectCollection;
@@ -12,18 +13,17 @@ public interface SubjectCollectionService {
     Mono<Void> collect(SubjectCollection subjectCollection);
 
     @Transactional
-    Mono<Void> collect(Long userId, Long subjectId,
+    Mono<Void> collect(UUID userId, UUID subjectId,
                        CollectionType type, Boolean isPrivate);
 
     /**
      * collect.
      *
-     * @see #collect(Long, Long, CollectionType, Boolean)
      */
-    Mono<Void> collect(Long userId, Long subjectId, CollectionType type);
+    Mono<Void> collect(UUID userId, UUID subjectId, CollectionType type);
 
     @Transactional
-    Mono<Void> unCollect(Long userId, Long subjectId);
+    Mono<Void> unCollect(UUID userId, UUID subjectId);
 
     /**
      * Find subject collection with userId and subjectId.
@@ -32,15 +32,15 @@ public interface SubjectCollectionService {
      * @param subjectId subject id
      * @return subject collection or null
      */
-    Mono<SubjectCollection> findCollection(Long userId, Long subjectId);
+    Mono<SubjectCollection> findCollection(UUID userId, UUID subjectId);
 
-    Mono<PagingWrap<SubjectCollection>> findCollections(Long userId, Integer page,
+    Mono<PagingWrap<SubjectCollection>> findCollections(UUID userId, Integer page,
                                                         Integer size);
 
-    Mono<PagingWrap<SubjectCollection>> findCollections(Long userId, Integer page,
+    Mono<PagingWrap<SubjectCollection>> findCollections(UUID userId, Integer page,
                                                         Integer size,
                                                         CollectionType type,
                                                         Boolean isPrivate);
 
-    Mono<Void> updateMainEpisodeProgress(Long userId, Long subjectId, Integer progress);
+    Mono<Void> updateMainEpisodeProgress(UUID userId, UUID subjectId, Integer progress);
 }

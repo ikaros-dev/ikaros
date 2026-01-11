@@ -20,104 +20,104 @@
 export interface UserEntity {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof UserEntity
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof UserEntity
    */
-  deleteStatus?: boolean;
+  deleteStatus?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof UserEntity
    */
-  createUid?: number;
+  createUid?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UserEntity
    */
-  createTime?: string;
+  createTime?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof UserEntity
    */
-  updateUid?: number;
+  updateUid?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UserEntity
    */
-  updateTime?: string;
+  updateTime?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof UserEntity
    */
-  optimisticLockVersion?: number;
+  optimisticLockVersion?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UserEntity
    */
-  username?: string;
+  username?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UserEntity
    */
-  password?: string;
+  password?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UserEntity
    */
-  nickname?: string;
+  nickname?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UserEntity
    */
-  introduce?: string;
+  introduce?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UserEntity
    */
-  telephone?: string;
+  telephone?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UserEntity
    */
-  site?: string;
+  site?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UserEntity
    */
-  email?: string;
+  email?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof UserEntity
    */
-  enable?: boolean;
+  enable?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof UserEntity
    */
-  nonLocked?: boolean;
+  nonLocked?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof UserEntity
    */
-  avatar?: string;
+  avatar?: any;
 }

@@ -8,13 +8,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.core.role.Role;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.core.role.RoleService;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
@@ -25,6 +28,8 @@ import run.ikaros.server.store.repository.RoleRepository;
 
 @SpringBootTest
 @AutoConfigureWebTestClient
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class RequestAuthorizationManagerTest {
 
     @Autowired

@@ -1,6 +1,7 @@
 package run.ikaros.server.core.role;
 
 import java.util.Objects;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.role.Role;
+import run.ikaros.api.core.role.RoleConst;
 import run.ikaros.server.core.role.event.RoleCreatedEvent;
 import run.ikaros.server.store.entity.RoleEntity;
 import run.ikaros.server.store.repository.RoleRepository;
@@ -25,7 +27,8 @@ public class DefaultRoleService implements RoleService {
     }
 
     @Override
-    public Mono<Role> findById(Long roleId) {
+    public Mono<Role> findById(UUID roleId) {
+        Assert.notNull(roleId, "'roleId' must not null.");
         return roleRepository.findById(roleId)
             .map(this::entity2Vo);
     }
@@ -35,7 +38,9 @@ public class DefaultRoleService implements RoleService {
         role.setId(e.getId());
         role.setName(e.getName());
         role.setDescription(e.getDescription());
-        role.setParentId(Objects.isNull(e.getParentId()) ? 0L : e.getParentId());
+        role.setParentId(Objects.isNull(e.getParentId())
+            ? RoleConst.ROLE_ROOT_ID
+            : e.getParentId());
         return role;
     }
 
@@ -44,12 +49,14 @@ public class DefaultRoleService implements RoleService {
         entity.setId(role.getId());
         entity.setName(role.getName());
         entity.setDescription(role.getDescription());
-        entity.setParentId(Objects.isNull(role.getParentId()) ? 0L : role.getParentId());
+        entity.setParentId(
+            Objects.isNull(role.getParentId()) ? RoleConst.ROLE_ROOT_ID : role.getParentId());
         return entity;
     }
 
     @Override
-    public Mono<String> findNameById(Long roleId) {
+    public Mono<String> findNameById(UUID roleId) {
+        Assert.notNull(roleId, "'roleId' must not null.");
         return findById(roleId)
             .flatMap(role -> Mono.just(role.getName()));
     }
@@ -60,10 +67,10 @@ public class DefaultRoleService implements RoleService {
             .filter(Boolean.FALSE::equals)
             .flatMap(exists -> Mono.just(RoleEntity.builder()
                 .name(role)
-                .parentId(0L)
+                .parentId(RoleConst.ROLE_ROOT_ID)
                 .build()))
             .flatMap(roleEntity ->
-                roleRepository.save(roleEntity)
+                roleRepository.insert(roleEntity)
                     .doOnSuccess(entity -> {
                         log.debug("create role if not exists for entity={}", roleEntity);
                         RoleCreatedEvent event = new RoleCreatedEvent(this, roleEntity);
@@ -80,8 +87,8 @@ public class DefaultRoleService implements RoleService {
     }
 
     @Override
-    public Mono<Void> deleteById(Long roleId) {
-        Assert.isTrue(roleId > 1, "roleId must be greater than 1");
+    public Mono<Void> deleteById(UUID roleId) {
+        Assert.notNull(roleId, "'roleId' must not null.");
         return roleRepository.deleteById(roleId);
     }
 
@@ -92,9 +99,11 @@ public class DefaultRoleService implements RoleService {
             .mapNotNull(Role::getId)
             .flatMap(roleRepository::findById)
             .map(entity -> entity.setName(role.getName())
-                .setParentId(Objects.isNull(role.getParentId()) ? 0L : role.getParentId())
+                .setParentId(Objects.isNull(role.getParentId())
+                    ? RoleConst.ROLE_ROOT_ID
+                    : role.getParentId())
                 .setDescription(role.getDescription()))
-            .flatMap(roleRepository::save)
+            .flatMap(roleRepository::update)
             .doOnNext(roleEntity -> log.debug("update exists role entity={}", roleEntity))
             .switchIfEmpty(createNewRole(role))
             .map(this::entity2Vo);
@@ -102,7 +111,7 @@ public class DefaultRoleService implements RoleService {
 
     private Mono<RoleEntity> createNewRole(Role role) {
         return Mono.just(vo2Entity(role))
-            .flatMap(roleRepository::save)
+            .flatMap(roleRepository::insert)
             .doOnNext(roleEntity -> {
                 log.debug("create new role entity={}", roleEntity);
                 RoleCreatedEvent event = new RoleCreatedEvent(this, roleEntity);

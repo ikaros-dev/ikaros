@@ -20,52 +20,52 @@
 export interface Episode {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Episode
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Episode
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Episode
    */
-  description?: string;
+  description?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Episode
    */
-  sequence?: number;
+  sequence?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Episode
    */
   group?: EpisodeGroupEnum;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Episode
    */
-  subject_id?: number;
+  subject_id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Episode
    */
-  name_cn?: string;
+  name_cn?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Episode
    */
-  air_time?: string;
+  air_time?: any;
 }
 
 export const EpisodeGroupEnum = {

@@ -1,7 +1,7 @@
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
-    id 'org.springframework.boot' version '3.0.1' apply false
+    id 'org.springframework.boot' version '4.0.1' apply false
     id 'java-platform'
     id 'maven-publish'
 }
@@ -13,9 +13,10 @@ ext {
     commonsLang3 = "3.12.0"
     pf4j = '3.8.0'
     jsoup = '1.15.3'
-    springDocOpenAPI = "2.5.0"
+    springDocOpenAPI = "3.0.1"
     lucene = "9.5.0"
     uuidCreator = "1.0.7"
+    r2dbcMigrate = "4.0.1"
 }
 
 javaPlatform {
@@ -43,11 +44,11 @@ dependencies {
         api "org.apache.lucene:lucene-backward-codecs:$lucene"
         api 'cn.shenyanchao.ik-analyzer:ik-analyzer:9.0.0'
 
-        runtime 'io.r2dbc:r2dbc-h2'
+        // r2dbc-migrate
+        api "name.nkonev.r2dbc-migrate:r2dbc-migrate-spring-boot-starter:$r2dbcMigrate"
+
         runtime 'org.postgresql:postgresql'
         runtime 'org.postgresql:r2dbc-postgresql'
-        runtime 'org.mariadb:r2dbc-mariadb:1.1.4'
-        runtime 'com.github.jasync-sql:jasync-r2dbc-mysql:2.1.23'
     }
 
 }

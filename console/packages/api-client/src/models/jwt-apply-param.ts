@@ -20,40 +20,40 @@
 export interface JwtApplyParam {
   /**
    * 认证类型
-   * @type {string}
+   * @type {any}
    * @memberof JwtApplyParam
    */
   authType: JwtApplyParamAuthTypeEnum;
   /**
    * 用户名
-   * @type {string}
+   * @type {any}
    * @memberof JwtApplyParam
    */
-  username?: string;
+  username?: any;
   /**
    * 密码
-   * @type {string}
+   * @type {any}
    * @memberof JwtApplyParam
    */
-  password?: string;
+  password?: any;
   /**
    * 手机号
-   * @type {string}
+   * @type {any}
    * @memberof JwtApplyParam
    */
-  phoneNum?: string;
+  phoneNum?: any;
   /**
    * 邮箱
-   * @type {string}
+   * @type {any}
    * @memberof JwtApplyParam
    */
-  email?: string;
+  email?: any;
   /**
    * 验证码
-   * @type {string}
+   * @type {any}
    * @memberof JwtApplyParam
    */
-  code?: string;
+  code?: any;
 }
 
 export const JwtApplyParamAuthTypeEnum = {

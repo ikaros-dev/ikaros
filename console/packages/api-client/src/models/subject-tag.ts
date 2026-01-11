@@ -20,38 +20,38 @@
 export interface SubjectTag {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectTag
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectTag
    */
-  subjectId?: number;
+  subjectId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectTag
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectTag
    */
-  userId?: number;
+  userId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectTag
    */
-  createTime?: string;
+  createTime?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectTag
    */
-  color?: string;
+  color?: any;
 }

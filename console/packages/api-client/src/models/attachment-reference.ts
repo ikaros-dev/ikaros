@@ -20,28 +20,28 @@
 export interface AttachmentReference {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentReference
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentReference
    */
   type?: AttachmentReferenceTypeEnum;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentReference
    */
-  attachmentId?: number;
+  attachmentId?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentReference
    */
-  referenceId?: number;
+  referenceId?: any;
 }
 
 export const AttachmentReferenceTypeEnum = {

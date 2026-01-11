@@ -20,14 +20,14 @@
 export interface Author {
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Author
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Author
    */
-  website?: string;
+  website?: any;
 }

@@ -1,6 +1,7 @@
 package run.ikaros.server.core.tag.listener;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -47,7 +48,7 @@ public class TagChangeEventListener {
         if (tagEntity == null || tagEntity.getType() != TagType.SUBJECT) {
             return Mono.empty();
         }
-        Long subjectId = tagEntity.getMasterId();
+        UUID subjectId = tagEntity.getMasterId();
         return subjectRepository.findById(subjectId)
             .flatMap(ReactiveSubjectDocConverter::fromEntity)
             .flatMap(subjectDoc ->

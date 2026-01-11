@@ -4,6 +4,8 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -16,6 +18,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.AttachmentRelation;
 import run.ikaros.api.core.attachment.VideoSubtitle;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.core.attachment.service.AttachmentRelationService;
 import run.ikaros.server.core.attachment.vo.PostAttachmentRelationsParam;
@@ -43,13 +46,13 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
                         .description("Master attachment id")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .name("relAttachmentId")
                         .description("Related attachment id")
                         .in(ParameterIn.QUERY)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .name("type")
                         .description("Type of attachment")
@@ -81,13 +84,13 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
                         .description("Master attachment id")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .name("relAttachmentId")
                         .description("Related attachment id")
                         .in(ParameterIn.QUERY)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .name("type")
                         .description("Type of attachment")
@@ -107,7 +110,7 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
                         .description("Attachment ID")
                         .in(ParameterIn.QUERY)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder().name("relationType")
                         .description("Relation type")
                         .in(ParameterIn.QUERY)
@@ -123,7 +126,7 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
                         .description("Attachment ID")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder()
                         .implementationArray(VideoSubtitle.class)))
 
@@ -131,13 +134,13 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
     }
 
     Mono<ServerResponse> putAttachmentRelation(ServerRequest request) {
-        String masterAttachmentIdStr = request.pathVariable("masterAttachmentId");
-        String relAttachmentIdStr = request.queryParam("relAttachmentId").orElse("");
+        UUID masterAttachmentId =
+            UuidV7Utils.fromString(request.queryParam("masterAttachmentId").orElse(""));
+        UUID relAttachmentId =
+            UuidV7Utils.fromString(request.queryParam("relAttachmentId").orElse(""));
         String typeStr =
             request.queryParam("type")
                 .orElse(AttachmentRelationType.VIDEO_SUBTITLE.name());
-        Long masterAttachmentId = Long.valueOf(masterAttachmentIdStr);
-        Long relAttachmentId = Long.valueOf(relAttachmentIdStr);
         AttachmentRelationType type = AttachmentRelationType.valueOf(typeStr);
         AttachmentRelation attachmentRelation = AttachmentRelation.builder()
             .attachmentId(masterAttachmentId)
@@ -149,13 +152,13 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
     }
 
     Mono<ServerResponse> deleteAttachmentRelation(ServerRequest request) {
-        String masterAttachmentIdStr = request.pathVariable("masterAttachmentId");
-        String relAttachmentIdStr = request.queryParam("relAttachmentId").orElse("");
+        UUID masterAttachmentId =
+            UuidV7Utils.fromString(request.queryParam("masterAttachmentId").orElse(""));
+        UUID relAttachmentId =
+            UuidV7Utils.fromString(request.queryParam("relAttachmentId").orElse(""));
         String typeStr =
             request.queryParam("type")
                 .orElse(AttachmentRelationType.VIDEO_SUBTITLE.name());
-        Long masterAttachmentId = Long.valueOf(masterAttachmentIdStr);
-        Long relAttachmentId = Long.valueOf(relAttachmentIdStr);
         AttachmentRelationType type = AttachmentRelationType.valueOf(typeStr);
         AttachmentRelation attachmentRelation = AttachmentRelation.builder()
             .attachmentId(masterAttachmentId)
@@ -175,27 +178,27 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
     }
 
     Mono<ServerResponse> findAttachmentVideoSubtitles(ServerRequest request) {
-        Long attachmentId = Long.parseLong(request.pathVariable("attachmentId"));
+        UUID attachmentId =
+            UuidV7Utils.fromString(request.pathVariable("attachmentId"));
         return attachmentRelationService.findAttachmentVideoSubtitles(attachmentId)
             .collectList()
             .flatMap(videoSubtitles -> ServerResponse.ok().bodyValue(videoSubtitles));
     }
 
     Mono<ServerResponse> findAttachmentRelations(ServerRequest request) {
-        String attachmentId = request.queryParam("attachmentId").orElse("");
+        UUID attachmentId =
+            UuidV7Utils.fromString(request.queryParam("attachmentId").orElse(""));
         String relationType = request.queryParam("relationType").orElse("");
-        if (!StringUtils.hasText(attachmentId) || !StringUtils.hasText(relationType)) {
+        if (Objects.isNull(attachmentId) || !StringUtils.hasText(relationType)) {
             return ServerResponse.badRequest().bodyValue("request params incorrect.");
         }
-        long attachmentIdL;
         AttachmentRelationType relationTypeE;
         try {
-            attachmentIdL = Long.parseLong(attachmentId);
             relationTypeE = AttachmentRelationType.valueOf(relationType);
         } catch (IllegalArgumentException illegalArgumentException) {
             return ServerResponse.badRequest().bodyValue("request params incorrect.");
         }
-        return attachmentRelationService.findAllByTypeAndAttachmentId(relationTypeE, attachmentIdL)
+        return attachmentRelationService.findAllByTypeAndAttachmentId(relationTypeE, attachmentId)
             .collectList()
             .flatMap(attachmentRelations -> ServerResponse.ok().bodyValue(attachmentRelations))
             .switchIfEmpty(ServerResponse.notFound().build());

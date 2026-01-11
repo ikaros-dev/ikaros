@@ -1,6 +1,7 @@
 package run.ikaros.server.controller;
 
 import java.util.Objects;
+import java.util.UUID;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,7 +65,7 @@ public class SubjectController {
      * Get subject details by id.
      */
     @GetMapping("/{id}")
-    public Mono<String> findById(@PathVariable("id") Long id,
+    public Mono<String> findById(@PathVariable("id") UUID id,
                                  @RequestParam("episode") Float epSeq, Model model) {
         return subjectService.findById(id)
             .map(subject -> model.addAttribute("subject", subject))

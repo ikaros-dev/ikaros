@@ -1,28 +1,29 @@
 package run.ikaros.server.core.attachment.event;
 
+import java.util.UUID;
 import org.springframework.context.ApplicationEvent;
 
 public class EpisodeAttachmentUpdateEvent extends ApplicationEvent {
-    private final Long episodeId;
-    private final Long attachmentId;
+    private final UUID episodeId;
+    private final UUID attachmentId;
     private final Boolean notify;
 
     /**
      * Construct.
      */
-    public EpisodeAttachmentUpdateEvent(Object source, Long episodeId,
-                                        Long attachmentId, Boolean notify) {
+    public EpisodeAttachmentUpdateEvent(Object source, UUID episodeId,
+                                        UUID attachmentId, Boolean notify) {
         super(source);
         this.episodeId = episodeId;
         this.attachmentId = attachmentId;
         this.notify = notify;
     }
 
-    public Long getEpisodeId() {
+    public UUID getEpisodeId() {
         return episodeId;
     }
 
-    public Long getAttachmentId() {
+    public UUID getAttachmentId() {
         return attachmentId;
     }
 

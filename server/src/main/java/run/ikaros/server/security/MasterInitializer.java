@@ -11,6 +11,7 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.core.role.Role;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.core.role.RoleService;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
@@ -66,6 +67,7 @@ public class MasterInitializer {
         log.debug("Create init user form username={} and role={}",
             initializer.getMasterUsername(), SecurityConst.ROLE_MASTER);
         return roleService.save(Role.builder()
+                .id(UuidV7Utils.generateUuid())
                 .name(SecurityConst.ROLE_MASTER)
                 .description("Default admin role, unable delete")
                 .build())
@@ -76,17 +78,24 @@ public class MasterInitializer {
                     .nickname(initializer.getMasterNickname())
                     .enable(true)
                     .build())
+                .map(userEntity -> {
+                    if (userEntity.getId() == null) {
+                        userEntity.setId(UuidV7Utils.generateUuid());
+                    }
+                    return userEntity;
+                })
                 .map(User::new)
                 .flatMap(userService::save)
                 .map(User::entity)
                 .map(BaseEntity::getId))
             .flatMap(tuple2 ->
                 userRoleRepository.findByUserIdAndRoleId(tuple2.getT2(), tuple2.getT1())
-                    .switchIfEmpty(Mono.just(UserRoleEntity.builder()
+                    .switchIfEmpty(userRoleRepository.insert(UserRoleEntity.builder()
+                        .id(UuidV7Utils.generateUuid())
                         .userId(tuple2.getT2())
                         .roleId(tuple2.getT1())
                         .build())))
-            .flatMap(userRoleRepository::save)
+            .flatMap(userRoleRepository::update)
             .then();
     }
 

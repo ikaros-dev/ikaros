@@ -1,6 +1,7 @@
 package run.ikaros.api.core.attachment;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -11,7 +12,7 @@ import reactor.core.publisher.Flux;
 public class AttachmentUploadCondition {
 
     @Schema(nullable = true, description = "父附件的ID，可为空，为空则代表附件在逻辑根目录下。")
-    private Long parentId;
+    private UUID parentId;
     @Schema(description = "经过Basic64编码的附件名称，附件名称字段模糊查询。")
     private String name;
     @Schema(implementation = Flux.class, description = "附件的数据。")

@@ -7,10 +7,16 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
+import run.ikaros.api.infra.utils.UuidV7Utils;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 
 @SpringBootTest
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class CustomMetadataRepositoryTest {
     @Autowired
     CustomMetadataRepository repository;
@@ -27,7 +33,7 @@ class CustomMetadataRepositoryTest {
         final String oldValue = Long.valueOf(new Random().nextLong()).toString();
         final String newValue = Long.valueOf(new Random().nextLong()).toString();
         CustomMetadataEntity metadataEntity = CustomMetadataEntity.builder()
-            .customId(Long.MIN_VALUE)
+            .customId(UuidV7Utils.generateUuid())
             .key(key)
             .value(oldValue.getBytes(StandardCharsets.UTF_8)).build();
 
@@ -36,12 +42,12 @@ class CustomMetadataRepositoryTest {
 
         // Update metadata entity value to new value.
         StepVerifier.create(repository
-                .updateValueByCustomIdAndKeyAndValue(Long.MIN_VALUE, key,
+                .updateValueByCustomIdAndKeyAndValue(UuidV7Utils.generateUuid(), key,
                     newValue.getBytes(StandardCharsets.UTF_8)))
             .verifyComplete();
 
         // Verify.
-        StepVerifier.create(repository.findByCustomIdAndKey(Long.MIN_VALUE, key)
+        StepVerifier.create(repository.findByCustomIdAndKey(UuidV7Utils.generateUuid(), key)
                 .map(CustomMetadataEntity::getValue)
                 .map(bytes -> new String(bytes, StandardCharsets.UTF_8)))
             .expectNext(newValue)

@@ -6,12 +6,17 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.ReactiveCustomClient;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.core.notify.model.MailRequest;
 import run.ikaros.server.core.setting.SystemSettingInitListener;
 
 @SpringBootTest
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class MailServiceTest {
 
     @Autowired

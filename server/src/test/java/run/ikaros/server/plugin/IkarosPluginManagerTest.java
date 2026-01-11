@@ -22,11 +22,16 @@ import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Import;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.test.reflect.MemberMatcher;
 
 @Disabled("TODO unittest-a-1.0.0.jar 和 unittest-b-1.0.0.jar 由于包结构调整需要重新构建")
 @Slf4j
 @SpringBootTest
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class IkarosPluginManagerTest {
 
     @Autowired

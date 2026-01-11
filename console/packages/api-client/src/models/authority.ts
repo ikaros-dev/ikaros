@@ -20,34 +20,34 @@
 export interface Authority {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Authority
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof Authority
    */
-  allow?: boolean;
+  allow?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Authority
    */
   type?: AuthorityTypeEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Authority
    */
-  target?: string;
+  target?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Authority
    */
-  authority?: string;
+  authority?: any;
 }
 
 export const AuthorityTypeEnum = {

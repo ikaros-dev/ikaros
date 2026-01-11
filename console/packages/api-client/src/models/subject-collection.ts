@@ -20,100 +20,100 @@
 export interface SubjectCollection {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectCollection
    */
   type?: SubjectCollectionTypeEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  infobox?: string;
+  infobox?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  summary?: string;
+  summary?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  nsfw?: boolean;
+  nsfw?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  cover?: string;
+  cover?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  comment?: string;
+  comment?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  score?: number;
+  score?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  user_id?: number;
+  user_id?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  subject_id?: number;
+  subject_id?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  main_ep_progress?: number;
+  main_ep_progress?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  is_private?: boolean;
+  is_private?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectCollection
    */
   subject_type?: SubjectCollectionSubjectTypeEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  name_cn?: string;
+  name_cn?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectCollection
    */
-  air_time?: string;
+  air_time?: any;
 }
 
 export const SubjectCollectionTypeEnum = {

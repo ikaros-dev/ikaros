@@ -1,30 +1,30 @@
 package run.ikaros.server.store.repository;
 
-import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.store.entity.AttachmentRelationEntity;
 
 public interface AttachmentRelationRepository
-    extends R2dbcRepository<AttachmentRelationEntity, Long> {
+    extends BaseRepository<AttachmentRelationEntity> {
     Mono<AttachmentRelationEntity> findByTypeAndAttachmentIdAndRelationAttachmentId(
-        AttachmentRelationType type, Long attachmentId, Long relationId);
+        AttachmentRelationType type, UUID attachmentId, UUID relationId);
 
-    Flux<AttachmentRelationEntity> findAllByAttachmentId(Long attachmentId);
+    Flux<AttachmentRelationEntity> findAllByAttachmentId(UUID attachmentId);
 
     Flux<AttachmentRelationEntity> findAllByTypeAndAttachmentId(AttachmentRelationType type,
-                                                                Long attachmentId);
+                                                                UUID attachmentId);
 
-    Mono<Boolean> existsByAttachmentId(Long attachmentId);
+    Mono<Boolean> existsByAttachmentId(UUID attachmentId);
 
     Mono<Boolean> existsByTypeAndAttachmentIdAndRelationAttachmentId(AttachmentRelationType type,
-                                                                     Long attachmentId,
-                                                                     Long relationAttachmentId);
+                                                                     UUID attachmentId,
+                                                                     UUID relationAttachmentId);
 
     Mono<Void> deleteByTypeAndAttachmentIdAndRelationAttachmentId(AttachmentRelationType type,
-                                                                  Long attachmentId,
-                                                                  Long relationAttachmentId);
+                                                                  UUID attachmentId,
+                                                                  UUID relationAttachmentId);
 
-    Mono<Void> deleteAllByAttachmentId(Long attachmentId);
+    Mono<Void> deleteAllByAttachmentId(UUID attachmentId);
 }

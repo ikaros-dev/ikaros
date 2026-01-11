@@ -10,14 +10,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Query;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.store.entity.SubjectEntity;
 
 @SpringBootTest
+@Testcontainers
+@Import(IkarosTestcontainersConfiguration.class)
 class SubjectRepositoryTest {
 
     @Autowired
@@ -65,7 +70,7 @@ class SubjectRepositoryTest {
         StepVerifier.create(subjectRepository.save(subjectEntity))
             .expectNext(subjectEntity).verifyComplete();
 
-        assertThat(subjectEntity.getId()).isGreaterThan(0);
+        assertThat(subjectEntity.getId()).isNotNull();
 
         String newName = name + new Random(10).nextInt();
         subjectEntity.setName(newName);
@@ -86,7 +91,7 @@ class SubjectRepositoryTest {
         subjectEntity = new SubjectEntity();
         BeanUtils.copyProperties(tmpSub, subjectEntity);
 
-        assertThat(subjectEntity.getId()).isGreaterThan(0);
+        assertThat(subjectEntity.getId()).isNotNull();
 
         newName = name + new Random(10).nextInt();
         subjectEntity.setName(newName);

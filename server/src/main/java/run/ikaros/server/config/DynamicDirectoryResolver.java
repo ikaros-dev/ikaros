@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.PathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.resource.PathResourceResolver;
@@ -82,7 +82,7 @@ public class DynamicDirectoryResolver implements ResourceResolver {
 
 
         requestPath = requestPath.replace("%20", " ")
-                .replace("%2F", "/")
+            .replace("%2F", "/")
             .replace("%3A", ":")
             .replace("%3F", "?")
             .replace("%26", "&")
@@ -120,7 +120,7 @@ public class DynamicDirectoryResolver implements ResourceResolver {
 
                 // 检查文件是否存在且可读
                 if (Files.exists(realFilePath) && Files.isReadable(realFilePath)) {
-                    Resource resource = new PathResource(realFilePath);
+                    Resource resource = new FileSystemResource(realFilePath);
                     log.debug("找到资源: {}", realFilePath);
                     return Mono.just(resource);
                 } else {

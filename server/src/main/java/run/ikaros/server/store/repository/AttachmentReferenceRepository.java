@@ -1,6 +1,6 @@
 package run.ikaros.server.store.repository;
 
-import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
@@ -8,41 +8,41 @@ import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 
 public interface AttachmentReferenceRepository
-    extends R2dbcRepository<AttachmentReferenceEntity, Long> {
+    extends BaseRepository<AttachmentReferenceEntity> {
     Flux<AttachmentReferenceEntity> findAllByTypeAndAttachmentId(
-        AttachmentReferenceType type, Long attachmentId);
+        AttachmentReferenceType type, UUID attachmentId);
 
     Mono<Boolean> existsByTypeAndAttachmentId(
-        AttachmentReferenceType type, Long attachmentId);
+        AttachmentReferenceType type, UUID attachmentId);
 
     Mono<Boolean> existsByTypeAndReferenceId(
-        AttachmentRelationType type, Long referenceId
+        AttachmentRelationType type, UUID referenceId
     );
 
-    Mono<Boolean> existsByTypeAndReferenceId(AttachmentReferenceType type, Long referenceId);
+    Mono<Boolean> existsByTypeAndReferenceId(AttachmentReferenceType type, UUID referenceId);
 
-    Mono<Boolean> existsByAttachmentId(Long attachmentId);
+    Mono<Boolean> existsByAttachmentId(UUID attachmentId);
 
-    Flux<AttachmentReferenceEntity> findAllByAttachmentId(Long attachmentId);
+    Flux<AttachmentReferenceEntity> findAllByAttachmentId(UUID attachmentId);
 
     Mono<AttachmentReferenceEntity> findByTypeAndAttachmentIdAndReferenceId(
-        AttachmentReferenceType type, Long attachmentId, Long referenceId
+        AttachmentReferenceType type, UUID attachmentId, UUID referenceId
     );
 
 
     Flux<AttachmentReferenceEntity> findAllByTypeAndReferenceId(AttachmentReferenceType type,
-                                                                Long referenceId);
+                                                                UUID referenceId);
 
     Mono<Long> countByTypeAndReferenceId(AttachmentReferenceType type,
-                                         Long referenceId);
+                                         UUID referenceId);
 
     Flux<AttachmentReferenceEntity> findAllByTypeAndReferenceIdOrderByTypeAscAttachmentIdAsc(
-        AttachmentReferenceType type, Long referenceId);
+        AttachmentReferenceType type, UUID referenceId);
 
     Mono<Void> deleteByTypeAndAttachmentIdAndReferenceId(
-        AttachmentReferenceType type, Long attachmentId, Long referenceId);
+        AttachmentReferenceType type, UUID attachmentId, UUID referenceId);
 
-    Mono<Void> deleteAllByTypeAndReferenceId(AttachmentReferenceType type, Long referenceId);
+    Mono<Void> deleteAllByTypeAndReferenceId(AttachmentReferenceType type, UUID referenceId);
 
-    Mono<Void> deleteAllByAttachmentId(Long attachmentId);
+    Mono<Void> deleteAllByAttachmentId(UUID attachmentId);
 }

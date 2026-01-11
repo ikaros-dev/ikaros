@@ -3,6 +3,7 @@ package run.ikaros.server.core.attachment.listener;
 import static run.ikaros.api.store.enums.AttachmentType.Driver_File;
 import static run.ikaros.api.store.enums.AttachmentType.File;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.VideoSubtitle;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.core.attachment.event.AttachmentReferenceSaveEvent;
@@ -44,7 +46,7 @@ public class AttachmentRelVideoSubtitleListener {
         if (!AttachmentReferenceType.EPISODE.equals(entity.getType())) {
             return Mono.empty();
         }
-        Long attachmentId = entity.getAttachmentId();
+        UUID attachmentId = entity.getAttachmentId();
 
         return findAttachmentSubtitlesAndSaveRelationIfNotExists(attachmentId);
     }
@@ -57,11 +59,11 @@ public class AttachmentRelVideoSubtitleListener {
      */
     @EventListener(EpisodeAttachmentUpdateEvent.class)
     public Mono<Void> onSubjectAdd(EpisodeAttachmentUpdateEvent event) {
-        Long attachmentId = event.getAttachmentId();
+        UUID attachmentId = event.getAttachmentId();
         return findAttachmentSubtitlesAndSaveRelationIfNotExists(attachmentId);
     }
 
-    private Mono<Void> findAttachmentSubtitlesAndSaveRelationIfNotExists(Long attachmentId) {
+    private Mono<Void> findAttachmentSubtitlesAndSaveRelationIfNotExists(UUID attachmentId) {
         return attachmentRepository.findById(attachmentId)
             .flatMapMany(this::findAllAttachmentSubtitles)
             .map(VideoSubtitle::getAttachmentId)
@@ -70,12 +72,13 @@ public class AttachmentRelVideoSubtitleListener {
                     AttachmentRelationType.VIDEO_SUBTITLE, attachmentId, relationAttId)
                 .filter(exists -> !exists)
                 .map(exists -> AttachmentRelationEntity.builder()
+                    .id(UuidV7Utils.generateUuid())
                     .type(AttachmentRelationType.VIDEO_SUBTITLE)
                     .attachmentId(attachmentId)
                     .relationAttachmentId(relationAttId)
                     .build())
                 .flatMap(attachmentRelationEntity -> attachmentRelationRepository
-                    .save(attachmentRelationEntity)
+                    .insert(attachmentRelationEntity)
                     .doOnSuccess(entity -> log.debug("Save new attachment relation record"
                             + " for type={} attId={} relAttId={}",
                         AttachmentRelationType.VIDEO_SUBTITLE,

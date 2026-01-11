@@ -7,6 +7,7 @@ import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuil
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.security.Principal;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import run.ikaros.api.core.tag.AttachmentTag;
 import run.ikaros.api.core.tag.SubjectTag;
 import run.ikaros.api.core.tag.Tag;
 import run.ikaros.api.infra.utils.StringUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.TagType;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -61,7 +63,7 @@ public class TagEndpoint implements CoreEndpoint {
                 builder -> builder.operationId("ListSubjectTagsBySubjectId")
                     .tag(tag).description("List subject tags by subject id.")
                     .parameter(parameterBuilder().name("subjectId").required(true)
-                        .in(ParameterIn.PATH).implementation(Long.class))
+                        .in(ParameterIn.PATH).implementation(String.class))
                     .response(responseBuilder().implementationArray(SubjectTag.class)))
 
             .GET("/tags/attachment/attachmentId/{attachmentId}",
@@ -69,7 +71,7 @@ public class TagEndpoint implements CoreEndpoint {
                 builder -> builder.operationId("ListAttachmentTagsByAttachmentId")
                     .tag(tag).description("List attachment tags by attachment id.")
                     .parameter(parameterBuilder().name("attachmentId").required(true)
-                        .in(ParameterIn.PATH).implementation(Long.class))
+                        .in(ParameterIn.PATH).implementation(String.class))
                     .response(responseBuilder().implementationArray(AttachmentTag.class)))
 
             .POST("/tag", this::create,
@@ -83,7 +85,7 @@ public class TagEndpoint implements CoreEndpoint {
                     .tag(tag).description("Remove tag by id.")
                     .parameter(parameterBuilder().name("id")
                         .required(true).in(ParameterIn.PATH)
-                        .implementation(Long.class)))
+                        .implementation(String.class)))
 
             .DELETE("/tag/condition", this::removeByCondition,
                 builder -> builder.operationId("RemoveTagByCondition")
@@ -93,7 +95,7 @@ public class TagEndpoint implements CoreEndpoint {
                         .implementation(TagType.class))
                     .parameter(parameterBuilder()
                         .name("masterId").required(false)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .name("name").required(false)
                         .implementation(String.class)))
@@ -108,17 +110,8 @@ public class TagEndpoint implements CoreEndpoint {
             type = TagType.valueOf(typeOp.get());
         }
 
-        Optional<String> masterIdOp = request.queryParam("masterId");
-        Long masterId = null;
-        if (masterIdOp.isPresent() && StringUtils.isNotBlank(masterIdOp.get())) {
-            masterId = Long.parseLong(masterIdOp.get());
-        }
-
-        Optional<String> userIdOp = request.queryParam("userId");
-        Long userId = null;
-        if (userIdOp.isPresent() && StringUtils.isNotBlank(userIdOp.get())) {
-            userId = Long.parseLong(userIdOp.get());
-        }
+        UUID masterId = UuidV7Utils.fromString(request.queryParam("masterId").orElse(""));
+        UUID userId = UuidV7Utils.fromString(request.queryParam("userId").orElse(""));
 
         Optional<String> nameOp = request.queryParam("name");
         String name = nameOp.orElse(null);
@@ -129,9 +122,7 @@ public class TagEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> listSubjectTagsBySubjectId(ServerRequest request) {
-        String subjectIdS = request.pathVariable("subjectId");
-        Assert.hasText(subjectIdS, "'subjectId' must has value.");
-        Long subjectId = Long.parseLong(subjectIdS);
+        UUID subjectId = UuidV7Utils.fromString(request.pathVariable("subjectId"));
         return tagService.findSubjectTags(subjectId)
             .collectList()
             .flatMap(subjectTags -> ServerResponse.ok()
@@ -140,9 +131,7 @@ public class TagEndpoint implements CoreEndpoint {
 
 
     private Mono<ServerResponse> listAttachmentTagsByAttachmentId(ServerRequest request) {
-        String attachmentIdS = request.pathVariable("attachmentId");
-        Assert.hasText(attachmentIdS, "'attachmentId' must has value.");
-        Long attachmentId = Long.parseLong(attachmentIdS);
+        UUID attachmentId = UuidV7Utils.fromString(request.pathVariable("attachmentId"));
         return tagService.findAttachmentTags(attachmentId)
             .collectList()
             .flatMap(attachmentTags -> ServerResponse.ok()
@@ -161,25 +150,22 @@ public class TagEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> removeById(ServerRequest request) {
-        String idS = request.pathVariable("id");
-        Assert.hasText(idS, "'id' must has value.");
-        Long id = Long.parseLong(idS);
+        UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
         return tagService.removeById(id)
             .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> removeByCondition(ServerRequest request) {
         Optional<String> typeOp = request.queryParam("type");
-        Optional<String> masterIdOp = request.queryParam("masterId");
         Optional<String> nameOp = request.queryParam("name");
         Assert.isTrue(typeOp.isPresent(), "'type' must has value.");
-        Assert.isTrue(masterIdOp.isPresent(), "'masterId' must has value.");
         Assert.isTrue(nameOp.isPresent(), "'name' must has value.");
 
         TagType type = TagType.valueOf(typeOp.get());
-        Long masterId = Long.parseLong(masterIdOp.get());
         String name = nameOp.get();
 
+        UUID masterId = UuidV7Utils.fromString(request.queryParam("masterId").orElse(""));
+        Assert.notNull(masterId, "'masterId' must not null.");
         return tagService.remove(type, masterId, name)
             .then(ServerResponse.ok().build());
     }

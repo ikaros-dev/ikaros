@@ -3,7 +3,6 @@ ikaros:
   work-dir: ${user.dir}/build/
   plugin:
     runtime-mode: development
-    system-version: 0.21.0
   task:
     core-pool-size: 4
     maximum-pool-size: 40
@@ -25,20 +24,9 @@ server:
 spring:
   thymeleaf:
     cache: false
-  sql:
-    init:
-      mode: always
-      platform: h2
   codec:
     max-in-memory-size: 10MB
   r2dbc:
-    url: r2dbc:h2:mem:///ikaros?MODE=MySQL&DB_CLOSE_ON_EXIT=FALSE
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: create-drop
-  flyway:
-    enabled: false
 
 springdoc:
   api-docs:

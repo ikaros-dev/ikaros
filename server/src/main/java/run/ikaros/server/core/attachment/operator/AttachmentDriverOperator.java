@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.operator;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -25,7 +26,7 @@ public class AttachmentDriverOperator implements AttachmentDriverOperate {
     }
 
     @Override
-    public Mono<AttachmentDriver> findById(Long id) {
+    public Mono<AttachmentDriver> findById(UUID id) {
         return service.findById(id);
     }
 
@@ -41,7 +42,7 @@ public class AttachmentDriverOperator implements AttachmentDriverOperate {
     }
 
     @Override
-    public Mono<Void> refresh(Long attachmentId) {
+    public Mono<Void> refresh(UUID attachmentId) {
         return service.refresh(attachmentId);
     }
 

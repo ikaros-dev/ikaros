@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import jakarta.persistence.Id;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,9 +18,9 @@ import org.springframework.data.relational.core.mapping.Table;
 @Accessors(chain = true)
 public class RoleAuthorityEntity {
     @Id
-    private Long id;
+    private UUID id;
     @Column("role_id")
-    private Long roleId;
+    private UUID roleId;
     @Column("authority_id")
-    private Long authorityId;
+    private UUID authorityId;
 }

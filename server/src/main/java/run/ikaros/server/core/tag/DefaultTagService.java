@@ -3,6 +3,7 @@ package run.ikaros.server.core.tag;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.Objects;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
@@ -18,6 +19,7 @@ import run.ikaros.api.core.tag.SubjectTag;
 import run.ikaros.api.core.tag.Tag;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.StringUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.TagType;
 import run.ikaros.server.core.tag.event.TagCreateEvent;
 import run.ikaros.server.core.tag.event.TagRemoveEvent;
@@ -43,18 +45,18 @@ public class DefaultTagService implements TagService {
     }
 
     @Override
-    public Flux<Tag> findAll(TagType type, Long masterId, Long userId, String name) {
+    public Flux<Tag> findAll(TagType type, UUID masterId, UUID userId, String name) {
         Criteria criteria = Criteria.empty();
 
         if (Objects.nonNull(type)) {
             criteria = criteria.and(Criteria.where("type").is(type));
         }
 
-        if (Objects.nonNull(masterId) && masterId >= 0) {
+        if (Objects.nonNull(masterId)) {
             criteria = criteria.and("master_id").is(masterId);
         }
 
-        if (Objects.nonNull(userId) && userId >= 0) {
+        if (Objects.nonNull(userId)) {
             criteria = criteria.and("user_id").is(userId);
         }
 
@@ -69,8 +71,7 @@ public class DefaultTagService implements TagService {
     }
 
     @Override
-    public Flux<SubjectTag> findSubjectTags(Long subjectId) {
-        Assert.isTrue(subjectId >= 0, "'subjectId' must >=0.");
+    public Flux<SubjectTag> findSubjectTags(UUID subjectId) {
         return findAll(TagType.SUBJECT, subjectId, null, null)
             .map(tag -> SubjectTag.builder()
                 .id(tag.getId())
@@ -83,8 +84,7 @@ public class DefaultTagService implements TagService {
     }
 
     @Override
-    public Flux<AttachmentTag> findAttachmentTags(Long attachmentId) {
-        Assert.isTrue(attachmentId >= 0, "'attachmentId' must >=0.");
+    public Flux<AttachmentTag> findAttachmentTags(UUID attachmentId) {
         return findAll(TagType.ATTACHMENT, attachmentId, null, null)
             .map(tag -> AttachmentTag.builder()
                 .id(tag.getId())
@@ -99,31 +99,36 @@ public class DefaultTagService implements TagService {
     public Mono<Tag> create(Tag tag) {
         Assert.isNull(tag.getId(), "'tag id' must is null.");
         Assert.notNull(tag.getType(), "'type' must not null.");
-        Assert.isTrue(tag.getMasterId() >= 0, "'masterId' must >=0.");
         Assert.hasText(tag.getName(), "'name' must has text.");
-        if (Objects.isNull(tag.getUserId())) {
-            tag.setUserId(-1L);
-        }
+        // if (Objects.isNull(tag.getUserId())) {
+        //     tag.setUserId(-1L);
+        // }
         return tagRepository.findAllByTypeAndUserIdAndName(
                 tag.getType(), tag.getUserId(), tag.getName())
             .map(tagEntity -> tagEntity.setColor(
                 StringUtils.isNotBlank(tag.getColor()) ? tag.getColor() : tagEntity.getColor()))
-            .flatMap(tagRepository::save)
+            .flatMap(tagRepository::update)
             .then(tagRepository.findByTypeAndMasterIdAndUserIdAndName(
                 tag.getType(), tag.getMasterId(), tag.getUserId(), tag.getName()
             ))
             .switchIfEmpty(Mono.just(new TagEntity()))
             .flatMap(tagEntity -> copyProperties(tag, tagEntity))
-            .flatMap(tagRepository::save)
+            .flatMap(e -> {
+                if (e.getId() == null) {
+                    e.setId(UuidV7Utils.generateUuid());
+                    return tagRepository.insert(e);
+                } else {
+                    return tagRepository.update(e);
+                }
+            })
             .doOnSuccess(savedTag ->
                 eventPublisher.publishEvent(new TagCreateEvent(this, savedTag)))
             .flatMap(tagEntity -> copyProperties(tagEntity, tag));
     }
 
     @Override
-    public Mono<Void> remove(TagType type, Long masterId, String name) {
+    public Mono<Void> remove(TagType type, UUID masterId, String name) {
         Assert.notNull(type, "'type' must not null.");
-        Assert.isTrue(masterId >= 0, "'masterId' must >=0.");
         Assert.hasText(name, "'name' must has text.");
         return findAll(type, masterId, null, name)
             .flatMap(tag -> removeById(tag.getId()))
@@ -131,8 +136,7 @@ public class DefaultTagService implements TagService {
     }
 
     @Override
-    public Mono<Void> removeById(Long tagId) {
-        Assert.isTrue(tagId >= 0, "'tagId' must >=0.");
+    public Mono<Void> removeById(UUID tagId) {
         return tagRepository.findById(tagId)
             .switchIfEmpty(Mono.error(new NotFoundException("Tag not found for id = " + tagId)))
             .flatMap(tagEntity -> tagRepository.deleteById(tagEntity.getId())

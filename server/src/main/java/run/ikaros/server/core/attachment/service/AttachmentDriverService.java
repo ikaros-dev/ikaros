@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.service;
 
+import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
@@ -12,22 +13,22 @@ public interface AttachmentDriverService {
 
     Mono<AttachmentDriver> save(AttachmentDriver driver);
 
-    Mono<Void> removeById(Long id);
+    Mono<Void> removeById(UUID id);
 
     Mono<Void> removeByTypeAndName(String type, String name);
 
-    Mono<AttachmentDriver> findById(Long id);
+    Mono<AttachmentDriver> findById(UUID id);
 
     Mono<AttachmentDriver> findByTypeAndName(String type, String name);
 
-    Mono<Void> enable(Long driverId);
+    Mono<Void> enable(UUID driverId);
 
-    Mono<Void> disable(Long driverId);
+    Mono<Void> disable(UUID driverId);
 
     Mono<PagingWrap<Attachment>> listAttachmentsByCondition(
         AttachmentSearchCondition attachmentSearchCondition);
 
-    Mono<Void> refresh(Long attachmentId);
+    Mono<Void> refresh(UUID attachmentId);
 
     Mono<PagingWrap<AttachmentDriver>> listDriversByCondition(
         Integer page, Integer pageSize

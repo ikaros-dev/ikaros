@@ -56,6 +56,7 @@ import {
 } from 'element-plus';
 import router from '@/router';
 import { getCompleteFileUrl } from '@/utils/url-tuils';
+import { attachmentRootId } from '@/modules/common/constants';
 
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
@@ -65,7 +66,7 @@ const attachmentCondition = ref({
 	page: 1,
 	size: 10,
 	total: 10,
-	parentId: 0,
+	parentId: attachmentRootId,
 	name: '',
 	type: undefined,
 });
@@ -101,7 +102,7 @@ const fetchDriverAttachments = async () => {
 
 const updateBreadcrumbByParentPath = async () => {
 	const { data } = await apiClient.attachment.getAttachmentPathDirsById({
-		id: attachmentCondition.value.parentId as number,
+		id: attachmentCondition.value.parentId as string,
 	});
 	paths.value = data.map((att) => {
 		const path: Path = {
@@ -457,7 +458,7 @@ const onRowContextmenu = (row, column, event) => {
 };
 
 const directorySelectDialogVisible = ref(false);
-const onDirSelected = async (targetDirid: number) => {
+const onDirSelected = async (targetDirid: string) => {
 	for (const attachment of selectionAttachments.value.filter(
 		(attachment) => targetDirid !== attachment.id
 	)) {
@@ -511,9 +512,7 @@ watch(
 				base64Decode(newValue.name as string)
 			);
 			if (newValue.parentId) {
-				attachmentCondition.value.parentId = parseInt(
-					newValue.parentId as string
-				);
+				attachmentCondition.value.parentId = newValue.parentId as string;
 				fetchCurrentParentAttachment()
 			}
 			fetchAttachments();
@@ -529,7 +528,7 @@ watch(attachmentCondition.value, () => {
 	if (name !== route.query.name) {
 		query.name = base64Encode(encodeURI(name));
 	}
-	if (parentId !== parseInt(route.query.parentId as string)) {
+	if (parentId !== route.query.parentId as string) {
 		query.parentId = parentId + '';
 	}
 	router.push({ path: route.path, query });

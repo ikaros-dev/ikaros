@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.operator;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -19,7 +20,7 @@ public class AttachmentRelationOperator implements AttachmentRelationOperate {
 
     @Override
     public Flux<AttachmentRelation> findAllByTypeAndAttachmentId(AttachmentRelationType type,
-                                                                 Long attachmentId) {
+                                                                 UUID attachmentId) {
         return attachmentRelationService.findAllByTypeAndAttachmentId(type, attachmentId);
     }
 }

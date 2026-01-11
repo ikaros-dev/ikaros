@@ -20,14 +20,14 @@
 export interface RoleAuthorityReqParams {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof RoleAuthorityReqParams
    */
-  roleId?: number;
+  roleId?: any;
   /**
    *
-   * @type {Array<number>}
+   * @type {any}
    * @memberof RoleAuthorityReqParams
    */
-  authorityIds?: Array<number>;
+  authorityIds?: any;
 }
