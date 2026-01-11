@@ -19,7 +19,6 @@ public interface SubjectCollectionService {
     /**
      * collect.
      *
-     * @see #collect(Long, Long, CollectionType, Boolean)
      */
     Mono<Void> collect(UUID userId, UUID subjectId, CollectionType type);
 

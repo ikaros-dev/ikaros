@@ -22,6 +22,7 @@ import run.ikaros.api.core.collection.event.SubjectUnCollectEvent;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.subject.SubjectNotFoundException;
 import run.ikaros.api.infra.exception.user.UserNotFoundException;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.wrap.PagingWrap;
@@ -102,9 +103,8 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                     .switchIfEmpty(copyProperties(subColl, new SubjectCollectionEntity())
                         .doOnSuccess(entity -> {
                             log.info("Create new subject collection entity: {}", entity);
-                            SubjectCollectionScoreUpdateEvent event
-                                = new SubjectCollectionScoreUpdateEvent(
-                                    this, entity.getSubjectId());
+                            SubjectCollectionScoreUpdateEvent event =
+                                new SubjectCollectionScoreUpdateEvent(this, entity.getSubjectId());
                             applicationEventPublisher.publishEvent(event);
                             SubjectCollectionCreateEvent newEvent
                                 = new SubjectCollectionCreateEvent(this,
@@ -114,15 +114,21 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                     .doOnNext(entity -> {
                         if (entity != null && entity.getScore() != null
                             && newScore != entity.getScore()) {
-                            SubjectCollectionScoreUpdateEvent event
-                                = new SubjectCollectionScoreUpdateEvent(
-                                    this, entity.getSubjectId());
+                            SubjectCollectionScoreUpdateEvent event =
+                                new SubjectCollectionScoreUpdateEvent(this, entity.getSubjectId());
                             applicationEventPublisher.publishEvent(event);
                         }
                     })
                     .flatMap(entity -> copyProperties(subColl, entity, "id"))
             )
-            .flatMap(subjectCollectionRepository::save)
+            .flatMap(entity -> {
+                if (entity.getId() == null) {
+                    entity.setId(UuidV7Utils.generateUuid());
+                    return subjectCollectionRepository.insert(entity);
+                } else {
+                    return subjectCollectionRepository.update(entity);
+                }
+            })
             .then();
     }
 
@@ -293,10 +299,9 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                 log.debug("Mark user subject collection progress from [{}] to [{}] "
                         + "for userId[{}] and subjectId[{}]",
                     oldProgress, progress, userId, subjectId);
-                SubjectCollectProgressChangeEvent event
-                    = new SubjectCollectProgressChangeEvent(
-                        this, userId, subjectId, oldProgress, progress
-                );
+                SubjectCollectProgressChangeEvent event =
+                    new SubjectCollectProgressChangeEvent(this, userId, subjectId, oldProgress,
+                        progress);
                 log.debug("Publish SubjectCollectProgressChangeEvent "
                         + "for userId[{}] and subjectId[{}] and progress=[{}]",
                     userId, subjectId, progress);

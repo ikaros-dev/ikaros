@@ -81,7 +81,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .name("subjectId")
                         .required(true)
                         .in(ParameterIn.PATH)
-                        .implementation(Long.class)
+                        .implementation(String.class)
                         .description("Subject id."))
                     .response(responseBuilder()
                         .implementation(SubjectCollection.class))
@@ -97,7 +97,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .name("subjectId")
                         .required(true)
                         .in(ParameterIn.QUERY)
-                        .implementation(Long.class)
+                        .implementation(String.class)
                         .description("Subject id."))
                     .parameter(parameterBuilder()
                         .name("type")
@@ -133,7 +133,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .name("subjectId")
                         .required(true)
                         .in(ParameterIn.QUERY)
-                        .implementation(Long.class)
+                        .implementation(String.class)
                         .description("Subject id."))
             )
 
@@ -145,7 +145,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                         .name("subjectId")
                         .required(true)
                         .in(ParameterIn.PATH)
-                        .implementation(Long.class)
+                        .implementation(String.class)
                         .description("Subject id."))
                     .parameter(parameterBuilder()
                         .name("progress")
@@ -191,7 +191,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> collectSubject(ServerRequest serverRequest) {
-        UUID subjectId = UUID.fromString(serverRequest.pathVariable("subjectId"));
+        UUID subjectId = serverRequest.queryParam("subjectId").map(UUID::fromString).orElse(null);
         Optional<String> typeOp = serverRequest.queryParam("type");
         Assert.isTrue(typeOp.isPresent(), "'type' must has value.");
         CollectionType type = CollectionType.valueOf(typeOp.get());
@@ -214,7 +214,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> unCollectSubject(ServerRequest serverRequest) {
-        UUID subjectId = UUID.fromString(serverRequest.pathVariable("subjectId"));
+        UUID subjectId = serverRequest.queryParam("subjectId").map(UUID::fromString).orElse(null);
         return userService.getUserIdFromSecurityContext()
             .flatMap(userId -> selfService.unCollect(userId, subjectId))
             .then(ServerResponse.ok().build())
