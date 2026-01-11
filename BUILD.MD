@@ -43,7 +43,7 @@ Mac或者Linux
 , 可以根据需要酌情修改，
 
 我建议是本地跑个 [docker for windows](https://docs.docker.com/desktop/install/windows-install/)
-，装好mariadb方便开发，但本地开发用H2也行。
+，装好PG方便开发。
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
 
@@ -117,10 +117,8 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 java -jar ./ikaros-server.jar
 ```
 
-在打包文件所在目录，`Windwos` 运行，
-需要加上额外参数`--spring.profiles.active=win`
 ```shell
-java -jar ikaros-server.jar --spring.profiles.active=win
+java -jar ikaros-server.jar --spring.profiles.active=dev,local
 ```
 
 # 提交PR后

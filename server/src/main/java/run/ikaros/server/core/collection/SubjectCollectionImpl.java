@@ -104,7 +104,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                             log.info("Create new subject collection entity: {}", entity);
                             SubjectCollectionScoreUpdateEvent event
                                 = new SubjectCollectionScoreUpdateEvent(
-                                this, entity.getSubjectId());
+                                    this, entity.getSubjectId());
                             applicationEventPublisher.publishEvent(event);
                             SubjectCollectionCreateEvent newEvent
                                 = new SubjectCollectionCreateEvent(this,
@@ -116,7 +116,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                             && newScore != entity.getScore()) {
                             SubjectCollectionScoreUpdateEvent event
                                 = new SubjectCollectionScoreUpdateEvent(
-                                this, entity.getSubjectId());
+                                    this, entity.getSubjectId());
                             applicationEventPublisher.publishEvent(event);
                         }
                     })
@@ -295,7 +295,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                     oldProgress, progress, userId, subjectId);
                 SubjectCollectProgressChangeEvent event
                     = new SubjectCollectProgressChangeEvent(
-                    this, userId, subjectId, oldProgress, progress
+                        this, userId, subjectId, oldProgress, progress
                 );
                 log.debug("Publish SubjectCollectProgressChangeEvent "
                         + "for userId[{}] and subjectId[{}] and progress=[{}]",
