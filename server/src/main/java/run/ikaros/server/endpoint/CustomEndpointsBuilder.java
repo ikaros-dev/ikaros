@@ -33,12 +33,16 @@ public class CustomEndpointsBuilder
     public RouterFunction<ServerResponse> build() {
         SpringdocRouteBuilder routeBuilder = SpringdocRouteBuilder.route();
         routerFunctionsMap.forEach((gvk, routerFunctions) -> {
+            // routeBuilder.nest(RequestPredicates.path("/apis/"
+            //         + gvk.group() + "/" + gvk.version() + "/" + gvk.kind()),
+            //     () -> routerFunctions.stream().reduce(RouterFunction::and).orElse(null),
+            //     builder -> builder.operationId("CustomEndpoints")
+            //         .description("Custom Endpoint")
+            //         .tag(gvk + "/CustomEndpoint")
+            // );
             routeBuilder.nest(RequestPredicates.path("/apis/"
                     + gvk.group() + "/" + gvk.version() + "/" + gvk.kind()),
-                () -> routerFunctions.stream().reduce(RouterFunction::and).orElse(null),
-                builder -> builder.operationId("CustomEndpoints")
-                    .description("Custom Endpoint")
-                    .tag(gvk + "/CustomEndpoint")
+                () -> routerFunctions.stream().reduce(RouterFunction::and).orElse(null)
             );
         });
         if (routerFunctionsMap.isEmpty()) {

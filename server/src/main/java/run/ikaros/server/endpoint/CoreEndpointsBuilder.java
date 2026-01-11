@@ -24,14 +24,17 @@ public class CoreEndpointsBuilder implements EndpointsBuilder<CoreEndpoint, Core
     @Override
     public RouterFunction<ServerResponse> build() {
         SpringdocRouteBuilder routeBuilder = SpringdocRouteBuilder.route();
-        routerFunctions.forEach((routerFunction) -> {
+        // routerFunctions.forEach((routerFunction) ->
+        //     routeBuilder.nest(RequestPredicates.path("/api/" + OpenApiConst.CORE_VERSION),
+        //             () -> routerFunction,
+        //             builder -> builder.operationId("CoreEndpoints")
+        //                 .description("Core Endpoint")
+        //                 .tag("/CoreEndpoints")
+        // ));
+        routerFunctions.forEach((routerFunction) ->
             routeBuilder.nest(RequestPredicates.path("/api/" + OpenApiConst.CORE_VERSION),
-                () -> routerFunction,
-                builder -> builder.operationId("CoreEndpoints")
-                    .description("Core Endpoint")
-                    .tag("/CoreEndpoints")
-            );
-        });
+                () -> routerFunction
+            ));
         routerFunctions.clear();
         return routeBuilder.build();
     }
