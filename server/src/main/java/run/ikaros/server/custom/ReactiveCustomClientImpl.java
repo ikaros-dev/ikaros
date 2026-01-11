@@ -75,8 +75,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .filter(Objects::nonNull)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'custom' must not null")))
             .flatMap(obj -> findCustomEntityOne(custom.getClass(), getNameFieldValue(custom)))
-            .switchIfEmpty(Mono.error(
-                new NotFoundException("custom not found for name=" + getNameFieldValue(custom))))
+            // .switchIfEmpty(Mono.error(
+            //     new NotFoundException("custom not found for name=" + getNameFieldValue(custom))))
             .flatMap(customEntity -> Mono.just(custom)
                 .map(CustomConverter::convertTo)
                 .flatMap(customDto -> Mono.just(customDto)

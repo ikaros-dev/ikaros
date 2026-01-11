@@ -15,13 +15,13 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
 import org.springframework.http.codec.CodecConfigurer;
 import org.springframework.http.codec.HttpMessageWriter;
-import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -71,14 +71,12 @@ public class WebFluxConfig implements WebFluxConfigurer {
                                    ViewResolutionResultHandler resultHandler) {
         return new ServerResponse.Context() {
             @Override
-            @NonNull
-            public List<HttpMessageWriter<?>> messageWriters() {
+            public @NonNull List<HttpMessageWriter<?>> messageWriters() {
                 return codec.getWriters();
             }
 
             @Override
-            @NonNull
-            public List<ViewResolver> viewResolvers() {
+            public @NonNull List<ViewResolver> viewResolvers() {
                 return resultHandler.getViewResolvers();
             }
         };
