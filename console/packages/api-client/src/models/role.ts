@@ -20,26 +20,26 @@
 export interface Role {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Role
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Role
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Role
    */
-  parentId?: number;
+  parentId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Role
    */
-  description?: string;
+  description?: any;
 }

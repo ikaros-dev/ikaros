@@ -20,16 +20,16 @@
 export interface AttachmentDriverFetcherVo {
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriverFetcherVo
    */
   type?: AttachmentDriverFetcherVoTypeEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriverFetcherVo
    */
-  name?: string;
+  name?: any;
 }
 
 export const AttachmentDriverFetcherVoTypeEnum = {

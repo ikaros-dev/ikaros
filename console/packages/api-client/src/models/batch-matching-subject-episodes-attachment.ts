@@ -20,19 +20,19 @@
 export interface BatchMatchingSubjectEpisodesAttachment {
   /**
    * subject id for episode belong.
-   * @type {number}
+   * @type {any}
    * @memberof BatchMatchingSubjectEpisodesAttachment
    */
-  subjectId: number;
+  subjectId: any;
   /**
    * attachment id array.
-   * @type {Array<number>}
+   * @type {any}
    * @memberof BatchMatchingSubjectEpisodesAttachment
    */
-  attachmentIds: Array<number>;
+  attachmentIds: any;
   /**
    * subject episode group.
-   * @type {string}
+   * @type {any}
    * @memberof BatchMatchingSubjectEpisodesAttachment
    */
   episodeGroup?: BatchMatchingSubjectEpisodesAttachmentEpisodeGroupEnum;

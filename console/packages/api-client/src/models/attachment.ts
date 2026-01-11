@@ -20,76 +20,76 @@
 export interface Attachment {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Attachment
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Attachment
    */
-  parentId?: number;
+  parentId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Attachment
    */
   type?: AttachmentTypeEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Attachment
    */
-  url?: string;
+  url?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Attachment
    */
-  path?: string;
+  path?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Attachment
    */
-  fsPath?: string;
+  fsPath?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Attachment
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Attachment
    */
-  size?: number;
+  size?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Attachment
    */
-  updateTime?: string;
+  updateTime?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof Attachment
    */
-  deleted?: boolean;
+  deleted?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof Attachment
    */
-  driverId?: number;
+  driverId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Attachment
    */
-  sha1?: string;
+  sha1?: any;
 }
 
 export const AttachmentTypeEnum = {

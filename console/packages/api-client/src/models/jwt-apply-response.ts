@@ -20,20 +20,20 @@
 export interface JwtApplyResponse {
   /**
    * 用户名
-   * @type {string}
+   * @type {any}
    * @memberof JwtApplyResponse
    */
-  username?: string;
+  username?: any;
   /**
    * Access Token
-   * @type {string}
+   * @type {any}
    * @memberof JwtApplyResponse
    */
-  accessToken?: string;
+  accessToken?: any;
   /**
    * Refresh Token
-   * @type {string}
+   * @type {any}
    * @memberof JwtApplyResponse
    */
-  refreshToken?: string;
+  refreshToken?: any;
 }

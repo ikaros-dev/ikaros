@@ -20,118 +20,118 @@
 export interface AttachmentDriver {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  enable?: boolean;
+  enable?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
   type: AttachmentDriverTypeEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  order?: number;
+  order?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  comment?: string;
+  comment?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  avatar?: string;
+  avatar?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  mount_name?: string;
+  mount_name?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  remote_path?: string;
+  remote_path?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  refresh_token?: string;
+  refresh_token?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  access_token?: string;
+  access_token?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  expire_time?: string;
+  expire_time?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  list_page_size?: number;
+  list_page_size?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  root_dir_id?: string;
+  root_dir_id?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  request_limit?: number;
+  request_limit?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  user_id?: string;
+  user_id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  user_name?: string;
+  user_name?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  space_total?: number;
+  space_total?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentDriver
    */
-  space_use?: number;
+  space_use?: any;
 }
 
 export const AttachmentDriverTypeEnum = {

@@ -27,28 +27,28 @@ import { PluginLoadLocation } from "./plugin-load-location";
 export interface Plugin {
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  clazz?: string;
+  clazz?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  version: string;
+  version: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  requires?: string;
+  requires?: any;
   /**
    *
    * @type {Author}
@@ -57,46 +57,46 @@ export interface Plugin {
   author?: Author;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  logo?: string;
+  logo?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  homepage?: string;
+  homepage?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  displayName?: string;
+  displayName?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  description?: string;
+  description?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  license?: string;
+  license?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
   state?: PluginStateEnum;
   /**
    *
-   * @type {{ [key: string]: string; }}
+   * @type {{ [key: string]: any; }}
    * @memberof Plugin
    */
-  dependencies?: { [key: string]: string };
+  dependencies?: { [key: string]: any };
   /**
    *
    * @type {PluginLoadLocation}
@@ -105,22 +105,22 @@ export interface Plugin {
   loadLocation?: PluginLoadLocation;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  entry?: string;
+  entry?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  stylesheet?: string;
+  stylesheet?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof Plugin
    */
-  configMapSchemas?: string;
+  configMapSchemas?: any;
 }
 
 export const PluginStateEnum = {

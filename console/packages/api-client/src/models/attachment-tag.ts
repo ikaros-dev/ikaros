@@ -20,32 +20,32 @@
 export interface AttachmentTag {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentTag
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentTag
    */
-  attachmentId?: number;
+  attachmentId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentTag
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof AttachmentTag
    */
-  userId?: number;
+  userId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof AttachmentTag
    */
-  createTime?: string;
+  createTime?: any;
 }

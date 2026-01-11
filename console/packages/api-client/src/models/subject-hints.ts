@@ -12,10 +12,6 @@
  * Do not edit the class manually.
  */
 
-// May contain unused imports in some cases
-// @ts-ignore
-import { SubjectHint } from "./subject-hint";
-
 /**
  *
  * @export
@@ -24,32 +20,32 @@ import { SubjectHint } from "./subject-hint";
 export interface SubjectHints {
   /**
    *
-   * @type {Array<SubjectHint>}
+   * @type {any}
    * @memberof SubjectHints
    */
-  hits?: Array<SubjectHint>;
+  hits?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectHints
    */
-  keyword?: string;
+  keyword?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectHints
    */
-  total?: number;
+  total?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectHints
    */
-  limit?: number;
+  limit?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectHints
    */
-  processingTimeMillis?: number;
+  processingTimeMillis?: any;
 }

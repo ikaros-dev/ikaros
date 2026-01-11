@@ -20,22 +20,22 @@
 export interface SubjectRelation {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectRelation
    */
-  subject: number;
+  subject: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectRelation
    */
   relation_type: SubjectRelationRelationTypeEnum;
   /**
    *
-   * @type {Set<number>}
+   * @type {any}
    * @memberof SubjectRelation
    */
-  relation_subjects: Set<number>;
+  relation_subjects: any;
 }
 
 export const SubjectRelationRelationTypeEnum = {

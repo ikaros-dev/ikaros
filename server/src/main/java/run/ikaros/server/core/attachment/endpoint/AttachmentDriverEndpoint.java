@@ -164,7 +164,6 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
                         .description("是否从驱动拉取最新数据,默认false.如果为false可能拉取的不是最新的数据，"
                             + "可通过此参数设置未true在查询前刷新数据，操作比较耗时不推荐，"
                             + "更推荐通过刷新接口去主动刷新数据。")
-                        .example("false")
                         .implementation(Boolean.class))
                     .response(responseBuilder().implementation(PagingWrap.class))
             )

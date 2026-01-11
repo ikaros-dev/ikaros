@@ -15,9 +15,6 @@
 // May contain unused imports in some cases
 // @ts-ignore
 import { Episode } from "./episode";
-// May contain unused imports in some cases
-// @ts-ignore
-import { EpisodeResource } from "./episode-resource";
 
 /**
  *
@@ -33,8 +30,8 @@ export interface EpisodeRecord {
   episode?: Episode;
   /**
    *
-   * @type {Array<EpisodeResource>}
+   * @type {any}
    * @memberof EpisodeRecord
    */
-  resources?: Array<EpisodeResource>;
+  resources?: any;
 }

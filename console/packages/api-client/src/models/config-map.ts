@@ -20,14 +20,14 @@
 export interface ConfigMap {
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof ConfigMap
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {{ [key: string]: string; }}
+   * @type {{ [key: string]: any; }}
    * @memberof ConfigMap
    */
-  data?: { [key: string]: string };
+  data?: { [key: string]: any };
 }

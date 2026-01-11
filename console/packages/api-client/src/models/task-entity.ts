@@ -20,58 +20,58 @@
 export interface TaskEntity {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof TaskEntity
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof TaskEntity
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof TaskEntity
    */
   status?: TaskEntityStatusEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof TaskEntity
    */
-  createTime?: string;
+  createTime?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof TaskEntity
    */
-  startTime?: string;
+  startTime?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof TaskEntity
    */
-  endTime?: string;
+  endTime?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof TaskEntity
    */
-  total?: number;
+  total?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof TaskEntity
    */
-  index?: number;
+  index?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof TaskEntity
    */
-  failMessage?: string;
+  failMessage?: any;
 }
 
 export const TaskEntityStatusEnum = {

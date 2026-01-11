@@ -20,14 +20,14 @@
 export interface BatchMatchingEpisodeAttachment {
   /**
    * episode id for subject.
-   * @type {number}
+   * @type {any}
    * @memberof BatchMatchingEpisodeAttachment
    */
-  episodeId: number;
+  episodeId: any;
   /**
    * attachment id array.
-   * @type {Array<number>}
+   * @type {any}
    * @memberof BatchMatchingEpisodeAttachment
    */
-  attachmentIds: Array<number>;
+  attachmentIds: any;
 }

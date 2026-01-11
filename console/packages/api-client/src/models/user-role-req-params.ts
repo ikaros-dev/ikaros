@@ -20,14 +20,14 @@
 export interface UserRoleReqParams {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof UserRoleReqParams
    */
-  userId?: number;
+  userId?: any;
   /**
    *
-   * @type {Array<number>}
+   * @type {any}
    * @memberof UserRoleReqParams
    */
-  roleIds?: Array<number>;
+  roleIds?: any;
 }

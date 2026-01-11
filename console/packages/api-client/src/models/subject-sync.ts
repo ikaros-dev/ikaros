@@ -20,28 +20,28 @@
 export interface SubjectSync {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectSync
    */
-  subjectId?: number;
+  subjectId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectSync
    */
   platform?: SubjectSyncPlatformEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectSync
    */
-  platformId?: string;
+  platformId?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectSync
    */
-  syncTime?: string;
+  syncTime?: any;
 }
 
 export const SubjectSyncPlatformEnum = {

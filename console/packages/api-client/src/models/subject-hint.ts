@@ -20,58 +20,58 @@
 export interface SubjectHint {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof SubjectHint
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectHint
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectHint
    */
-  nameCn?: string;
+  nameCn?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectHint
    */
-  infobox?: string;
+  infobox?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectHint
    */
-  summary?: string;
+  summary?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectHint
    */
-  cover?: string;
+  cover?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof SubjectHint
    */
-  nsfw?: boolean;
+  nsfw?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectHint
    */
   type?: SubjectHintTypeEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof SubjectHint
    */
-  airTime?: string;
+  airTime?: any;
 }
 
 export const SubjectHintTypeEnum = {

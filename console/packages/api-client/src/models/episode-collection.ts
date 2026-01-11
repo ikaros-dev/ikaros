@@ -20,88 +20,88 @@
 export interface EpisodeCollection {
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  id?: number;
+  id?: any;
   /**
    *
-   * @type {boolean}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  finish?: boolean;
+  finish?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  progress?: number;
+  progress?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  duration?: number;
+  duration?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  name?: string;
+  name?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  description?: string;
+  description?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  sequence?: number;
+  sequence?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  user_id?: number;
+  user_id?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  episode_id?: number;
+  episode_id?: any;
   /**
    *
-   * @type {number}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  subject_id?: number;
+  subject_id?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  name_cn?: string;
+  name_cn?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  air_time?: string;
+  air_time?: any;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof EpisodeCollection
    */
   ep_group?: EpisodeCollectionEpGroupEnum;
   /**
    *
-   * @type {string}
+   * @type {any}
    * @memberof EpisodeCollection
    */
-  update_time?: string;
+  update_time?: any;
 }
 
 export const EpisodeCollectionEpGroupEnum = {
