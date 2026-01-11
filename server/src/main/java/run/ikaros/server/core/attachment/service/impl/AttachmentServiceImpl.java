@@ -2,7 +2,6 @@ package run.ikaros.server.core.attachment.service.impl;
 
 import static org.springframework.util.FileCopyUtils.BUFFER_SIZE;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
-import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_PARENT_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import static run.ikaros.api.store.enums.AttachmentType.Directory;
 import static run.ikaros.api.store.enums.AttachmentType.Driver_Directory;
@@ -65,6 +64,7 @@ import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherExcep
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.SystemVarUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -694,13 +694,14 @@ public class AttachmentServiceImpl implements AttachmentService {
                 "Parent attachment not found for id = " + fParentId)))
             .flatMap(exists -> findPathByParentId(fParentId, name))
             .map(path -> AttachmentEntity.builder()
+                .id(UuidV7Utils.generateUuid())
                 .parentId(fParentId)
                 .name(name)
                 .path(path)
                 .updateTime(LocalDateTime.now())
                 .type(Directory)
                 .build())
-            .flatMap(repository::save)
+            .flatMap(repository::insert)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }
 
@@ -988,12 +989,12 @@ public class AttachmentServiceImpl implements AttachmentService {
 
 
     private Mono<List<AttachmentEntity>> findPathDirs(UUID id, List<AttachmentEntity> entities) {
-        if (ROOT_DIRECTORY_PARENT_ID.equals(id)) {
+        if (ROOT_DIRECTORY_ID.equals(id)) {
             Collections.reverse(entities);
             return Mono.just(entities);
         }
         return repository.findById(id)
-            .map(AttachmentEntity::getParentId)
+            .map(e -> e.getParentId())
             .flatMap(repository::findById)
             .flatMap(attachmentEntity -> {
                 entities.add(attachmentEntity);

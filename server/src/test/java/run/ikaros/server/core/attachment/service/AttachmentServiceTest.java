@@ -31,6 +31,7 @@ import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
@@ -449,30 +450,37 @@ class AttachmentServiceTest {
         final String dir2name = RandomUtils.randomString(20);
 
         final AttachmentEntity att1 = AttachmentEntity.builder()
+            .id(UuidV7Utils.generateUuid())
             .name(dir1name)
             .type(AttachmentType.Directory)
             .parentId(ROOT_DIRECTORY_ID)
             .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
             .updateTime(LocalDateTime.now())
             .build();
-        StepVerifier.create(attachmentService.saveEntity(att1))
-            .expectNextMatches(new AttachmentEntityPredicate(att1))
+        StepVerifier.create(attachmentRepository.insert(att1))
+            .expectNext(att1)
             .verifyComplete();
-        Assertions.assertThat(att1.getId()).isNotNull();
 
         final AttachmentEntity att2 = AttachmentEntity.builder()
+            .id(UuidV7Utils.generateUuid())
             .name(dir2name)
             .type(AttachmentType.Directory)
             .parentId(att1.getId())
             .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
             .updateTime(LocalDateTime.now())
             .build();
-
-        StepVerifier.create(attachmentService.saveEntity(att2))
-            .expectNextMatches(new AttachmentEntityPredicate(att2))
+        StepVerifier.create(attachmentRepository.insert(att2))
+            .expectNext(att2)
             .verifyComplete();
-        Assertions.assertThat(att2.getId()).isNotNull();
 
+
+        StepVerifier.create(attachmentService.findAttachmentPathDirsById(att2.getId())
+            .flatMapMany(attachments -> Flux.fromStream(attachments.stream()))
+            .map(Attachment::getId))
+            .expectNext(ROOT_DIRECTORY_ID)
+            .expectNext(att1.getId())
+            .expectNext(att2.getId())
+            .verifyComplete();
     }
 
     @Test
