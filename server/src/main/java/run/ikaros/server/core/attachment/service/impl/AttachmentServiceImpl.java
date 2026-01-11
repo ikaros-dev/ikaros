@@ -21,6 +21,7 @@ import java.nio.channels.CompletionHandler;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,7 +128,14 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(entity ->
                 copyProperties(attachmentEntity, entity, "id", "path"))
             .map(entity -> entity.setUpdateTime(LocalDateTime.now()))
-            .flatMap(repository::save);
+            .flatMap(entity -> {
+                if (entity.getId() == null) {
+                    entity.setId(UuidV7Utils.generateUuid());
+                    return attachmentRepository.insert(entity);
+                } else {
+                    return attachmentRepository.update(entity);
+                }
+            });
     }
 
     @Override
@@ -534,6 +542,15 @@ public class AttachmentServiceImpl implements AttachmentService {
         }
     }
 
+    private String findFileSha1(String uploadFilePath) {
+        try {
+            return FileUtils.calculateSha1(uploadFilePath);
+        } catch (IOException | NoSuchAlgorithmException e) {
+            log.warn("Get file sha1 fail for file system path: {}", uploadFilePath, e);
+            return "";
+        }
+    }
+
     @Override
     @MonoCacheEvict
     public Mono<Void> receiveAndHandleFragmentUploadChunkFile(String unique,
@@ -604,6 +621,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                                 .path(path)
                                 .url(path2url(filePath, ikarosProperties.getWorkDir().toString()))
                                 .size(findFileSize(filePath))
+                                .sha1(findFileSha1(filePath))
                                 .build())
                             .flatMap(this::saveEntity)
                     ).then();

@@ -44,7 +44,7 @@ const props = withDefaults(
 		enableChunkUploads?: boolean;
 		enableChunkForce?: boolean;
 		chunkSize?: number;
-		parentId: number;
+		parentId: string;
 	}>(),
 	{
 		name: 'file',
@@ -63,7 +63,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
-	(event: 'update:parentId', parentId: number): void;
+	(event: 'update:parentId', parentId: string): void;
 }>();
 
 const reqHeaderParendId = computed({
@@ -71,7 +71,7 @@ const reqHeaderParendId = computed({
 		return props.parentId;
 	},
 	set(value) {
-		emit('update:parentId', value as number);
+		emit('update:parentId', value as string);
 	},
 });
 
@@ -80,12 +80,12 @@ const server = computed({
 		return {
 			url: '/',
 			process: {
-				url: './api/v1alpha1/attachment/fragment/unique',
+				url: './api/v1/attachment/fragment/unique',
 				withCredentials: true,
 				headers: { Authorization: 'Bearer ' + userStore.jwtToken },
 			},
 			patch: {
-				url: './api/v1alpha1/attachment/fragment/patch/',
+				url: './api/v1/attachment/fragment/patch/',
 				withCredentials: true,
 				headers: {
 					'PARENT-ID': reqHeaderParendId.value,
@@ -93,7 +93,7 @@ const server = computed({
 				},
 			},
 			revert: {
-				url: './api/v1alpha1/attachment/fragment/revert',
+				url: './api/v1/attachment/fragment/revert',
 				withCredentials: true,
 				headers: { Authorization: 'Bearer ' + userStore.jwtToken },
 			},

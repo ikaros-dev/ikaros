@@ -527,7 +527,7 @@ watch(attachmentCondition.value, () => {
 	if (name !== route.query.name) {
 		query.name = base64Encode(encodeURI(name));
 	}
-	if (parentId !== parseInt(route.query.parentId as string)) {
+	if (parentId !== route.query.parentId as string) {
 		query.parentId = parentId + '';
 	}
 	router.push({ path: route.path, query });
