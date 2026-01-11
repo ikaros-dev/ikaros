@@ -124,7 +124,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .name("id").description("Attachment id.")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder().implementationArray(Attachment.class)))
 
             .DELETE("/attachment/{id}", this::deleteById,
@@ -133,7 +133,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("Attachment ID")
                         .in(ParameterIn.PATH)
                         .required(true)
-                        .implementation(Long.class)))
+                        .implementation(String.class)))
 
             .POST("/attachment/directory", this::createDirectory,
                 builder -> builder.operationId("CreateDirectory")
@@ -193,7 +193,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .name("id")
                         .description("Download url.")
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder().implementation(String.class)))
 
             .GET("/attachment/url/read/id/{id}", this::getReadUrl,
@@ -213,7 +213,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .in(ParameterIn.PATH)
                         .name("id")
                         .description("Attachment id.")
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .response(responseBuilder().implementation(String.class)))
 
             .build();
