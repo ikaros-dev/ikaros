@@ -90,6 +90,19 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Run tests
+        env:
+          # 优化 Testcontainers 配置
+          TESTCONTAINERS_RYUK_DISABLED: false
+          TESTCONTAINERS_REUSE_ENABLE: false  # CI 中通常禁用重用
+          TESTCONTAINERS_CHECKS_DISABLE: true
+          DOCKER_HOST: unix:///var/run/docker.sock
+          # 性能优化配置
+          TESTCONTAINERS_PARALLEL: "true"
+          TESTCONTAINERS_MAX_CONCURRENT: "4"
+          TESTCONTAINERS_DISABLE_IMAGE_PULL: "false"
+          TESTCONTAINERS_IMAGE_PULL_TIMEOUT: "10m"
+          # 使用更快镜像源
+          TESTCONTAINERS_DOCKER_CLIENT_TIMEOUT: "120"
         run: ./gradlew test
       - name: Generate jacoco unit test coverage report xml
         run: ./gradlew jacocoTestReport
