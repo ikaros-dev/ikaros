@@ -11,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.VideoSubtitle;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.core.attachment.event.AttachmentReferenceSaveEvent;
@@ -71,12 +72,13 @@ public class AttachmentRelVideoSubtitleListener {
                     AttachmentRelationType.VIDEO_SUBTITLE, attachmentId, relationAttId)
                 .filter(exists -> !exists)
                 .map(exists -> AttachmentRelationEntity.builder()
+                    .id(UuidV7Utils.generateUuid())
                     .type(AttachmentRelationType.VIDEO_SUBTITLE)
                     .attachmentId(attachmentId)
                     .relationAttachmentId(relationAttId)
                     .build())
                 .flatMap(attachmentRelationEntity -> attachmentRelationRepository
-                    .save(attachmentRelationEntity)
+                    .insert(attachmentRelationEntity)
                     .doOnSuccess(entity -> log.debug("Save new attachment relation record"
                             + " for type={} attId={} relAttId={}",
                         AttachmentRelationType.VIDEO_SUBTITLE,
