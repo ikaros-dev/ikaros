@@ -65,7 +65,7 @@ const attachmentCondition = ref({
 	page: 1,
 	size: 10,
 	total: 10,
-	parentId: 0,
+	parentId: '019b715b-08c7-7509-ab14-2abe47f440f3',
 	name: '',
 	type: undefined,
 });
@@ -101,7 +101,7 @@ const fetchDriverAttachments = async () => {
 
 const updateBreadcrumbByParentPath = async () => {
 	const { data } = await apiClient.attachment.getAttachmentPathDirsById({
-		id: attachmentCondition.value.parentId as number,
+		id: attachmentCondition.value.parentId as string,
 	});
 	paths.value = data.map((att) => {
 		const path: Path = {
@@ -511,9 +511,7 @@ watch(
 				base64Decode(newValue.name as string)
 			);
 			if (newValue.parentId) {
-				attachmentCondition.value.parentId = parseInt(
-					newValue.parentId as string
-				);
+				attachmentCondition.value.parentId = newValue.parentId as string;
 				fetchCurrentParentAttachment()
 			}
 			fetchAttachments();
