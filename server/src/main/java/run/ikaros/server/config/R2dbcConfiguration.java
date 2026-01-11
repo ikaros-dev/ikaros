@@ -10,10 +10,12 @@ import org.springframework.data.r2dbc.convert.R2dbcCustomConversions;
 import org.springframework.data.r2dbc.dialect.PostgresDialect;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import run.ikaros.api.store.enums.AttachmentType;
+import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.server.store.convert.AttachmentDriverType2EnumConverter;
 import run.ikaros.server.store.convert.AttachmentDriverType2StringConverter;
 import run.ikaros.server.store.convert.AttachmentType2EnumConverter;
 import run.ikaros.server.store.convert.Enum2StringConverter;
+import run.ikaros.server.store.convert.SubjectRelationType2EnumConverter;
 import run.ikaros.server.store.repository.DelegateBaseRepository;
 
 @Configuration(proxyBeanMethods = false)
@@ -34,6 +36,8 @@ public class R2dbcConfiguration {
         converters.add(new AttachmentDriverType2StringConverter());
         converters.add(new Enum2StringConverter<AttachmentType>());
         converters.add(new AttachmentType2EnumConverter());
+        converters.add(new Enum2StringConverter<SubjectRelationType>());
+        converters.add(new SubjectRelationType2EnumConverter());
 
         return R2dbcCustomConversions.of(
             PostgresDialect.INSTANCE,
