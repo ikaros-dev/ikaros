@@ -60,7 +60,7 @@ public class RoleCreatedListener {
                 .authorityId(authorityId)
                 .roleId(roleId)
                 .build())
-            .flatMap(roleAuthorityEntity -> roleAuthorityRepository.save(roleAuthorityEntity)
+            .flatMap(roleAuthorityEntity -> roleAuthorityRepository.insert(roleAuthorityEntity)
                 .doOnSuccess(e ->
                     log.debug("save master role authority record: [{}].", e)))
             .then();

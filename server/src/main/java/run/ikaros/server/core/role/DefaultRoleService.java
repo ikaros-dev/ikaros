@@ -70,7 +70,7 @@ public class DefaultRoleService implements RoleService {
                 .parentId(RoleConst.ROLE_ROOT_ID)
                 .build()))
             .flatMap(roleEntity ->
-                roleRepository.save(roleEntity)
+                roleRepository.insert(roleEntity)
                     .doOnSuccess(entity -> {
                         log.debug("create role if not exists for entity={}", roleEntity);
                         RoleCreatedEvent event = new RoleCreatedEvent(this, roleEntity);
@@ -103,7 +103,7 @@ public class DefaultRoleService implements RoleService {
                     ? RoleConst.ROLE_ROOT_ID
                     : role.getParentId())
                 .setDescription(role.getDescription()))
-            .flatMap(roleRepository::save)
+            .flatMap(roleRepository::update)
             .doOnNext(roleEntity -> log.debug("update exists role entity={}", roleEntity))
             .switchIfEmpty(createNewRole(role))
             .map(this::entity2Vo);
@@ -111,7 +111,7 @@ public class DefaultRoleService implements RoleService {
 
     private Mono<RoleEntity> createNewRole(Role role) {
         return Mono.just(vo2Entity(role))
-            .flatMap(roleRepository::save)
+            .flatMap(roleRepository::insert)
             .doOnNext(roleEntity -> {
                 log.debug("create new role entity={}", roleEntity);
                 RoleCreatedEvent event = new RoleCreatedEvent(this, roleEntity);

@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.authority.Authority;
 import run.ikaros.api.infra.utils.ReactiveBeanUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.store.entity.RoleAuthorityEntity;
 import run.ikaros.server.store.repository.AuthorityRepository;
 import run.ikaros.server.store.repository.RoleAuthorityRepository;
@@ -36,9 +37,10 @@ public class DefaultRoleAuthorityService implements RoleAuthorityService {
         Assert.isTrue(authorityIds.length > 0, "authorityIds must be greater than 0");
         return Flux.fromArray(authorityIds)
             .map(authorityId -> RoleAuthorityEntity.builder()
+                .id(UuidV7Utils.generateUuid())
                 .roleId(roleId).authorityId(authorityId)
                 .build())
-            .flatMap(roleAuthorityRepository::save)
+            .flatMap(roleAuthorityRepository::insert)
             .map(RoleAuthorityEntity::getAuthorityId)
             .flatMap(this::getAuthorityByAuthorityId);
     }

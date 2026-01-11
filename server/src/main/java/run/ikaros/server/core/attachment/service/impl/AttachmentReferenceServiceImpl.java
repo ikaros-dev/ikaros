@@ -16,6 +16,7 @@ import run.ikaros.api.core.attachment.exception.AttachmentRefMatchingException;
 import run.ikaros.api.infra.exception.RegexMatchingException;
 import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
 import run.ikaros.api.infra.utils.RegexUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.cache.annotation.FluxCacheable;
@@ -147,7 +148,8 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                     .existsByTypeAndReferenceId(EPISODE, episodeEntity.getId())
                     .filter(exists -> !exists)
                     .flatMap(exists -> repository
-                        .save(AttachmentReferenceEntity.builder()
+                        .insert(AttachmentReferenceEntity.builder()
+                            .id(UuidV7Utils.generateUuid())
                             .type(EPISODE)
                             .attachmentId(entity.getId())
                             .referenceId(episodeEntity.getId())
@@ -188,21 +190,26 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
             // save attachment ref records.
             .flatMapMany(attExistsList -> Flux.fromArray(attachmentIds))
             .map(attId -> AttachmentReferenceEntity.builder()
+                .id(UuidV7Utils.generateUuid())
                 .type(EPISODE).attachmentId(attId).referenceId(episodeId)
                 .build())
-            .flatMap(attachmentReferenceEntity -> repository.save(attachmentReferenceEntity)
-                .doOnSuccess(entity -> {
-                    log.info("save episode file matching "
-                            + "for attId:[{}] and episodeId:[{}]. ",
-                        entity.getAttachmentId(), entity.getReferenceId());
-                    EpisodeAttachmentUpdateEvent event =
-                        new EpisodeAttachmentUpdateEvent(this,
-                            entity.getReferenceId(),
-                            entity.getAttachmentId(), false);
-                    applicationEventPublisher.publishEvent(event);
-                    log.debug("publish event EpisodeAttachmentUpdateEvent "
-                        + "for attachmentReferenceEntity: {}", attachmentReferenceEntity);
-                }))
+            .flatMap(attachmentReferenceEntity ->
+                repository.insert(attachmentReferenceEntity)
+                    .doOnSuccess(entity -> {
+                        if (entity == null) {
+                            return;
+                        }
+                        log.info("save episode file matching "
+                                + "for attId:[{}] and episodeId:[{}]. ",
+                            entity.getAttachmentId(), entity.getReferenceId());
+                        EpisodeAttachmentUpdateEvent event =
+                            new EpisodeAttachmentUpdateEvent(this,
+                                entity.getReferenceId(),
+                                entity.getAttachmentId(), false);
+                        applicationEventPublisher.publishEvent(event);
+                        log.debug("publish event EpisodeAttachmentUpdateEvent "
+                            + "for attachmentReferenceEntity: {}", attachmentReferenceEntity);
+                    }))
             .then();
     }
 

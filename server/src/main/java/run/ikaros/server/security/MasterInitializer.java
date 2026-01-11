@@ -90,12 +90,12 @@ public class MasterInitializer {
                 .map(BaseEntity::getId))
             .flatMap(tuple2 ->
                 userRoleRepository.findByUserIdAndRoleId(tuple2.getT2(), tuple2.getT1())
-                    .switchIfEmpty(Mono.just(UserRoleEntity.builder()
+                    .switchIfEmpty(userRoleRepository.insert(UserRoleEntity.builder()
                         .id(UuidV7Utils.generateUuid())
                         .userId(tuple2.getT2())
                         .roleId(tuple2.getT1())
                         .build())))
-            .flatMap(userRoleRepository::save)
+            .flatMap(userRoleRepository::update)
             .then();
     }
 

@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentRelation;
 import run.ikaros.api.core.attachment.VideoSubtitle;
 import run.ikaros.api.infra.exception.NotFoundException;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.server.cache.annotation.FluxCacheEvict;
 import run.ikaros.server.cache.annotation.FluxCacheable;
@@ -81,8 +82,8 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
             .flatMap(
                 e -> repository.findByTypeAndAttachmentIdAndRelationAttachmentId(type, attachmentId,
                     relationAttachmentId))
-            .switchIfEmpty(repository.save(AttachmentRelationEntity
-                .builder().attachmentId(attachmentId)
+            .switchIfEmpty(repository.insert(AttachmentRelationEntity
+                .builder().attachmentId(attachmentId).id(UuidV7Utils.generateUuid())
                 .type(type).relationAttachmentId(relationAttachmentId)
                 .build()))
             .flatMap(entity -> copyProperties(entity, attachmentRelation));

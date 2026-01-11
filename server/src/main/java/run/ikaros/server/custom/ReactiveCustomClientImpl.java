@@ -50,7 +50,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .filter(Objects::nonNull)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'custom' must not null")))
             .map(CustomConverter::convertTo)
-            .flatMap(customDto -> repository.save(customDto.customEntity()
+            .flatMap(customDto -> repository.insert(customDto.customEntity()
                     .setId(UuidV7Utils.generateUuid()))
                 .flatMap(customEntity -> Mono.just(customDto)))
             .flatMap(customDto -> Mono.just(customDto.customMetadataEntityList())
@@ -61,7 +61,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
                     customMetadataEntity
                         .setId(UuidV7Utils.generateUuid())
                         .setCustomId(customDto.customEntity().getId()))
-                .flatMap(metadataRepository::save)
+                .flatMap(metadataRepository::insert)
                 .collectList()
                 .flatMap(customMetadataEntityList -> Mono.just(customDto)))
             .map(customDto -> (C) CustomConverter.convertFrom(custom.getClass(), customDto))

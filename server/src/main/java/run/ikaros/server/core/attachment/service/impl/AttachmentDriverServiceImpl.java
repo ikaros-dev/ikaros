@@ -86,12 +86,13 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         return repository.findByTypeAndNameAndMountName(
                 driver.getType().toString(), driver.getName(), driver.getMountName())
             .switchIfEmpty(Mono.defer(() -> copyProperties(driver, new AttachmentDriverEntity())
-                    .flatMap(repository::save))
+                    .flatMap(repository::insert))
                 .doOnSuccess(entity ->
                     log.debug("Created attachment driver with type={} and name={}",
-                        entity.getType(), entity.getName())))
+                        entity == null ? null : entity.getType(),
+                        entity == null ? null : entity.getName())))
             .flatMap(entity -> copyProperties(driver, entity, "id"))
-            .flatMap(repository::save)
+            .flatMap(repository::update)
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
     }
 
@@ -138,7 +139,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         Assert.notNull(driverId, "'driverId' must not null.");
         return repository.findById(driverId)
             .map(entity -> entity.setEnable(true))
-            .flatMap(repository::save)
+            .flatMap(repository::update)
             .doOnSuccess(entity ->
                 eventPublisher.publishEvent(new AttachmentDriverEnableEvent(this, entity)))
             .then();
@@ -149,7 +150,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         Assert.notNull(driverId, "'driverId' must not null.");
         return repository.findById(driverId)
             .map(entity -> entity.setEnable(false))
-            .flatMap(repository::save)
+            .flatMap(repository::update)
             .doOnSuccess(entity ->
                 eventPublisher.publishEvent(new AttachmentDriverDisableEvent(this, entity)))
             .then();
