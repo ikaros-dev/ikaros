@@ -49,6 +49,7 @@ import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentService;
@@ -281,8 +282,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
             ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
             : "";
 
-        UUID parentId = UUID.fromString(request.queryParam("parentId")
-            .orElse(V_ROOT_DIRECTORY_PARENT_ID));
+        UUID parentId = UuidV7Utils.fromString(request.queryParam("parentId").orElse(null));
 
         Optional<String> typeOp = request.queryParam("type");
         AttachmentType type = typeOp.map(AttachmentType::valueOf).orElse(null);

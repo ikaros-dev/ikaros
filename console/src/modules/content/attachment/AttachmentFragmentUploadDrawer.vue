@@ -24,7 +24,7 @@ const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
 	// eslint-disable-next-line no-unused-vars
-	(event: 'update:parentId', parentId: number): void;
+	(event: 'update:parentId', parentId: string): void;
 	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 	// eslint-disable-next-line no-unused-vars
@@ -38,7 +38,7 @@ const uploadParentId = computed({
 		return props.parentId;
 	},
 	set(value) {
-		emit('update:parentId', value as number);
+		emit('update:parentId', value as string);
 	},
 });
 

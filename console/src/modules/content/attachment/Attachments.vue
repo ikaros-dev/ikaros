@@ -56,6 +56,7 @@ import {
 } from 'element-plus';
 import router from '@/router';
 import { getCompleteFileUrl } from '@/utils/url-tuils';
+import { attachmentRootId } from '@/modules/common/constants';
 
 // eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
@@ -65,7 +66,7 @@ const attachmentCondition = ref({
 	page: 1,
 	size: 10,
 	total: 10,
-	parentId: '019b715b-08c7-7509-ab14-2abe47f440f3',
+	parentId: attachmentRootId,
 	name: '',
 	type: undefined,
 });

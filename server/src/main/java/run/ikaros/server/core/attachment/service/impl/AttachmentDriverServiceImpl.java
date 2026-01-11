@@ -21,6 +21,7 @@ import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
@@ -86,12 +87,18 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         return repository.findByTypeAndNameAndMountName(
                 driver.getType().toString(), driver.getName(), driver.getMountName())
             .switchIfEmpty(Mono.defer(() -> copyProperties(driver, new AttachmentDriverEntity())
+                    .map(entity -> {
+                        if (entity.getId() == null) {
+                            entity.setId(UuidV7Utils.generateUuid());
+                        }
+                        return entity;
+                    })
                     .flatMap(repository::insert))
                 .doOnSuccess(entity ->
                     log.debug("Created attachment driver with type={} and name={}",
                         entity == null ? null : entity.getType(),
                         entity == null ? null : entity.getName())))
-            .flatMap(entity -> copyProperties(driver, entity, "id"))
+            .flatMap(entity -> copyProperties(driver, entity))
             .flatMap(repository::update)
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
     }

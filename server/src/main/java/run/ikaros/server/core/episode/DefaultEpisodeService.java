@@ -15,6 +15,7 @@ import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeRecord;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.infra.utils.ReflectUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.cache.annotation.FluxCacheEvict;
 import run.ikaros.server.cache.annotation.FluxCacheable;
@@ -58,11 +59,15 @@ public class DefaultEpisodeService implements EpisodeService {
         if (episodeId != null) {
             return episodeRepository.findById(episodeId)
                 .flatMap(entity -> copyProperties(episode, entity))
-                .flatMap(episodeRepository::save)
+                .flatMap(episodeRepository::update)
                 .flatMap(e -> copyProperties(e, episode));
         } else {
             return copyProperties(episode, new EpisodeEntity())
-                .flatMap(episodeRepository::save)
+                .map(e -> {
+                    e.setId(UuidV7Utils.generateUuid());
+                    return e;
+                })
+                .flatMap(episodeRepository::insert)
                 .flatMap(e -> copyProperties(e, episode));
         }
     }

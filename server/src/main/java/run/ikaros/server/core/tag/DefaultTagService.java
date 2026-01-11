@@ -19,6 +19,7 @@ import run.ikaros.api.core.tag.SubjectTag;
 import run.ikaros.api.core.tag.Tag;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.StringUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.TagType;
 import run.ikaros.server.core.tag.event.TagCreateEvent;
 import run.ikaros.server.core.tag.event.TagRemoveEvent;
@@ -106,13 +107,20 @@ public class DefaultTagService implements TagService {
                 tag.getType(), tag.getUserId(), tag.getName())
             .map(tagEntity -> tagEntity.setColor(
                 StringUtils.isNotBlank(tag.getColor()) ? tag.getColor() : tagEntity.getColor()))
-            .flatMap(tagRepository::save)
+            .flatMap(tagRepository::update)
             .then(tagRepository.findByTypeAndMasterIdAndUserIdAndName(
                 tag.getType(), tag.getMasterId(), tag.getUserId(), tag.getName()
             ))
             .switchIfEmpty(Mono.just(new TagEntity()))
             .flatMap(tagEntity -> copyProperties(tag, tagEntity))
-            .flatMap(tagRepository::save)
+            .flatMap(e -> {
+                if (e.getId() == null) {
+                    e.setId(UuidV7Utils.generateUuid());
+                    return tagRepository.insert(e);
+                } else {
+                    return tagRepository.update(e);
+                }
+            })
             .doOnSuccess(savedTag ->
                 eventPublisher.publishEvent(new TagCreateEvent(this, savedTag)))
             .flatMap(tagEntity -> copyProperties(tagEntity, tag));

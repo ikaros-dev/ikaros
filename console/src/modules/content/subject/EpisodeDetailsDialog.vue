@@ -33,7 +33,7 @@ const userStore = useUserStore();
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		subjectId: number | string | undefined;
+		subjectId: string | undefined;
 		// episode
 		ep: Episode | undefined;
 		multiResource?: boolean;
@@ -171,16 +171,16 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 };
 const onCloseWithAttachments = async (attachments: Attachment[]) => {
 	// console.log('attachments', attachments);
-	const attIds: number[] = attachments.map((att) => att.id) as number[];
+	const attIds: string[] = attachments.map((att) => att.id) as string[];
 	await delegateBatchMatchingEpisode(currentOperateEpisode.value?.id, attIds);
 	await fetchEpisodeResources();
 };
 
 const delegateBatchMatchingEpisode = async (
-	episodeId: number | undefined,
-	attIds: number[]
+	episodeId: string | undefined,
+	attIds: string[]
 ) => {
-	if (!episodeId || episodeId <= 0 || !attIds || attIds.length === 0) {
+	if (!episodeId  || !attIds || attIds.length === 0) {
 		return;
 	}
 	batchMatchingEpisodeButtonLoading.value = true;
