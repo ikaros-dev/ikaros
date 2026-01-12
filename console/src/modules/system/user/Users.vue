@@ -259,7 +259,7 @@ onMounted(() => {
 		<el-row>
 			<el-col :span="24">
 				<el-table :data="users" size="large">
-					<el-table-column prop="entity.id" label="ID" width="80" />
+					<el-table-column prop="entity.id" label="ID" width="160" />
 					<el-table-column
 						prop="entity.username"
 						label="Username"

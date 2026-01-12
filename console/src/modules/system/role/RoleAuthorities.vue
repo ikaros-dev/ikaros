@@ -190,7 +190,7 @@ onMounted(() => {
 				@selection-change="onAuthTabSelectChange"
 			>
 				<el-table-column type="selection" width="55" />
-				<el-table-column prop="id" label="ID" width="60" />
+				<el-table-column prop="id" label="ID" width="150" />
 				<el-table-column prop="type" label="Type" width="180" />
 				<el-table-column prop="target" label="Target" />
 				<el-table-column prop="authority" label="Authority" />
@@ -208,7 +208,7 @@ onMounted(() => {
 		<el-button @click="authorityDialogVisible = true">Add</el-button>
 
 		<el-table :data="roleAutiorities" style="width: 100%">
-			<el-table-column prop="id" label="ID" width="60" />
+			<el-table-column prop="id" label="ID" width="160" />
 			<el-table-column prop="type" label="Type" width="180" />
 			<el-table-column prop="target" label="Target" />
 			<el-table-column prop="authority" label="Authority" />
