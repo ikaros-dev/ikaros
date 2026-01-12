@@ -141,7 +141,8 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
             .flatMap(subjectCollection ->
                 subjectCollectionRepository.findByUserIdAndSubjectId(userId, subjectId))
             .switchIfEmpty(
-                subjectCollectionRepository.save(SubjectCollectionEntity.builder()
+                subjectCollectionRepository.insert(SubjectCollectionEntity.builder()
+                    .id(UuidV7Utils.generateUuid())
                     .userId(userId)
                     .subjectId(subjectId)
                     .isPrivate(isPrivate)
@@ -152,10 +153,14 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                         userId, subjectId)))
             .map(subjectCollectionEntity -> subjectCollectionEntity
                 .setType(type).setIsPrivate(isPrivate))
-            .flatMap(entity -> subjectCollectionRepository.save(entity)
+            .flatMap(entity -> subjectCollectionRepository.update(entity)
                 .doOnSuccess(ent -> {
+                    if (ent == null) {
+                        return;
+                    }
                     SubjectCollectEvent event =
                         new SubjectCollectEvent(this, SubjectCollection.builder()
+                            .id(ent.getId())
                             .userId(ent.getUserId())
                             .subjectId(ent.getSubjectId())
                             .isPrivate(ent.getIsPrivate())
@@ -172,16 +177,19 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
             .flatMap(episodeId ->
                 episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
                     .switchIfEmpty(
-                        episodeCollectionRepository.save(EpisodeCollectionEntity.builder()
+                        episodeCollectionRepository.insert(EpisodeCollectionEntity.builder()
+                                .id(UuidV7Utils.generateUuid())
                                 .userId(userId)
                                 .subjectId(subjectId)
                                 .episodeId(episodeId)
                                 .finish(false)
                                 .build())
-                            .doOnSuccess(entity -> log.debug(
-                                "Create new episode collection "
-                                    + "for userId is [{}] and episode id is [{}]",
-                                userId, entity.getEpisodeId())))
+                            .doOnSuccess(entity -> {
+                                log.debug(
+                                    "Create new episode collection "
+                                        + "for userId is [{}] and episode id is [{}]",
+                                    userId, entity == null ? null : entity.getEpisodeId());
+                            }))
             )
             .then();
     }
@@ -308,7 +316,14 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                 applicationEventPublisher.publishEvent(event);
                 return entity;
             })
-            .flatMap(subjectCollectionRepository::save)
+            .flatMap(e -> {
+                if (e.getId() == null) {
+                    e.setId(UuidV7Utils.generateUuid());
+                    return subjectCollectionRepository.insert(e);
+                } else {
+                    return subjectCollectionRepository.update(e);
+                }
+            })
             .flatMapMany(entity -> episodeRepository.findAllBySubjectId(subjectId))
             .filter(episodeEntity -> episodeEntity.getGroup() == EpisodeGroup.MAIN)
             .filter(episodeEntity -> progress >= episodeEntity.getSequence())
@@ -316,7 +331,14 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
             .flatMap(episodeId -> episodeCollectionRepository.findByUserIdAndEpisodeId(userId,
                 episodeId))
             .map(entity -> entity.setFinish(true))
-            .flatMap(episodeCollectionRepository::save)
+            .flatMap(e -> {
+                if (e.getId() == null) {
+                    e.setId(UuidV7Utils.generateUuid());
+                    return episodeCollectionRepository.insert(e);
+                } else {
+                    return episodeCollectionRepository.update(e);
+                }
+            })
             .then();
     }
 }

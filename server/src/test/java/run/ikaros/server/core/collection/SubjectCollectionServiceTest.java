@@ -81,9 +81,10 @@ class SubjectCollectionServiceTest {
             .airTime(LocalDateTime.now())
             .nameCn("")
             .build();
+        entity.setId(UuidV7Utils.generateUuid());
 
-        StepVerifier.create(subjectRepository.save(entity))
-            .expectNextCount(1).verifyComplete();
+        StepVerifier.create(subjectRepository.insert(entity))
+            .expectNext(entity).verifyComplete();
 
         return entity;
     }
@@ -101,8 +102,9 @@ class SubjectCollectionServiceTest {
                 .sequence(Float.sum(i, 1))
                 .nameCn("")
                 .build();
+            episodeEntity.setId(UuidV7Utils.generateUuid());
 
-            StepVerifier.create(episodeRepository.save(episodeEntity))
+            StepVerifier.create(episodeRepository.insert(episodeEntity))
                 .expectNextCount(1).verifyComplete();
 
             episodeEntities.add(episodeEntity);
@@ -203,8 +205,9 @@ class SubjectCollectionServiceTest {
                 .airTime(LocalDateTime.now())
                 .nameCn("")
                 .build();
+            entity.setId(UuidV7Utils.generateUuid());
 
-            StepVerifier.create(subjectRepository.save(entity))
+            StepVerifier.create(subjectRepository.insert(entity))
                 .expectNextCount(1).verifyComplete();
 
             UUID subjectId = entity.getId();
