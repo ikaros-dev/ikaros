@@ -17,6 +17,7 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class SubjectSync {
+    private UUID id;
     private UUID subjectId;
     private SubjectSyncPlatform platform;
     private String platformId;

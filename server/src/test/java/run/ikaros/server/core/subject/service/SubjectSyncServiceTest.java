@@ -34,6 +34,7 @@ class SubjectSyncServiceTest {
     void save() {
         var random = new Random();
         SubjectSync subjectSync = SubjectSync.builder()
+            .id(UuidV7Utils.generateUuid())
             .syncTime(LocalDateTime.now())
             .subjectId(UuidV7Utils.generateUuid())
             .platform(SubjectSyncPlatform.BGM_TV)

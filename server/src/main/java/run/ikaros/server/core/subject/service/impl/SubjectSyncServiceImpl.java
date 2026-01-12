@@ -31,6 +31,7 @@ import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.core.subject.SubjectSynchronizer;
 import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
@@ -368,12 +369,17 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                     .setPlatform(subjectSync.getPlatform())
                     .setPlatformId(subjectSync.getPlatformId())
                     .setSyncTime(subjectSync.getSyncTime()))
+                .map(e -> {
+                    e.setId(UuidV7Utils.generateUuid());
+                    return e;
+                })
+                .flatMap(subjectSyncRepository::insert)
                 .doOnSuccess(e -> log.debug("create new subject sync record: [{}].", e)))
             .map(entity -> entity.setSubjectId(subjectSync.getSubjectId())
                 .setPlatform(subjectSync.getPlatform())
                 .setPlatformId(subjectSync.getPlatformId())
                 .setSyncTime(subjectSync.getSyncTime()))
-            .flatMap(subjectSyncRepository::save)
+            .flatMap(subjectSyncRepository::update)
             .map(entity -> subjectSync
                 .setSubjectId(entity.getSubjectId())
                 .setPlatform(entity.getPlatform())
