@@ -52,8 +52,8 @@ class EpisodeCollectionServiceTest {
             .group(episodeGroup)
             .build();
         episodeEntity.setId(episodeId);
-        StepVerifier.create(episodeRepository.save(episodeEntity))
-            .expectNextCount(1)
+        StepVerifier.create(episodeRepository.insert(episodeEntity))
+            .expectNext(episodeEntity)
             .verifyComplete();
 
         // find episode collection when not exists
@@ -93,8 +93,8 @@ class EpisodeCollectionServiceTest {
             .group(episodeGroup)
             .build();
         episodeEntity.setId(episodeId);
-        StepVerifier.create(episodeRepository.save(episodeEntity))
-            .expectNextCount(1)
+        StepVerifier.create(episodeRepository.insert(episodeEntity))
+            .expectNext(episodeEntity)
             .verifyComplete();
 
         // create episode collection
@@ -133,7 +133,7 @@ class EpisodeCollectionServiceTest {
             .group(episodeGroup)
             .build();
         episodeEntity.setId(episodeId);
-        StepVerifier.create(episodeRepository.save(episodeEntity))
+        StepVerifier.create(episodeRepository.insert(episodeEntity))
             .expectNextCount(1)
             .verifyComplete();
 
@@ -177,7 +177,7 @@ class EpisodeCollectionServiceTest {
             .group(episodeGroup)
             .build();
         episodeEntity.setId(episodeId);
-        StepVerifier.create(episodeRepository.save(episodeEntity))
+        StepVerifier.create(episodeRepository.insert(episodeEntity))
             .expectNextCount(1)
             .verifyComplete();
 

@@ -15,6 +15,7 @@ import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.core.collection.EpisodeCollection;
 import run.ikaros.api.core.collection.event.EpisodeCollectionFinishChangeEvent;
 import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.store.entity.EpisodeCollectionEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.EpisodeCollectionRepository;
@@ -48,7 +49,8 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
                         new EpisodeNotFoundException("episode not found for id: " + episodeId)))
                     .map(EpisodeEntity::getSubjectId)
                     .flatMap(subjectId -> episodeCollectionRepository
-                        .save(EpisodeCollectionEntity.builder()
+                        .insert(EpisodeCollectionEntity.builder()
+                            .id(UuidV7Utils.generateUuid())
                             .userId(userId)
                             .subjectId(subjectId)
                             .episodeId(episodeId)
