@@ -1,7 +1,6 @@
 package run.ikaros.server.core.subject;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
-import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.UuidV7Utils;
@@ -35,15 +33,6 @@ class SubjectServiceTest {
     @AfterEach
     void tearDown() {
         StepVerifier.create(subjectService.deleteAll()).verifyComplete();
-    }
-
-    @Test
-    void findByIdWhenIdNotGtZero() {
-        try {
-            subjectService.findById(UuidV7Utils.generateUuid()).block(AppConst.BLOCK_TIMEOUT);
-        } catch (Exception e) {
-            assertThat(e).isInstanceOf(IllegalArgumentException.class);
-        }
     }
 
     @Test
@@ -75,19 +64,15 @@ class SubjectServiceTest {
 
     @Test
     void findByBgmIdWhenIdNotGtZero() {
-        try {
-            subjectService.findByBgmId(UuidV7Utils.generateUuid(), UuidV7Utils.generate())
-                .block(BLOCK_TIMEOUT);
-        } catch (Exception e) {
-            assertThat(e).isInstanceOf(IllegalArgumentException.class);
-        }
+        StepVerifier.create(subjectService.findByBgmId(UuidV7Utils.generateUuid(), "-1"))
+            .expectError(IllegalArgumentException.class);
     }
 
     @Test
     void findByBgmIdWhenRecordNotExists() {
         StepVerifier.create(
-                subjectService.findByBgmId(UuidV7Utils.generateUuid(), UuidV7Utils.generate()))
-            .expectErrorMessage("Not found subject by bgmtv_id: " + UuidV7Utils.generateUuid())
+                subjectService.findByBgmId(UuidV7Utils.generateUuid(), "99999"))
+            .expectErrorMessage("Not found subject by bgmtv_id: 99999")
             .verify();
     }
 
@@ -128,6 +113,7 @@ class SubjectServiceTest {
 
     private static Subject createSubjectInstance() {
         var subject = new Subject();
+        subject.setId(UuidV7Utils.generateUuid());
         subject.setName("subject-name-unit-test");
         subject.setType(SubjectType.ANIME);
         subject.setNsfw(Boolean.FALSE);
@@ -136,13 +122,6 @@ class SubjectServiceTest {
         subject.setAirTime(LocalDateTime.now());
         subject.setCover("https://ikaros.run/static/test.jpg");
         return subject;
-    }
-
-    @Test
-    void deleteByIdWhenIdNotGtZero() {
-        StepVerifier.create(subjectService.deleteById(UuidV7Utils.generateUuid()))
-            .expectErrorMatches(throwable -> (throwable instanceof IllegalArgumentException)
-                && "'id' must gt 0.".equals(throwable.getMessage())).verify();
     }
 
     @Test

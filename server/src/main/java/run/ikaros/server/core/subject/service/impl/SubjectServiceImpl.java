@@ -32,6 +32,7 @@ import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.vo.FindSubjectCondition;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.StringUtils;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
@@ -167,12 +168,15 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     public synchronized Mono<Subject> create(Subject subject) {
         Assert.notNull(subject, "'subject' must not be null.");
         Assert.notNull(subject.getType(), "'subject.type' must not be null.");
+        if (subject.getId() == null) {
+            subject.setId(UuidV7Utils.generateUuid());
+        }
         return copyProperties(subject, new SubjectEntity())
             .map(subjectEntity -> {
                 subjectEntity.setUpdateTime(LocalDateTime.now());
                 return subjectEntity;
             })
-            .flatMap(subjectRepository::save)
+            .flatMap(subjectRepository::insert)
             .doOnNext(entity -> applicationContext.publishEvent(new SubjectAddEvent(this, entity)))
             .flatMap(subjectEntity -> copyProperties(subjectEntity, subject));
     }
