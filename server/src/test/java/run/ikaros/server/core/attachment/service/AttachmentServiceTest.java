@@ -2,6 +2,8 @@ package run.ikaros.server.core.attachment.service;
 
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
+import static run.ikaros.server.core.attachment.utils.AttachmentTestUtils.attIsEqualsWithoutOrder;
+import static run.ikaros.server.core.attachment.utils.AttachmentTestUtils.entitiesIsEqualsWithoutOrder;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -35,6 +37,7 @@ import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
+import run.ikaros.server.core.attachment.init.AttachmentInitializer;
 import run.ikaros.server.infra.utils.RandomUtils;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
@@ -49,6 +52,8 @@ class AttachmentServiceTest {
     AttachmentRepository attachmentRepository;
     @Autowired
     IkarosProperties ikarosProperties;
+    @Autowired
+    AttachmentInitializer initializer;
 
     @AfterEach
     void tearDown() throws IOException {
@@ -188,54 +193,6 @@ class AttachmentServiceTest {
     void testUpload() {
     }
 
-    private boolean entitiesIsEquals(List<AttachmentEntity> oldAttachments,
-                                     List<AttachmentEntity> newAttachments) {
-        if (oldAttachments.size() != newAttachments.size()) {
-            return false;
-        }
-
-        /// oldAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
-        // newAttachments.sort((o1, o2) -> (int) (o1.getId() - o2.getId()));
-
-        boolean result = true;
-        for (int i = 0; i < oldAttachments.size(); i++) {
-            AttachmentEntity oldEntity = oldAttachments.get(i);
-            AttachmentEntity newEntity = newAttachments.get(i);
-            if (!oldEntity.getName().equals(newEntity.getName())) {
-                result = false;
-                break;
-            }
-            if (!oldEntity.getType().equals(newEntity.getType())) {
-                result = false;
-                break;
-            }
-            if (!oldEntity.getParentId().equals(newEntity.getParentId())) {
-                result = false;
-                break;
-            }
-            if (!oldEntity.getSize().equals(newEntity.getSize())) {
-                result = false;
-                break;
-            }
-        }
-        return result;
-    }
-
-    private boolean attIsEquals(List<AttachmentEntity> oldAttachments,
-                                List<Attachment> newAttachments) {
-        ArrayList<AttachmentEntity> objects = new ArrayList<>();
-        for (Attachment newAttachment : newAttachments) {
-            objects.add(AttachmentEntity.builder()
-                .id(newAttachment.getId())
-                .name(newAttachment.getName())
-                .type(newAttachment.getType())
-                .parentId(newAttachment.getParentId())
-                .size(newAttachment.getSize())
-                .updateTime(newAttachment.getUpdateTime())
-                .build());
-        }
-        return entitiesIsEquals(oldAttachments, objects);
-    }
 
     @Test
     void listEntitiesByCondition() {
@@ -266,28 +223,29 @@ class AttachmentServiceTest {
                     && condition.getPage().equals(newPagingwrap.getPage())
                     && condition.getSize().equals(newPagingwrap.getItems().size())
                     &&
-                    entitiesIsEquals(attachmentEntities.subList(0, size), newPagingwrap.getItems()))
+                    entitiesIsEqualsWithoutOrder(attachmentEntities.subList(0, size),
+                        newPagingwrap.getItems()))
             .verifyComplete();
 
     }
 
     @Test
     void listByCondition() {
-
-        final int size = RandomUtils.getRandom().nextInt(1, 100);
+        final int size = RandomUtils.getRandom().nextInt(10, 100);
         List<AttachmentEntity> attachmentEntities = new ArrayList<>(size);
 
         final String namePrefix = RandomUtils.randomString(20);
         for (int i = 0; i < size; i++) {
             AttachmentEntity entity = AttachmentEntity.builder()
+                .id(UuidV7Utils.generateUuid())
                 .parentId(ROOT_DIRECTORY_ID)
                 .type(AttachmentType.File)
                 .name(namePrefix + i)
                 .size(Long.parseLong(String.valueOf(i)))
                 .build();
             attachmentEntities.add(entity);
-            StepVerifier.create(attachmentService.saveEntity(entity))
-                .expectNextMatches(new AttachmentEntityPredicate(entity))
+            StepVerifier.create(attachmentRepository.insert(entity))
+                .expectNext(entity)
                 .verifyComplete();
         }
 
@@ -300,8 +258,7 @@ class AttachmentServiceTest {
                 condition.getSize().equals(newPagingwrap.getSize())
                     && condition.getPage().equals(newPagingwrap.getPage())
                     && condition.getSize().equals(newPagingwrap.getItems().size())
-                    &&
-                    attIsEquals(attachmentEntities.subList(0, size), newPagingwrap.getItems()))
+                    && attIsEqualsWithoutOrder(attachmentEntities, newPagingwrap.getItems()))
             .verifyComplete();
 
     }
@@ -426,6 +383,7 @@ class AttachmentServiceTest {
     @Test
     void createDirectory() {
         AttachmentEntity parentAttachmentEntity = AttachmentEntity.builder()
+            .id(UuidV7Utils.generateUuid())
             .name(RandomUtils.randomString(20))
             .type(AttachmentType.Directory)
             .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
@@ -433,7 +391,7 @@ class AttachmentServiceTest {
             .parentId(ROOT_DIRECTORY_ID)
             .path("/test")
             .build();
-        StepVerifier.create(attachmentRepository.save(parentAttachmentEntity))
+        StepVerifier.create(attachmentRepository.insert(parentAttachmentEntity))
             .expectNextMatches(new AttachmentEntityPredicate(parentAttachmentEntity))
             .verifyComplete();
         Assertions.assertThat(parentAttachmentEntity.getId()).isNotNull();
@@ -449,12 +407,16 @@ class AttachmentServiceTest {
         final String dir1name = RandomUtils.randomString(20);
         final String dir2name = RandomUtils.randomString(20);
 
+        // 执行该任务时的时候，AttachmentInitializer#initialize 并没有运行
+        // 所有此时并没有 Root 目录
+        // AttachmentInitializer#initialize是可重复执行的方法
+        StepVerifier.create(initializer.initialize()).verifyComplete();
+
         final AttachmentEntity att1 = AttachmentEntity.builder()
             .id(UuidV7Utils.generateUuid())
             .name(dir1name)
             .type(AttachmentType.Directory)
             .parentId(ROOT_DIRECTORY_ID)
-            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
             .updateTime(LocalDateTime.now())
             .build();
         StepVerifier.create(attachmentRepository.insert(att1))
@@ -466,7 +428,6 @@ class AttachmentServiceTest {
             .name(dir2name)
             .type(AttachmentType.Directory)
             .parentId(att1.getId())
-            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
             .updateTime(LocalDateTime.now())
             .build();
         StepVerifier.create(attachmentRepository.insert(att2))
@@ -475,8 +436,8 @@ class AttachmentServiceTest {
 
 
         StepVerifier.create(attachmentService.findAttachmentPathDirsById(att2.getId())
-            .flatMapMany(attachments -> Flux.fromStream(attachments.stream()))
-            .map(Attachment::getId))
+                .flatMapMany(attachments -> Flux.fromStream(attachments.stream()))
+                .map(Attachment::getId))
             .expectNext(ROOT_DIRECTORY_ID)
             .expectNext(att1.getId())
             .expectNext(att2.getId())

@@ -12,6 +12,8 @@ ikaros:
     initializer:
       master-username: tomoki
       master-password: tomoki
+  cache:
+    enable: false
 
 server:
   port: 51000

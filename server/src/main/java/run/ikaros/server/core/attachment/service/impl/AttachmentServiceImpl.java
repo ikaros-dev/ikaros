@@ -62,6 +62,7 @@ import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundExceptio
 import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.core.attachment.exception.AttachmentUploadException;
 import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.SystemVarUtils;
@@ -126,7 +127,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                 attachmentEntity.getName())
                 .map(attachmentEntity::setPath))
             .flatMap(entity ->
-                copyProperties(attachmentEntity, entity, "id", "path"))
+                copyProperties(attachmentEntity, entity, "path"))
             .map(entity -> entity.setUpdateTime(LocalDateTime.now()))
             .flatMap(entity -> {
                 if (entity.getId() == null) {
@@ -223,7 +224,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(attEntity -> findPathByParentId(attEntity.getParentId(), attEntity.getName())
                 .filter(newPath -> !newPath.equals(attEntity.getPath()))
                 .map(attEntity::setPath)
-                .flatMap(attachmentRepository::save)
+                .flatMap(attachmentRepository::update)
                 .switchIfEmpty(Mono.just(attEntity)))
             .collectList()
             .map(attachmentEntities -> new PagingWrap<>(page, size, total, attachmentEntities)));
@@ -1012,8 +1013,9 @@ public class AttachmentServiceImpl implements AttachmentService {
             return Mono.just(entities);
         }
         return repository.findById(id)
-            .map(e -> e.getParentId())
-            .flatMap(repository::findById)
+            .flatMap(e -> repository.findById(e.getParentId())
+                .switchIfEmpty(
+                    Mono.error(new NotFoundException("att parent not found for " + e))))
             .flatMap(attachmentEntity -> {
                 entities.add(attachmentEntity);
                 return findPathDirs(attachmentEntity.getId(), entities);
