@@ -57,7 +57,7 @@ onMounted(fetchActuatorInfo);
 		</el-descriptions-item>
 		<el-descriptions-item>
 			<template #label> Git Commit</template>
-			{{ actuatorInfo?.git.commit.id }}
+			<a target="_blank" :href="'https://github.com/ikaros-dev/ikaros/tree/' + actuatorInfo?.git.commit.id">{{ actuatorInfo?.git.commit.id }}</a>
 		</el-descriptions-item>
 		<el-descriptions-item>
 			<template #label> Commit Time</template>
