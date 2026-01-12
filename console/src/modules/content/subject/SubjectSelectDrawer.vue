@@ -23,7 +23,7 @@ const { t } = useI18n();
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		filter: number[];
+		filter: string[];
 	}>(),
 	{
 		visible: false,
@@ -37,7 +37,7 @@ const emit = defineEmits<{
 	// eslint-disable-next-line no-unused-vars
 	(event: 'close'): void;
 	// eslint-disable-next-line no-unused-vars
-	(event: 'selectionsChange', set: Set<number>);
+	(event: 'selectionsChange', set: Set<string>);
 }>();
 
 const drawerVisible = computed({
@@ -90,12 +90,12 @@ const fetchSubjects = async () => {
 	if (props.filter && props.filter.length > 0) {
 		console.debug('props.filter', props.filter);
 		subjects.value = subjects.value.filter(
-			(sub) => sub.id && sub.id > 0 && props.filter.indexOf(sub.id) < 0
+			(sub) => sub.id && props.filter.indexOf(sub.id) < 0
 		);
 	}
 };
 
-const selectionSubjectIdSet = new Set<number>();
+const selectionSubjectIdSet = new Set<string>();
 const handleSelectionChange = (selection) => {
 	// console.log('selection', selection);
 	selectionSubjectIdSet.clear();

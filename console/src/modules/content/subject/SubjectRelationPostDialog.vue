@@ -21,11 +21,11 @@ const { t } = useI18n();
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		masterSubjectId: number;
+		masterSubjectId: string;
 	}>(),
 	{
 		visible: false,
-		masterSubjectId: -1,
+		masterSubjectId: '',
 	}
 );
 
@@ -71,7 +71,7 @@ const reqCreateRelaction = async () => {
 	reqCreateRelactionBtnLoading.value = true;
 	await apiClient.subjectRelation.createSubjectRelation({
 		subjectRelation: {
-			subject: props.masterSubjectId as number,
+			subject: props.masterSubjectId as string,
 			relation_subjects: JSON.parse(slaveSubjectIdsStr.value),
 			relation_type: selectSubjectReactionType.value,
 		},
@@ -87,7 +87,7 @@ const reqCreateRelaction = async () => {
 <template>
 	<subject-select-drawer
 		v-model:visible="subjectSelectDrawerVisible"
-		:filter="[props.masterSubjectId as number]"
+		:filter="[props.masterSubjectId as string]"
 		@selections-change="onSelectionsChange"
 	/>
 	<el-dialog

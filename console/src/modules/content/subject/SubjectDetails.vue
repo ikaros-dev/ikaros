@@ -80,7 +80,7 @@ const doRefreshSubjectRelactionDialog = () => {
 };
 
 const subject = ref<Subject>({
-	id: -1,
+	id: '',
 	name: '',
 	type: SubjectTypeEnum.Other,
 	nsfw: true,

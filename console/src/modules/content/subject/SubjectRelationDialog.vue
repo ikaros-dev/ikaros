@@ -61,7 +61,7 @@ const onClose = () => {
 
 const activeTabName = ref('AFTER');
 const subject = ref<Subject>({
-	id: -1,
+	id: '',
 	name: '',
 	type: SubjectTypeEnum.Other,
 	nsfw: true,
@@ -157,7 +157,7 @@ const onSubjectRelationDeleteDialogClose = async () => {
 const subjectRelationDeleteDialogVisible = ref(false);
 const subjectId = computed({
 	get() {
-		return parseInt(subject.value.id + '');
+		return subject.value.id;
 	},
 	set(val) {
 		subject.value.id = val;

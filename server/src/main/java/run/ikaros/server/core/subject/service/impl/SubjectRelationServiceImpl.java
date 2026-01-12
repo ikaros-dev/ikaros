@@ -11,6 +11,7 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subject.SubjectRelation;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.server.cache.annotation.FluxCacheable;
 import run.ikaros.server.cache.annotation.MonoCacheEvict;
@@ -80,6 +81,16 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
     }
 
     @Override
+    public Mono<SubjectRelationEntity> saveEntity(SubjectRelationEntity entity) {
+        if (entity.getId() == null) {
+            entity.setId(UuidV7Utils.generateUuid());
+            return subjectRelationRepository.insert(entity);
+        } else {
+            return subjectRelationRepository.update(entity);
+        }
+    }
+
+    @Override
     @MonoCacheEvict
     public Mono<SubjectRelation> createSubjectRelation(SubjectRelation subjectRelation) {
         Assert.notNull(subjectRelation, "'subjectRelation' must not be null.");
@@ -99,7 +110,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
                         .relationType(subjectRelation.getRelationType())
                         .relationSubjectId(relationSubject)
                         .build())
-                    .flatMap(subjectRelationRepository::save)
+                    .flatMap(this::saveEntity)
                     // save slave relation
                     .flatMap(subjectRelationEntity -> subjectRepository.findById(
                             subjectRelationEntity.getSubjectId())
@@ -110,7 +121,7 @@ public class SubjectRelationServiceImpl implements SubjectRelationService {
                             .relationType(SubjectRelationCourt.judge(subjectType,
                                 subjectRelationEntity.getRelationType()))
                             .build())))
-                    .flatMap(subjectRelationRepository::save)
+                    .flatMap(this::saveEntity)
 
             )
             .then(findBySubjectIdAndType(masterSubjectId,

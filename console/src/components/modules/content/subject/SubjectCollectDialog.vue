@@ -20,7 +20,7 @@ import { apiClient } from '@/utils/api-client';
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		subjectId: number | string;
+		subjectId: string;
 	}>(),
 	{
 		visible: false,
@@ -49,7 +49,7 @@ const comment = ref('');
 
 const onSubjectCollectionSubmit = async () => {
 	await apiClient.collectionSubject.collectSubject({
-		subjectId: props.subjectId as number,
+		subjectId: props.subjectId as string,
 		type: collectType.value as 'WISH' | 'DOING' | 'DONE' | 'SHELVE' | 'DISCARD',
 		score: score.value,
 		comment: comment.value,

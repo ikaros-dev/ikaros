@@ -22,12 +22,12 @@ const { t } = useI18n();
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		masterSubjectId: number;
+		masterSubjectId: string;
 		relationSubjects: SubjectRelation[];
 	}>(),
 	{
 		visible: false,
-		masterSubjectId: -1,
+		masterSubjectId: '',
 	}
 );
 

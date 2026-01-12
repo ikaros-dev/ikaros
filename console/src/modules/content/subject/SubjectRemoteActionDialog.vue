@@ -25,7 +25,7 @@ const props = withDefaults(
 	defineProps<{
 		visible: boolean;
 		isPush: boolean;
-		subjectId: number;
+		subjectId: string;
 	}>(),
 	{
 		visible: false,
