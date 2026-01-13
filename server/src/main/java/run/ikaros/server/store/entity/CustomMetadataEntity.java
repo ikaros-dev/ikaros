@@ -1,8 +1,10 @@
 package run.ikaros.server.store.entity;
 
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -17,6 +19,8 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @Table("custom_metadata")
 @Accessors(chain = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class CustomMetadataEntity {
     @Id
     private UUID id;
