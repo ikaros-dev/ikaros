@@ -1,6 +1,5 @@
 package run.ikaros.server.store.repository;
 
-import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +32,14 @@ class SubjectSyncRepositoryTest {
             .platform(SubjectSyncPlatform.BGM_TV)
             .platformId("328609")
             .build();
+        subjectSyncEntity.setId(UuidV7Utils.generateUuid());
 
-        StepVerifier.create(subjectSyncRepository.save(subjectSyncEntity)
-                .map(SubjectSyncEntity::getId))
-            .expectNextMatches(Objects::nonNull)
+        StepVerifier.create(subjectSyncRepository.insert(subjectSyncEntity))
+            .expectNext(subjectSyncEntity)
             .verifyComplete();
 
         StepVerifier.create(subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
-                UuidV7Utils.generateUuid(), SubjectSyncPlatform.BGM_TV, "328609"
+                subjectSyncEntity.getSubjectId(), SubjectSyncPlatform.BGM_TV, "328609"
             )).expectNextMatches(newEntity ->
                 newEntity.getId().equals(subjectSyncEntity.getId())
                     && newEntity.getSubjectId().equals(subjectSyncEntity.getSubjectId())

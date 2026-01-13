@@ -66,7 +66,7 @@ class SubjectEndpointTest {
     @Test
     void getByIdWhenNotFound() {
         webTestClient.get()
-            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject/" + "10")
+            .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject/" + UuidV7Utils.generateUuid())
             .header(HttpHeaders.AUTHORIZATION, "Basic "
                 + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8))
             .exchange()

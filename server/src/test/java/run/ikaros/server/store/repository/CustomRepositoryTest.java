@@ -1,7 +1,5 @@
 package run.ikaros.server.store.repository;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.store.entity.CustomEntity;
 
@@ -35,22 +34,19 @@ class CustomRepositoryTest {
         String group = "test-group";
         String version = "v1alpha1";
         String kind = "TestCustomRepositoryCustom";
-        List<CustomEntity> customEntityList = new ArrayList<>();
         long count = 9;
         for (int i = 1; i <= count; i++) {
-            customEntityList.add(
-                CustomEntity.builder()
-                    .group(group)
-                    .version(version)
-                    .kind(kind)
-                    .name(namePrefix + i)
-                    .build());
+            CustomEntity customEntity = CustomEntity.builder()
+                .id(UuidV7Utils.generateUuid())
+                .group(group)
+                .version(version)
+                .kind(kind)
+                .name(namePrefix + i)
+                .build();
+            StepVerifier.create(customRepository.insert(customEntity))
+                .expectNext(customEntity)
+                .verifyComplete();
         }
-        StepVerifier.create(customRepository.saveAll(customEntityList)
-            .collectList()
-            .flatMap(customEntities -> Mono.just(customEntities.size())))
-                .expectNext((int) count).verifyComplete();
-
 
 
         StepVerifier.create(customRepository.findAll(Example.of(CustomEntity.builder()

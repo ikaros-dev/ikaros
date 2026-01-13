@@ -1,8 +1,6 @@
 package run.ikaros.server.store.repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,7 +33,6 @@ class AttachmentRepositoryTest {
             .name(name)
             .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
             .type(AttachmentType.Directory)
-            .updateTime(LocalDateTime.now())
             .path("").fsPath("")
             .build();
         StepVerifier.create(repository.insert(att))
@@ -58,20 +55,28 @@ class AttachmentRepositoryTest {
             "[Airota&LoliHouse] Liz and the Blue Bird - "
                 + "Movie [BDRip 1080p HEVC-yuv420p10 FLACx2].tc.ass";
 
-        StepVerifier.create(repository.save(AttachmentEntity.builder()
-                .name(videoAttName).type(AttachmentType.File).path(videoAttName)
-                .build()).map(AttachmentEntity::getId))
-            .expectNextMatches(Objects::nonNull)
+        AttachmentEntity att1 = AttachmentEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .name(videoAttName).type(AttachmentType.File).path(videoAttName)
+            .build();
+        StepVerifier.create(repository.insert(att1).map(AttachmentEntity::getId))
+            .expectNext(att1.getId())
             .verifyComplete();
-        StepVerifier.create(repository.save(AttachmentEntity.builder()
-                .name(assScSubtitleAttName).type(AttachmentType.File).path(videoAttName)
-                .build()).map(AttachmentEntity::getId))
-            .expectNextMatches(Objects::nonNull)
+
+        AttachmentEntity attAssSc1 = AttachmentEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .name(assScSubtitleAttName).type(AttachmentType.File).path(videoAttName)
+            .build();
+        StepVerifier.create(repository.insert(attAssSc1).map(AttachmentEntity::getId))
+            .expectNext(attAssSc1.getId())
             .verifyComplete();
-        StepVerifier.create(repository.save(AttachmentEntity.builder()
-                .name(assTcSubtitleAttName).type(AttachmentType.File).path(videoAttName)
-                .build()).map(AttachmentEntity::getId))
-            .expectNextMatches(Objects::nonNull)
+
+        AttachmentEntity attAssTc1 = AttachmentEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .name(assTcSubtitleAttName).type(AttachmentType.File).path(videoAttName)
+            .build();
+        StepVerifier.create(repository.insert(attAssTc1).map(AttachmentEntity::getId))
+            .expectNext(attAssTc1.getId())
             .verifyComplete();
 
 

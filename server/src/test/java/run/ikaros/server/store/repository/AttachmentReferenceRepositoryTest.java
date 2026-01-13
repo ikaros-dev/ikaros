@@ -34,24 +34,24 @@ class AttachmentReferenceRepositoryTest {
         UUID refId1 = UuidV7Utils.generateUuid();
 
         AttachmentReferenceEntity attRef1 = AttachmentReferenceEntity.builder()
+            .id(UuidV7Utils.generateUuid())
             .type(AttachmentReferenceType.EPISODE)
             .attachmentId(attId1)
             .referenceId(refId1)
             .build();
-        StepVerifier.create(repository.save(attRef1))
-            .expectNextMatches(entity -> attId1 == entity.getAttachmentId()
-                && refId1 == entity.getReferenceId())
+        StepVerifier.create(repository.insert(attRef1))
+            .expectNext(attRef1)
             .verifyComplete();
 
         StepVerifier.create(repository.findAllByTypeAndAttachmentId(
-            AttachmentReferenceType.EPISODE, attId1
-        )).expectNextMatches(entity -> entity.getAttachmentId() == attId1
-            && entity.getReferenceId() == refId1).verifyComplete();
+                AttachmentReferenceType.EPISODE, attId1))
+            .expectNext(attRef1)
+            .verifyComplete();
 
         StepVerifier.create(repository.findAllByTypeAndReferenceId(
-            AttachmentReferenceType.EPISODE, refId1
-        )).expectNextMatches(entity -> entity.getAttachmentId() == attId1
-            && entity.getReferenceId() == refId1).verifyComplete();
+                AttachmentReferenceType.EPISODE, refId1))
+            .expectNext(attRef1)
+            .verifyComplete();
 
     }
 }
