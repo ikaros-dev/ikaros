@@ -41,6 +41,8 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
     org.springframework.r2dbc.core.DefaultDatabaseClient: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.test.web.reactive.server: TRACE
 
   file:
     name: ./build/logs/ikaros.log
