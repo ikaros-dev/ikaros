@@ -14,7 +14,6 @@ import java.util.function.Predicate;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -68,12 +67,11 @@ class AttachmentServiceTest {
     }
 
     @Test
-    @Disabled
     void upload() throws IOException {
         StepVerifier.create(attachmentService.listEntitiesByCondition(
                     AttachmentSearchCondition.builder().build())
                 .map(PagingWrap::getTotal))
-            .expectNext(3L)
+            .expectNext(0L)
             .verifyComplete();
 
         final String name = "UnitTestDocFile.TXT";
