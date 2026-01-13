@@ -10,6 +10,7 @@ ikaros:
     queue-count: 10000
   security:
     initializer:
+      enable: true
       master-username: tomoki
       master-password: tomoki
   cache:

@@ -36,6 +36,7 @@ import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.infra.utils.JsonUtils;
+import run.ikaros.server.security.MasterInitializer;
 import run.ikaros.server.security.SecurityProperties;
 
 @SpringBootTest
@@ -52,6 +53,8 @@ class SubjectEndpointTest {
     SubjectService subjectService;
     @Autowired
     SecurityProperties securityProperties;
+    @Autowired
+    MasterInitializer masterInitializer;
 
     private String username;
     private String password;
@@ -61,6 +64,7 @@ class SubjectEndpointTest {
         webTestClient = webTestClient.mutateWith(csrf());
         username = securityProperties.getInitializer().getMasterUsername();
         password = securityProperties.getInitializer().getMasterPassword();
+        StepVerifier.create(masterInitializer.initialize()).verifyComplete();
     }
 
     @Test
