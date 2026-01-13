@@ -9,6 +9,7 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.role.Role;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.store.entity.UserRoleEntity;
 import run.ikaros.server.store.repository.RoleRepository;
 import run.ikaros.server.store.repository.UserRoleRepository;
@@ -48,10 +49,13 @@ public class DefaultUserRoleService implements UserRoleService {
         Assert.notNull(roleIds, "'roleIds' must not null.");
         Assert.isTrue(roleIds.length > 0, "roleIds must be greater than zero");
         return Flux.fromArray(roleIds)
-            .map(roleId -> UserRoleEntity.builder()
-                .userId(userId).roleId(roleId)
-                .build())
-            .flatMap(this::saveEntity)
+            .flatMap(rid -> userRoleRepository.findByUserIdAndRoleId(userId, rid)
+                .switchIfEmpty(userRoleRepository.insert(UserRoleEntity.builder()
+                    .id(UuidV7Utils.generateUuid())
+                    .userId(userId).roleId(rid)
+                    .build())
+                    .doOnSuccess(userRoleEntity ->
+                        log.debug("Create new user role entity: {}", userRoleEntity))))
             .map(UserRoleEntity::getRoleId)
             .flatMap(this::findRoleByRoleId);
     }
