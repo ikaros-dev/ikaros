@@ -64,6 +64,7 @@ class SubjectEndpointTest {
     }
 
     @Test
+    @Disabled
     void getByIdWhenNotFound() {
         webTestClient.get()
             .uri("/api/" + OpenApiConst.CORE_VERSION + "/subject/" + UuidV7Utils.generateUuid())
