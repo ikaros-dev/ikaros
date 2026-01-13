@@ -52,7 +52,6 @@ public class DefaultMigrationService implements MigrationService {
             .flatMapSequential(tuple -> {
                 long index = tuple.getT1();
                 Map<String, Object> row = new HashMap<>(tuple.getT2());
-                row.putIfAbsent("uuid", UuidV7Utils.generate());
                 return Flux.defer(() -> {
                     String csvLine = convertRowToCsv(row) + "\n";
                     if (index == 0) {
