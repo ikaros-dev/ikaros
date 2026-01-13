@@ -53,14 +53,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<User> save(User user) {
-        Assert.notNull(user, "'user' must not be null");
-        Assert.notNull(user.entity(), "'user entity' must not be null");
-        return Mono.just(user)
-            .map(User::entity)
-            .map(userEntity -> userEntity.setPassword(
-                passwordEncoder.encode(userEntity.getPassword())))
-            .flatMap(repository::save)
+    public Mono<User> insert(User user) {
+        Assert.notNull(user, "'user' must not null.");
+        Assert.notNull(user.entity(), "'user.entity' must not null.");
+        Assert.notNull(user.entity().getId(), "'user.entity.id' must not null.");
+        UserEntity userEntity = user.entity();
+        userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+        return repository.insert(user.entity())
             .map(User::new);
     }
 

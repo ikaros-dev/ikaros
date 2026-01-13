@@ -17,6 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.core.role.Role;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.core.role.RoleService;
 import run.ikaros.server.core.user.User;
@@ -76,9 +77,10 @@ class RequestAuthorizationManagerTest {
         var username = String.valueOf(random.nextInt(1, 100));
 
         UserEntity friend = new UserEntity();
+        friend.setId(UuidV7Utils.generateUuid());
         friend.setUsername(username);
         friend.setPassword(password);
-        StepVerifier.create(userService.save(new User(friend))
+        StepVerifier.create(userService.insert(new User(friend))
                 .map(User::entity)
                 .map(UserEntity::getUsername))
             .expectNext(username)
@@ -86,7 +88,7 @@ class RequestAuthorizationManagerTest {
 
         StepVerifier.create(roleService.createIfNotExist(SecurityConst.ROLE_FRIEND)
                 .map(Role::getId)
-                .flatMap(f -> userService.save(new User(friend)))
+                .flatMap(f -> userService.insert(new User(friend)))
                 .map(User::entity)
                 .map(UserEntity::getUsername))
             .expectNext(username)

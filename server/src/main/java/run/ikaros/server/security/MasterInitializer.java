@@ -85,7 +85,7 @@ public class MasterInitializer {
                     return userEntity;
                 })
                 .map(User::new)
-                .flatMap(userService::save)
+                .flatMap(userService::insert)
                 .map(User::entity)
                 .map(BaseEntity::getId))
             .flatMap(tuple2 ->

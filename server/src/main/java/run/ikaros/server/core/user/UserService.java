@@ -24,7 +24,7 @@ public interface UserService {
             DEFAULT_PASSWORD_ENCODING_ID_PREFIX + rawPassword;
     }
 
-    Mono<User> save(User user);
+    Mono<User> insert(User user);
 
     Mono<Long> count();
 
