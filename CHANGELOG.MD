@@ -9,7 +9,9 @@ PS: 从v1.0.x无法无缝升级到v1.1，升级到此版本，请参考具体的
 ## 数据库
 
 - 去掉H2数据库，全面使用PG数据库
-- 使用liquibase替代flyway的迁移方案
+- 替换数据库SQL版本工具为 db-migration
+- 升级SpringBoot版本到4
+- ID换成由程序生成的UUIDV7
 
 # 1.0.8
 
