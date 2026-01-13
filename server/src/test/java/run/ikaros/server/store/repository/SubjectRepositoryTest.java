@@ -5,7 +5,6 @@ import static org.springframework.data.relational.core.query.Criteria.where;
 
 import java.util.Random;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,7 @@ import org.springframework.data.relational.core.query.Query;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.store.entity.SubjectEntity;
@@ -44,7 +44,8 @@ class SubjectRepositoryTest {
             .type(SubjectType.ANIME)
             .nsfw(false)
             .build();
-        StepVerifier.create(subjectRepository.save(subject))
+        subject.setId(UuidV7Utils.generateUuid());
+        StepVerifier.create(subjectRepository.insert(subject))
             .expectNextMatches(subjectEntity -> {
                 subject.setId(subjectEntity.getId());
                 return name.equals(subjectEntity.getName());
@@ -58,7 +59,6 @@ class SubjectRepositoryTest {
     }
 
     @Test
-    @Disabled
     void update() {
         final String name = "test" + new Random(100).nextInt();
         SubjectEntity subjectEntity = SubjectEntity.builder()
@@ -66,8 +66,9 @@ class SubjectRepositoryTest {
             .type(SubjectType.ANIME)
             .nsfw(false)
             .build();
+        subjectEntity.setId(UuidV7Utils.generateUuid());
 
-        StepVerifier.create(subjectRepository.save(subjectEntity))
+        StepVerifier.create(subjectRepository.insert(subjectEntity))
             .expectNext(subjectEntity).verifyComplete();
 
         assertThat(subjectEntity.getId()).isNotNull();
@@ -76,13 +77,13 @@ class SubjectRepositoryTest {
         subjectEntity.setName(newName);
 
         String finalNewName1 = newName;
-        StepVerifier.create(subjectRepository.save(subjectEntity))
+        StepVerifier.create(subjectRepository.update(subjectEntity))
             .expectNextMatches(newSubject -> finalNewName1.equals(newSubject.getName()))
             .verifyComplete();
 
         subjectEntity.setNsfw(true);
 
-        StepVerifier.create(subjectRepository.save(subjectEntity))
+        StepVerifier.create(subjectRepository.update(subjectEntity))
             .expectNextMatches(SubjectEntity::getNsfw)
             .verifyComplete();
 
@@ -114,6 +115,7 @@ class SubjectRepositoryTest {
             .type(SubjectType.ANIME)
             .nsfw(false)
             .build();
+        subjectEntity.setId(UuidV7Utils.generateUuid());
 
         StepVerifier.create(template.insert(subjectEntity))
             .expectNext(subjectEntity).verifyComplete();

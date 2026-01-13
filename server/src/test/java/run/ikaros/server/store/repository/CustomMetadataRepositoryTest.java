@@ -33,21 +33,22 @@ class CustomMetadataRepositoryTest {
         final String oldValue = Long.valueOf(new Random().nextLong()).toString();
         final String newValue = Long.valueOf(new Random().nextLong()).toString();
         CustomMetadataEntity metadataEntity = CustomMetadataEntity.builder()
+            .id(UuidV7Utils.generateUuid())
             .customId(UuidV7Utils.generateUuid())
             .key(key)
             .value(oldValue.getBytes(StandardCharsets.UTF_8)).build();
 
-        StepVerifier.create(repository.save(metadataEntity))
+        StepVerifier.create(repository.insert(metadataEntity))
             .expectNext(metadataEntity).verifyComplete();
 
         // Update metadata entity value to new value.
         StepVerifier.create(repository
-                .updateValueByCustomIdAndKeyAndValue(UuidV7Utils.generateUuid(), key,
+                .updateValueByCustomIdAndKeyAndValue(metadataEntity.getCustomId(), key,
                     newValue.getBytes(StandardCharsets.UTF_8)))
             .verifyComplete();
 
         // Verify.
-        StepVerifier.create(repository.findByCustomIdAndKey(UuidV7Utils.generateUuid(), key)
+        StepVerifier.create(repository.findByCustomIdAndKey(metadataEntity.getCustomId(), key)
                 .map(CustomMetadataEntity::getValue)
                 .map(bytes -> new String(bytes, StandardCharsets.UTF_8)))
             .expectNext(newValue)
