@@ -72,7 +72,6 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     @Transactional(rollbackFor = Exception.class)
     public <C> Mono<C> update(C custom) {
         return Mono.justOrEmpty(custom)
-            .filter(Objects::nonNull)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'custom' must not null")))
             .flatMap(obj -> findCustomEntityOne(custom.getClass(), getNameFieldValue(custom)))
             // .switchIfEmpty(Mono.error(
@@ -244,7 +243,6 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     @Override
     public <C> Flux<C> findAll(Class<C> type, Predicate<C> predicate) {
         return Mono.justOrEmpty(type)
-            .filter(Objects::nonNull)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'type' must not null")))
             .flatMapMany(obj -> repository.findAll(Example.of(CustomEntity.builder()
                 .group(type.getAnnotation(Custom.class).group())
