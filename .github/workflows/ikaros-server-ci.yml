@@ -105,7 +105,7 @@ jobs:
       - name: Generate jacoco unit test coverage report xml
         run: ./gradlew jacocoTestReport
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./server/build/reports/jacoco/test/jacocoTestReport.xml
