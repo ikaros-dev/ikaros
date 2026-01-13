@@ -1,5 +1,6 @@
 package run.ikaros.server.core.migration;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -31,14 +33,17 @@ import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.mapping.RelationalMappingContext;
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
+import org.springframework.data.relational.core.mapping.RelationalPersistentProperty;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 import run.ikaros.api.constant.FileConst;
+import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.StringUtils;
@@ -47,6 +52,8 @@ import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.infra.utils.DataBufferFileWriter;
 import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.store.entity.AttachmentEntity;
+import run.ikaros.server.store.entity.CustomMetadataEntity;
+import run.ikaros.server.store.entity.RoleEntity;
 import run.ikaros.server.store.repository.BaseRepository;
 
 @Slf4j
@@ -347,6 +354,7 @@ public class DefaultMigrationService implements MigrationService {
 
             List<Tuple3<String, UUID, String>> tuple3s = entry.getValue();
             Map<String, String> attIdUuidMap = new HashMap<>();
+            Map<String, String> roleIdUuidMap = new HashMap<>();
             for (Tuple3<String, UUID, String> tuple3 : tuple3s) {
                 Map<String, String> entityJsonMap =
                     JsonUtils.json2obj(tuple3.getT3(), HashMap.class);
@@ -364,7 +372,9 @@ public class DefaultMigrationService implements MigrationService {
                     entityJsonMap.put("reference_id", uuid == null ? null : uuid.toString());
                 }
 
-                for (Map.Entry<String, String> e2 : entityJsonMap.entrySet()) {
+                Map<String, String> entityJsonCloneMap = new HashMap<>(entityJsonMap.size());
+                entityJsonCloneMap.putAll(entityJsonMap);
+                for (Map.Entry<String, String> e2 : entityJsonCloneMap.entrySet()) {
                     String key = e2.getKey();
                     if (!rkTableNameMap.containsKey(key)) {
                         continue;
@@ -373,11 +383,18 @@ public class DefaultMigrationService implements MigrationService {
                     String replaceTableId = e2.getValue();
                     UUID uuid = tableNameIdUuidMap.get(replaceTableName)
                         .getOrDefault(replaceTableId, null);
-                    e2.setValue(uuid == null ? null : uuid.toString());
+                    entityJsonMap.put(key, uuid == null ? null : uuid.toString());
                 }
 
                 if ("attachment".equalsIgnoreCase(tabName)) {
-                    attIdUuidMap.put(entityJsonMap.get("id"), entityJsonMap.get("uuid"));
+                    String id = entityJsonMap.get("id");
+                    attIdUuidMap.put(id, entityJsonMap.get("uuid"));
+                    if ("0".equalsIgnoreCase(id)) {
+                        attIdUuidMap.put(id, AttachmentConst.V_ROOT_DIRECTORY_ID);
+                    }
+                }
+                if ("role".equalsIgnoreCase(tabName)) {
+                    roleIdUuidMap.put(entityJsonMap.get("id"), entityJsonMap.get("uuid"));
                 }
 
                 // 把ID的值替换成UUID的值
@@ -406,15 +423,82 @@ public class DefaultMigrationService implements MigrationService {
                     String parentId = attRecord.get("parent_id");
                     String newParentUuid = attIdUuidMap.getOrDefault(parentId, "");
                     attRecord.put("parent_id", newParentUuid);
+                    if ("-1".equalsIgnoreCase(parentId)) {
+                        attRecord.put("parent_id", AttachmentConst.V_ROOT_DIRECTORY_PARENT_ID);
+                    }
+                    if ("0".equalsIgnoreCase(parentId)) {
+                        attRecord.put("parent_id", AttachmentConst.V_ROOT_DIRECTORY_ID);
+                    }
                     String newAttRecordJson = JsonUtils.obj2Json(attRecord);
                     newAttRecordJsons.add(newAttRecordJson);
                 }
                 clsEntityJsonMap.put(AttachmentEntity.class, newAttRecordJsons);
             }
 
+            // 角色表的 parent_id => 对应的 UUID
+            if ("role".equalsIgnoreCase(tabName)) {
+                // roleIdUuidMap.put(entityJsonMap.get("id"), entityJsonMap.get("uuid"));
+                List<String> oldRoleJsons = clsEntityJsonMap.get(RoleEntity.class);
+                List<String> newRoleJsons = new ArrayList<>(oldRoleJsons.size());
+                for (String oldRoleJson : oldRoleJsons) {
+                    Map<String, String> roleJsonMap =
+                        JsonUtils.json2obj(oldRoleJson, HashMap.class);
+                    if (roleJsonMap == null) {
+                        continue;
+                    }
+                    String parentId = roleJsonMap.get("parent_id");
+                    String newParentId = roleIdUuidMap.getOrDefault(parentId, "");
+                    roleJsonMap.put("parent_id", newParentId);
+                    newRoleJsons.add(JsonUtils.obj2Json(roleJsonMap));
+                }
+                clsEntityJsonMap.put(RoleEntity.class, newRoleJsons);
+            }
+
         }
 
-        return Flux.fromStream(clsEntityJsonMap.entrySet().stream())
+        Map<Class<?>, List<String>> clsEntityJsonNewMap = new HashMap<>(clsEntityJsonMap.size());
+        for (Map.Entry<Class<?>, List<String>> e : clsEntityJsonMap.entrySet()) {
+            Class<?> cls = e.getKey();
+            RelationalPersistentEntity<?> persistentEntity =
+                mappingContext.getPersistentEntity(cls);
+            if (persistentEntity == null) {
+                log.warn("Current persistentEntity is null for cls: {}", cls);
+                continue;
+            }
+
+            List<String> jsons = e.getValue();
+            List<String> newJsons = new ArrayList<>(jsons.size());
+            for (String json : jsons) {
+                Map<String, String> columnMap = JsonUtils.json2obj(json, HashMap.class);
+                if (columnMap == null) {
+                    continue;
+                }
+                // 数据库列名 => Java字段名称
+                Map<String, String> entityJavaNameMap = new HashMap<>();
+                for (RelationalPersistentProperty property : persistentEntity) {
+                    // 获取 Java 字段名称
+                    String javaName = property.getName();
+                    // 获取数据库列名 (SqlIdentifier 转为字符串)
+                    String columnName = property.getColumnName().getReference();
+                    if ("cm_value".equalsIgnoreCase(columnName)) {
+                        String v = columnMap.get(columnName);
+                        try {
+                            JsonUtils.getObjectMapper().readValue(v, CustomMetadataEntity.class);
+                        } catch (JsonProcessingException ex) {
+                            log.warn("Ignore table custom_metadata column cm_value "
+                                + "for illegal json value: {}", v);
+                            continue;
+                        }
+                    }
+                    String v = columnMap.get(columnName);
+                    entityJavaNameMap.put(javaName, v);
+                }
+                newJsons.add(JsonUtils.obj2Json(entityJavaNameMap));
+            }
+            clsEntityJsonNewMap.put(cls, newJsons);
+        }
+
+        return Flux.fromStream(clsEntityJsonNewMap.entrySet().stream())
             .flatMap(clsEntityJson -> {
                 Class<?> cls = clsEntityJson.getKey();
                 List<String> jsons = clsEntityJson.getValue();
@@ -431,13 +515,21 @@ public class DefaultMigrationService implements MigrationService {
                 }
                 BaseRepository repository = (BaseRepository) repositoryObj;
                 return Flux.fromStream(jsons.stream())
+                    .parallel(20)
                     .flatMap(
                         json -> Mono.just(Objects.requireNonNull(JsonUtils.json2obj(json, cls)))
-                            .onErrorContinue(NullPointerException.class,
+                            .onErrorContinue(Exception.class,
                                 (t, e) -> log.error(
                                     "Convert json to entity fail for cls={} and json={}",
-                                    cls.getCanonicalName(), json, t)))
-                    .flatMap(o -> repository.insert(o))
+                                    cls.getCanonicalName(), json, t))
+                            .flatMap(o -> repository.insert(o)
+                                .onErrorContinue(Exception.class,
+                                    (BiConsumer<Throwable, Object>) (throwable, o1) -> log.error(
+                                        "Insert entity fail for cls={} and json={}",
+                                        cls.getCanonicalName(), json, throwable)))
+                    )
+
+                    .runOn(Schedulers.boundedElastic())
                     .then();
             })
             .then();
