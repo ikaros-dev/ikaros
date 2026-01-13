@@ -2,6 +2,7 @@ package run.ikaros.server.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -9,17 +10,12 @@ import org.springframework.data.r2dbc.config.EnableR2dbcAuditing;
 import org.springframework.data.r2dbc.convert.R2dbcCustomConversions;
 import org.springframework.data.r2dbc.dialect.PostgresDialect;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
-import run.ikaros.api.store.enums.AttachmentRelationType;
-import run.ikaros.api.store.enums.AttachmentType;
-import run.ikaros.api.store.enums.SubjectRelationType;
-import run.ikaros.server.store.convert.AttachmentDriverType2EnumConverter;
-import run.ikaros.server.store.convert.AttachmentDriverType2StringConverter;
-import run.ikaros.server.store.convert.AttachmentRelationType2EnumConverter;
-import run.ikaros.server.store.convert.AttachmentType2EnumConverter;
+import run.ikaros.api.infra.utils.PathResourceUtils;
 import run.ikaros.server.store.convert.Enum2StringConverter;
-import run.ikaros.server.store.convert.SubjectRelationType2EnumConverter;
+import run.ikaros.server.store.convert.String2EnumConverter;
 import run.ikaros.server.store.repository.DelegateBaseRepository;
 
+@Slf4j
 @Configuration(proxyBeanMethods = false)
 @EnableR2dbcAuditing
 @EnableR2dbcRepositories(
@@ -34,14 +30,23 @@ public class R2dbcConfiguration {
     @Bean
     public R2dbcCustomConversions r2dbcCustomConversions() {
         List<Converter<?, ?>> converters = new ArrayList<>();
-        converters.add(new AttachmentDriverType2EnumConverter());
-        converters.add(new AttachmentDriverType2StringConverter());
-        converters.add(new Enum2StringConverter<AttachmentType>());
-        converters.add(new AttachmentType2EnumConverter());
-        converters.add(new Enum2StringConverter<SubjectRelationType>());
-        converters.add(new SubjectRelationType2EnumConverter());
-        converters.add(new AttachmentRelationType2EnumConverter());
-        converters.add(new Enum2StringConverter<AttachmentRelationType>());
+
+        final String packageName = "run.ikaros.api.store.enums";
+        List<Class<?>> classes = new ArrayList<>();
+        try {
+            classes.addAll(PathResourceUtils.getClasses(packageName));
+        } catch (Exception e) {
+            log.warn("Get class fail for packageName={}", packageName, e);
+        }
+        for (Class<?> cls : classes) {
+            if (!cls.isEnum()) {
+                continue;
+            }
+            Class<? extends Enum> enumCls = cls.asSubclass(Enum.class);
+            converters.add(new String2EnumConverter<>(enumCls));
+            converters.add(new Enum2StringConverter<>(enumCls));
+        }
+
 
         return R2dbcCustomConversions.of(
             PostgresDialect.INSTANCE,
