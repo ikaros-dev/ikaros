@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -67,4 +68,5 @@ public class AttachmentDriverEntity {
     private Long spaceTotal;
     @Column("space_use")
     private Long spaceUse;
+    private UUID uuid;
 }

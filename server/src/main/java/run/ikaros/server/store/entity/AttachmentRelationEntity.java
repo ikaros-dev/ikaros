@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,4 +25,5 @@ public class AttachmentRelationEntity {
     private AttachmentRelationType type;
     @Column("relation_attachment_id")
     private Long relationAttachmentId;
+    private UUID uuid;
 }

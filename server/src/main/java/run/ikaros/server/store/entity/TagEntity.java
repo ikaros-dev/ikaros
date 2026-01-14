@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,4 +36,5 @@ public class TagEntity {
      * 十六进制字符串颜色，与条目无关，与标签名一对一，与用户ID关联.
      */
     private String color;
+    private UUID uuid;
 }

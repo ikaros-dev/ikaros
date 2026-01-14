@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -51,5 +52,6 @@ public class UserEntity extends BaseEntity {
     private Boolean nonLocked;
 
     private String avatar;
+    private UUID uuid;
 
 }

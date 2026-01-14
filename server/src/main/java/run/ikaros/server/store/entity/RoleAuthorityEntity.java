@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import jakarta.persistence.Id;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,4 +23,5 @@ public class RoleAuthorityEntity {
     private Long roleId;
     @Column("authority_id")
     private Long authorityId;
+    private UUID uuid;
 }
