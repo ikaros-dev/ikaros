@@ -120,4 +120,10 @@ export interface UserEntity {
    * @memberof UserEntity
    */
   avatar?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserEntity
+   */
+  uuid?: string;
 }

@@ -1,7 +1,6 @@
 export * from "./attachment";
 export * from "./attachment-driver";
 export * from "./attachment-driver-fetcher-vo";
-export * from "./attachment-pan-custom";
 export * from "./attachment-reference";
 export * from "./attachment-relation";
 export * from "./attachment-tag";
