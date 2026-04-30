@@ -42,9 +42,12 @@ class IkarosAppInfoContributorTest {
         when(subjectRepository.countByType(SubjectType.OTHER)).thenReturn(Mono.just(0L));
 
         when(subjectCollectionRepository.count()).thenReturn(Mono.just(8L));
-        when(subjectCollectionRepository.countByType(CollectionType.WISH)).thenReturn(Mono.just(2L));
-        when(subjectCollectionRepository.countByType(CollectionType.DOING)).thenReturn(Mono.just(3L));
-        when(subjectCollectionRepository.countByType(CollectionType.DONE)).thenReturn(Mono.just(2L));
+        when(subjectCollectionRepository.countByType(CollectionType.WISH))
+            .thenReturn(Mono.just(2L));
+        when(subjectCollectionRepository.countByType(CollectionType.DOING))
+            .thenReturn(Mono.just(3L));
+        when(subjectCollectionRepository.countByType(CollectionType.DONE))
+            .thenReturn(Mono.just(2L));
         when(subjectCollectionRepository.countByType(CollectionType.SHELVE))
             .thenReturn(Mono.just(1L));
         when(subjectCollectionRepository.countByType(CollectionType.DISCARD))

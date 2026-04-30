@@ -103,8 +103,8 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                         .doOnSuccess(entity -> {
                             log.info("Create new subject collection entity: {}", entity);
                             SubjectCollectionScoreUpdateEvent event
-                                = new SubjectCollectionScoreUpdateEvent(
-                                this, entity.getSubjectId());
+                                = new SubjectCollectionScoreUpdateEvent(this,
+                                entity.getSubjectId());
                             applicationEventPublisher.publishEvent(event);
                             SubjectCollectionCreateEvent newEvent
                                 = new SubjectCollectionCreateEvent(this,
@@ -115,8 +115,8 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                         if (entity != null && entity.getScore() != null
                             && newScore != entity.getScore()) {
                             SubjectCollectionScoreUpdateEvent event
-                                = new SubjectCollectionScoreUpdateEvent(
-                                this, entity.getSubjectId());
+                                = new SubjectCollectionScoreUpdateEvent(this,
+                                entity.getSubjectId());
                             applicationEventPublisher.publishEvent(event);
                         }
                     })
@@ -304,8 +304,8 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
                         + "for userId[{}] and subjectId[{}]",
                     oldProgress, progress, userId, subjectId);
                 SubjectCollectProgressChangeEvent event
-                    = new SubjectCollectProgressChangeEvent(
-                    this, userId, subjectId, oldProgress, progress
+                    = new SubjectCollectProgressChangeEvent(this,
+                    userId, subjectId, oldProgress, progress
                 );
                 log.debug("Publish SubjectCollectProgressChangeEvent "
                         + "for userId[{}] and subjectId[{}] and progress=[{}]",

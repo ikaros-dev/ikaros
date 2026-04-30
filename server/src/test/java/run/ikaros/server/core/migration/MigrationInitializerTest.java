@@ -370,16 +370,7 @@ class MigrationInitializerTest {
                 name = "Subject with 'quotes' & \"double quotes\" <brackets>";
             }
             String nameCn = sid <= 80 ? "中文名" + sid : null;
-            String type = subjectTypes[(sid - 1) % subjectTypes.length];
-            boolean nsfw = sid % 10 == 0;
             String cover = sid <= 60 ? "/covers/subject" + sid + ".jpg" : null;
-            String infobox = sid <= 50 ? "{\"name\":\"" + name + "\",\"eps\":"
-                + (sid % 50 + 1) + "}" : null;
-            String summary = sid == 100 ? "" : (sid <= 70 ? "Summary for subject " + sid
-                + ". This is a longer summary to test text fields." : null);
-            Double score = sid <= 80 ? (sid % 10) * 1.0 + 0.5 : null;
-            long createUid = (sid % 50) + 1;
-            long updateUid = (sid % 50) + 1;
 
             var subjectSpec = sourceClient.sql(
                     "INSERT INTO subject "
@@ -395,18 +386,26 @@ class MigrationInitializerTest {
                 .bind("name", name);
             subjectSpec = nameCn != null ? subjectSpec.bind("name_cn", nameCn)
                 : subjectSpec.bindNull("name_cn", String.class);
-            subjectSpec = subjectSpec.bind("type", type)
-                .bind("nsfw", nsfw)
+            subjectSpec = subjectSpec
+                .bind("type", subjectTypes[(sid - 1) % subjectTypes.length])
+                .bind("nsfw", sid % 10 == 0)
                 .bind("air_time", LocalDateTime.of(2020 + (sid % 6),
                     (sid % 12) + 1, (sid % 28) + 1, 0, 0));
             subjectSpec = cover != null ? subjectSpec.bind("cover", cover)
                 : subjectSpec.bindNull("cover", String.class);
+            String infobox = sid <= 50 ? "{\"name\":\"" + name + "\",\"eps\":"
+                + (sid % 50 + 1) + "}" : null;
             subjectSpec = infobox != null ? subjectSpec.bind("infobox", infobox)
                 : subjectSpec.bindNull("infobox", String.class);
+            String summary = sid == 100 ? "" : (sid <= 70 ? "Summary for subject " + sid
+                + ". This is a longer summary to test text fields." : null);
             subjectSpec = summary != null ? subjectSpec.bind("summary", summary)
                 : subjectSpec.bindNull("summary", String.class);
+            Double score = sid <= 80 ? (sid % 10) * 1.0 + 0.5 : null;
             subjectSpec = score != null ? subjectSpec.bind("score", score)
                 : subjectSpec.bindNull("score", Double.class);
+            long createUid = (sid % 50) + 1;
+            long updateUid = (sid % 50) + 1;
             subjectSpec.bind("create_uid", createUid)
                 .bind("update_uid", updateUid)
                 .bind("create_time", LocalDateTime.now().minusDays(sid))
@@ -505,9 +504,6 @@ class MigrationInitializerTest {
             }
             Long size = isDirectory ? null : (long) (aid * 1024);
             String sha1 = isDirectory ? null : "sha1_hash_" + aid;
-            String url = aid % 3 == 0 ? "https://example.com/files/" + aid : null;
-            String fsPath = aid % 4 == 0 ? "/data/files/" + aid : null;
-            Long driverId = aid % 10 == 0 ? 1L : null;
 
             var attSpec = sourceClient.sql(
                     "INSERT INTO attachment "
@@ -519,7 +515,7 @@ class MigrationInitializerTest {
                         + ":deleted, :driver_id)")
                 .bind("id", (long) aid)
                 .bind("parent_id", parentId)
-                .bind("type", type)
+                .bind("type", isDirectory ? "Directory" : "File")
                 .bind("path", path)
                 .bind("name", name);
             attSpec = size != null ? attSpec.bind("size", size)
@@ -527,10 +523,13 @@ class MigrationInitializerTest {
             attSpec = attSpec.bind("update_time", LocalDateTime.now().minusDays(aid));
             attSpec = sha1 != null ? attSpec.bind("sha1", sha1)
                 : attSpec.bindNull("sha1", String.class);
+            String url = aid % 3 == 0 ? "https://example.com/files/" + aid : null;
             attSpec = url != null ? attSpec.bind("url", url)
                 : attSpec.bindNull("url", String.class);
+            String fsPath = aid % 4 == 0 ? "/data/files/" + aid : null;
             attSpec = fsPath != null ? attSpec.bind("fs_path", fsPath)
                 : attSpec.bindNull("fs_path", String.class);
+            Long driverId = aid % 10 == 0 ? 1L : null;
             attSpec = driverId != null ? attSpec.bind("driver_id", driverId)
                 : attSpec.bindNull("driver_id", Long.class);
             attSpec.bind("deleted", aid == 159)
@@ -764,10 +763,6 @@ class MigrationInitializerTest {
             String taskName = "task_" + tid;
             String status = taskStatuses[(tid - 1) % taskStatuses.length];
             Long total = tid <= 7 ? (long) (tid * 100) : null;
-            Long index = status.equals("SUCCESS") ? total
-                : (status.equals("RUNNING") ? total / 2 : null);
-            String failMessage = status.equals("FAILED")
-                ? "Fail reason for task " + tid + ": some detailed error message" : null;
 
             var taskSpec = sourceClient.sql(
                     "INSERT INTO task "
@@ -787,8 +782,12 @@ class MigrationInitializerTest {
                 : taskSpec.bindNull("end_time", LocalDateTime.class);
             taskSpec = total != null ? taskSpec.bind("total", total)
                 : taskSpec.bindNull("total", Long.class);
+            Long index = status.equals("SUCCESS") ? total
+                : (status.equals("RUNNING") ? total / 2 : null);
             taskSpec = index != null ? taskSpec.bind("index", index)
                 : taskSpec.bindNull("index", Long.class);
+            String failMessage = status.equals("FAILED")
+                ? "Fail reason for task " + tid + ": some detailed error message" : null;
             taskSpec = failMessage != null ? taskSpec.bind("fail_message", failMessage)
                 : taskSpec.bindNull("fail_message", String.class);
             taskSpec.fetch().rowsUpdated()
@@ -911,7 +910,6 @@ class MigrationInitializerTest {
             String nameCn = elid <= 7 ? "播放列表" + elid : null;
             String cover = elid <= 5 ? "/covers/list" + elid + ".jpg" : null;
             String description = elid <= 8 ? "Description for list " + elid : null;
-            boolean nsfw = elid % 5 == 0;
 
             var elSpec = sourceClient.sql(
                     "INSERT INTO episode_list "
@@ -927,7 +925,7 @@ class MigrationInitializerTest {
                 : elSpec.bindNull("cover", String.class);
             elSpec = description != null ? elSpec.bind("description", description)
                 : elSpec.bindNull("description", String.class);
-            elSpec.bind("nsfw", nsfw)
+            elSpec.bind("nsfw", elid % 5 == 0)
                 .bind("create_time", LocalDateTime.now().minusDays(elid))
                 .bind("delete_status", elid == 10)
                 .fetch().rowsUpdated()
@@ -1045,8 +1043,8 @@ class MigrationInitializerTest {
         String[] driverTypes = {"LOCAL", "ALIYUN_PAN", "ONE_DRIVE", "MINIO", "S3"};
         for (int i = 1; i <= 5; i++) {
             final int adid = i;
-            String dType = driverTypes[(adid - 1) % driverTypes.length];
-            String dName = "Driver " + adid;
+            String driverType = driverTypes[(adid - 1) % driverTypes.length];
+            String driverName = "Driver " + adid;
             String mountName = "/driver" + adid;
             String remotePath = adid <= 3 ? "/remote/" + adid : null;
             Long userId = (long) ((adid % 50) + 1);
@@ -1063,8 +1061,8 @@ class MigrationInitializerTest {
                         + ":user_id, :user_name)")
                 .bind("id", (long) adid)
                 .bind("enable", enable)
-                .bind("d_type", dType)
-                .bind("d_name", dName)
+                .bind("d_type", driverType)
+                .bind("d_name", driverName)
                 .bind("mount_name", mountName);
             driverSpec = remotePath != null ? driverSpec.bind("remote_path", remotePath)
                 : driverSpec.bindNull("remote_path", String.class);
