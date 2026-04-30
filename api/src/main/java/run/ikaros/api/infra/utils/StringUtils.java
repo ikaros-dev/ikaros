@@ -80,4 +80,35 @@ public class StringUtils {
         String regex = "^[A-Za-z0-9+/=]+$";
         return str.matches(regex) && str.length() % 4 == 0;
     }
+
+    /**
+     * user_id => userId
+     * .
+     */
+    public static String snakeToCamel(String input) {
+        if (input == null || !input.contains("_")) {
+            return input;
+        }
+
+        StringBuilder result = new StringBuilder();
+        boolean nextUpperCase = false;
+
+        // 转为小写处理，确保结果符合标准驼峰（如 USER_ID -> userId）
+        String lowerInput = input.toLowerCase();
+
+        for (int i = 0; i < lowerInput.length(); i++) {
+            char c = lowerInput.charAt(i);
+            if (c == '_') {
+                nextUpperCase = true;
+            } else {
+                if (nextUpperCase) {
+                    result.append(Character.toUpperCase(c));
+                    nextUpperCase = false;
+                } else {
+                    result.append(c);
+                }
+            }
+        }
+        return result.toString();
+    }
 }

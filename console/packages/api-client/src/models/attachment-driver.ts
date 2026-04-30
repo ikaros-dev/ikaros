@@ -110,10 +110,10 @@ export interface AttachmentDriver {
   request_limit?: number;
   /**
    *
-   * @type {string}
+   * @type {number}
    * @memberof AttachmentDriver
    */
-  user_id?: string;
+  user_id?: number;
   /**
    *
    * @type {string}

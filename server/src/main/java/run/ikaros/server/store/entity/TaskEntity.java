@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,4 +33,5 @@ public class TaskEntity {
     private Long index;
     @Column("fail_message")
     private String failMessage;
+    private UUID uuid;
 }

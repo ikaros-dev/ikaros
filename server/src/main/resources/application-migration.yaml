@@ -1,0 +1,8 @@
+ikaros:
+  migration:
+    enable: false
+    r2dbc:
+      # r2dbc:pool:postgresql://<host>:<port>/<database>
+      url: r2dbc:pool:postgresql://localhost:5432/newikaros
+      username: ikaros
+      password: openikaros

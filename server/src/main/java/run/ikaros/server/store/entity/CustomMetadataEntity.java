@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -25,4 +26,5 @@ public class CustomMetadataEntity {
     private String key;
     @Column("cm_value")
     private byte[] value;
+    private UUID uuid;
 }

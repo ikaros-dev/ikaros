@@ -1,0 +1,36 @@
+ikaros:
+  external-url: "http://${server.address:localhost}:${server.port}"
+  work-dir: ${user.dir}/build/
+  migration:
+    enable: true
+    r2dbc:
+      url: r2dbc:postgresql://localhost:5435/ikaros_test
+      username: ikaros
+      password: ikaros
+  security:
+    initializer:
+      master-username: tomoki
+      master-password: tomoki
+
+server:
+  port: 0
+
+spring:
+  sql:
+    init:
+      mode: never
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5434/ikaros_test
+    username: ikaros
+    password: ikaros
+  flyway:
+    enabled: false
+
+springdoc:
+  api-docs:
+    enabled: false
+
+logging:
+  level:
+    run.ikaros.server: DEBUG
+    org.springframework.r2dbc.core.DefaultDatabaseClient: DEBUG

@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,5 @@ public class RoleEntity extends BaseEntity {
     @Column("parent_id")
     private Long parentId;
     private String description;
+    private UUID uuid;
 }
