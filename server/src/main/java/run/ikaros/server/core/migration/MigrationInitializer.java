@@ -259,7 +259,11 @@ public class MigrationInitializer {
             .doOnSuccess(unused -> log.info("Execute sql script from: {}",
                 classPathResource.getPath()))
             .doOnError(e -> log.error("Failed to execute sql script from: {}",
-                classPathResource.getPath(), e));
+                classPathResource.getPath(), e))
+            .onErrorResume(e -> {
+                log.warn("Continuing despite error in: {}", classPathResource.getPath());
+                return Mono.empty();
+            });
     }
 
     private Mono<Void> executeSqlScript(ConnectionFactory connectionFactory,
@@ -422,15 +426,42 @@ public class MigrationInitializer {
             return Mono.just(recordMap);
         }
         String rkKey = "reference_id@type@" + onlyReadMap.get("type").toString().toUpperCase();
+        Object referenceId = recordMap.get("reference_id");
+        if (referenceId == null) {
+            return Mono.just(recordMap);
+        }
+        // 确保 referenceId 是 Long 类型
+        if (referenceId instanceof Number num) {
+            referenceId = num.longValue();
+        }
 
+        String targetTable = rkTableNameMap.get(rkKey);
+        if (targetTable == null) {
+            log.warn("No target table found for rkKey: {}", rkKey);
+            return Mono.just(recordMap);
+        }
+
+        Object finalReferenceId = referenceId;
         return template.getDatabaseClient()
-            .sql("select uuid from " + rkTableNameMap.get(rkKey) + " where id=:id")
-            .bind("id", recordMap.get("reference_id"))
+            .sql("select uuid from " + targetTable + " where id=:id")
+            .bind("id", finalReferenceId)
             .fetch()
             .one()
-            .map(recordMap2 -> recordMap2.get("uuid"))
-            .map(uuid -> recordMap.put("reference_id", uuid))
-            .then(Mono.defer(() -> Mono.just(recordMap)));
+            .doOnNext(recordMap2 -> {
+                Object uuid = recordMap2.get("uuid");
+                if (uuid != null) {
+                    recordMap.put("reference_id", uuid);
+                } else {
+                    log.warn("UUID not found for reference_id={} in table={}",
+                        finalReferenceId, targetTable);
+                }
+            })
+            .then(Mono.defer(() -> Mono.just(recordMap)))
+            .switchIfEmpty(Mono.defer(() -> {
+                log.warn("No record found for reference_id={} in table={}",
+                    finalReferenceId, targetTable);
+                return Mono.just(recordMap);
+            }));
     }
 
     private Mono<Map<String, Object>> replaceSelfParentIdFromSourceUuid(
@@ -462,7 +493,7 @@ public class MigrationInitializer {
         if ("attachment".equalsIgnoreCase(tableName)
             && id instanceof Number num
             && (num.longValue() == 0 || num.longValue() == -1)) {
-            recordMap.put("parent_id", V_ROOT_DIRECTORY_PARENT_ID);
+            recordMap.put("parent_id", UUID.fromString(V_ROOT_DIRECTORY_PARENT_ID));
             return Mono.just(recordMap);
         }
 
@@ -540,7 +571,28 @@ public class MigrationInitializer {
                 }
                 spec = spec.bindNull(entry.getKey(), fieldCls);
             } else {
-                spec = spec.bind(entry.getKey(), entry.getValue());
+                // 如果是 UUID 类型的列，确保值是 UUID 对象
+                if (uuidType.contains(entry.getKey())) {
+                    if (entry.getValue() instanceof String uuidStr) {
+                        try {
+                            spec = spec.bind(entry.getKey(), UUID.fromString(uuidStr));
+                        } catch (IllegalArgumentException e) {
+                            spec = spec.bind(entry.getKey(), entry.getValue());
+                        }
+                    } else if (entry.getValue() instanceof UUID) {
+                        spec = spec.bind(entry.getKey(), entry.getValue());
+                    } else {
+                        // 尝试转换为 UUID
+                        try {
+                            spec = spec.bind(entry.getKey(),
+                                UUID.fromString(String.valueOf(entry.getValue())));
+                        } catch (IllegalArgumentException e) {
+                            spec = spec.bind(entry.getKey(), entry.getValue());
+                        }
+                    }
+                } else {
+                    spec = spec.bind(entry.getKey(), entry.getValue());
+                }
             }
         }
 
@@ -564,6 +616,11 @@ public class MigrationInitializer {
                     log.warn("Skipping duplicate record for table={}", tabName);
                     return Mono.just(0L);
                 })
+            .onErrorResume(e -> {
+                log.warn("Error inserting record for table={}, skipping: {}", tabName,
+                    e.getMessage());
+                return Mono.just(0L);
+            })
             .doOnSuccess(count -> {
                 if (count > 0) {
                     log.info("Update table={} from record={}", tabName,

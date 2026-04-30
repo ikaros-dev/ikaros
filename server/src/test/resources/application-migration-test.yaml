@@ -2,7 +2,7 @@ ikaros:
   external-url: "http://${server.address:localhost}:${server.port}"
   work-dir: ${user.dir}/build/
   migration:
-    enable: false
+    enable: true
     r2dbc:
       url: r2dbc:postgresql://localhost:5435/ikaros_test
       username: ikaros
