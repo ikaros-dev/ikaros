@@ -46,7 +46,6 @@ import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 import run.ikaros.api.infra.utils.FileUtils;
@@ -112,8 +111,11 @@ public class MigrationInitializer {
         this.mappingContext = mappingContext;
     }
 
+    /**
+     * Execute migration manually.
+     */
     @EventListener(ApplicationReadyEvent.class)
-    private Mono<Void> doMigration(ApplicationReadyEvent event) {
+    public Mono<Void> doMigration(ApplicationReadyEvent event) {
         log.info("Start migration database table records to new database...");
         ConnectionFactoryOptions baseOptions =
             ConnectionFactoryOptions.parse(migrationProperties.getR2dbc().getUrl());
@@ -146,7 +148,7 @@ public class MigrationInitializer {
         String tableNameKey;
         if (name.toLowerCase().contains("h2")) {
             sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES "
-                + "WHERE TABLE_SCHEMA = 'PUBLIC'";
+                + "WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_TYPE = 'BASE TABLE'";
             tableNameKey = "TABLE_NAME";
         } else {
             tableNameKey = "tablename";
@@ -159,6 +161,15 @@ public class MigrationInitializer {
                 Long index = t.getT1();
                 Object o = t.getT2().get(tableNameKey);
                 return String.valueOf(o);
+            })
+            .filter(tableName -> {
+                // 过滤掉系统表和不需要迁移的表
+                String lowerTableName = tableName.toLowerCase();
+                return !lowerTableName.startsWith("flyway_")
+                    && !lowerTableName.startsWith("migrations")
+                    && !lowerTableName.startsWith("information_schema")
+                    && !lowerTableName.startsWith("pg_")
+                    && !lowerTableName.startsWith("sql_");
             });
     }
 
@@ -227,19 +238,15 @@ public class MigrationInitializer {
                     .and("uuid").isNull()))
                 .apply(Update.update("uuid", V_DOWNLOAD_DIRECTORY_ID)))
             .thenMany(Flux.defer(this::fetchTableNames))
-            .parallel(4)
-            .flatMap(tableName -> {
-                return fetchTableIds(tableName)
-                    .parallel(10)
-                    .flatMap(id -> template.update(getEntityClassByTableName(tableName))
+            .flatMapSequential(tableName ->
+                fetchTableIds(tableName)
+                    .flatMapSequential(id -> template.update(getEntityClassByTableName(tableName))
                         .matching(Query.query(Criteria.empty()
                             .and("id").is(id)
                             .and("uuid").isNull()))
                         .apply(Update.update("uuid", UuidV7Utils.generate()))
                         .then())
-                    .runOn(Schedulers.boundedElastic());
-            })
-            .runOn(Schedulers.boundedElastic())
+            )
             .then();
     }
 
@@ -250,7 +257,9 @@ public class MigrationInitializer {
         );
         return populator.populate(connectionFactory)
             .doOnSuccess(unused -> log.info("Execute sql script from: {}",
-                classPathResource.getPath()));
+                classPathResource.getPath()))
+            .doOnError(e -> log.error("Failed to execute sql script from: {}",
+                classPathResource.getPath(), e));
     }
 
     private Mono<Void> executeSqlScript(ConnectionFactory connectionFactory,
@@ -368,7 +377,11 @@ public class MigrationInitializer {
     private Map<String, Object> replaceIdValueFromUuid(
         Map<String, Object> recordMap
     ) {
-        recordMap.put("id", recordMap.remove("uuid"));
+        Object uuid = recordMap.get("uuid");
+        if (uuid != null) {
+            recordMap.put("id", uuid);
+            recordMap.remove("uuid");
+        }
         return recordMap;
     }
 
@@ -385,7 +398,7 @@ public class MigrationInitializer {
             .filter(name -> rkTableNameMap.containsKey(name))
             .filter(name -> recordMap.get(name) != null)
             .flatMapSequential(name -> template.getDatabaseClient()
-                .sql("select uuid form " + rkTableNameMap.get(name) + " where id=:id")
+                .sql("select uuid from " + rkTableNameMap.get(name) + " where id=:id")
                 .bind("id", recordMap.get(name))
                 .fetch()
                 .one()
@@ -411,7 +424,7 @@ public class MigrationInitializer {
         String rkKey = "reference_id@type@" + onlyReadMap.get("type").toString().toUpperCase();
 
         return template.getDatabaseClient()
-            .sql("select uuid form " + rkTableNameMap.get(rkKey) + " where id=:id")
+            .sql("select uuid from " + rkTableNameMap.get(rkKey) + " where id=:id")
             .bind("id", recordMap.get("reference_id"))
             .fetch()
             .one()
@@ -430,21 +443,40 @@ public class MigrationInitializer {
 
         Object id = onlyReadMap.get("parent_id");
 
+        // 处理 null 值
+        if (id == null) {
+            return Mono.just(recordMap);
+        }
+
+        // 处理 attachment 表的特殊值
         if ("attachment".equalsIgnoreCase(tableName)
             && id instanceof String ids
             && ("-1".equalsIgnoreCase(ids)
-            || "0".equalsIgnoreCase(ids))) {
+            || "0".equalsIgnoreCase(ids)
+            || "".equalsIgnoreCase(ids))) {
+            recordMap.put("parent_id", UUID.fromString(V_ROOT_DIRECTORY_PARENT_ID));
+            return Mono.just(recordMap);
+        }
+
+        // 处理数值类型的 0 和 -1
+        if ("attachment".equalsIgnoreCase(tableName)
+            && id instanceof Number num
+            && (num.longValue() == 0 || num.longValue() == -1)) {
             recordMap.put("parent_id", V_ROOT_DIRECTORY_PARENT_ID);
             return Mono.just(recordMap);
         }
 
         return template.getDatabaseClient()
-            .sql("select uuid form " + tableName + " where id=:id")
+            .sql("select uuid from " + tableName + " where id=:id")
             .bind("id", id)
             .fetch()
             .one()
-            .map(recordMap2 -> recordMap2.get("uuid"))
-            .map(uuid -> recordMap.put("parent_id", uuid))
+            .doOnNext(recordMap2 -> {
+                Object uuid = recordMap2.get("uuid");
+                if (uuid != null) {
+                    recordMap.put("parent_id", uuid);
+                }
+            })
             .then()
             .then(Mono.defer(() -> Mono.just(recordMap)));
     }
@@ -496,12 +528,15 @@ public class MigrationInitializer {
         // 5. 循环 bind 数据
         for (Map.Entry<String, Object> entry : data.entrySet()) {
             if (entry.getValue() == null) {
-                // 注意：R2DBC 绑定 null 需要指定类型，这里简单处理，实际可根据 key 获取实体类型
                 Class<?> fieldCls;
                 if (uuidType.contains(entry.getKey())) {
                     fieldCls = UUID.class;
                 } else {
                     fieldCls = getFieldTypeByColumnName(cls, entry.getKey());
+                }
+                // PostgreSQL driver doesn't support Object.class for null
+                if (fieldCls == Object.class) {
+                    fieldCls = String.class;
                 }
                 spec = spec.bindNull(entry.getKey(), fieldCls);
             } else {
@@ -518,12 +553,16 @@ public class MigrationInitializer {
         return insertMapIfAbsent(targetClient, tabName, recordMap)
             .onErrorResume(DuplicateKeyException.class,
                 e -> {
-                    if ("ikuser".equalsIgnoreCase(tabName)) {
+                    log.warn("Duplicate key found for table={}, trying to update username if "
+                        + "applicable", tabName);
+                    if ("ikuser".equalsIgnoreCase(tabName)
+                        && recordMap.containsKey("username")) {
                         recordMap.put("username", recordMap.get("username")
-                            + String.valueOf(RandomUtils.getRandom().nextInt(1, 100)));
+                            + "_" + RandomUtils.getRandom().nextInt(1, 1000));
                         return insertMapIfAbsent(targetClient, tabName, recordMap);
                     }
-                    return Mono.error(e);
+                    log.warn("Skipping duplicate record for table={}", tabName);
+                    return Mono.just(0L);
                 })
             .doOnSuccess(count -> {
                 if (count > 0) {
