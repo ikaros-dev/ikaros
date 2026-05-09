@@ -1,39 +1,45 @@
 ikaros:
   show-theme: true
-  enable-redis: true
   security:
     # 30 day for local dev token expire
     jwt-expiration-time: 18144000000
+    initializer:
+      master-username: tomoki
+      master-password: tomoki
   indices:
     initializer:
-      enabled: false
+      enabled: true
 
-
+  cache:
+    enable: false
+    type: memory
+    redis:
+      host: localhost
+      port: 6379
+      password: openredis
+      expiration-time: 259200000
+      timeout: 10000
 
 
   plugin:
     runtime-mode: development
     auto-start-plugin: true
     fixed-plugin-path:
-      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-bgmtv
+    #  - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-bgmtv
+    #  - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-pan115
+    #  - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-openlist
     #      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-mikan
-    #      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-alist
     #      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-starter
     #      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-local-files-import
-    #      - C:\Users\chivehao\GitRepos\ikaros-dev\plugin-alist
     #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-jellyfin
     #      - C:\Develop\GitRepos\ikaros-dev\plugins\plugin-baidupan
 
-
-#spring:
-#  r2dbc:
-#    url: r2dbc:pool:postgresql://192.168.13.102:5432/ikaros
-#    username: ikaros
-#    password: openpostgresql
-#  flyway:
-#    url: jdbc:postgresql://192.168.13.102:5432/ikaros
-#    locations: classpath:db/postgresql/migration
-
+  migration:
+    enable: false
+    r2dbc:
+      url: r2dbc:pool:postgresql://localhost:55432/v11x
+      username: ikaros
+      password: ikaros
 
 logging:
   level:
@@ -43,15 +49,21 @@ logging:
     run.ikaros.plugin: DEBUG
     run.ikaros.api: DEBUG
     org.pf4j: INFO
-    org.hibernate.SQL: INFO
+    org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: INFO
-    org.springframework.r2dbc.core.DefaultDatabaseClient: INFO
+    org.springframework.r2dbc.core.DefaultDatabaseClient: DEBUG
+    run.ikaros.server.cache: DEBUG
 
 spring:
   jpa:
     show-sql: true
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      password:
+  r2dbc:
+    url: r2dbc:pool:postgresql://localhost:5432/ikaros
+    username: ikaros
+    password: openpostgresql
+
+  flyway:
+    locations: classpath:db/postgresql/migration
+    url: jdbc:postgresql://localhost:5432/ikaros
+    user: ikaros
+    password: openpostgresql
