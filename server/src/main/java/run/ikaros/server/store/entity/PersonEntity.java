@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,4 +20,5 @@ public class PersonEntity extends BaseEntity {
     private String name;
     private String infobox;
     private String summary;
+    private UUID uuid;
 }

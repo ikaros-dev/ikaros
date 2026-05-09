@@ -79,9 +79,24 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 
 ## 本地开发
 
-在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win-dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,win-dev,local`
+由于全面转向pgsql, 建议本地开发时，安装好docker环境，Windows推荐推荐`Docker Desktop`，部分单元测试也依赖容器环境。
+
+在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,local`
 
 这里的`local`请先确保您已经进行了上面的`application-local.yaml.example`实例文件复制移动重命名
+
+给个本地开发用数据库的部署参考:
+```txt
+docker run -d \
+--name ikarosdb_dev \
+-p 5432:5432 \
+-v /share/container/app/ikarosdb_dev:/var/lib/postgresql/data \
+-e POSTGRES_DB=ikaros \
+-e POSTGRES_USER=ikaros \
+-e POSTGRES_PASSWORD=openpostgresql \
+--restart=always \
+postgres
+```
 
 ### Console编译
 需要先运行任务进行Console的前端文件编译：

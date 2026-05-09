@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -48,4 +49,5 @@ public class SubjectCollectionEntity {
      * Subject score, from 0 to 10.
      */
     private Integer score;
+    private UUID uuid;
 }

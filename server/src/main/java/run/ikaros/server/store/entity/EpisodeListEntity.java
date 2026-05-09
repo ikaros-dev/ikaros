@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,4 +27,5 @@ public class EpisodeListEntity extends BaseEntity {
      */
     private Boolean nsfw;
     private String description;
+    private UUID uuid;
 }

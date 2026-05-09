@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,4 +26,5 @@ public class EpisodeListCollectionEntity {
     private Long episodeListId;
     @Column("update_time")
     private LocalDateTime updateTime;
+    private UUID uuid;
 }

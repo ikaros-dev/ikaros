@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -27,4 +28,5 @@ public class CustomEntity {
     private String version;
     private String kind;
     private String name;
+    private UUID uuid;
 }

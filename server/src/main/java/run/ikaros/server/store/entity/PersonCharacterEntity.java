@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,5 @@ public class PersonCharacterEntity extends BaseEntity {
     private Long personId;
     @Column("character_id")
     private Long characterId;
+    private UUID uuid;
 }

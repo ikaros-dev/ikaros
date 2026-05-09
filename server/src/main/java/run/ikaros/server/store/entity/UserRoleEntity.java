@@ -1,5 +1,6 @@
 package run.ikaros.server.store.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,4 +23,5 @@ public class UserRoleEntity {
     private Long userId;
     @Column("role_id")
     private Long roleId;
+    private UUID uuid;
 }

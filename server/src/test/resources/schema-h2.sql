@@ -2,6 +2,7 @@
 create table if not exists attachment
 (
     id          int8          not null auto_increment,
+    uuid        uuid          null,
     parent_id   int8          null,
     type        varchar(255)  not null,
     url         varchar(5000) null,
@@ -39,6 +40,7 @@ WHERE NOT EXISTS (SELECT 1
 create table if not exists attachment_relation
 (
     id                     int8         not null auto_increment,
+    uuid                   uuid         null,
     attachment_id          int8         not null,
     type                   varchar(255) not null,
     relation_attachment_id int8         not null,
@@ -49,6 +51,7 @@ create table if not exists attachment_relation
 create table if not exists attachment_reference
 (
     id            int8         not null auto_increment,
+    uuid          uuid         null,
     type          varchar(255) not null,
     attachment_id int8         not null,
     reference_id  int8         not null,
@@ -61,6 +64,7 @@ create table if not exists attachment_reference
 create table if not exists authority
 (
     id            int8           not null auto_increment,
+    uuid          uuid           null,
     create_time   timestamp(6)   null,
     create_uid    int8           null,
     delete_status bool           null,
@@ -78,6 +82,7 @@ create table if not exists authority
 create table if not exists character
 (
     id            int8           not null auto_increment,
+    uuid          uuid           null,
     create_time   timestamp(6)   null,
     create_uid    int8           null,
     delete_status bool           null,
@@ -94,6 +99,7 @@ create table if not exists character
 create table if not exists subject_collection
 (
     id               int8         not null auto_increment,
+    uuid             uuid         null,
     user_id          int8         not null,
     subject_id       int8         not null,
     type             varchar(255) not null,
@@ -109,6 +115,7 @@ create table if not exists subject_collection
 create table if not exists episode_collection
 (
     id          int8         not null auto_increment,
+    uuid        uuid         null,
     user_id     int8         not null,
     subject_id  int8         not null,
     episode_id  int8         not null,
@@ -124,6 +131,7 @@ create table if not exists episode_collection
 create table if not exists episode
 (
     id            int8           not null auto_increment,
+    uuid          uuid           null,
     create_time   timestamp(6)   null,
     create_uid    int8           null,
     delete_status bool           null,
@@ -145,6 +153,7 @@ create table if not exists episode
 create table if not exists person_character
 (
     id            int8         not null auto_increment,
+    uuid          uuid         null,
     create_time   timestamp(6) null,
     create_uid    int8         null,
     delete_status bool         null,
@@ -160,6 +169,7 @@ create table if not exists person_character
 create table if not exists person
 (
     id            int8           not null auto_increment,
+    uuid          uuid           null,
     create_time   timestamp(6)   null,
     create_uid    int8           null,
     delete_status bool           null,
@@ -177,6 +187,7 @@ create table if not exists person
 create table if not exists role
 (
     id            int8           not null auto_increment,
+    uuid          uuid           null,
     create_time   timestamp(6)   null,
     create_uid    int8           null,
     delete_status bool           null,
@@ -193,6 +204,7 @@ create table if not exists role
 create table if not exists subject_character
 (
     id            int8         not null auto_increment,
+    uuid          uuid         null,
     create_time   timestamp(6) null,
     create_uid    int8         null,
     delete_status bool         null,
@@ -208,6 +220,7 @@ create table if not exists subject_character
 create table if not exists subject
 (
     id            int8           not null auto_increment,
+    uuid          uuid           null,
     create_time   timestamp(6)   null,
     create_uid    int8           null,
     delete_status bool           null,
@@ -230,6 +243,7 @@ create table if not exists subject
 create table if not exists subject_person
 (
     id            int8         not null auto_increment,
+    uuid          uuid         null,
     create_time   timestamp(6) null,
     create_uid    int8         null,
     delete_status bool         null,
@@ -245,6 +259,7 @@ create table if not exists subject_person
 create table if not exists subject_relation
 (
     id                  int8         not null auto_increment,
+    uuid                uuid         null,
     create_time         timestamp(6) null,
     create_uid          int8         null,
     delete_status       bool         null,
@@ -261,6 +276,7 @@ create table if not exists subject_relation
 create table if not exists subject_sync
 (
     id            int8         not null auto_increment,
+    uuid          uuid         null,
     create_time   timestamp(6) null,
     create_uid    int8         null,
     delete_status bool         null,
@@ -279,6 +295,7 @@ create table if not exists subject_sync
 create table if not exists ikuser
 (
     id              int8                not null auto_increment,
+    uuid            uuid                null,
     create_time     timestamp(6)        null,
     create_uid      int8                null,
     delete_status   bool                null,
@@ -303,6 +320,7 @@ create table if not exists ikuser
 create table if not exists `custom`
 (
     id      int8         not null auto_increment,
+    uuid    uuid         null,
     c_group varchar(255) not null,
     version varchar(255) not null,
     kind    varchar(255) not null,
@@ -315,6 +333,7 @@ create table if not exists `custom`
 create table if not exists `custom_metadata`
 (
     id        int8         not null auto_increment,
+    uuid      uuid         null,
     custom_id int8         not null,
     cm_key    varchar(255) not null,
     cm_value  blob,
@@ -326,6 +345,7 @@ create table if not exists `custom_metadata`
 create table if not exists `task`
 (
     id           int8          not null auto_increment,
+    uuid         uuid          null,
     name         varchar(255)  not null,
     status       varchar(255)  not null,
     create_time  timestamp(6)  null,
@@ -342,6 +362,7 @@ create table if not exists `task`
 create table if not exists tag
 (
     id          int8         not null auto_increment,
+    uuid        uuid         null,
     type        varchar(255) not null,
     master_id   int8         not null,
     name        varchar(255) not null,
@@ -355,6 +376,7 @@ create table if not exists tag
 create table if not exists ikuser_role
 (
     id      int8 not null auto_increment,
+    uuid    uuid null,
     user_id int8 not null,
     role_id int8 not null,
     constraint ikuser_role_pkey primary key (id)
@@ -364,6 +386,7 @@ create table if not exists ikuser_role
 create table if not exists role_authority
 (
     id           int8 not null auto_increment,
+    uuid         uuid null,
     role_id      int8 not null,
     authority_id int8 not null,
     constraint role_authority_pkey primary key (id)
@@ -373,6 +396,7 @@ create table if not exists role_authority
 create table if not exists attachment_driver
 (
     id              int8           not null auto_increment,
+    uuid            uuid           null,
     enable          bool           null,
     d_type          varchar(255)   not null,
     d_name          varchar(255)   null,
@@ -392,4 +416,44 @@ create table if not exists attachment_driver
     space_total     int8           null,
     space_use       int8           null,
     constraint attachment_driver_pkey primary key (id)
+);
+
+-- episode_list
+create table if not exists episode_list
+(
+    id            int8           not null auto_increment,
+    uuid          uuid           null,
+    create_time   timestamp(6)   null,
+    create_uid    int8           null,
+    delete_status bool           null,
+    update_time   timestamp(6)   null,
+    update_uid    int8           null,
+    ol_version    int8           null,
+    name          varchar(255)   not null,
+    name_cn       varchar(255)   null,
+    cover         varchar(10000) null,
+    description   varchar(50000) null,
+    nsfw          bool           not null,
+    constraint episode_list_pkey primary key (id)
+);
+
+-- episode_list_episode
+create table if not exists episode_list_episode
+(
+    id              int8 not null auto_increment,
+    uuid            uuid null,
+    episode_list_id int8 not null,
+    episode_id      int8 not null,
+    constraint episode_list_episode_pkey primary key (id)
+);
+
+-- episode_list_collection
+create table if not exists episode_list_collection
+(
+    id              int8         not null auto_increment,
+    uuid            uuid         null,
+    user_id         int8         not null,
+    episode_list_id int8         not null,
+    update_time     timestamp(6) null,
+    constraint episode_list_collection_pkey primary key (id)
 );

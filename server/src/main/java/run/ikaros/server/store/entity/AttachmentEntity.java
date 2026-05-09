@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -48,4 +49,5 @@ public class AttachmentEntity {
     @Column("driver_id")
     private Long driverId;
     private String sha1;
+    private UUID uuid;
 }

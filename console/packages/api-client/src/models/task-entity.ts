@@ -72,6 +72,12 @@ export interface TaskEntity {
    * @memberof TaskEntity
    */
   failMessage?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof TaskEntity
+   */
+  uuid?: string;
 }
 
 export const TaskEntityStatusEnum = {

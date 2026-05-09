@@ -1,6 +1,7 @@
 package run.ikaros.server.core.migration;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -129,7 +130,12 @@ public class DefaultMigrationService implements MigrationService {
                 if (value == null) {
                     return "";
                 }
-                String strValue = value.toString();
+                String strValue;
+                if (value instanceof ByteBuffer buffer) {
+                    strValue = StandardCharsets.UTF_8.decode(buffer.asReadOnlyBuffer()).toString();
+                } else {
+                    strValue = value.toString();
+                }
                 // 处理CSV特殊字符（引号、逗号、换行符）
                 if (strValue.contains(",") || strValue.contains("\"") || strValue.contains("\n")) {
                     strValue = "\"" + strValue.replace("\"", "\"\"") + "\"";
