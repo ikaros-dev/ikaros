@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { SubjectCollection, V1alpha1CollectionSubjectApiFindCollectionSubjectsRequest } from '@runikaros/api-client';
+import { SubjectCollection, V1CollectionSubjectApiFindCollectionSubjectsRequest } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
 import {
 	ElCol,
@@ -32,7 +32,7 @@ const fetchCollections = async () => {
 	const { data } = await apiClient.collectionSubject.findCollectionSubjects({
 		page: findSubjectCollection.value.page,
 		size: findSubjectCollection.value.size,
-		type: findSubjectCollection.value.type as V1alpha1CollectionSubjectApiFindCollectionSubjectsRequest["type"],
+		type: findSubjectCollection.value.type as V1CollectionSubjectApiFindCollectionSubjectsRequest["type"],
 		isPrivate: findSubjectCollection.value.isPrivate,
 	});
 	findSubjectCollection.value.page = data.page;
