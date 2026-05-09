@@ -16,6 +16,7 @@ import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import jakarta.annotation.Nonnull;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -132,8 +133,25 @@ public class MigrationInitializer {
         DatabaseClient targetClient = DatabaseClient.create(pooledConnectionFactory);
 
         return updateUuidColumnValueForAllTableIfNotExists()
-            .then(Mono.defer(() -> createNewTableInTargetDatabase(targetClient)))
-            .then(Mono.defer(() -> migrationWithNameIdUuidMap(targetClient)));
+            .timeout(Duration.ofMinutes(5))
+            .doOnSuccess(v ->
+                log.info("Step 1 completed: updateUuidColumnValueForAllTableIfNotExists"))
+            .doOnError(e ->
+                log.error("Step 1 failed: updateUuidColumnValueForAllTableIfNotExists", e))
+            .then(Mono.defer(() -> {
+                log.info("Step 2 starting: createNewTableInTargetDatabase");
+                return createNewTableInTargetDatabase(targetClient);
+            }))
+            .timeout(Duration.ofMinutes(10))
+            .doOnSuccess(v -> log.info("Step 2 completed: createNewTableInTargetDatabase"))
+            .doOnError(e -> log.error("Step 2 failed: createNewTableInTargetDatabase", e))
+            .then(Mono.defer(() -> {
+                log.info("Step 3 starting: migrationWithNameIdUuidMap");
+                return migrationWithNameIdUuidMap(targetClient);
+            }))
+            .timeout(Duration.ofMinutes(30))
+            .doOnSuccess(v -> log.info("Step 3 completed: migrationWithNameIdUuidMap"))
+            .doOnError(e -> log.error("Step 3 failed: migrationWithNameIdUuidMap", e));
     }
 
     @Nonnull
@@ -222,22 +240,27 @@ public class MigrationInitializer {
     }
 
     private Mono<Void> updateUuidColumnValueForAllTableIfNotExists() {
+        log.info("updateUuidColumnValueForAllTableIfNotExists start");
         return template.update(AttachmentEntity.class)
             .matching(Query.query(Criteria.empty()
                 .and("id").is(ROOT_DIRECTORY_ID)
                 .and("uuid").isNull()))
             .apply(Update.update("uuid", V_ROOT_DIRECTORY_UUID))
+            .doOnSuccess(v -> log.info("Updated ROOT_DIRECTORY uuid"))
             .then(template.update(AttachmentEntity.class)
                 .matching(Query.query(Criteria.empty()
                     .and("id").is(COVER_DIRECTORY_ID)
                     .and("uuid").isNull()))
                 .apply(Update.update("uuid", V_COVER_DIRECTORY_ID)))
+            .doOnSuccess(v -> log.info("Updated COVER_DIRECTORY uuid"))
             .then(template.update(AttachmentEntity.class)
                 .matching(Query.query(Criteria.empty()
                     .and("id").is(DOWNLOAD_DIRECTORY_ID)
                     .and("uuid").isNull()))
                 .apply(Update.update("uuid", V_DOWNLOAD_DIRECTORY_ID)))
+            .doOnSuccess(v -> log.info("Updated DOWNLOAD_DIRECTORY uuid"))
             .thenMany(Flux.defer(this::fetchTableNames))
+            .doOnNext(tableName -> log.info("Processing table: {}", tableName))
             .flatMapSequential(tableName ->
                 fetchTableIds(tableName)
                     .flatMapSequential(id -> template.update(getEntityClassByTableName(tableName))
@@ -245,8 +268,12 @@ public class MigrationInitializer {
                             .and("id").is(id)
                             .and("uuid").isNull()))
                         .apply(Update.update("uuid", UuidV7Utils.generate()))
-                        .then())
-            )
+                        .then(), 4)
+                    .onErrorResume(e -> {
+                        log.warn("Failed to update uuid for table={}, skipping: {}",
+                            tableName, e.getMessage());
+                        return Mono.empty();
+                    }), 1)
             .then();
     }
 
@@ -366,10 +393,7 @@ public class MigrationInitializer {
                     .flatMap(this::replaceReferenceIdRkIdValueFromMasterTableIdAndUuid)
                     .flatMap(recoreMap -> replaceSelfParentIdFromSourceUuid(tabName, recoreMap))
                     .flatMap(recordMap ->
-                        saveRecordToNewDatabase(tabName, recordMap, targetClient))
-                )
-
-            ).then();
+                        saveRecordToNewDatabase(tabName, recordMap, targetClient)), 4), 1).then();
     }
 
     private Map<String, Object> replaceCanModifyMap(Map<String, Object> recordMap) {
