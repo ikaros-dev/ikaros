@@ -29,7 +29,11 @@ configurations {
 }
 
 springBoot {
-    buildInfo()
+    buildInfo {
+        properties {
+            name = 'ikaros-server'
+        }
+    }
 }
 
 bootJar {
