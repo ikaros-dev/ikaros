@@ -1,0 +1,102 @@
+ikaros:
+  external-url: "http://${server.address:localhost}:${server.port}"
+  work-dir: ${user.home}/.ikaros
+  show-theme: true
+  cache:
+    enable: false
+    type: memory
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      expiration-time: 259200000
+      timeout: 10000
+
+  security:
+    expiry:
+      access-token-day: 3
+      refresh-token-month: 3
+
+  plugin:
+    runtime-mode: deployment
+    plugins-root: ${ikaros.work-dir}/plugins
+    system-version: 1.0.8
+
+  task:
+    core-pool-size: 4
+    maximum-pool-size: 40
+    keep-alive-time: 0
+    queue-count: 10000
+
+
+server:
+  port: 9999
+  compression:
+    enabled: true
+  error:
+    whitelabel:
+      enabled: false
+spring:
+  codec:
+    max-in-memory-size: 10MB
+  data:
+    redis:
+      repositories:
+        enabled: false
+      host: ${ikaros.cache.redis.host:localhost}
+      port: ${ikaros.cache.redis.port:6379}
+      connect-timeout: ${ikaros.cache.redis.timeout:10000}
+      client-name: ikaros
+      password: ${ikaros.cache.redis.password:}
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/ikaros
+    username: ikaros
+    password: openpostgresql
+
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    doc-expansion: none
+  show-actuator: true
+
+logging:
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      total-size-cap: 1GB
+      max-history: 2
+  level:
+    run.ikaros.server: INFO
+  charset:
+    console: UTF-8
+    file: UTF-8
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+      roles:
+        - MASTER
+    env:
+      enabled: true
+  info:
+    defaults:
+      enabled: true
+    build:
+      enabled: true
+    git:
+      enabled: true
+      mode: simple
+    os:
+      enabled: true
+    java:
+      enabled: true

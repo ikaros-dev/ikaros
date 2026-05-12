@@ -13,6 +13,40 @@ repositories {
 
 dependencies {
     api platform(project(':platform:server'))
+
+    api 'org.springframework.boot:spring-boot-starter-actuator'
+    api 'com.baomidou:mybatis-plus-spring-boot4-starter'
+    api 'org.springframework.boot:spring-boot-starter-mail'
+    api 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter-validation'
+    api 'org.springframework.boot:spring-boot-starter-flyway'
+    api 'com.github.f4b6a3:uuid-creator'
+
+    // Spring Security
+    api 'org.springframework.boot:spring-boot-starter-security'
+
+    api "org.springdoc:springdoc-openapi-starter-webmvc-ui"
+
+    api "org.apache.commons:commons-lang3"
+    api "org.pf4j:pf4j"
+    api "org.jsoup:jsoup"
+    api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
+
+    // Apache Lucene todo use pgsql text-index module
+    // api "org.apache.lucene:lucene-core"
+    // api "org.apache.lucene:lucene-queryparser"
+    // api "org.apache.lucene:lucene-highlighter"
+    // api "org.apache.lucene:lucene-backward-codecs"
+    // api 'cn.shenyanchao.ik-analyzer:ik-analyzer'
+
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 java {

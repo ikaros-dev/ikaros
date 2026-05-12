@@ -1,22 +1,114 @@
 plugins {
+    id 'org.springframework.boot' version '4.0.6'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id "checkstyle"
     id 'java'
-    id 'application'
+    id 'jacoco'
+    id "com.github.node-gradle.node" version "7.1.0"
+    id 'org.graalvm.buildtools.native' version '0.11.5'
 }
 
 group = 'run.ikaros.server'
 description = 'Server module of ikaros project'
 
+checkstyle {
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+}
+
+repositories {
+    mavenCentral()
+
+    maven { url 'https://repo.spring.io/milestone' }
+    mavenLocal()
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+springBoot {
+    buildInfo()
+}
+
+bootJar {
+    manifest {
+        attributes "Implementation-Title": "Ikaros Application",
+                "Implementation-Version": archiveVersion
+    }
+    archiveFileName = "ikaros-server.jar"
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+ext {
+}
+
 dependencies {
     implementation project(':api')
 }
 
-application {
-    mainClass = 'run.ikaros.server.Application'
+node {
+    nodeProjectDir = file("${rootProject.projectDir}/console")
 }
 
-tasks.named('jar') {
-    manifest {
-        attributes 'Implementation-Title': 'Ikaros Server',
-                   'Implementation-Version': archiveVersion
+task pnpmInstallPackageShared(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/shared', 'install']
+}
+
+task buildFrontendPackageShared(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/shared', 'build']
+    dependsOn("pnpmInstallPackageShared")
+}
+
+task pnpmInstallPackageApiClient(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/api-client', 'install']
+}
+
+task buildFrontendPackageApiClient(type: NpxTask) {
+    command = 'pnpm'
+    args = ['--filter', './packages/api-client', 'build']
+    dependsOn("pnpmInstallPackageApiClient")
+}
+
+task pnpmInstallFrontend(type: NpxTask) {
+    command = "pnpm"
+    args = ["install"]
+    dependsOn("buildFrontendPackageShared", "buildFrontendPackageApiClient")
+}
+
+task buildFrontend(type: NpxTask) {
+    command = 'pnpm'
+    args = ['build']
+    dependsOn("pnpmInstallFrontend")
+}
+
+task pnpmDev(type: NpxTask) {
+    command = "pnpm"
+    args = ["dev"]
+    dependsOn("buildFrontend")
+}
+
+build {
+    // build frontend before build
+    // tasks.getByName('compileJava').dependsOn('buildFrontend')
+}
+
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+tasks.named('jacocoTestReport') {
+    reports {
+        xml.required = true
+        html.required = true
     }
 }

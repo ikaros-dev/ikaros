@@ -1,4 +1,8 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
+    id 'org.springframework.boot' version '4.0.6' apply false
+    id 'org.graalvm.buildtools.native' version '0.11.5' apply false
     id 'java-platform'
     id 'maven-publish'
 }
@@ -6,10 +10,38 @@ plugins {
 group = 'run.ikaros.platform.core'
 description = 'Platform of ikaros core.'
 
+ext {
+    mybatisPlusStarter = "3.5.15"
+    springDocOpenAPI = "3.0.2"
+    commonsLang3 = "3.18.0"
+    pf4j = '3.15.0'
+    jsoup = '1.22.2'
+    uuidCreator = "6.1.1"
+    flywayPostgresql = "12.6.0"
+}
+
+javaPlatform {
+    allowDependencies()
+}
+
 dependencies {
+    api platform(SpringBootPlugin.BOM_COORDINATES)
+
     constraints {
-        // Add dependency constraints here
+        api "com.baomidou:mybatis-plus-spring-boot4-starter:$mybatisPlusStarter"
+        api "org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenAPI"
+
+        api "org.apache.commons:commons-lang3:$commonsLang3"
+        api "org.pf4j:pf4j:$pf4j"
+        api "org.jsoup:jsoup:$jsoup"
+        api "org.springframework.integration:spring-integration-core"
+        api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
+        api "com.github.f4b6a3:uuid-creator:$uuidCreator"
+
+        runtime 'org.postgresql:postgresql'
+        runtime "org.flywaydb:flyway-database-postgresql:$flywayPostgresql"
     }
+
 }
 
 publishing {
@@ -17,5 +49,9 @@ publishing {
         applicationPlatform(MavenPublication) {
             from components.javaPlatform
         }
+    }
+
+    repositories {
+        mavenLocal()
     }
 }
