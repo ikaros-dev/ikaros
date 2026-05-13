@@ -1,7 +1,7 @@
 package run.ikaros.server.store.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import run.ikaros.server.store.entity.Ikuser;
+import run.ikaros.server.store.entity.User;
 
 /**
  * <p>
@@ -11,6 +11,6 @@ import run.ikaros.server.store.entity.Ikuser;
  * @author chivehao
  * @since 2026-05-13
  */
-public interface IkuserMapper extends BaseMapper<Ikuser> {
+public interface UserMapper extends BaseMapper<User> {
 
 }

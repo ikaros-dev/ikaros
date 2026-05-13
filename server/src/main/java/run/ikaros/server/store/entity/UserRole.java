@@ -19,7 +19,7 @@ import java.io.Serializable;
 @Setter
 @ToString
 @TableName("ikuser_role")
-public class IkuserRole implements Serializable {
+public class UserRole implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
