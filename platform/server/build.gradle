@@ -18,6 +18,7 @@ ext {
     jsoup = '1.22.2'
     uuidCreator = "6.1.1"
     flywayPostgresql = "12.6.0"
+    lucene = "9.5.0"
 }
 
 javaPlatform {
@@ -37,6 +38,13 @@ dependencies {
         api "org.springframework.integration:spring-integration-core"
         api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
         api "com.github.f4b6a3:uuid-creator:$uuidCreator"
+
+        // Apache Lucene
+        api "org.apache.lucene:lucene-core:$lucene"
+        api "org.apache.lucene:lucene-queryparser:$lucene"
+        api "org.apache.lucene:lucene-highlighter:$lucene"
+        api "org.apache.lucene:lucene-backward-codecs:$lucene"
+        api 'cn.shenyanchao.ik-analyzer:ik-analyzer:9.0.0'
 
         runtime 'org.postgresql:postgresql'
         runtime "org.flywaydb:flyway-database-postgresql:$flywayPostgresql"

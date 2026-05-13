@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'io.freefair.lombok' version "9.5.0"
 }
 
 group = 'run.ikaros.api'
@@ -33,12 +34,12 @@ dependencies {
     api "org.jsoup:jsoup"
     api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
 
-    // Apache Lucene todo use pgsql text-index module
-    // api "org.apache.lucene:lucene-core"
-    // api "org.apache.lucene:lucene-queryparser"
-    // api "org.apache.lucene:lucene-highlighter"
-    // api "org.apache.lucene:lucene-backward-codecs"
-    // api 'cn.shenyanchao.ik-analyzer:ik-analyzer'
+    // Apache Lucene
+     api "org.apache.lucene:lucene-core"
+     api "org.apache.lucene:lucene-queryparser"
+     api "org.apache.lucene:lucene-highlighter"
+     api "org.apache.lucene:lucene-backward-codecs"
+     api 'cn.shenyanchao.ik-analyzer:ik-analyzer'
 
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.flywaydb:flyway-database-postgresql'
