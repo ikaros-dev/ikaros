@@ -16,6 +16,9 @@ spring:
   thymeleaf:
     cache: false
 
+  flyway:
+    clean-disabled: false
+
 
 springdoc:
   api-docs:

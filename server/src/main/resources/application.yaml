@@ -33,9 +33,6 @@ server:
   port: 9999
   compression:
     enabled: true
-  error:
-    whitelabel:
-      enabled: false
 spring:
   codec:
     max-in-memory-size: 10MB
@@ -55,6 +52,19 @@ spring:
     username: ikaros
     password: openpostgresql
 
+  web:
+    error:
+      whitelabel:
+        enabled: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: flyway_schema_history
+    encoding: UTF-8
+    validate-on-migrate: true
+    baseline-on-migrate: false
+    clean-disabled: true
 
 springdoc:
   api-docs:
