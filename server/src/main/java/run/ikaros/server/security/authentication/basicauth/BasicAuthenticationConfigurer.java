@@ -1,22 +1,23 @@
 package run.ikaros.server.security.authentication.basicauth;
 
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 
 @Component
 public class BasicAuthenticationConfigurer implements SecurityConfigurer {
-    private final BasicAuthenticationFilter basicAuthenticationFilter;
+    private final IkarosBasicAuthenticationFilter ikarosBasicAuthenticationFilter;
 
-    public BasicAuthenticationConfigurer(BasicAuthenticationFilter basicAuthenticationFilter) {
-        this.basicAuthenticationFilter = basicAuthenticationFilter;
+    public BasicAuthenticationConfigurer(
+        IkarosBasicAuthenticationFilter basicAuthenticationFilter) {
+        this.ikarosBasicAuthenticationFilter = basicAuthenticationFilter;
     }
 
     @Override
-    public void configure(ServerHttpSecurity http) {
+    public void configure(HttpSecurity http) {
         http.httpBasic(Customizer.withDefaults())
-            .addFilterAfter(basicAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION);
+            .addFilterAfter(ikarosBasicAuthenticationFilter, BasicAuthenticationFilter.class);
     }
 }

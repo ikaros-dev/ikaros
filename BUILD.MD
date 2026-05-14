@@ -1,17 +1,20 @@
 # 编译环境
 
-- JDK: 17
-- Gradle: 8.1
-- SpringBoot: 3.0.1
-- CheckStyle: 9.3
+- JDK: 21
+- Gradle: 9.4.1
+- SpringBoot: 4.0.6
+- CheckStyle: 13.4.2
 - Vue: 3
-- IDE: IntelliJ IDEA
+- IDE: IntelliJ IDEA 
+
+建议先Fork一份仓库,
 
 您可以通过`git`拉取代码库
 ```shell
-git clone https://github.com/ikaros-dev/ikaros.git
+git clone https://github.com/{youusername}/ikaros.git
 cd ikaros
 ```
+- {youusername}: 替换成你的GitHub用户名，你fork之后对应的库链接就是替换后的链接。
 
 拉取代码后需要进行
 git module 初始化
@@ -47,7 +50,7 @@ Mac或者Linux
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
 
-配置插件过程中版本选择`9.3`，
+配置插件过程中版本选择`13.4.2`，
 扫描范围包括测试代码，描述可以填比如`Ikaros Checks`，
 还会让填变量值，填入如下值
 
@@ -66,6 +69,8 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 .\gradlew.bat clean bootJar -x test
 ```
 
+借助Graalvm编译本地镜像 #433 目前还有问题，暂时不可用。
+
 ## 代码格式化
 
 `Setting` => `Editor` => `Code Style` => `Java`
@@ -79,7 +84,7 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 
 ## 本地开发
 
-在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win-dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,win-dev,local`
+在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,local`
 
 这里的`local`请先确保您已经进行了上面的`application-local.yaml.example`实例文件复制移动重命名
 
@@ -99,7 +104,7 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 5. 保存设置
 
 ## Fast Jar
-需要有`Java17`的运行环境
+需要有`Java21`的运行环境
 
 请先按照上放先进行`build`
 

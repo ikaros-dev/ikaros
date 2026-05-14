@@ -9,7 +9,6 @@ import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 import run.ikaros.api.infra.exception.security.InvalidTokenException;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.security.SecurityProperties;
@@ -34,7 +33,7 @@ public class JwtAuthenticationProvider {
     /**
      * generateToken and convert to {@link JwtApplyResponse}.
      */
-    public Mono<JwtApplyResponse> generateJwtResp(UserDetails userDetails) {
+    public JwtApplyResponse generateJwtResp(UserDetails userDetails) {
         String username = userDetails.getUsername();
         SecurityProperties.Expiry expiry = securityProperties.getExpiry();
         Integer accessTokenDay = expiry.getAccessTokenDay();
@@ -44,11 +43,11 @@ public class JwtAuthenticationProvider {
         refreshTokenExpiry = (long) refreshTokenMonth * dayOfMs * 30;
         String accessToken = generateToken(username, accessTokenExpiry);
         String refreshToken = generateToken(username, refreshTokenExpiry);
-        return Mono.just(JwtApplyResponse.builder()
+        return JwtApplyResponse.builder()
             .username(username)
             .accessToken(accessToken)
             .refreshToken(refreshToken)
-            .build());
+            .build();
     }
 
     /**
@@ -56,11 +55,11 @@ public class JwtAuthenticationProvider {
      *
      * @return 新的accessToken
      */
-    public Mono<String> refreshToken(String refreshToken) {
+    public String refreshToken(String refreshToken) {
         if (!validateToken(refreshToken)) {
-            return Mono.error(new InvalidTokenException("Invalid token"));
+            throw new InvalidTokenException("Invalid token");
         }
-        return Mono.just(generateToken(extractUsername(refreshToken), accessTokenExpiry));
+        return generateToken(extractUsername(refreshToken), accessTokenExpiry);
     }
 
     /**

@@ -1,7 +1,7 @@
 package run.ikaros.server.security.authentication.logout;
 
 
-import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Component;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 
@@ -9,8 +9,8 @@ import run.ikaros.server.security.authentication.SecurityConfigurer;
 public class LogoutConfigurer implements SecurityConfigurer {
 
     @Override
-    public void configure(ServerHttpSecurity http) {
+    public void configure(HttpSecurity http) {
         http.logout(logoutSpec ->
-            logoutSpec.logoutSuccessHandler(new LogoutSuccessHandler()));
+            logoutSpec.logoutSuccessHandler(new IkarosLogoutSuccessHandler()));
     }
 }

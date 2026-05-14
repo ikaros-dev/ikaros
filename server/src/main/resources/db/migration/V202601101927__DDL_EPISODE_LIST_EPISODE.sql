@@ -1,8 +1,7 @@
 create table if not exists "episode_list_episode"
 (
-    "id"              uuid NOT NULL,
-    "episode_list_id" uuid,
-    "episode_id"      uuid,
-    CONSTRAINT "episode_list_episode_pkey" PRIMARY KEY ("id")
+    "id"              bigint primary key,
+    "episode_list_id" bigint,
+    "episode_id"      bigint
 )
 ;

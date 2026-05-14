@@ -26,13 +26,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
 
 @Slf4j
@@ -325,45 +320,6 @@ public class FileUtils {
         }
     }
 
-    /**
-     * Convert file to data buffer flux.
-     */
-    public static Flux<DataBuffer> convertToDataBufferFlux(File file) {
-        DefaultDataBufferFactory bufferFactory = new DefaultDataBufferFactory();
-        return DataBufferUtils.readInputStream(() ->
-            Files.newInputStream(file.toPath()), bufferFactory, 1024);
-    }
-
-    /**
-     * Calculate file size.
-     */
-    public static Mono<Long> calculateFileSize(Flux<DataBuffer> dataBufferFlux) {
-        return dataBufferFlux.map(DataBuffer::readableByteCount)
-            .reduce(0L, Long::sum);
-    }
-
-    /**
-     * Calculate file hash.
-     */
-    public static String calculateFileHash(Flux<DataBuffer> dataBufferFlux) {
-        MessageDigest messageDigest = null;
-        try {
-            messageDigest = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-
-        MessageDigest finalMessageDigest = messageDigest;
-        dataBufferFlux.subscribe(dataBuffer -> {
-            byte[] bytes = new byte[dataBuffer.readableByteCount()];
-            dataBuffer.read(bytes);
-            DataBufferUtils.release(dataBuffer);
-            finalMessageDigest.update(bytes);
-        });
-
-        byte[] hashBytes = messageDigest.digest();
-        return bytesToHex(hashBytes);
-    }
 
     private static String bytesToHex(byte[] bytes) {
         StringBuilder hexString = new StringBuilder(2 * bytes.length);

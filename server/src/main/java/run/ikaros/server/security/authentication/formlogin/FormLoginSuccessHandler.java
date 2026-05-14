@@ -1,46 +1,44 @@
 package run.ikaros.server.security.authentication.formlogin;
 
-import java.nio.charset.StandardCharsets;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.web.server.WebFilterExchange;
-import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import run.ikaros.server.core.user.UserService;
+import run.ikaros.api.store.entity.User;
 import run.ikaros.server.infra.utils.JsonUtils;
+import run.ikaros.server.security.SecurityUser;
+import run.ikaros.server.store.mapper.UserMapper;
 
 
 /**
  * Return a user detail json when login success.
- *
- * @see <a href="https://stackoverflow.com/questions/45211431/webexceptionhandler-how-to-write-a-body-with-spring-webflux">WebExceptionHandler : How to write a body with Spring Webflux</a>
  */
+@Slf4j
 @Component
-public class FormLoginSuccessHandler implements ServerAuthenticationSuccessHandler {
-    private final UserService userService;
+public class FormLoginSuccessHandler implements AuthenticationSuccessHandler {
+    private final UserMapper userMapper;
 
-    public FormLoginSuccessHandler(UserService userService) {
-        this.userService = userService;
+    public FormLoginSuccessHandler(UserMapper userMapper) {
+        this.userMapper = userMapper;
     }
 
     @Override
-    public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange,
-                                              Authentication authentication) {
-        User principal = (User) authentication.getPrincipal();
-        String username = principal.getUsername();
-        ServerHttpResponse response = webFilterExchange.getExchange().getResponse();
-        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication)
+        throws IOException, ServletException {
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return userService.getUserByUsername(username)
-            .flatMap(user -> Mono.justOrEmpty(JsonUtils.obj2Json(user)))
-            .flatMap(json -> Mono.just(json.getBytes(StandardCharsets.UTF_8)))
-            .flatMap(bytes -> Mono.just(response
-                .bufferFactory().wrap(bytes)))
-            .flatMap(dataBuffer -> response.writeWith(Flux.just(dataBuffer)));
+        SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
+        final User user = securityUser.getUser();
+        log.debug("Set user info to security context with username={}.",
+            securityUser.getUsername());
+        response.setContentType(MediaType.APPLICATION_JSON.toString());
+        securityUser.eraseCredentials();
+        response.getWriter().write(JsonUtils.obj2Json(user));
     }
 }

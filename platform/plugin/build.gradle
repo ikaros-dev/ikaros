@@ -13,6 +13,7 @@ javaPlatform {
 
 dependencies {
     api platform(project(':platform:server'))
+
     constraints {
         api project(':api')
         // TODO other plugin API dependencies
@@ -25,6 +26,7 @@ publishing {
             from components.javaPlatform
         }
     }
+
     repositories {
         mavenLocal()
     }

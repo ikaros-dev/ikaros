@@ -1,71 +1,71 @@
 package run.ikaros.server.security;
 
-import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
-
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import run.ikaros.api.core.authority.Authority;
-import run.ikaros.server.store.entity.BaseEntity;
-import run.ikaros.server.store.entity.RoleAuthorityEntity;
-import run.ikaros.server.store.entity.UserEntity;
-import run.ikaros.server.store.entity.UserRoleEntity;
-import run.ikaros.server.store.repository.AuthorityRepository;
-import run.ikaros.server.store.repository.RoleAuthorityRepository;
-import run.ikaros.server.store.repository.UserRepository;
-import run.ikaros.server.store.repository.UserRoleRepository;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import run.ikaros.api.infra.utils.AssertUtils;
+import run.ikaros.api.store.entity.Authority;
+import run.ikaros.api.store.entity.Role;
+import run.ikaros.api.store.entity.RoleAuthority;
+import run.ikaros.api.store.entity.User;
+import run.ikaros.api.store.entity.UserRole;
+import run.ikaros.server.security.exception.RoleNotFoundException;
+import run.ikaros.server.security.exception.UserHasNotRoleException;
+import run.ikaros.server.store.mapper.AuthorityMapper;
+import run.ikaros.server.store.mapper.RoleAuthorityMapper;
+import run.ikaros.server.store.mapper.RoleMapper;
+import run.ikaros.server.store.mapper.UserMapper;
+import run.ikaros.server.store.mapper.UserRoleMapper;
 
-/**
- * ikaros default user detail service.
- *
- * @author: chivehao
- */
-public class DefaultUserDetailService implements ReactiveUserDetailsService {
-
-    private final UserRepository userRepository;
-    private final UserRoleRepository userRoleRepository;
-    private final AuthorityRepository authorityRepository;
-    private final RoleAuthorityRepository roleAuthorityRepository;
+@Slf4j
+public class DefaultUserDetailService implements UserDetailsService {
+    private final UserMapper userMapper;
+    private final UserRoleMapper userRoleMapper;
+    private final RoleMapper roleMapper;
+    private final RoleAuthorityMapper roleAuthorityMapper;
+    private final AuthorityMapper authorityMapper;
 
     /**
-     * Construct.
+     * Default user detail service.
      */
-    public DefaultUserDetailService(UserRepository userRepository,
-                                    UserRoleRepository userRoleRepository,
-                                    AuthorityRepository authorityRepository,
-                                    RoleAuthorityRepository roleAuthorityRepository) {
-        this.userRepository = userRepository;
-        this.userRoleRepository = userRoleRepository;
-        this.authorityRepository = authorityRepository;
-        this.roleAuthorityRepository = roleAuthorityRepository;
+    public DefaultUserDetailService(UserMapper userMapper, UserRoleMapper userRoleMapper,
+                                    RoleMapper roleMapper, RoleAuthorityMapper roleAuthorityMapper,
+                                    AuthorityMapper authorityMapper) {
+        this.userMapper = userMapper;
+        this.userRoleMapper = userRoleMapper;
+        this.roleMapper = roleMapper;
+        this.roleAuthorityMapper = roleAuthorityMapper;
+        this.authorityMapper = authorityMapper;
     }
 
     @Override
-    public Mono<UserDetails> findByUsername(String username) {
-        return userRepository
-            .findByUsernameAndEnableAndDeleteStatus(username, true, false)
-            .map(BaseEntity::getId)
-            .flatMapMany(userRoleRepository::findByUserId)
-            .map(UserRoleEntity::getRoleId)
-            .flatMap(roleId -> roleAuthorityRepository.findByRoleId(roleId).collectList())
-            .flatMap(Flux::fromIterable)
-            .collectList()
-            .flatMapMany(Flux::fromIterable)
-            .map(RoleAuthorityEntity::getAuthorityId)
-            .flatMap(authorityRepository::findById)
-            .flatMap(authorityEntity -> copyProperties(authorityEntity, new Authority()))
-            .map(IkarosGrantedAuthority::new)
-            .collectList()
-            .flatMap(authorities ->
-                userRepository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
-                    .map(UserEntity::getPassword)
-                    .map(password -> User.builder()
-                        .authorities(authorities)
-                        .username(username)
-                        .password(password)
-                        .build()));
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        AssertUtils.notBlank(username, "'username' must not blank.");
+        log.debug("Load user by username: {}", username);
+        User ikuser = userMapper.findByUsernameAndEnableAndDeleteStatus(username, true, false);
+        if (ikuser == null) {
+            throw new UsernameNotFoundException("username: " + username);
+        }
+        UserRole userRole = userRoleMapper.findByUserId(ikuser.getId());
+        if (userRole == null) {
+            throw new UserHasNotRoleException("username: " + username);
+        }
+        Role role = roleMapper.selectById(userRole.getRoleId());
+        if (role == null) {
+            throw new RoleNotFoundException("role: " + role);
+        }
+        log.debug("Current user[{}] has role: {}", username, role.getName());
+        List<RoleAuthority> roleAuthorities = roleAuthorityMapper.findAllByRoleId(role.getId());
+        List<IkarosGrantedAuthority> authorities = new ArrayList<>(roleAuthorities.size());
+        for (RoleAuthority roleAuthority : roleAuthorities) {
+            Authority authority = authorityMapper.selectById(roleAuthority.getAuthorityId());
+            IkarosGrantedAuthority grantedAuthority = new IkarosGrantedAuthority(authority);
+            authorities.add(grantedAuthority);
+        }
+        log.debug("Current user[{}] has authorities: {}", username, authorities);
+        return new SecurityUser(ikuser, authorities);
     }
-
 }

@@ -1,6 +1,6 @@
 package run.ikaros.server.security.authentication.formlogin;
 
-import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Component;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 
@@ -8,15 +8,20 @@ import run.ikaros.server.security.authentication.SecurityConfigurer;
 public class FormLoginConfigurer implements SecurityConfigurer {
 
     private final FormLoginSuccessHandler formLoginSuccessHandler;
+    private final FormLoginFailureHandler formLoginFailureHandler;
 
-    public FormLoginConfigurer(FormLoginSuccessHandler formLoginSuccessHandler) {
+    public FormLoginConfigurer(FormLoginSuccessHandler formLoginSuccessHandler,
+                               FormLoginFailureHandler formLoginFailureHandler) {
         this.formLoginSuccessHandler = formLoginSuccessHandler;
+        this.formLoginFailureHandler = formLoginFailureHandler;
     }
 
     @Override
-    public void configure(ServerHttpSecurity http) {
-        http.formLogin(formLoginSpec ->
-            formLoginSpec.authenticationSuccessHandler(formLoginSuccessHandler)
-                .authenticationFailureHandler(new FormLoginFailureHandler()));
+    public void configure(HttpSecurity http) {
+        http.formLogin((formLogin) ->
+            formLogin
+                // .successHandler(formLoginSuccessHandler)
+                .failureHandler(formLoginFailureHandler)
+        );
     }
 }

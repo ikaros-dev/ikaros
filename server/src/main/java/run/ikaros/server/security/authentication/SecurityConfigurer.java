@@ -1,7 +1,7 @@
 package run.ikaros.server.security.authentication;
 
-import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 public interface SecurityConfigurer {
-    void configure(ServerHttpSecurity http);
+    void configure(HttpSecurity http);
 }

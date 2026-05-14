@@ -1,24 +1,28 @@
 package run.ikaros.server.security;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.api.core.role.Role;
-import run.ikaros.api.infra.utils.UuidV7Utils;
-import run.ikaros.server.core.role.RoleService;
-import run.ikaros.server.core.user.User;
-import run.ikaros.server.core.user.UserService;
-import run.ikaros.server.store.entity.BaseEntity;
-import run.ikaros.server.store.entity.UserEntity;
-import run.ikaros.server.store.entity.UserRoleEntity;
-import run.ikaros.server.store.repository.UserRoleRepository;
+import run.ikaros.api.store.entity.Authority;
+import run.ikaros.api.store.entity.Role;
+import run.ikaros.api.store.entity.RoleAuthority;
+import run.ikaros.api.store.entity.User;
+import run.ikaros.api.store.entity.UserRole;
+import run.ikaros.api.store.enums.AuthorityType;
+import run.ikaros.server.store.mapper.AuthorityMapper;
+import run.ikaros.server.store.mapper.RoleAuthorityMapper;
+import run.ikaros.server.store.mapper.RoleMapper;
+import run.ikaros.server.store.mapper.UserMapper;
+import run.ikaros.server.store.mapper.UserRoleMapper;
 
 @Slf4j
 @Component
@@ -29,74 +33,107 @@ public class MasterInitializer {
 
     private final SecurityProperties securityProperties;
     private final SecurityProperties.Initializer initializer;
-    private final UserService userService;
-    private final RoleService roleService;
-    private final UserRoleRepository userRoleRepository;
+    private final UserMapper userMapper;
+    private final RoleMapper roleMapper;
+    private final UserRoleMapper userRoleMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthorityMapper authorityMapper;
+    private final RoleAuthorityMapper roleAuthorityMapper;
 
     /**
      * default master tomoki init.
      */
-    public MasterInitializer(SecurityProperties securityProperties,
-                             UserService userService, RoleService roleService,
-                             UserRoleRepository userRoleRepository) {
+    public MasterInitializer(SecurityProperties securityProperties, UserMapper userMapper,
+                             RoleMapper roleMapper, UserRoleMapper userRoleMapper,
+                             PasswordEncoder passwordEncoder, AuthorityMapper authorityMapper,
+                             RoleAuthorityMapper roleAuthorityMapper) {
         this.securityProperties = securityProperties;
-        this.initializer = this.securityProperties.getInitializer();
-        this.userService = userService;
-        this.roleService = roleService;
-        this.userRoleRepository = userRoleRepository;
+        this.initializer = securityProperties.getInitializer();
+        this.userMapper = userMapper;
+        this.roleMapper = roleMapper;
+        this.userRoleMapper = userRoleMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.authorityMapper = authorityMapper;
+        this.roleAuthorityMapper = roleAuthorityMapper;
     }
+
 
     /**
      * init master user after application ready.
      */
     @EventListener(ApplicationReadyEvent.class)
-    public Mono<Void> initialize() {
+    public void initialize() {
         if (initializer.isDisabled()) {
             log.warn("Skip init master user when ikaros.security.initializer.disabled=true");
-            return Mono.empty();
+            return;
         }
-        return userService.getUserByUsername(initializer.getMasterUsername())
-            .then()
-            .onErrorResume(UsernameNotFoundException.class, user ->
-                userService.count()
-                    .filter(count -> count == 0)
-                    .flatMap(count -> createMaster()));
-    }
 
-    private Mono<Void> createMaster() {
-        log.debug("Create init user form username={} and role={}",
-            initializer.getMasterUsername(), SecurityConst.ROLE_MASTER);
-        return roleService.save(Role.builder()
-                .id(UuidV7Utils.generateUuid())
-                .name(SecurityConst.ROLE_MASTER)
-                .description("Default admin role, unable delete")
-                .build())
-            .map(Role::getId)
-            .zipWith(Mono.just(UserEntity.builder()
-                    .username(initializer.getMasterUsername())
-                    .password(getPassword())
-                    .nickname(initializer.getMasterNickname())
-                    .enable(true)
-                    .build())
-                .map(userEntity -> {
-                    if (userEntity.getId() == null) {
-                        userEntity.setId(UuidV7Utils.generateUuid());
-                    }
-                    return userEntity;
-                })
-                .map(User::new)
-                .flatMap(userService::insert)
-                .map(User::entity)
-                .map(BaseEntity::getId))
-            .flatMap(tuple2 ->
-                userRoleRepository.findByUserIdAndRoleId(tuple2.getT2(), tuple2.getT1())
-                    .switchIfEmpty(userRoleRepository.insert(UserRoleEntity.builder()
-                        .id(UuidV7Utils.generateUuid())
-                        .userId(tuple2.getT2())
-                        .roleId(tuple2.getT1())
-                        .build())))
-            .flatMap(userRoleRepository::update)
-            .then();
+        boolean exists = userMapper.exists(new LambdaQueryWrapper<User>()
+            .eq(User::getUsername, initializer.getMasterUsername()));
+
+        if (exists) {
+            LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<User>();
+            updateWrapper.set(User::getEnable, true);
+            updateWrapper.set(User::getDeleteStatus, false);
+            userMapper.update(updateWrapper);
+            log.info("Update and enable current user for {}.", initializer.getMasterUsername());
+            return;
+        }
+
+        // To create master user
+        LocalDateTime now = LocalDateTime.now();
+        Role role = new Role();
+        role.setName(SecurityConst.ROLE_MASTER);
+        role.setDescription("Default admin role, unable delete");
+        role.setDeleteStatus(false);
+        role.setCreateTime(now);
+        role.setUpdateTime(now);
+        role.setCreateUid(-1L);
+        role.setUpdateUid(-1L);
+        roleMapper.insertOrUpdate(role);
+        log.info("Insert or update master role: [{}].", role);
+
+        User user = new User();
+        user.setUsername(initializer.getMasterUsername());
+        String encodedPassword = passwordEncoder.encode(getPassword());
+        user.setPassword(encodedPassword);
+        user.setNickname(initializer.getMasterNickname());
+        user.setEnable(true);
+        user.setDeleteStatus(false);
+        user.setCreateTime(now);
+        user.setUpdateTime(now);
+        user.setCreateUid(-1L);
+        user.setUpdateUid(-1L);
+        userMapper.insertOrUpdate(user);
+        log.info("Insert or update master user: [{}].", user);
+
+        UserRole userRole = new UserRole();
+        userRole.setUserId(user.getId());
+        userRole.setRoleId(role.getId());
+        userRoleMapper.insertOrUpdate(userRole);
+        log.info("Insert or update master userRole: [{}].", userRole);
+
+        Authority authority = new Authority();
+        authority.setAllow(true);
+        authority.setTarget(SecurityConst.Authorization.Target.ALL);
+        authority.setAuthority(SecurityConst.Authorization.Authority.ALL);
+        authority.setCreateTime(now);
+        authority.setCreateUid(-1L);
+        authority.setDeleteStatus(false);
+        authority.setType(AuthorityType.ALL.name());
+        authority.setUpdateTime(now);
+        authority.setUpdateUid(-1L);
+        authorityMapper.insertOrUpdate(authority);
+        log.info("Insert or update master authority: [{}].", authority);
+
+        RoleAuthority roleAuthority = new RoleAuthority();
+        roleAuthority.setAuthorityId(authority.getId());
+        roleAuthority.setRoleId(role.getId());
+        roleAuthorityMapper.insertOrUpdate(roleAuthority);
+        log.info("Insert or update roleAuthority: [{}].", roleAuthority);
+
+        log.info("Create init user success form username={} and role={}",
+            user.getUsername(), role.getName());
     }
 
 
