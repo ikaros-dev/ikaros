@@ -14,6 +14,6 @@ import run.ikaros.server.store.entity.User;
  * @since 2026-05-13
  */
 public interface UserMapper extends BaseMapper<User> {
-    @Select("select * from ikuser where username = #{username}")
-    User findByUsername(@Param("username") String username);
+    @Select("select * from ikuser where username = #{username} and enable = #{enable} and delete_status = #{deleteStatus}")
+    User findByUsernameAndEnableAndDeleteStatus(String username, boolean enable, boolean deleteStatus);
 }
