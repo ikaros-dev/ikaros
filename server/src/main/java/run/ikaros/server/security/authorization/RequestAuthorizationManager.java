@@ -1,6 +1,13 @@
 package run.ikaros.server.security.authorization;
 
+import static run.ikaros.api.constant.OpenApiConst.CORE_VERSION;
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
+
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpMethod;
@@ -16,31 +23,25 @@ import org.springframework.util.PathMatcher;
 import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.store.enums.AuthorityType;
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import static run.ikaros.api.constant.OpenApiConst.CORE_VERSION;
-import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
-
 @Slf4j
-public class RequestAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
+public class RequestAuthorizationManager
+    implements AuthorizationManager<RequestAuthorizationContext> {
 
     private final PathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
-    public @Nullable AuthorizationResult authorize(Supplier<? extends @Nullable Authentication> authentication,
-                                                   RequestAuthorizationContext context) {
+    public @Nullable AuthorizationResult authorize(
+        Supplier<? extends @Nullable Authentication> authentication,
+        RequestAuthorizationContext context) {
         Assert.notNull(context, "'context' must not null.");
         final HttpServletRequest request = context.getRequest();
         final String path = request.getRequestURI();
         final HttpMethod method = HttpMethod.valueOf(request.getMethod());
         if (path.startsWith("/api/" + CORE_VERSION + "/static/")
-                || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/apply")
-                || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/refresh")
-                || path.startsWith("/api/" + CORE_VERSION + "/attachment/stream")
-                || path.startsWith(DRIVER_STATIC_RESOURCE_PREFIX + '/') // todo 后续可能考虑对本地映射文件鉴权
+            || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/apply")
+            || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/refresh")
+            || path.startsWith("/api/" + CORE_VERSION + "/attachment/stream")
+            || path.startsWith(DRIVER_STATIC_RESOURCE_PREFIX + '/') // todo 后续可能考虑对本地映射文件鉴权
         ) {
             return new AuthorizationDecision(true);
         }
@@ -52,8 +53,8 @@ public class RequestAuthorizationManager implements AuthorizationManager<Request
         }
 
         Set<String> authorities = auth.getAuthorities()
-                .stream().map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
+            .stream().map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toSet());
         if (authorities.isEmpty()) {
             return new AuthorizationDecision(false);
         }
@@ -78,18 +79,19 @@ public class RequestAuthorizationManager implements AuthorizationManager<Request
 
             if (AuthorityType.ALL.equals(type)) {
                 if (SecurityConst.Authorization.Target.ALL.equals(target)
-                        && SecurityConst.Authorization.Authority.ALL.equals(author)) {
+                    && SecurityConst.Authorization.Authority.ALL.equals(author)) {
                     granted = true;
                     continue;
                 }
 
                 if (SecurityConst.Authorization.Target.ALL.equals(target)
-                        && SecurityConst.Authorization.Authority.HTTP_ALL.equals(author)) {
+                    && SecurityConst.Authorization.Authority.HTTP_ALL.equals(author)) {
                     granted = true;
                     continue;
                 }
 
-                if (!SecurityConst.Authorization.Authority.ALL.equals(author) && author.startsWith("HTTP")) {
+                if (!SecurityConst.Authorization.Authority.ALL.equals(author)
+                    && author.startsWith("HTTP")) {
                     if (author.contains(method.name())) {
                         granted = true;
                         continue;
@@ -100,7 +102,7 @@ public class RequestAuthorizationManager implements AuthorizationManager<Request
             if (AuthorityType.API.equals(type) || AuthorityType.APIS.equals(type)) {
 
                 if (authTarget(target, path, granted)
-                        && authMethod(author, method, granted)) {
+                    && authMethod(author, method, granted)) {
                     granted = true;
                     continue;
                 }

@@ -2,6 +2,7 @@ package run.ikaros.server.security;
 
 import java.util.Collection;
 import java.util.List;
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import run.ikaros.api.store.entity.User;
 
 public class SecurityUser implements UserDetails, CredentialsContainer {
+    @Getter
     private final User user;
     private final List<IkarosGrantedAuthority> authorities;
 
@@ -50,4 +52,5 @@ public class SecurityUser implements UserDetails, CredentialsContainer {
     public Long getId() {
         return user.getId();
     }
+
 }

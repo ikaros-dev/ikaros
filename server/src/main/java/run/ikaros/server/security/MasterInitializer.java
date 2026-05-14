@@ -8,12 +8,18 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import run.ikaros.api.constant.SecurityConst;
+import run.ikaros.api.store.entity.Authority;
 import run.ikaros.api.store.entity.Role;
+import run.ikaros.api.store.entity.RoleAuthority;
 import run.ikaros.api.store.entity.User;
 import run.ikaros.api.store.entity.UserRole;
+import run.ikaros.api.store.enums.AuthorityType;
+import run.ikaros.server.store.mapper.AuthorityMapper;
+import run.ikaros.server.store.mapper.RoleAuthorityMapper;
 import run.ikaros.server.store.mapper.RoleMapper;
 import run.ikaros.server.store.mapper.UserMapper;
 import run.ikaros.server.store.mapper.UserRoleMapper;
@@ -30,17 +36,25 @@ public class MasterInitializer {
     private final UserMapper userMapper;
     private final RoleMapper roleMapper;
     private final UserRoleMapper userRoleMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthorityMapper authorityMapper;
+    private final RoleAuthorityMapper roleAuthorityMapper;
 
     /**
      * default master tomoki init.
      */
     public MasterInitializer(SecurityProperties securityProperties, UserMapper userMapper,
-                             RoleMapper roleMapper, UserRoleMapper userRoleMapper) {
+                             RoleMapper roleMapper, UserRoleMapper userRoleMapper,
+                             PasswordEncoder passwordEncoder, AuthorityMapper authorityMapper,
+                             RoleAuthorityMapper roleAuthorityMapper) {
         this.securityProperties = securityProperties;
         this.initializer = securityProperties.getInitializer();
         this.userMapper = userMapper;
         this.roleMapper = roleMapper;
         this.userRoleMapper = userRoleMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.authorityMapper = authorityMapper;
+        this.roleAuthorityMapper = roleAuthorityMapper;
     }
 
 
@@ -57,10 +71,7 @@ public class MasterInitializer {
         boolean exists = userMapper.exists(new LambdaQueryWrapper<User>()
             .eq(User::getUsername, initializer.getMasterUsername()));
 
-        if (exists && !(userMapper.exists(new LambdaQueryWrapper<User>()
-            .eq(User::getUsername, initializer.getMasterUsername())
-            .eq(User::getEnable, true)
-            .eq(User::getDeleteStatus, false)))) {
+        if (exists) {
             LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<User>();
             updateWrapper.set(User::getEnable, true);
             updateWrapper.set(User::getDeleteStatus, false);
@@ -84,7 +95,8 @@ public class MasterInitializer {
 
         User user = new User();
         user.setUsername(initializer.getMasterUsername());
-        user.setPassword(getPassword());
+        String encodedPassword = passwordEncoder.encode(getPassword());
+        user.setPassword(encodedPassword);
         user.setNickname(initializer.getMasterNickname());
         user.setEnable(true);
         user.setDeleteStatus(false);
@@ -100,6 +112,25 @@ public class MasterInitializer {
         userRole.setRoleId(role.getId());
         userRoleMapper.insertOrUpdate(userRole);
         log.info("Insert or update master userRole: [{}].", userRole);
+
+        Authority authority = new Authority();
+        authority.setAllow(true);
+        authority.setTarget(SecurityConst.Authorization.Target.ALL);
+        authority.setAuthority(SecurityConst.Authorization.Authority.ALL);
+        authority.setCreateTime(now);
+        authority.setCreateUid(-1L);
+        authority.setDeleteStatus(false);
+        authority.setType(AuthorityType.ALL.name());
+        authority.setUpdateTime(now);
+        authority.setUpdateUid(-1L);
+        authorityMapper.insertOrUpdate(authority);
+        log.info("Insert or update master authority: [{}].", authority);
+
+        RoleAuthority roleAuthority = new RoleAuthority();
+        roleAuthority.setAuthorityId(authority.getId());
+        roleAuthority.setRoleId(role.getId());
+        roleAuthorityMapper.insertOrUpdate(roleAuthority);
+        log.info("Insert or update roleAuthority: [{}].", roleAuthority);
 
         log.info("Create init user success form username={} and role={}",
             user.getUsername(), role.getName());

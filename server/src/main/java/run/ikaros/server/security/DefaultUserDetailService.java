@@ -6,10 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import run.ikaros.api.infra.utils.AssertUtils;
 import run.ikaros.api.store.entity.Authority;
 import run.ikaros.api.store.entity.Role;
 import run.ikaros.api.store.entity.RoleAuthority;
 import run.ikaros.api.store.entity.User;
+import run.ikaros.api.store.entity.UserRole;
+import run.ikaros.server.security.exception.RoleNotFoundException;
+import run.ikaros.server.security.exception.UserHasNotRoleException;
 import run.ikaros.server.store.mapper.AuthorityMapper;
 import run.ikaros.server.store.mapper.RoleAuthorityMapper;
 import run.ikaros.server.store.mapper.RoleMapper;
@@ -36,10 +40,20 @@ public class DefaultUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        AssertUtils.notBlank(username, "'username' must not blank.");
         log.debug("Load user by username: {}", username);
         User ikuser = userMapper.findByUsernameAndEnableAndDeleteStatus(username, true, false);
-        run.ikaros.api.store.entity.UserRole userRole = userRoleMapper.findByUserId(ikuser.getId());
+        if (ikuser == null) {
+            throw new UsernameNotFoundException("username: " + username);
+        }
+        UserRole userRole = userRoleMapper.findByUserId(ikuser.getId());
+        if (userRole == null) {
+            throw new UserHasNotRoleException("username: " + username);
+        }
         Role role = roleMapper.selectById(userRole.getRoleId());
+        if (role == null) {
+            throw new RoleNotFoundException("role: " + role);
+        }
         log.debug("Current user[{}] has role: {}", username, role.getName());
         List<RoleAuthority> roleAuthorities = roleAuthorityMapper.findAllByRoleId(role.getId());
         List<IkarosGrantedAuthority> authorities = new ArrayList<>(roleAuthorities.size());
