@@ -1,15 +1,14 @@
 create table if not exists "role"
 (
-    "id"            uuid NOT NULL,
+    "id"            bigint primary key,
     "create_time"   timestamp(6),
-    "create_uid"    uuid,
+    "create_uid"    bigint,
     "delete_status" boolean,
     "update_time"   timestamp(6),
-    "update_uid"    uuid,
+    "update_uid"    bigint,
     "ol_version"    bigint,
-    "parent_id"     uuid,
+    "parent_id"     bigint,
     "name"          varchar(255),
-    "description"   varchar(50000),
-    CONSTRAINT "role_pkey" PRIMARY KEY ("id")
+    "description"   varchar(50000)
 )
 ;

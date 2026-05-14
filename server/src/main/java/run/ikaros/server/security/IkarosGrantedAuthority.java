@@ -2,7 +2,7 @@ package run.ikaros.server.security;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
-import run.ikaros.server.store.entity.Authority;
+import run.ikaros.api.store.entity.Authority;
 
 import static run.ikaros.api.constant.SecurityConst.AUTHORITY_DIVIDE;
 

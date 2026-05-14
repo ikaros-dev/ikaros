@@ -1,13 +1,13 @@
 create table if not exists "attachment_driver"
 (
-    "id"             uuid         NOT NULL,
+    "id"             bigint primary key,
     "enable"         boolean,
-    "d_type"         varchar(100) NOT NULL,
-    "d_name"         varchar(100),
+    "driver_type"         varchar(100) NOT NULL,
+    "driver_name"         varchar(100),
     "mount_name"     varchar(255),
     "remote_path"    varchar(1000),
-    "d_order"        bigint,
-    "d_comment"      varchar(255),
+    "driver_order"        bigint,
+    "driver_comment"      varchar(255),
     "refresh_token"  varchar(255),
     "access_token"   varchar(255),
     "expire_time"    timestamp(6),
@@ -18,7 +18,6 @@ create table if not exists "attachment_driver"
     "user_name"      varchar(255),
     "avatar"         varchar(1000),
     "space_total"    bigint,
-    "space_use"      bigint,
-    CONSTRAINT "attachment_driver_pkey" PRIMARY KEY ("id")
+    "space_use"      bigint
 )
 ;

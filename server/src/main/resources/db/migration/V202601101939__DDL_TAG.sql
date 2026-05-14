@@ -1,12 +1,11 @@
 create table if not exists "tag"
 (
-    "id"          uuid NOT NULL,
+    "id"          bigint primary key,
     "type"        varchar(255),
-    "master_id"   uuid,
+    "master_id"   bigint,
     "name"        varchar(255),
-    "user_id"     uuid,
+    "user_id"     bigint,
     "create_time" timestamp(6),
-    "color"       varchar(200),
-    CONSTRAINT "tag_pkey" PRIMARY KEY ("id")
+    "color"       varchar(200)
 )
 ;

@@ -4,7 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import run.ikaros.server.store.entity.*;
+import run.ikaros.api.store.entity.Authority;
+import run.ikaros.api.store.entity.Role;
+import run.ikaros.api.store.entity.RoleAuthority;
+import run.ikaros.api.store.entity.User;
 import run.ikaros.server.store.mapper.*;
 
 import java.util.ArrayList;
@@ -32,7 +35,7 @@ public class DefaultUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.debug("Load user by username: {}", username);
         User ikuser = userMapper.findByUsernameAndEnableAndDeleteStatus(username, true, false);
-        UserRole userRole = userRoleMapper.findByUserId(ikuser.getId());
+        run.ikaros.api.store.entity.UserRole userRole = userRoleMapper.findByUserId(ikuser.getId());
         Role role = roleMapper.selectById(userRole.getRoleId());
         log.debug("Current user[{}] has role: {}", username, role.getName());
         List<RoleAuthority> roleAuthorities = roleAuthorityMapper.findAllByRoleId(role.getId());

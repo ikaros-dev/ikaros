@@ -1,7 +1,7 @@
 package run.ikaros.server.store.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import run.ikaros.server.store.entity.Subject;
+import run.ikaros.api.store.entity.Subject;
 
 /**
  * <p>

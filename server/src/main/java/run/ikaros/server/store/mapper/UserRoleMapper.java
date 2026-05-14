@@ -2,7 +2,7 @@ package run.ikaros.server.store.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
-import run.ikaros.server.store.entity.UserRole;
+import run.ikaros.api.store.entity.UserRole;
 
 import java.util.UUID;
 
