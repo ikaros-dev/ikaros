@@ -14,7 +14,7 @@ PS: 从v1.0.x无法无缝升级到v1.1，升级到此版本，请参考具体的
 
 ## 服务端
 
-- 全面转向 Servlet Stack
+- 全面从 Reactive Stack 转向 Servlet Stack
 - 去掉新版本导出数据库表为CSV时自动生成的一列UUID
 - 升级SpringBoot版本到4
 
