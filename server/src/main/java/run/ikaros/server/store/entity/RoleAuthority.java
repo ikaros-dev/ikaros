@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * <p>
@@ -23,9 +24,9 @@ public class RoleAuthority implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Object id;
+    private UUID id;
 
-    private Object roleId;
+    private UUID roleId;
 
-    private Object authorityId;
+    private UUID authorityId;
 }

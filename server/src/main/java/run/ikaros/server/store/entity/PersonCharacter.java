@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * <p>
@@ -24,21 +25,21 @@ public class PersonCharacter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Object id;
+    private UUID id;
 
     private LocalDateTime createTime;
 
-    private Object createUid;
+    private UUID createUid;
 
     private Boolean deleteStatus;
 
     private LocalDateTime updateTime;
 
-    private Object updateUid;
+    private UUID updateUid;
 
     private Long olVersion;
 
-    private Object personId;
+    private UUID personId;
 
-    private Object characterId;
+    private UUID characterId;
 }

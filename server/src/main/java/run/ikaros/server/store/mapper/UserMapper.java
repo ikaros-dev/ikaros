@@ -1,6 +1,8 @@
 package run.ikaros.server.store.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import run.ikaros.server.store.entity.User;
 
 /**
@@ -12,5 +14,6 @@ import run.ikaros.server.store.entity.User;
  * @since 2026-05-13
  */
 public interface UserMapper extends BaseMapper<User> {
-
+    @Select("select * from ikuser where username = #{username}")
+    User findByUsername(@Param("username") String username);
 }

@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * <p>
@@ -24,7 +25,7 @@ public class SubjectPerson implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Object id;
+    private UUID id;
 
     private LocalDateTime createTime;
 
@@ -34,11 +35,11 @@ public class SubjectPerson implements Serializable {
 
     private LocalDateTime updateTime;
 
-    private Object updateUid;
+    private UUID updateUid;
 
     private Long olVersion;
 
-    private Object subjectId;
+    private UUID subjectId;
 
-    private Object personId;
+    private UUID personId;
 }

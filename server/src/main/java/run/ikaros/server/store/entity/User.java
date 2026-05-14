@@ -1,11 +1,13 @@
 package run.ikaros.server.store.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * <p>
@@ -18,11 +20,12 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
+@TableName("ikuser")
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Object id;
+    private UUID id;
 
     private LocalDateTime createTime;
 

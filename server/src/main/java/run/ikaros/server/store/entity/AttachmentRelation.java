@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * <p>
@@ -23,11 +24,11 @@ public class AttachmentRelation implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Object id;
+    private UUID id;
 
-    private Object attachmentId;
+    private UUID attachmentId;
 
     private String type;
 
-    private Object relationAttachmentId;
+    private UUID relationAttachmentId;
 }

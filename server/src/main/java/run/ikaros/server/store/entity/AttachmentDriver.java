@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * <p>
@@ -24,7 +25,7 @@ public class AttachmentDriver implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Object id;
+    private UUID id;
 
     private Boolean enable;
 

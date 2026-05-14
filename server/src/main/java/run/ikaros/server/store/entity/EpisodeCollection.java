@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * <p>
@@ -24,13 +25,13 @@ public class EpisodeCollection implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Object id;
+    private UUID id;
 
-    private Object userId;
+    private UUID userId;
 
-    private Object subjectId;
+    private UUID subjectId;
 
-    private Object episodeId;
+    private UUID episodeId;
 
     private Boolean finish;
 

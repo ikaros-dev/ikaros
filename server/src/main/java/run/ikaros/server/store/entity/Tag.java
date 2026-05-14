@@ -6,6 +6,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * <p>
@@ -22,15 +23,15 @@ public class Tag implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Object id;
+    private UUID id;
 
     private String type;
 
-    private Object masterId;
+    private UUID masterId;
 
     private String name;
 
-    private Object userId;
+    private UUID userId;
 
     private LocalDateTime createTime;
 
