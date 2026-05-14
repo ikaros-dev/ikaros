@@ -24,7 +24,7 @@ public class User implements Serializable {
 
     private Object createUid;
 
-    private Boolean deleteStatus;
+    private Boolean deleteStatus = false;
 
     private LocalDateTime updateTime;
 
@@ -36,13 +36,13 @@ public class User implements Serializable {
 
     private String email;
 
-    private Boolean enable;
+    private Boolean enable = true;
 
     private String introduce;
 
     private String nickname;
 
-    private Boolean nonLocked;
+    private Boolean nonLocked = true;
 
     private String password;
 

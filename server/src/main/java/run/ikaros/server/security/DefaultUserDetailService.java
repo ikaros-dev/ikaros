@@ -49,8 +49,6 @@ public class DefaultUserDetailService implements UserDetailsService {
             authorities.add(grantedAuthority);
         }
         log.debug("Current user[{}] has authorities: {}", username, authorities);
-        return new org.springframework.security.core.userdetails.User(
-            ikuser.getUsername(), ikuser.getPassword(), authorities
-        );
+        return new SecurityUser(ikuser, authorities);
     }
 }

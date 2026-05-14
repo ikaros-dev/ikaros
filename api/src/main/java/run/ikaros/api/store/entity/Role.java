@@ -23,7 +23,7 @@ public class Role implements Serializable {
 
     private Long createUid;
 
-    private Boolean deleteStatus;
+    private Boolean deleteStatus = false;
 
     private LocalDateTime updateTime;
 

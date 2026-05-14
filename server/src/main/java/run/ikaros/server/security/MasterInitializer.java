@@ -77,6 +77,8 @@ public class MasterInitializer {
         role.setDeleteStatus(false);
         role.setCreateTime(now);
         role.setUpdateTime(now);
+        role.setCreateUid(-1L);
+        role.setUpdateUid(-1L);
         roleMapper.insertOrUpdate(role);
         log.info("Insert or update master role: [{}].", role);
 
@@ -88,6 +90,8 @@ public class MasterInitializer {
         user.setDeleteStatus(false);
         user.setCreateTime(now);
         user.setUpdateTime(now);
+        user.setCreateUid(-1L);
+        user.setUpdateUid(-1L);
         userMapper.insertOrUpdate(user);
         log.info("Insert or update master user: [{}].", user);
 
