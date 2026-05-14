@@ -2,6 +2,7 @@ package run.ikaros.server.security;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,7 +11,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.entity.Role;
 import run.ikaros.api.store.entity.User;
 import run.ikaros.api.store.entity.UserRole;
@@ -18,15 +18,11 @@ import run.ikaros.server.store.mapper.RoleMapper;
 import run.ikaros.server.store.mapper.UserMapper;
 import run.ikaros.server.store.mapper.UserRoleMapper;
 
-import java.time.LocalDateTime;
-
-import static run.ikaros.api.core.role.RoleConst.ROLE_MASTER_ID;
-
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "ikaros.security.initializer.disabled",
-        havingValue = "false",
-        matchIfMissing = true)
+    havingValue = "false",
+    matchIfMissing = true)
 public class MasterInitializer {
 
     private final SecurityProperties securityProperties;
@@ -59,12 +55,12 @@ public class MasterInitializer {
         }
 
         boolean exists = userMapper.exists(new LambdaQueryWrapper<User>()
-                .eq(User::getUsername, initializer.getMasterUsername()));
+            .eq(User::getUsername, initializer.getMasterUsername()));
 
         if (exists && !(userMapper.exists(new LambdaQueryWrapper<User>()
-                .eq(User::getUsername, initializer.getMasterUsername())
-                .eq(User::getEnable, true)
-                .eq(User::getDeleteStatus, false)))) {
+            .eq(User::getUsername, initializer.getMasterUsername())
+            .eq(User::getEnable, true)
+            .eq(User::getDeleteStatus, false)))) {
             LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<User>();
             updateWrapper.set(User::getEnable, true);
             updateWrapper.set(User::getDeleteStatus, false);
@@ -76,7 +72,6 @@ public class MasterInitializer {
         // To create master user
         LocalDateTime now = LocalDateTime.now();
         Role role = new Role();
-        role.setId(ROLE_MASTER_ID);
         role.setName(SecurityConst.ROLE_MASTER);
         role.setDescription("Default admin role, unable delete");
         role.setDeleteStatus(false);
@@ -97,14 +92,13 @@ public class MasterInitializer {
         log.info("Insert or update master user: [{}].", user);
 
         UserRole userRole = new UserRole();
-        userRole.setId(UuidV7Utils.generateUuid());
         userRole.setUserId(user.getId());
         userRole.setRoleId(role.getId());
         userRoleMapper.insertOrUpdate(userRole);
         log.info("Insert or update master userRole: [{}].", userRole);
 
         log.info("Create init user success form username={} and role={}",
-                user.getUsername(), role.getName());
+            user.getUsername(), role.getName());
     }
 
 
@@ -114,7 +108,7 @@ public class MasterInitializer {
             // generate password
             password = RandomStringUtils.randomAlphanumeric(16);
             log.info("=== Generated random password: {} for super master: {} ===",
-                    password, this.initializer.getMasterUsername());
+                password, this.initializer.getMasterUsername());
         }
         return password;
     }

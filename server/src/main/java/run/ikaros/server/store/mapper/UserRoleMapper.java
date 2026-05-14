@@ -16,5 +16,5 @@ import java.util.UUID;
  */
 public interface UserRoleMapper extends BaseMapper<UserRole> {
     @Select("select * from ikuser_role where user_id = #{userId}")
-    UserRole findByUserId(UUID userId);
+    UserRole findByUserId(Long userId);
 }

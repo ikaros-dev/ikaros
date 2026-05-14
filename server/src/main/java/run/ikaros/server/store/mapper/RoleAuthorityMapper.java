@@ -17,5 +17,5 @@ import java.util.UUID;
  */
 public interface RoleAuthorityMapper extends BaseMapper<RoleAuthority> {
     @Select("select * from role_authority where role_id = #{roleId}")
-    List<RoleAuthority> findAllByRoleId(UUID roleId);
+    List<RoleAuthority> findAllByRoleId(Long roleId);
 }

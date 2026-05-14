@@ -1,5 +1,7 @@
 package run.ikaros.server.security;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -8,10 +10,11 @@ import run.ikaros.api.store.entity.Authority;
 import run.ikaros.api.store.entity.Role;
 import run.ikaros.api.store.entity.RoleAuthority;
 import run.ikaros.api.store.entity.User;
-import run.ikaros.server.store.mapper.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import run.ikaros.server.store.mapper.AuthorityMapper;
+import run.ikaros.server.store.mapper.RoleAuthorityMapper;
+import run.ikaros.server.store.mapper.RoleMapper;
+import run.ikaros.server.store.mapper.UserMapper;
+import run.ikaros.server.store.mapper.UserRoleMapper;
 
 @Slf4j
 public class DefaultUserDetailService implements UserDetailsService {
@@ -47,7 +50,7 @@ public class DefaultUserDetailService implements UserDetailsService {
         }
         log.debug("Current user[{}] has authorities: {}", username, authorities);
         return new org.springframework.security.core.userdetails.User(
-                ikuser.getUsername(), ikuser.getPassword(), authorities
+            ikuser.getUsername(), ikuser.getPassword(), authorities
         );
     }
 }
