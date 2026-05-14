@@ -28,6 +28,9 @@ public class DefaultUserDetailService implements UserDetailsService {
     private final RoleAuthorityMapper roleAuthorityMapper;
     private final AuthorityMapper authorityMapper;
 
+    /**
+     * Default user detail service.
+     */
     public DefaultUserDetailService(UserMapper userMapper, UserRoleMapper userRoleMapper,
                                     RoleMapper roleMapper, RoleAuthorityMapper roleAuthorityMapper,
                                     AuthorityMapper authorityMapper) {

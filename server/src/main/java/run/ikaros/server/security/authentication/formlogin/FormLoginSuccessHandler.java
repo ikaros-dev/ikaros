@@ -34,7 +34,7 @@ public class FormLoginSuccessHandler implements AuthenticationSuccessHandler {
         throws IOException, ServletException {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
-        User user = securityUser.getUser();
+        final User user = securityUser.getUser();
         log.debug("Set user info to security context with username={}.",
             securityUser.getUsername());
         response.setContentType(MediaType.APPLICATION_JSON.toString());

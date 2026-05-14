@@ -13,6 +13,9 @@ group = 'run.ikaros.server'
 description = 'Server module of ikaros project'
 
 checkstyle {
+    toolVersion = "13.4.2"
+    showViolations = false
+    ignoreFailures = false
     configFile = rootProject.file("config/checkstyle/checkstyle.xml")
 }
 
