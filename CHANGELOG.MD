@@ -9,12 +9,10 @@ PS: 从v1.0.x无法无缝升级到v1.1，升级到此版本，请参考具体的
 ## 数据库
 
 - 去掉H2数据库，全面使用PG数据库
-- 替换数据库SQL版本工具为 flyway
-- ID替换成雪花算法ID
+- 替换数据库SQL版本工具为 db-migration
 
 ## 服务端
 
-- 全面从 Reactive Stack 转向 Servlet Stack
 - 去掉新版本导出数据库表为CSV时自动生成的一列UUID
 - 升级SpringBoot版本到4
 

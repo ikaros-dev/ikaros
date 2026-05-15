@@ -2,18 +2,18 @@ package run.ikaros.server.security;
 
 import java.util.List;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.server.security.authentication.SecurityConfigurer;
 
 @Component
 public class CorsConfigurer implements SecurityConfigurer {
     @Override
-    public void configure(HttpSecurity http) {
+    public void configure(ServerHttpSecurity http) {
         http.cors(spec -> spec.configurationSource(apiCorsConfigSource()));
     }
 

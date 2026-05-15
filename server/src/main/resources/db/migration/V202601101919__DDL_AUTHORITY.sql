@@ -1,15 +1,16 @@
 create table if not exists "authority"
 (
-    "id"            bigint primary key,
+    "id"            uuid NOT NULL,
     "create_time"   timestamp(6),
-    "create_uid"    bigint,
+    "create_uid"    uuid,
     "delete_status" boolean,
     "update_time"   timestamp(6),
-    "update_uid"    bigint,
+    "update_uid"    uuid,
     "ol_version"    bigint,
     "allow"         boolean,
     "type"          varchar(100),
     "target"        varchar(255),
-    "authority"     varchar(10000)
+    "authority"     varchar(10000),
+    CONSTRAINT "authority_pkey" PRIMARY KEY ("id")
 )
 ;

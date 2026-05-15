@@ -1,8 +1,7 @@
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
-    id 'org.springframework.boot' version '4.0.6' apply false
-    id 'org.graalvm.buildtools.native' version '0.11.5' apply false
+    id 'org.springframework.boot' version '4.0.1' apply false
     id 'java-platform'
     id 'maven-publish'
 }
@@ -11,14 +10,13 @@ group = 'run.ikaros.platform.core'
 description = 'Platform of ikaros core.'
 
 ext {
-    mybatisPlusStarter = "3.5.15"
-    springDocOpenAPI = "3.0.2"
-    commonsLang3 = "3.18.0"
-    pf4j = '3.15.0'
-    jsoup = '1.22.2'
-    uuidCreator = "6.1.1"
-    flywayPostgresql = "12.6.0"
+    commonsLang3 = "3.12.0"
+    pf4j = '3.8.0'
+    jsoup = '1.15.3'
+    springDocOpenAPI = "3.0.1"
     lucene = "9.5.0"
+    uuidCreator = "1.0.7"
+    r2dbcMigrate = "4.0.1"
 }
 
 javaPlatform {
@@ -29,15 +27,15 @@ dependencies {
     api platform(SpringBootPlugin.BOM_COORDINATES)
 
     constraints {
-        api "com.baomidou:mybatis-plus-spring-boot4-starter:$mybatisPlusStarter"
-        api "org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenAPI"
+        api "org.springdoc:springdoc-openapi-starter-webflux-ui:$springDocOpenAPI"
+        api "org.openapi4j:openapi-schema-validator:$uuidCreator"
 
         api "org.apache.commons:commons-lang3:$commonsLang3"
         api "org.pf4j:pf4j:$pf4j"
         api "org.jsoup:jsoup:$jsoup"
         api "org.springframework.integration:spring-integration-core"
         api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
-        api "com.github.f4b6a3:uuid-creator:$uuidCreator"
+        api 'com.github.f4b6a3:uuid-creator:6.1.1'
 
         // Apache Lucene
         api "org.apache.lucene:lucene-core:$lucene"
@@ -46,8 +44,11 @@ dependencies {
         api "org.apache.lucene:lucene-backward-codecs:$lucene"
         api 'cn.shenyanchao.ik-analyzer:ik-analyzer:9.0.0'
 
+        // r2dbc-migrate
+        api "name.nkonev.r2dbc-migrate:r2dbc-migrate-spring-boot-starter:$r2dbcMigrate"
+
         runtime 'org.postgresql:postgresql'
-        runtime "org.flywaydb:flyway-database-postgresql:$flywayPostgresql"
+        runtime 'org.postgresql:r2dbc-postgresql'
     }
 
 }
