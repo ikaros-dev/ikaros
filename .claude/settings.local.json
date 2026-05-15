@@ -18,7 +18,12 @@
       "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.SecurityIntegrationTest\")",
       "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.SecurityIntegrationTest.unauthenticatedRequest_toStaticResource_shouldBeGranted\" --info)",
       "Bash(./gradlew :server:jacocoTestReport)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.TimeUtilsTest.formatTimestampWithPattern\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.SqlUtilsTest.escapeLikeSpecialChars_noSpecialChars\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.PathUtilsTest.combinePath_nullSegment\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.ByteArrUtilsTest.isBinaryData_withNull\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.config.mybatis.MybatisPlusMetaObjectHandlerTest.insertFill_withAuthenticatedUser\" --info)"
     ]
   }
 }
