@@ -6,16 +6,18 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.entity.Authority;
 import run.ikaros.api.store.entity.User;
+import run.ikaros.server.common.TestEntityIds;
 
 class SecurityUserTest {
 
     @Test
     void constructor_shouldWrapUserAndAuthorities() {
         User user = new User();
-        user.setId(1L);
+        user.setId(TestEntityIds.USER_1);
         user.setUsername("testuser");
         user.setPassword("secret");
         user.setEnable(true);
@@ -32,7 +34,7 @@ class SecurityUserTest {
 
         assertEquals("testuser", securityUser.getUsername());
         assertEquals("secret", securityUser.getPassword());
-        assertEquals(1L, securityUser.getId());
+        assertEquals(TestEntityIds.USER_1, securityUser.getId());
         assertTrue(securityUser.isEnabled());
         assertTrue(securityUser.isAccountNonLocked());
         assertEquals(1, securityUser.getAuthorities().size());
@@ -104,11 +106,11 @@ class SecurityUserTest {
     @Test
     void getUser_shouldReturnWrappedUser() {
         User user = new User();
-        user.setId(42L);
+        user.setId(TestEntityIds.ENTITY_42);
         user.setUsername("wrapper");
 
         SecurityUser securityUser = new SecurityUser(user, List.of());
         assertEquals(user, securityUser.getUser());
-        assertEquals(42L, securityUser.getUser().getId());
+        assertEquals(TestEntityIds.ENTITY_42, securityUser.getUser().getId());
     }
 }

@@ -27,7 +27,12 @@
       "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.AesEncryptUtilsTest.decryptFile_withKeyBytes\" --info)",
       "Bash(./gradlew :server:compileTestJava --info)",
       "Bash(grep -v ':1$')",
-      "Bash(grep -v ':0$')"
+      "Bash(grep -v ':0$')",
+      "Bash(./gradlew compileJava)",
+      "Bash(./gradlew compileTestJava)",
+      "Bash(./gradlew build *)",
+      "Bash(./gradlew checkstyleMain)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

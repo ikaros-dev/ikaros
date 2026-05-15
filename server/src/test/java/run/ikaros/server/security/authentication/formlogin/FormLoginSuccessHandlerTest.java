@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import run.ikaros.server.common.TestEntityIds;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
@@ -37,7 +38,7 @@ class FormLoginSuccessHandlerTest {
         when(response.getWriter()).thenReturn(new PrintWriter(stringWriter));
 
         User user = new User();
-        user.setId(1L);
+        user.setId(TestEntityIds.USER_1);
         user.setUsername("testuser");
         user.setPassword("secret");
         user.setNickname("Test User");

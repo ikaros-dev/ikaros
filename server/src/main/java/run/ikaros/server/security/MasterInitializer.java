@@ -88,8 +88,8 @@ public class MasterInitializer {
         role.setDeleteStatus(false);
         role.setCreateTime(now);
         role.setUpdateTime(now);
-        role.setCreateUid(-1L);
-        role.setUpdateUid(-1L);
+        role.setCreateUid(null);
+        role.setUpdateUid(null);
         roleMapper.insertOrUpdate(role);
         log.info("Insert or update master role: [{}].", role);
 
@@ -102,8 +102,8 @@ public class MasterInitializer {
         user.setDeleteStatus(false);
         user.setCreateTime(now);
         user.setUpdateTime(now);
-        user.setCreateUid(-1L);
-        user.setUpdateUid(-1L);
+        user.setCreateUid(null);
+        user.setUpdateUid(null);
         userMapper.insertOrUpdate(user);
         log.info("Insert or update master user: [{}].", user);
 
@@ -118,11 +118,11 @@ public class MasterInitializer {
         authority.setTarget(SecurityConst.Authorization.Target.ALL);
         authority.setAuthority(SecurityConst.Authorization.Authority.ALL);
         authority.setCreateTime(now);
-        authority.setCreateUid(-1L);
+        authority.setCreateUid(null);
         authority.setDeleteStatus(false);
         authority.setType(AuthorityType.ALL.name());
         authority.setUpdateTime(now);
-        authority.setUpdateUid(-1L);
+        authority.setUpdateUid(null);
         authorityMapper.insertOrUpdate(authority);
         log.info("Insert or update master authority: [{}].", authority);
 
