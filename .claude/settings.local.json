@@ -7,7 +7,16 @@
       "Bash(./gradlew :server:cleanTest :server:test --tests \"run.ikaros.server.security.authentication.jwt.JwtAuthenticationProviderTest\")",
       "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.authentication.jwt.JwtAuthenticationProviderTest\" --rerun-tasks)",
       "Bash(claude mcp *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.*\" --rerun-tasks)",
+      "Bash(./gradlew :server:dependencies --configuration testCompileClasspath)",
+      "Bash(jar tf *)",
+      "Bash(./gradlew :server:test --info)",
+      "Bash(./gradlew :server:test)",
+      "Bash(./gradlew :server:compileTestJava)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.SecurityIntegrationTest\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.SecurityIntegrationTest\")",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.SecurityIntegrationTest.unauthenticatedRequest_toStaticResource_shouldBeGranted\" --info)"
     ]
   }
 }

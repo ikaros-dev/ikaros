@@ -51,3 +51,6 @@ out/
 
 ### Ikaros Server ###
 server/src/main/resources/application-local.yaml
+/.claude/worktrees/
+/server/workDirPath_IS_UNDEFINED/
+/server/target/
