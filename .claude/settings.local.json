@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"---EXIT:$?\")",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.authentication.jwt.JwtAuthenticationProviderTest\")",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.authentication.jwt.JwtAuthenticationProviderTest\" --info)",
+      "Bash(./gradlew :server:cleanTest :server:test --tests \"run.ikaros.server.security.authentication.jwt.JwtAuthenticationProviderTest\")",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.authentication.jwt.JwtAuthenticationProviderTest\" --rerun-tasks)",
+      "Bash(claude mcp *)",
+      "Bash(curl *)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.*\" --rerun-tasks)",
+      "Bash(./gradlew :server:dependencies --configuration testCompileClasspath)",
+      "Bash(jar tf *)",
+      "Bash(./gradlew :server:test --info)",
+      "Bash(./gradlew :server:test)",
+      "Bash(./gradlew :server:compileTestJava)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.SecurityIntegrationTest\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.SecurityIntegrationTest\")",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.SecurityIntegrationTest.unauthenticatedRequest_toStaticResource_shouldBeGranted\" --info)",
+      "Bash(./gradlew :server:jacocoTestReport)",
+      "Bash(python3 *)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.TimeUtilsTest.formatTimestampWithPattern\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.SqlUtilsTest.escapeLikeSpecialChars_noSpecialChars\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.PathUtilsTest.combinePath_nullSegment\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.ByteArrUtilsTest.isBinaryData_withNull\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.config.mybatis.MybatisPlusMetaObjectHandlerTest.insertFill_withAuthenticatedUser\" --info)",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.AesEncryptUtilsTest.decryptFile_withKeyBytes\" --info)",
+      "Bash(./gradlew :server:compileTestJava --info)"
+    ]
+  }
+}
