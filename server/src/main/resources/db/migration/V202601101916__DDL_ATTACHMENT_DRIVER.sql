@@ -1,6 +1,6 @@
 create table if not exists "attachment_driver"
 (
-    "id"             uuid primary key DEFAULT uuid_generate_v7(),
+    "id"             uuid primary key DEFAULT uuidv7(),
     "enable"         boolean,
     "driver_type"    varchar(100) NOT NULL,
     "driver_name"    varchar(100),

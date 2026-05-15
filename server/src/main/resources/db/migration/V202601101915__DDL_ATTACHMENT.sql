@@ -1,6 +1,6 @@
 create table if not exists "attachment"
 (
-    "id"          uuid primary key DEFAULT uuid_generate_v7(),
+    "id"          uuid primary key DEFAULT uuidv7(),
     "parent_id"   uuid,
     "type"        varchar(255),
     "url"         varchar(5000),

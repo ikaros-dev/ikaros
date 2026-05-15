@@ -1,6 +1,6 @@
 create table if not exists "subject_collection"
 (
-    "id"               uuid primary key DEFAULT uuid_generate_v7(),
+    "id"               uuid primary key DEFAULT uuidv7(),
     "user_id"          uuid,
     "subject_id"       uuid,
     "type"             varchar(255),

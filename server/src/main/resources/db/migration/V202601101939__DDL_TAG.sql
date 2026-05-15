@@ -1,6 +1,6 @@
 create table if not exists "tag"
 (
-    "id"          uuid primary key DEFAULT uuid_generate_v7(),
+    "id"          uuid primary key DEFAULT uuidv7(),
     "type"        varchar(255),
     "master_id"   uuid,
     "name"        varchar(255),

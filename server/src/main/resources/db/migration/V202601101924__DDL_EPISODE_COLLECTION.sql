@@ -1,6 +1,6 @@
 create table if not exists "episode_collection"
 (
-    "id"          uuid primary key DEFAULT uuid_generate_v7(),
+    "id"          uuid primary key DEFAULT uuidv7(),
     "user_id"     uuid,
     "subject_id"  uuid,
     "episode_id"  uuid,

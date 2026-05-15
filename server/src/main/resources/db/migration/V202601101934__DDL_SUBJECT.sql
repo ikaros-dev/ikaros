@@ -1,6 +1,6 @@
 create table if not exists "subject"
 (
-    "id"            uuid primary key DEFAULT uuid_generate_v7(),
+    "id"            uuid primary key DEFAULT uuidv7(),
     "create_time"   timestamp(6),
     "create_uid"    uuid,
     "delete_status" boolean,

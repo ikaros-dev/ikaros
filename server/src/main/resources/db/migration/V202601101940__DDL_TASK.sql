@@ -1,6 +1,6 @@
 create table if not exists "task"
 (
-    "id"           uuid primary key DEFAULT uuid_generate_v7(),
+    "id"           uuid primary key DEFAULT uuidv7(),
     "name"         varchar(255),
     "status"       varchar(255),
     "create_time"  timestamp(6),
