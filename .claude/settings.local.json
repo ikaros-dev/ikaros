@@ -25,7 +25,9 @@
       "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.ByteArrUtilsTest.isBinaryData_withNull\" --info)",
       "Bash(./gradlew :server:test --tests \"run.ikaros.server.config.mybatis.MybatisPlusMetaObjectHandlerTest.insertFill_withAuthenticatedUser\" --info)",
       "Bash(./gradlew :server:test --tests \"run.ikaros.server.infra.utils.AesEncryptUtilsTest.decryptFile_withKeyBytes\" --info)",
-      "Bash(./gradlew :server:compileTestJava --info)"
+      "Bash(./gradlew :server:compileTestJava --info)",
+      "Bash(grep -v ':1$')",
+      "Bash(grep -v ':0$')"
     ]
   }
 }

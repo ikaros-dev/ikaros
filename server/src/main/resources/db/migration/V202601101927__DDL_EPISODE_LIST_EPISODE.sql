@@ -1,7 +1,7 @@
 create table if not exists "episode_list_episode"
 (
-    "id"              bigint primary key,
-    "episode_list_id" bigint,
-    "episode_id"      bigint
+    "id"              uuid primary key DEFAULT uuid_generate_v7(),
+    "episode_list_id" uuid,
+    "episode_id"      uuid
 )
 ;

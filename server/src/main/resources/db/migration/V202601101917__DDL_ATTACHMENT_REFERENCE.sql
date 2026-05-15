@@ -1,8 +1,8 @@
 create table if not exists "attachment_reference"
 (
-    "id"            bigint primary key,
+    "id"            uuid primary key DEFAULT uuid_generate_v7(),
     "type"          varchar(255),
-    "attachment_id" bigint,
-    "reference_id"  bigint
+    "attachment_id" uuid,
+    "reference_id"  uuid
 )
 ;

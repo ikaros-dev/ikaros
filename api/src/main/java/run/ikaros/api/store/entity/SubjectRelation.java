@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
+import java.util.UUID;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,22 +19,22 @@ public class SubjectRelation implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    @TableId(type = IdType.AUTO)
+    private UUID id;
 
     private LocalDateTime createTime;
 
-    private Long createUid;
+    private UUID createUid;
 
     private Boolean deleteStatus;
 
     private LocalDateTime updateTime;
 
-    private Long updateUid;
+    private UUID updateUid;
 
     private Long olVersion;
 
-    private Long subjectId;
+    private UUID subjectId;
 
     private String relationType;
 

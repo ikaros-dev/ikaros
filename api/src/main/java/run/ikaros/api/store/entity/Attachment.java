@@ -3,6 +3,7 @@ package run.ikaros.api.store.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+import java.util.UUID;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,10 +16,10 @@ public class Attachment implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    @TableId(type = IdType.AUTO)
+    private UUID id;
 
-    private Long parentId;
+    private UUID parentId;
 
     private String type;
 
@@ -36,7 +37,7 @@ public class Attachment implements Serializable {
 
     private Boolean deleted;
 
-    private Long driverId;
+    private UUID driverId;
 
     private String sha1;
 }

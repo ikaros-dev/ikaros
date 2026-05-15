@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
+import java.util.UUID;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,14 +18,14 @@ public class EpisodeCollection implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    @TableId(type = IdType.AUTO)
+    private UUID id;
 
-    private Long userId;
+    private UUID userId;
 
-    private Long subjectId;
+    private UUID subjectId;
 
-    private Long episodeId;
+    private UUID episodeId;
 
     private Boolean finish;
 
