@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"---EXIT:$?\")",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.authentication.jwt.JwtAuthenticationProviderTest\")",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.authentication.jwt.JwtAuthenticationProviderTest\" --info)",
+      "Bash(./gradlew :server:cleanTest :server:test --tests \"run.ikaros.server.security.authentication.jwt.JwtAuthenticationProviderTest\")",
+      "Bash(./gradlew :server:test --tests \"run.ikaros.server.security.authentication.jwt.JwtAuthenticationProviderTest\" --rerun-tasks)",
+      "Bash(claude mcp *)",
+      "Bash(curl *)"
+    ]
+  }
+}
