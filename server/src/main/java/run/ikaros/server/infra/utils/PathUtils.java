@@ -70,7 +70,7 @@ public class PathUtils {
 
 
     /**
-     * Append a {@code '/'} if the path does not end with a {@code '/'}.
+     * <p>Append a {@code '/'} if the path does not end with a {@code '/'}.</p>
      * Examples are as follows:
      * <pre>
      *     PathUtils.appendPathSeparatorIfMissing("hello") -> hello/
@@ -86,8 +86,8 @@ public class PathUtils {
     }
 
     /**
-     * Remove the regex in the path pattern placeholder.
-     * For example:
+     * <p>Remove the regex in the path pattern placeholder.</p>
+     * <p>For example: </p>
      * <ul>
      * <li>'{@code /{year:\d{4}}/{month:\d{2}}}' &rarr; '{@code /{year}/{month}}'</li>
      * <li>'{@code /archives/{year:\d{4}}/{month:\d{2}}}' &rarr; '{@code /archives/{year}/{month}

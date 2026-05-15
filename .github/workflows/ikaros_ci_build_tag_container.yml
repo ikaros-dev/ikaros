@@ -16,12 +16,12 @@ jobs:
           submodules: true
       - name: Git submodule init
         uses: snickerbockers/submodules-init@v4
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           cache: 'gradle'
-          java-version: 21
+          java-version: 17
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Clean with gradle

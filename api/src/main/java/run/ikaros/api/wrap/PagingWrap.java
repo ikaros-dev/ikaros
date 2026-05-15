@@ -10,10 +10,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import lombok.Data;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 @Data
-public class PagingWrap<T> {
+public class PagingWrap<T> implements Streamable<T> {
 
     @Schema(description = "Page number, starts from 1. If not set or equal to 0, it means no "
         + "pagination.", requiredMode = REQUIRED)
@@ -92,10 +93,12 @@ public class PagingWrap<T> {
         return page > 1;
     }
 
+    @Override
     public Iterator<T> iterator() {
         return items.iterator();
     }
 
+    @Override
     @JsonIgnore
     public boolean isEmpty() {
         return items.isEmpty();

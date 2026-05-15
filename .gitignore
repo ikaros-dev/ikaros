@@ -48,6 +48,3 @@ out/
 
 ### Console ###
 /server/src/main/resources/console/
-
-### Ikaros Server ###
-server/src/main/resources/application-local.yaml

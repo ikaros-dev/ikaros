@@ -15,9 +15,11 @@ ikaros:
 spring:
   thymeleaf:
     cache: false
-
-  flyway:
-    clean-disabled: false
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
 
 springdoc:
@@ -25,3 +27,4 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+

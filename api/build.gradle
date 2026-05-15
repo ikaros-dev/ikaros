@@ -1,8 +1,9 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'io.freefair.lombok' version "9.5.0"
+    id "io.freefair.lombok" version "8.14.3"
 }
+
 
 group = 'run.ikaros.api'
 description = 'API of ikaros project, connecting by other projects.'
@@ -16,43 +17,55 @@ dependencies {
     api platform(project(':platform:server'))
 
     api 'org.springframework.boot:spring-boot-starter-actuator'
-    api 'com.baomidou:mybatis-plus-spring-boot4-starter'
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
     api 'org.springframework.boot:spring-boot-starter-mail'
     api 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter-webflux'
     api 'org.springframework.boot:spring-boot-starter-validation'
-    api 'org.springframework.boot:spring-boot-starter-flyway'
+    api 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    api 'name.nkonev.r2dbc-migrate:r2dbc-migrate-spring-boot-starter'
     api 'com.github.f4b6a3:uuid-creator'
 
     // Spring Security
     api 'org.springframework.boot:spring-boot-starter-security'
+    api 'org.springframework.security:spring-security-oauth2-jose'
+    api 'org.springframework.security:spring-security-oauth2-client'
+    api 'org.springframework.security:spring-security-oauth2-resource-server'
 
-    api "org.springdoc:springdoc-openapi-starter-webmvc-ui"
+    api "org.springdoc:springdoc-openapi-starter-webflux-ui"
+    api 'org.openapi4j:openapi-schema-validator'
+    api "net.bytebuddy:byte-buddy"
 
     api "org.apache.commons:commons-lang3"
     api "org.pf4j:pf4j"
     api "org.jsoup:jsoup"
+    api "org.springframework.integration:spring-integration-core"
     api "org.thymeleaf.extras:thymeleaf-extras-springsecurity6"
 
     // Apache Lucene
-     api "org.apache.lucene:lucene-core"
-     api "org.apache.lucene:lucene-queryparser"
-     api "org.apache.lucene:lucene-highlighter"
-     api "org.apache.lucene:lucene-backward-codecs"
-     api 'cn.shenyanchao.ik-analyzer:ik-analyzer'
+    api "org.apache.lucene:lucene-core"
+    api "org.apache.lucene:lucene-queryparser"
+    api "org.apache.lucene:lucene-highlighter"
+    api "org.apache.lucene:lucene-backward-codecs"
+    api 'cn.shenyanchao.ik-analyzer:ik-analyzer'
 
     runtimeOnly 'org.postgresql:postgresql'
-    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+    runtimeOnly 'org.postgresql:r2dbc-postgresql'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-flyway-test'
+    testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 java {
     withSourcesJar()
+//    withJavadocJar()
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }
 
 publishing {
