@@ -2,7 +2,6 @@ package run.ikaros.server.infra.utils;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -11,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -174,7 +172,8 @@ class AesEncryptUtilsTest {
         AesEncryptUtils.decryptFile(keyFile, encryptedFile, decryptedFile);
         assertTrue(decryptedFile.exists());
 
-        String decryptedContent = new String(Files.readAllBytes(decryptedFile.toPath()), StandardCharsets.UTF_8);
+        String decryptedContent =
+            new String(Files.readAllBytes(decryptedFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(decryptedContent.contains("File encryption test"));
     }
 

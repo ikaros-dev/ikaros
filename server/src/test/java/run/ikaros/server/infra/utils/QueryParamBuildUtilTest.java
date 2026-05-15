@@ -2,6 +2,7 @@ package run.ikaros.server.infra.utils;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.junit.jupiter.api.Test;
 import org.springdoc.core.fn.builders.operation.Builder;
 
@@ -44,7 +45,7 @@ class QueryParamBuildUtilTest {
     }
 
     static class RequiredQueryParam {
-        @io.swagger.v3.oas.annotations.media.Schema(requiredMode = io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED)
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
         private String id;
 
         private String name;

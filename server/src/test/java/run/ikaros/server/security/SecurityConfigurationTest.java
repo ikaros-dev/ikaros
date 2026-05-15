@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import run.ikaros.server.store.mapper.AuthorityMapper;
 import run.ikaros.server.store.mapper.RoleAuthorityMapper;
 import run.ikaros.server.store.mapper.RoleMapper;

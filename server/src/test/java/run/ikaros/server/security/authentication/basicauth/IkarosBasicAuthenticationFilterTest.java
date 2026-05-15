@@ -58,9 +58,9 @@ class IkarosBasicAuthenticationFilterTest {
 
     @Test
     void doFilter_basicAuth_shouldSetAuthentication() throws Exception {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
+        final HttpServletRequest request = mock(HttpServletRequest.class);
+        final HttpServletResponse response = mock(HttpServletResponse.class);
+        final FilterChain chain = mock(FilterChain.class);
 
         String credentials = base64Encode("testuser:mypassword");
         when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Basic " + credentials);

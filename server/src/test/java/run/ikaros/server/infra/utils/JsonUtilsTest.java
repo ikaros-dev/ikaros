@@ -1,6 +1,5 @@
 package run.ikaros.server.infra.utils;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -98,7 +97,8 @@ class JsonUtilsTest {
 
     @Test
     void json2obj_nullJson_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> JsonUtils.json2obj(null, TestObject.class));
+        assertThrows(IllegalArgumentException.class,
+            () -> JsonUtils.json2obj(null, TestObject.class));
     }
 
     @Test
@@ -133,7 +133,8 @@ class JsonUtilsTest {
     @Test
     void json2ObjArr_listOfObjects() {
         String json = "[{\"name\":\"a\",\"value\":1},{\"name\":\"b\",\"value\":2}]";
-        TestObject[] arr = JsonUtils.json2ObjArr(json, new TypeReference<TestObject[]>() {});
+        TestObject[] arr = JsonUtils.json2ObjArr(json, new TypeReference<TestObject[]>() {
+        });
         assertNotNull(arr);
         assertEquals(2, arr.length);
         assertEquals("a", arr[0].getName());
@@ -143,7 +144,8 @@ class JsonUtilsTest {
     @Test
     void json2ObjArr_nullJson_throwsException() {
         assertThrows(IllegalArgumentException.class,
-            () -> JsonUtils.json2ObjArr(null, new TypeReference<TestObject[]>() {}));
+            () -> JsonUtils.json2ObjArr(null, new TypeReference<TestObject[]>() {
+            }));
     }
 
     @Test
@@ -155,14 +157,16 @@ class JsonUtilsTest {
     @Test
     void json2ObjArr_invalidJson_returnsNull() {
         String json = "{invalid}";
-        TestObject[] arr = JsonUtils.json2ObjArr(json, new TypeReference<TestObject[]>() {});
+        TestObject[] arr = JsonUtils.json2ObjArr(json, new TypeReference<TestObject[]>() {
+        });
         assertNull(arr);
     }
 
     @Test
     void json2ObjArr_emptyArray() {
         String json = "[]";
-        TestObject[] arr = JsonUtils.json2ObjArr(json, new TypeReference<TestObject[]>() {});
+        TestObject[] arr = JsonUtils.json2ObjArr(json, new TypeReference<TestObject[]>() {
+        });
         assertNotNull(arr);
         assertEquals(0, arr.length);
     }
@@ -173,7 +177,8 @@ class JsonUtilsTest {
             new TestObject("a", 1),
             new TestObject("b", 2)
         );
-        TestObject[] arr = JsonUtils.obj2Arr(list, new TypeReference<TestObject[]>() {});
+        TestObject[] arr = JsonUtils.obj2Arr(list, new TypeReference<TestObject[]>() {
+        });
         assertNotNull(arr);
         assertEquals(2, arr.length);
     }
@@ -181,7 +186,8 @@ class JsonUtilsTest {
     @Test
     void obj2Arr_nullObject_throwsException() {
         assertThrows(IllegalArgumentException.class,
-            () -> JsonUtils.obj2Arr(null, new TypeReference<TestObject[]>() {}));
+            () -> JsonUtils.obj2Arr(null, new TypeReference<TestObject[]>() {
+            }));
     }
 
     @Test
@@ -192,7 +198,8 @@ class JsonUtilsTest {
 
     @Test
     void obj2Arr_emptyList() {
-        TestObject[] arr = JsonUtils.obj2Arr(List.of(), new TypeReference<TestObject[]>() {});
+        TestObject[] arr = JsonUtils.obj2Arr(List.of(), new TypeReference<TestObject[]>() {
+        });
         assertNotNull(arr);
         assertEquals(0, arr.length);
     }
@@ -225,7 +232,8 @@ class JsonUtilsTest {
     }
 
     @Test
-    void objectMapper_hasJavaTimeModule() throws com.fasterxml.jackson.core.JsonProcessingException {
+    void objectMapper_hasJavaTimeModule()
+        throws com.fasterxml.jackson.core.JsonProcessingException {
         ObjectMapper mapper = JsonUtils.getObjectMapper();
         String json = mapper.writeValueAsString(java.time.LocalDateTime.of(2024, 1, 15, 10, 30));
         assertNotNull(json);

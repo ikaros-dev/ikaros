@@ -138,7 +138,7 @@ class JwtAuthenticationProviderTest {
     @Test
     void refreshToken_withValidRefreshTokenShouldReturnNewAccessToken() {
         JwtApplyResponse response = provider.generateJwtResp(mockUserDetails("testuser"));
-        String originalAccessToken = response.getAccessToken();
+        final String originalAccessToken = response.getAccessToken();
 
         String newAccessToken = assertDoesNotThrow(
             () -> provider.refreshToken(response.getRefreshToken()));

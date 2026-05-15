@@ -9,8 +9,6 @@ import static org.mockito.Mockito.when;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.context.SecurityContextHolder;
 import run.ikaros.api.store.entity.User;
-import run.ikaros.server.security.IkarosGrantedAuthority;
 import run.ikaros.server.security.SecurityUser;
 
 class JwtAuthenticationFilterTest {
@@ -71,9 +68,9 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void doFilter_validBearerToken_shouldSetAuthentication() throws Exception {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
+        final HttpServletRequest request = mock(HttpServletRequest.class);
+        final HttpServletResponse response = mock(HttpServletResponse.class);
+        final FilterChain chain = mock(FilterChain.class);
 
         when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer valid.jwt.token");
         when(jwtProvider.validateToken("valid.jwt.token")).thenReturn(true);

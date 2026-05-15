@@ -31,7 +31,7 @@ class FormLoginSuccessHandlerTest {
 
     @Test
     void onAuthenticationSuccess_shouldWriteUserJson() throws Exception {
-        HttpServletRequest request = mock(HttpServletRequest.class);
+        final HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         StringWriter stringWriter = new StringWriter();
         when(response.getWriter()).thenReturn(new PrintWriter(stringWriter));
