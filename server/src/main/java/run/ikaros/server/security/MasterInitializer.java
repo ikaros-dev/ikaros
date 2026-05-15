@@ -10,8 +10,10 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import run.ikaros.api.constant.SecurityConst;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.entity.Authority;
 import run.ikaros.api.store.entity.Role;
 import run.ikaros.api.store.entity.RoleAuthority;
@@ -62,6 +64,7 @@ public class MasterInitializer {
      * init master user after application ready.
      */
     @EventListener(ApplicationReadyEvent.class)
+    @Transactional(rollbackFor = RuntimeException.class)
     public void initialize() {
         if (initializer.isDisabled()) {
             log.warn("Skip init master user when ikaros.security.initializer.disabled=true");
@@ -83,6 +86,7 @@ public class MasterInitializer {
         // To create master user
         LocalDateTime now = LocalDateTime.now();
         Role role = new Role();
+        role.setId(UuidV7Utils.generateUuid());
         role.setName(SecurityConst.ROLE_MASTER);
         role.setDescription("Default admin role, unable delete");
         role.setDeleteStatus(false);
@@ -94,6 +98,7 @@ public class MasterInitializer {
         log.info("Insert or update master role: [{}].", role);
 
         User user = new User();
+        user.setId(UuidV7Utils.generateUuid());
         user.setUsername(initializer.getMasterUsername());
         String encodedPassword = passwordEncoder.encode(getPassword());
         user.setPassword(encodedPassword);
@@ -108,12 +113,14 @@ public class MasterInitializer {
         log.info("Insert or update master user: [{}].", user);
 
         UserRole userRole = new UserRole();
+        userRole.setId(UuidV7Utils.generateUuid());
         userRole.setUserId(user.getId());
         userRole.setRoleId(role.getId());
         userRoleMapper.insertOrUpdate(userRole);
         log.info("Insert or update master userRole: [{}].", userRole);
 
         Authority authority = new Authority();
+        authority.setId(UuidV7Utils.generateUuid());
         authority.setAllow(true);
         authority.setTarget(SecurityConst.Authorization.Target.ALL);
         authority.setAuthority(SecurityConst.Authorization.Authority.ALL);
@@ -127,6 +134,7 @@ public class MasterInitializer {
         log.info("Insert or update master authority: [{}].", authority);
 
         RoleAuthority roleAuthority = new RoleAuthority();
+        roleAuthority.setId(UuidV7Utils.generateUuid());
         roleAuthority.setAuthorityId(authority.getId());
         roleAuthority.setRoleId(role.getId());
         roleAuthorityMapper.insertOrUpdate(roleAuthority);
