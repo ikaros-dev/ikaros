@@ -2,6 +2,7 @@ package run.ikaros.server.infra.utils;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -48,6 +49,22 @@ class AesEncryptUtilsTest {
     }
 
     @Test
+    void generateKeyFile_withSpecificLength() throws IOException {
+        File keyFile = new File(tempDir, "key128.dat");
+        AesEncryptUtils.generateKeyFile(128, keyFile);
+        assertTrue(keyFile.exists());
+        assertTrue(keyFile.length() > 0);
+    }
+
+    @Test
+    void generateKeyFile_createsParentDir() throws IOException {
+        File keyFile = new File(tempDir, "subdir/key.dat");
+        AesEncryptUtils.generateKeyFile(keyFile);
+        assertTrue(keyFile.exists());
+        assertTrue(keyFile.getParentFile().exists());
+    }
+
+    @Test
     void encryptDecryptByteArray_roundTrip() {
         byte[] key = AesEncryptUtils.generateKeyByteArray();
         byte[] original = "Hello, World! This is a test message.".getBytes(StandardCharsets.UTF_8);
@@ -82,6 +99,34 @@ class AesEncryptUtilsTest {
     }
 
     @Test
+    void encryptDecryptByteArray_emptyData() {
+        byte[] key = AesEncryptUtils.generateKeyByteArray();
+        byte[] original = new byte[0];
+
+        byte[] encrypted = AesEncryptUtils.encryptByteArray(key, original);
+        assertNotNull(encrypted);
+
+        byte[] decrypted = AesEncryptUtils.decryptByteArray(key, encrypted);
+        assertArrayEquals(original, decrypted);
+    }
+
+    @Test
+    void encryptDecryptByteArray_largeData() {
+        byte[] key = AesEncryptUtils.generateKeyByteArray();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 1000; i++) {
+            sb.append("This is a test line number ").append(i).append("\n");
+        }
+        byte[] original = sb.toString().getBytes(StandardCharsets.UTF_8);
+
+        byte[] encrypted = AesEncryptUtils.encryptByteArray(key, original);
+        assertNotNull(encrypted);
+
+        byte[] decrypted = AesEncryptUtils.decryptByteArray(key, encrypted);
+        assertArrayEquals(original, decrypted);
+    }
+
+    @Test
     void encryptDecryptInputStream_roundTrip() throws IOException {
         byte[] key = AesEncryptUtils.generateKeyByteArray();
         byte[] original = "Stream encryption test".getBytes(StandardCharsets.UTF_8);
@@ -97,6 +142,20 @@ class AesEncryptUtilsTest {
         byte[] decrypted = decryptedOut.toByteArray();
 
         assertArrayEquals(original, decrypted);
+    }
+
+    @Test
+    void encryptInputStream_notCloseInputStream() throws IOException {
+        byte[] key = AesEncryptUtils.generateKeyByteArray();
+        byte[] original = "Test".getBytes(StandardCharsets.UTF_8);
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(original);
+        ByteArrayOutputStream encryptedOut = new ByteArrayOutputStream();
+
+        AesEncryptUtils.encryptInputStream(inputStream, false, encryptedOut, key);
+
+        // Stream should still be open, we can read from it
+        assertTrue(inputStream.read() == -1); // Data was consumed
     }
 
     @Test
@@ -130,5 +189,77 @@ class AesEncryptUtilsTest {
         byte[] encrypted = AesEncryptUtils.encryptFile(keyFile, dataFile);
         assertNotNull(encrypted);
         assertTrue(encrypted.length > 0);
+    }
+
+    @Test
+    void encryptFile_withKeyBytes() throws IOException {
+        byte[] key = AesEncryptUtils.generateKeyByteArray();
+
+        File dataFile = new File(tempDir, "data.txt");
+        Files.write(dataFile.toPath(), "Data to encrypt".getBytes(StandardCharsets.UTF_8));
+
+        byte[] encrypted = AesEncryptUtils.encryptFile(key, dataFile);
+        assertNotNull(encrypted);
+        assertTrue(encrypted.length > 0);
+    }
+
+    @Test
+    void decryptFile_withKeyBytes() throws IOException {
+        byte[] key = AesEncryptUtils.generateKeyByteArray();
+
+        File dataFile = new File(tempDir, "data.txt");
+        Files.write(dataFile.toPath(), "Data to encrypt".getBytes(StandardCharsets.UTF_8));
+
+        // Encrypt and get bytes
+        byte[] encryptedBytes = AesEncryptUtils.encryptFile(key, dataFile);
+
+        // Write encrypted bytes to file
+        File encryptedFile = new File(tempDir, "encrypted.dat");
+        Files.write(encryptedFile.toPath(), encryptedBytes);
+
+        // Decrypt
+        byte[] decrypted = AesEncryptUtils.decryptFile(key, encryptedFile);
+        assertNotNull(decrypted);
+        assertTrue(decrypted.length > 0);
+        assertTrue(new String(decrypted, StandardCharsets.UTF_8).contains("Data to encrypt"));
+    }
+
+    @Test
+    void decryptFile_withKeyFile() throws IOException {
+        File keyFile = new File(tempDir, "key.dat");
+        AesEncryptUtils.generateKeyFile(keyFile);
+
+        File dataFile = new File(tempDir, "data.txt");
+        Files.write(dataFile.toPath(), "Test data".getBytes(StandardCharsets.UTF_8));
+
+        // Encrypt and get bytes
+        byte[] encryptedBytes = AesEncryptUtils.encryptFile(keyFile, dataFile);
+
+        // Write encrypted bytes to file
+        File encryptedFile = new File(tempDir, "encrypted.dat");
+        Files.write(encryptedFile.toPath(), encryptedBytes);
+
+        // Decrypt
+        byte[] decrypted = AesEncryptUtils.decryptFile(keyFile, encryptedFile);
+        assertNotNull(decrypted);
+        assertTrue(decrypted.length > 0);
+        assertTrue(new String(decrypted, StandardCharsets.UTF_8).contains("Test data"));
+    }
+
+    @Test
+    void decryptFile_createsOutputDir() throws IOException {
+        File keyFile = new File(tempDir, "key.dat");
+        AesEncryptUtils.generateKeyFile(keyFile);
+
+        File dataFile = new File(tempDir, "data.txt");
+        Files.write(dataFile.toPath(), "Test".getBytes(StandardCharsets.UTF_8));
+
+        File encryptedFile = new File(tempDir, "encrypted.dat");
+        AesEncryptUtils.encryptFile(keyFile, dataFile, encryptedFile);
+
+        File decryptedFile = new File(tempDir, "subdir/decrypted.txt");
+        AesEncryptUtils.decryptFile(keyFile, encryptedFile, decryptedFile);
+        assertTrue(decryptedFile.exists());
+        assertTrue(decryptedFile.getParentFile().exists());
     }
 }

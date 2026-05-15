@@ -32,6 +32,30 @@ class ByteArrUtilsTest {
     }
 
     @Test
+    void isBinaryData_withNullByte() {
+        byte[] binary = new byte[]{0};
+        assertTrue(ByteArrUtils.isBinaryData(binary));
+    }
+
+    @Test
+    void isBinaryData_withCarriageReturn() {
+        byte[] text = "Hello\rWorld".getBytes(StandardCharsets.UTF_8);
+        assertFalse(ByteArrUtils.isBinaryData(text));
+    }
+
+    @Test
+    void isBinaryData_withOnlyControlChars() {
+        byte[] binary = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
+        assertTrue(ByteArrUtils.isBinaryData(binary));
+    }
+
+    @Test
+    void isBinaryData_withMixedControlAndPrintable() {
+        byte[] data = new byte[]{'H', 0, 'i'};
+        assertTrue(ByteArrUtils.isBinaryData(data));
+    }
+
+    @Test
     void isStringData_withValidText() {
         byte[] text = "Hello, World!".getBytes(StandardCharsets.UTF_8);
         assertTrue(ByteArrUtils.isStringData(text));
@@ -52,5 +76,25 @@ class ByteArrUtilsTest {
     void isStringData_withUnicodeText() {
         byte[] text = "你好世界".getBytes(StandardCharsets.UTF_8);
         assertTrue(ByteArrUtils.isStringData(text));
+    }
+
+    @Test
+    void isStringData_withControlCharsInUtf8() {
+        // Tab, LF, CR are valid control chars in string data
+        byte[] text = "hello\tworld\nline\rbreak".getBytes(StandardCharsets.UTF_8);
+        assertTrue(ByteArrUtils.isStringData(text));
+    }
+
+    @Test
+    void isStringData_withNullByte() {
+        byte[] data = new byte[]{0};
+        assertFalse(ByteArrUtils.isStringData(data));
+    }
+
+    @Test
+    void isStringData_withHighByteValues() {
+        // Characters with values >= 32 are considered printable
+        byte[] data = new byte[]{65, 66, 67}; // "ABC"
+        assertTrue(ByteArrUtils.isStringData(data));
     }
 }
