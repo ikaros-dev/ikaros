@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -31,7 +32,7 @@ import run.ikaros.server.store.mapper.UserRoleMapper;
 @ConditionalOnProperty(name = "ikaros.security.initializer.disabled",
     havingValue = "false",
     matchIfMissing = true)
-public class MasterInitializer {
+public class MasterInitializer implements ApplicationListener<ApplicationReadyEvent> {
 
     private final SecurityProperties securityProperties;
     private final SecurityProperties.Initializer initializer;
@@ -59,20 +60,30 @@ public class MasterInitializer {
         this.roleAuthorityMapper = roleAuthorityMapper;
     }
 
+    private String getPassword() {
+        var password = this.initializer.getMasterPassword();
+        if (!StringUtils.hasText(password)) {
+            // generate password
+            password = RandomStringUtils.randomAlphanumeric(16);
+            log.info("=== Generated random password: {} for super master: {} ===",
+                password, this.initializer.getMasterUsername());
+        }
+        return password;
+    }
 
     /**
      * init master user after application ready.
      */
-    @EventListener(ApplicationReadyEvent.class)
+    @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public void initialize() {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         if (initializer.isDisabled()) {
             log.warn("Skip init master user when ikaros.security.initializer.disabled=true");
             return;
         }
 
         boolean exists = userMapper.exists(new LambdaQueryWrapper<User>()
-            .eq(User::getUsername, initializer.getMasterUsername()));
+                .eq(User::getUsername, initializer.getMasterUsername()));
 
         if (exists) {
             LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<User>();
@@ -141,18 +152,6 @@ public class MasterInitializer {
         log.info("Insert or update roleAuthority: [{}].", roleAuthority);
 
         log.info("Create init user success form username={} and role={}",
-            user.getUsername(), role.getName());
-    }
-
-
-    private String getPassword() {
-        var password = this.initializer.getMasterPassword();
-        if (!StringUtils.hasText(password)) {
-            // generate password
-            password = RandomStringUtils.randomAlphanumeric(16);
-            log.info("=== Generated random password: {} for super master: {} ===",
-                password, this.initializer.getMasterUsername());
-        }
-        return password;
+                user.getUsername(), role.getName());
     }
 }
