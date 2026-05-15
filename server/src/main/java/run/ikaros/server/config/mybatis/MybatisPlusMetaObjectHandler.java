@@ -9,6 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import run.ikaros.server.security.SecurityUser;
 
+import static run.ikaros.server.security.SecurityContextHolderUtils.getCurrentUserId;
+
 @Component
 public class MybatisPlusMetaObjectHandler implements MetaObjectHandler {
 
@@ -33,21 +35,4 @@ public class MybatisPlusMetaObjectHandler implements MetaObjectHandler {
         this.strictUpdateFill(metaObject, "updateUid", UUID.class, getCurrentUserId());
     }
 
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // 未认证或匿名用户
-        if (authentication == null
-            || !authentication.isAuthenticated()
-            || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof SecurityUser user) {
-            return user.getId();
-        }
-
-        return null;
-    }
 }
