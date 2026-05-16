@@ -21,7 +21,7 @@ public class FormLoginFailureHandler implements AuthenticationFailureHandler {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON.toString());
         CommonResult result = new CommonResult();
-        result.setException(ex.getClass().getName());
+        result.setException(ex);
         result.setMessage(ex.getLocalizedMessage());
         String json = JsonUtils.obj2Json(result);
         assert json != null;
