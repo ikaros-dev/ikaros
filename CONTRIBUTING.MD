@@ -118,7 +118,3 @@ git push origin master
 ```
 
 
-
-### 此文参考
-
-- [开源项目Halo贡献指南](https://github.com/halo-dev/halo/blob/master/CONTRIBUTING.md)

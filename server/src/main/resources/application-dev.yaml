@@ -19,6 +19,12 @@ spring:
   flyway:
     clean-disabled: false
 
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/ikaros
+    username: ikaros
+    password: openpostgresql
+
 
 springdoc:
   api-docs:

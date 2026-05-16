@@ -6,6 +6,7 @@
 - CheckStyle: 13.4.2
 - Vue: 3
 - IDE: IntelliJ IDEA 
+- Database: postgres:18.1-alpine
 
 建议先Fork一份仓库,
 
@@ -83,6 +84,21 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 最后OK保存
 
 ## 本地开发
+
+因为本地开发需要本地起一个postgres18数据库，加上测试用的`testcontainer`需要容器环境，
+
+所有建议你本地安装好Docker环境，Windows推荐使用`Docker Desktop`。
+
+这里给个参考配置：
+```shell
+docker run -d \
+--name ikarosdb_dev \
+-p 5432:5432 \
+-e POSTGRES_DB=ikaros \
+-e POSTGRES_USER=ikaros \
+-e POSTGRES_PASSWORD=openpostgresql \
+postgres:18.1-alpine
+```
 
 在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,local`
 

@@ -1,8 +1,8 @@
 create table if not exists "ikuser_role"
 (
-    "id"      bigint primary key,
-    "user_id" bigint,
-    "role_id" bigint,
+    "id"      uuid primary key DEFAULT uuidv7(),
+    "user_id" uuid not null,
+    "role_id" uuid not null,
     CONSTRAINT "user_role_id_uk" unique (user_id, role_id)
 )
 ;

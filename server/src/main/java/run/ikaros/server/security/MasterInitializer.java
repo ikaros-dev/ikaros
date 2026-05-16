@@ -7,11 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import run.ikaros.api.constant.SecurityConst;
+import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.entity.Authority;
 import run.ikaros.api.store.entity.Role;
 import run.ikaros.api.store.entity.RoleAuthority;
@@ -29,7 +32,7 @@ import run.ikaros.server.store.mapper.UserRoleMapper;
 @ConditionalOnProperty(name = "ikaros.security.initializer.disabled",
     havingValue = "false",
     matchIfMissing = true)
-public class MasterInitializer {
+public class MasterInitializer implements ApplicationListener<ApplicationReadyEvent> {
 
     private final SecurityProperties securityProperties;
     private final SecurityProperties.Initializer initializer;
@@ -57,19 +60,30 @@ public class MasterInitializer {
         this.roleAuthorityMapper = roleAuthorityMapper;
     }
 
+    private String getPassword() {
+        var password = this.initializer.getMasterPassword();
+        if (!StringUtils.hasText(password)) {
+            // generate password
+            password = RandomStringUtils.randomAlphanumeric(16);
+            log.info("=== Generated random password: {} for super master: {} ===",
+                password, this.initializer.getMasterUsername());
+        }
+        return password;
+    }
 
     /**
      * init master user after application ready.
      */
-    @EventListener(ApplicationReadyEvent.class)
-    public void initialize() {
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         if (initializer.isDisabled()) {
             log.warn("Skip init master user when ikaros.security.initializer.disabled=true");
             return;
         }
 
         boolean exists = userMapper.exists(new LambdaQueryWrapper<User>()
-            .eq(User::getUsername, initializer.getMasterUsername()));
+                .eq(User::getUsername, initializer.getMasterUsername()));
 
         if (exists) {
             LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<User>();
@@ -83,17 +97,19 @@ public class MasterInitializer {
         // To create master user
         LocalDateTime now = LocalDateTime.now();
         Role role = new Role();
+        role.setId(UuidV7Utils.generateUuid());
         role.setName(SecurityConst.ROLE_MASTER);
         role.setDescription("Default admin role, unable delete");
         role.setDeleteStatus(false);
         role.setCreateTime(now);
         role.setUpdateTime(now);
-        role.setCreateUid(-1L);
-        role.setUpdateUid(-1L);
+        role.setCreateUid(null);
+        role.setUpdateUid(null);
         roleMapper.insertOrUpdate(role);
         log.info("Insert or update master role: [{}].", role);
 
         User user = new User();
+        user.setId(UuidV7Utils.generateUuid());
         user.setUsername(initializer.getMasterUsername());
         String encodedPassword = passwordEncoder.encode(getPassword());
         user.setPassword(encodedPassword);
@@ -102,49 +118,40 @@ public class MasterInitializer {
         user.setDeleteStatus(false);
         user.setCreateTime(now);
         user.setUpdateTime(now);
-        user.setCreateUid(-1L);
-        user.setUpdateUid(-1L);
+        user.setCreateUid(null);
+        user.setUpdateUid(null);
         userMapper.insertOrUpdate(user);
         log.info("Insert or update master user: [{}].", user);
 
         UserRole userRole = new UserRole();
+        userRole.setId(UuidV7Utils.generateUuid());
         userRole.setUserId(user.getId());
         userRole.setRoleId(role.getId());
         userRoleMapper.insertOrUpdate(userRole);
         log.info("Insert or update master userRole: [{}].", userRole);
 
         Authority authority = new Authority();
+        authority.setId(UuidV7Utils.generateUuid());
         authority.setAllow(true);
         authority.setTarget(SecurityConst.Authorization.Target.ALL);
         authority.setAuthority(SecurityConst.Authorization.Authority.ALL);
         authority.setCreateTime(now);
-        authority.setCreateUid(-1L);
+        authority.setCreateUid(null);
         authority.setDeleteStatus(false);
         authority.setType(AuthorityType.ALL.name());
         authority.setUpdateTime(now);
-        authority.setUpdateUid(-1L);
+        authority.setUpdateUid(null);
         authorityMapper.insertOrUpdate(authority);
         log.info("Insert or update master authority: [{}].", authority);
 
         RoleAuthority roleAuthority = new RoleAuthority();
+        roleAuthority.setId(UuidV7Utils.generateUuid());
         roleAuthority.setAuthorityId(authority.getId());
         roleAuthority.setRoleId(role.getId());
         roleAuthorityMapper.insertOrUpdate(roleAuthority);
         log.info("Insert or update roleAuthority: [{}].", roleAuthority);
 
         log.info("Create init user success form username={} and role={}",
-            user.getUsername(), role.getName());
-    }
-
-
-    private String getPassword() {
-        var password = this.initializer.getMasterPassword();
-        if (!StringUtils.hasText(password)) {
-            // generate password
-            password = RandomStringUtils.randomAlphanumeric(16);
-            log.info("=== Generated random password: {} for super master: {} ===",
-                password, this.initializer.getMasterUsername());
-        }
-        return password;
+                user.getUsername(), role.getName());
     }
 }

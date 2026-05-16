@@ -54,6 +54,8 @@ public class SecurityConfiguration {
         securityConfigurers.orderedStream()
             .forEach(securityConfigurer -> securityConfigurer.configure(http));
 
+        http.exceptionHandling(configurer ->
+                configurer.authenticationEntryPoint(new DefaultAuthenticationEntryPoint()));
         return http.build();
     }
 

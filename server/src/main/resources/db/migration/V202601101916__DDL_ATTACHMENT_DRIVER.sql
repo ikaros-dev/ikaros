@@ -1,13 +1,13 @@
 create table if not exists "attachment_driver"
 (
-    "id"             bigint primary key,
+    "id"             uuid primary key DEFAULT uuidv7(),
     "enable"         boolean,
-    "driver_type"         varchar(100) NOT NULL,
-    "driver_name"         varchar(100),
+    "driver_type"    varchar(100) NOT NULL,
+    "driver_name"    varchar(100),
     "mount_name"     varchar(255),
     "remote_path"    varchar(1000),
-    "driver_order"        bigint,
-    "driver_comment"      varchar(255),
+    "driver_order"   bigint,
+    "driver_comment" varchar(255),
     "refresh_token"  varchar(255),
     "access_token"   varchar(255),
     "expire_time"    timestamp(6),

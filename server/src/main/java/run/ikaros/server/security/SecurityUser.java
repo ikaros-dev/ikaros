@@ -1,6 +1,7 @@
 package run.ikaros.server.security;
 
 import java.util.Collection;
+import java.util.UUID;
 import java.util.List;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
@@ -49,7 +50,7 @@ public class SecurityUser implements UserDetails, CredentialsContainer {
         user.setPassword(null);
     }
 
-    public Long getId() {
+    public UUID getId() {
         return user.getId();
     }
 

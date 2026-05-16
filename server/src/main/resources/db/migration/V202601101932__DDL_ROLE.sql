@@ -1,13 +1,13 @@
 create table if not exists "role"
 (
-    "id"            bigint primary key,
+    "id"            uuid primary key DEFAULT uuidv7(),
     "create_time"   timestamp(6),
-    "create_uid"    bigint,
+    "create_uid"    uuid,
     "delete_status" boolean,
     "update_time"   timestamp(6),
-    "update_uid"    bigint,
+    "update_uid"    uuid,
     "ol_version"    bigint,
-    "parent_id"     bigint,
+    "parent_id"     uuid,
     "name"          varchar(255),
     "description"   varchar(50000)
 )

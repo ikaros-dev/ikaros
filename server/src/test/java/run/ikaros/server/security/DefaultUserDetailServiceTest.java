@@ -16,6 +16,7 @@ import run.ikaros.api.store.entity.Role;
 import run.ikaros.api.store.entity.RoleAuthority;
 import run.ikaros.api.store.entity.User;
 import run.ikaros.api.store.entity.UserRole;
+import run.ikaros.server.common.TestEntityIds;
 import run.ikaros.server.security.exception.RoleNotFoundException;
 import run.ikaros.server.security.exception.UserHasNotRoleException;
 import run.ikaros.server.store.mapper.AuthorityMapper;
@@ -47,7 +48,7 @@ class DefaultUserDetailServiceTest {
     @Test
     void loadUserByUsername_validUser_shouldReturnSecurityUser() {
         User user = new User();
-        user.setId(1L);
+        user.setId(TestEntityIds.USER_1);
         user.setUsername("testuser");
         user.setPassword("encoded_pass");
         user.setEnable(true);
@@ -56,26 +57,27 @@ class DefaultUserDetailServiceTest {
             .thenReturn(user);
 
         UserRole userRole = new UserRole();
-        userRole.setUserId(1L);
-        userRole.setRoleId(10L);
-        when(userRoleMapper.findByUserId(1L)).thenReturn(userRole);
+        userRole.setUserId(TestEntityIds.USER_1);
+        userRole.setRoleId(TestEntityIds.ROLE_10);
+        when(userRoleMapper.findByUserId(TestEntityIds.USER_1)).thenReturn(userRole);
 
         Role role = new Role();
-        role.setId(10L);
+        role.setId(TestEntityIds.ROLE_10);
         role.setName("MASTER");
-        when(roleMapper.selectById(10L)).thenReturn(role);
+        when(roleMapper.selectById(TestEntityIds.ROLE_10)).thenReturn(role);
 
         RoleAuthority ra = new RoleAuthority();
-        ra.setId(100L);
-        ra.setAuthorityId(200L);
-        when(roleAuthorityMapper.findAllByRoleId(10L)).thenReturn(List.of(ra));
+        ra.setId(TestEntityIds.AUTH_100);
+        ra.setAuthorityId(TestEntityIds.AUTH_200);
+        when(roleAuthorityMapper.findAllByRoleId(TestEntityIds.ROLE_10))
+            .thenReturn(List.of(ra));
 
         Authority authority = new Authority();
-        authority.setId(200L);
+        authority.setId(TestEntityIds.AUTH_200);
         authority.setType("ALL");
         authority.setTarget("*");
         authority.setAuthority("*");
-        when(authorityMapper.selectById(200L)).thenReturn(authority);
+        when(authorityMapper.selectById(TestEntityIds.AUTH_200)).thenReturn(authority);
 
         UserDetails result = service.loadUserByUsername("testuser");
 
@@ -97,12 +99,12 @@ class DefaultUserDetailServiceTest {
     @Test
     void loadUserByUsername_userHasNoRole_shouldThrowUserHasNotRoleException() {
         User user = new User();
-        user.setId(1L);
+        user.setId(TestEntityIds.USER_1);
         user.setUsername("orphanuser");
         user.setEnable(true);
         when(userMapper.findByUsernameAndEnableAndDeleteStatus("orphanuser", true, false))
             .thenReturn(user);
-        when(userRoleMapper.findByUserId(1L)).thenReturn(null);
+        when(userRoleMapper.findByUserId(TestEntityIds.USER_1)).thenReturn(null);
 
         assertThrows(UserHasNotRoleException.class,
             () -> service.loadUserByUsername("orphanuser"));
@@ -111,17 +113,17 @@ class DefaultUserDetailServiceTest {
     @Test
     void loadUserByUsername_roleNotFound_shouldThrowRoleNotFoundException() {
         User user = new User();
-        user.setId(1L);
+        user.setId(TestEntityIds.USER_1);
         user.setUsername("testuser");
         user.setEnable(true);
         when(userMapper.findByUsernameAndEnableAndDeleteStatus("testuser", true, false))
             .thenReturn(user);
 
         UserRole userRole = new UserRole();
-        userRole.setUserId(1L);
-        userRole.setRoleId(99L);
-        when(userRoleMapper.findByUserId(1L)).thenReturn(userRole);
-        when(roleMapper.selectById(99L)).thenReturn(null);
+        userRole.setUserId(TestEntityIds.USER_1);
+        userRole.setRoleId(TestEntityIds.ROLE_99);
+        when(userRoleMapper.findByUserId(TestEntityIds.USER_1)).thenReturn(userRole);
+        when(roleMapper.selectById(TestEntityIds.ROLE_99)).thenReturn(null);
 
         assertThrows(RoleNotFoundException.class,
             () -> service.loadUserByUsername("testuser"));
@@ -142,7 +144,7 @@ class DefaultUserDetailServiceTest {
     @Test
     void loadUserByUsername_multipleAuthorities_shouldLoadAll() {
         User user = new User();
-        user.setId(1L);
+        user.setId(TestEntityIds.USER_1);
         user.setUsername("multiuser");
         user.setPassword("pass");
         user.setEnable(true);
@@ -150,35 +152,36 @@ class DefaultUserDetailServiceTest {
             .thenReturn(user);
 
         UserRole userRole = new UserRole();
-        userRole.setUserId(1L);
-        userRole.setRoleId(10L);
-        when(userRoleMapper.findByUserId(1L)).thenReturn(userRole);
+        userRole.setUserId(TestEntityIds.USER_1);
+        userRole.setRoleId(TestEntityIds.ROLE_10);
+        when(userRoleMapper.findByUserId(TestEntityIds.USER_1)).thenReturn(userRole);
 
         Role role = new Role();
-        role.setId(10L);
+        role.setId(TestEntityIds.ROLE_10);
         role.setName("ADMIN");
-        when(roleMapper.selectById(10L)).thenReturn(role);
+        when(roleMapper.selectById(TestEntityIds.ROLE_10)).thenReturn(role);
 
         RoleAuthority ra1 = new RoleAuthority();
-        ra1.setId(1L);
-        ra1.setAuthorityId(101L);
+        ra1.setId(TestEntityIds.ROLE_AUTH_1);
+        ra1.setAuthorityId(TestEntityIds.AUTH_101);
         RoleAuthority ra2 = new RoleAuthority();
-        ra2.setId(2L);
-        ra2.setAuthorityId(102L);
-        when(roleAuthorityMapper.findAllByRoleId(10L)).thenReturn(List.of(ra1, ra2));
+        ra2.setId(TestEntityIds.ROLE_AUTH_2);
+        ra2.setAuthorityId(TestEntityIds.AUTH_102);
+        when(roleAuthorityMapper.findAllByRoleId(TestEntityIds.ROLE_10))
+            .thenReturn(List.of(ra1, ra2));
 
         Authority a1 = new Authority();
-        a1.setId(101L);
+        a1.setId(TestEntityIds.AUTH_101);
         a1.setType("API");
         a1.setTarget("/api/v1/user/**");
         a1.setAuthority("HTTP_GET");
         Authority a2 = new Authority();
-        a2.setId(102L);
+        a2.setId(TestEntityIds.AUTH_102);
         a2.setType("API");
         a2.setTarget("/api/v1/subject/**");
         a2.setAuthority("*");
-        when(authorityMapper.selectById(101L)).thenReturn(a1);
-        when(authorityMapper.selectById(102L)).thenReturn(a2);
+        when(authorityMapper.selectById(TestEntityIds.AUTH_101)).thenReturn(a1);
+        when(authorityMapper.selectById(TestEntityIds.AUTH_102)).thenReturn(a2);
 
         UserDetails result = service.loadUserByUsername("multiuser");
 

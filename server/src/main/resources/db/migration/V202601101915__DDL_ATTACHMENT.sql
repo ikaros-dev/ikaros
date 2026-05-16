@@ -1,7 +1,7 @@
 create table if not exists "attachment"
 (
-    "id"          bigint primary key,
-    "parent_id"   bigint,
+    "id"          uuid primary key DEFAULT uuidv7(),
+    "parent_id"   uuid,
     "type"        varchar(255),
     "url"         varchar(5000),
     "path"        varchar(5000),
@@ -10,7 +10,7 @@ create table if not exists "attachment"
     "size"        bigint,
     "update_time" timestamp(6),
     "deleted"     boolean,
-    "driver_id"   bigint,
+    "driver_id"   uuid,
     "sha1"        varchar(255)
 )
 ;

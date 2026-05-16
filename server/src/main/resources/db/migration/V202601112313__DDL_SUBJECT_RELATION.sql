@@ -1,14 +1,14 @@
 create table if not exists "subject_relation"
 (
-    "id"                  bigint primary key,
+    "id"                  uuid primary key DEFAULT uuidv7(),
     "create_time"         timestamp(6),
-    "create_uid"          bigint,
+    "create_uid"          uuid,
     "delete_status"       boolean,
     "update_time"         timestamp(6),
-    "update_uid"          bigint,
+    "update_uid"          uuid,
     "ol_version"          bigint,
-    "subject_id"          bigint,
+    "subject_id"          uuid,
     "relation_type"       varchar(100) not null,
-    "relation_subject_id" bigint
+    "relation_subject_id" uuid
 )
 ;
