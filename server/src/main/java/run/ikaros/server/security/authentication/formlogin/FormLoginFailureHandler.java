@@ -20,11 +20,10 @@ public class FormLoginFailureHandler implements AuthenticationFailureHandler {
         throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON.toString());
-        CommonResult result = new CommonResult();
-        result.setException(ex);
-        result.setMessage(ex.getLocalizedMessage());
-        String json = JsonUtils.obj2Json(result);
-        assert json != null;
-        response.getWriter().write(json);
+        CommonResult result = CommonResult.errorWithException(ex);
+        result.setCustomMessage("LOGIN FAIL");
+        result.setRequestId(request.getRequestId());
+        result.setRequestUri(request.getRequestURI());
+        response.getWriter().write(JsonUtils.obj2Json(result));
     }
 }

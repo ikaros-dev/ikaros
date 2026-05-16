@@ -17,7 +17,7 @@ public class IkarosLogoutSuccessHandler implements LogoutSuccessHandler {
         throws IOException {
         response.setContentType(MediaType.APPLICATION_JSON.toString());
         CommonResult result = new CommonResult();
-        result.setMessage("LOGOUT SUCCESS");
+        result.setCustomMessage("LOGOUT SUCCESS");
         String json = JsonUtils.obj2Json(result);
         assert json != null;
         response.getWriter().write(json);
