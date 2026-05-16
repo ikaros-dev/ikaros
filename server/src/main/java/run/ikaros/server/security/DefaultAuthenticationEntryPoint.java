@@ -3,7 +3,6 @@ package run.ikaros.server.security;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -11,7 +10,6 @@ import run.ikaros.api.wrap.CommonResult;
 import run.ikaros.server.infra.utils.JsonUtils;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class DefaultAuthenticationEntryPoint implements AuthenticationEntryPoint {
