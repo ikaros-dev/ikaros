@@ -21,6 +21,4 @@ public class CacheProperties {
         private Long expirationTime = (long) (3 * 24 * 60 * 60 * 1000); // 3day
     }
 
-    private Boolean enabled = false;
-
 }
