@@ -12,7 +12,7 @@ public class CacheRedisDisableCondition extends SpringBootCondition {
         String cacheEnable = context.getEnvironment().getProperty("ikaros.cache.enable");
         String cacheType = context.getEnvironment().getProperty("ikaros.cache.type");
 
-        boolean match = !"true".equals(cacheEnable) || !"redis".equals(cacheType);
+        boolean match = !("true".equals(cacheEnable) && "redis".equals(cacheType));
         return new ConditionOutcome(match, "Cache enable is true or type not redis");
     }
 }

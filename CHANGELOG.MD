@@ -2,6 +2,10 @@
 
 更新日志文档，版本顺序从新到旧，最新版本在最前(上)面。
 
+# 1.1.6
+
+- fix: redis auto config match logic
+
 # 1.1.5
 
 - 修复Dockerfile
