@@ -81,11 +81,11 @@ public class MigrationInitializer {
     private static final String MIGRATION_SCRIPT_PATTERN = "classpath:db/migration/*.sql";
 
     private final R2dbcEntityTemplate oldEntityTemplate;
-    private final R2dbcEntityTemplate newEntityTemplate;
+    private final MigrationR2dbcEntityTemplate newEntityTemplate;
     private final ResourcePatternResolver resourcePatternResolver;
 
     public MigrationInitializer(R2dbcEntityTemplate oldEntityTemplate,
-                                @Qualifier("migrationR2dbcEntityTemplate") R2dbcEntityTemplate newEntityTemplate,
+                                MigrationR2dbcEntityTemplate newEntityTemplate,
                                 ResourcePatternResolver resourcePatternResolver) {
         this.oldEntityTemplate = oldEntityTemplate;
         this.newEntityTemplate = newEntityTemplate;
