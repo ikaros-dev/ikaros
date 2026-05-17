@@ -2,6 +2,10 @@
 
 更新日志文档，版本顺序从新到旧，最新版本在最前(上)面。
 
+# 1.1.3
+
+- 修正Dockerfile的基础jre版本为 eclipse-temurin:21-jre-alpine
+
 # 1.1.2
 
 - 更正版本号
