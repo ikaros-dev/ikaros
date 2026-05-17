@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "ikaros.cache")
 public class CacheProperties {
-    private Boolean enable = true;
+    private boolean enable = false;
     private CacheType type;
     private Redis redis = new Redis();
 
