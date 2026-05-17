@@ -23,4 +23,4 @@ RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime \
 
 EXPOSE 9999 
 
-ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} org.springframework.boot.loader.JarLauncher ${0} ${@}"]
+ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -cp . org.springframework.boot.loader.launch.JarLauncher ${0} ${@}"]
