@@ -1,10 +1,13 @@
 package run.ikaros.server.migration;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
@@ -27,13 +30,18 @@ public class MigrationInitializer {
         "attachment_driver"
     );
 
+    private static final String MIGRATION_SCRIPT_PATTERN = "classpath:db/migration/*.sql";
+
     private final R2dbcEntityTemplate oldEntityTemplate;
     private final R2dbcEntityTemplate newEntityTemplate;
+    private final ResourcePatternResolver resourcePatternResolver;
 
     public MigrationInitializer(R2dbcEntityTemplate oldEntityTemplate,
-                                @Qualifier("migrationR2dbcEntityTemplate") R2dbcEntityTemplate newEntityTemplate) {
+                                @Qualifier("migrationR2dbcEntityTemplate") R2dbcEntityTemplate newEntityTemplate,
+                                ResourcePatternResolver resourcePatternResolver) {
         this.oldEntityTemplate = oldEntityTemplate;
         this.newEntityTemplate = newEntityTemplate;
+        this.resourcePatternResolver = resourcePatternResolver;
     }
 
     /**
@@ -64,6 +72,26 @@ public class MigrationInitializer {
                     .doOnNext(count -> log.info("Updated {} rows in {}", count, table));
             })
             .then()
-            .doOnSuccess(v -> log.info("Database migration UUID generation completed."));
+            .doOnSuccess(v -> log.info("Database migration UUID generation completed."))
+            .then(runMigrationScripts());
+    }
+
+    private Mono<Void> runMigrationScripts() {
+        return Mono.fromCallable(() -> resourcePatternResolver.getResources(MIGRATION_SCRIPT_PATTERN))
+            .flatMapIterable(resources -> List.of(resources))
+            .sort((a, b) -> a.getFilename().compareTo(b.getFilename()))
+            .concatMap(resource -> Mono.fromCallable(() ->
+                    new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8))
+                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                .flatMap(sql -> {
+                    log.info("Executing migration script: {}", resource.getFilename());
+                    return newEntityTemplate.getDatabaseClient()
+                        .sql(sql)
+                        .fetch()
+                        .rowsUpdated();
+                })
+            )
+            .then()
+            .doOnSuccess(v -> log.info("All migration scripts executed successfully."));
     }
 }
