@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jre-alpine as builder
+FROM eclipse-temurin:21-jre as builder
 WORKDIR application
 ARG JAR_FILE=server/build/libs/*.jar
 COPY ${JAR_FILE} application.jar
@@ -6,7 +6,7 @@ RUN java -Djarmode=layertools -jar application.jar extract
 
 ###########################################################
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre
 MAINTAINER chivehao <chivehao@ikaros.run>
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
