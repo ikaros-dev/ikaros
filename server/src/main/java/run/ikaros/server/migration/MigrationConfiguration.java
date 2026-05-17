@@ -2,6 +2,7 @@ package run.ikaros.server.migration;
 
 import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +25,7 @@ public class MigrationConfiguration {
      * Create R2dbcEntityTemplate backed by the migration connection factory.
      */
     @Bean("migrationR2dbcEntityTemplate")
-    @ConditionalOnProperty(prefix = "ikaros.migration.datasource", name = "url")
+    @ConditionalOnProperty(prefix = "ikaros.migration.enable", havingValue = "true")
     public R2dbcEntityTemplate migrationR2dbcEntityTemplate(
         ConnectionFactory migrationConnectionFactory) {
         return new R2dbcEntityTemplate(migrationConnectionFactory);
