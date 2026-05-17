@@ -243,7 +243,12 @@ public class MigrationInitializer {
 
         DatabaseClient.GenericExecuteSpec spec = newEntityTemplate.getDatabaseClient().sql(sql);
         for (int i = 0; i < columns.size(); i++) {
-            spec = spec.bind("p" + i, row.get(columns.get(i)));
+            Object value = row.get(columns.get(i));
+            if (value == null) {
+                spec = spec.bindNull("p" + i, String.class);
+            } else {
+                spec = spec.bind("p" + i, value);
+            }
         }
         return spec.fetch().rowsUpdated().then();
     }
