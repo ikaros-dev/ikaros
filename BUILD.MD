@@ -6,6 +6,7 @@
 - CheckStyle: 9.3
 - Vue: 3
 - IDE: IntelliJ IDEA
+- Database: PostgreSQL 18+
 
 您可以通过`git`拉取代码库
 ```shell
@@ -79,7 +80,22 @@ commit之前，用checkstyle检查下代码，确认没有问题后再commit。
 
 ## 本地开发
 
-在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,win-dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,win-dev,local`
+因为本地开发需要本地起一个postgres18数据库，加上测试用的`testcontainer`需要容器环境，
+
+所有建议你本地安装好Docker环境，Windows推荐使用`Docker Desktop`。
+
+这里给个参考配置：
+```shell
+docker run -d \
+--name ikarosdb_dev \
+-p 5432:5432 \
+-e POSTGRES_DB=ikaros \
+-e POSTGRES_USER=ikaros \
+-e POSTGRES_PASSWORD=openpostgresql \
+postgres:18.3-alpine
+```
+
+在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,local`
 
 这里的`local`请先确保您已经进行了上面的`application-local.yaml.example`实例文件复制移动重命名
 
