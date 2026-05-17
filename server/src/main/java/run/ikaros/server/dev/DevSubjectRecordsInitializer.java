@@ -32,7 +32,7 @@ public class DevSubjectRecordsInitializer {
         for (int i = 0; i < count; i++) {
             SubjectEntity entity = SubjectEntity.builder().build();
             entity.setId(UuidV7Utils.generateUuid());
-            entity.setCover("/static/dev/subject/cover/default.jpg");
+            entity.setCover("https://lain.bgm.tv/pic/cover/l/45/1e/109108_IqVY4.jpg");
             entity.setAirTime(LocalDateTime.now());
             entity.setName("name" + i);
             entity.setNsfw(false);
