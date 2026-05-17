@@ -85,6 +85,8 @@ public class MigrationInitializer {
         putFk("tag", "master_id", "subject");
         putFk("custom_metadata", "custom_id", "custom");
         putFk("attachment_driver", "user_id", "ikuser");
+        putFk("ikuser_role", "user_id", "ikuser");
+        putFk("ikuser_role", "role_id", "role");
     }
 
     private static void putFk(String table, String column, String refTable) {
