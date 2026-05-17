@@ -28,6 +28,14 @@ ikaros:
     keep-alive-time: 0
     queue-count: 10000
 
+  migration:
+    enable: false
+    datasource:
+      url:
+      username:
+      password:
+
+
 
 server:
   port: 9999
