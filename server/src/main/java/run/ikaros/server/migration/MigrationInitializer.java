@@ -15,6 +15,7 @@ import run.ikaros.api.infra.utils.UuidV7Utils;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -266,10 +267,11 @@ public class MigrationInitializer {
         }
         if (TIMESTAMP_COLUMNS.contains(column)) {
             if (value instanceof LocalDateTime) {
-                return value;
+                return DateTimeConverter.toTimestamp((LocalDateTime) value, ZoneId.systemDefault());
             }
             if (value instanceof String s && !s.isEmpty()) {
-                return LocalDateTime.parse(s, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                LocalDateTime time = LocalDateTime.parse(s, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                return DateTimeConverter.toTimestamp(time, ZoneId.systemDefault());
             }
             return null;
         }
