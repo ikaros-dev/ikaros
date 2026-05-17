@@ -1,6 +1,6 @@
 create table if not exists "character"
 (
-    "id"            uuid NOT NULL,
+    "id"            uuid primary key default uuidv7(),
     "create_time"   timestamp(6),
     "create_uid"    uuid,
     "delete_status" boolean,
@@ -9,7 +9,6 @@ create table if not exists "character"
     "ol_version"    bigint,
     "name"          varchar(255),
     "infobox"       varchar(50000),
-    "summary"       varchar(50000),
-    CONSTRAINT "character_pkey" PRIMARY KEY ("id")
+    "summary"       varchar(50000)
 )
 ;

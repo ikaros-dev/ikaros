@@ -1,6 +1,6 @@
 create table if not exists "subject_relation"
 (
-    "id"                  uuid         NOT NULL,
+    "id"                  uuid primary key default uuidv7(),
     "create_time"         timestamp(6),
     "create_uid"          uuid,
     "delete_status"       boolean,
@@ -9,7 +9,6 @@ create table if not exists "subject_relation"
     "ol_version"          bigint,
     "subject_id"          uuid,
     "relation_type"       varchar(100) not null,
-    "relation_subject_id" uuid,
-    CONSTRAINT "subject_relation_pkey" PRIMARY KEY ("id")
+    "relation_subject_id" uuid
 )
 ;

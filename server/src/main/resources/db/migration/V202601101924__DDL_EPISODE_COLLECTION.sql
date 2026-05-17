@@ -1,13 +1,12 @@
 create table if not exists "episode_collection"
 (
-    "id"          uuid NOT NULL,
+    "id"          uuid primary key default uuidv7(),
     "user_id"     uuid,
     "subject_id"  uuid,
     "episode_id"  uuid,
     "finish"      boolean,
     "progress"    bigint,
     "duration"    bigint,
-    "update_time" timestamp(6),
-    CONSTRAINT "episode_collection_pkey" PRIMARY KEY ("id")
+    "update_time" timestamp(6)
 )
 ;

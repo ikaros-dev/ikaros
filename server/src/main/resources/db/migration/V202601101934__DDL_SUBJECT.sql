@@ -1,6 +1,6 @@
 create table if not exists "subject"
 (
-    "id"            uuid NOT NULL,
+    "id"            uuid primary key default uuidv7(),
     "create_time"   timestamp(6),
     "create_uid"    uuid,
     "delete_status" boolean,
@@ -15,7 +15,6 @@ create table if not exists "subject"
     "summary"       varchar(50000),
     "nsfw"          boolean,
     "air_time"      timestamp(6),
-    "score"         double precision,
-    CONSTRAINT "subject_pkey" PRIMARY KEY ("id")
+    "score"         double precision
 )
 ;

@@ -1,9 +1,8 @@
 create table if not exists "attachment_relation"
 (
-    "id"                     uuid NOT NULL,
+    "id"                     uuid primary key default uuidv7(),
     "attachment_id"          uuid,
     "type"                   varchar(255),
-    "relation_attachment_id" uuid,
-    CONSTRAINT "attachment_relation_pkey" PRIMARY KEY ("id")
+    "relation_attachment_id" uuid
 )
 ;

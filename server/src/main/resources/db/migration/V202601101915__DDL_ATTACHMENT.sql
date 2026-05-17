@@ -1,6 +1,6 @@
 create table if not exists "attachment"
 (
-    "id"          uuid NOT NULL,
+    "id"          uuid primary key default uuidv7(),
     "parent_id"   uuid,
     "type"        varchar(255),
     "url"         varchar(5000),
@@ -11,7 +11,6 @@ create table if not exists "attachment"
     "update_time" timestamp(6),
     "deleted"     boolean,
     "driver_id"   uuid,
-    "sha1"        varchar(255),
-    CONSTRAINT "attachment_pkey" PRIMARY KEY ("id")
+    "sha1"        varchar(255)
 )
 ;

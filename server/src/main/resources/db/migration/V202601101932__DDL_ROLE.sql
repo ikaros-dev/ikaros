@@ -1,6 +1,6 @@
 create table if not exists "role"
 (
-    "id"            uuid NOT NULL,
+    "id"            uuid primary key default uuidv7(),
     "create_time"   timestamp(6),
     "create_uid"    uuid,
     "delete_status" boolean,
@@ -9,7 +9,6 @@ create table if not exists "role"
     "ol_version"    bigint,
     "parent_id"     uuid,
     "name"          varchar(255),
-    "description"   varchar(50000),
-    CONSTRAINT "role_pkey" PRIMARY KEY ("id")
+    "description"   varchar(50000)
 )
 ;
