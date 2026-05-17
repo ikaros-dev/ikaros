@@ -25,7 +25,7 @@ public class MigrationConfiguration {
      * Create R2dbcEntityTemplate backed by the migration connection factory.
      */
     @Bean("migrationR2dbcEntityTemplate")
-    @ConditionalOnProperty(prefix = "ikaros.migration.enable", havingValue = "true")
+    @ConditionalOnProperty(prefix = "ikaros.migration.datasource", name = "url")
     public R2dbcEntityTemplate migrationR2dbcEntityTemplate(
         ConnectionFactory migrationConnectionFactory) {
         return new R2dbcEntityTemplate(migrationConnectionFactory);
