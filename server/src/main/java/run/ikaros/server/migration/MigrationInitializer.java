@@ -8,6 +8,7 @@ import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.Resource;
@@ -22,6 +23,7 @@ import run.ikaros.api.infra.utils.UuidV7Utils;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "ikaros.migration.enable", havingValue = "true", matchIfMissing = false)
 public class MigrationInitializer {
 
     private static final List<String> TABLE_NAMES = List.of(
@@ -110,7 +112,7 @@ public class MigrationInitializer {
                             .concatMap(id -> {
                                 String uuid = UuidV7Utils.generate();
                                 return client.sql("UPDATE " + table
-                                                + " SET migration_uuid = :uuid WHERE id = :id")
+                                                + " SET migration_uuid = :uuid WHERE id = :id and migration_uuid isnull")
                                         .bind("uuid", uuid)
                                         .bind("id", id)
                                         .fetch()
