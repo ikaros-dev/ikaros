@@ -14,6 +14,7 @@ import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -42,6 +43,18 @@ public class MigrationInitializer {
     private static final Map<String, Map<String, String>> FK_COLUMNS = new HashMap<>();
 
     static {
+        // BaseEntity FK columns: create_uid, update_uid → ikuser (所有继承BaseEntity的表)
+        String[] baseEntityTables = {
+                "ikuser", "character", "authority", "episode", "episode_list",
+                "person", "person_character", "role", "subject",
+                "subject_character", "subject_relation", "subject_person", "subject_sync"
+        };
+        for (String table : baseEntityTables) {
+            putFk(table, "create_uid", "ikuser");
+            putFk(table, "update_uid", "ikuser");
+        }
+
+        // Business FK columns
         putFk("attachment", "parent_id", "attachment");
         putFk("attachment", "driver_id", "attachment_driver");
         putFk("attachment_relation", "attachment_id", "attachment");
@@ -82,6 +95,22 @@ public class MigrationInitializer {
 
     private static final Set<String> TIMESTAMP_COLUMNS = Set.of(
             "create_time", "update_time", "expire_time", "air_time"
+    );
+
+    private static final Set<String> FLOAT_COLUMNS = Set.of(
+            "sequence", "score"
+    );
+
+    private static final Set<String> NUMBER_COLUMNS = Set.of(
+            "size", "d_order", "list_page_size", "request_limit", "space_total", "space_use", "ol_version",
+            "progress", "duration", "main_ep_progress", "total", "index"
+    );
+
+    private static final Set<String> UUID_COLUMNS = Set.of(
+            "create_uid", "update_uid", "parent_id", "driver_id", "attachment_id",
+            "relation_attachment_id", "reference_id", "user_id", "subject_id",
+            "episode_id", "episode_list_id", "person_id", "character_id",
+            "role_id", "authority_id", "relation_subject_id", "master_id", "custom_id", "id"
     );
 
     private static final Set<String> BOOLEAN_COLUMNS = Set.of(
@@ -206,6 +235,7 @@ public class MigrationInitializer {
 
                     // Remove migration_uuid - not a column in new tables
                     newRow.remove("migration_uuid");
+                    newRow.remove("uuid");
 
                     // Replace id with old record's migration_uuid
                     Long oldId = ((Number) oldRow.get("id")).longValue();
@@ -251,9 +281,9 @@ public class MigrationInitializer {
         DatabaseClient.GenericExecuteSpec spec = newEntityTemplate.getDatabaseClient().sql(sql);
         for (int i = 0; i < columns.size(); i++) {
             String column = columns.get(i);
-            Object value = convertType(row.get(column), column);
+            Object value = convertType(row.get(column), column, table);
             if (value == null) {
-                spec = spec.bindNull("p" + i, String.class);
+                spec = spec.bindNull("p" + i, convertNullColumnType(column));
             } else {
                 spec = spec.bind("p" + i, value);
             }
@@ -261,9 +291,45 @@ public class MigrationInitializer {
         return spec.fetch().rowsUpdated().then();
     }
 
-    private Object convertType(Object value, String column) {
+    private Class<?> convertNullColumnType(String column) {
+
+        if (FLOAT_COLUMNS.contains(column)) {
+            return Double.class;
+        }
+        if (NUMBER_COLUMNS.contains(column)) {
+            return Long.class;
+        }
+        if (UUID_COLUMNS.contains(column)) {
+            return UUID.class;
+        }
+        if (TIMESTAMP_COLUMNS.contains(column)) {
+            return Timestamp.class;
+        }
+        if (BOOLEAN_COLUMNS.contains(column)) {
+            return Boolean.class;
+        }
+        return String.class;
+    }
+
+    private Object convertType(Object value, String column, String table) {
         if (value == null) {
             return null;
+        }
+        if (FLOAT_COLUMNS.contains(column)) {
+            return Double.parseDouble(value.toString());
+        }
+        if (NUMBER_COLUMNS.contains(column)) {
+            return Long.valueOf(value.toString());
+        }
+        if (UUID_COLUMNS.contains(column)) {
+            UUID uuid = null;
+            try {
+                uuid = UUID.fromString(value.toString());
+            } catch (Exception e) {
+                // 引用表没有对应的纪录，不用插入。
+                // log.error("Exception when table={} and column={} and value={}", table, column, value, e);
+            }
+            return uuid;
         }
         if (TIMESTAMP_COLUMNS.contains(column)) {
             if (value instanceof LocalDateTime) {
