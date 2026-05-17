@@ -48,4 +48,6 @@ public class SubjectCollectionEntity {
      * Subject score, from 0 to 10.
      */
     private Integer score;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

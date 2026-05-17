@@ -22,4 +22,6 @@ public class RoleAuthorityEntity {
     private Long roleId;
     @Column("authority_id")
     private Long authorityId;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

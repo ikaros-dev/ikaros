@@ -22,4 +22,6 @@ public class EpisodeListEpisodeEntity {
     private Long episodeListId;
     @Column("episode_id")
     private Long episodeId;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

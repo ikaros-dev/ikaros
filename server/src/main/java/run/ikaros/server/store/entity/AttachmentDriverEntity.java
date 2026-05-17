@@ -67,4 +67,6 @@ public class AttachmentDriverEntity {
     private Long spaceTotal;
     @Column("space_use")
     private Long spaceUse;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

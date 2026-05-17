@@ -24,4 +24,6 @@ public class AttachmentRelationEntity {
     private AttachmentRelationType type;
     @Column("relation_attachment_id")
     private Long relationAttachmentId;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

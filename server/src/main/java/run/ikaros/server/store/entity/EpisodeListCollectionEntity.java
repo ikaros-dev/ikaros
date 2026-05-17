@@ -25,4 +25,6 @@ public class EpisodeListCollectionEntity {
     private Long episodeListId;
     @Column("update_time")
     private LocalDateTime updateTime;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

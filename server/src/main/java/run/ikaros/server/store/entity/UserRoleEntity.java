@@ -22,4 +22,6 @@ public class UserRoleEntity {
     private Long userId;
     @Column("role_id")
     private Long roleId;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

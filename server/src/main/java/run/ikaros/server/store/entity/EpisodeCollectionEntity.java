@@ -39,4 +39,6 @@ public class EpisodeCollectionEntity {
     private Long duration;
     @Column("update_time")
     private LocalDateTime updateTime;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

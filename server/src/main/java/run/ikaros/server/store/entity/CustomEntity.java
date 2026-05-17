@@ -27,4 +27,6 @@ public class CustomEntity {
     private String version;
     private String kind;
     private String name;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }
