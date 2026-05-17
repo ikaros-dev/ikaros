@@ -50,9 +50,9 @@ const handleVisibleChange = (visible: boolean) => {
 
 const endpoint = computed(() => {
 	if (props.upgradePlugin && props.upgradePlugin.name) {
-		return `/api/v1alpha1/plugin/upgrade/file/${props.upgradePlugin.name}`;
+		return `/api/v1/plugin/upgrade/file/${props.upgradePlugin.name}`;
 	}
-	return '/api/v1alpha1/plugin/install/file';
+	return '/api/v1/plugin/install/file';
 });
 
 watch(
