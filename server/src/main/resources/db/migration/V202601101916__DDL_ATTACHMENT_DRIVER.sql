@@ -1,6 +1,6 @@
 create table if not exists "attachment_driver"
 (
-    "id"             uuid         NOT NULL,
+    "id"             uuid primary key default uuidv7(),
     "enable"         boolean,
     "d_type"         varchar(100) NOT NULL,
     "d_name"         varchar(100),
@@ -18,7 +18,6 @@ create table if not exists "attachment_driver"
     "user_name"      varchar(255),
     "avatar"         varchar(1000),
     "space_total"    bigint,
-    "space_use"      bigint,
-    CONSTRAINT "attachment_driver_pkey" PRIMARY KEY ("id")
+    "space_use"      bigint
 )
 ;

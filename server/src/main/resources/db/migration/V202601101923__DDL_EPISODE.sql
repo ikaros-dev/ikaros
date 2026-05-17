@@ -1,6 +1,6 @@
 create table if not exists "episode"
 (
-    "id"            uuid NOT NULL,
+    "id"            uuid primary key default uuidv7(),
     "create_time"   timestamp(6),
     "create_uid"    uuid,
     "delete_status" boolean,
@@ -14,7 +14,6 @@ create table if not exists "episode"
     "air_time"      timestamp(6),
     "ep_group"      varchar(50),
     "sequence"      real,
-    CONSTRAINT "episode_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "subject_group_seq_name_uk" unique (subject_id, ep_group, sequence, name)
 )
 ;

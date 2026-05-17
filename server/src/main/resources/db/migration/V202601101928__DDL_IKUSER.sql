@@ -1,6 +1,6 @@
 create table if not exists "ikuser"
 (
-    "id"            uuid NOT NULL,
+    "id"            uuid primary key default uuidv7(),
     "create_time"   timestamp(6),
     "create_uid"    uuid,
     "delete_status" boolean,
@@ -17,7 +17,6 @@ create table if not exists "ikuser"
     "site"          varchar(255),
     "telephone"     varchar(255),
     "username"      varchar(255),
-    CONSTRAINT "ikuser_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "ikuser_username_key" unique (username)
 )
 ;

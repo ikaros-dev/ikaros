@@ -1,9 +1,8 @@
 create table if not exists "role_authority"
 (
-    "id"           uuid NOT NULL,
+    "id"           uuid primary key default uuidv7(),
     "role_id"      uuid,
     "authority_id" uuid,
-    CONSTRAINT "role_authority_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "role_authority_id_uk" UNIQUE (role_id, authority_id)
 )
 ;

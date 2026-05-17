@@ -1,6 +1,6 @@
 create table if not exists "subject_sync"
 (
-    "id"            uuid NOT NULL,
+    "id"            uuid primary key default uuidv7(),
     "create_time"   timestamp(6),
     "create_uid"    uuid,
     "delete_status" boolean,
@@ -11,7 +11,6 @@ create table if not exists "subject_sync"
     "platform"      varchar(255),
     "platform_id"   varchar(255),
     "sync_time"     timestamp(6),
-    CONSTRAINT "subject_sync_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "platform_pid_ukey" UNIQUE (platform, platform_id)
 )
 ;
