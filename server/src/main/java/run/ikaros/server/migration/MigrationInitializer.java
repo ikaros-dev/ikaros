@@ -1,17 +1,9 @@
 package run.ikaros.server.migration;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -20,6 +12,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.infra.utils.UuidV7Utils;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -81,6 +78,15 @@ public class MigrationInitializer {
     }
 
     private static final String MIGRATION_SCRIPT_PATTERN = "classpath:db/migration/*.sql";
+
+    private static final Set<String> TIMESTAMP_COLUMNS = Set.of(
+            "create_time", "update_time", "expire_time", "air_time"
+    );
+
+    private static final Set<String> BOOLEAN_COLUMNS = Set.of(
+            "delete_status", "enable", "non_locked", "finish", "nsfw",
+            "deleted", "is_private"
+    );
 
     private final R2dbcEntityTemplate oldEntityTemplate;
     private final MigrationR2dbcEntityTemplate newEntityTemplate;
@@ -149,9 +155,9 @@ public class MigrationInitializer {
 
     private Mono<Void> migrateAllData() {
         return loadAllIdMappings()
-            .then(Flux.fromIterable(TABLE_NAMES)
-                .concatMap(this::migrateTableData)
-                .then());
+                .then(Flux.fromIterable(TABLE_NAMES)
+                        .concatMap(this::migrateTableData)
+                        .then());
     }
 
     /**
@@ -243,7 +249,8 @@ public class MigrationInitializer {
 
         DatabaseClient.GenericExecuteSpec spec = newEntityTemplate.getDatabaseClient().sql(sql);
         for (int i = 0; i < columns.size(); i++) {
-            Object value = row.get(columns.get(i));
+            String column = columns.get(i);
+            Object value = convertType(row.get(column), column);
             if (value == null) {
                 spec = spec.bindNull("p" + i, String.class);
             } else {
@@ -251,5 +258,32 @@ public class MigrationInitializer {
             }
         }
         return spec.fetch().rowsUpdated().then();
+    }
+
+    private Object convertType(Object value, String column) {
+        if (value == null) {
+            return null;
+        }
+        if (TIMESTAMP_COLUMNS.contains(column)) {
+            if (value instanceof LocalDateTime) {
+                return value;
+            }
+            if (value instanceof String s && !s.isEmpty()) {
+                return LocalDateTime.parse(s, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            }
+            return null;
+        }
+        if (BOOLEAN_COLUMNS.contains(column)) {
+            if (value instanceof Boolean) {
+                return value;
+            }
+            if (value instanceof Number n) {
+                return n.intValue() != 0;
+            }
+            if (value instanceof String s) {
+                return Boolean.parseBoolean(s);
+            }
+        }
+        return value;
     }
 }
