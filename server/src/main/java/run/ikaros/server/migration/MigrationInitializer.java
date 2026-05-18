@@ -1,5 +1,16 @@
 package run.ikaros.server.migration;
 
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -15,27 +26,20 @@ import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.TagType;
 
-import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "ikaros.migration.enable", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(name = "ikaros.migration.enable", havingValue = "true")
 public class MigrationInitializer {
 
     private static final List<String> TABLE_NAMES = List.of(
-            "ikuser", "attachment", "attachment_relation", "attachment_reference",
-            "authority", "character", "episode", "episode_collection",
-            "episode_list", "episode_list_episode", "episode_list_collection",
-            "person", "person_character", "role", "role_authority",
-            "subject", "subject_character", "subject_collection",
-            "subject_person", "subject_relation", "subject_sync",
-            "tag", "task", "ikuser_role", "custom", "custom_metadata",
-            "attachment_driver"
+        "ikuser", "attachment", "attachment_relation", "attachment_reference",
+        "authority", "character", "episode", "episode_collection",
+        "episode_list", "episode_list_episode", "episode_list_collection",
+        "person", "person_character", "role", "role_authority",
+        "subject", "subject_character", "subject_collection",
+        "subject_person", "subject_relation", "subject_sync",
+        "tag", "task", "ikuser_role", "custom", "custom_metadata",
+        "attachment_driver"
     );
 
     /**
@@ -47,9 +51,9 @@ public class MigrationInitializer {
     static {
         // BaseEntity FK columns: create_uid, update_uid → ikuser (所有继承BaseEntity的表)
         String[] baseEntityTables = {
-                "ikuser", "character", "authority", "episode", "episode_list",
-                "person", "person_character", "role", "subject",
-                "subject_character", "subject_relation", "subject_person", "subject_sync"
+            "ikuser", "character", "authority", "episode", "episode_list",
+            "person", "person_character", "role", "subject",
+            "subject_character", "subject_relation", "subject_person", "subject_sync"
         };
         for (String table : baseEntityTables) {
             putFk(table, "create_uid", "ikuser");
@@ -95,28 +99,29 @@ public class MigrationInitializer {
     private static final String MIGRATION_SCRIPT_PATTERN = "classpath:db/migration/*.sql";
 
     private static final Set<String> TIMESTAMP_COLUMNS = Set.of(
-            "create_time", "update_time", "expire_time", "air_time"
+        "create_time", "update_time", "expire_time", "air_time"
     );
 
     private static final Set<String> FLOAT_COLUMNS = Set.of(
-            "sequence", "score"
+        "sequence", "score"
     );
 
     private static final Set<String> NUMBER_COLUMNS = Set.of(
-            "size", "d_order", "list_page_size", "request_limit", "space_total", "space_use", "ol_version",
-            "progress", "duration", "main_ep_progress", "total", "index"
+        "size", "d_order", "list_page_size", "request_limit", "space_total", "space_use",
+        "ol_version",
+        "progress", "duration", "main_ep_progress", "total", "index"
     );
 
     private static final Set<String> UUID_COLUMNS = Set.of(
-            "create_uid", "update_uid", "parent_id", "driver_id", "attachment_id",
-            "relation_attachment_id", "reference_id", "user_id", "subject_id",
-            "episode_id", "episode_list_id", "person_id", "character_id",
-            "role_id", "authority_id", "relation_subject_id", "master_id", "custom_id", "id"
+        "create_uid", "update_uid", "parent_id", "driver_id", "attachment_id",
+        "relation_attachment_id", "reference_id", "user_id", "subject_id",
+        "episode_id", "episode_list_id", "person_id", "character_id",
+        "role_id", "authority_id", "relation_subject_id", "master_id", "custom_id", "id"
     );
 
     private static final Set<String> BOOLEAN_COLUMNS = Set.of(
-            "delete_status", "enable", "non_locked", "finish", "nsfw",
-            "deleted", "is_private"
+        "delete_status", "enable", "non_locked", "finish", "nsfw",
+        "deleted", "is_private"
     );
 
     private final R2dbcEntityTemplate oldEntityTemplate;
@@ -141,63 +146,64 @@ public class MigrationInitializer {
         DatabaseClient client = oldEntityTemplate.getDatabaseClient();
 
         return Flux.fromIterable(TABLE_NAMES)
-                .concatMap(table -> {
-                    log.info("Generating migration_uuid for table: {}", table);
-                    return client.sql("SELECT id FROM " + table)
-                            .map((row, meta) -> row.get("id", Long.class))
-                            .all()
-                            .concatMap(id -> {
-                                String uuid;
-                                if (id == 0L) {
-                                    uuid = "019b715b-08c7-7509-ab14-2abe47f440f3";
-                                } else if (id == 1L) {
-                                    uuid = "019b715b-5cb5-7407-b571-6688c9e61e5a";
-                                } else if (id == 2L) {
-                                    uuid = "019b715b-97dc-72dd-9e5a-0f714efc89d9";
-                                } else {
-                                    uuid = UuidV7Utils.generate();
-                                }
-                                return client.sql("UPDATE " + table
-                                                + " SET migration_uuid = :uuid WHERE id = :id")
-                                        .bind("uuid", uuid)
-                                        .bind("id", id)
-                                        .fetch()
-                                        .rowsUpdated();
-                            })
-                            .count()
-                            .doOnNext(count -> log.info("Updated {} rows in {}", count, table));
-                })
-                .then()
-                .doOnSuccess(v -> log.info("Database migration UUID generation completed."))
-                .then(runMigrationScripts())
-                .then(migrateAllData())
-                .doOnSuccess(v -> log.info("All data migration completed."));
+            .concatMap(table -> {
+                log.info("Generating migration_uuid for table: {}", table);
+                return client.sql("SELECT id FROM " + table)
+                    .map((row, meta) -> row.get("id", Long.class))
+                    .all()
+                    .concatMap(id -> {
+                        String uuid;
+                        if (id == 0L) {
+                            uuid = "019b715b-08c7-7509-ab14-2abe47f440f3";
+                        } else if (id == 1L) {
+                            uuid = "019b715b-5cb5-7407-b571-6688c9e61e5a";
+                        } else if (id == 2L) {
+                            uuid = "019b715b-97dc-72dd-9e5a-0f714efc89d9";
+                        } else {
+                            uuid = UuidV7Utils.generate();
+                        }
+                        return client.sql("UPDATE " + table
+                                + " SET migration_uuid = :uuid WHERE id = :id")
+                            .bind("uuid", uuid)
+                            .bind("id", id)
+                            .fetch()
+                            .rowsUpdated();
+                    })
+                    .count()
+                    .doOnNext(count -> log.info("Updated {} rows in {}", count, table));
+            })
+            .then()
+            .doOnSuccess(v -> log.info("Database migration UUID generation completed."))
+            .then(runMigrationScripts())
+            .then(migrateAllData())
+            .doOnSuccess(v -> log.info("All data migration completed."));
     }
 
     private Mono<Void> runMigrationScripts() {
-        return Mono.fromCallable(() -> resourcePatternResolver.getResources(MIGRATION_SCRIPT_PATTERN))
-                .flatMapIterable(resources -> List.of(resources))
-                .sort((a, b) -> a.getFilename().compareTo(b.getFilename()))
-                .concatMap(resource -> Mono.fromCallable(() ->
-                                new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8))
-                        .subscribeOn(Schedulers.boundedElastic())
-                        .flatMap(sql -> {
-                            log.info("Executing migration script: {}", resource.getFilename());
-                            return newEntityTemplate.getDatabaseClient()
-                                    .sql(sql)
-                                    .fetch()
-                                    .rowsUpdated();
-                        })
-                )
-                .then()
-                .doOnSuccess(v -> log.info("All migration scripts executed successfully."));
+        return Mono.fromCallable(
+                () -> resourcePatternResolver.getResources(MIGRATION_SCRIPT_PATTERN))
+            .flatMapIterable(resources -> List.of(resources))
+            .sort((a, b) -> a.getFilename().compareTo(b.getFilename()))
+            .concatMap(resource -> Mono.fromCallable(() ->
+                    new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(sql -> {
+                    log.info("Executing migration script: {}", resource.getFilename());
+                    return newEntityTemplate.getDatabaseClient()
+                        .sql(sql)
+                        .fetch()
+                        .rowsUpdated();
+                })
+            )
+            .then()
+            .doOnSuccess(v -> log.info("All migration scripts executed successfully."));
     }
 
     private Mono<Void> migrateAllData() {
         return loadAllIdMappings()
-                .then(Flux.fromIterable(TABLE_NAMES)
-                        .concatMap(this::migrateTableData)
-                        .then());
+            .then(Flux.fromIterable(TABLE_NAMES)
+                .concatMap(this::migrateTableData)
+                .then());
     }
 
     /**
@@ -213,19 +219,19 @@ public class MigrationInitializer {
 
     private Mono<Void> loadIdMapping(String table) {
         return oldEntityTemplate.getDatabaseClient()
-                .sql("SELECT id, migration_uuid FROM " + table)
-                .map((row, meta) -> {
-                    Long id = row.get("id", Long.class);
-                    String uuid = row.get("migration_uuid", String.class);
-                    return Map.entry(id, uuid);
-                })
-                .all()
-                .collectMap(Map.Entry::getKey, Map.Entry::getValue)
-                .doOnNext(map -> {
-                    idMappings.put(table, map);
-                    log.info("Loaded {} id mappings for {}", map.size(), table);
-                })
-                .then();
+            .sql("SELECT id, migration_uuid FROM " + table)
+            .map((row, meta) -> {
+                Long id = row.get("id", Long.class);
+                String uuid = row.get("migration_uuid", String.class);
+                return Map.entry(id, uuid);
+            })
+            .all()
+            .collectMap(Map.Entry::getKey, Map.Entry::getValue)
+            .doOnNext(map -> {
+                idMappings.put(table, map);
+                log.info("Loaded {} id mappings for {}", map.size(), table);
+            })
+            .then();
     }
 
     private final Map<String, Map<Long, String>> idMappings = new HashMap<>();
@@ -235,66 +241,67 @@ public class MigrationInitializer {
      */
     private Mono<Void> migrateTableData(String table) {
         return oldEntityTemplate.getDatabaseClient()
-                .sql("SELECT * FROM " + table)
-                .fetch()
-                .all()
-                .index()
-                .concatMap(tuple -> {
-                    Map<String, Object> oldRow = tuple.getT2();
-                    Map<String, Object> newRow = new HashMap<>(oldRow);
+            .sql("SELECT * FROM " + table)
+            .fetch()
+            .all()
+            .index()
+            .concatMap(tuple -> {
+                Map<String, Object> oldRow = tuple.getT2();
+                Map<String, Object> newRow = new HashMap<>(oldRow);
 
-                    // Remove migration_uuid - not a column in new tables
-                    newRow.remove("migration_uuid");
-                    newRow.remove("uuid");
+                // Remove migration_uuid - not a column in new tables
+                newRow.remove("migration_uuid");
+                newRow.remove("uuid");
 
-                    // Replace id with old record's migration_uuid
-                    Long oldId = ((Number) oldRow.get("id")).longValue();
-                    String uuid = idMappings.get(table).get(oldId);
-                    newRow.put("id", uuid);
+                // Replace id with old record's migration_uuid
+                Long oldId = ((Number) oldRow.get("id")).longValue();
+                String uuid = idMappings.get(table).get(oldId);
+                newRow.put("id", uuid);
 
-                    // Replace FK columns with their referenced table's uuid
-                    Map<String, String> fkCols = FK_COLUMNS.get(table);
-                    if (fkCols != null) {
-                        for (var entry : fkCols.entrySet()) {
-                            String fkCol = entry.getKey();
-                            String refTable = entry.getValue();
-                            if ("attachment_reference".equalsIgnoreCase(table)
+                // Replace FK columns with their referenced table's uuid
+                Map<String, String> fkCols = FK_COLUMNS.get(table);
+                if (fkCols != null) {
+                    for (var entry : fkCols.entrySet()) {
+                        String fkCol = entry.getKey();
+                        String refTable = entry.getValue();
+                        if ("attachment_reference".equalsIgnoreCase(table)
                             && fkCol.contains("reference_id")) {
-                                String type = oldRow.get("type").toString();
-                                if (AttachmentReferenceType.SUBJECT.name().equalsIgnoreCase(type)) {
-                                    refTable = "subject";
-                                } else if (AttachmentReferenceType.EPISODE.name().equalsIgnoreCase(type)) {
-                                    refTable = "episode";
-                                } else {
-                                    refTable = "attachment";
-                                }
+                            String type = oldRow.get("type").toString();
+                            if (AttachmentReferenceType.SUBJECT.name().equalsIgnoreCase(type)) {
+                                refTable = "subject";
+                            } else if (AttachmentReferenceType.EPISODE.name()
+                                .equalsIgnoreCase(type)) {
+                                refTable = "episode";
+                            } else {
+                                refTable = "attachment";
                             }
-                            if ("tag".equalsIgnoreCase(table)
-                                    && fkCol.contains("master_id")) {
-                                String type = oldRow.get("type").toString();
-                                if (TagType.SUBJECT.name().equalsIgnoreCase(type)) {
-                                    refTable = "subject";
-                                } else if (TagType.EPISODE.name().equalsIgnoreCase(type)) {
-                                    refTable = "episode";
-                                } else {
-                                    refTable = "attachment";
-                                }
+                        }
+                        if ("tag".equalsIgnoreCase(table)
+                            && fkCol.contains("master_id")) {
+                            String type = oldRow.get("type").toString();
+                            if (TagType.SUBJECT.name().equalsIgnoreCase(type)) {
+                                refTable = "subject";
+                            } else if (TagType.EPISODE.name().equalsIgnoreCase(type)) {
+                                refTable = "episode";
+                            } else {
+                                refTable = "attachment";
                             }
-                            Object fkVal = oldRow.get(fkCol);
-                            if (fkVal != null && idMappings.containsKey(refTable)) {
-                                Long fkId = ((Number) fkVal).longValue();
-                                String fkUuid = idMappings.get(refTable).get(fkId);
-                                if (fkUuid != null) {
-                                    newRow.put(fkCol, fkUuid);
-                                }
+                        }
+                        Object fkVal = oldRow.get(fkCol);
+                        if (fkVal != null && idMappings.containsKey(refTable)) {
+                            Long fkId = ((Number) fkVal).longValue();
+                            String fkUuid = idMappings.get(refTable).get(fkId);
+                            if (fkUuid != null) {
+                                newRow.put(fkCol, fkUuid);
                             }
                         }
                     }
+                }
 
-                    return insertRow(table, newRow);
-                })
-                .then()
-                .doOnNext(v -> log.info("Migrated data for table: {}", table));
+                return insertRow(table, newRow);
+            })
+            .then()
+            .doOnNext(v -> log.info("Migrated data for table: {}", table));
     }
 
     /**
@@ -307,8 +314,8 @@ public class MigrationInitializer {
             placeholders.add(":p" + i);
         }
         String sql = "INSERT INTO " + table + " ("
-                + String.join(", ", columns) + ") VALUES ("
-                + String.join(", ", placeholders) + ")";
+            + String.join(", ", columns) + ") VALUES ("
+            + String.join(", ", placeholders) + ")";
 
         DatabaseClient.GenericExecuteSpec spec = newEntityTemplate.getDatabaseClient().sql(sql);
         for (int i = 0; i < columns.size(); i++) {
@@ -359,7 +366,8 @@ public class MigrationInitializer {
                 uuid = UUID.fromString(value.toString());
             } catch (Exception e) {
                 // 引用表没有对应的纪录，不用插入。
-                // log.error("Exception when table={} and column={} and value={}", table, column, value, e);
+                // log.error("Exception when table={}
+                // and column={} and value={}", table, column, value, e);
             }
             return uuid;
         }
