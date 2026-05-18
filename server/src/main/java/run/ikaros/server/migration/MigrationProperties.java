@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 public class MigrationProperties {
     private boolean enable = false;
     private final Datasource datasource = new Datasource();
+
     @Data
     public static class Datasource {
         private String url;

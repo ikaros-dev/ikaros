@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(MigrationProperties.class)
-@ConditionalOnProperty(name = "ikaros.migration.enable", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(name = "ikaros.migration.enable", havingValue = "true")
 public class MigrationConfiguration {
 
     /**
