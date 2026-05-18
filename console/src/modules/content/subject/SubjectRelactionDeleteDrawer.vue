@@ -42,7 +42,7 @@ const handleClose = () => {
 	drawerVisible.value = false;
 };
 
-const selectionSubjectMap = new Map<string, number[]>();
+const selectionSubjectMap = new Map<string, string[]>();
 const selectionSubjectReactions = ref<SubjectRelation[]>([]);
 const handleSelectionChange = (selection) => {
 	// console.debug('selection', selection);
@@ -50,7 +50,7 @@ const handleSelectionChange = (selection) => {
 	selectionSubjectMap.clear();
 	selectionSubjectReactions.value = [];
 	selection.forEach((sub) => {
-		let ids: number[] = selectionSubjectMap.get(sub.type) as number[];
+		let ids: string[] = selectionSubjectMap.get(sub.type) as string[];
 		if (ids) {
 			ids.push(sub.id);
 		} else {
@@ -71,10 +71,10 @@ const handleSelectionChange = (selection) => {
 	// console.debug('selectionSubjectReactions', selectionSubjectReactions);
 };
 
-const subjectIdMapCache = new Map<number, Subject>();
+const subjectIdMapCache = new Map<string, Subject>();
 const subjects = ref<Subject[]>([]);
 const onOpen = async () => {
-	let ids: number[] = [];
+	let ids: string[] = [];
 	props.relationSubjects.forEach((subRel) => {
 		subRel.relation_subjects.forEach((id) => ids.push(id));
 	});

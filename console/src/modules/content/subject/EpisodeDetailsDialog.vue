@@ -158,8 +158,8 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 	await apiClient.attachmentRef.saveAttachmentReference({
 		attachmentReference: {
 			type: 'EPISODE' as AttachmentReferenceTypeEnum,
-			attachmentId: attachment.id as number,
-			referenceId: currentOperateEpisode.value?.id as number,
+			attachmentId: attachment.id,
+			referenceId: currentOperateEpisode.value?.id,
 		},
 	});
 	ElMessage.success(
@@ -207,7 +207,7 @@ const episodeResources = ref<EpisodeResource[]>([]);
 const fetchEpisodeResources = async () => {
 	if (!episode.value) return;
 	const { data } = await apiClient.episode.getAttachmentRefsById({
-		id: episode.value.id as number,
+		id: episode.value.id,
 	});
 	episodeResources.value = data;
 	var multiResource =
@@ -228,7 +228,7 @@ const loadVideoAttachment = async () => {
 			episodeResources.value[0].attachmentId
 		);
 		const { data } = await apiClient.attachment.getAttachmentById({
-			id: episodeResources.value[0].attachmentId as number,
+			id: episodeResources.value[0].attachmentId,
 		});
 		currentVideoAttachment.value = data;
 	} else {

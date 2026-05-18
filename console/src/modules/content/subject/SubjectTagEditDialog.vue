@@ -51,7 +51,7 @@ const onTagSubmit = async () => {
     updateTagRequesting.value = true;
     // 删除旧的标签
     if (props.tag.id) {
-        await apiClient.tag.removeTagById({ id: props.tag.id as number });
+        await apiClient.tag.removeTagById({ id: props.tag.id as string });
     } else {
         await apiClient.tag.removeTagByCondition({
             type: TagTypeEnum.Subject,

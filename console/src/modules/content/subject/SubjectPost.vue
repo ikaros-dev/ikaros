@@ -100,7 +100,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 				subject: subject.value,
 			});
 			await episodes.value.forEach(async (e) => {
-				e.subject_id = data.id as number;
+				e.subject_id = data.id;
 				await apiClient.episode.postEpisode({ episode: e });
 			});
 			submitBtnLoading.value = false;

@@ -126,7 +126,7 @@ const openRoleDialog = async (userE: UserEntity) => {
 		userId: rowUserEntity.value.id + '',
 	});
 	if (data.length > 0) {
-		userRoleId.value = data[0].id as number;
+		userRoleId.value = data[0].id as string;
 	}
 	userRoleDialogVisible.value = true;
 };
@@ -151,7 +151,7 @@ const submitUserRole = async () => {
 		await apiClient.userRole.deleteUserRoles({
 			userRoleReqParams: {
 				userId: rowUserEntity.value.id,
-				roleIds: roleIds as number[],
+				roleIds: roleIds as string[],
 			},
 		});
 		ElMessage.success(
@@ -237,7 +237,7 @@ onMounted(() => {
 							v-for="role in roles"
 							:key="role.id"
 							:label="role.name"
-							:value="role.id as number"
+							:value="role.id as string"
 						/>
 					</el-select>
 				</el-form-item>

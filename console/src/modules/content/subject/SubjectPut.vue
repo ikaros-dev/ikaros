@@ -49,7 +49,7 @@ const { t } = useI18n();
 
 watch(route, () => {
 	//@ts-ignore
-	subject.value.id = route.params.id as number;
+	subject.value.id = route.params.id;
 	fetchSubjectById();
 });
 
@@ -66,7 +66,7 @@ const removeEpisodes = ref<Episode[]>([]);
 const fetchSubjectById = async () => {
 	if (subject.value.id) {
 		const { data } = await apiClient.subject.searchSubjectById({
-			id: subject.value.id as number,
+			id: subject.value.id,
 		});
 		subject.value = data;
 	}
@@ -75,7 +75,7 @@ const fetchSubjectById = async () => {
 const fetchEpisodes = async () => {
 	if (!subject.value || !subject.value.id) return;
 	const { data } = await apiClient.episode.getAllBySubjectId({
-		id: subject.value.id as number,
+		id: subject.value.id,
 	});
 	episodes.value = data;
 };
@@ -137,11 +137,11 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 			// console.debug('episodes', episodes.value);
 			for (var episode of episodes.value) {
 				// console.debug('episode', episode);
-				episode.subject_id = subject.value.id as number;
+				episode.subject_id = subject.value.id;
 				await apiClient.episode.putEpisode({ episode: episode });
 			}
 			for (var remEp of removeEpisodes.value) {
-				await apiClient.episode.deleteById({ id: remEp.id as number });
+				await apiClient.episode.deleteById({ id: remEp.id });
 			}
 			removeEpisodes.value = [];
 			submitBtnLoading.value = false;
@@ -150,7 +150,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 					name: subject.value.name,
 				})
 			);
-			subjectStore.clearSubjectCacheById(subject.value.id as number);
+			subjectStore.clearSubjectCacheById(subject.value.id);
 			router.push(
 				'/subjects?name=' +
 					base64Encode(encodeURI(subject.value.name)) +
@@ -241,7 +241,7 @@ const oepnCropperjsDialog = () => {
 
 onMounted(() => {
 	//@ts-ignore
-	subject.value.id = route.params.id as number;
+	subject.value.id = route.params.id;
 	fetchSubjectById();
 	initEpisodeHasMultiResource();
 });

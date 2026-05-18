@@ -40,7 +40,7 @@ const fetchAttachment = async () => {
 	const { data } = await apiClient.attachment.getAttachmentById({
 		id: props.attachmentId,
 	});
-	const rsp = await apiClient.attachment.getReadUrl({id: data.id as number})
+	const rsp = await apiClient.attachment.getReadUrl({id: data.id})
 	if (!rsp.data.startsWith('http')) {
 		data.url = encodeURI(rsp.data ?? "")
 	} else {
@@ -79,7 +79,7 @@ const getVideoSubtitles = async () => {
 	artSubtitles.value = [];
 	const { data } =
 		await apiClient.attachmentRelation.findAttachmentVideoSubtitles({
-			attachmentId: props.attachmentId as number,
+			attachmentId: props.attachmentId,
 		});
 	// console.log('load video subtitles', data);
 	for (let index = 0; index < data!.length; index++) {

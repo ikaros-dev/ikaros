@@ -107,8 +107,8 @@ const updateBreadcrumbByParentPath = async () => {
 	paths.value = data.map((att) => {
 		const path: Path = {
 			name: att.name as string,
-			id: att.id as number,
-			parentId: att.parentId as number,
+			id: att.id,
+			parentId: att.parentId,
 		};
 		return path;
 	});
@@ -226,7 +226,7 @@ const onSelectionChange = (selections) => {
 const deleteAttachment = async (attachment: Attachment) => {
 	await apiClient.attachment
 		.deleteAttachment({
-			id: attachment?.id as number,
+			id: attachment?.id,
 		})
 		.then(() => {
 			ElMessage.success(

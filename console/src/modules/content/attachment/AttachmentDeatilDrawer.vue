@@ -71,7 +71,7 @@ const handleDelete = async () => {
 		deleting.value = true;
 		await apiClient.attachment
 			.deleteAttachment({
-				id: file.value.id as number,
+				id: file.value.id,
 			})
 			.then(() => {
 				ElMessage.success(

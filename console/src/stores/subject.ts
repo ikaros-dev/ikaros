@@ -12,7 +12,7 @@ export const useSubjectStore = defineStore('subject', {
 		cacheMap: new Map<number, Subject>(),
 	}),
 	actions: {
-		async fetchSubjectById(id: number): Promise<Subject> {
+		async fetchSubjectById(id: string): Promise<Subject> {
 			try {
 				const { data } = await apiClient.subject.searchSubjectById({ id: id });
 				return data;
@@ -20,7 +20,7 @@ export const useSubjectStore = defineStore('subject', {
 				console.error('Failed to fetch subject by id', e);
 			}
 		},
-		async getSubjectById(id: number): Promise<Subject> {
+		async getSubjectById(id: string): Promise<Subject> {
 			let sub = this.cacheMap.get(id);
 			if (!sub) {
 				sub = await this.fetchSubjectById(id);
@@ -28,7 +28,7 @@ export const useSubjectStore = defineStore('subject', {
 			}
 			return sub;
 		},
-		async clearSubjectCacheById(id: number) {
+		async clearSubjectCacheById(id: string) {
 			this.cacheMap.delete(id);
 		},
 		clearCacheMap() {
