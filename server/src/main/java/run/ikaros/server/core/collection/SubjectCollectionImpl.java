@@ -67,6 +67,9 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     }
 
     private Mono<Boolean> checkUserIdExists(UUID userId) {
+        if (userId == null) {
+            return Mono.empty();
+        }
         return userRepository.existsById(userId)
             .filter(exists -> exists)
             .switchIfEmpty(
@@ -237,6 +240,9 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
 
     @Override
     public Mono<SubjectCollection> findCollection(UUID userId, UUID subjectId) {
+        if (userId == null || subjectId == null) {
+            return Mono.empty();
+        }
         return checkUserIdExists(userId)
             .then(subjectRepository.findById(subjectId))
             .flatMap(subjectEntity -> copyProperties(subjectEntity, new SubjectCollection()))
