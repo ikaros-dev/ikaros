@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "ikaros.migration")
 public class MigrationProperties {
-    private Boolean enable = false;
+    private boolean enable = false;
     private final Datasource datasource = new Datasource();
     @Data
     public static class Datasource {

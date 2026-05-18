@@ -12,6 +12,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.infra.utils.UuidV7Utils;
+import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.api.store.enums.TagType;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -57,36 +59,33 @@ public class MigrationInitializer {
         // Business FK columns
         putFk("attachment", "parent_id", "attachment");
         putFk("attachment", "driver_id", "attachment_driver");
+        putFk("attachment_driver", "user_id", "ikuser");
         putFk("attachment_relation", "attachment_id", "attachment");
         putFk("attachment_relation", "relation_attachment_id", "attachment");
         putFk("attachment_reference", "attachment_id", "attachment");
-        putFk("attachment_reference", "reference_id", "subject");
+        putFk("attachment_reference", "reference_id", "subject"); // 需要根据 type 动态转表
+
+        putFk("custom_metadata", "custom_id", "custom");
+
+        putFk("ikuser_role", "user_id", "ikuser");
+        putFk("ikuser_role", "role_id", "role");
+        putFk("role_authority", "role_id", "role");
+        putFk("role_authority", "authority_id", "authority");
+
+        putFk("episode", "subject_id", "subject");
         putFk("episode_collection", "user_id", "ikuser");
         putFk("episode_collection", "subject_id", "subject");
         putFk("episode_collection", "episode_id", "episode");
-        putFk("episode_list_episode", "episode_list_id", "episode_list");
-        putFk("episode_list_episode", "episode_id", "episode");
-        putFk("episode_list_collection", "user_id", "ikuser");
-        putFk("episode_list_collection", "episode_list_id", "episode_list");
-        putFk("person_character", "person_id", "person");
-        putFk("person_character", "character_id", "character");
-        putFk("role_authority", "role_id", "role");
-        putFk("role_authority", "authority_id", "authority");
-        putFk("subject_character", "subject_id", "subject");
-        putFk("subject_character", "character_id", "character");
+
         putFk("subject_collection", "user_id", "ikuser");
         putFk("subject_collection", "subject_id", "subject");
-        putFk("subject_person", "subject_id", "subject");
-        putFk("subject_person", "person_id", "person");
+
         putFk("subject_relation", "subject_id", "subject");
         putFk("subject_relation", "relation_subject_id", "subject");
         putFk("subject_sync", "subject_id", "subject");
+
         putFk("tag", "user_id", "ikuser");
-        putFk("tag", "master_id", "subject");
-        putFk("custom_metadata", "custom_id", "custom");
-        putFk("attachment_driver", "user_id", "ikuser");
-        putFk("ikuser_role", "user_id", "ikuser");
-        putFk("ikuser_role", "role_id", "role");
+        putFk("tag", "master_id", "subject");  // 需要根据 type 动态转表
     }
 
     private static void putFk(String table, String column, String refTable) {
@@ -148,9 +147,18 @@ public class MigrationInitializer {
                             .map((row, meta) -> row.get("id", Long.class))
                             .all()
                             .concatMap(id -> {
-                                String uuid = UuidV7Utils.generate();
+                                String uuid;
+                                if (id == 0L) {
+                                    uuid = "019b715b-08c7-7509-ab14-2abe47f440f3";
+                                } else if (id == 1L) {
+                                    uuid = "019b715b-5cb5-7407-b571-6688c9e61e5a";
+                                } else if (id == 2L) {
+                                    uuid = "019b715b-97dc-72dd-9e5a-0f714efc89d9";
+                                } else {
+                                    uuid = UuidV7Utils.generate();
+                                }
                                 return client.sql("UPDATE " + table
-                                                + " SET migration_uuid = :uuid WHERE id = :id and migration_uuid isnull")
+                                                + " SET migration_uuid = :uuid WHERE id = :id")
                                         .bind("uuid", uuid)
                                         .bind("id", id)
                                         .fetch()
@@ -250,6 +258,28 @@ public class MigrationInitializer {
                         for (var entry : fkCols.entrySet()) {
                             String fkCol = entry.getKey();
                             String refTable = entry.getValue();
+                            if ("attachment_reference".equalsIgnoreCase(table)
+                            && fkCol.contains("reference_id")) {
+                                String type = oldRow.get("type").toString();
+                                if (AttachmentReferenceType.SUBJECT.name().equalsIgnoreCase(type)) {
+                                    refTable = "subject";
+                                } else if (AttachmentReferenceType.EPISODE.name().equalsIgnoreCase(type)) {
+                                    refTable = "episode";
+                                } else {
+                                    refTable = "attachment";
+                                }
+                            }
+                            if ("tag".equalsIgnoreCase(table)
+                                    && fkCol.contains("master_id")) {
+                                String type = oldRow.get("type").toString();
+                                if (TagType.SUBJECT.name().equalsIgnoreCase(type)) {
+                                    refTable = "subject";
+                                } else if (TagType.EPISODE.name().equalsIgnoreCase(type)) {
+                                    refTable = "episode";
+                                } else {
+                                    refTable = "attachment";
+                                }
+                            }
                             Object fkVal = oldRow.get(fkCol);
                             if (fkVal != null && idMappings.containsKey(refTable)) {
                                 Long fkId = ((Number) fkVal).longValue();
