@@ -65,4 +65,7 @@ public class BaseEntity {
     @Column("ol_version")
     private Long optimisticLockVersion;
 
+    @Column("migration_uuid")
+    private String migrationUuid;
+
 }

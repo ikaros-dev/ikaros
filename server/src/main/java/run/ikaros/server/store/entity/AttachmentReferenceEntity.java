@@ -24,4 +24,6 @@ public class AttachmentReferenceEntity {
     private Long attachmentId;
     @Column("reference_id")
     private Long referenceId;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

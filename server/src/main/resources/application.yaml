@@ -20,13 +20,21 @@ ikaros:
   plugin:
     runtime-mode: deployment
     plugins-root: ${ikaros.work-dir}/plugins
-    system-version: 1.0.8
+    system-version: 1.0.9
 
   task:
     core-pool-size: 4
     maximum-pool-size: 40
     keep-alive-time: 0
     queue-count: 10000
+
+  migration:
+    enable: false
+    datasource:
+      url:
+      username:
+      password:
+
 
 
 server:

@@ -48,3 +48,4 @@ out/
 
 ### Console ###
 /server/src/main/resources/console/
+/.claude/

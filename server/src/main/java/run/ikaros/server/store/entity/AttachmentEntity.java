@@ -48,4 +48,6 @@ public class AttachmentEntity {
     @Column("driver_id")
     private Long driverId;
     private String sha1;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

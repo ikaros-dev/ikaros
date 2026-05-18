@@ -35,4 +35,6 @@ public class TagEntity {
      * 十六进制字符串颜色，与条目无关，与标签名一对一，与用户ID关联.
      */
     private String color;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

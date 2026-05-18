@@ -32,4 +32,6 @@ public class TaskEntity {
     private Long index;
     @Column("fail_message")
     private String failMessage;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }

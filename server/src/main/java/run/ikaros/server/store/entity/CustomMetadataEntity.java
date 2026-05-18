@@ -25,4 +25,6 @@ public class CustomMetadataEntity {
     private String key;
     @Column("cm_value")
     private byte[] value;
+    @Column("migration_uuid")
+    private String migrationUuid;
 }
