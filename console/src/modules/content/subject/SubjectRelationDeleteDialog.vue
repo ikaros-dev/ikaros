@@ -60,13 +60,13 @@ const onSelectionsChange = (subjectRels) => {
 	console.log('receive subjectRelations', subjectRelations);
 	subjectRelations.value = subjectRels;
 	let types = new Set<string>();
-	let ids = new Set<number>();
+	let ids = new Set<string>();
 	subjectRels.forEach((subRel) => {
 		types.add(subRel.relation_type);
 		subRel.relation_subjects.forEach((id) => ids.add(id));
 	});
 	let typeArr: string[] = [];
-	let idArr: number[] = [];
+	let idArr: string[] = [];
 	types.forEach((v) => typeArr.push(v));
 	ids.forEach((v) => idArr.push(v));
 	slaveSubjectTypesStr.value = JSON.stringify(typeArr);
@@ -84,7 +84,7 @@ const reqRemoveRelaction = async () => {
 	reqRemoveRelactionBtnLoading.value = true;
 	await subjectRelations.value.forEach(async (subRel) => {
 		const subIdSet = subRel.relation_subjects;
-		let ids: number[] = [];
+		let ids: string[] = [];
 		subIdSet.forEach((v) => ids.push(v));
 		await apiClient.subjectRelation.removeSubjectRelation({
 			subjectId: subRel.subject,

@@ -105,9 +105,9 @@ const fetchAttComplexPathById = async (id: number | undefined) => {
 const attachmentMultiSelectDialogVisible = ref(false);
 const onAttMultiSelectDialogClose = async (attachments: Attachment[]) => {
 	// console.debug("onAttMultiSelectDialogClose attachments", attachments);
-	var relationIds: number[] = [];
+	var relationIds: string[] = [];
 	attachments.forEach((att) => {
-		relationIds.push(att.id as number);
+		relationIds.push(att.id);
 	});
 	await apiClient.attachmentRelation.postAttachmentRelations({
 		postAttachmentRelationsParam: {
@@ -128,8 +128,8 @@ const onAttRelationDelateBtnConfirm = async (
 ) => {
 	// console.debug('onAttRelationDelateBtnConfirm attRelation', attRelation);
 	await apiClient.attachmentRelation.deleteAttachmentRelation({
-		masterAttachmentId: attRelation.masterId as number,
-		relAttachmentId: attRelation.relationAtt.id as number,
+		masterAttachmentId: attRelation.masterId,
+		relAttachmentId: attRelation.relationAtt.id,
 		type: attRelation.type as 'VIDEO_SUBTITLE',
 	});
 	ElMessage.success(

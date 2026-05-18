@@ -33,7 +33,7 @@ const dirTreeProps = {
 	isLeaf: 'isLeaf',
 };
 interface DirNode {
-	value: number;
+	value: string;
 	label: string;
 	isLeaf?: boolean;
 }
@@ -55,7 +55,7 @@ const loadDirectoryNodes = async (node, resolve) => {
 		.filter(att => att.type == 'Directory' || att?.type == 'Driver_Directory')	
 		.map((attachment) => {
 			let node: DirNode = {
-				value: attachment.id as number,
+				value: attachment.id,
 				label: attachment.name as string,
 			};
 			return node;

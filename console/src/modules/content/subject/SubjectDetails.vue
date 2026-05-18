@@ -95,7 +95,7 @@ const episodeRecords = ref<EpisodeRecord[]>([]);
 const fetchSubjectById = async () => {
 	if (subject.value.id) {
 		subject.value = await subjectStore.fetchSubjectById(
-			subject.value.id as number
+			subject.value.id as string
 		);
 		await fetchEpisodeRecords();
 		await fetchSubjectSyncs();
@@ -104,7 +104,7 @@ const fetchSubjectById = async () => {
 
 const fetchEpisodeRecords = async () => {
 	const { data } = await apiClient.episode.getRecordsBySubjectId({
-		id: subject.value.id as number,
+		id: subject.value.id,
 	});
 	episodeRecords.value = data;
 	if (!episodeRecords.value || episodeRecords.value.length === 0) {
@@ -281,7 +281,7 @@ const fileRemoteActionDialogVisible = ref(false);
 const fileRemoteFileId = ref(-1);
 const fileRemoteIsPush = ref(true);
 const openFileRemoteActionDialog = (fileId, fileCanRead) => {
-	fileRemoteFileId.value = fileId as number;
+	fileRemoteFileId.value = fileId;
 	fileRemoteIsPush.value = fileCanRead as boolean;
 	fileRemoteActionDialogVisible.value = true;
 };
@@ -310,7 +310,7 @@ const updateSubjectCollection = async () => {
 		return;
 	}
 	await apiClient.collectionSubject.collectSubject({
-		subjectId: subject.value.id as number,
+		subjectId: subject.value.id as string,
 		type: subjectCollection.value.type as
 			| 'WISH'
 			| 'DOING'
@@ -330,7 +330,7 @@ const changeSubjectCollectState = async () => {
 	if (isUnCollect) {
 		// un collect
 		await apiClient.collectionSubject.removeSubjectCollect({
-			subjectId: subject.value.id as number,
+			subjectId: subject.value.id as string,
 		});
 		ElMessage.success(
 			t('module.subject.details.message.operate.cancel.success')
@@ -347,7 +347,7 @@ const subjectCollection = ref<SubjectCollection>({});
 const fetchSubjectCollection = async () => {
 	// eslint-disable-next-line no-unused-vars
 	const rsp = await apiClient.collectionSubject.findCollectionSubject({
-		subjectId: subject.value.id as number,
+		subjectId: subject.value.id as string,
 	});
 
 	// if (rsp.status === 404) {
@@ -377,7 +377,7 @@ const fetchEpisodeCollections = async () => {
 	const { data } =
 		await apiClient.collectionEpisode.findCollectionEpisodesByUserIdAndSubjectId(
 			{
-				subjectId: subject.value.id as number,
+				subjectId: subject.value.id as string,
 			}
 		);
 	episodeCollections.value = data;
@@ -404,7 +404,7 @@ const udpateEpisodeCollectionProgress = async (
 	}
 	// console.debug('udpateEpisodeCollectionProgress episode id', episodeRecord?.episode?.id);
 	await apiClient.collectionEpisode.updateCollectionEpisodeFinish({
-		episodeId: episodeRecord?.episode?.id as number,
+		episodeId: episodeRecord?.episode?.id as string,
 		finish: isFinish,
 	});
 	ElMessage.success(
@@ -415,7 +415,7 @@ const udpateEpisodeCollectionProgress = async (
 
 const fetchDatas = async () => {
 	//@ts-ignore
-	subject.value.id = route.params.id as number;
+	subject.value.id = route.params.id;
 	await fetchSubjectById();
 	await fetchTags();
 	await initEpisodeHasMultiResource();
@@ -431,7 +431,7 @@ const batchMatchingEpisodeButtonLoading = ref(false);
 const attachmentMultiSelectDialogVisible = ref(false);
 const onCloseWithAttachments = async (attachments: Attachment[]) => {
 	// console.log('attachments', attachments);
-	const attIds: number[] = attachments.map((att) => att.id) as number[];
+	const attIds: string[] = attachments.map((att) => att.id) as string[];
 	if (bindMasterIsEpisodeFlag.value) {
 		await delegateBatchMatchingEpisode(currentOperateEpisode.value?.id, attIds);
 	} else {
@@ -439,10 +439,10 @@ const onCloseWithAttachments = async (attachments: Attachment[]) => {
 	}
 };
 const delegateBatchMatchingSubject = async (
-	subjectId: number | undefined,
-	attIds: number[]
+	subjectId: string | undefined,
+	attIds: string[]
 ) => {
-	if (!subjectId || subjectId <= 0 || !attIds || attIds.length === 0) {
+	if (!subjectId || subjectId == "" || !attIds || attIds.length === 0) {
 		return;
 	}
 	batchMatchingSubjectButtonLoading.value = true;
@@ -466,10 +466,10 @@ const delegateBatchMatchingSubject = async (
 		});
 };
 const delegateBatchMatchingEpisode = async (
-	episodeId: number | undefined,
-	attIds: number[]
+	episodeId: string | undefined,
+	attIds: string[]
 ) => {
-	if (!episodeId || episodeId <= 0 || !attIds || attIds.length === 0) {
+	if (!episodeId || episodeId == "" || !attIds || attIds.length === 0) {
 		return;
 	}
 	batchMatchingEpisodeButtonLoading.value = true;
@@ -502,8 +502,8 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 	await apiClient.attachmentRef.saveAttachmentReference({
 		attachmentReference: {
 			type: 'EPISODE' as AttachmentReferenceTypeEnum,
-			attachmentId: attachment.id as number,
-			referenceId: currentOperateEpisode.value?.id as number,
+			attachmentId: attachment.id,
+			referenceId: currentOperateEpisode.value?.id,
 		},
 	});
 	ElMessage.success(
@@ -667,7 +667,7 @@ const loadEpisodeGroupLabels = () => {
 const subjectSyncs = ref<SubjectSync[]>([]);
 const fetchSubjectSyncs = async () => {
 	const { data } = await apiClient.subjectSync.getSubjectSyncsBySubjectId({
-		id: subject.value.id as number,
+		id: subject.value.id,
 	});
 	subjectSyncs.value = data;
 };

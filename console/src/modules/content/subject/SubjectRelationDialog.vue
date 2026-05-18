@@ -69,7 +69,7 @@ const subject = ref<Subject>({
 });
 const loadSubject = async () => {
 	//@ts-ignore
-	subject.value.id = route.params.id as number;
+	subject.value.id = route.params.id;
 	const { data } = await apiClient.subject.searchSubjectById({
 		id: subject.value.id,
 	});
@@ -79,7 +79,7 @@ const loadSubject = async () => {
 const subjectRelations = ref<SubjectRelation[]>([]);
 const loadSubjectRelations = async () => {
 	const { data } = await apiClient.subjectRelation.getSubjectRelationsById({
-		subjectId: subject.value.id as number,
+		subjectId: subject.value.id,
 	});
 	// console.log('subject relations rsp:', rsp);
 	if (data instanceof Array) {
@@ -129,7 +129,7 @@ const loadTypeRelSubjectMap = async () => {
 	typeRelSubjectMap.value.clear();
 	await subjectRelations.value.forEach(async (subRel) => {
 		const type = subRel.relation_type;
-		const relSubs: Set<number> = subRel.relation_subjects;
+		const relSubs: Set<string> = subRel.relation_subjects;
 		let subjects: Subject[] = [];
 		await relSubs.forEach(async (id) => {
 			let tmpSub = await subjectStore.getSubjectById(id);

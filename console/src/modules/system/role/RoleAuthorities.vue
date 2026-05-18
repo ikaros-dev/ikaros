@@ -21,7 +21,7 @@ import {
 
 const route = useRoute();
 
-const roleId = ref<number>();
+const roleId = ref<string>();
 
 watch(route, async () => {
 	fetchRoleIdFromRoute();
@@ -32,7 +32,7 @@ const fetchRoleIdFromRoute = () => {
 		return;
 	}
 	// console.log(route.params.id);
-	roleId.value = route.params?.roleId as any as number;
+	roleId.value = route.params?.roleId as any as string;
 };
 
 const roleAutiorities = ref<Authority[]>([]);
@@ -93,10 +93,10 @@ const onSizeChange = async (val: number) => {
 	await fetchAuthorities();
 };
 
-const authorityIds = ref<number[]>([]);
+const authorityIds = ref<string[]>([]);
 const onAuthTabSelectChange = (newSelection) => {
 	console.debug('newSelection', newSelection);
-	authorityIds.value = newSelection.map((auth) => auth.id as number);
+	authorityIds.value = newSelection.map((auth) => auth.id as string);
 };
 
 const submitRoleAuthoritiesAdd = async () => {
