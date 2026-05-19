@@ -23,7 +23,7 @@ const airTimeDateFormatter = (time) => {
 };
 
 const onBasicInfoCopyButtonClick = () => {
-	var map = objectToMap(actuatorInfo.value);
+	const map = objectToMap(actuatorInfo.value);
 
 	let result = '';
 
@@ -57,7 +57,14 @@ onMounted(fetchActuatorInfo);
 		</el-descriptions-item>
 		<el-descriptions-item>
 			<template #label> Git Commit</template>
-			<a target="_blank" :href="'https://github.com/ikaros-dev/ikaros/tree/' + actuatorInfo?.git.commit.id">{{ actuatorInfo?.git.commit.id }}</a>
+			<a
+				target="_blank"
+				:href="
+					'https://github.com/ikaros-dev/ikaros/tree/' +
+					actuatorInfo?.git.commit.id
+				"
+				>{{ actuatorInfo?.git.commit.id }}</a
+			>
 		</el-descriptions-item>
 		<el-descriptions-item>
 			<template #label> Commit Time</template>

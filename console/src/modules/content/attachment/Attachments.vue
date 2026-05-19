@@ -58,7 +58,6 @@ import router from '@/router';
 import { getCompleteFileUrl } from '@/utils/url-tuils';
 import { attachmentRootId } from '@/modules/common/constants';
 
-// eslint-disable-next-line no-unused-vars
 const { t } = useI18n();
 const route = useRoute();
 
@@ -98,7 +97,7 @@ const fetchDriverAttachments = async () => {
 	attachmentCondition.value.size = data.size;
 	attachmentCondition.value.total = data.total;
 	await updateBreadcrumbByParentPath();
-}
+};
 
 const updateBreadcrumbByParentPath = async () => {
 	const { data } = await apiClient.attachment.getAttachmentPathDirsById({
@@ -145,7 +144,7 @@ const paths = ref<Path[]>([
 
 const onBreadcrumbClick = async (path) => {
 	// console.log('path', path);
-	var index = paths.value.indexOf(path);
+	const index = paths.value.indexOf(path);
 	if (index !== -1) {
 		paths.value.splice(index + 1);
 	}
@@ -159,7 +158,10 @@ const entryAttachment = async (attachment) => {
 	// console.log('attachment', attachment);
 	// console.log('attachment id:', attachment.id);
 	// console.log('attachment name:', attachment.name);
-	if ('Directory' === attachment.type || 'Driver_Directory' == attachment.type) {
+	if (
+		'Directory' === attachment.type ||
+		'Driver_Directory' == attachment.type
+	) {
 		attachmentCondition.value.parentId = attachment.id;
 		paths.value.push({
 			name: attachment.name,
@@ -175,7 +177,7 @@ const entryAttachment = async (attachment) => {
 };
 
 const dateFormat = (row, column) => {
-	var date = row[column.property];
+	const date = row[column.property];
 
 	if (date == undefined) {
 		return '';
@@ -240,7 +242,7 @@ const deleteAttachment = async (attachment: Attachment) => {
 			);
 		})
 		.catch((e) => {
-			// @ts-ignore
+			// @ts-expect-error
 			let msg = e?.response?.data?.message;
 			if (!msg) {
 				msg = e.message;
@@ -334,7 +336,8 @@ const onRowContextmenu = (row, column, event) => {
 		items: [
 			{
 				label:
-					(currentSelectionAttachment.value?.type === 'Directory' || currentSelectionAttachment.value?.type == 'Driver_Directory')
+					currentSelectionAttachment.value?.type === 'Directory' ||
+					currentSelectionAttachment.value?.type == 'Driver_Directory'
 						? t('module.attachment.contextmenu.entry')
 						: t('module.attachment.contextmenu.details'),
 				divided: 'down',
@@ -348,7 +351,7 @@ const onRowContextmenu = (row, column, event) => {
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
 					const name = currentSelectionAttachment.value?.name as string;
-					var simpleName = name.replace(/\[.*?\]/g, '');
+					let simpleName = name.replace(/\[.*?\]/g, '');
 					simpleName = simpleName.substring(0, simpleName.lastIndexOf('.'));
 					await copyValue(simpleName);
 					ElMessage.success(
@@ -374,7 +377,10 @@ const onRowContextmenu = (row, column, event) => {
 			{
 				label: t('module.attachment.contextmenu.copy_url'),
 				divided: 'down',
-				disabled: (currentSelectionAttachment.value?.type !== AttachmentTypeEnum.File) && (AttachmentTypeEnum.DriverFile !== currentSelectionAttachment.value?.type),
+				disabled:
+					currentSelectionAttachment.value?.type !== AttachmentTypeEnum.File &&
+					AttachmentTypeEnum.DriverFile !==
+						currentSelectionAttachment.value?.type,
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
 					const name = currentSelectionAttachment.value?.name as string;
@@ -471,37 +477,35 @@ const onDirSelected = async (targetDirid: string) => {
 	await fetchAttachments();
 };
 
-const currentParentAttachment = ref<Attachment>({})
+const currentParentAttachment = ref<Attachment>({});
 const fetchCurrentParentAttachment = async () => {
-	if (!(attachmentCondition.value.parentId)) return
-	var attId = attachmentCondition.value.parentId
-	const {data} = await apiClient.attachment.getAttachmentById({id: attId})
-	currentParentAttachment.value = data
-}
+	if (!attachmentCondition.value.parentId) return;
+	const attId = attachmentCondition.value.parentId;
+	const { data } = await apiClient.attachment.getAttachmentById({ id: attId });
+	currentParentAttachment.value = data;
+};
 
-const refreshButtonLoading = ref(false)
+const refreshButtonLoading = ref(false);
 const refreshCurrentDir = async () => {
 	try {
-		refreshButtonLoading.value = true
-		await fetchCurrentParentAttachment()
-		var type = currentParentAttachment.value.type
+		refreshButtonLoading.value = true;
+		await fetchCurrentParentAttachment();
+		const type = currentParentAttachment.value.type;
 		if (type && type === 'Driver_Directory') {
-			await fetchDriverAttachments()
+			await fetchDriverAttachments();
 		} else {
-			await fetchAttachments()
+			await fetchAttachments();
 		}
 	} catch (error) {
-		console.error(error)
+		console.error(error);
 	} finally {
-		refreshButtonLoading.value = false
+		refreshButtonLoading.value = false;
 	}
-	
-}
+};
 
 const toAttachmentDrivers = () => {
 	router.push('/attachment/drivers');
-}
-
+};
 
 watch(
 	() => route.query,
@@ -513,7 +517,7 @@ watch(
 			);
 			if (newValue.parentId) {
 				attachmentCondition.value.parentId = newValue.parentId as string;
-				fetchCurrentParentAttachment()
+				fetchCurrentParentAttachment();
 			}
 			fetchAttachments();
 		}
@@ -528,7 +532,7 @@ watch(attachmentCondition.value, () => {
 	if (name !== route.query.name) {
 		query.name = base64Encode(encodeURI(name));
 	}
-	if (parentId !== route.query.parentId as string) {
+	if (parentId !== (route.query.parentId as string)) {
 		query.parentId = parentId + '';
 	}
 	router.push({ path: route.path, query });
@@ -584,9 +588,14 @@ const onAttachmentDetailDrawerClose = () => {
 
 	<el-row>
 		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-			<el-button plain 
-				:disabled="currentParentAttachment.type && currentParentAttachment.type === 'Driver_Directory'"
-				@click="attachmentUploadDrawerVisible = true" >
+			<el-button
+				plain
+				:disabled="
+					currentParentAttachment.type &&
+					currentParentAttachment.type === 'Driver_Directory'
+				"
+				@click="attachmentUploadDrawerVisible = true"
+			>
 				<el-icon>
 					<Upload />
 				</el-icon>
@@ -595,7 +604,11 @@ const onAttachmentDetailDrawerClose = () => {
 			<el-button :icon="FolderAdd" @click="dialogFolderVisible = true">
 				{{ t('module.attachment.btn.mkdir') }}
 			</el-button>
-			<el-button :icon="Refresh"  :loading="refreshButtonLoading" @click="refreshCurrentDir">
+			<el-button
+				:icon="Refresh"
+				:loading="refreshButtonLoading"
+				@click="refreshCurrentDir"
+			>
 				{{ t('module.attachment.btn.refresh') }}
 			</el-button>
 			<el-button :icon="MostlyCloudy" @click="toAttachmentDrivers">
@@ -698,12 +711,40 @@ const onAttachmentDetailDrawerClose = () => {
 							size="25"
 							style="position: relative; top: 7px; margin: 0 5px 0 0px"
 						>
-							<Folder v-if="('Directory' === scoped.row.type) || ('Driver_Directory' === scoped.row.type)" :color="scoped.row.type === 'Driver_Directory' ? 'skyblue': 'default'"/>
+							<Folder
+								v-if="
+									'Directory' === scoped.row.type ||
+									'Driver_Directory' === scoped.row.type
+								"
+								:color="
+									scoped.row.type === 'Driver_Directory' ? 'skyblue' : 'default'
+								"
+							/>
 							<span v-else>
-								<Picture v-if="isImage(scoped.row.name)" :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
-								<Headset v-else-if="isVoice(scoped.row.name)" :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
-								<Film v-else-if="isVideo(scoped.row.name)" :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
-								<Document v-else  :color="scoped.row.type === 'Driver_File' ? 'skyblue': 'default'" />
+								<Picture
+									v-if="isImage(scoped.row.name)"
+									:color="
+										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
+									"
+								/>
+								<Headset
+									v-else-if="isVoice(scoped.row.name)"
+									:color="
+										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
+									"
+								/>
+								<Film
+									v-else-if="isVideo(scoped.row.name)"
+									:color="
+										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
+									"
+								/>
+								<Document
+									v-else
+									:color="
+										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
+									"
+								/>
 							</span>
 						</el-icon>
 						<!-- &nbsp;&nbsp; -->
@@ -724,7 +765,12 @@ const onAttachmentDetailDrawerClose = () => {
 					width="130"
 				>
 					<template #default="scoped">
-						<span v-if="(scoped.row.type !== 'Directory') && (scoped.row.type !== 'Driver_Directory')">
+						<span
+							v-if="
+								scoped.row.type !== 'Directory' &&
+								scoped.row.type !== 'Driver_Directory'
+							"
+						>
 							{{ formatFileSize(scoped.row.size) }}
 						</span>
 					</template>

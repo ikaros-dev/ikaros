@@ -5,7 +5,7 @@ import {
 	Plugin,
 	V1PluginApiOperatePluginStateByIdRequest,
 } from '@runikaros/api-client';
-// eslint-disable-next-line no-unused-vars
+
 import PluginUploadDrawer from './PluginUploadDrawer.vue';
 import type { AxiosResponse } from 'axios';
 import { onMounted, ref } from 'vue';
@@ -57,7 +57,6 @@ const onCurrentPageChange = (val: number) => {
 	getPluginsFromServer();
 };
 
-// eslint-disable-next-line no-unused-vars
 const stateStrMap: Map<string, string> = new Map([
 	['ALL', t('module.plugin.label.state.all')],
 	['STARTED', t('module.plugin.label.state.started')],
@@ -361,7 +360,6 @@ const deletePlugin = (pluginName: string | undefined) => {
 		});
 };
 
-// eslint-disable-next-line no-unused-vars
 const upgradePlugin = (plugin: Plugin) => {
 	ElMessageBox.confirm(
 		t('module.plugin.operate.plugin.upgrade.confirm.title'),

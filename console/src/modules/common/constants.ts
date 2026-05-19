@@ -129,4 +129,4 @@ export const scoreTexts = [
 	'超神作 10 (请谨慎评价)',
 ];
 
-export const attachmentRootId = "019b715b-08c7-7509-ab14-2abe47f440f3";
+export const attachmentRootId = '019b715b-08c7-7509-ab14-2abe47f440f3';

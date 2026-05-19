@@ -34,13 +34,12 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'update:defineSubjectId', defineSubjectId: string | undefined): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'closeWithSubjectName', subject: Subject): void;
 }>();
 
@@ -86,7 +85,7 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 				console.log('subjectSync', subjectSync.value);
 				await apiClient.subjectSync
 					.syncSubjectAndPlatform({
-						// @ts-ignore
+						// @ts-expect-error
 						platform: subjectSync.value.platform,
 						platformId: subjectSync.value.platformId,
 						subjectId: subjectId.value as string,
@@ -96,9 +95,9 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 					});
 				const { data } =
 					await apiClient.subjectSync.getSubjectSyncsByPlatformAndPlatformId({
-						// @ts-ignore
+						// @ts-expect-error
 						platform: subjectSync.value.platform,
-						// @ts-ignore
+						// @ts-expect-error
 						platformId: subjectSync.value.platformId,
 					});
 				if (data.length > 0) {

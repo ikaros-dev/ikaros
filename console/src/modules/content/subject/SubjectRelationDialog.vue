@@ -40,9 +40,8 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
 }>();
 
@@ -130,9 +129,9 @@ const loadTypeRelSubjectMap = async () => {
 	await subjectRelations.value.forEach(async (subRel) => {
 		const type = subRel.relation_type;
 		const relSubs: Set<string> = subRel.relation_subjects;
-		let subjects: Subject[] = [];
+		const subjects: Subject[] = [];
 		await relSubs.forEach(async (id) => {
-			let tmpSub = await subjectStore.getSubjectById(id);
+			const tmpSub = await subjectStore.getSubjectById(id);
 			subjects.push(tmpSub);
 		});
 		typeRelSubjectMap.value.set(type, subjects);

@@ -31,11 +31,10 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'update:attachmentId', attacmentId: number): void;
 }>();
 
@@ -81,10 +80,10 @@ const fetchRelations = async () => {
 	attachmentTableDatas.value = [];
 	attachmentRelations.value = data;
 	attachmentRelations.value.forEach(async (attRel) => {
-		var relationAtt: Attachment = await fetchAttComplexPathById(
+		const relationAtt: Attachment = await fetchAttComplexPathById(
 			attRel.relation_attachment_id
 		);
-		var attTabCol: AttachmentTableColumn = {
+		const attTabCol: AttachmentTableColumn = {
 			id: attRel.id,
 			type: attRel.type,
 			masterId: attRel.attachment_id,
@@ -105,7 +104,7 @@ const fetchAttComplexPathById = async (id: number | undefined) => {
 const attachmentMultiSelectDialogVisible = ref(false);
 const onAttMultiSelectDialogClose = async (attachments: Attachment[]) => {
 	// console.debug("onAttMultiSelectDialogClose attachments", attachments);
-	var relationIds: string[] = [];
+	const relationIds: string[] = [];
 	attachments.forEach((att) => {
 		relationIds.push(att.id);
 	});
@@ -171,11 +170,11 @@ const onAttRelationDelateBtnConfirm = async (
 							<router-link
 								target="_blank"
 								:to="
-							'/attachments?parentId=' +
-							scoped.row.relationAtt.parentId +
-							'&name=' +
-							base64Encode(encodeURI(scoped.row.relationAtt.name as string))
-						"
+									'/attachments?parentId=' +
+									scoped.row.relationAtt.parentId +
+									'&name=' +
+									base64Encode(encodeURI(scoped.row.relationAtt.name as string))
+								"
 								>{{ scoped.row.relationAtt.name }}</router-link
 							>
 						</template>

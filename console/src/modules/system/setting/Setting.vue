@@ -99,13 +99,13 @@ const getSettingFromServer = async () => {
 		name: settingConfigMapName,
 		metaName: 'data',
 	});
-	// @ts-ignore
+	// @ts-expect-error
 	setting.value = data;
 };
 
 const settingSaveBtnLoading = ref(false);
 const settingStore = useSettingStore();
-// eslint-disable-next-line no-unused-vars
+
 const updateSetting = async () => {
 	settingSaveBtnLoading.value = true;
 	await apiClient.configmap

@@ -43,11 +43,10 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'closeWithAttachments', attachments: Attachment[]): void;
 }>();
 
@@ -82,7 +81,11 @@ const fetchAttachments = async () => {
 		parentId: attachmentCondition.value.parentId as any as string,
 	});
 	attachments.value = data.items;
-	attachments.value = attachments.value.filter(att => att.type == AttachmentTypeEnum.File || att?.type == AttachmentTypeEnum.DriverFile)	
+	attachments.value = attachments.value.filter(
+		(att) =>
+			att.type == AttachmentTypeEnum.File ||
+			att?.type == AttachmentTypeEnum.DriverFile
+	);
 	attachmentCondition.value.page = data.page;
 	attachmentCondition.value.size = data.size;
 	attachmentCondition.value.total = data.total;
@@ -104,7 +107,7 @@ const onFileUploadDrawerClose = () => {
 };
 
 const dateFormat = (row, column) => {
-	var date = row[column.property];
+	const date = row[column.property];
 
 	if (date == undefined) {
 		return '';

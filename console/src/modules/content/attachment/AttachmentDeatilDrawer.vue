@@ -38,13 +38,12 @@ const editable = ref(false);
 const deleting = ref(false);
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'update:defineFile', file: Attachment): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'delete', file: Attachment): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
 }>();
 
@@ -92,12 +91,12 @@ const handleDelete = async () => {
 };
 
 const nameInput = ref(null);
-// eslint-disable-next-line no-unused-vars
+
 const handleEditName = () => {
 	editable.value = !editable.value;
 	if (editable.value) {
 		nextTick(() => {
-			// @ts-ignore
+			// @ts-expect-error
 			nameInput.value.focus();
 		});
 	}
@@ -126,7 +125,6 @@ const handleUpdateName = async () => {
 	}
 };
 
-
 const handleClose = (done: () => void) => {
 	done();
 	drawerVisible.value = false;
@@ -148,7 +146,6 @@ const artplayerRef = ref();
 const getArtplayerInstance = (art: Artplayer) => {
 	artplayer.value = art;
 };
-
 </script>
 
 <template>
@@ -242,9 +239,7 @@ const getArtplayerInstance = (art: Artplayer) => {
 					>
 						{{ formatFileSize(file.size) }}
 					</el-descriptions-item>
-					<el-descriptions-item
-						label="SHA1"
-					>
+					<el-descriptions-item label="SHA1">
 						{{ file.sha1 }}
 					</el-descriptions-item>
 					<el-descriptions-item

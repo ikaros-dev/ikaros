@@ -18,7 +18,7 @@ import {
 	ElRow,
 } from 'element-plus';
 import { base64Encode } from '@/utils/string-util';
-// eslint-disable-next-line no-unused-vars
+
 import { apiClient } from '@/utils/api-client';
 import { isVideo } from '@/utils/file';
 import { Close, Plus } from '@element-plus/icons-vue';
@@ -61,13 +61,12 @@ watch(props, async (newVal) => {
 });
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'update:multiResource', multiResource: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'removeEpisodeFilesBind'): void;
 }>();
 
@@ -90,7 +89,7 @@ const dialogVisible = computed({
 // })
 
 const removeEpisodeAllAttachmentRefs = async () => {
-	// @ts-ignore
+	// @ts-expect-error
 	if (!episodeResources.value) {
 		ElMessage.warning(
 			t(
@@ -135,7 +134,6 @@ const removeEpisodeAttachmentRef = async (attachmentId) => {
 	await fetchEpisodeResources();
 };
 
-// eslint-disable-next-line no-unused-vars
 const urlIsArachivePackage = (url: string | undefined): boolean => {
 	return !url || url.endsWith('zip') || url.endsWith('7z');
 };
@@ -149,7 +147,6 @@ const bingResources = (episode: Episode) => {
 	attachmentMultiSelectDialogVisible.value = true;
 };
 
-// eslint-disable-next-line no-unused-vars
 const onCloseWithAttachmentForAttachmentSelectDialog = async (
 	attachment: Attachment
 ) => {
@@ -180,7 +177,7 @@ const delegateBatchMatchingEpisode = async (
 	episodeId: string | undefined,
 	attIds: string[]
 ) => {
-	if (!episodeId  || !attIds || attIds.length === 0) {
+	if (!episodeId || !attIds || attIds.length === 0) {
 		return;
 	}
 	batchMatchingEpisodeButtonLoading.value = true;
@@ -210,7 +207,7 @@ const fetchEpisodeResources = async () => {
 		id: episode.value.id,
 	});
 	episodeResources.value = data;
-	var multiResource =
+	const multiResource =
 		episodeResources.value && episodeResources.value.length > 1;
 	emit('update:multiResource', multiResource);
 };
@@ -305,7 +302,7 @@ const onDialogClose = () => {
 				<div v-if="episodeResources && episodeResources.length > 0">
 					<div v-if="!props.multiResource" align="center">
 						<router-link
-							v-if="userStore.roleHasMaster()" 
+							v-if="userStore.roleHasMaster()"
 							target="_blank"
 							:to="
 								'/attachments?parentId=' +
@@ -348,14 +345,14 @@ const onDialogClose = () => {
 						>
 							<el-card shadow="hover">
 								<router-link
-									v-if="userStore.roleHasMaster()" 
+									v-if="userStore.roleHasMaster()"
 									target="_blank"
 									:to="
-									'/attachments?parentId=' +
-									res.parentAttachmentId +
-									'&name=' +
-									base64Encode(encodeURI(res.name as string))
-								"
+										'/attachments?parentId=' +
+										res.parentAttachmentId +
+										'&name=' +
+										base64Encode(encodeURI(res.name as string))
+									"
 								>
 									<span>
 										{{ res.name }}
@@ -364,7 +361,7 @@ const onDialogClose = () => {
 								<span v-else>
 									{{ res.name }}
 								</span>
-								<span  style="float: right">
+								<span style="float: right">
 									<el-popconfirm
 										:title="
 											t(

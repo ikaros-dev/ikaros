@@ -35,7 +35,7 @@ const footerDom = ref();
 
 const loadGlobalHeader = () => {
 	if (settingStore.globalHeader) {
-		var headerDiv = document.createElement('div');
+		const headerDiv = document.createElement('div');
 		headerDiv.innerHTML = settingStore.globalHeader;
 		headerDom.value.appendChild(headerDiv);
 		// 获取所有的 <script> 标签
@@ -74,7 +74,7 @@ const loadGlobalHeader = () => {
 
 const loadGolbalFooter = () => {
 	if (settingStore.globalFooter) {
-		var fotterDiv = document.createElement('div');
+		const fotterDiv = document.createElement('div');
 		fotterDiv.innerHTML = settingStore.globalFooter;
 		footerDom.value.appendChild(fotterDiv);
 

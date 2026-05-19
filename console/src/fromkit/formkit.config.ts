@@ -2,7 +2,7 @@ import { zh } from '@formkit/i18n';
 import { DefaultConfigOptions } from '@formkit/vue';
 import { generateClasses } from '@formkit/themes';
 import { genesisIcons } from '@formkit/icons';
-// @ts-ignore
+// @ts-expect-error
 import genesis from '@formkit/themes/tailwindcss/genesis';
 
 import '@formkit/themes/genesis';

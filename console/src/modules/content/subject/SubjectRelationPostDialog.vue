@@ -30,9 +30,8 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
 }>();
 
@@ -55,7 +54,7 @@ const selectSubjectReactionType = ref();
 const subjectSelectDrawerVisible = ref(false);
 
 const onSelectionsChange = (set) => {
-	let arr: number[] = [];
+	const arr: number[] = [];
 	set.forEach((v) => arr.push(v));
 	slaveSubjectIdsStr.value = JSON.stringify(arr);
 };

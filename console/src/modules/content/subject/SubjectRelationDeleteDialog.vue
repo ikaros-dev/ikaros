@@ -32,9 +32,8 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
 }>();
 
@@ -59,14 +58,14 @@ const subjectRelations = ref<SubjectRelation[]>([]);
 const onSelectionsChange = (subjectRels) => {
 	console.log('receive subjectRelations', subjectRelations);
 	subjectRelations.value = subjectRels;
-	let types = new Set<string>();
-	let ids = new Set<string>();
+	const types = new Set<string>();
+	const ids = new Set<string>();
 	subjectRels.forEach((subRel) => {
 		types.add(subRel.relation_type);
 		subRel.relation_subjects.forEach((id) => ids.add(id));
 	});
-	let typeArr: string[] = [];
-	let idArr: string[] = [];
+	const typeArr: string[] = [];
+	const idArr: string[] = [];
 	types.forEach((v) => typeArr.push(v));
 	ids.forEach((v) => idArr.push(v));
 	slaveSubjectTypesStr.value = JSON.stringify(typeArr);
@@ -84,7 +83,7 @@ const reqRemoveRelaction = async () => {
 	reqRemoveRelactionBtnLoading.value = true;
 	await subjectRelations.value.forEach(async (subRel) => {
 		const subIdSet = subRel.relation_subjects;
-		let ids: string[] = [];
+		const ids: string[] = [];
 		subIdSet.forEach((v) => ids.push(v));
 		await apiClient.subjectRelation.removeSubjectRelation({
 			subjectId: subRel.subject,

@@ -15,7 +15,6 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:targetDirid', targetDirid: string | undefined): void;
 }>();
 
@@ -46,15 +45,15 @@ const loadDirectoryNodes = async (node, resolve) => {
 	}
 	if (node.isLeaf) return resolve([]);
 	const { data } = await apiClient.attachment.listAttachmentsByCondition1({
-		parentId: parentId  as string,
+		parentId: parentId as string,
 		page: 1,
 		size: 999999,
 	});
 	const attachments: Attachment[] = data.items;
 	const dirNodes: DirNode[] = attachments
-		.filter(att => att.type == 'Directory' || att?.type == 'Driver_Directory')	
+		.filter((att) => att.type == 'Directory' || att?.type == 'Driver_Directory')
 		.map((attachment) => {
-			let node: DirNode = {
+			const node: DirNode = {
 				value: attachment.id,
 				label: attachment.name as string,
 			};

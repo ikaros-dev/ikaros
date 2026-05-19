@@ -91,7 +91,6 @@ const episodeRecords = ref<EpisodeRecord[]>([]);
 // const episodes = ref<Episode[]>([]);
 // const episodeResources = ref<EpisodeResource[]>([]);
 
-// eslint-disable-next-line no-unused-vars
 const fetchSubjectById = async () => {
 	if (subject.value.id) {
 		subject.value = await subjectStore.fetchSubjectById(
@@ -140,7 +139,6 @@ const fetchEpisodeRecords = async () => {
 // 	});
 // };
 
-// eslint-disable-next-line no-unused-vars
 const infoMap = ref<Map<string, string>>();
 
 watch(subject, () => {
@@ -151,7 +149,7 @@ watch(subject, () => {
 	const infobox: string = subject.value.infobox as string;
 	// console.log("infobox.indexOf('\n') < 0", infobox.indexOf('\n') < 0);
 	// console.log("infobox.indexOf(':') >= 0", infobox.indexOf(':') >= 0);
-	let map = new Map<string, string>();
+	const map = new Map<string, string>();
 	if (infobox.indexOf('\n') < 0) {
 		if (infobox.indexOf(':') >= 0) {
 			const strArr = infobox.split(':');
@@ -160,7 +158,7 @@ watch(subject, () => {
 			}
 			if (strArr.length > 2) {
 				const firstStr = strArr[0];
-				let index = infobox.indexOf(firstStr);
+				const index = infobox.indexOf(firstStr);
 				const value = infobox.substring(
 					index + firstStr.length + 1,
 					infobox.length
@@ -183,7 +181,7 @@ watch(subject, () => {
 		}
 		if (strArr.length > 2) {
 			const firstStr = strArr[0];
-			let index = str.indexOf(firstStr);
+			const index = str.indexOf(firstStr);
 			const value = str.substring(index + firstStr.length + 1, str.length);
 			// console.log('str', str);
 			// console.log('firstStr', firstStr);
@@ -196,7 +194,6 @@ watch(subject, () => {
 	// console.log('infoMap', infoMap.value);
 });
 
-// eslint-disable-next-line no-unused-vars
 const airTimeDateFormatter = (row) => {
 	// console.log('row', row);
 	return formatDate(new Date(row.episode.air_time), 'yyyy-MM-dd');
@@ -305,7 +302,7 @@ const removeCollectText = t('module.subject.details.text.collect.cancel');
 const collectText = t('module.subject.details.text.collect.done');
 const collectButtonText = ref(notCollectText);
 const updateSubjectCollection = async () => {
-	var isUnCollect = subjectCollection.value && subjectCollection.value.type;
+	const isUnCollect = subjectCollection.value && subjectCollection.value.type;
 	if (!isUnCollect) {
 		return;
 	}
@@ -325,7 +322,7 @@ const updateSubjectCollection = async () => {
 
 const subjectCollectDialogVisible = ref(false);
 const changeSubjectCollectState = async () => {
-	var isUnCollect = subjectCollection.value && subjectCollection.value.type;
+	const isUnCollect = subjectCollection.value && subjectCollection.value.type;
 	console.log('isUnCollect', isUnCollect);
 	if (isUnCollect) {
 		// un collect
@@ -341,11 +338,10 @@ const changeSubjectCollectState = async () => {
 	}
 	fetchSubjectCollection();
 };
-// eslint-disable-next-line no-unused-vars
+
 const subjectCollection = ref<SubjectCollection>({});
-// eslint-disable-next-line no-unused-vars
+
 const fetchSubjectCollection = async () => {
-	// eslint-disable-next-line no-unused-vars
 	const rsp = await apiClient.collectionSubject.findCollectionSubject({
 		subjectId: subject.value.id as string,
 	});
@@ -386,7 +382,7 @@ const getEpisodeCollectionByEpisodeId = (episodeRecord: EpisodeRecord) => {
 	if (!episodeCollections.value || !episodeRecord) {
 		return undefined;
 	}
-	var result = episodeCollections.value.find(
+	const result = episodeCollections.value.find(
 		(ele) => ele?.episode_id === episodeRecord?.episode?.id
 	);
 	// console.log('result', result);
@@ -442,7 +438,7 @@ const delegateBatchMatchingSubject = async (
 	subjectId: string | undefined,
 	attIds: string[]
 ) => {
-	if (!subjectId || subjectId == "" || !attIds || attIds.length === 0) {
+	if (!subjectId || subjectId == '' || !attIds || attIds.length === 0) {
 		return;
 	}
 	batchMatchingSubjectButtonLoading.value = true;
@@ -469,7 +465,7 @@ const delegateBatchMatchingEpisode = async (
 	episodeId: string | undefined,
 	attIds: string[]
 ) => {
-	if (!episodeId || episodeId == "" || !attIds || attIds.length === 0) {
+	if (!episodeId || episodeId == '' || !attIds || attIds.length === 0) {
 		return;
 	}
 	batchMatchingEpisodeButtonLoading.value = true;
@@ -514,7 +510,7 @@ const onCloseWithAttachmentForAttachmentSelectDialog = async (
 
 const tags = ref<SubjectTag[]>([]);
 const fetchTags = async () => {
-	var subjectId = subject.value.id;
+	const subjectId = subject.value.id;
 	if (!subjectId) return;
 	const { data } = await apiClient.tag.listSubjectTagsBySubjectId({
 		subjectId: subjectId,
@@ -543,7 +539,7 @@ const showNewTagInput = () => {
 const newTag = ref<SubjectTag>({});
 const onNewTagNameChange = async () => {
 	if (!newTagInputVisible.value) return;
-	var tagName = newTag.value.name;
+	const tagName = newTag.value.name;
 	if (
 		!tagName ||
 		tagName === '' ||
@@ -682,8 +678,7 @@ const onTagContextMenu = (e: MouseEvent, tag: SubjectTag) => {
 		minWidth: 320,
 		items: [
 			{
-				label:
-					'编辑标签[' + tag.name + ']',
+				label: '编辑标签[' + tag.name + ']',
 				divided: 'down',
 				icon: h(EditPen, { style: 'height: 14px' }),
 				onClick: () => {
@@ -691,40 +686,65 @@ const onTagContextMenu = (e: MouseEvent, tag: SubjectTag) => {
 					subjectTagEditDialogVisible.value = true;
 				},
 			},
-
 		],
 	});
-}
+};
 
 onMounted(fetchDatas);
 </script>
 
 <template>
-	<AttachmentMultiSelectDialog v-model:visible="attachmentMultiSelectDialogVisible"
-		@close-with-attachments="onCloseWithAttachments" />
-	<SubjectSyncDialog v-model:visible="subjectSyncDialogVisible" :define-subject-id="subject.id" :is-merge="true"
-		@closeWithSubjectName="onSubjectSyncDialogCloseWithSubjectName" />
+	<AttachmentMultiSelectDialog
+		v-model:visible="attachmentMultiSelectDialogVisible"
+		@close-with-attachments="onCloseWithAttachments"
+	/>
+	<SubjectSyncDialog
+		v-model:visible="subjectSyncDialogVisible"
+		:define-subject-id="subject.id"
+		:is-merge="true"
+		@closeWithSubjectName="onSubjectSyncDialogCloseWithSubjectName"
+	/>
 
-	<SubjectRemoteActionDialog v-model:visible="subjectRemoteActionDialogVisible" v-model:is-push="subjectRemoteIsPush"
-		v-model:subjectId="subjectRemoteFileId" @close="onSubjectRemoteActionDialogClose" />
+	<SubjectRemoteActionDialog
+		v-model:visible="subjectRemoteActionDialogVisible"
+		v-model:is-push="subjectRemoteIsPush"
+		v-model:subjectId="subjectRemoteFileId"
+		@close="onSubjectRemoteActionDialogClose"
+	/>
 
-	<SubjectRelationDialog v-if="refreshSubjectRelactionDialog" v-model:visible="subjectRelationDialogVisible" />
+	<SubjectRelationDialog
+		v-if="refreshSubjectRelactionDialog"
+		v-model:visible="subjectRelationDialogVisible"
+	/>
 
-	<SubjectCollectDialog v-model:visible="subjectCollectDialogVisible" v-model:subjectId="subject.id"
-		@close="fetchSubjectCollection" />
+	<SubjectCollectDialog
+		v-model:visible="subjectCollectDialogVisible"
+		v-model:subjectId="subject.id"
+		@close="fetchSubjectCollection"
+	/>
 
-	<SubjectTagEditDialog v-model:visible="subjectTagEditDialogVisible" v-model:tag="currentSelectSubjectTagForEdit" />
+	<SubjectTagEditDialog
+		v-model:visible="subjectTagEditDialogVisible"
+		v-model:tag="currentSelectSubjectTagForEdit"
+	/>
 
 	<el-row>
 		<el-col :span="24">
 			<el-button v-if="userStore.roleHasMaster()" plain @click="toSubjectPut">
 				{{ t('module.subject.details.text.button.edit') }}
 			</el-button>
-			<el-button v-if="userStore.roleHasMaster()" plain @click="openSubjectSyncDialog">
+			<el-button
+				v-if="userStore.roleHasMaster()"
+				plain
+				@click="openSubjectSyncDialog"
+			>
 				{{ t('module.subject.details.text.button.update') }}
 			</el-button>
-			<el-popconfirm v-if="userStore.roleHasMaster()" :title="t('module.subject.details.dele-popconfirm.title')"
-				@confirm="deleteSubject">
+			<el-popconfirm
+				v-if="userStore.roleHasMaster()"
+				:title="t('module.subject.details.dele-popconfirm.title')"
+				@confirm="deleteSubject"
+			>
 				<template #reference>
 					<el-button plain type="danger">
 						{{ t('module.subject.details.text.button.delete') }}
@@ -742,70 +762,126 @@ onMounted(fetchDatas);
 		<el-col :xs="24" :sm="24" :md="24" :lg="20" :xl="20">
 			<el-row>
 				<el-col :xs="24" :sm="24" :md="12" :lg="6" :xl="6">
-					<el-image style="width: 100%" :src="subject.cover as string" :zoom-rate="1.2"
-						:preview-src-list="new Array(subject.cover) as string[]" :initial-index="4" fit="cover" />
+					<el-image
+						style="width: 100%"
+						:src="subject.cover as string"
+						:zoom-rate="1.2"
+						:preview-src-list="new Array(subject.cover) as string[]"
+						:initial-index="4"
+						fit="cover"
+					/>
 				</el-col>
 				<el-col :xs="24" :sm="24" :md="12" :lg="18" :xl="18">
-					<el-descriptions style="margin: 0 5px" direction="vertical" :column="6" size="large" border>
+					<el-descriptions
+						style="margin: 0 5px"
+						direction="vertical"
+						:column="6"
+						size="large"
+						border
+					>
 						<el-descriptions-item label="ID" :span="1">
 							{{ subject.id }}
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.name')" :span="1">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.name')"
+							:span="1"
+						>
 							{{ subject.name }}
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.name_cn')" :span="1">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.name_cn')"
+							:span="1"
+						>
 							{{ subject.name_cn }}
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.air_time')" :span="1">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.air_time')"
+							:span="1"
+						>
 							{{ subject.airTime }}
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.type')" :span="1">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.type')"
+							:span="1"
+						>
 							{{ subject.type }}
 						</el-descriptions-item>
 						<el-descriptions-item label="NSFW" :span="1">
 							{{ subject.nsfw }}
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.summary')" :span="6">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.summary')"
+							:span="6"
+						>
 							{{ subject.summary }}
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions size="large" border>
-						<el-descriptions-item v-if="userStore.roleHasMaster()" :label="t('module.subject.details.label.tag')">
-							<el-tag v-for="tag in tags" :key="tag.id" closable
-								style="margin-right: 5px; margin-top: 5px" :disable-transitions="false"
-								:color="tag.color" @close="onTagRemove(tag)"
-								@contextmenu="onTagContextMenu($event, tag)">
+						<el-descriptions-item
+							v-if="userStore.roleHasMaster()"
+							:label="t('module.subject.details.label.tag')"
+						>
+							<el-tag
+								v-for="tag in tags"
+								:key="tag.id"
+								closable
+								style="margin-right: 5px; margin-top: 5px"
+								:disable-transitions="false"
+								:color="tag.color"
+								@close="onTagRemove(tag)"
+								@contextmenu="onTagContextMenu($event, tag)"
+							>
 								{{ tag.name }}
 							</el-tag>
-							<el-input v-if="newTagInputVisible" ref="newTagInputRef" v-model="newTag.name" size="small"
-								style="max-width: 80px" @blur="onNewTagNameChange"
-								@keydown.enter="onNewTagNameChange" />
-							<el-button v-else size="small" style="margin-top: 5px" @click="showNewTagInput">
+							<el-input
+								v-if="newTagInputVisible"
+								ref="newTagInputRef"
+								v-model="newTag.name"
+								size="small"
+								style="max-width: 80px"
+								@blur="onNewTagNameChange"
+								@keydown.enter="onNewTagNameChange"
+							/>
+							<el-button
+								v-else
+								size="small"
+								style="margin-top: 5px"
+								@click="showNewTagInput"
+							>
 								{{ t('module.subject.details.text.button.add-tag') }}
 							</el-button>
 						</el-descriptions-item>
 						<el-descriptions-item v-else>
-							<el-tag v-for="tag in tags" :key="tag.id"
-								style="margin-right: 5px; margin-top: 5px" :disable-transitions="false"
-								:color="tag.color">
+							<el-tag
+								v-for="tag in tags"
+								:key="tag.id"
+								style="margin-right: 5px; margin-top: 5px"
+								:disable-transitions="false"
+								:color="tag.color"
+							>
 								{{ tag.name }}
 							</el-tag>
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions size="large" :column="2" border>
 						<el-descriptions-item label="综合评分">
-							<span v-if="
-								subject.score != undefined &&
-								subject.score >= 0
-							" v-text="subject.score" />
+							<span
+								v-if="subject.score != undefined && subject.score >= 0"
+								v-text="subject.score"
+							/>
 							<span v-else> 无评分信息 </span>
 						</el-descriptions-item>
-						<el-descriptions-item :label="t('module.subject.details.label.sync-platform')">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.sync-platform')"
+						>
 							<span v-if="subjectSyncs && subjectSyncs.length > 0">
 								<span v-for="(sync, index) in subjectSyncs" :key="index">
 									{{ sync.platform }} :
 									<span v-if="sync.platform === 'BGM_TV'">
-										<a :href="'https://bgm.tv/subject/' + sync.platformId" target="_blank">
+										<a
+											:href="'https://bgm.tv/subject/' + sync.platformId"
+											target="_blank"
+										>
 											{{ sync.platformId }}
 										</a>
 									</span>
@@ -814,70 +890,109 @@ onMounted(fetchDatas);
 									</span>
 								</span>
 							</span>
-							<span v-else>
-								无三方平台同步信息
-							</span>
-
+							<span v-else> 无三方平台同步信息 </span>
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions size="large" :column="2" border>
 						<el-descriptions-item label="我的评分">
-							<el-rate v-if="
-								subjectCollection &&
-								subjectCollection.score != undefined &&
-								subjectCollection.score >= 0
-							" v-model="subjectCollection.score" clearable show-text :max="10" :colors="scoreColors" :texts="scoreTexts"
-								@change="onSubjectCollectionScoreChange" />
+							<el-rate
+								v-if="
+									subjectCollection &&
+									subjectCollection.score != undefined &&
+									subjectCollection.score >= 0
+								"
+								v-model="subjectCollection.score"
+								clearable
+								show-text
+								:max="10"
+								:colors="scoreColors"
+								:texts="scoreTexts"
+								@change="onSubjectCollectionScoreChange"
+							/>
 							<span v-else> 无评分信息 </span>
 						</el-descriptions-item>
 						<el-descriptions-item label="我的评论">
-							<el-input v-model="subjectCollection.comment" @change="onSubjectCollectionCommentChange" />
+							<el-input
+								v-model="subjectCollection.comment"
+								@change="onSubjectCollectionCommentChange"
+							/>
 						</el-descriptions-item>
 					</el-descriptions>
 					<el-descriptions size="large" border>
-						<el-descriptions-item :label="t('module.subject.details.label.collect-status')">
-							<el-popconfirm :title="t(
-								'module.subject.details.cancel-collect-popconfirm.title-prefix'
-							) +
-								(subjectCollection && subjectCollection.type
-									? t(
-										'module.subject.details.cancel-collect-popconfirm.cancel-collect'
-									)
-									: t(
-										'module.subject.details.cancel-collect-popconfirm.collect'
-									)) +
-								t(
-									'module.subject.details.cancel-collect-popconfirm.title-postfix'
-								) +
-								(subjectCollection && subjectCollection.type
-									? '条目收藏中您的评分和评论会一起删除！'
-									: '')
-								" width="200px" @confirm="changeSubjectCollectState">
+						<el-descriptions-item
+							:label="t('module.subject.details.label.collect-status')"
+						>
+							<el-popconfirm
+								:title="
+									t(
+										'module.subject.details.cancel-collect-popconfirm.title-prefix'
+									) +
+									(subjectCollection && subjectCollection.type
+										? t(
+												'module.subject.details.cancel-collect-popconfirm.cancel-collect'
+											)
+										: t(
+												'module.subject.details.cancel-collect-popconfirm.collect'
+											)) +
+									t(
+										'module.subject.details.cancel-collect-popconfirm.title-postfix'
+									) +
+									(subjectCollection && subjectCollection.type
+										? '条目收藏中您的评分和评论会一起删除！'
+										: '')
+								"
+								width="200px"
+								@confirm="changeSubjectCollectState"
+							>
 								<template #reference>
-									<el-button style="width: 100px" plain @mouseleave="
-										collectButtonText =
-										subjectCollection && subjectCollection.type
-											? collectText
-											: notCollectText
-										" @mouseover="
+									<el-button
+										style="width: 100px"
+										plain
+										@mouseleave="
 											collectButtonText =
-											subjectCollection && subjectCollection.type
-												? removeCollectText
-												: clickCollectText
-											">
+												subjectCollection && subjectCollection.type
+													? collectText
+													: notCollectText
+										"
+										@mouseover="
+											collectButtonText =
+												subjectCollection && subjectCollection.type
+													? removeCollectText
+													: clickCollectText
+										"
+									>
 										{{ collectButtonText }}
 									</el-button>
 								</template>
 							</el-popconfirm>
 							&nbsp;&nbsp;
-							<el-select v-if="subjectCollection && subjectCollection.type"
-								v-model="subjectCollection.type" placeholder="Select" style="width: 100px"
-								@change="updateSubjectCollection">
-								<el-option :label="t('module.subject.collect.type.wish')" value="WISH" />
-								<el-option :label="t('module.subject.collect.type.doing')" value="DOING" />
-								<el-option :label="t('module.subject.collect.type.done')" value="DONE" />
-								<el-option :label="t('module.subject.collect.type.shelve')" value="SHELVE" />
-								<el-option :label="t('module.subject.collect.type.discard')" value="DISCARD" />
+							<el-select
+								v-if="subjectCollection && subjectCollection.type"
+								v-model="subjectCollection.type"
+								placeholder="Select"
+								style="width: 100px"
+								@change="updateSubjectCollection"
+							>
+								<el-option
+									:label="t('module.subject.collect.type.wish')"
+									value="WISH"
+								/>
+								<el-option
+									:label="t('module.subject.collect.type.doing')"
+									value="DOING"
+								/>
+								<el-option
+									:label="t('module.subject.collect.type.done')"
+									value="DONE"
+								/>
+								<el-option
+									:label="t('module.subject.collect.type.shelve')"
+									value="SHELVE"
+								/>
+								<el-option
+									:label="t('module.subject.collect.type.discard')"
+									value="DISCARD"
+								/>
 							</el-select>
 						</el-descriptions-item>
 					</el-descriptions>
@@ -886,42 +1001,81 @@ onMounted(fetchDatas);
 			<el-row>
 				<el-col :span="24">
 					<el-tabs type="border-card">
-						<el-tab-pane v-for="item in episodeGroupItems" :key="item.group" :label="item.label">
-							<el-table :data="episodeRecords?.filter(
-								(record) => record?.episode?.group === item.group
-							)
-								" @row-dblclick="showEpisodeDetails">
-								<el-table-column :label="t('module.subject.details.episode.label.sequence')"
-									prop="episode.sequence" width="80px" sortable />
-								<el-table-column :label="t('module.subject.details.episode.label.name')"
-									prop="episode.name" />
-								<el-table-column :label="t('module.subject.details.episode.label.name_cn')"
-									prop="episode.name_cn" />
-								<el-table-column :label="t('module.subject.details.episode.label.air_time')"
-									prop="episode.air_time" sortable :formatter="airTimeDateFormatter" />
-								<el-table-column  :label="t('module.subject.details.episode.label.operate')" width="320">
-									<template v-if="item.group === EpisodeGroupEnum.Main.toString()" #header>
-										<el-button  v-if="userStore.roleHasMaster()" plain :loading="batchMatchingSubjectButtonLoading"
-											:disabled="batchMatchingSubjectButtonDisable" @click="
+						<el-tab-pane
+							v-for="item in episodeGroupItems"
+							:key="item.group"
+							:label="item.label"
+						>
+							<el-table
+								:data="
+									episodeRecords?.filter(
+										(record) => record?.episode?.group === item.group
+									)
+								"
+								@row-dblclick="showEpisodeDetails"
+							>
+								<el-table-column
+									:label="t('module.subject.details.episode.label.sequence')"
+									prop="episode.sequence"
+									width="80px"
+									sortable
+								/>
+								<el-table-column
+									:label="t('module.subject.details.episode.label.name')"
+									prop="episode.name"
+								/>
+								<el-table-column
+									:label="t('module.subject.details.episode.label.name_cn')"
+									prop="episode.name_cn"
+								/>
+								<el-table-column
+									:label="t('module.subject.details.episode.label.air_time')"
+									prop="episode.air_time"
+									sortable
+									:formatter="airTimeDateFormatter"
+								/>
+								<el-table-column
+									:label="t('module.subject.details.episode.label.operate')"
+									width="320"
+								>
+									<template
+										v-if="item.group === EpisodeGroupEnum.Main.toString()"
+										#header
+									>
+										<el-button
+											v-if="userStore.roleHasMaster()"
+											plain
+											:loading="batchMatchingSubjectButtonLoading"
+											:disabled="batchMatchingSubjectButtonDisable"
+											@click="
 												() => {
 													attachmentMultiSelectDialogVisible = true;
 													bindMasterIsEpisodeFlag = false;
 												}
-											">
+											"
+										>
 											{{
 												t(
 													'module.subject.details.episode.label.button.batch-resources'
 												)
 											}}
 										</el-button>
-										<el-popconfirm v-if="userStore.roleHasMaster()"  :title="t(
-											'module.subject.details.cancel-batch-popconfirm.title'
-										)
-											" @confirm="deleteBatchingAttachments">
+										<el-popconfirm
+											v-if="userStore.roleHasMaster()"
+											:title="
+												t(
+													'module.subject.details.cancel-batch-popconfirm.title'
+												)
+											"
+											@confirm="deleteBatchingAttachments"
+										>
 											<template #reference>
-												<el-button plain type="danger"
+												<el-button
+													plain
+													type="danger"
 													:disabled="deleteMatchingSubjectButtonDisable"
-													:loading="batchCancenMatchingSubjectButtonLoading">
+													:loading="batchCancenMatchingSubjectButtonLoading"
+												>
 													{{
 														t(
 															'module.subject.details.episode.label.button.cancel-batch-resources'
@@ -932,38 +1086,54 @@ onMounted(fetchDatas);
 										</el-popconfirm>
 									</template>
 									<template #default="scoped">
-										<el-button v-if="userStore.roleHasMaster()"  plain :icon="isEpisodeBindResource(scoped.row) ? Check : Close"
-											:color="isEpisodeBindResource(scoped.row)
+										<el-button
+											v-if="userStore.roleHasMaster()"
+											plain
+											:icon="isEpisodeBindResource(scoped.row) ? Check : Close"
+											:color="
+												isEpisodeBindResource(scoped.row)
 													? '#00CCFF'
 													: '#FF0000'
-												" @click="showEpisodeDetails(scoped.row)">
+											"
+											@click="showEpisodeDetails(scoped.row)"
+										>
 											{{
 												t('module.subject.details.episode.label.button.details')
 											}}
 										</el-button>
-										<el-button v-else plain @click="showEpisodeDetails(scoped.row)">
+										<el-button
+											v-else
+											plain
+											@click="showEpisodeDetails(scoped.row)"
+										>
 											{{
 												t('module.subject.details.episode.label.button.details')
 											}}
 										</el-button>
 
-										<el-button v-if="subjectCollection && subjectCollection.type" plain :icon="getEpisodeCollectionByEpisodeId(scoped.row)?.finish
-												? Check
-												: Close
-											" @click="
+										<el-button
+											v-if="subjectCollection && subjectCollection.type"
+											plain
+											:icon="
+												getEpisodeCollectionByEpisodeId(scoped.row)?.finish
+													? Check
+													: Close
+											"
+											@click="
 												udpateEpisodeCollectionProgress(
 													!getEpisodeCollectionByEpisodeId(scoped.row)?.finish,
 													scoped.row
 												)
-												">
+											"
+										>
 											{{
 												getEpisodeCollectionByEpisodeId(scoped.row)?.finish
 													? t(
-														'module.subject.details.episode.label.button.reset'
-													)
+															'module.subject.details.episode.label.button.reset'
+														)
 													: t(
-														'module.subject.details.episode.label.button.done'
-													)
+															'module.subject.details.episode.label.button.done'
+														)
 											}}
 										</el-button>
 										<!-- <el-button
@@ -972,16 +1142,20 @@ onMounted(fetchDatas);
                     >
                       进度
                     </el-button> -->
-										<el-button v-if="
-											settingStore.remoteEnable &&
-											scoped.row.resources &&
-											scoped.row.resources.length > 0
-										" plain @click="
+										<el-button
+											v-if="
+												settingStore.remoteEnable &&
+												scoped.row.resources &&
+												scoped.row.resources.length > 0
+											"
+											plain
+											@click="
 												openFileRemoteActionDialog(
 													scoped.row.resources[0].file_id,
 													scoped.row.resources[0].canRead
 												)
-												">
+											"
+										>
 											<span v-if="scoped.row.resources[0].canRead">
 												{{
 													t('module.subject.details.episode.label.button.push')
@@ -1010,12 +1184,19 @@ onMounted(fetchDatas);
 			</ul>
 		</el-col>
 	</el-row>
-	<EpisodeDetailsDialog v-model:subjectId="subject.id" v-model:visible="episodeDetailsDialogVisible"
-		v-model:ep="currentEpisode" v-model:multiResource="episodeHasMultiResource" @close="fetchEpisodeRecords"
-		@removeEpisodeFilesBind="fetchSubjectById" />
+	<EpisodeDetailsDialog
+		v-model:subjectId="subject.id"
+		v-model:visible="episodeDetailsDialogVisible"
+		v-model:ep="currentEpisode"
+		v-model:multiResource="episodeHasMultiResource"
+		@close="fetchEpisodeRecords"
+		@removeEpisodeFilesBind="fetchSubjectById"
+	/>
 
-	<AttachmentSelectDialog v-model:visible="attachmentSelectDialog"
-		@close-with-attachment="onCloseWithAttachmentForAttachmentSelectDialog" />
+	<AttachmentSelectDialog
+		v-model:visible="attachmentSelectDialog"
+		@close-with-attachment="onCloseWithAttachmentForAttachmentSelectDialog"
+	/>
 </template>
 
 <style lang="scss" scoped>

@@ -125,14 +125,14 @@ async function loadPluginModules() {
 
 	// Get all started plugins
 	const plugins = data.items.filter((plugin) => {
-		// @ts-ignore
+		// @ts-expect-error: plugin type missing entry/stylesheet
 		const { entry, stylesheet } = plugin || {};
-		// @ts-ignore
+		// @ts-expect-error: plugin type missing state
 		return plugin.state === 'STARTED' && (!!entry || !!stylesheet);
 	});
 
 	for (const plugin of plugins) {
-		// @ts-ignore
+		// @ts-expect-error: plugin type missing entry/stylesheet
 		const { entry, stylesheet } = plugin || {
 			entry: '',
 			stylesheet: '',
@@ -141,13 +141,13 @@ async function loadPluginModules() {
 		if (entry) {
 			try {
 				const { load } = useScriptTag(
-					// @ts-ignore
+					// @ts-expect-error: entry type may be undefined
 					`${import.meta.env.VITE_API_URL}${plugin?.entry}`
 				);
 
 				await load();
 
-				// @ts-ignore
+				// @ts-expect-error: dynamic plugin module on window
 				const pluginModule = window[plugin.name];
 
 				if (pluginModule) {
@@ -159,7 +159,7 @@ async function loadPluginModules() {
 			} catch (e) {
 				const message = i18n.global.t(
 					'module.plugin.loader.message.entry_load_failed',
-					// @ts-ignore
+					// @ts-expect-error: plugin name type
 					{ name: plugin.name }
 				);
 				console.error(message, e);
@@ -173,7 +173,7 @@ async function loadPluginModules() {
 			} catch (e) {
 				const message = i18n.global.t(
 					'module.plugin.loader.message.style_load_failed',
-					// @ts-ignore
+					// @ts-expect-error: plugin name type
 					{ name: plugin.name }
 				);
 				console.error(message, e);
@@ -213,7 +213,6 @@ async function initApp() {
 				console.error('Failed to load plugins', e);
 			}
 		}
-		
 	} catch (e) {
 		console.log('Init app fail: ', e);
 	} finally {

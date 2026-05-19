@@ -15,7 +15,6 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'clip-img', base64Encode: string | undefined): void;
 }>();
 

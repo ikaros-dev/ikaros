@@ -73,12 +73,14 @@ export const useUserStore = defineStore('user', {
 			this.currentUser = undefined;
 		},
 		async fetchCurrentRole() {
-			const {data} = await apiClient.userRole.getRolesForUser({userId: String(this.currentUser?.entity?.id ?? -1)});
-			this.currentRoles = data
+			const { data } = await apiClient.userRole.getRolesForUser({
+				userId: String(this.currentUser?.entity?.id ?? -1),
+			});
+			this.currentRoles = data;
 		},
 		roleHasMaster() {
-			return this.currentRoles?.some((item) => item.name === "MASTER");
-		}
+			return this.currentRoles?.some((item) => item.name === 'MASTER');
+		},
 	},
 	persist: {
 		enabled: true,

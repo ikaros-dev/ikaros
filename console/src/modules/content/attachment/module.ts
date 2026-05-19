@@ -2,9 +2,9 @@ import { definePlugin } from '@runikaros/shared';
 import { markRaw } from 'vue';
 import { Folder as FolderIcon } from '@element-plus/icons-vue';
 import Attachments from './Attachments.vue';
-import AttachmentDrivers from './AttachmentDrivers.vue'
-import AttachmentDriverPost from './AttachmentDriverPost.vue'
-import AttachmentDriverPut from './AttachmentDriverPut.vue'
+import AttachmentDrivers from './AttachmentDrivers.vue';
+import AttachmentDriverPost from './AttachmentDriverPost.vue';
+import AttachmentDriverPut from './AttachmentDriverPut.vue';
 
 // <el-icon><MessageBox /></el-icon>
 export default definePlugin({
@@ -42,7 +42,7 @@ export default definePlugin({
 						name: 'module.attachment.driver.sidebar',
 						hidden: true,
 						admin: true,
-					}
+					},
 				},
 			},
 		},
@@ -59,7 +59,7 @@ export default definePlugin({
 						name: 'module.attachment.driver.post.sidebar',
 						hidden: true,
 						admin: true,
-					}
+					},
 				},
 			},
 		},
@@ -76,7 +76,7 @@ export default definePlugin({
 						name: 'module.attachment.driver.put.sidebar',
 						hidden: true,
 						admin: true,
-					}
+					},
 				},
 			},
 		},

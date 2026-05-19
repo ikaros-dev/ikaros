@@ -27,27 +27,26 @@ watch(route, () => {
 	onPluginNameUpdate(route.params.name as string);
 });
 
-// eslint-disable-next-line no-unused-vars, no-undef
 const configMapSchemas = computed(() => {
 	let str = plugin.value?.configMapSchemas;
 	// let str = plugin.value?.configMapSchemas?.replace(/(\n|\r|\r\n|↵)/g, '');
 	// str = str.replace(/\$/g, '\\$');
-	// @ts-ignore
+	// @ts-expect-error
 	str = str.replace(' ', '');
 	// console.log('str', str);
 	str = JSON.parse(str);
-	// @ts-ignore
+	// @ts-expect-error
 	str = Object.values(str);
 	// console.log('str', str);
 	// 变量Schemas，如果找到包含字段名为 name的对象，
 	// 则从configMap中拿出对应的字段名的值，
 	// 赋值给 schema的对应value上，目的是完成初始化。
-	// @ts-ignore
+	// @ts-expect-error
 	for (const obj of str) {
 		// console.log(obj, typeof obj.name);
-		// @ts-ignore
+		// @ts-expect-error
 		if (obj && 'string' === typeof obj.name) {
-			// @ts-ignore
+			// @ts-expect-error
 			const field = obj.name;
 			// console.log(field);
 			// console.log(configMap.value);
@@ -56,7 +55,7 @@ const configMapSchemas = computed(() => {
 				configMap.value.data &&
 				'undefined' !== typeof configMap.value?.data[field]
 			) {
-				// @ts-ignore
+				// @ts-expect-error
 				obj.value = configMap.value?.data[field];
 				// console.log(
 				// 	'configMap.value?.data[field]',
@@ -64,15 +63,15 @@ const configMapSchemas = computed(() => {
 				// );
 			}
 		}
-		// // @ts-ignore
+		// // @ts-expect-error
 		// if (obj && obj.props && 'string' === typeof obj.props.name) {
-		// 	// @ts-ignore
+		// 	// @ts-expect-error
 		// 	const field = obj.props.name;
 		// 	console.log(field);
 
-		// 	// 	// @ts-ignore
+		// 	// 	// @ts-expect-error
 		// 	// 	// console.log(configMap.value);
-		// 	// 	// @ts-ignore
+		// 	// 	// @ts-expect-error
 		// 	// 	// eslint-disable-next-line valid-typeof
 		// 	// 	if ('checkbox' === obj.props.type) {
 		// 	// 		if (
@@ -80,14 +79,14 @@ const configMapSchemas = computed(() => {
 		// 	// 			configMap.value.data &&
 		// 	// 			'undefined' !== typeof configMap.value?.data[field]
 		// 	// 		) {
-		// 	// 			// @ts-ignore
+		// 	// 			// @ts-expect-error
 		// 	// 			obj.props.value = Boolean(configMap.value?.data[field]);
-		// 	// 			// @ts-ignore
+		// 	// 			// @ts-expect-error
 		// 	// 			obj.value = Boolean(configMap.value?.data[field]);
 		// 	// 			// checked
-		// 	// 			// @ts-ignore
+		// 	// 			// @ts-expect-error
 		// 	// 			obj.props.checked = Boolean(configMap.value?.data[field]);
-		// 	// 			// @ts-ignore
+		// 	// 			// @ts-expect-error
 		// 	// 			obj.checked = Boolean(configMap.value?.data[field]);
 		// 	// 		}
 		// 	// 	}
@@ -97,7 +96,6 @@ const configMapSchemas = computed(() => {
 	return str;
 });
 
-// eslint-disable-next-line no-unused-vars
 const plugin = ref<Plugin>({
 	version: '',
 });
@@ -110,7 +108,7 @@ const fetchPlugin = async () => {
 };
 
 const configMap = ref<ConfigMap>();
-// eslint-disable-next-line no-unused-vars
+
 const fetchConfigMap = async () => {
 	// console.log('plugin.value.configMapSchemas', plugin.value.configMapSchemas);
 	if (!plugin.value.configMapSchemas) {
@@ -124,17 +122,16 @@ const fetchConfigMap = async () => {
 
 const onSubmit = (form) => {
 	console.log('form', form);
-	// @ts-ignore
-	for (let key in configMap.value.data) {
-		// @ts-ignore
+	// @ts-expect-error
+	for (const key in configMap.value.data) {
+		// @ts-expect-error
 		configMap.value.data[key] = form[key];
 	}
 	updateConfigMap();
 };
 
-// eslint-disable-next-line no-unused-vars
 const convertKeyToStr = (obj) => {
-	for (var key in obj) {
+	for (let key in obj) {
 		if (typeof key === 'object' && key !== null) {
 			convertKeyToStr(key); // 递归处理嵌套对象的值
 		} else {
@@ -143,9 +140,8 @@ const convertKeyToStr = (obj) => {
 	}
 };
 
-// eslint-disable-next-line no-unused-vars
 const convertValToStr = (obj) => {
-	for (var key in obj) {
+	for (const key in obj) {
 		// console.log(key);
 		if (typeof obj[key] === 'object' && obj[key] !== null) {
 			convertValToStr(obj[key]); // 递归处理嵌套对象的值
@@ -155,11 +151,10 @@ const convertValToStr = (obj) => {
 	}
 };
 
-// eslint-disable-next-line no-unused-vars
 const updateConfigMap = async () => {
 	// console.log('plugin.value.name', plugin.value.name);
 	console.debug('configMap.value', configMap.value);
-	// @ts-ignore
+	// @ts-expect-error
 	configMap.value.name = plugin.value.name;
 	await apiClient.configmap.updateConfigmap({
 		configMap: {
@@ -241,7 +236,7 @@ onMounted(() => {
 						style="width: 100px"
 						:src="plugin.logo as string"
 						:zoom-rate="1.2"
-						:preview-src-list="new Array(plugin.logo)  as string[]"
+						:preview-src-list="new Array(plugin.logo) as string[]"
 						:initial-index="4"
 						fit="cover"
 					/>
@@ -265,7 +260,7 @@ onMounted(() => {
 					<FormKitSchema
 						v-if="configMap?.data"
 						:data="configMap?.data"
-						:schema="(Object.values(JSON.parse(plugin?.configMapSchemas)) as any)"
+						:schema="Object.values(JSON.parse(plugin?.configMapSchemas)) as any"
 					/>
 				</FormKit>
 			</div>

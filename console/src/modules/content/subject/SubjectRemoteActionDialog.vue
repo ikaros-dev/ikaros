@@ -15,7 +15,7 @@ import {
 	FormRules,
 } from 'element-plus';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-// eslint-disable-next-line no-unused-vars
+
 import { apiClient } from '@/utils/api-client';
 import { useI18n } from 'vue-i18n';
 
@@ -41,9 +41,8 @@ watch(props, (newVal) => {
 });
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
 }>();
 
@@ -67,7 +66,7 @@ const subjectRemoteArr = ref<string[]>([]);
 const { pluginModules } = usePluginModuleStore();
 
 const actionButtonLoading = ref(false);
-// eslint-disable-next-line no-unused-vars
+
 const onConfirm = async (formEl: FormInstance | undefined) => {
 	if (subjectRemoteArr.value.length === 0) {
 		emit('close');
@@ -193,8 +192,8 @@ onMounted(() => {
 						subjectRemoteArr.length === 0
 							? t('module.subject.dialog.remote-action.button.cancel')
 							: props.isPush
-							? t('module.subject.dialog.remote-action.button.push')
-							: t('module.subject.dialog.remote-action.button.pull')
+								? t('module.subject.dialog.remote-action.button.push')
+								: t('module.subject.dialog.remote-action.button.pull')
 					}}
 				</el-button>
 			</span>

@@ -1,7 +1,7 @@
 import moment from 'moment';
 
 export const dateFormat = (row, column) => {
-	var date = row[column.property];
+	const date = row[column.property];
 
 	if (date == undefined) {
 		return '';
