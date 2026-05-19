@@ -1,5 +1,6 @@
 package run.ikaros.server.cache;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -13,6 +14,7 @@ import run.ikaros.server.cache.condition.CacheMemoryEnableCondition;
 import run.ikaros.server.cache.condition.CacheRedisEnableCondition;
 import tools.jackson.databind.ObjectMapper;
 
+@Slf4j
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(CacheProperties.class)
 public class CacheConfiguration {
@@ -21,6 +23,7 @@ public class CacheConfiguration {
     @Bean
     @Conditional(CacheMemoryEnableCondition.class)
     public ReactiveCacheManager memoryReactiveCacheManager() {
+        log.info("init memory cache manager");
         return new MemoryReactiveCacheManager();
     }
 
@@ -29,6 +32,7 @@ public class CacheConfiguration {
     public ReactiveCacheManager redisReactiveCacheManager(
         ReactiveRedisTemplate<String, Object> reactiveRedisTemplate
     ) {
+        log.info("init redis cache manager");
         return new RedisReactiveCacheManager(reactiveRedisTemplate);
     }
 

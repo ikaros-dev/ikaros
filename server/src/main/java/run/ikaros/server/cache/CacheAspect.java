@@ -226,51 +226,61 @@ public class CacheAspect {
     /**
      * 处理缓存移除注解切面
      * 要求返回值为Mono类型
+     * 修复：先执行原方法，确认写操作完成后再清除缓存，避免脏读
      * .
      */
     @Around("monoCacheEvictMethods() && @annotation(monoCacheEvict)")
     public Mono<?> aroundMonoMethodsWithAnnotationCacheEvict(
         ProceedingJoinPoint joinPoint, MonoCacheEvict monoCacheEvict
     ) throws Throwable {
-        Object proceed = joinPoint.proceed();
+        Mono<?> proceedMono = (Mono<?>) joinPoint.proceed();
         if (monoCacheEvict.value().length == 0
             && "".equals(monoCacheEvict.key())) {
-            return cm.clear()
-                .flatMap(s -> (Mono<?>) proceed);
+            return proceedMono
+                .flatMap(result -> cm.clear().thenReturn(result));
         }
         final String cacheKeyPostfix = parseSpelExpression(monoCacheEvict.key(), joinPoint);
         final List<String> cacheKeys =
             Arrays.stream(monoCacheEvict.value())
                 .map(namespace -> namespace + cacheKeyPostfix).toList();
-        return Flux.fromStream(cacheKeys.stream())
-            .flatMap(cm::remove)
-            .next()
-            .flatMap(bool -> (Mono<?>) proceed);
+        return proceedMono
+            .flatMap(result ->
+                Flux.fromIterable(cacheKeys)
+                    .flatMap(cm::remove)
+                    .then(Mono.just(result))
+            );
     }
 
     /**
      * 处理缓存移除注解切面
-     * 要求返回值为Mono类型
+     * 要求返回值为Flux类型
+     * 修复：先执行原方法，确认写操作完成后再清除缓存，避免脏读
      * .
      */
     @Around("fluxCacheEvictMethods() && @annotation(fluxCacheEvict)")
     public Flux<?> aroundFluxMethodsWithAnnotationCacheEvict(
         ProceedingJoinPoint joinPoint, FluxCacheEvict fluxCacheEvict
     ) throws Throwable {
-        Object proceed = joinPoint.proceed();
+        Flux<?> proceedFlux = (Flux<?>) joinPoint.proceed();
         if (fluxCacheEvict.value().length == 0
             && "".equals(fluxCacheEvict.key())) {
-            return cm.clear()
-                .flatMapMany(s -> (Flux<?>) proceed);
+            return proceedFlux
+                .collectList()
+                .flatMap(list -> cm.clear().thenReturn(list))
+                .flatMapMany(Flux::fromIterable);
         }
         final String cacheKeyPostfix = parseSpelExpression(fluxCacheEvict.key(), joinPoint);
         final List<String> cacheKeys =
             Arrays.stream(fluxCacheEvict.value())
                 .map(namespace -> namespace + cacheKeyPostfix).toList();
-        return Flux.fromStream(cacheKeys.stream())
-            .flatMap(cm::remove)
-            .next()
-            .flatMapMany(bool -> (Flux<?>) proceed);
+        return proceedFlux
+            .collectList()
+            .flatMap(list ->
+                Flux.fromIterable(cacheKeys)
+                    .flatMap(cm::remove)
+                    .then(Mono.just(list))
+            )
+            .flatMapMany(Flux::fromIterable);
     }
 
 
