@@ -82,10 +82,10 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
             .flatMap(
                 e -> repository.findByTypeAndAttachmentIdAndRelationAttachmentId(type, attachmentId,
                     relationAttachmentId))
-            .switchIfEmpty(repository.insert(AttachmentRelationEntity
+            .switchIfEmpty(Mono.defer(() -> repository.insert(AttachmentRelationEntity
                 .builder().attachmentId(attachmentId).id(UuidV7Utils.generateUuid())
                 .type(type).relationAttachmentId(relationAttachmentId)
-                .build()))
+                .build())))
             .flatMap(entity -> copyProperties(entity, attachmentRelation));
     }
 

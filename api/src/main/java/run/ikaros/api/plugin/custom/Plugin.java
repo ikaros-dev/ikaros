@@ -12,6 +12,7 @@ import run.ikaros.api.custom.Name;
 
 /**
  * Plugin custom model.
+ *
  * <p><code>plugin.yml</code> example: </p>
  * <pre>
  * # A unique name

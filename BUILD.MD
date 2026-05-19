@@ -1,8 +1,8 @@
 # 编译环境
 
-- JDK: 17
-- Gradle: 8.1
-- SpringBoot: 3.0.1
+- JDK: 21
+- Gradle: 8.14.3
+- SpringBoot: 4.0.1
 - CheckStyle: 9.3
 - Vue: 3
 - IDE: IntelliJ IDEA
@@ -26,7 +26,7 @@ git submodule update
 
 执行gradle任务前，默认会走一遍单元测试， 如需跳过，加上`-x test` 即可。
 
-建议先使用`java -version`检查下jdk版本，如本地JDK版本不是17编译会报错。
+建议先使用`java -version`检查下jdk版本，如本地JDK版本不是21编译会报错。
 
 跳过测试编译(Windows)
 
@@ -115,7 +115,7 @@ postgres:18.3-alpine
 5. 保存设置
 
 ## Fast Jar
-需要有`Java17`的运行环境
+需要有`Java21`的运行环境
 
 请先按照上放先进行`build`
 

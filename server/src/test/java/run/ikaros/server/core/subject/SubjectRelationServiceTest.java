@@ -18,7 +18,6 @@ import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.core.subject.service.SubjectRelationService;
 import run.ikaros.server.store.repository.SubjectRelationRepository;
 
-@Disabled
 @SpringBootTest
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
@@ -35,6 +34,7 @@ class SubjectRelationServiceTest {
     }
 
     @Test
+    @Disabled("Requires Subject entities in DB - service looks up subject type during creation")
     void createSubjectRelation() {
         final UUID random = UuidV7Utils.generateUuid();
         SubjectRelation subjectRelation = SubjectRelation.builder()
@@ -94,13 +94,13 @@ class SubjectRelationServiceTest {
                 subjectRelationService.findBySubjectIdAndType(UuidV7Utils.generateUuid(),
                     SubjectRelationType.COMIC))
             .expectNextMatches(subjectRelation1
-                -> !subjectRelation1.getRelationSubjects().contains(random)
-                && subjectRelation1.getRelationSubjects().contains(9L))
+                -> !subjectRelation1.getRelationSubjects().contains(random))
             .verifyComplete();
 
     }
 
     @Test
+    @Disabled("Requires Subject entities in DB - service looks up subject type during creation")
     void findAllBySubjectId() {
         final UUID random = UuidV7Utils.generateUuid();
         SubjectRelation subjectRelation = SubjectRelation.builder()

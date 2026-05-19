@@ -17,9 +17,9 @@ import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.plugin.BasePlugin;
 
 /**
- * <p>Basic implementation for {@link ExtensionFactory}.</p>
- * <p>Uses Springs {@link AutowireCapableBeanFactory} to instantiate a given extension class,
- * so can support {@link Autowired}.</p>
+ * Basic implementation for {@link ExtensionFactory}.
+ * Uses Springs {@link AutowireCapableBeanFactory} to instantiate a given extension class,
+ * so can support {@link Autowired}.
  *
  * @author li-guohao
  */

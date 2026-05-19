@@ -11,7 +11,7 @@ jobs:
 
   release:
     if: github.repository == 'ikaros-dev/ikaros'
-    name: Build with java 17 and upload
+    name: Build with java 21 and upload
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -19,12 +19,12 @@ jobs:
           submodules: true
       - name: Git submodule init
         uses: snickerbockers/submodules-init@v4
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           cache: 'gradle'
-          java-version: 17
+          java-version: 21
       - name: Install pnpm
         run: npm install -g pnpm
       - name: Reduce pnpm concurrency

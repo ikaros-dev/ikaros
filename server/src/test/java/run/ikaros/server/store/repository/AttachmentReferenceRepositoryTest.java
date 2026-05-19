@@ -54,4 +54,106 @@ class AttachmentReferenceRepositoryTest {
             .verifyComplete();
 
     }
+
+    @Test
+    void existsByTypeAndAttachmentId() {
+        UUID attId = UuidV7Utils.generateUuid();
+        UUID refId = UuidV7Utils.generateUuid();
+
+        StepVerifier.create(repository.existsByTypeAndAttachmentId(
+                AttachmentReferenceType.EPISODE, attId))
+            .expectNext(false).verifyComplete();
+
+        AttachmentReferenceEntity entity = AttachmentReferenceEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .type(AttachmentReferenceType.EPISODE)
+            .attachmentId(attId)
+            .referenceId(refId)
+            .build();
+
+        StepVerifier.create(repository.insert(entity))
+            .expectNext(entity).verifyComplete();
+
+        StepVerifier.create(repository.existsByTypeAndAttachmentId(
+                AttachmentReferenceType.EPISODE, attId))
+            .expectNext(true).verifyComplete();
+    }
+
+    @Test
+    void existsByTypeAndReferenceId() {
+        UUID attId = UuidV7Utils.generateUuid();
+        UUID refId = UuidV7Utils.generateUuid();
+
+        StepVerifier.create(repository.existsByTypeAndReferenceId(
+                AttachmentReferenceType.EPISODE, refId))
+            .expectNext(false).verifyComplete();
+
+        AttachmentReferenceEntity entity = AttachmentReferenceEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .type(AttachmentReferenceType.EPISODE)
+            .attachmentId(attId)
+            .referenceId(refId)
+            .build();
+
+        StepVerifier.create(repository.insert(entity))
+            .expectNext(entity).verifyComplete();
+
+        StepVerifier.create(repository.existsByTypeAndReferenceId(
+                AttachmentReferenceType.EPISODE, refId))
+            .expectNext(true).verifyComplete();
+    }
+
+    @Test
+    void existsByAttachmentId() {
+        UUID attId = UuidV7Utils.generateUuid();
+        UUID refId = UuidV7Utils.generateUuid();
+
+        StepVerifier.create(repository.existsByAttachmentId(attId))
+            .expectNext(false).verifyComplete();
+
+        AttachmentReferenceEntity entity = AttachmentReferenceEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .type(AttachmentReferenceType.EPISODE)
+            .attachmentId(attId)
+            .referenceId(refId)
+            .build();
+
+        StepVerifier.create(repository.insert(entity))
+            .expectNext(entity).verifyComplete();
+
+        StepVerifier.create(repository.existsByAttachmentId(attId))
+            .expectNext(true).verifyComplete();
+    }
+
+    @Test
+    void countByTypeAndReferenceId() {
+        UUID refId = UuidV7Utils.generateUuid();
+
+        StepVerifier.create(repository.countByTypeAndReferenceId(
+                AttachmentReferenceType.EPISODE, refId))
+            .expectNext(0L).verifyComplete();
+
+        AttachmentReferenceEntity entity1 = AttachmentReferenceEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .type(AttachmentReferenceType.EPISODE)
+            .attachmentId(UuidV7Utils.generateUuid())
+            .referenceId(refId)
+            .build();
+
+        AttachmentReferenceEntity entity2 = AttachmentReferenceEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .type(AttachmentReferenceType.EPISODE)
+            .attachmentId(UuidV7Utils.generateUuid())
+            .referenceId(refId)
+            .build();
+
+        StepVerifier.create(repository.insert(entity1))
+            .expectNext(entity1).verifyComplete();
+        StepVerifier.create(repository.insert(entity2))
+            .expectNext(entity2).verifyComplete();
+
+        StepVerifier.create(repository.countByTypeAndReferenceId(
+                AttachmentReferenceType.EPISODE, refId))
+            .expectNext(2L).verifyComplete();
+    }
 }

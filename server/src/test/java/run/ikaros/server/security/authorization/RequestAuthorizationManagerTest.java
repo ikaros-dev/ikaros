@@ -1,102 +1,192 @@
 package run.ikaros.server.security.authorization;
 
-import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.util.Random;
-import org.junit.jupiter.api.AfterEach;
+import java.net.URI;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
-import org.springframework.context.annotation.Import;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationResult;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.web.server.authorization.AuthorizationContext;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.SecurityConst;
-import run.ikaros.api.core.role.Role;
-import run.ikaros.api.infra.utils.UuidV7Utils;
-import run.ikaros.server.config.IkarosTestcontainersConfiguration;
-import run.ikaros.server.core.role.RoleService;
-import run.ikaros.server.core.user.User;
-import run.ikaros.server.core.user.UserService;
-import run.ikaros.server.security.SecurityProperties;
-import run.ikaros.server.store.entity.UserEntity;
-import run.ikaros.server.store.repository.AuthorityRepository;
-import run.ikaros.server.store.repository.RoleRepository;
+import run.ikaros.api.constant.SecurityConst.Authorization;
+import run.ikaros.api.store.enums.AuthorityType;
 
-@SpringBootTest
-@AutoConfigureWebTestClient
-@Testcontainers
-@Import(IkarosTestcontainersConfiguration.class)
 class RequestAuthorizationManagerTest {
 
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private RoleService roleService;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private AuthorityRepository authorityRepository;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
-    @Autowired
-    WebTestClient webTestClient;
-    @Autowired
-    SecurityProperties securityProperties;
-
-
-    private String username;
-    private String password;
+    private RequestAuthorizationManager manager;
 
     @BeforeEach
     void setUp() {
-        webTestClient = webTestClient.mutateWith(csrf());
-        username = securityProperties.getInitializer().getMasterUsername();
-        password = securityProperties.getInitializer().getMasterPassword();
+        manager = new RequestAuthorizationManager();
     }
 
-    @AfterEach
-    void tearDown() {
-        webTestClient = webTestClient.mutateWith(csrf());
-        username = securityProperties.getInitializer().getMasterUsername();
-        password = securityProperties.getInitializer().getMasterPassword();
-        StepVerifier.create(userService.deleteAll()).verifyComplete();
-        StepVerifier.create(roleRepository.deleteAll()).verifyComplete();
-        StepVerifier.create(authorityRepository.deleteAll()).verifyComplete();
+    private Authentication createAuth(String... authorities) {
+        var granted = new java.util.ArrayList<GrantedAuthority>();
+        for (String auth : authorities) {
+            granted.add(new SimpleGrantedAuthority(auth));
+        }
+        return new UsernamePasswordAuthenticationToken("user", "pass", granted);
+    }
+
+    private AuthorizationContext createContext(String path, HttpMethod method) {
+        ServerHttpRequest request = mock(ServerHttpRequest.class);
+        when(request.getURI()).thenReturn(URI.create(path));
+        when(request.getMethod()).thenReturn(method);
+        ServerWebExchange exchange = mock(ServerWebExchange.class);
+        when(exchange.getRequest()).thenReturn(request);
+        return new AuthorizationContext(exchange, null);
+    }
+
+    private void verifyDecision(Mono<AuthorizationResult> result, boolean expected) {
+        StepVerifier.create(result)
+            .assertNext(r -> assertThat(r.isGranted()).isEqualTo(expected))
+            .verifyComplete();
     }
 
     @Test
-    @Disabled
-    void checkRoleFriend() {
-        Random random = new Random();
-        var username = String.valueOf(random.nextInt(1, 100));
+    void alwaysAllow_staticResource() {
+        var auth = createAuth("anonymous");
+        var ctx = createContext("/api/v1/static/index.js", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
+    }
 
-        UserEntity friend = new UserEntity();
-        friend.setId(UuidV7Utils.generateUuid());
-        friend.setUsername(username);
-        friend.setPassword(password);
-        StepVerifier.create(userService.insert(new User(friend))
-                .map(User::entity)
-                .map(UserEntity::getUsername))
-            .expectNext(username)
-            .verifyComplete();
+    @Test
+    void alwaysAllow_jwtApply() {
+        var auth = createAuth("anonymous");
+        var ctx = createContext("/api/v1/security/auth/token/jwt/apply", HttpMethod.POST);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
+    }
 
-        StepVerifier.create(roleService.createIfNotExist(SecurityConst.ROLE_FRIEND)
-                .map(Role::getId)
-                .flatMap(f -> userService.insert(new User(friend)))
-                .map(User::entity)
-                .map(UserEntity::getUsername))
-            .expectNext(username)
-            .verifyComplete();
+    @Test
+    void alwaysAllow_jwtRefresh() {
+        var auth = createAuth("anonymous");
+        var ctx = createContext("/api/v1/security/auth/token/jwt/refresh", HttpMethod.POST);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
+    }
 
-        StepVerifier.create(authorityRepository.count())
-            .expectNextMatches(count -> count >= 2)
-            .verifyComplete();
+    @Test
+    void alwaysAllow_attachmentStream() {
+        var auth = createAuth("anonymous");
+        var ctx = createContext("/api/v1/attachment/stream/123", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
+    }
 
+    @Test
+    void alwaysAllow_localFilePrefix() {
+        var auth = createAuth("anonymous");
+        var ctx = createContext("/driver/static/test.mp4", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
+    }
+
+    @Test
+    void deny_emptyAuthorities() {
+        var auth = createAuth();
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), false);
+    }
+
+    @Test
+    void deny_anonymousUser() {
+        var auth = createAuth("anonymous");
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), false);
+    }
+
+    @Test
+    void allow_allAuthorityType_allTarget_allAuthority() {
+        String authority = AuthorityType.ALL.name() + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Target.ALL + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Authority.ALL;
+        var auth = createAuth(authority);
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
+    }
+
+    @Test
+    void allow_allAuthorityType_allTarget_httpAll() {
+        String authority = AuthorityType.ALL.name() + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Target.ALL + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Authority.HTTP_ALL;
+        var auth = createAuth(authority);
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.POST);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
+    }
+
+    @Test
+    void allow_allAuthorityType_allTarget_httpGet() {
+        String authority = AuthorityType.ALL.name() + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Target.ALL + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Authority.HTTP_GET;
+        var auth = createAuth(authority);
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
+    }
+
+    @Test
+    void deny_allAuthorityType_allTarget_httpGet_wrongMethod() {
+        String authority = AuthorityType.ALL.name() + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Target.ALL + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Authority.HTTP_GET;
+        var auth = createAuth(authority);
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.POST);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), false);
+    }
+
+    @Test
+    void allow_apiAuthorityType_matchingTargetAndMethod() {
+        String authority = AuthorityType.API.name() + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Target.API_CORE_SUBJECT + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Authority.HTTP_ALL;
+        var auth = createAuth(authority);
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
+    }
+
+    @Test
+    void deny_apiAuthorityType_nonMatchingTarget() {
+        String authority = AuthorityType.API.name() + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Target.API_CORE_ROLE + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Authority.HTTP_ALL;
+        var auth = createAuth(authority);
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), false);
+    }
+
+    @Test
+    void allow_apiAuthorityType_allTarget() {
+        String authority = AuthorityType.API.name() + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Target.ALL + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Authority.HTTP_ALL;
+        var auth = createAuth(authority);
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
+    }
+
+    @Test
+    void deny_invalidAuthorityFormat() {
+        var auth = createAuth("invalid_authority_format");
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), false);
+    }
+
+    @Test
+    void allow_apisAuthorityType_matchingTargetAndMethod() {
+        String authority = AuthorityType.APIS.name() + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Target.API_CORE_SUBJECT + SecurityConst.AUTHORITY_DIVIDE
+            + Authorization.Authority.HTTP_ALL;
+        var auth = createAuth(authority);
+        var ctx = createContext("/api/v1/subject/123", HttpMethod.GET);
+        verifyDecision(manager.authorize(Mono.just(auth), ctx), true);
     }
 }

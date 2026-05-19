@@ -3,6 +3,7 @@ package run.ikaros.server.core.subject;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
@@ -15,9 +16,11 @@ import org.springframework.context.annotation.Import;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.vo.FindSubjectCondition;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.core.subject.service.SubjectService;
 
@@ -180,5 +183,89 @@ class SubjectServiceTest {
             .verifyComplete();
 
 
+    }
+
+    @Test
+    void deleteById() {
+        Subject subject = createSubjectInstance();
+        AtomicReference<UUID> subjectId = new AtomicReference<>();
+
+        StepVerifier.create(subjectService.create(subject))
+            .expectNextMatches(sub -> {
+                subjectId.set(sub.getId());
+                return Objects.nonNull(sub.getId());
+            })
+            .verifyComplete();
+
+        assertThat(subjectId.get()).isNotNull();
+
+        StepVerifier.create(subjectService.findById(subjectId.get()))
+            .expectNextMatches(sub -> Objects.equals(subjectId.get(), sub.getId()))
+            .verifyComplete();
+
+        StepVerifier.create(subjectService.deleteById(subjectId.get()))
+            .verifyComplete();
+
+        StepVerifier.create(subjectService.findById(subjectId.get()))
+            .verifyComplete();
+    }
+
+    @Test
+    void findAllByPageable() {
+        // Create multiple subjects
+        for (int i = 0; i < 5; i++) {
+            Subject subject = createSubjectInstance();
+            subject.setName("subject-" + i);
+            StepVerifier.create(subjectService.create(subject))
+                .expectNextCount(1)
+                .verifyComplete();
+        }
+
+        PagingWrap<Subject> pagingWrap = new PagingWrap<>(1, 3, 5, List.of());
+
+        StepVerifier.create(subjectService.findAllByPageable(pagingWrap))
+            .expectNextMatches(result ->
+                result.getPage() == 1
+                    && result.getSize() == 3
+                    && result.getTotal() >= 5
+                    && result.getItems().size() <= 3)
+            .verifyComplete();
+    }
+
+    @Test
+    void listEntitiesByCondition() {
+        // Create a subject
+        Subject subject = createSubjectInstance();
+        StepVerifier.create(subjectService.create(subject))
+            .expectNextCount(1)
+            .verifyComplete();
+
+        FindSubjectCondition condition = FindSubjectCondition.builder()
+            .page(1)
+            .size(10)
+            .name("subject-name-unit-test")
+            .build();
+
+        StepVerifier.create(subjectService.listEntitiesByCondition(condition))
+            .expectNextMatches(result ->
+                result.getPage() == 1
+                    && result.getSize() == 10
+                    && result.getTotal() >= 1)
+            .verifyComplete();
+    }
+
+    @Test
+    void existsByPlatformAndPlatformId() {
+        Subject subject = createSubjectInstance();
+        StepVerifier.create(subjectService.create(subject))
+            .expectNextCount(1)
+            .verifyComplete();
+
+        // Since we don't have a platform sync, this should return false
+        StepVerifier.create(subjectService.existsByPlatformAndPlatformId(
+                run.ikaros.api.store.enums.SubjectSyncPlatform.BGM_TV,
+                "nonexistent-platform-id"))
+            .expectNext(false)
+            .verifyComplete();
     }
 }

@@ -59,6 +59,9 @@ public class TagChangeEventListener {
                         return subjectDoc;
                     })
             ).doOnSuccess(subjectDoc -> {
+                if (subjectDoc == null) {
+                    return;
+                }
                 try {
                     subjectSearchService.updateDocument(List.of(subjectDoc));
                 } catch (Exception e) {
