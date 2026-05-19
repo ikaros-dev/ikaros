@@ -202,4 +202,75 @@ class EpisodeCollectionServiceTest {
             .expectNextMatches(EpisodeCollection::getFinish)
             .verifyComplete();
     }
+
+    @Test
+    void updateEpisodeCollection() {
+        UUID userId = UuidV7Utils.generateUuid();
+        UUID episodeId = UuidV7Utils.generateUuid();
+        UUID subjectId = UuidV7Utils.generateUuid();
+        EpisodeGroup episodeGroup = EpisodeGroup.MAIN;
+        String episodeName = String.valueOf(new Random().nextDouble());
+
+        // save episode
+        EpisodeEntity episodeEntity = EpisodeEntity.builder()
+            .name(episodeName)
+            .subjectId(subjectId)
+            .group(episodeGroup)
+            .build();
+        episodeEntity.setId(episodeId);
+        StepVerifier.create(episodeRepository.insert(episodeEntity))
+            .expectNextCount(1)
+            .verifyComplete();
+
+        // create episode collection
+        StepVerifier.create(episodeCollectionService.create(userId, episodeId))
+            .expectNextCount(1)
+            .verifyComplete();
+
+        // update episode collection with progress and duration
+        Long progress = 120000L;
+        Long duration = 300000L;
+        StepVerifier.create(
+                episodeCollectionService.updateEpisodeCollection(userId, episodeId, progress, duration))
+            .verifyComplete();
+
+        // find episode collection after update
+        StepVerifier.create(episodeCollectionService.findByUserIdAndEpisodeId(userId, episodeId))
+            .expectNextMatches(episodeCollection ->
+                progress.equals(episodeCollection.getProgress())
+                    && duration.equals(episodeCollection.getDuration()))
+            .verifyComplete();
+    }
+
+    @Test
+    void findAllByUserIdAndSubjectId() {
+        UUID userId = UuidV7Utils.generateUuid();
+        UUID subjectId = UuidV7Utils.generateUuid();
+        EpisodeGroup episodeGroup = EpisodeGroup.MAIN;
+
+        // Create multiple episodes
+        for (int i = 0; i < 3; i++) {
+            String episodeName = "episode-" + i;
+            EpisodeEntity episodeEntity = EpisodeEntity.builder()
+                .name(episodeName)
+                .subjectId(subjectId)
+                .group(episodeGroup)
+                .sequence((float) i)
+                .build();
+            episodeEntity.setId(UuidV7Utils.generateUuid());
+            StepVerifier.create(episodeRepository.insert(episodeEntity))
+                .expectNextCount(1)
+                .verifyComplete();
+
+            // Create episode collection for each episode
+            StepVerifier.create(episodeCollectionService.create(userId, episodeEntity.getId()))
+                .expectNextCount(1)
+                .verifyComplete();
+        }
+
+        // Find all episode collections for user and subject
+        StepVerifier.create(episodeCollectionService.findAllByUserIdAndSubjectId(userId, subjectId))
+            .expectNextCount(3)
+            .verifyComplete();
+    }
 }

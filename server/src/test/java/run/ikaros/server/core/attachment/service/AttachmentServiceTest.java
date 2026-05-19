@@ -444,9 +444,51 @@ class AttachmentServiceTest {
 
     @Test
     void existsByParentIdAndName() {
+        final String name = RandomUtils.randomString(20);
+        AttachmentEntity entity = AttachmentEntity.builder()
+            .name(name)
+            .type(AttachmentType.File)
+            .parentId(ROOT_DIRECTORY_ID)
+            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
+            .updateTime(LocalDateTime.now())
+            .build();
+
+        StepVerifier.create(attachmentService.saveEntity(entity))
+            .expectNextMatches(new AttachmentEntityPredicate(entity))
+            .verifyComplete();
+
+        StepVerifier.create(attachmentService.existsByParentIdAndName(ROOT_DIRECTORY_ID, name))
+            .expectNext(true)
+            .verifyComplete();
+
+        StepVerifier.create(attachmentService.existsByParentIdAndName(ROOT_DIRECTORY_ID, "nonexistent"))
+            .expectNext(false)
+            .verifyComplete();
     }
 
     @Test
     void existsByTypeAndParentIdAndName() {
+        final String name = RandomUtils.randomString(20);
+        AttachmentEntity entity = AttachmentEntity.builder()
+            .name(name)
+            .type(AttachmentType.File)
+            .parentId(ROOT_DIRECTORY_ID)
+            .size(RandomUtils.getRandom().nextLong(1, Long.MAX_VALUE))
+            .updateTime(LocalDateTime.now())
+            .build();
+
+        StepVerifier.create(attachmentService.saveEntity(entity))
+            .expectNextMatches(new AttachmentEntityPredicate(entity))
+            .verifyComplete();
+
+        StepVerifier.create(attachmentService.existsByTypeAndParentIdAndName(
+                AttachmentType.File, ROOT_DIRECTORY_ID, name))
+            .expectNext(true)
+            .verifyComplete();
+
+        StepVerifier.create(attachmentService.existsByTypeAndParentIdAndName(
+                AttachmentType.File, ROOT_DIRECTORY_ID, "nonexistent"))
+            .expectNext(false)
+            .verifyComplete();
     }
 }

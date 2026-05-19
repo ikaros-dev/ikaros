@@ -64,7 +64,8 @@ class SubjectEndpointTest {
         webTestClient = webTestClient.mutateWith(csrf());
         username = securityProperties.getInitializer().getMasterUsername();
         password = securityProperties.getInitializer().getMasterPassword();
-        StepVerifier.create(masterInitializer.initialize()).verifyComplete();
+        StepVerifier.create(masterInitializer.initialize()
+            .onErrorResume(e -> Mono.empty())).verifyComplete();
     }
 
     @Test

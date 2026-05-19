@@ -3,7 +3,6 @@ package run.ikaros.server.core.task;
 
 import java.time.LocalDateTime;
 import java.util.Random;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,6 @@ import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.TaskRepository;
 
-@Disabled
 @SpringBootTest
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
@@ -42,13 +40,12 @@ class TaskServiceTest {
 
         @Override
         protected void doRun() throws Exception {
-            //System.out.println(getEntity().getName() + "-" + getEntity().getStatus());
             log.info(getEntity().getName() + "-" + getEntity().getStatus());
         }
     }
 
     @Test
-    void submit() throws InterruptedException {
+    void submit() {
         String name = "UnitTestTask-" + new Random().nextInt(10000);
         LocalDateTime now = LocalDateTime.now();
         TestTask task = new TestTask(TaskEntity.builder()
@@ -61,9 +58,58 @@ class TaskServiceTest {
             .build(), repository);
 
         StepVerifier.create(taskService.submit(task)).verifyComplete();
+    }
 
-        taskService.updateTaskStatus();
-        Thread.sleep(500);
+    @Test
+    void findById() {
+        String name = "UnitTestTask-" + new Random().nextInt(10000);
+        LocalDateTime now = LocalDateTime.now();
+        TaskEntity entity = TaskEntity.builder()
+            .id(run.ikaros.api.infra.utils.UuidV7Utils.generateUuid())
+            .name(name)
+            .createTime(now)
+            .startTime(now)
+            .status(TaskStatus.CREATE)
+            .total(1L)
+            .index(0L)
+            .build();
 
+        StepVerifier.create(repository.insert(entity))
+            .expectNextCount(1).verifyComplete();
+
+        StepVerifier.create(taskService.findById(entity.getId()))
+            .expectNextMatches(taskEntity -> name.equals(taskEntity.getName()))
+            .verifyComplete();
+    }
+
+    @Test
+    void listEntitiesByCondition() {
+        String name = "UnitTestTask-" + new Random().nextInt(10000);
+        LocalDateTime now = LocalDateTime.now();
+        TaskEntity entity = TaskEntity.builder()
+            .id(run.ikaros.api.infra.utils.UuidV7Utils.generateUuid())
+            .name(name)
+            .createTime(now)
+            .startTime(now)
+            .status(TaskStatus.CREATE)
+            .total(1L)
+            .index(0L)
+            .build();
+
+        StepVerifier.create(repository.insert(entity))
+            .expectNextCount(1).verifyComplete();
+
+        FindTaskCondition condition = FindTaskCondition.builder()
+            .page(1)
+            .size(10)
+            .name(name)
+            .build();
+
+        StepVerifier.create(taskService.listEntitiesByCondition(condition))
+            .expectNextMatches(pagingWrap ->
+                pagingWrap.getPage() == 1
+                    && pagingWrap.getSize() == 10
+                    && pagingWrap.getTotal() >= 1)
+            .verifyComplete();
     }
 }
