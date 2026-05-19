@@ -1,8 +1,8 @@
 import type { App } from 'vue';
 import { createI18n } from 'vue-i18n';
-// @ts-ignore
+// @ts-expect-error
 import en from './en.yaml';
-// @ts-ignore
+// @ts-expect-error
 import zhCN from './zh-CN.yaml';
 
 export const locales = [
@@ -41,7 +41,7 @@ const i18n = createI18n({
 
 export function getBrowserLanguage(): string {
 	const browserLanguage = navigator.language;
-	// eslint-disable-next-line no-unused-vars
+
 	const language = messages[browserLanguage]
 		? browserLanguage
 		: browserLanguage.split('-')[0];

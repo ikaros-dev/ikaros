@@ -160,14 +160,14 @@ interface EpisodeCountPercentage {
 const episodeCountPercentages = ref<EpisodeCountPercentage[]>([]);
 const fetchEpisodePercentags = async () => {
 	await subjects.value.forEach(async (sub) => {
-		var subId = sub.id;
-		var totalRsp = await apiClient.episode.getCountTotalBySubjectId({
+		const subId = sub.id;
+		const totalRsp = await apiClient.episode.getCountTotalBySubjectId({
 			id: subId,
 		});
-		var countRsp = await apiClient.episode.getCountMatchingBySubjectId({
+		const countRsp = await apiClient.episode.getCountMatchingBySubjectId({
 			id: subId,
 		});
-		var percentage = (countRsp.data / totalRsp.data) * 100;
+		const percentage = (countRsp.data / totalRsp.data) * 100;
 		episodeCountPercentages.value.push({
 			subjectId: subId,
 			percentage: percentage,
@@ -177,7 +177,7 @@ const fetchEpisodePercentags = async () => {
 };
 const episodeAttsPercentage = (subject: Subject): number => {
 	// console.debug('subject', subject);
-	var subjectId = subject.id;
+	const subjectId = subject.id;
 	return (
 		episodeCountPercentages.value.find((e) => e.subjectId === subjectId)
 			?.percentage ?? 0

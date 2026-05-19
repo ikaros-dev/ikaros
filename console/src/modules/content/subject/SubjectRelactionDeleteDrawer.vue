@@ -20,11 +20,10 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'selectionsChange', subjectRelations: SubjectRelation[]);
 }>();
 
@@ -58,8 +57,8 @@ const handleSelectionChange = (selection) => {
 			ids.push(sub.id);
 			selectionSubjectMap.set(sub.type, ids);
 		}
-		var subjectRelation = props.relationSubjects.find((rel) => {
-			var result = false;
+		const subjectRelation = props.relationSubjects.find((rel) => {
+			let result = false;
 			rel.relation_subjects.forEach((relId) => {
 				if (relId === sub.id) result = true;
 			});
@@ -74,7 +73,7 @@ const handleSelectionChange = (selection) => {
 const subjectIdMapCache = new Map<string, Subject>();
 const subjects = ref<Subject[]>([]);
 const onOpen = async () => {
-	let ids: string[] = [];
+	const ids: string[] = [];
 	props.relationSubjects.forEach((subRel) => {
 		subRel.relation_subjects.forEach((id) => ids.push(id));
 	});

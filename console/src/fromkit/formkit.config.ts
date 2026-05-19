@@ -5,6 +5,7 @@ import { genesisIcons } from '@formkit/icons';
 // @ts-ignore
 import genesis from '@formkit/themes/tailwindcss/genesis';
 
+// @ts-ignore
 import '@formkit/themes/genesis';
 
 const config: DefaultConfigOptions = {

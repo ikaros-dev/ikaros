@@ -49,7 +49,7 @@ export interface ProblemDetail {
 axiosInstance.interceptors.response.use(
 	(response) => response,
 	async (error: AxiosError<ProblemDetail>) => {
-		// @ts-ignore
+		// @ts-expect-error
 		let msg = error?.response?.data?.message;
 		if (!msg) {
 			msg = error.message;
@@ -155,7 +155,6 @@ axiosInstance.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 const apiClient = setupApiClient(axiosInstance);
 
-// eslint-disable-next-line no-shadow, no-unused-vars
 function setupApiClient(axios: AxiosInstance) {
 	return {
 		// actuator
@@ -169,44 +168,24 @@ function setupApiClient(axios: AxiosInstance) {
 		authority: new V1AuthorityApi(undefined, baseURL, axios),
 		corePlugin: new V1PluginApi(undefined, baseURL, axios),
 		attachment: new V1AttachmentApi(undefined, baseURL, axios),
-		attachmentRef: new V1AttachmentReferenceApi(
-			undefined,
-			baseURL,
-			axios
-		),
-		attachmentRelation: new V1AttachmentRelationApi(
-			undefined,
-			baseURL,
-			axios
-		),
+		attachmentRef: new V1AttachmentReferenceApi(undefined, baseURL, axios),
+		attachmentRelation: new V1AttachmentRelationApi(undefined, baseURL, axios),
 		attachmentDriver: new V1AttachmentDriverApi(undefined, baseURL, axios),
 		subject: new V1SubjectApi(undefined, baseURL, axios),
 		subjectSync: new V1SubjectSyncApi(undefined, baseURL, axios),
 		indices: new V1IndicesApi(undefined, baseURL, axios),
 		task: new V1TaskApi(undefined, baseURL, axios),
-		collectionSubject: new V1CollectionSubjectApi(
-			undefined,
-			baseURL,
-			axios
-		),
+		collectionSubject: new V1CollectionSubjectApi(undefined, baseURL, axios),
 		subjectRelation: new V1SubjectRelationApi(undefined, baseURL, axios),
 		episode: new V1EpisodeApi(undefined, baseURL, axios),
-		collectionEpisode: new V1CollectionEpisodeApi(
-			undefined,
-			baseURL,
-			axios
-		),
+		collectionEpisode: new V1CollectionEpisodeApi(undefined, baseURL, axios),
 		tag: new V1TagApi(undefined, baseURL, axios),
 		staticRes: new V1StaticApi(undefined, baseURL, axios),
 		security: new V1SecurityApi(undefined, baseURL, axios),
 		notify: new V1NotifyApi(undefined, baseURL, axios),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1PluginApi(undefined, baseURL, axios),
-		configmap: new SettingIkarosRunV1ConfigmapApi(
-			undefined,
-			baseURL,
-			axios
-		),
+		configmap: new SettingIkarosRunV1ConfigmapApi(undefined, baseURL, axios),
 	};
 }
 

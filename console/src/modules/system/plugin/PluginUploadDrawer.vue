@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { Plugin } from '@runikaros/api-client';
-import { ErrorResponse } from '@uppy/core';
 import { computed, ref, watch } from 'vue';
 import { ElMessage, ElDrawer } from 'element-plus';
-import UppyUpload from '@/components/upload/UppyUpload.vue';
+import PluginPondUpload from '@/components/upload/PluginPondUpload.vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -20,11 +19,10 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'update:upgradePlugin', plugin: Plugin): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
 }>();
 
@@ -37,7 +35,7 @@ const modalTitle = computed(() => {
 				display_name: props.upgradePlugin.displayName
 					? props.upgradePlugin.displayName
 					: props.upgradePlugin.name,
-		  })
+			})
 		: t('module.plugin.upload_modal.titles.install');
 });
 
@@ -86,9 +84,9 @@ const onUploaded = async () => {
 	handleVisibleChange(false);
 };
 
-const onError = (file, response: ErrorResponse) => {
-	const body = response.body;
-	ElMessage.error(body.message);
+const onError = (body: unknown) => {
+	const msg = (body as { message?: string })?.message || 'Upload failed';
+	ElMessage.error(msg);
 	console.error(body);
 };
 </script>
@@ -99,7 +97,7 @@ const onError = (file, response: ErrorResponse) => {
 		:title="modalTitle"
 		direction="ttb"
 		:before-close="handleClose"
-		size="80%"
+		size="40%"
 	>
 		<template #header>
 			<div align="center">
@@ -108,15 +106,10 @@ const onError = (file, response: ErrorResponse) => {
 		</template>
 		<template #default>
 			<div align="center">
-				<UppyUpload
+				<PluginPondUpload
 					v-if="uploadVisible"
 					style="width: 100%"
-					:restrictions="{
-						maxNumberOfFiles: 1,
-						allowedFileTypes: ['.jar'],
-					}"
 					:endpoint="endpoint"
-					auto-proceed
 					@uploaded="onUploaded"
 					@error="onError"
 				/>

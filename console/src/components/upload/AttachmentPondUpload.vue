@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-ignore
 import VueFilePond, { setOptions } from 'vue-filepond';
 import 'filepond/dist/filepond.min.css';
 
@@ -28,6 +27,7 @@ const filePond = VueFilePond(
 );
 
 setOptions({
+	// @ts-ignore
 	fileRenameFunction: (file) => {
 		const word = Utf8.parse(file.name);
 		return Base64.stringify(word);
@@ -62,7 +62,6 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:parentId', parentId: string): void;
 }>();
 
@@ -105,15 +104,15 @@ const server = computed({
 const fileList = ref([]);
 
 const handleFilePondInit = () => {};
-// eslint-disable-next-line no-unused-vars
+
 const handleClearFileList = () => {
-	// @ts-ignore
+	// @ts-expect-error
 	filePondRef.value.removeFiles();
 };
-// eslint-disable-next-line no-unused-vars
+
 const getFirstFile = () => {
 	// console.log('filePondRef.value', filePondRef.value);
-	// @ts-ignore
+	// @ts-expect-error
 	return filePondRef.value.getFile(0);
 };
 

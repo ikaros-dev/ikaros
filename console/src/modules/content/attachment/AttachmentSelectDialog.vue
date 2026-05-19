@@ -44,11 +44,10 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'closeWithAttachment', attachment: Attachment): void;
 }>();
 
@@ -105,7 +104,7 @@ const onFileUploadDrawerClose = () => {
 };
 
 const dateFormat = (row, column) => {
-	var date = row[column.property];
+	const date = row[column.property];
 
 	if (date == undefined) {
 		return '';

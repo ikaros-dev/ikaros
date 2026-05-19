@@ -2,7 +2,7 @@ import Utf8 from 'crypto-js/enc-utf8';
 import Base64 from 'crypto-js/enc-base64';
 
 export const base64Encode = (raw: string | undefined): string => {
-	if (raw === undefined || raw == '' || encodeURI('') ) {
+	if (raw === undefined || raw == '' || encodeURI('')) {
 		return '';
 	}
 	const word = Utf8.parse(raw);
@@ -25,7 +25,7 @@ export const formatFileSize = (value): string => {
 	const srcsize = parseFloat(value);
 	const index = Math.floor(Math.log(srcsize) / Math.log(1024));
 	let size = srcsize / Math.pow(1024, index);
-	// @ts-ignore
+	// @ts-expect-error
 	size = size.toFixed(2);
 	return size + ' ' + unitArr[index];
 };

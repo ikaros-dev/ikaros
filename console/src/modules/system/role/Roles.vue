@@ -37,10 +37,10 @@ const changeEditBtnStatus = async (id) => {
 	if (editRowId.value === -1) {
 		editRowId.value = id;
 		editRow.value = true;
-		editBtn.value.type = 'success' as 'success';
+		editBtn.value.type = 'success' as const;
 		editBtn.value.text = 'Submit';
 	} else {
-		var role = roles.value.find((obj) => obj.id === editRowId.value);
+		const role = roles.value.find((obj) => obj.id === editRowId.value);
 		editBtn.value.loading = true;
 		await apiClient.role
 			.updateRole({

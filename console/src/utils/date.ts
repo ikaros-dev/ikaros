@@ -12,7 +12,7 @@
  * @returns formatted str
  */
 export const formatDate = (
-	date: Date | String,
+	date: Date | string,
 	format = 'yyyy-MM-dd HH:mm:ss'
 ): string => {
 	// console.log('date', date)

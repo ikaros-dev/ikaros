@@ -1,28 +1,32 @@
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
-interface LayoutStoreState {
-	asideIsExtend: boolean;
-	currentActivePath: string;
-	i18nCode: string;
-}
+export const useLayoutStore = defineStore('layout', () => {
+	const asideIsExtend = ref(true);
+	const currentActivePath = ref('/dashboard');
+	const i18nCode = ref('zh-CN');
 
-export const useLayoutStore = defineStore('layout', {
-	state: (): LayoutStoreState => ({
-		asideIsExtend: true,
-		currentActivePath: '/dashboard',
-		i18nCode: 'zh-CN',
-	}),
-	actions: {
-		switchLayoutAsideExtendState() {
-			this.asideIsExtend = !this.asideIsExtend;
-		},
-		updatecurrentActivePathByRoutePath(path) {
-			this.currentActivePath = path;
-		},
-		setI18nCode(code: string) {
-			this.i18nCode = code;
-		},
-	},
+	function switchLayoutAsideExtendState() {
+		asideIsExtend.value = !asideIsExtend.value;
+	}
+
+	function updatecurrentActivePathByRoutePath(path: string) {
+		currentActivePath.value = path;
+	}
+
+	function setI18nCode(code: string) {
+		i18nCode.value = code;
+	}
+
+	return {
+		asideIsExtend,
+		currentActivePath,
+		i18nCode,
+		switchLayoutAsideExtendState,
+		updatecurrentActivePathByRoutePath,
+		setI18nCode,
+	};
+}, {
 	// In order to config pinia-plugin-persist, please see https://github.com/Seb-L/pinia-plugin-persist
 	persist: {
 		enabled: true,

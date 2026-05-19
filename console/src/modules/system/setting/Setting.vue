@@ -99,13 +99,13 @@ const getSettingFromServer = async () => {
 		name: settingConfigMapName,
 		metaName: 'data',
 	});
-	// @ts-ignore
+	// @ts-expect-error
 	setting.value = data;
 };
 
 const settingSaveBtnLoading = ref(false);
 const settingStore = useSettingStore();
-// eslint-disable-next-line no-unused-vars
+
 const updateSetting = async () => {
 	settingSaveBtnLoading.value = true;
 	await apiClient.configmap
@@ -276,8 +276,8 @@ onMounted(getSettingFromServer);
 						v-model="setting.GLOBAL_HEADER"
 						style="max-width: 600px"
 						:autosize="{ minRows: 10 }"
-						maxlength="2000"
-						rows="10"
+						:maxlength="2000"
+						:rows="10"
 						show-word-limit
 						type="textarea"
 					/>
@@ -287,8 +287,8 @@ onMounted(getSettingFromServer);
 						v-model="setting.GLOBAL_FOOTER"
 						style="max-width: 600px"
 						:autosize="{ minRows: 10 }"
-						maxlength="2000"
-						rows="10"
+						:maxlength="2000"
+						:rows="10"
 						show-word-limit
 						type="textarea"
 					/>

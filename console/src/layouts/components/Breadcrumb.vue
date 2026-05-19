@@ -10,7 +10,7 @@ const route = useRoute();
 const router = useRouter();
 const layoutStore = useLayoutStore();
 
-let breadcrumbList: Ref = ref([]);
+const breadcrumbList: Ref = ref([]);
 
 const initBreadcrumbList = () => {
 	// console.log('route.matched: ', route.matched);
@@ -49,8 +49,8 @@ watch(
 							? t(item?.meta?.title)
 							: item?.meta?.title
 						: i18n.global.te(item?.name)
-						? t(item?.name)
-						: item?.name
+							? t(item?.name)
+							: item?.name
 				}}
 			</span>
 		</el-breadcrumb-item>

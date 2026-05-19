@@ -62,7 +62,6 @@ const subject = ref<Subject>({
 const episodes = ref<Episode[]>([]);
 const removeEpisodes = ref<Episode[]>([]);
 
-// eslint-disable-next-line no-unused-vars
 const fetchSubjectById = async () => {
 	if (subject.value.id) {
 		const { data } = await apiClient.subject.searchSubjectById({
@@ -135,12 +134,12 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 			});
 			// console.debug('subject', subject.value);
 			// console.debug('episodes', episodes.value);
-			for (var episode of episodes.value) {
+			for (const episode of episodes.value) {
 				// console.debug('episode', episode);
 				episode.subject_id = subject.value.id;
 				await apiClient.episode.putEpisode({ episode: episode });
 			}
-			for (var remEp of removeEpisodes.value) {
+			for (const remEp of removeEpisodes.value) {
 				await apiClient.episode.deleteById({ id: remEp.id });
 			}
 			removeEpisodes.value = [];
@@ -202,7 +201,7 @@ const onAttachmentSelectDialogColseWithAttachment = (
 	attachmentSelectDialogVisible.value = false;
 };
 
-const crrentPutEpisode = ref<Episode>();
+const crrentPutEpisode = ref<Episode>({} as Episode);
 const episodePutDialogVisible = ref(false);
 const toEPisodeEdit = (episode) => {
 	crrentPutEpisode.value = episode;
@@ -322,8 +321,8 @@ onMounted(() => {
 				>
 					<el-input
 						v-model="subject.summary"
-						maxlength="10000"
-						rows="5"
+						:maxlength="10000"
+						:rows="5"
 						show-word-limit
 						type="textarea"
 					/>
@@ -332,8 +331,8 @@ onMounted(() => {
 				<el-form-item :label="t('module.subject.put.label.infobox')">
 					<el-input
 						v-model="subject.infobox"
-						maxlength="10000"
-						rows="15"
+						:maxlength="10000"
+						:rows="15"
 						show-word-limit
 						type="textarea"
 						:placeholder="t('module.subject.put.infobox-input.placeholder')"

@@ -5,6 +5,7 @@ import SubtitlesOctopus from '@/libs/JavascriptSubtitlesOctopus/subtitles-octopu
 import { useFontStore } from '@/stores/font';
 import { Attachment } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
+// @ts-ignore
 import type { Setting } from 'artplayer/types/setting';
 import { subtitleNameChineseMap } from '@/modules/common/constants';
 
@@ -24,7 +25,6 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'getInstance', instance: Artplayer): void;
 }>();
 
@@ -40,11 +40,11 @@ const fetchAttachment = async () => {
 	const { data } = await apiClient.attachment.getAttachmentById({
 		id: props.attachmentId,
 	});
-	const rsp = await apiClient.attachment.getReadUrl({id: data.id})
+	const rsp = await apiClient.attachment.getReadUrl({ id: data.id });
 	if (!rsp.data.startsWith('http')) {
-		data.url = encodeURI(rsp.data ?? "")
+		data.url = encodeURI(rsp.data ?? '');
 	} else {
-		data.url = rsp.data
+		data.url = rsp.data;
 	}
 	attachment.value = data;
 };
@@ -62,7 +62,7 @@ interface ArtSubtitle {
 
 const getSubtitleSimpleNameByAttachmentName = (name: string): string => {
 	if (!name) return '';
-	var str = name.substring(0, name.lastIndexOf('.'));
+	let str = name.substring(0, name.lastIndexOf('.'));
 	str = str.substring(str.lastIndexOf('.') + 1);
 	str = str.toLocaleUpperCase();
 	console.log('subtitle simple name', name, str);
@@ -86,7 +86,7 @@ const getVideoSubtitles = async () => {
 		const simpleName = getSubtitleSimpleNameByAttachmentName(
 			data![index].name as string
 		);
-		var artSubtitle: ArtSubtitle = {
+		const artSubtitle: ArtSubtitle = {
 			default:
 				simpleName === 'SC' || simpleName === 'sc' || simpleName == 'JPSC',
 			html: getSubtitleChineseSimpleNameBySimpleName(simpleName),
@@ -96,8 +96,8 @@ const getVideoSubtitles = async () => {
 	}
 };
 
-var artRef = ref();
-var art = ref<Artplayer>();
+const artRef = ref();
+const art = ref<Artplayer>();
 const subtitleOctopus = ref();
 
 const artplayerPluginAss = (options: any) => {

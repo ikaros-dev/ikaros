@@ -49,7 +49,6 @@ const fetchTasks = async () => {
 		page: findTaskCondition.value.page,
 		size: findTaskCondition.value.size,
 		name: base64Encode(findTaskCondition.value.name),
-		// @ts-ignore
 		status: findTaskCondition.value.status,
 	});
 	tasks.value = data.items;

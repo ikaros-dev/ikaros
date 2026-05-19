@@ -29,7 +29,6 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
 }>();
 
@@ -86,7 +85,7 @@ const onSubjectCollectionSubmit = async () => {
 		<el-input
 			v-model="comment"
 			type="textarea"
-			rows="3"
+			:rows="3"
 			:autosize="{ minRows: 3 }"
 			placeholder="输入您的对条目的评论"
 		/>

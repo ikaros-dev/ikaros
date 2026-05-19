@@ -131,8 +131,8 @@ onMounted(initProfileAndUsername);
 							<el-input
 								v-model="profile.introduce"
 								:autosize="{ minRows: 2 }"
-								maxlength="2000"
-								rows="10"
+								:maxlength="2000"
+								:rows="10"
 								show-word-limit
 								type="textarea"
 							/>

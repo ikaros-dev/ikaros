@@ -147,7 +147,7 @@ const submitUserRole = async () => {
 		const { data } = await apiClient.userRole.getRolesForUser({
 			userId: rowUserEntity.value.id + '',
 		});
-		var roleIds = data.map((role) => role.id);
+		const roleIds = data.map((role) => role.id);
 		await apiClient.userRole.deleteUserRoles({
 			userRoleReqParams: {
 				userId: rowUserEntity.value.id,

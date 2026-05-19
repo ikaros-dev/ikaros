@@ -31,7 +31,7 @@ const generateMenus = () => {
 		}),
 		[
 			(route: RouteRecordRaw) => !route.meta?.core,
-			// @ts-ignore
+			// @ts-expect-error
 			(route: RouteRecordRaw) => route.meta?.menu?.priority || 0,
 		]
 	);
@@ -58,7 +58,7 @@ const generateMenus = () => {
 						path: childRoute.path,
 						icon: childMetaMenu.icon,
 					},
-			  ]
+				]
 			: undefined;
 		if (group) {
 			group.items?.push({

@@ -21,13 +21,12 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	// eslint-disable-next-line no-unused-vars
 	(event: 'update:visible', visible: boolean): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'update:parentId', parentId: string): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'close'): void;
-	// eslint-disable-next-line no-unused-vars
+
 	(event: 'fileUploadDrawerCloes', file?: any): void;
 }>();
 
@@ -35,7 +34,7 @@ const uploadVisible = ref(false);
 const drawerVisible = ref(false);
 const uploadParentId = computed({
 	get() {
-		return props.parentId;
+		return props.parentId || '';
 	},
 	set(value) {
 		emit('update:parentId', value as string);
@@ -83,9 +82,9 @@ const handleClose = (done: () => void) => {
 		}
 	)
 		.then(() => {
-			// @ts-ignore
+			// @ts-expect-error
 			const firstFile = filePondUploadRef.value.getFirstFile();
-			// @ts-ignore
+			// @ts-expect-error
 			filePondUploadRef.value.handleClearFileList();
 			emit('fileUploadDrawerCloes', firstFile);
 			done();
@@ -98,7 +97,6 @@ const handleClose = (done: () => void) => {
 		});
 };
 
-// eslint-disable-next-line no-unused-vars
 const uploadHandler = (file, onUploadProgress) => {
 	console.log('file', file);
 	console.log('onUploadProgress', onUploadProgress);
