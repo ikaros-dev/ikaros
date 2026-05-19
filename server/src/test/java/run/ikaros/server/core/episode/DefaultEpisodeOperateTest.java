@@ -159,7 +159,8 @@ class DefaultEpisodeOperateTest {
         when(service.findBySubjectIdAndGroupAndSequence(subjectId, EpisodeGroup.MAIN, 1f))
             .thenReturn(Flux.just(ep1));
 
-        StepVerifier.create(operate.findBySubjectIdAndGroupAndSequence(subjectId, EpisodeGroup.MAIN, 1f))
+        StepVerifier.create(
+                operate.findBySubjectIdAndGroupAndSequence(subjectId, EpisodeGroup.MAIN, 1f))
             .assertNext(result -> assertThat(result).isSameAs(ep1))
             .verifyComplete();
 

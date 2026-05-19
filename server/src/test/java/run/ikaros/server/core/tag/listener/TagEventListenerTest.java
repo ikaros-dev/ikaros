@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,7 +100,7 @@ class TagEventListenerTest {
         UUID subjectId = UUID.randomUUID();
         TagEntity tagEntity = buildTagEntity(TagType.SUBJECT);
         tagEntity.setMasterId(subjectId);
-        TagChangeEvent event = new TagChangeEvent(this, tagEntity);
+        final TagChangeEvent event = new TagChangeEvent(this, tagEntity);
 
         SubjectEntity subjectEntity = new SubjectEntity();
         subjectEntity.setId(subjectId);

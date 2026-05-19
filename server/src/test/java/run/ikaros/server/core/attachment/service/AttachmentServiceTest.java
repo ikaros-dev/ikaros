@@ -461,7 +461,8 @@ class AttachmentServiceTest {
             .expectNext(true)
             .verifyComplete();
 
-        StepVerifier.create(attachmentService.existsByParentIdAndName(ROOT_DIRECTORY_ID, "nonexistent"))
+        StepVerifier.create(
+                attachmentService.existsByParentIdAndName(ROOT_DIRECTORY_ID, "nonexistent"))
             .expectNext(false)
             .verifyComplete();
     }

@@ -43,7 +43,7 @@ class RoleCreatedListenerTest {
             .description("Default admin role")
             .build();
         roleEntity.setId(roleId);
-        RoleCreatedEvent event = new RoleCreatedEvent(this, roleEntity);
+        final RoleCreatedEvent event = new RoleCreatedEvent(this, roleEntity);
 
         UUID authorityId = UuidV7Utils.generateUuid();
         AuthorityEntity authorityEntity = AuthorityEntity.builder()

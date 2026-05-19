@@ -114,7 +114,8 @@ class SubjectSyncServiceTest {
     }
 
     @Test
-    @Disabled("@MonoCacheEvict on remove() interferes with reactive chain, causing delete to not complete before cache eviction")
+    @Disabled("@MonoCacheEvict on remove() "
+        + "interferes with reactive chain, causing delete to not complete before cache eviction")
     void remove() {
         var random = new Random();
         SubjectSync subjectSync = SubjectSync.builder()

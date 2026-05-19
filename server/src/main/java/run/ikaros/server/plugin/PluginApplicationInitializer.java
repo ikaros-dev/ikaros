@@ -64,7 +64,7 @@ public class PluginApplicationInitializer {
             new StopWatch(String.format("[%s]InitPluginAppContext", pluginId));
 
         stopWatch.start("CreatePluginAppContext");
-        PluginApplicationContext pluginApplicationContext =
+        final PluginApplicationContext pluginApplicationContext =
             createPluginApplicationContext(pluginId);
         stopWatch.stop();
 

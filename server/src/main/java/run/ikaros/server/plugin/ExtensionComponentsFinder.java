@@ -36,7 +36,7 @@ public class ExtensionComponentsFinder {
     }
 
     /**
-     * <p>Finds all extension components by plugin id.</p>
+     * Finds all extension components by plugin id.
      * If the plugin id is system or null, it means to find from halo.
      *
      * @param type subclass type of extension point

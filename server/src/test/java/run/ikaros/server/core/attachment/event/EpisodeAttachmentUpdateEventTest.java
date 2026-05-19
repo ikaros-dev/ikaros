@@ -66,7 +66,7 @@ class EpisodeAttachmentUpdateEventTest {
 
         EpisodeAttachmentUpdateEvent event1 =
             new EpisodeAttachmentUpdateEvent(source, episodeId1, attachmentId1, true);
-        EpisodeAttachmentUpdateEvent event2 =
+        final EpisodeAttachmentUpdateEvent event2 =
             new EpisodeAttachmentUpdateEvent(source, episodeId2, attachmentId2, false);
 
         assertEquals(episodeId1, event1.getEpisodeId());

@@ -9,10 +9,6 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import run.ikaros.api.plugin.BasePlugin;
 
-/**
- * <p>The default implementation for PluginFactory.</p>
- * <p>Get a {@link BasePlugin} instance from the {@link PluginApplicationContext}.</p>
- */
 @Slf4j
 public class BasePluginFactory implements PluginFactory {
 

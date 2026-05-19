@@ -37,7 +37,8 @@ class AttachmentRemoveEventTest {
 
     @Test
     void isApplicationEvent() {
-        AttachmentRemoveEvent event = new AttachmentRemoveEvent(new Object(), buildAttachmentEntity());
+        AttachmentRemoveEvent event =
+            new AttachmentRemoveEvent(new Object(), buildAttachmentEntity());
         assertNotNull(event.getTimestamp());
     }
 

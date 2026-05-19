@@ -55,7 +55,7 @@ class UserAvatarUpdateEventTest {
 
         UserAvatarUpdateEvent event1 =
             new UserAvatarUpdateEvent(source, "old1", "new1", userId1, "user1");
-        UserAvatarUpdateEvent event2 =
+        final UserAvatarUpdateEvent event2 =
             new UserAvatarUpdateEvent(source, "old2", "new2", userId2, "user2");
 
         assertEquals("old1", event1.getOldAvatar());

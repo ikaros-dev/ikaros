@@ -1,7 +1,7 @@
 package run.ikaros.server.core.episode;
 
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

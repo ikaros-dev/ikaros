@@ -5,7 +5,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>Plugin application context registrar.</p>
+ * Plugin application context registrar.
+ *
  * <p>It contain a map
  * that key is the plugin id and value is application context of plugin.</p>
  *
@@ -16,7 +17,10 @@ public class PluginApplicationContextRegistry {
         new PluginApplicationContextRegistry();
 
     /**
+     * res.
+     *
      * <p>an plugin application context will be registered when the plugin is enabled.</p>
+     *
      * <p>an plugin application context will be deleted when the plugin is disabled.</p>
      */
     private final Map<String, PluginApplicationContext> registry = new ConcurrentHashMap<>();

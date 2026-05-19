@@ -14,7 +14,6 @@ import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.api.core.role.Role;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.store.entity.RoleEntity;
 import run.ikaros.server.store.entity.UserRoleEntity;
@@ -98,7 +97,7 @@ class DefaultUserRoleServiceTest {
         UUID userId = UuidV7Utils.generateUuid();
         UUID roleId1 = UuidV7Utils.generateUuid();
         UUID roleId2 = UuidV7Utils.generateUuid();
-        UUID[] roleIds = new UUID[]{roleId1, roleId2};
+        UUID[] roleIds = new UUID[] {roleId1, roleId2};
 
         // For each roleId, findByUserIdAndRoleId returns empty -> insert is called
         when(userRoleRepository.findByUserIdAndRoleId(userId, roleId1))
@@ -149,7 +148,7 @@ class DefaultUserRoleServiceTest {
         UUID userId = UuidV7Utils.generateUuid();
         UUID roleId1 = UuidV7Utils.generateUuid();
         UUID roleId2 = UuidV7Utils.generateUuid();
-        UUID[] roleIds = new UUID[]{roleId1, roleId2};
+        UUID[] roleIds = new UUID[] {roleId1, roleId2};
 
         when(userRoleRepository.deleteByUserIdAndRoleId(userId, roleId1))
             .thenReturn(Mono.empty());

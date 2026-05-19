@@ -18,7 +18,6 @@ import run.ikaros.api.core.authority.Authority;
 import run.ikaros.api.core.authority.AuthorityCondition;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AuthorityType;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.store.entity.AuthorityEntity;
 import run.ikaros.server.store.repository.AuthorityRepository;
 
@@ -37,9 +36,9 @@ class DefaultAuthorityServiceTest {
     }
 
     private AuthorityEntity buildAuthorityEntity(UUID id, AuthorityType type,
-                                                  String target,
-                                                  String authority,
-                                                  Boolean allow) {
+                                                 String target,
+                                                 String authority,
+                                                 Boolean allow) {
         AuthorityEntity entity = AuthorityEntity.builder()
             .type(type)
             .target(target)
@@ -162,7 +161,7 @@ class DefaultAuthorityServiceTest {
     }
 
     @Test
-    void save_withAuthorityVO() {
+    void saveWithauthorityvo() {
         UUID id = UuidV7Utils.generateUuid();
         Authority authority = Authority.builder()
             .type(AuthorityType.API)

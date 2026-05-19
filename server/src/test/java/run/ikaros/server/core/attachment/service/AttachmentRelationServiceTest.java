@@ -1,9 +1,6 @@
 package run.ikaros.server.core.attachment.service;
 
 
-import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
-
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -16,10 +13,8 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.core.attachment.AttachmentRelation;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentRelationType;
-import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.core.attachment.vo.PostAttachmentRelationsParam;
-import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.AttachmentRelationEntity;
 import run.ikaros.server.store.repository.AttachmentRelationRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
@@ -117,8 +112,9 @@ class AttachmentRelationServiceTest {
         StepVerifier.create(attachmentRelationService.deleteAttachmentRelation(attachmentRelation))
             .expectNext(attachmentRelation).verifyComplete();
 
-        StepVerifier.create(attachmentRelationRepository.existsByTypeAndAttachmentIdAndRelationAttachmentId(
-                AttachmentRelationType.VIDEO_SUBTITLE, attachmentId, relationAttachmentId))
+        StepVerifier.create(
+                attachmentRelationRepository.existsByTypeAndAttachmentIdAndRelationAttachmentId(
+                    AttachmentRelationType.VIDEO_SUBTITLE, attachmentId, relationAttachmentId))
             .expectNext(false).verifyComplete();
     }
 

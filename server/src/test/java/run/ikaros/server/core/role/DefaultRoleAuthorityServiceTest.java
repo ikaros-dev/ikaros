@@ -41,7 +41,7 @@ class DefaultRoleAuthorityServiceTest {
         UUID authId2 = UuidV7Utils.generateUuid();
 
         when(roleAuthorityRepository.insert(
-                any(RoleAuthorityEntity.class)))
+            any(RoleAuthorityEntity.class)))
             .thenAnswer(invocation ->
                 Mono.just(invocation.getArgument(0)));
 
@@ -58,7 +58,7 @@ class DefaultRoleAuthorityServiceTest {
         StepVerifier.create(
                 defaultRoleAuthorityService
                     .addAuthoritiesForRole(
-                        roleId, new UUID[]{authId1, authId2}))
+                        roleId, new UUID[] {authId1, authId2}))
             .expectNextCount(2)
             .verifyComplete();
     }
@@ -77,7 +77,7 @@ class DefaultRoleAuthorityServiceTest {
         StepVerifier.create(
                 defaultRoleAuthorityService
                     .deleteAuthoritiesForRole(
-                        roleId, new UUID[]{authId1, authId2}))
+                        roleId, new UUID[] {authId1, authId2}))
             .verifyComplete();
     }
 

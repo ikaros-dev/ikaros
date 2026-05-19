@@ -22,7 +22,8 @@ class SubjectRelationCourtTest {
 
     @Test
     void judgeSameWorldviewReturnsSameWorldview() {
-        assertThat(SubjectRelationCourt.judge(SubjectType.ANIME, SubjectRelationType.SAME_WORLDVIEW))
+        assertThat(SubjectRelationCourt.judge(
+            SubjectType.ANIME, SubjectRelationType.SAME_WORLDVIEW))
             .isEqualTo(SubjectRelationType.SAME_WORLDVIEW);
     }
 

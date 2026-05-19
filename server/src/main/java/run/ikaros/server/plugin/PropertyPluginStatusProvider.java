@@ -9,11 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginStatusProvider;
 
 /**
- * <p>An implementation for {@link PluginStatusProvider}.</p>
+ * An implementation for {@link PluginStatusProvider}.
+ *
  * <p>
  * The enabled plugins are read from {@code ikaros.plugin.enabled-plugins} properties
  * in <code>application.yaml</code>.
  * </p>
+ *
  * <p>
  * The disabled plugins are read from {@code ikaros.plugin.disabled-plugins} properties
  * in <code>application.yaml</code>.

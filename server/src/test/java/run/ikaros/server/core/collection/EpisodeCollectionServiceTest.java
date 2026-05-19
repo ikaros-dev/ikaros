@@ -230,8 +230,8 @@ class EpisodeCollectionServiceTest {
         // update episode collection with progress and duration
         Long progress = 120000L;
         Long duration = 300000L;
-        StepVerifier.create(
-                episodeCollectionService.updateEpisodeCollection(userId, episodeId, progress, duration))
+        StepVerifier.create(episodeCollectionService
+                .updateEpisodeCollection(userId, episodeId, progress, duration))
             .verifyComplete();
 
         // find episode collection after update

@@ -42,7 +42,8 @@ class String2EnumConverterTest {
         assertNull(converter.convert("NONEXISTENT"));
     }
 
-    private static class String2EnumConverterTestHelper extends String2EnumConverter<AttachmentType> {
+    private static class String2EnumConverterTestHelper
+        extends String2EnumConverter<AttachmentType> {
         String2EnumConverterTestHelper() {
             super(AttachmentType.class);
         }

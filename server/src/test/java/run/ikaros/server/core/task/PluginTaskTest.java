@@ -2,9 +2,7 @@ package run.ikaros.server.core.task;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.TaskStatus;

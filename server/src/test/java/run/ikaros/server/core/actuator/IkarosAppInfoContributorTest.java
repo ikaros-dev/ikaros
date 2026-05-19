@@ -26,7 +26,7 @@ class IkarosAppInfoContributorTest {
     private SubjectRepository subjectRepository;
     private CharacterRepository characterRepository;
     private PersonRepository personRepository;
-    private SubjectCollectionRepository subjectCollectionRepository;
+    private SubjectCollectionRepository subjectCollectRep;
     private IkarosAppInfoContributor contributor;
 
     @BeforeEach
@@ -35,10 +35,10 @@ class IkarosAppInfoContributorTest {
         subjectRepository = mock(SubjectRepository.class);
         characterRepository = mock(CharacterRepository.class);
         personRepository = mock(PersonRepository.class);
-        subjectCollectionRepository = mock(SubjectCollectionRepository.class);
+        subjectCollectRep = mock(SubjectCollectionRepository.class);
         contributor = new IkarosAppInfoContributor(
             attachmentRepository, subjectRepository, characterRepository,
-            personRepository, subjectCollectionRepository);
+            personRepository, subjectCollectRep);
     }
 
     @Test
@@ -59,12 +59,12 @@ class IkarosAppInfoContributorTest {
         when(subjectRepository.countByType(SubjectType.OTHER)).thenReturn(Mono.just(2L));
 
         // Subject collection counts
-        when(subjectCollectionRepository.count()).thenReturn(Mono.just(40L));
-        when(subjectCollectionRepository.countByType(CollectionType.WISH)).thenReturn(Mono.just(10L));
-        when(subjectCollectionRepository.countByType(CollectionType.DOING)).thenReturn(Mono.just(15L));
-        when(subjectCollectionRepository.countByType(CollectionType.DONE)).thenReturn(Mono.just(10L));
-        when(subjectCollectionRepository.countByType(CollectionType.SHELVE)).thenReturn(Mono.just(3L));
-        when(subjectCollectionRepository.countByType(CollectionType.DISCARD)).thenReturn(Mono.just(2L));
+        when(subjectCollectRep.count()).thenReturn(Mono.just(40L));
+        when(subjectCollectRep.countByType(CollectionType.WISH)).thenReturn(Mono.just(10L));
+        when(subjectCollectRep.countByType(CollectionType.DOING)).thenReturn(Mono.just(15L));
+        when(subjectCollectRep.countByType(CollectionType.DONE)).thenReturn(Mono.just(10L));
+        when(subjectCollectRep.countByType(CollectionType.SHELVE)).thenReturn(Mono.just(3L));
+        when(subjectCollectRep.countByType(CollectionType.DISCARD)).thenReturn(Mono.just(2L));
 
         // Character and person counts
         when(characterRepository.count()).thenReturn(Mono.just(200L));
@@ -137,12 +137,12 @@ class IkarosAppInfoContributorTest {
         verify(subjectRepository).countByType(SubjectType.NOVEL);
         verify(subjectRepository).countByType(SubjectType.REAL);
         verify(subjectRepository).countByType(SubjectType.OTHER);
-        verify(subjectCollectionRepository).count();
-        verify(subjectCollectionRepository).countByType(CollectionType.WISH);
-        verify(subjectCollectionRepository).countByType(CollectionType.DOING);
-        verify(subjectCollectionRepository).countByType(CollectionType.DONE);
-        verify(subjectCollectionRepository).countByType(CollectionType.SHELVE);
-        verify(subjectCollectionRepository).countByType(CollectionType.DISCARD);
+        verify(subjectCollectRep).count();
+        verify(subjectCollectRep).countByType(CollectionType.WISH);
+        verify(subjectCollectRep).countByType(CollectionType.DOING);
+        verify(subjectCollectRep).countByType(CollectionType.DONE);
+        verify(subjectCollectRep).countByType(CollectionType.SHELVE);
+        verify(subjectCollectRep).countByType(CollectionType.DISCARD);
         verify(characterRepository).count();
         verify(personRepository).count();
     }
