@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error
 import VueFilePond from 'vue-filepond';
 import 'filepond/dist/filepond.min.css';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';

@@ -196,8 +196,8 @@ const episodeElFormRef = ref<FormInstance>();
 				<el-input
 					v-model="episode.description"
 					:autosize="{ minRows: 3 }"
-					maxlength="10000"
-					rows="3"
+					:maxlength="10000"
+					:rows="3"
 					show-word-limit
 					type="textarea"
 				/>

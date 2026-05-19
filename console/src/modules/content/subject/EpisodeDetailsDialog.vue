@@ -89,7 +89,6 @@ const dialogVisible = computed({
 // })
 
 const removeEpisodeAllAttachmentRefs = async () => {
-	// @ts-expect-error
 	if (!episodeResources.value) {
 		ElMessage.warning(
 			t(
@@ -247,8 +246,9 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 	return 0;
 };
 
-const artplayer = ref<Artplayer>();
-const getArtplayerInstance = (art: Artplayer) => {
+const artplayer = ref<InstanceType<typeof Artplayer>>();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getArtplayerInstance = (art: any) => {
 	artplayer.value = art;
 };
 const currentVideoAttachment = ref<Attachment>({

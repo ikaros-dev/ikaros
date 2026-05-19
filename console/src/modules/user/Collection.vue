@@ -131,6 +131,7 @@ onMounted(fetchCollections);
 				:name="subjectCollection?.name"
 				:name-cn="subjectCollection?.name_cn"
 				:cover="subjectCollection?.cover"
+				:percentage="0"
 			/>
 		</el-col>
 	</el-row>

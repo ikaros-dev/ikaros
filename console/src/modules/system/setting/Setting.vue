@@ -276,8 +276,8 @@ onMounted(getSettingFromServer);
 						v-model="setting.GLOBAL_HEADER"
 						style="max-width: 600px"
 						:autosize="{ minRows: 10 }"
-						maxlength="2000"
-						rows="10"
+						:maxlength="2000"
+						:rows="10"
 						show-word-limit
 						type="textarea"
 					/>
@@ -287,8 +287,8 @@ onMounted(getSettingFromServer);
 						v-model="setting.GLOBAL_FOOTER"
 						style="max-width: 600px"
 						:autosize="{ minRows: 10 }"
-						maxlength="2000"
-						rows="10"
+						:maxlength="2000"
+						:rows="10"
 						show-word-limit
 						type="textarea"
 					/>

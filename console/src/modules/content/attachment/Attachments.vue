@@ -211,7 +211,7 @@ const onCreateFolderDialogOpen = () => {
 	});
 };
 
-const currentSelectionAttachment = ref<Attachment>();
+const currentSelectionAttachment = ref<Attachment>({} as Attachment);
 const onCurrentChange = (val: Attachment | undefined) => {
 	if (val) {
 		currentSelectionAttachment.value = val;
@@ -242,7 +242,6 @@ const deleteAttachment = async (attachment: Attachment) => {
 			);
 		})
 		.catch((e) => {
-			// @ts-expect-error
 			let msg = e?.response?.data?.message;
 			if (!msg) {
 				msg = e.message;

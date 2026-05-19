@@ -141,9 +141,10 @@ const onClose = async () => {
 	emit('close');
 };
 
-const artplayer = ref<Artplayer>();
+const artplayer = ref<InstanceType<typeof Artplayer>>();
 const artplayerRef = ref();
-const getArtplayerInstance = (art: Artplayer) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getArtplayerInstance = (art: any) => {
 	artplayer.value = art;
 };
 </script>

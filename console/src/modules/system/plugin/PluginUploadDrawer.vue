@@ -84,8 +84,9 @@ const onUploaded = async () => {
 	handleVisibleChange(false);
 };
 
-const onError = (body: { message?: string }) => {
-	ElMessage.error(body?.message || 'Upload failed');
+const onError = (body: unknown) => {
+	const msg = (body as { message?: string })?.message || 'Upload failed';
+	ElMessage.error(msg);
 	console.error(body);
 };
 </script>

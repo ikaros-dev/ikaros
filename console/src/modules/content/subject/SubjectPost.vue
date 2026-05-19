@@ -245,8 +245,8 @@ const oepnCropperjsDialog = () => {
 					<el-input
 						v-model="subject.summary"
 						:autosize="{ minRows: 2 }"
-						maxlength="10000"
-						rows="2"
+						:maxlength="10000"
+						:rows="2"
 						show-word-limit
 						type="textarea"
 					/>
@@ -256,8 +256,8 @@ const oepnCropperjsDialog = () => {
 					<el-input
 						v-model="subject.infobox"
 						:autosize="{ minRows: 2 }"
-						maxlength="10000"
-						rows="2"
+						:maxlength="10000"
+						:rows="2"
 						show-word-limit
 						type="textarea"
 						:placeholder="t('module.subject.post.infobox-input.placeholder')"

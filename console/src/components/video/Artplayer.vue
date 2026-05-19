@@ -5,6 +5,7 @@ import SubtitlesOctopus from '@/libs/JavascriptSubtitlesOctopus/subtitles-octopu
 import { useFontStore } from '@/stores/font';
 import { Attachment } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
+// @ts-ignore
 import type { Setting } from 'artplayer/types/setting';
 import { subtitleNameChineseMap } from '@/modules/common/constants';
 

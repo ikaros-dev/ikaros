@@ -85,7 +85,7 @@ const onSubjectCollectionSubmit = async () => {
 		<el-input
 			v-model="comment"
 			type="textarea"
-			rows="3"
+			:rows="3"
 			:autosize="{ minRows: 3 }"
 			placeholder="输入您的对条目的评论"
 		/>

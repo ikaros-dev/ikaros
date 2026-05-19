@@ -31,22 +31,17 @@ const configMapSchemas = computed(() => {
 	let str = plugin.value?.configMapSchemas;
 	// let str = plugin.value?.configMapSchemas?.replace(/(\n|\r|\r\n|↵)/g, '');
 	// str = str.replace(/\$/g, '\\$');
-	// @ts-expect-error
 	str = str.replace(' ', '');
 	// console.log('str', str);
 	str = JSON.parse(str);
-	// @ts-expect-error
 	str = Object.values(str);
 	// console.log('str', str);
 	// 变量Schemas，如果找到包含字段名为 name的对象，
 	// 则从configMap中拿出对应的字段名的值，
 	// 赋值给 schema的对应value上，目的是完成初始化。
-	// @ts-expect-error
 	for (const obj of str) {
 		// console.log(obj, typeof obj.name);
-		// @ts-expect-error
 		if (obj && 'string' === typeof obj.name) {
-			// @ts-expect-error
 			const field = obj.name;
 			// console.log(field);
 			// console.log(configMap.value);
@@ -55,7 +50,6 @@ const configMapSchemas = computed(() => {
 				configMap.value.data &&
 				'undefined' !== typeof configMap.value?.data[field]
 			) {
-				// @ts-expect-error
 				obj.value = configMap.value?.data[field];
 				// console.log(
 				// 	'configMap.value?.data[field]',

@@ -67,7 +67,7 @@ const attachmentCondition = ref({
 	page: 1,
 	size: 10,
 	total: 10,
-	parentId: undefined,
+	parentId: '',
 	name: '',
 	// type: 'File',
 });
@@ -131,7 +131,7 @@ const onConfirm = () => {
 const onParentDirSelected = async (val) => {
 	console.log('val', val);
 	if (!val || val === '') {
-		attachmentCondition.value.parentId = undefined;
+		attachmentCondition.value.parentId = '';
 	}
 	attachmentCondition.value.page = 1;
 	await fetchAttachments();

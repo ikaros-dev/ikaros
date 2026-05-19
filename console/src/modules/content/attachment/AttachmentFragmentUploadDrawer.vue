@@ -34,7 +34,7 @@ const uploadVisible = ref(false);
 const drawerVisible = ref(false);
 const uploadParentId = computed({
 	get() {
-		return props.parentId;
+		return props.parentId || '';
 	},
 	set(value) {
 		emit('update:parentId', value as string);

@@ -201,7 +201,7 @@ const onAttachmentSelectDialogColseWithAttachment = (
 	attachmentSelectDialogVisible.value = false;
 };
 
-const crrentPutEpisode = ref<Episode>();
+const crrentPutEpisode = ref<Episode>({} as Episode);
 const episodePutDialogVisible = ref(false);
 const toEPisodeEdit = (episode) => {
 	crrentPutEpisode.value = episode;
@@ -321,8 +321,8 @@ onMounted(() => {
 				>
 					<el-input
 						v-model="subject.summary"
-						maxlength="10000"
-						rows="5"
+						:maxlength="10000"
+						:rows="5"
 						show-word-limit
 						type="textarea"
 					/>
@@ -331,8 +331,8 @@ onMounted(() => {
 				<el-form-item :label="t('module.subject.put.label.infobox')">
 					<el-input
 						v-model="subject.infobox"
-						maxlength="10000"
-						rows="15"
+						:maxlength="10000"
+						:rows="15"
 						show-word-limit
 						type="textarea"
 						:placeholder="t('module.subject.put.infobox-input.placeholder')"

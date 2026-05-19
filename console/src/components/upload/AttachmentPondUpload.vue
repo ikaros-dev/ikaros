@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error
 import VueFilePond, { setOptions } from 'vue-filepond';
 import 'filepond/dist/filepond.min.css';
 
@@ -28,6 +27,7 @@ const filePond = VueFilePond(
 );
 
 setOptions({
+	// @ts-ignore
 	fileRenameFunction: (file) => {
 		const word = Utf8.parse(file.name);
 		return Base64.stringify(word);

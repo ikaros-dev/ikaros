@@ -85,7 +85,6 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 				console.log('subjectSync', subjectSync.value);
 				await apiClient.subjectSync
 					.syncSubjectAndPlatform({
-						// @ts-expect-error
 						platform: subjectSync.value.platform,
 						platformId: subjectSync.value.platformId,
 						subjectId: subjectId.value as string,
@@ -95,9 +94,7 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 					});
 				const { data } =
 					await apiClient.subjectSync.getSubjectSyncsByPlatformAndPlatformId({
-						// @ts-expect-error
 						platform: subjectSync.value.platform,
-						// @ts-expect-error
 						platformId: subjectSync.value.platformId,
 					});
 				if (data.length > 0) {

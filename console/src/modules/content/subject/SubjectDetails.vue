@@ -669,7 +669,7 @@ const fetchSubjectSyncs = async () => {
 };
 
 const subjectTagEditDialogVisible = ref(false);
-const currentSelectSubjectTagForEdit = ref<SubjectTag>();
+const currentSelectSubjectTagForEdit = ref<SubjectTag>({} as SubjectTag);
 const onTagContextMenu = (e: MouseEvent, tag: SubjectTag) => {
 	e.preventDefault();
 	ContextMenu.showContextMenu({
