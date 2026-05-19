@@ -121,10 +121,14 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .container {
-	// overflow: hidden;
+	overflow: hidden;
 	width: 100%;
 	height: auto;
 	aspect-ratio: 24/39;
+
+	:deep(.el-card__body) {
+		overflow: hidden;
+	}
 
 	.card-header {
 		overflow: hidden;
