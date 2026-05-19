@@ -37,6 +37,7 @@ import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.cache.annotation.FluxCacheable;
 import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.cache.annotation.MonoCacheable;
 import run.ikaros.server.core.subject.event.SubjectAddEvent;
@@ -113,7 +114,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheEvict
+    @MonoCacheable(value = "subject:", key = "#bgmtvId")
     public Mono<Subject> findByBgmId(@Nonnull UUID subjectId, String bgmtvId) {
         Assert.notNull(subjectId, "'subjectId' must not null.");
         Assert.hasText(bgmtvId, "'bgmtvId' must has text.");
@@ -128,7 +129,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheEvict
+    @MonoCacheable(value = "subject:",
+        key = "#subjectId + ' ' + #platform.toString() + ' ' + #platformId")
     public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull UUID subjectId,
                                                                  @Nonnull SubjectSyncPlatform
                                                                      platform,
@@ -143,7 +145,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheEvict
+    @FluxCacheable(value = "subject:platform:",
+        key = "#subjectSyncPlatform.toString() + ' ' + #platformId")
     public Flux<Subject> findByPlatformAndPlatformId(
         @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
@@ -155,7 +158,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
 
     @Override
     @MonoCacheable(value = "subject:",
-        key = "#subjectSyncPlatform.toString() + ' ' #platformId.toString()")
+        key = "#subjectSyncPlatform.toString() + ' ' + #platformId.toString()")
     public Mono<Boolean> existsByPlatformAndPlatformId(
         @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
@@ -243,7 +246,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     }
 
     @Override
-    @MonoCacheEvict(value = "subject:", key = "#id")
+    @MonoCacheEvict
     public Mono<Void> deleteById(UUID id) {
         Assert.notNull(id, "'id' must not null.");
         return subjectRepository.existsById(id)
