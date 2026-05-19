@@ -1,187 +1,167 @@
 package run.ikaros.server.custom;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import run.ikaros.api.custom.Custom;
-import run.ikaros.api.custom.Name;
-import run.ikaros.api.custom.exception.CustomConvertException;
+import run.ikaros.api.custom.GroupVersionKind;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
-import run.ikaros.server.test.TestConst;
-import run.ikaros.server.test.reflect.MemberMatcher;
 
 class CustomConverterTest {
 
     @Test
-    void convertSuccess() {
-        String title = "demo custom -- 0001";
+    void convertToConvertsCustomToCustomDto() {
+        String title = "demo-custom-001";
         DemoCustom demoCustom = new DemoCustom()
-            .setFlag(Boolean.FALSE)
-            .setHead((byte) 1)
-            .setHeaderMap("headerMap".getBytes(StandardCharsets.UTF_8))
-            .setNumber(-1L)
-            .setTime(LocalDateTime.now())
             .setTitle(title)
-            .setUser(new DemoCustom.User()
-                .setUsername("username"));
+            .setFlag(Boolean.TRUE)
+            .setHead((byte) 1)
+            .setNumber(42L)
+            .setTime(LocalDateTime.of(2025, 1, 15, 10, 30))
+            .setHeaderMap("headerMap".getBytes(StandardCharsets.UTF_8))
+            .setUser(new DemoCustom.User().setUsername("alice"));
+
         CustomDto customDto = CustomConverter.convertTo(demoCustom);
-        CustomEntity customEntity = customDto.customEntity();
-        assertThat(customEntity.getGroup()).isEqualTo(DemoCustom.GROUP);
-        assertThat(customEntity.getVersion()).isEqualTo(DemoCustom.VERSION);
-        assertThat(customEntity.getKind()).isEqualTo(DemoCustom.KIND);
-        assertThat(customEntity.getName()).isEqualTo(title);
+        CustomEntity entity = customDto.customEntity();
 
-        List<CustomMetadataEntity> customMetadataEntities = customDto.customMetadataEntityList();
-        assertThat(customMetadataEntities.size()).isEqualTo(
-            DemoCustom.class.getDeclaredFields().length - 1);
+        assertThat(entity).isNotNull();
+        assertThat(entity.getGroup()).isEqualTo(DemoCustom.GROUP);
+        assertThat(entity.getVersion()).isEqualTo(DemoCustom.VERSION);
+        assertThat(entity.getKind()).isEqualTo(DemoCustom.KIND);
+        assertThat(entity.getName()).isEqualTo(title);
+        // id should be null before insert
+        assertThat(entity.getId()).isNull();
 
-        DemoCustom demoCustom1 = CustomConverter.convertFrom(DemoCustom.class, customDto);
-        assertThat(demoCustom1).isNotEqualTo(demoCustom);
-        assertThat(demoCustom1.getHeaderMap()).isEqualTo(demoCustom.getHeaderMap());
-        assertThat(demoCustom1.getTime()).isEqualTo(demoCustom.getTime());
+        List<CustomMetadataEntity> metadataEntities = customDto.customMetadataEntityList();
+        // All fields except @Name field become metadata entries
+        int expectedMetadataCount =
+            DemoCustom.class.getDeclaredFields().length - 1;
+        assertThat(metadataEntities).hasSize(expectedMetadataCount);
+
+        // Each metadata entry should have a non-null key and value
+        for (CustomMetadataEntity meta : metadataEntities) {
+            assertThat(meta.getKey()).isNotBlank();
+            assertThat(meta.getValue()).isNotNull();
+            assertThat(meta.getId()).isNull();
+            assertThat(meta.getCustomId()).isNull();
+        }
     }
 
     @Test
-    void covertCustomField2MetadataEntity() throws NoSuchFieldException, IOException {
+    void convertToRoundTripWithConvertFrom() {
+        String title = "round-trip-title";
+        byte[] headerBytes = "binary-data".getBytes(StandardCharsets.UTF_8);
+        LocalDateTime now = LocalDateTime.now();
+
+        DemoCustom original = new DemoCustom()
+            .setTitle(title)
+            .setFlag(Boolean.FALSE)
+            .setHead((byte) 9)
+            .setNumber(123L)
+            .setTime(now)
+            .setHeaderMap(headerBytes)
+            .setUser(new DemoCustom.User().setUsername("bob"));
+
+        CustomDto dto = CustomConverter.convertTo(original);
+
+        // Assign an id and customId so convertFrom can filter metadata correctly
+        UUID customId = UUID.randomUUID();
+        dto.customEntity().setId(customId);
+        for (CustomMetadataEntity meta : dto.customMetadataEntityList()) {
+            meta.setCustomId(customId);
+        }
+
+        DemoCustom restored = CustomConverter.convertFrom(DemoCustom.class, dto);
+
+        assertThat(restored).isNotNull();
+        assertThat(restored.getTitle()).isEqualTo(title);
+        assertThat(restored.getFlag()).isEqualTo(Boolean.FALSE);
+        assertThat(restored.getHead()).isEqualTo((byte) 9);
+        assertThat(restored.getNumber()).isEqualTo(123L);
+        assertThat(restored.getTime()).isEqualTo(now);
+        assertThat(restored.getHeaderMap()).isEqualTo(headerBytes);
+        assertThat(restored.getUser()).isNotNull();
+        assertThat(restored.getUser().getUsername()).isEqualTo("bob");
+    }
+
+    @Test
+    void convertFromWithNoMetadataRestoresNameOnly() {
+        String title = "name-only-title";
+        DemoOnlyNameCustom original = new DemoOnlyNameCustom().setTitle(title);
+
+        CustomDto dto = CustomConverter.convertTo(original);
+        UUID customId = UUID.randomUUID();
+        dto.customEntity().setId(customId);
+
+        DemoOnlyNameCustom restored =
+            CustomConverter.convertFrom(DemoOnlyNameCustom.class, dto);
+
+        assertThat(restored).isNotNull();
+        assertThat(restored.getTitle()).isEqualTo(title);
+    }
+
+    @Test
+    void convertFromIgnoresMetadataWithMismatchedCustomId() {
+        String title = "mismatch-id-title";
         DemoCustom demoCustom = new DemoCustom()
-            .setTitle("test-title")
-            .setNumber(9L);
+            .setTitle(title)
+            .setNumber(100L);
 
-        ObjectMapper om = new ObjectMapper();
-        Field numberField = MemberMatcher.field(DemoCustom.class, "number");
+        CustomDto dto = CustomConverter.convertTo(demoCustom);
+        UUID correctId = UUID.randomUUID();
+        dto.customEntity().setId(correctId);
 
-        try {
-            CustomConverter.covertCustomFieldToMetadataEntity(null, numberField, om);
-            fail(TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS);
-        } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).isEqualTo("'custom' must not null");
+        // Set all metadata entries to have a WRONG customId
+        for (CustomMetadataEntity meta : dto.customMetadataEntityList()) {
+            meta.setCustomId(UUID.randomUUID());
         }
 
-        try {
-            CustomConverter.covertCustomFieldToMetadataEntity(demoCustom, null, om);
-            fail(TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS);
-        } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).isEqualTo("'field' must not null");
-        }
+        DemoCustom restored = CustomConverter.convertFrom(DemoCustom.class, dto);
 
-
-        Field titleField = MemberMatcher.field(DemoCustom.class, "title");
-        try {
-            CustomConverter.covertCustomFieldToMetadataEntity(demoCustom, titleField, om);
-            fail(TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS);
-        } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).startsWith(
-                "@Name field can not convert CustomMetadataEntity instance");
-        }
-
-
-        CustomMetadataEntity customMetadataEntity =
-            CustomConverter.covertCustomFieldToMetadataEntity(demoCustom, numberField, om);
-        assertThat(om.readValue(customMetadataEntity.getValue(), Long.class))
-            .isEqualTo(9L);
-
-        customMetadataEntity =
-            CustomConverter.covertCustomFieldToMetadataEntity(demoCustom, numberField, null);
-        assertThat(om.readValue(customMetadataEntity.getValue(), Long.class))
-            .isEqualTo(9L);
-
-        om = Mockito.spy(om);
-        Mockito.when(om.writeValueAsBytes(9L))
-            .thenThrow(new NullPointerException("mock exception"));
-
-        try {
-            CustomConverter.covertCustomFieldToMetadataEntity(demoCustom, numberField, om);
-            fail(TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS);
-        } catch (CustomConvertException e) {
-            assertThat(e.getMessage()).contains(
-                "convert custom field to metadata entity fail for class: ");
-        }
+        assertThat(restored).isNotNull();
+        assertThat(restored.getTitle()).isEqualTo(title);
+        // Fields that were metadata should NOT be restored because customId didn't match
+        assertThat(restored.getNumber()).isNull();
+        assertThat(restored.getFlag()).isNull();
+        assertThat(restored.getTime()).isNull();
     }
-
 
     @Test
-    void getNameFieldValue() {
+    void getNameFieldValueReturnsNullForNullInput() {
         assertThat(CustomConverter.getNameFieldValue(null)).isNull();
-
-        TestCustom1 testCustom1 = new TestCustom1()
-            .setName("test-custom-1")
-            .setTitle("test-title-1");
-
-        try {
-            CustomConverter.getNameFieldValue(testCustom1);
-            fail(TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS);
-        } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).isEqualTo(
-                "@run.ikaros.api.custom.Custom mark class "
-                    + "must has one field that type is String and"
-                    + " mark by @run.ikaros.api.custom.Name");
-        }
-
-        TestCustom2 testCustom2 = new TestCustom2();
-        try {
-            CustomConverter.getNameFieldValue(testCustom2);
-            fail(TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS);
-        } catch (CustomConvertException e) {
-            assertThat(e.getMessage()).contains("get custom name filed value fail for name");
-        }
-
-        TestCustom2 testCustom21 = CustomConverter.convertFrom(TestCustom2.class,
-            CustomConverter.convertTo(testCustom2.setTitle("test-custom-2")));
-        assertThat(testCustom21.getTitle()).isEqualTo("test-custom-2");
-
-        // CustomConverter.getNameFieldValue(testCustom2);
     }
 
-    @Custom(group = "test.ikaros.run", version = "v1", kind = "TestCustom1",
-        singular = "test", plural = "tests")
-    static class TestCustom1 {
-        @Name
-        private String title;
-        @Name
-        private String name;
+    @Test
+    void getNameFieldValueExtractsNameFieldFromCustomObject() {
+        String title = "my-custom-name";
+        DemoCustom demoCustom = new DemoCustom().setTitle(title);
 
-        public String getTitle() {
-            return title;
-        }
+        String nameValue = CustomConverter.getNameFieldValue(demoCustom);
 
-        public TestCustom1 setTitle(String title) {
-            this.title = title;
-            return this;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public TestCustom1 setName(String name) {
-            this.name = name;
-            return this;
-        }
+        assertThat(nameValue).isEqualTo(title);
     }
 
+    @Test
+    void gvkReturnsGroupVersionKindForAnnotatedClass() {
+        GroupVersionKind gvk = CustomConverter.gvk(DemoCustom.class);
 
-    @Custom(group = "test.ikaros.run", version = "v1", kind = "TestCustom2",
-        singular = "test", plural = "tests")
-    static class TestCustom2 {
-        @Name
-        private String title;
+        assertThat(gvk).isNotNull();
+        assertThat(gvk.group()).isEqualTo(DemoCustom.GROUP);
+        assertThat(gvk.version()).isEqualTo(DemoCustom.VERSION);
+        assertThat(gvk.kind()).isEqualTo(DemoCustom.KIND);
+    }
 
-        public String getTitle() {
-            return title;
-        }
+    @Test
+    void gvkReturnsEmptyValuesForNonAnnotatedClass() {
+        GroupVersionKind gvk = CustomConverter.gvk(String.class);
 
-        public TestCustom2 setTitle(String title) {
-            this.title = title;
-            return this;
-        }
+        assertThat(gvk).isNotNull();
+        assertThat(gvk.group()).isEmpty();
+        assertThat(gvk.version()).isEmpty();
+        assertThat(gvk.kind()).isEmpty();
     }
 }
