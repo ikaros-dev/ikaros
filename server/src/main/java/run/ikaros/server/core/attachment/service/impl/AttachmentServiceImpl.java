@@ -389,6 +389,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    @MonoCacheEvict
     public Mono<Void> removeByIdOnlyRecords(UUID attachmentId) {
         Assert.notNull(attachmentId, "'attachmentId' must not null.");
         return repository.findById(attachmentId)

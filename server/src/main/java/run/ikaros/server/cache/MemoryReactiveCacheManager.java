@@ -1,5 +1,6 @@
 package run.ikaros.server.cache;
 
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import reactor.core.publisher.Mono;
 
@@ -18,9 +19,8 @@ public class MemoryReactiveCacheManager implements ReactiveCacheManager {
 
     @Override
     public Mono<Boolean> put(String key, Object value) {
-        Object put = cacheMap.put(key, value);
-        boolean result = put != null;
-        return Mono.just(result);
+        cacheMap.put(key, value);
+        return Mono.just(true);
     }
 
     @Override
@@ -32,13 +32,16 @@ public class MemoryReactiveCacheManager implements ReactiveCacheManager {
 
     @Override
     public Mono<Boolean> removePrefix(String keyPrefix) {
-        boolean result = true;
-        for (String key : cacheMap.keySet()) {
+        boolean removedAny = false;
+        Iterator<String> it = cacheMap.keySet().iterator();
+        while (it.hasNext()) {
+            String key = it.next();
             if (key.startsWith(keyPrefix)) {
-                result = cacheMap.remove(key) != null;
+                it.remove();  // 迭代器删除更安全
+                removedAny = true;
             }
         }
-        return Mono.just(result);
+        return Mono.just(removedAny);
     }
 
     @Override
