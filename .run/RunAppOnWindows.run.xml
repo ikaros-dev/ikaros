@@ -2,6 +2,7 @@
   <configuration default="false" name="RunAppOnWindows" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="run.ikaros.server.IkarosApplication" />
     <module name="ikaros.server.main" />
+    <shortenClasspath name="ARGS_FILE" />
     <option name="VM_PARAMETERS" value="-Dspring.profiles.active=dev,local" />
     <extension name="coverage">
       <pattern>
