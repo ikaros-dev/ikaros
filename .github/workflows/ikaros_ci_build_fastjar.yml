@@ -28,7 +28,7 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
       - name: Reduce pnpm concurrency
-        run: pnpm config set fetch-retries 5 && pnpm config set fetch-timeout 60000 && pnpm config set max-concurrent-requests 6
+        run: pnpm config set fetch-retries 5 && pnpm config set fetch-timeout 60000 && pnpm config set network-concurrency 6
       - name: Use npm mirror
         run: |
           npm config set registry https://registry.npmmirror.com
