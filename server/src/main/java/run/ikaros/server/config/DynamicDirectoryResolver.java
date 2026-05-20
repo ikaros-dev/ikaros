@@ -106,7 +106,7 @@ public class DynamicDirectoryResolver implements ResourceResolver {
             // 检查请求路径是否以虚拟前缀开头
             if (requestPath.startsWith(virtualPrefix)) {
                 // 提取相对路径部分
-                String relativePath = requestPath.substring(virtualPrefix.length());
+                String relativePath = requestPath.substring(virtualPrefix.length() + 1);
 
                 // 构建真实文件路径
                 Path realFilePath = realBaseDir.resolve(relativePath).normalize();
