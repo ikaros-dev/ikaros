@@ -19,7 +19,10 @@ public class ReactiveSubjectDocConverter {
         subjectDoc.setInfobox(entity.getInfobox());
         subjectDoc.setType(entity.getType());
         subjectDoc.setNameCn(entity.getNameCn());
-        subjectDoc.setAirTime(entity.getAirTime().toEpochSecond(OffsetDateTime.now().getOffset()));
+        if (entity.getAirTime() != null) {
+            subjectDoc.setAirTime(
+                entity.getAirTime().toEpochSecond(OffsetDateTime.now().getOffset()));
+        }
         subjectDoc.setCover(entity.getCover());
         return Mono.just(subjectDoc);
     }

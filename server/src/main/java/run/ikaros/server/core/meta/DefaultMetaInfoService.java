@@ -30,7 +30,8 @@ public class DefaultMetaInfoService implements MetaInfoService {
     }
 
     @Override
-    public Mono<SubjectRecord> getSubjectByPlatformId(SubjectSyncPlatform platform, String platformId) {
+    public Mono<SubjectRecord> getSubjectByPlatformId(
+        SubjectSyncPlatform platform, String platformId) {
         AssertUtils.notNull(platform, "'platform' must not be null.");
         AssertUtils.notBlank(platformId, "'platformId' must not blank.");
         return findByPlatform(platform)
