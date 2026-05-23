@@ -6,8 +6,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.meta.MetaInfoExtensionPoint;
-import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.SubjectRecord;
 import run.ikaros.api.infra.utils.AssertUtils;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
@@ -23,7 +22,7 @@ public class DefaultMetaInfoService implements MetaInfoService {
     }
 
     @Override
-    public Flux<Subject> searchSubjects(SubjectSyncPlatform platform, String keyword) {
+    public Flux<SubjectRecord> searchSubjects(SubjectSyncPlatform platform, String keyword) {
         AssertUtils.notNull(platform, "'platform' must not be null.");
         AssertUtils.notBlank(keyword, "'keyword' must not blank.");
         return findByPlatform(platform)
@@ -31,27 +30,11 @@ public class DefaultMetaInfoService implements MetaInfoService {
     }
 
     @Override
-    public Mono<Subject> getSubjectByPlatformId(SubjectSyncPlatform platform, String platformId) {
+    public Mono<SubjectRecord> getSubjectByPlatformId(SubjectSyncPlatform platform, String platformId) {
         AssertUtils.notNull(platform, "'platform' must not be null.");
         AssertUtils.notBlank(platformId, "'platformId' must not blank.");
         return findByPlatform(platform)
             .flatMap(ext -> ext.getSubjectByPlatformId(platformId));
-    }
-
-    @Override
-    public Flux<Episode> getEpisodesByPlatformId(SubjectSyncPlatform platform, String platformId) {
-        AssertUtils.notNull(platform, "'platform' must not be null.");
-        AssertUtils.notBlank(platformId, "'platformId' must not blank.");
-        return findByPlatform(platform)
-            .flatMapMany(ext -> ext.getEpisodesByPlatformId(platformId));
-    }
-
-    @Override
-    public Flux<String> getTagsByPlatformId(SubjectSyncPlatform platform, String platformId) {
-        AssertUtils.notNull(platform, "'platform' must not be null.");
-        AssertUtils.notBlank(platformId, "'platformId' must not blank.");
-        return findByPlatform(platform)
-            .flatMapMany(ext -> ext.getTagsByPlatformId(platformId));
     }
 
     private Mono<MetaInfoExtensionPoint> findByPlatform(SubjectSyncPlatform platform) {

@@ -2,8 +2,7 @@ package run.ikaros.api.core.meta;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.SubjectRecord;
 import run.ikaros.api.plugin.IkarosExtensionPoint;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 
@@ -23,20 +22,10 @@ public interface MetaInfoExtensionPoint extends IkarosExtensionPoint {
     /**
      * Search subjects by keyword, returning the most matching results.
      */
-    Flux<Subject> searchSubjects(String keyword);
+    Flux<SubjectRecord> searchSubjects(String keyword);
 
     /**
-     * Get a single subject by platform id.
+     * Get a single subject record by platform id.
      */
-    Mono<Subject> getSubjectByPlatformId(String platformId);
-
-    /**
-     * Get episodes for a subject by platform id.
-     */
-    Flux<Episode> getEpisodesByPlatformId(String platformId);
-
-    /**
-     * Get tag names for a subject by platform id.
-     */
-    Flux<String> getTagsByPlatformId(String platformId);
+    Mono<SubjectRecord> getSubjectByPlatformId(String platformId);
 }

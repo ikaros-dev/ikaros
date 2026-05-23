@@ -14,8 +14,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
-import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.SubjectRecord;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.meta.MetaInfoService;
 import run.ikaros.server.endpoint.CoreEndpoint;
@@ -50,14 +49,15 @@ public class MetaInfoEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(String.class))
                     .response(Builder.responseBuilder()
-                        .description("Matched subjects.")
-                        .implementationArray(Subject.class))
+                        .description("Matched subject records.")
+                        .implementationArray(SubjectRecord.class))
             )
 
             .GET("/metaInfo/subject", this::getSubject,
                 builder -> builder.operationId("GetMetaInfoSubjectByPlatformId")
                     .tag(tag)
-                    .description("Get subject from third-party metadata platform by platform id.")
+                    .description("Get subject record from third-party metadata platform "
+                        + "by platform id.")
                     .parameter(parameterBuilder()
                         .name("platform")
                         .description("Platform.")
@@ -69,46 +69,8 @@ public class MetaInfoEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(String.class))
                     .response(Builder.responseBuilder()
-                        .description("Subject info.")
-                        .implementation(Subject.class))
-            )
-
-            .GET("/metaInfo/episodes", this::getEpisodes,
-                builder -> builder.operationId("GetMetaInfoEpisodesByPlatformId")
-                    .tag(tag)
-                    .description("Get episodes from third-party metadata platform by platform id.")
-                    .parameter(parameterBuilder()
-                        .name("platform")
-                        .description("Platform.")
-                        .required(true)
-                        .implementation(SubjectSyncPlatform.class))
-                    .parameter(parameterBuilder()
-                        .name("platformId")
-                        .description("Platform id.")
-                        .required(true)
-                        .implementation(String.class))
-                    .response(Builder.responseBuilder()
-                        .description("Episodes.")
-                        .implementationArray(Episode.class))
-            )
-
-            .GET("/metaInfo/tags", this::getTags,
-                builder -> builder.operationId("GetMetaInfoTagsByPlatformId")
-                    .tag(tag)
-                    .description("Get tag names from third-party metadata platform by platform id.")
-                    .parameter(parameterBuilder()
-                        .name("platform")
-                        .description("Platform.")
-                        .required(true)
-                        .implementation(SubjectSyncPlatform.class))
-                    .parameter(parameterBuilder()
-                        .name("platformId")
-                        .description("Platform id.")
-                        .required(true)
-                        .implementation(String.class))
-                    .response(Builder.responseBuilder()
-                        .description("Tag names.")
-                        .implementationArray(String.class))
+                        .description("Subject record with episodes, tags and syncs.")
+                        .implementation(SubjectRecord.class))
             )
 
             .build();
@@ -126,23 +88,7 @@ public class MetaInfoEndpoint implements CoreEndpoint {
         SubjectSyncPlatform platform = parsePlatform(request);
         String platformId = parseRequiredParam(request, "platformId");
         return service.getSubjectByPlatformId(platform, platformId)
-            .flatMap(subject -> ServerResponse.ok().bodyValue(subject));
-    }
-
-    private Mono<ServerResponse> getEpisodes(ServerRequest request) {
-        SubjectSyncPlatform platform = parsePlatform(request);
-        String platformId = parseRequiredParam(request, "platformId");
-        return service.getEpisodesByPlatformId(platform, platformId)
-            .collectList()
-            .flatMap(list -> ServerResponse.ok().bodyValue(list));
-    }
-
-    private Mono<ServerResponse> getTags(ServerRequest request) {
-        SubjectSyncPlatform platform = parsePlatform(request);
-        String platformId = parseRequiredParam(request, "platformId");
-        return service.getTagsByPlatformId(platform, platformId)
-            .collectList()
-            .flatMap(list -> ServerResponse.ok().bodyValue(list));
+            .flatMap(record -> ServerResponse.ok().bodyValue(record));
     }
 
     private SubjectSyncPlatform parsePlatform(ServerRequest request) {
