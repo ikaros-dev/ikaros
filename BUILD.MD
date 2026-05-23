@@ -1,7 +1,7 @@
 # 编译环境
 
 - JDK: 21
-- Gradle: 8.14.3
+- Gradle: 8.14.4
 - SpringBoot: 4.0.1
 - CheckStyle: 9.3
 - Vue: 3
