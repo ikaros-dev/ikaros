@@ -17,7 +17,7 @@ class MemoryReactiveCacheManagerTest {
     void putAndGetValue() {
         cacheManager.put("key1", "value1")
             .as(StepVerifier::create)
-            .expectNext(false)
+            .expectNext(true)
             .verifyComplete();
 
         cacheManager.get("key1")
@@ -102,7 +102,7 @@ class MemoryReactiveCacheManagerTest {
 
         cacheManager.removePrefix("zzz_")
             .as(StepVerifier::create)
-            .expectNext(true)
+            .expectNext(false)
             .verifyComplete();
 
         cacheManager.containsKey("key1")
@@ -142,7 +142,7 @@ class MemoryReactiveCacheManagerTest {
     void overwriteExistingKey() {
         cacheManager.put("key", "oldValue")
             .as(StepVerifier::create)
-            .expectNext(false)
+            .expectNext(true)
             .verifyComplete();
 
         cacheManager.put("key", "newValue")

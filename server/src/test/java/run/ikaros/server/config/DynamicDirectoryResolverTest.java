@@ -78,7 +78,7 @@ class DynamicDirectoryResolverTest {
         Path file = Files.createFile(tempDir.resolve("test.txt"));
         Files.writeString(file, "hello");
 
-        resolver.addDirectoryMapping("/uploads/", tempDir.toString());
+        resolver.addDirectoryMapping("/uploads", tempDir.toString());
 
         ServerWebExchange exchange = mock(ServerWebExchange.class);
         ResourceResolverChain chain = mock(ResourceResolverChain.class);
