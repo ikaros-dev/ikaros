@@ -1,12 +1,10 @@
 package run.ikaros.server.core.binding.handler;
 
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.binding.DirectoryBindingContext;
 import run.ikaros.api.core.binding.DirectoryBindingStep;
-import run.ikaros.api.core.subject.SubjectRecord;
 import run.ikaros.server.core.meta.MetaInfoService;
 
 /**
@@ -47,7 +45,8 @@ public class FindSubjectInfoStep implements DirectoryBindingStep {
             .filter(list -> !list.isEmpty())
             .map(list -> list.get(0))
             .flatMap(record -> {
-                if (record.subject() != null && record.syncs() != null && !record.syncs().isEmpty()) {
+                if (record.subject() != null && record.syncs() != null
+                    && !record.syncs().isEmpty()) {
                     String platformId = record.syncs().get(0).getPlatformId();
                     context.setPlatformId(platformId);
                     log.info("Found subject info: name={}, platformId={}",

@@ -38,10 +38,10 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
 
     public ProcessSpSubdirectoriesStep(AttachmentRepository attachmentRepository,
                                         EpisodeService episodeService,
-                                        AttachmentReferenceRepository attachmentReferenceRepository) {
+                                        AttachmentReferenceRepository referenceRepository) {
         this.attachmentRepository = attachmentRepository;
         this.episodeService = episodeService;
-        this.attachmentReferenceRepository = attachmentReferenceRepository;
+        this.attachmentReferenceRepository = referenceRepository;
     }
 
     @Override

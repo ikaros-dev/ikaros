@@ -65,7 +65,8 @@ public class ListFilesStep implements DirectoryBindingStep {
                     .flatMap(videoFiles -> {
                         context.setChildAttachments(videoFiles);
                         return Flux.fromIterable(spDirEntityList)
-                            .concatMap(entity -> copyProperties(entity, Attachment.builder().build()))
+                            .concatMap(entity ->
+                                copyProperties(entity, Attachment.builder().build()))
                             .collectList();
                     })
                     .map(spDirs -> {
