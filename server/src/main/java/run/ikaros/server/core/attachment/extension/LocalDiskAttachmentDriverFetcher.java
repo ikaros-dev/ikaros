@@ -14,8 +14,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +25,7 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.infra.utils.FileUtils;
@@ -59,38 +58,37 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
         if (files == null) {
             return Flux.empty();
         }
-        List<Attachment> attachments = new ArrayList<>();
-        for (File f : files) {
-            long size = 0;
-            String sha1 = "";
-            try {
-                size = Files.size(Path.of(f.toURI()));
-                if (f.isFile()) {
-                    sha1 = FileUtils.calculateSha1(f.getAbsolutePath());
+        return Flux.fromArray(files)
+            .parallel()
+            .runOn(Schedulers.boundedElastic())
+            .map(f -> {
+                long size = 0;
+                String sha1 = "";
+                try {
+                    size = Files.size(Path.of(f.toURI()));
+                    if (f.isFile()) {
+                        sha1 = FileUtils.calculateSha1(f.getAbsolutePath());
+                    }
+                } catch (IOException ioException) {
+                    log.warn("File size error: {}", ioException.getMessage());
+                } catch (NoSuchAlgorithmException e) {
+                    log.warn("File sha1 error: {}", e.getMessage());
                 }
-            } catch (IOException ioException) {
-                log.warn("File size error: {}", ioException.getMessage());
-            } catch (NoSuchAlgorithmException e) {
-                log.warn("File sha1 error: {}", e.getMessage());
-            }
-
-            Attachment attachment = Attachment.builder()
-                .parentId(parentAttId)
-                .type(f.isFile() ? AttachmentType.Driver_File : AttachmentType.Driver_Directory)
-                .name(f.getName())
-                .path(f.getPath())
-                .url(f.getPath())
-                .fsPath(f.getAbsolutePath())
-                .size(size)
-                .sha1(sha1)
-                .updateTime(LocalDateTime.now())
-                .deleted(false)
-                .driverId(driverId)
-                .build();
-            attachments.add(attachment);
-        }
-
-        return Flux.fromStream(attachments.stream());
+                return Attachment.builder()
+                    .parentId(parentAttId)
+                    .type(f.isFile() ? AttachmentType.Driver_File : AttachmentType.Driver_Directory)
+                    .name(f.getName())
+                    .path(f.getPath())
+                    .url(f.getPath())
+                    .fsPath(f.getAbsolutePath())
+                    .size(size)
+                    .sha1(sha1)
+                    .updateTime(LocalDateTime.now())
+                    .deleted(false)
+                    .driverId(driverId)
+                    .build();
+            })
+            .sequential();
     }
 
     @Override
