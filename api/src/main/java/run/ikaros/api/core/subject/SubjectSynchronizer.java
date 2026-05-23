@@ -1,13 +1,13 @@
 package run.ikaros.api.core.subject;
 
 import java.util.List;
-import org.pf4j.ExtensionPoint;
 import run.ikaros.api.core.character.Character;
 import run.ikaros.api.core.person.Person;
 import run.ikaros.api.core.tag.Tag;
+import run.ikaros.api.plugin.IkarosExtensionPoint;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 
-public interface SubjectSynchronizer extends ExtensionPoint {
+public interface SubjectSynchronizer extends IkarosExtensionPoint {
     /**
      * 当前插件同步处理的对应的平台，比如是bgmtv的同步插件则返回对应的平台枚举.
      *

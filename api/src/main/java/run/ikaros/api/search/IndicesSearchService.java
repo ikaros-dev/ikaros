@@ -1,9 +1,9 @@
 package run.ikaros.api.search;
 
 import java.util.Set;
-import org.pf4j.ExtensionPoint;
+import run.ikaros.api.plugin.IkarosExtensionPoint;
 
-public interface IndicesSearchService extends ExtensionPoint {
+public interface IndicesSearchService extends IkarosExtensionPoint {
 
     void removeDocuments(Set<String> termTexts) throws Exception;
 }

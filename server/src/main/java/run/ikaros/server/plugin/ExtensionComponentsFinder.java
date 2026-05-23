@@ -2,12 +2,12 @@ package run.ikaros.server.plugin;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.pf4j.ExtensionPoint;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import run.ikaros.api.plugin.IkarosExtensionPoint;
 
 /**
- * Extension components finder for {@link ExtensionPoint}.
+ * Extension components finder for {@link IkarosExtensionPoint}.
  */
 @Component
 public class ExtensionComponentsFinder {
@@ -56,8 +56,9 @@ public class ExtensionComponentsFinder {
     }
 
     private void assertExtensionPoint(Class<?> type) {
-        if (!ExtensionPoint.class.isAssignableFrom(type)) {
-            throw new IllegalArgumentException("The type must be a subclass of ExtensionPoint");
+        if (!IkarosExtensionPoint.class.isAssignableFrom(type)) {
+            throw new IllegalArgumentException(
+                "The type must be a subclass of IkarosExtensionPoint");
         }
     }
 }
