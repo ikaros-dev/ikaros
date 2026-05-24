@@ -108,7 +108,7 @@ task buildFrontendPackageShared(type: NpxTask) {
 
 task pnpmInstallPackageApiClient(type: NpxTask) {
     command = 'pnpm'
-    args = ['--filter', './packages/api-client', 'install', '--ignore-scripts=false']
+    args = ['--filter', './packages/api-client', 'install', '--ignore-scripts=true']
 }
 
 task buildFrontendPackageApiClient(type: NpxTask) {
