@@ -111,13 +111,7 @@ task pnpmInstallPackageApiClient(type: NpxTask) {
     args = ['--filter', './packages/api-client', 'install', '--ignore-scripts=false']
     doFirst {
         // 在安装前批准构建脚本
-        exec {
-            commandLine 'npx', 'pnpm', 'approve-builds', '--global',
-                    '@nestjs/core', '@openapitools/openapi-generator-cli',
-                    '@parcel/watcher', 'esbuild', 'vue-demi'
-        }
-        // 或者批准所有包
-        // commandLine 'npx', 'pnpm', 'approve-builds', '--global', '*'
+        commandLine 'npx', 'pnpm', 'approve-builds', '--global', '*'
     }
 }
 
