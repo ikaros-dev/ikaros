@@ -109,10 +109,6 @@ task buildFrontendPackageShared(type: NpxTask) {
 task pnpmInstallPackageApiClient(type: NpxTask) {
     command = 'pnpm'
     args = ['--filter', './packages/api-client', 'install', '--ignore-scripts=false']
-    doFirst {
-        // 在安装前批准构建脚本
-        commandLine 'npx', 'pnpm', 'approve-builds', '--global', '*'
-    }
 }
 
 task buildFrontendPackageApiClient(type: NpxTask) {
