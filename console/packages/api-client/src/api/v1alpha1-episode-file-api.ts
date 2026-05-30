@@ -44,7 +44,7 @@ import { BatchMatchingEpisodeFile } from "../models";
  * @export
  */
 export const V1alpha1EpisodeFileApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -55,13 +55,13 @@ export const V1alpha1EpisodeFileApiAxiosParamCreator = function (
      */
     batchMatchingEpisodeFile: async (
       batchMatchingEpisodeFile: BatchMatchingEpisodeFile,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'batchMatchingEpisodeFile' is not null or undefined
       assertParamExists(
         "batchMatchingEpisodeFile",
         "batchMatchingEpisodeFile",
-        batchMatchingEpisodeFile
+        batchMatchingEpisodeFile,
       );
       const localVarPath = `/api/v1alpha1/episode/file/batch`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -100,7 +100,7 @@ export const V1alpha1EpisodeFileApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         batchMatchingEpisodeFile,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -118,7 +118,7 @@ export const V1alpha1EpisodeFileApiAxiosParamCreator = function (
     createEpisodeFile: async (
       episodeId: number,
       fileId: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'episodeId' is not null or undefined
       assertParamExists("createEpisodeFile", "episodeId", episodeId);
@@ -174,7 +174,7 @@ export const V1alpha1EpisodeFileApiAxiosParamCreator = function (
     removeEpisodeFile: async (
       episodeId: number,
       fileId: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'episodeId' is not null or undefined
       assertParamExists("removeEpisodeFile", "episodeId", episodeId);
@@ -228,7 +228,7 @@ export const V1alpha1EpisodeFileApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1EpisodeFileApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     V1alpha1EpisodeFileApiAxiosParamCreator(configuration);
@@ -241,20 +241,20 @@ export const V1alpha1EpisodeFileApiFp = function (
      */
     async batchMatchingEpisodeFile(
       batchMatchingEpisodeFile: BatchMatchingEpisodeFile,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.batchMatchingEpisodeFile(
           batchMatchingEpisodeFile,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -267,7 +267,7 @@ export const V1alpha1EpisodeFileApiFp = function (
     async createEpisodeFile(
       episodeId: number,
       fileId: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -275,13 +275,13 @@ export const V1alpha1EpisodeFileApiFp = function (
         await localVarAxiosParamCreator.createEpisodeFile(
           episodeId,
           fileId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -294,7 +294,7 @@ export const V1alpha1EpisodeFileApiFp = function (
     async removeEpisodeFile(
       episodeId: number,
       fileId: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -302,13 +302,13 @@ export const V1alpha1EpisodeFileApiFp = function (
         await localVarAxiosParamCreator.removeEpisodeFile(
           episodeId,
           fileId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -321,7 +321,7 @@ export const V1alpha1EpisodeFileApiFp = function (
 export const V1alpha1EpisodeFileApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1EpisodeFileApiFp(configuration);
   return {
@@ -333,12 +333,12 @@ export const V1alpha1EpisodeFileApiFactory = function (
      */
     batchMatchingEpisodeFile(
       requestParameters: V1alpha1EpisodeFileApiBatchMatchingEpisodeFileRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .batchMatchingEpisodeFile(
           requestParameters.batchMatchingEpisodeFile,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -350,13 +350,13 @@ export const V1alpha1EpisodeFileApiFactory = function (
      */
     createEpisodeFile(
       requestParameters: V1alpha1EpisodeFileApiCreateEpisodeFileRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .createEpisodeFile(
           requestParameters.episodeId,
           requestParameters.fileId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -368,13 +368,13 @@ export const V1alpha1EpisodeFileApiFactory = function (
      */
     removeEpisodeFile(
       requestParameters: V1alpha1EpisodeFileApiRemoveEpisodeFileRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .removeEpisodeFile(
           requestParameters.episodeId,
           requestParameters.fileId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -453,12 +453,12 @@ export class V1alpha1EpisodeFileApi extends BaseAPI {
    */
   public batchMatchingEpisodeFile(
     requestParameters: V1alpha1EpisodeFileApiBatchMatchingEpisodeFileRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeFileApiFp(this.configuration)
       .batchMatchingEpisodeFile(
         requestParameters.batchMatchingEpisodeFile,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -472,13 +472,13 @@ export class V1alpha1EpisodeFileApi extends BaseAPI {
    */
   public createEpisodeFile(
     requestParameters: V1alpha1EpisodeFileApiCreateEpisodeFileRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeFileApiFp(this.configuration)
       .createEpisodeFile(
         requestParameters.episodeId,
         requestParameters.fileId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -492,13 +492,13 @@ export class V1alpha1EpisodeFileApi extends BaseAPI {
    */
   public removeEpisodeFile(
     requestParameters: V1alpha1EpisodeFileApiRemoveEpisodeFileRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeFileApiFp(this.configuration)
       .removeEpisodeFile(
         requestParameters.episodeId,
         requestParameters.fileId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

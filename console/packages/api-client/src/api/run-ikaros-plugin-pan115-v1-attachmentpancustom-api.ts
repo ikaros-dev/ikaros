@@ -56,7 +56,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
        */
       createAttachmentPan: async (
         attachmentPanCustom?: AttachmentPanCustom,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         const localVarPath = `/apis/run.ikaros.plugin.pan115/v1/attachment_pan`;
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -95,7 +95,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
         localVarRequestOptions.data = serializeDataIfNeeded(
           attachmentPanCustom,
           localVarRequestOptions,
-          configuration
+          configuration,
         );
 
         return {
@@ -111,14 +111,14 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
        */
       deleteAttachmentPan: async (
         name: string,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'name' is not null or undefined
         assertParamExists("deleteAttachmentPan", "name", name);
         const localVarPath =
           `/apis/run.ikaros.plugin.pan115/v1/attachment_pan/{name}`.replace(
             `{${"name"}}`,
-            encodeURIComponent(String(name))
+            encodeURIComponent(String(name)),
           );
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
         const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -165,14 +165,14 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
        */
       getAttachmentPan: async (
         name: string,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'name' is not null or undefined
         assertParamExists("getAttachmentPan", "name", name);
         const localVarPath =
           `/apis/run.ikaros.plugin.pan115/v1/attachment_pan/{name}`.replace(
             `{${"name"}}`,
-            encodeURIComponent(String(name))
+            encodeURIComponent(String(name)),
           );
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
         const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -221,7 +221,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
       getAttachmentPanMeta: async (
         name: string,
         metaName: string,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'name' is not null or undefined
         assertParamExists("getAttachmentPanMeta", "name", name);
@@ -278,7 +278,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
       getAttachmentPansByPaging: async (
         page: string,
         size: string,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'page' is not null or undefined
         assertParamExists("getAttachmentPansByPaging", "page", page);
@@ -331,7 +331,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
        * @throws {RequiredError}
        */
       listAttachmentPans: async (
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         const localVarPath = `/apis/run.ikaros.plugin.pan115/v1/attachment_pans`;
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -379,7 +379,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
        */
       updateAttachmentPan: async (
         attachmentPanCustom?: AttachmentPanCustom,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         const localVarPath = `/apis/run.ikaros.plugin.pan115/v1/attachment_pan`;
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -418,7 +418,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
         localVarRequestOptions.data = serializeDataIfNeeded(
           attachmentPanCustom,
           localVarRequestOptions,
-          configuration
+          configuration,
         );
 
         return {
@@ -438,7 +438,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
         name: string,
         metaName: string,
         body: string,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'name' is not null or undefined
         assertParamExists("updateAttachmentPanMeta", "name", name);
@@ -486,7 +486,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
         localVarRequestOptions.data = serializeDataIfNeeded(
           body,
           localVarRequestOptions,
-          configuration
+          configuration,
         );
 
         return {
@@ -502,11 +502,11 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator =
  * @export
  */
 export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     RunIkarosPluginPan115V1AttachmentpancustomApiAxiosParamCreator(
-      configuration
+      configuration,
     );
   return {
     /**
@@ -517,23 +517,23 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
      */
     async createAttachmentPan(
       attachmentPanCustom?: AttachmentPanCustom,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<AttachmentPanCustom>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.createAttachmentPan(
           attachmentPanCustom,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -544,7 +544,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
      */
     async deleteAttachmentPan(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -554,7 +554,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -565,11 +565,11 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
      */
     async getAttachmentPan(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<AttachmentPanCustom>
     > {
       const localVarAxiosArgs =
@@ -578,7 +578,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -591,7 +591,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
     async getAttachmentPanMeta(
       name: string,
       metaName: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -599,13 +599,13 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
         await localVarAxiosParamCreator.getAttachmentPanMeta(
           name,
           metaName,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -618,7 +618,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
     async getAttachmentPansByPaging(
       page: string,
       size: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -626,13 +626,13 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
         await localVarAxiosParamCreator.getAttachmentPansByPaging(
           page,
           size,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -641,11 +641,11 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
      * @throws {RequiredError}
      */
     async listAttachmentPans(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<AttachmentPanCustom>
     > {
       const localVarAxiosArgs =
@@ -654,7 +654,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -665,23 +665,23 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
      */
     async updateAttachmentPan(
       attachmentPanCustom?: AttachmentPanCustom,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<AttachmentPanCustom>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.updateAttachmentPan(
           attachmentPanCustom,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -696,11 +696,11 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
       name: string,
       metaName: string,
       body: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<AttachmentPanCustom>
     > {
       const localVarAxiosArgs =
@@ -708,13 +708,13 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
           name,
           metaName,
           body,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -727,7 +727,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFp = function (
 export const RunIkarosPluginPan115V1AttachmentpancustomApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp =
     RunIkarosPluginPan115V1AttachmentpancustomApiFp(configuration);
@@ -740,7 +740,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFactory = function (
      */
     createAttachmentPan(
       requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiCreateAttachmentPanRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<AttachmentPanCustom> {
       return localVarFp
         .createAttachmentPan(requestParameters.attachmentPanCustom, options)
@@ -754,7 +754,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFactory = function (
      */
     deleteAttachmentPan(
       requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiDeleteAttachmentPanRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteAttachmentPan(requestParameters.name, options)
@@ -768,7 +768,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFactory = function (
      */
     getAttachmentPan(
       requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiGetAttachmentPanRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<AttachmentPanCustom> {
       return localVarFp
         .getAttachmentPan(requestParameters.name, options)
@@ -782,13 +782,13 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFactory = function (
      */
     getAttachmentPanMeta(
       requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiGetAttachmentPanMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .getAttachmentPanMeta(
           requestParameters.name,
           requestParameters.metaName,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -800,13 +800,13 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFactory = function (
      */
     getAttachmentPansByPaging(
       requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiGetAttachmentPansByPagingRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .getAttachmentPansByPaging(
           requestParameters.page,
           requestParameters.size,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -816,7 +816,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFactory = function (
      * @throws {RequiredError}
      */
     listAttachmentPans(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<AttachmentPanCustom> {
       return localVarFp
         .listAttachmentPans(options)
@@ -830,7 +830,7 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFactory = function (
      */
     updateAttachmentPan(
       requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiUpdateAttachmentPanRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<AttachmentPanCustom> {
       return localVarFp
         .updateAttachmentPan(requestParameters.attachmentPanCustom, options)
@@ -844,14 +844,14 @@ export const RunIkarosPluginPan115V1AttachmentpancustomApiFactory = function (
      */
     updateAttachmentPanMeta(
       requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiUpdateAttachmentPanMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<AttachmentPanCustom> {
       return localVarFp
         .updateAttachmentPanMeta(
           requestParameters.name,
           requestParameters.metaName,
           requestParameters.body,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1000,7 +1000,7 @@ export class RunIkarosPluginPan115V1AttachmentpancustomApi extends BaseAPI {
    */
   public createAttachmentPan(
     requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiCreateAttachmentPanRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return RunIkarosPluginPan115V1AttachmentpancustomApiFp(this.configuration)
       .createAttachmentPan(requestParameters.attachmentPanCustom, options)
@@ -1016,7 +1016,7 @@ export class RunIkarosPluginPan115V1AttachmentpancustomApi extends BaseAPI {
    */
   public deleteAttachmentPan(
     requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiDeleteAttachmentPanRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return RunIkarosPluginPan115V1AttachmentpancustomApiFp(this.configuration)
       .deleteAttachmentPan(requestParameters.name, options)
@@ -1032,7 +1032,7 @@ export class RunIkarosPluginPan115V1AttachmentpancustomApi extends BaseAPI {
    */
   public getAttachmentPan(
     requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiGetAttachmentPanRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return RunIkarosPluginPan115V1AttachmentpancustomApiFp(this.configuration)
       .getAttachmentPan(requestParameters.name, options)
@@ -1048,13 +1048,13 @@ export class RunIkarosPluginPan115V1AttachmentpancustomApi extends BaseAPI {
    */
   public getAttachmentPanMeta(
     requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiGetAttachmentPanMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return RunIkarosPluginPan115V1AttachmentpancustomApiFp(this.configuration)
       .getAttachmentPanMeta(
         requestParameters.name,
         requestParameters.metaName,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1068,13 +1068,13 @@ export class RunIkarosPluginPan115V1AttachmentpancustomApi extends BaseAPI {
    */
   public getAttachmentPansByPaging(
     requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiGetAttachmentPansByPagingRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return RunIkarosPluginPan115V1AttachmentpancustomApiFp(this.configuration)
       .getAttachmentPansByPaging(
         requestParameters.page,
         requestParameters.size,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1100,7 +1100,7 @@ export class RunIkarosPluginPan115V1AttachmentpancustomApi extends BaseAPI {
    */
   public updateAttachmentPan(
     requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiUpdateAttachmentPanRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return RunIkarosPluginPan115V1AttachmentpancustomApiFp(this.configuration)
       .updateAttachmentPan(requestParameters.attachmentPanCustom, options)
@@ -1116,14 +1116,14 @@ export class RunIkarosPluginPan115V1AttachmentpancustomApi extends BaseAPI {
    */
   public updateAttachmentPanMeta(
     requestParameters: RunIkarosPluginPan115V1AttachmentpancustomApiUpdateAttachmentPanMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return RunIkarosPluginPan115V1AttachmentpancustomApiFp(this.configuration)
       .updateAttachmentPanMeta(
         requestParameters.name,
         requestParameters.metaName,
         requestParameters.body,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

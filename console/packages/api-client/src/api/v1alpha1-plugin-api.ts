@@ -42,7 +42,7 @@ import {
  * @export
  */
 export const V1alpha1PluginApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -53,7 +53,7 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
      */
     installPluginByFile: async (
       file?: File,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/plugin/install/file`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -70,9 +70,10 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
       };
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
-      const localVarFormParams = new ((configuration &&
-        configuration.formDataCtor) ||
-        FormData)();
+      const localVarFormParams = new (
+        (configuration && configuration.formDataCtor) ||
+        FormData
+      )();
 
       // authentication BasicAuth required
       // http basic authentication required
@@ -124,7 +125,7 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
         | "RELOAD_ALL_STARTED"
         | "DELETE"
         | "UNLOAD",
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("operatePluginStateById", "name", name);
@@ -132,7 +133,7 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
       assertParamExists("operatePluginStateById", "operate", operate);
       const localVarPath = `/api/v1alpha1/plugin/{name}/state`.replace(
         `{${"name"}}`,
-        encodeURIComponent(String(name))
+        encodeURIComponent(String(name)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -183,13 +184,13 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
      */
     reloadPluginById: async (
       name: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("reloadPluginById", "name", name);
       const localVarPath = `/api/v1alpha1/plugin/{name}/state/reload`.replace(
         `{${"name"}}`,
-        encodeURIComponent(String(name))
+        encodeURIComponent(String(name)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -236,13 +237,13 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
      */
     startPluginById: async (
       name: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("startPluginById", "name", name);
       const localVarPath = `/api/v1alpha1/plugin/{name}/state/start`.replace(
         `{${"name"}}`,
-        encodeURIComponent(String(name))
+        encodeURIComponent(String(name)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -289,13 +290,13 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
      */
     stopPluginById: async (
       name: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("stopPluginById", "name", name);
       const localVarPath = `/api/v1alpha1/plugin/{name}/state/stop`.replace(
         `{${"name"}}`,
-        encodeURIComponent(String(name))
+        encodeURIComponent(String(name)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -344,14 +345,14 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
     upgradePluginByFile: async (
       pluginId: string,
       file?: File,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'pluginId' is not null or undefined
       assertParamExists("upgradePluginByFile", "pluginId", pluginId);
       const localVarPath =
         `/api/v1alpha1/plugin/upgrade/file/{pluginId}`.replace(
           `{${"pluginId"}}`,
-          encodeURIComponent(String(pluginId))
+          encodeURIComponent(String(pluginId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -367,9 +368,10 @@ export const V1alpha1PluginApiAxiosParamCreator = function (
       };
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
-      const localVarFormParams = new ((configuration &&
-        configuration.formDataCtor) ||
-        FormData)();
+      const localVarFormParams = new (
+        (configuration && configuration.formDataCtor) ||
+        FormData
+      )();
 
       // authentication BasicAuth required
       // http basic authentication required
@@ -419,7 +421,7 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
      */
     async installPluginByFile(
       file?: File,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -429,7 +431,7 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -453,7 +455,7 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
         | "RELOAD_ALL_STARTED"
         | "DELETE"
         | "UNLOAD",
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
     > {
@@ -461,13 +463,13 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.operatePluginStateById(
           name,
           operate,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -478,7 +480,7 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
      */
     async reloadPluginById(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
     > {
@@ -488,7 +490,7 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -499,19 +501,19 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
      */
     async startPluginById(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.startPluginById(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -522,19 +524,19 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
      */
     async stopPluginById(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.stopPluginById(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -547,7 +549,7 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
     async upgradePluginByFile(
       pluginId: string,
       file?: File,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -555,13 +557,13 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.upgradePluginByFile(
           pluginId,
           file,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -574,7 +576,7 @@ export const V1alpha1PluginApiFp = function (configuration?: Configuration) {
 export const V1alpha1PluginApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1PluginApiFp(configuration);
   return {
@@ -586,7 +588,7 @@ export const V1alpha1PluginApiFactory = function (
      */
     installPluginByFile(
       requestParameters: V1alpha1PluginApiInstallPluginByFileRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .installPluginByFile(requestParameters.file, options)
@@ -600,13 +602,13 @@ export const V1alpha1PluginApiFactory = function (
      */
     operatePluginStateById(
       requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<string> {
       return localVarFp
         .operatePluginStateById(
           requestParameters.name,
           requestParameters.operate,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -618,7 +620,7 @@ export const V1alpha1PluginApiFactory = function (
      */
     reloadPluginById(
       requestParameters: V1alpha1PluginApiReloadPluginByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<boolean> {
       return localVarFp
         .reloadPluginById(requestParameters.name, options)
@@ -632,7 +634,7 @@ export const V1alpha1PluginApiFactory = function (
      */
     startPluginById(
       requestParameters: V1alpha1PluginApiStartPluginByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<boolean> {
       return localVarFp
         .startPluginById(requestParameters.name, options)
@@ -646,7 +648,7 @@ export const V1alpha1PluginApiFactory = function (
      */
     stopPluginById(
       requestParameters: V1alpha1PluginApiStopPluginByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<boolean> {
       return localVarFp
         .stopPluginById(requestParameters.name, options)
@@ -660,13 +662,13 @@ export const V1alpha1PluginApiFactory = function (
      */
     upgradePluginByFile(
       requestParameters: V1alpha1PluginApiUpgradePluginByFileRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .upgradePluginByFile(
           requestParameters.pluginId,
           requestParameters.file,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -798,7 +800,7 @@ export class V1alpha1PluginApi extends BaseAPI {
    */
   public installPluginByFile(
     requestParameters: V1alpha1PluginApiInstallPluginByFileRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1PluginApiFp(this.configuration)
       .installPluginByFile(requestParameters.file, options)
@@ -814,13 +816,13 @@ export class V1alpha1PluginApi extends BaseAPI {
    */
   public operatePluginStateById(
     requestParameters: V1alpha1PluginApiOperatePluginStateByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1PluginApiFp(this.configuration)
       .operatePluginStateById(
         requestParameters.name,
         requestParameters.operate,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -834,7 +836,7 @@ export class V1alpha1PluginApi extends BaseAPI {
    */
   public reloadPluginById(
     requestParameters: V1alpha1PluginApiReloadPluginByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1PluginApiFp(this.configuration)
       .reloadPluginById(requestParameters.name, options)
@@ -850,7 +852,7 @@ export class V1alpha1PluginApi extends BaseAPI {
    */
   public startPluginById(
     requestParameters: V1alpha1PluginApiStartPluginByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1PluginApiFp(this.configuration)
       .startPluginById(requestParameters.name, options)
@@ -866,7 +868,7 @@ export class V1alpha1PluginApi extends BaseAPI {
    */
   public stopPluginById(
     requestParameters: V1alpha1PluginApiStopPluginByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1PluginApiFp(this.configuration)
       .stopPluginById(requestParameters.name, options)
@@ -882,13 +884,13 @@ export class V1alpha1PluginApi extends BaseAPI {
    */
   public upgradePluginByFile(
     requestParameters: V1alpha1PluginApiUpgradePluginByFileRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1PluginApiFp(this.configuration)
       .upgradePluginByFile(
         requestParameters.pluginId,
         requestParameters.file,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

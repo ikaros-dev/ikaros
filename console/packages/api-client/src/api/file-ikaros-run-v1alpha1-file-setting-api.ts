@@ -46,7 +46,7 @@ import { PagingWrap } from "../models";
  * @export
  */
 export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,7 +57,7 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
      */
     createSetting: async (
       fileSetting?: FileSetting,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/apis/file.ikaros.run/v1alpha1/setting`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -96,7 +96,7 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         fileSetting,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -112,14 +112,14 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
      */
     deleteSetting: async (
       name: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("deleteSetting", "name", name);
       const localVarPath =
         `/apis/file.ikaros.run/v1alpha1/setting/{name}`.replace(
           `{${"name"}}`,
-          encodeURIComponent(String(name))
+          encodeURIComponent(String(name)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -166,14 +166,14 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
      */
     getSetting: async (
       name: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("getSetting", "name", name);
       const localVarPath =
         `/apis/file.ikaros.run/v1alpha1/setting/{name}`.replace(
           `{${"name"}}`,
-          encodeURIComponent(String(name))
+          encodeURIComponent(String(name)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -222,7 +222,7 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
     getSettingMeta: async (
       name: string,
       metaName: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("getSettingMeta", "name", name);
@@ -279,7 +279,7 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
     getSettingsByPaging: async (
       page: string,
       size: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'page' is not null or undefined
       assertParamExists("getSettingsByPaging", "page", page);
@@ -332,7 +332,7 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     listSettings: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/apis/file.ikaros.run/v1alpha1/settings`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -382,13 +382,13 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
     updateSetting: async (
       name: string,
       fileSetting?: FileSetting,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("updateSetting", "name", name);
       const localVarPath = `/apis/file.ikaros.run/v1alpha1/setting`.replace(
         `{${"name"}}`,
-        encodeURIComponent(String(name))
+        encodeURIComponent(String(name)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -426,7 +426,7 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         fileSetting,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -446,7 +446,7 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
       name: string,
       metaName: string,
       body: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("updateSettingMeta", "name", name);
@@ -494,7 +494,7 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         body,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -510,7 +510,7 @@ export const FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator = function (
  * @export
  */
 export const FileIkarosRunV1alpha1FileSettingApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     FileIkarosRunV1alpha1FileSettingApiAxiosParamCreator(configuration);
@@ -523,19 +523,19 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
      */
     async createSetting(
       fileSetting?: FileSetting,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FileSetting>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.createSetting(
         fileSetting,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -546,19 +546,19 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
      */
     async deleteSetting(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.deleteSetting(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -569,19 +569,19 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
      */
     async getSetting(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FileSetting>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getSetting(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -594,20 +594,20 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
     async getSettingMeta(
       name: string,
       metaName: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getSettingMeta(
         name,
         metaName,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -620,7 +620,7 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
     async getSettingsByPaging(
       page: string,
       size: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -628,13 +628,13 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
         await localVarAxiosParamCreator.getSettingsByPaging(
           page,
           size,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -643,18 +643,17 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
      * @throws {RequiredError}
      */
     async listSettings(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FileSetting>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.listSettings(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listSettings(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -667,20 +666,20 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
     async updateSetting(
       name: string,
       fileSetting?: FileSetting,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FileSetting>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.updateSetting(
         name,
         fileSetting,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -695,7 +694,7 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
       name: string,
       metaName: string,
       body: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FileSetting>
     > {
@@ -704,13 +703,13 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
           name,
           metaName,
           body,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -723,7 +722,7 @@ export const FileIkarosRunV1alpha1FileSettingApiFp = function (
 export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = FileIkarosRunV1alpha1FileSettingApiFp(configuration);
   return {
@@ -735,7 +734,7 @@ export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
      */
     createSetting(
       requestParameters: FileIkarosRunV1alpha1FileSettingApiCreateSettingRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<FileSetting> {
       return localVarFp
         .createSetting(requestParameters.fileSetting, options)
@@ -749,7 +748,7 @@ export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
      */
     deleteSetting(
       requestParameters: FileIkarosRunV1alpha1FileSettingApiDeleteSettingRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteSetting(requestParameters.name, options)
@@ -763,7 +762,7 @@ export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
      */
     getSetting(
       requestParameters: FileIkarosRunV1alpha1FileSettingApiGetSettingRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<FileSetting> {
       return localVarFp
         .getSetting(requestParameters.name, options)
@@ -777,13 +776,13 @@ export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
      */
     getSettingMeta(
       requestParameters: FileIkarosRunV1alpha1FileSettingApiGetSettingMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .getSettingMeta(
           requestParameters.name,
           requestParameters.metaName,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -795,13 +794,13 @@ export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
      */
     getSettingsByPaging(
       requestParameters: FileIkarosRunV1alpha1FileSettingApiGetSettingsByPagingRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .getSettingsByPaging(
           requestParameters.page,
           requestParameters.size,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -823,13 +822,13 @@ export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
      */
     updateSetting(
       requestParameters: FileIkarosRunV1alpha1FileSettingApiUpdateSettingRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<FileSetting> {
       return localVarFp
         .updateSetting(
           requestParameters.name,
           requestParameters.fileSetting,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -841,14 +840,14 @@ export const FileIkarosRunV1alpha1FileSettingApiFactory = function (
      */
     updateSettingMeta(
       requestParameters: FileIkarosRunV1alpha1FileSettingApiUpdateSettingMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<FileSetting> {
       return localVarFp
         .updateSettingMeta(
           requestParameters.name,
           requestParameters.metaName,
           requestParameters.body,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1004,7 +1003,7 @@ export class FileIkarosRunV1alpha1FileSettingApi extends BaseAPI {
    */
   public createSetting(
     requestParameters: FileIkarosRunV1alpha1FileSettingApiCreateSettingRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FileSettingApiFp(this.configuration)
       .createSetting(requestParameters.fileSetting, options)
@@ -1020,7 +1019,7 @@ export class FileIkarosRunV1alpha1FileSettingApi extends BaseAPI {
    */
   public deleteSetting(
     requestParameters: FileIkarosRunV1alpha1FileSettingApiDeleteSettingRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FileSettingApiFp(this.configuration)
       .deleteSetting(requestParameters.name, options)
@@ -1036,7 +1035,7 @@ export class FileIkarosRunV1alpha1FileSettingApi extends BaseAPI {
    */
   public getSetting(
     requestParameters: FileIkarosRunV1alpha1FileSettingApiGetSettingRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FileSettingApiFp(this.configuration)
       .getSetting(requestParameters.name, options)
@@ -1052,13 +1051,13 @@ export class FileIkarosRunV1alpha1FileSettingApi extends BaseAPI {
    */
   public getSettingMeta(
     requestParameters: FileIkarosRunV1alpha1FileSettingApiGetSettingMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FileSettingApiFp(this.configuration)
       .getSettingMeta(
         requestParameters.name,
         requestParameters.metaName,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1072,13 +1071,13 @@ export class FileIkarosRunV1alpha1FileSettingApi extends BaseAPI {
    */
   public getSettingsByPaging(
     requestParameters: FileIkarosRunV1alpha1FileSettingApiGetSettingsByPagingRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FileSettingApiFp(this.configuration)
       .getSettingsByPaging(
         requestParameters.page,
         requestParameters.size,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1104,13 +1103,13 @@ export class FileIkarosRunV1alpha1FileSettingApi extends BaseAPI {
    */
   public updateSetting(
     requestParameters: FileIkarosRunV1alpha1FileSettingApiUpdateSettingRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FileSettingApiFp(this.configuration)
       .updateSetting(
         requestParameters.name,
         requestParameters.fileSetting,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1124,14 +1123,14 @@ export class FileIkarosRunV1alpha1FileSettingApi extends BaseAPI {
    */
   public updateSettingMeta(
     requestParameters: FileIkarosRunV1alpha1FileSettingApiUpdateSettingMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FileSettingApiFp(this.configuration)
       .updateSettingMeta(
         requestParameters.name,
         requestParameters.metaName,
         requestParameters.body,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

@@ -48,7 +48,7 @@ import { PagingWrap } from "../models";
  * @export
  */
 export const V1alpha1FileApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -59,13 +59,13 @@ export const V1alpha1FileApiAxiosParamCreator = function (
      */
     deleteFile: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("deleteFile", "id", id);
       const localVarPath = `/api/v1alpha1/file/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -110,7 +110,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     generateFragmentUploadFileUniqueId: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/file/fragment/unique`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -156,7 +156,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     listFiles: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/files`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -210,7 +210,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
       size?: number,
       fileName?: string,
       type?: "IMAGE" | "VIDEO" | "DOCUMENT" | "VOICE" | "UNKNOWN",
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/files/condition`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -276,7 +276,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
     moveFileToAppointFolder: async (
       id: string,
       folderId: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("moveFileToAppointFolder", "id", id);
@@ -338,7 +338,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
     pullFile4Remote: async (
       id: string,
       remote: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("pullFile4Remote", "id", id);
@@ -398,7 +398,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
      */
     pullFile4RemoteBatch: async (
       fileBatchRequest?: FileBatchRequest,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/file/remote/pull/batch`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -437,7 +437,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         fileBatchRequest,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -455,7 +455,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
     pullSubject4Remote: async (
       subjectId: string,
       remote: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists("pullSubject4Remote", "subjectId", subjectId);
@@ -464,7 +464,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
       const localVarPath =
         `/api/v1alpha1/file/remote/pull/batch/subject/{subjectId}`.replace(
           `{${"subjectId"}}`,
-          encodeURIComponent(String(subjectId))
+          encodeURIComponent(String(subjectId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -517,7 +517,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
     pushFile2Remote: async (
       id: string,
       remote: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("pushFile2Remote", "id", id);
@@ -577,7 +577,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
      */
     pushFile2RemoteBatch: async (
       fileBatchRequest?: FileBatchRequest,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/file/remote/push/batch`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -616,7 +616,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         fileBatchRequest,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -634,7 +634,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
     pushSubject2Remote: async (
       subjectId: string,
       remote: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists("pushSubject2Remote", "subjectId", subjectId);
@@ -643,7 +643,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
       const localVarPath =
         `/api/v1alpha1/file/remote/push/batch/subject/{subjectId}`.replace(
           `{${"subjectId"}}`,
-          encodeURIComponent(String(subjectId))
+          encodeURIComponent(String(subjectId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -700,7 +700,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
       uploadLength: string,
       uploadOffset: string,
       uploadName: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'unique' is not null or undefined
       assertParamExists("receiveFragmentUploadChunkFile", "unique", unique);
@@ -708,23 +708,23 @@ export const V1alpha1FileApiAxiosParamCreator = function (
       assertParamExists(
         "receiveFragmentUploadChunkFile",
         "uploadLength",
-        uploadLength
+        uploadLength,
       );
       // verify required parameter 'uploadOffset' is not null or undefined
       assertParamExists(
         "receiveFragmentUploadChunkFile",
         "uploadOffset",
-        uploadOffset
+        uploadOffset,
       );
       // verify required parameter 'uploadName' is not null or undefined
       assertParamExists(
         "receiveFragmentUploadChunkFile",
         "uploadName",
-        uploadName
+        uploadName,
       );
       const localVarPath = `/api/v1alpha1/file/fragment/patch/{unique}`.replace(
         `{${"unique"}}`,
-        encodeURIComponent(String(unique))
+        encodeURIComponent(String(unique)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -783,7 +783,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
      */
     revertFragmentUploadFileByUniqueId: async (
       body?: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/file/fragment/revert`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -822,7 +822,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         body,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -838,7 +838,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
      */
     updateFile: async (
       fileEntity?: FileEntity,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/file/update`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -877,7 +877,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         fileEntity,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -893,7 +893,7 @@ export const V1alpha1FileApiAxiosParamCreator = function (
      */
     uploadFile: async (
       file: File,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'file' is not null or undefined
       assertParamExists("uploadFile", "file", file);
@@ -912,9 +912,10 @@ export const V1alpha1FileApiAxiosParamCreator = function (
       };
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
-      const localVarFormParams = new ((configuration &&
-        configuration.formDataCtor) ||
-        FormData)();
+      const localVarFormParams = new (
+        (configuration && configuration.formDataCtor) ||
+        FormData
+      )();
 
       // authentication BasicAuth required
       // http basic authentication required
@@ -964,19 +965,19 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
      */
     async deleteFile(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.deleteFile(
         id,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -985,19 +986,19 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async generateFragmentUploadFileUniqueId(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.generateFragmentUploadFileUniqueId(
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1006,21 +1007,20 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async listFiles(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<Array<FileEntity>>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.listFiles(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listFiles(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1037,7 +1037,7 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
       size?: number,
       fileName?: string,
       type?: "IMAGE" | "VIDEO" | "DOCUMENT" | "VOICE" | "UNKNOWN",
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -1047,13 +1047,13 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
           size,
           fileName,
           type,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1066,7 +1066,7 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
     async moveFileToAppointFolder(
       id: string,
       folderId: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -1074,13 +1074,13 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.moveFileToAppointFolder(
           id,
           folderId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1093,20 +1093,20 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
     async pullFile4Remote(
       id: string,
       remote: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.pullFile4Remote(
         id,
         remote,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1117,20 +1117,20 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
      */
     async pullFile4RemoteBatch(
       fileBatchRequest?: FileBatchRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.pullFile4RemoteBatch(
           fileBatchRequest,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1143,7 +1143,7 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
     async pullSubject4Remote(
       subjectId: string,
       remote: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -1151,13 +1151,13 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.pullSubject4Remote(
           subjectId,
           remote,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1170,20 +1170,20 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
     async pushFile2Remote(
       id: string,
       remote: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.pushFile2Remote(
         id,
         remote,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1194,20 +1194,20 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
      */
     async pushFile2RemoteBatch(
       fileBatchRequest?: FileBatchRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.pushFile2RemoteBatch(
           fileBatchRequest,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1220,7 +1220,7 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
     async pushSubject2Remote(
       subjectId: string,
       remote: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -1228,13 +1228,13 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.pushSubject2Remote(
           subjectId,
           remote,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1251,7 +1251,7 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
       uploadLength: string,
       uploadOffset: string,
       uploadName: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -1261,13 +1261,13 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
           uploadLength,
           uploadOffset,
           uploadName,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1278,20 +1278,20 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
      */
     async revertFragmentUploadFileByUniqueId(
       body?: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.revertFragmentUploadFileByUniqueId(
           body,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1302,19 +1302,19 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
      */
     async updateFile(
       fileEntity?: FileEntity,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.updateFile(
         fileEntity,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1325,19 +1325,19 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
      */
     async uploadFile(
       file: File,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(
         file,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -1350,7 +1350,7 @@ export const V1alpha1FileApiFp = function (configuration?: Configuration) {
 export const V1alpha1FileApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1FileApiFp(configuration);
   return {
@@ -1362,7 +1362,7 @@ export const V1alpha1FileApiFactory = function (
      */
     deleteFile(
       requestParameters: V1alpha1FileApiDeleteFileRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteFile(requestParameters.id, options)
@@ -1374,7 +1374,7 @@ export const V1alpha1FileApiFactory = function (
      * @throws {RequiredError}
      */
     generateFragmentUploadFileUniqueId(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<string> {
       return localVarFp
         .generateFragmentUploadFileUniqueId(options)
@@ -1398,7 +1398,7 @@ export const V1alpha1FileApiFactory = function (
      */
     listFilesByCondition(
       requestParameters: V1alpha1FileApiListFilesByConditionRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .listFilesByCondition(
@@ -1406,7 +1406,7 @@ export const V1alpha1FileApiFactory = function (
           requestParameters.size,
           requestParameters.fileName,
           requestParameters.type,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1418,13 +1418,13 @@ export const V1alpha1FileApiFactory = function (
      */
     moveFileToAppointFolder(
       requestParameters: V1alpha1FileApiMoveFileToAppointFolderRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .moveFileToAppointFolder(
           requestParameters.id,
           requestParameters.folderId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1436,13 +1436,13 @@ export const V1alpha1FileApiFactory = function (
      */
     pullFile4Remote(
       requestParameters: V1alpha1FileApiPullFile4RemoteRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .pullFile4Remote(
           requestParameters.id,
           requestParameters.remote,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1454,7 +1454,7 @@ export const V1alpha1FileApiFactory = function (
      */
     pullFile4RemoteBatch(
       requestParameters: V1alpha1FileApiPullFile4RemoteBatchRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .pullFile4RemoteBatch(requestParameters.fileBatchRequest, options)
@@ -1468,13 +1468,13 @@ export const V1alpha1FileApiFactory = function (
      */
     pullSubject4Remote(
       requestParameters: V1alpha1FileApiPullSubject4RemoteRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .pullSubject4Remote(
           requestParameters.subjectId,
           requestParameters.remote,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1486,13 +1486,13 @@ export const V1alpha1FileApiFactory = function (
      */
     pushFile2Remote(
       requestParameters: V1alpha1FileApiPushFile2RemoteRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .pushFile2Remote(
           requestParameters.id,
           requestParameters.remote,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1504,7 +1504,7 @@ export const V1alpha1FileApiFactory = function (
      */
     pushFile2RemoteBatch(
       requestParameters: V1alpha1FileApiPushFile2RemoteBatchRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .pushFile2RemoteBatch(requestParameters.fileBatchRequest, options)
@@ -1518,13 +1518,13 @@ export const V1alpha1FileApiFactory = function (
      */
     pushSubject2Remote(
       requestParameters: V1alpha1FileApiPushSubject2RemoteRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .pushSubject2Remote(
           requestParameters.subjectId,
           requestParameters.remote,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1536,7 +1536,7 @@ export const V1alpha1FileApiFactory = function (
      */
     receiveFragmentUploadChunkFile(
       requestParameters: V1alpha1FileApiReceiveFragmentUploadChunkFileRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .receiveFragmentUploadChunkFile(
@@ -1544,7 +1544,7 @@ export const V1alpha1FileApiFactory = function (
           requestParameters.uploadLength,
           requestParameters.uploadOffset,
           requestParameters.uploadName,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1556,7 +1556,7 @@ export const V1alpha1FileApiFactory = function (
      */
     revertFragmentUploadFileByUniqueId(
       requestParameters: V1alpha1FileApiRevertFragmentUploadFileByUniqueIdRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .revertFragmentUploadFileByUniqueId(requestParameters.body, options)
@@ -1570,7 +1570,7 @@ export const V1alpha1FileApiFactory = function (
      */
     updateFile(
       requestParameters: V1alpha1FileApiUpdateFileRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .updateFile(requestParameters.fileEntity, options)
@@ -1584,7 +1584,7 @@ export const V1alpha1FileApiFactory = function (
      */
     uploadFile(
       requestParameters: V1alpha1FileApiUploadFileRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .uploadFile(requestParameters.file, options)
@@ -1868,7 +1868,7 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public deleteFile(
     requestParameters: V1alpha1FileApiDeleteFileRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .deleteFile(requestParameters.id, options)
@@ -1908,7 +1908,7 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public listFilesByCondition(
     requestParameters: V1alpha1FileApiListFilesByConditionRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .listFilesByCondition(
@@ -1916,7 +1916,7 @@ export class V1alpha1FileApi extends BaseAPI {
         requestParameters.size,
         requestParameters.fileName,
         requestParameters.type,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1930,13 +1930,13 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public moveFileToAppointFolder(
     requestParameters: V1alpha1FileApiMoveFileToAppointFolderRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .moveFileToAppointFolder(
         requestParameters.id,
         requestParameters.folderId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1950,7 +1950,7 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public pullFile4Remote(
     requestParameters: V1alpha1FileApiPullFile4RemoteRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .pullFile4Remote(requestParameters.id, requestParameters.remote, options)
@@ -1966,7 +1966,7 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public pullFile4RemoteBatch(
     requestParameters: V1alpha1FileApiPullFile4RemoteBatchRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .pullFile4RemoteBatch(requestParameters.fileBatchRequest, options)
@@ -1982,13 +1982,13 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public pullSubject4Remote(
     requestParameters: V1alpha1FileApiPullSubject4RemoteRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .pullSubject4Remote(
         requestParameters.subjectId,
         requestParameters.remote,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -2002,7 +2002,7 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public pushFile2Remote(
     requestParameters: V1alpha1FileApiPushFile2RemoteRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .pushFile2Remote(requestParameters.id, requestParameters.remote, options)
@@ -2018,7 +2018,7 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public pushFile2RemoteBatch(
     requestParameters: V1alpha1FileApiPushFile2RemoteBatchRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .pushFile2RemoteBatch(requestParameters.fileBatchRequest, options)
@@ -2034,13 +2034,13 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public pushSubject2Remote(
     requestParameters: V1alpha1FileApiPushSubject2RemoteRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .pushSubject2Remote(
         requestParameters.subjectId,
         requestParameters.remote,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -2054,7 +2054,7 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public receiveFragmentUploadChunkFile(
     requestParameters: V1alpha1FileApiReceiveFragmentUploadChunkFileRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .receiveFragmentUploadChunkFile(
@@ -2062,7 +2062,7 @@ export class V1alpha1FileApi extends BaseAPI {
         requestParameters.uploadLength,
         requestParameters.uploadOffset,
         requestParameters.uploadName,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -2076,7 +2076,7 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public revertFragmentUploadFileByUniqueId(
     requestParameters: V1alpha1FileApiRevertFragmentUploadFileByUniqueIdRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .revertFragmentUploadFileByUniqueId(requestParameters.body, options)
@@ -2092,7 +2092,7 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public updateFile(
     requestParameters: V1alpha1FileApiUpdateFileRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .updateFile(requestParameters.fileEntity, options)
@@ -2108,7 +2108,7 @@ export class V1alpha1FileApi extends BaseAPI {
    */
   public uploadFile(
     requestParameters: V1alpha1FileApiUploadFileRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileApiFp(this.configuration)
       .uploadFile(requestParameters.file, options)

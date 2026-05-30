@@ -46,7 +46,7 @@ import { User } from "../models";
  * @export
  */
 export const V1alpha1UserMeApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -60,7 +60,7 @@ export const V1alpha1UserMeApiAxiosParamCreator = function (
     bindEmail: async (
       email: string,
       verificationCode: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'email' is not null or undefined
       assertParamExists("bindEmail", "email", email);
@@ -123,7 +123,7 @@ export const V1alpha1UserMeApiAxiosParamCreator = function (
     bindTelephone: async (
       telephone: string,
       verificationCode: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'telephone' is not null or undefined
       assertParamExists("bindTelephone", "telephone", telephone);
@@ -185,7 +185,7 @@ export const V1alpha1UserMeApiAxiosParamCreator = function (
     changeUserPassword: async (
       oldPassword: string,
       newPassword: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'oldPassword' is not null or undefined
       assertParamExists("changeUserPassword", "oldPassword", oldPassword);
@@ -245,13 +245,13 @@ export const V1alpha1UserMeApiAxiosParamCreator = function (
      */
     existEmail: async (
       email: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'email' is not null or undefined
       assertParamExists("existEmail", "email", email);
       const localVarPath = `/api/v1alpha1/user/me/email/exists/{email}`.replace(
         `{${"email"}}`,
-        encodeURIComponent(String(email))
+        encodeURIComponent(String(email)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -296,7 +296,7 @@ export const V1alpha1UserMeApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     getUserMe: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/user/me`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -344,7 +344,7 @@ export const V1alpha1UserMeApiAxiosParamCreator = function (
      */
     putProfile: async (
       updateUserRequest: UpdateUserRequest,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'updateUserRequest' is not null or undefined
       assertParamExists("putProfile", "updateUserRequest", updateUserRequest);
@@ -385,7 +385,7 @@ export const V1alpha1UserMeApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         updateUserRequest,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -401,14 +401,14 @@ export const V1alpha1UserMeApiAxiosParamCreator = function (
      */
     sendVerificationCode: async (
       type: "EMAIL" | "PHONE_MSG" | "OTHER",
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'type' is not null or undefined
       assertParamExists("sendVerificationCode", "type", type);
       const localVarPath =
         `/api/v1alpha1/user/me/verificationCode/{type}`.replace(
           `{${"type"}}`,
-          encodeURIComponent(String(type))
+          encodeURIComponent(String(type)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -455,14 +455,14 @@ export const V1alpha1UserMeApiAxiosParamCreator = function (
      */
     updateUsername: async (
       newUsername: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'newUsername' is not null or undefined
       assertParamExists("updateUsername", "newUsername", newUsername);
       const localVarPath =
         `/api/v1alpha1/user/me/username/{newUsername}`.replace(
           `{${"newUsername"}}`,
-          encodeURIComponent(String(newUsername))
+          encodeURIComponent(String(newUsername)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -523,20 +523,20 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
     async bindEmail(
       email: string,
       verificationCode: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.bindEmail(
         email,
         verificationCode,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -550,20 +550,20 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
     async bindTelephone(
       telephone: string,
       verificationCode: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.bindTelephone(
         telephone,
         verificationCode,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -576,7 +576,7 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
     async changeUserPassword(
       oldPassword: string,
       newPassword: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -584,13 +584,13 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.changeUserPassword(
           oldPassword,
           newPassword,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -601,19 +601,19 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
      */
     async existEmail(
       email: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.existEmail(
         email,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -622,18 +622,17 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async getUserMe(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<User>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.getUserMe(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.getUserMe(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -644,19 +643,19 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
      */
     async putProfile(
       updateUserRequest: UpdateUserRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<User>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.putProfile(
         updateUserRequest,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -667,7 +666,7 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
      */
     async sendVerificationCode(
       type: "EMAIL" | "PHONE_MSG" | "OTHER",
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -677,7 +676,7 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -688,19 +687,19 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
      */
     async updateUsername(
       newUsername: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.updateUsername(
         newUsername,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -713,7 +712,7 @@ export const V1alpha1UserMeApiFp = function (configuration?: Configuration) {
 export const V1alpha1UserMeApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1UserMeApiFp(configuration);
   return {
@@ -726,13 +725,13 @@ export const V1alpha1UserMeApiFactory = function (
      */
     bindEmail(
       requestParameters: V1alpha1UserMeApiBindEmailRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .bindEmail(
           requestParameters.email,
           requestParameters.verificationCode,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -745,13 +744,13 @@ export const V1alpha1UserMeApiFactory = function (
      */
     bindTelephone(
       requestParameters: V1alpha1UserMeApiBindTelephoneRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .bindTelephone(
           requestParameters.telephone,
           requestParameters.verificationCode,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -763,13 +762,13 @@ export const V1alpha1UserMeApiFactory = function (
      */
     changeUserPassword(
       requestParameters: V1alpha1UserMeApiChangeUserPasswordRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .changeUserPassword(
           requestParameters.oldPassword,
           requestParameters.newPassword,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -781,7 +780,7 @@ export const V1alpha1UserMeApiFactory = function (
      */
     existEmail(
       requestParameters: V1alpha1UserMeApiExistEmailRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<boolean> {
       return localVarFp
         .existEmail(requestParameters.email, options)
@@ -805,7 +804,7 @@ export const V1alpha1UserMeApiFactory = function (
      */
     putProfile(
       requestParameters: V1alpha1UserMeApiPutProfileRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<User> {
       return localVarFp
         .putProfile(requestParameters.updateUserRequest, options)
@@ -819,7 +818,7 @@ export const V1alpha1UserMeApiFactory = function (
      */
     sendVerificationCode(
       requestParameters: V1alpha1UserMeApiSendVerificationCodeRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .sendVerificationCode(requestParameters.type, options)
@@ -833,7 +832,7 @@ export const V1alpha1UserMeApiFactory = function (
      */
     updateUsername(
       requestParameters: V1alpha1UserMeApiUpdateUsernameRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .updateUsername(requestParameters.newUsername, options)
@@ -978,13 +977,13 @@ export class V1alpha1UserMeApi extends BaseAPI {
    */
   public bindEmail(
     requestParameters: V1alpha1UserMeApiBindEmailRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1UserMeApiFp(this.configuration)
       .bindEmail(
         requestParameters.email,
         requestParameters.verificationCode,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -999,13 +998,13 @@ export class V1alpha1UserMeApi extends BaseAPI {
    */
   public bindTelephone(
     requestParameters: V1alpha1UserMeApiBindTelephoneRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1UserMeApiFp(this.configuration)
       .bindTelephone(
         requestParameters.telephone,
         requestParameters.verificationCode,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1019,13 +1018,13 @@ export class V1alpha1UserMeApi extends BaseAPI {
    */
   public changeUserPassword(
     requestParameters: V1alpha1UserMeApiChangeUserPasswordRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1UserMeApiFp(this.configuration)
       .changeUserPassword(
         requestParameters.oldPassword,
         requestParameters.newPassword,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1039,7 +1038,7 @@ export class V1alpha1UserMeApi extends BaseAPI {
    */
   public existEmail(
     requestParameters: V1alpha1UserMeApiExistEmailRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1UserMeApiFp(this.configuration)
       .existEmail(requestParameters.email, options)
@@ -1067,7 +1066,7 @@ export class V1alpha1UserMeApi extends BaseAPI {
    */
   public putProfile(
     requestParameters: V1alpha1UserMeApiPutProfileRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1UserMeApiFp(this.configuration)
       .putProfile(requestParameters.updateUserRequest, options)
@@ -1083,7 +1082,7 @@ export class V1alpha1UserMeApi extends BaseAPI {
    */
   public sendVerificationCode(
     requestParameters: V1alpha1UserMeApiSendVerificationCodeRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1UserMeApiFp(this.configuration)
       .sendVerificationCode(requestParameters.type, options)
@@ -1099,7 +1098,7 @@ export class V1alpha1UserMeApi extends BaseAPI {
    */
   public updateUsername(
     requestParameters: V1alpha1UserMeApiUpdateUsernameRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1UserMeApiFp(this.configuration)
       .updateUsername(requestParameters.newUsername, options)

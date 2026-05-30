@@ -44,7 +44,7 @@ import { EpisodeCollection } from "../models";
  * @export
  */
 export const V1alpha1EpisodeCollectionApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,7 +57,7 @@ export const V1alpha1EpisodeCollectionApiAxiosParamCreator = function (
     deleteEpisodeCollection: async (
       userId: number,
       episodeId: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'userId' is not null or undefined
       assertParamExists("deleteEpisodeCollection", "userId", userId);
@@ -114,7 +114,7 @@ export const V1alpha1EpisodeCollectionApiAxiosParamCreator = function (
     findEpisodeCollection: async (
       userId: number,
       episodeId: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'userId' is not null or undefined
       assertParamExists("findEpisodeCollection", "userId", userId);
@@ -171,19 +171,19 @@ export const V1alpha1EpisodeCollectionApiAxiosParamCreator = function (
     findEpisodeCollectionsByUserIdAndSubjectId: async (
       userId: number,
       subjectId: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'userId' is not null or undefined
       assertParamExists(
         "findEpisodeCollectionsByUserIdAndSubjectId",
         "userId",
-        userId
+        userId,
       );
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists(
         "findEpisodeCollectionsByUserIdAndSubjectId",
         "subjectId",
-        subjectId
+        subjectId,
       );
       const localVarPath =
         `/api/v1alpha1/episode/collections/subjectId/{userId}/{subjectId}`
@@ -236,7 +236,7 @@ export const V1alpha1EpisodeCollectionApiAxiosParamCreator = function (
     saveEpisodeCollection: async (
       userId: number,
       episodeId: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'userId' is not null or undefined
       assertParamExists("saveEpisodeCollection", "userId", userId);
@@ -297,7 +297,7 @@ export const V1alpha1EpisodeCollectionApiAxiosParamCreator = function (
       episodeId: number,
       progress: number,
       duration?: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'userId' is not null or undefined
       assertParamExists("updateEpisodeCollection", "userId", userId);
@@ -366,7 +366,7 @@ export const V1alpha1EpisodeCollectionApiAxiosParamCreator = function (
       userId: number,
       episodeId: number,
       finish: boolean,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'userId' is not null or undefined
       assertParamExists("updateEpisodeCollectionFinish", "userId", userId);
@@ -374,7 +374,7 @@ export const V1alpha1EpisodeCollectionApiAxiosParamCreator = function (
       assertParamExists(
         "updateEpisodeCollectionFinish",
         "episodeId",
-        episodeId
+        episodeId,
       );
       // verify required parameter 'finish' is not null or undefined
       assertParamExists("updateEpisodeCollectionFinish", "finish", finish);
@@ -428,7 +428,7 @@ export const V1alpha1EpisodeCollectionApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1EpisodeCollectionApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     V1alpha1EpisodeCollectionApiAxiosParamCreator(configuration);
@@ -443,24 +443,24 @@ export const V1alpha1EpisodeCollectionApiFp = function (
     async deleteEpisodeCollection(
       userId: number,
       episodeId: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<EpisodeCollection>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.deleteEpisodeCollection(
           userId,
           episodeId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -473,24 +473,24 @@ export const V1alpha1EpisodeCollectionApiFp = function (
     async findEpisodeCollection(
       userId: number,
       episodeId: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<EpisodeCollection>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.findEpisodeCollection(
           userId,
           episodeId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -503,24 +503,24 @@ export const V1alpha1EpisodeCollectionApiFp = function (
     async findEpisodeCollectionsByUserIdAndSubjectId(
       userId: number,
       subjectId: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<Array<EpisodeCollection>>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.findEpisodeCollectionsByUserIdAndSubjectId(
           userId,
           subjectId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -533,24 +533,24 @@ export const V1alpha1EpisodeCollectionApiFp = function (
     async saveEpisodeCollection(
       userId: number,
       episodeId: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<EpisodeCollection>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.saveEpisodeCollection(
           userId,
           episodeId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -567,7 +567,7 @@ export const V1alpha1EpisodeCollectionApiFp = function (
       episodeId: number,
       progress: number,
       duration?: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -577,13 +577,13 @@ export const V1alpha1EpisodeCollectionApiFp = function (
           episodeId,
           progress,
           duration,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -598,7 +598,7 @@ export const V1alpha1EpisodeCollectionApiFp = function (
       userId: number,
       episodeId: number,
       finish: boolean,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -607,13 +607,13 @@ export const V1alpha1EpisodeCollectionApiFp = function (
           userId,
           episodeId,
           finish,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -626,7 +626,7 @@ export const V1alpha1EpisodeCollectionApiFp = function (
 export const V1alpha1EpisodeCollectionApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1EpisodeCollectionApiFp(configuration);
   return {
@@ -638,13 +638,13 @@ export const V1alpha1EpisodeCollectionApiFactory = function (
      */
     deleteEpisodeCollection(
       requestParameters: V1alpha1EpisodeCollectionApiDeleteEpisodeCollectionRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<EpisodeCollection> {
       return localVarFp
         .deleteEpisodeCollection(
           requestParameters.userId,
           requestParameters.episodeId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -656,13 +656,13 @@ export const V1alpha1EpisodeCollectionApiFactory = function (
      */
     findEpisodeCollection(
       requestParameters: V1alpha1EpisodeCollectionApiFindEpisodeCollectionRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<EpisodeCollection> {
       return localVarFp
         .findEpisodeCollection(
           requestParameters.userId,
           requestParameters.episodeId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -674,13 +674,13 @@ export const V1alpha1EpisodeCollectionApiFactory = function (
      */
     findEpisodeCollectionsByUserIdAndSubjectId(
       requestParameters: V1alpha1EpisodeCollectionApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<EpisodeCollection>> {
       return localVarFp
         .findEpisodeCollectionsByUserIdAndSubjectId(
           requestParameters.userId,
           requestParameters.subjectId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -692,13 +692,13 @@ export const V1alpha1EpisodeCollectionApiFactory = function (
      */
     saveEpisodeCollection(
       requestParameters: V1alpha1EpisodeCollectionApiSaveEpisodeCollectionRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<EpisodeCollection> {
       return localVarFp
         .saveEpisodeCollection(
           requestParameters.userId,
           requestParameters.episodeId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -710,7 +710,7 @@ export const V1alpha1EpisodeCollectionApiFactory = function (
      */
     updateEpisodeCollection(
       requestParameters: V1alpha1EpisodeCollectionApiUpdateEpisodeCollectionRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .updateEpisodeCollection(
@@ -718,7 +718,7 @@ export const V1alpha1EpisodeCollectionApiFactory = function (
           requestParameters.episodeId,
           requestParameters.progress,
           requestParameters.duration,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -730,14 +730,14 @@ export const V1alpha1EpisodeCollectionApiFactory = function (
      */
     updateEpisodeCollectionFinish(
       requestParameters: V1alpha1EpisodeCollectionApiUpdateEpisodeCollectionFinishRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .updateEpisodeCollectionFinish(
           requestParameters.userId,
           requestParameters.episodeId,
           requestParameters.finish,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -907,13 +907,13 @@ export class V1alpha1EpisodeCollectionApi extends BaseAPI {
    */
   public deleteEpisodeCollection(
     requestParameters: V1alpha1EpisodeCollectionApiDeleteEpisodeCollectionRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeCollectionApiFp(this.configuration)
       .deleteEpisodeCollection(
         requestParameters.userId,
         requestParameters.episodeId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -927,13 +927,13 @@ export class V1alpha1EpisodeCollectionApi extends BaseAPI {
    */
   public findEpisodeCollection(
     requestParameters: V1alpha1EpisodeCollectionApiFindEpisodeCollectionRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeCollectionApiFp(this.configuration)
       .findEpisodeCollection(
         requestParameters.userId,
         requestParameters.episodeId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -947,13 +947,13 @@ export class V1alpha1EpisodeCollectionApi extends BaseAPI {
    */
   public findEpisodeCollectionsByUserIdAndSubjectId(
     requestParameters: V1alpha1EpisodeCollectionApiFindEpisodeCollectionsByUserIdAndSubjectIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeCollectionApiFp(this.configuration)
       .findEpisodeCollectionsByUserIdAndSubjectId(
         requestParameters.userId,
         requestParameters.subjectId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -967,13 +967,13 @@ export class V1alpha1EpisodeCollectionApi extends BaseAPI {
    */
   public saveEpisodeCollection(
     requestParameters: V1alpha1EpisodeCollectionApiSaveEpisodeCollectionRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeCollectionApiFp(this.configuration)
       .saveEpisodeCollection(
         requestParameters.userId,
         requestParameters.episodeId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -987,7 +987,7 @@ export class V1alpha1EpisodeCollectionApi extends BaseAPI {
    */
   public updateEpisodeCollection(
     requestParameters: V1alpha1EpisodeCollectionApiUpdateEpisodeCollectionRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeCollectionApiFp(this.configuration)
       .updateEpisodeCollection(
@@ -995,7 +995,7 @@ export class V1alpha1EpisodeCollectionApi extends BaseAPI {
         requestParameters.episodeId,
         requestParameters.progress,
         requestParameters.duration,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1009,14 +1009,14 @@ export class V1alpha1EpisodeCollectionApi extends BaseAPI {
    */
   public updateEpisodeCollectionFinish(
     requestParameters: V1alpha1EpisodeCollectionApiUpdateEpisodeCollectionFinishRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeCollectionApiFp(this.configuration)
       .updateEpisodeCollectionFinish(
         requestParameters.userId,
         requestParameters.episodeId,
         requestParameters.finish,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

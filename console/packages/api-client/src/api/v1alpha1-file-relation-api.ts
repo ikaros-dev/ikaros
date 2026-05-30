@@ -46,7 +46,7 @@ import { Subtitle } from "../models";
  * @export
  */
 export const V1alpha1FileRelationApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -59,7 +59,7 @@ export const V1alpha1FileRelationApiAxiosParamCreator = function (
     findFileRelations: async (
       fileId: number,
       relationType: "VIDEO_SUBTITLE",
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'fileId' is not null or undefined
       assertParamExists("findFileRelations", "fileId", fileId);
@@ -119,14 +119,14 @@ export const V1alpha1FileRelationApiAxiosParamCreator = function (
      */
     findVideoSubtitles: async (
       fileId: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'fileId' is not null or undefined
       assertParamExists("findVideoSubtitles", "fileId", fileId);
       const localVarPath =
         `/api/v1alpha1/file/relation/video/subtitle/{fileId}`.replace(
           `{${"fileId"}}`,
-          encodeURIComponent(String(fileId))
+          encodeURIComponent(String(fileId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -173,7 +173,7 @@ export const V1alpha1FileRelationApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1FileRelationApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     V1alpha1FileRelationApiAxiosParamCreator(configuration);
@@ -188,7 +188,7 @@ export const V1alpha1FileRelationApiFp = function (
     async findFileRelations(
       fileId: number,
       relationType: "VIDEO_SUBTITLE",
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FileRelations>
     > {
@@ -196,13 +196,13 @@ export const V1alpha1FileRelationApiFp = function (
         await localVarAxiosParamCreator.findFileRelations(
           fileId,
           relationType,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -213,11 +213,11 @@ export const V1alpha1FileRelationApiFp = function (
      */
     async findVideoSubtitles(
       fileId: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<Array<Subtitle>>
     > {
       const localVarAxiosArgs =
@@ -226,7 +226,7 @@ export const V1alpha1FileRelationApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -239,7 +239,7 @@ export const V1alpha1FileRelationApiFp = function (
 export const V1alpha1FileRelationApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1FileRelationApiFp(configuration);
   return {
@@ -251,13 +251,13 @@ export const V1alpha1FileRelationApiFactory = function (
      */
     findFileRelations(
       requestParameters: V1alpha1FileRelationApiFindFileRelationsRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<FileRelations> {
       return localVarFp
         .findFileRelations(
           requestParameters.fileId,
           requestParameters.relationType,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -269,7 +269,7 @@ export const V1alpha1FileRelationApiFactory = function (
      */
     findVideoSubtitles(
       requestParameters: V1alpha1FileRelationApiFindVideoSubtitlesRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<Subtitle>> {
       return localVarFp
         .findVideoSubtitles(requestParameters.fileId, options)
@@ -329,13 +329,13 @@ export class V1alpha1FileRelationApi extends BaseAPI {
    */
   public findFileRelations(
     requestParameters: V1alpha1FileRelationApiFindFileRelationsRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileRelationApiFp(this.configuration)
       .findFileRelations(
         requestParameters.fileId,
         requestParameters.relationType,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -349,7 +349,7 @@ export class V1alpha1FileRelationApi extends BaseAPI {
    */
   public findVideoSubtitles(
     requestParameters: V1alpha1FileRelationApiFindVideoSubtitlesRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FileRelationApiFp(this.configuration)
       .findVideoSubtitles(requestParameters.fileId, options)

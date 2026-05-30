@@ -23,6 +23,12 @@ export interface SubjectSync {
    * @type {any}
    * @memberof SubjectSync
    */
+  id?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof SubjectSync
+   */
   subjectId?: any;
   /**
    *

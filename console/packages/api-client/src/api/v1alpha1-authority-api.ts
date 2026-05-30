@@ -46,7 +46,7 @@ import { PagingWrap } from "../models";
  * @export
  */
 export const V1alpha1AuthorityApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,7 +57,7 @@ export const V1alpha1AuthorityApiAxiosParamCreator = function (
      */
     createAuthority: async (
       authority?: Authority,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/authority`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -96,7 +96,7 @@ export const V1alpha1AuthorityApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         authority,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -112,13 +112,13 @@ export const V1alpha1AuthorityApiAxiosParamCreator = function (
      */
     deleteAuthorityById: async (
       id: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("deleteAuthorityById", "id", id);
       const localVarPath = `/api/v1alpha1/authority/id/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -175,7 +175,7 @@ export const V1alpha1AuthorityApiAxiosParamCreator = function (
       authority?: string,
       page?: number,
       size?: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'type' is not null or undefined
       assertParamExists("getAuthoritiesByCondition", "type", type);
@@ -249,13 +249,13 @@ export const V1alpha1AuthorityApiAxiosParamCreator = function (
      */
     getAuthoritiesByType: async (
       type: "ALL" | "API" | "APIS" | "MENU" | "URL" | "OTHERS",
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'type' is not null or undefined
       assertParamExists("getAuthoritiesByType", "type", type);
       const localVarPath = `/api/v1alpha1/authorities/type/{type}`.replace(
         `{${"type"}}`,
-        encodeURIComponent(String(type))
+        encodeURIComponent(String(type)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -300,7 +300,7 @@ export const V1alpha1AuthorityApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     getAuthorityTypes: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/authority/types`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -359,19 +359,19 @@ export const V1alpha1AuthorityApiFp = function (configuration?: Configuration) {
      */
     async createAuthority(
       authority?: Authority,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.createAuthority(
         authority,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -382,7 +382,7 @@ export const V1alpha1AuthorityApiFp = function (configuration?: Configuration) {
      */
     async deleteAuthorityById(
       id: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -392,7 +392,7 @@ export const V1alpha1AuthorityApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -413,7 +413,7 @@ export const V1alpha1AuthorityApiFp = function (configuration?: Configuration) {
       authority?: string,
       page?: number,
       size?: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -425,13 +425,13 @@ export const V1alpha1AuthorityApiFp = function (configuration?: Configuration) {
           authority,
           page,
           size,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -442,11 +442,11 @@ export const V1alpha1AuthorityApiFp = function (configuration?: Configuration) {
      */
     async getAuthoritiesByType(
       type: "ALL" | "API" | "APIS" | "MENU" | "URL" | "OTHERS",
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<Array<Authority>>
     > {
       const localVarAxiosArgs =
@@ -455,7 +455,7 @@ export const V1alpha1AuthorityApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -464,7 +464,7 @@ export const V1alpha1AuthorityApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async getAuthorityTypes(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>
     > {
@@ -474,7 +474,7 @@ export const V1alpha1AuthorityApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -487,7 +487,7 @@ export const V1alpha1AuthorityApiFp = function (configuration?: Configuration) {
 export const V1alpha1AuthorityApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1AuthorityApiFp(configuration);
   return {
@@ -499,7 +499,7 @@ export const V1alpha1AuthorityApiFactory = function (
      */
     createAuthority(
       requestParameters: V1alpha1AuthorityApiCreateAuthorityRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .createAuthority(requestParameters.authority, options)
@@ -513,7 +513,7 @@ export const V1alpha1AuthorityApiFactory = function (
      */
     deleteAuthorityById(
       requestParameters: V1alpha1AuthorityApiDeleteAuthorityByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteAuthorityById(requestParameters.id, options)
@@ -527,7 +527,7 @@ export const V1alpha1AuthorityApiFactory = function (
      */
     getAuthoritiesByCondition(
       requestParameters: V1alpha1AuthorityApiGetAuthoritiesByConditionRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .getAuthoritiesByCondition(
@@ -537,7 +537,7 @@ export const V1alpha1AuthorityApiFactory = function (
           requestParameters.authority,
           requestParameters.page,
           requestParameters.size,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -549,7 +549,7 @@ export const V1alpha1AuthorityApiFactory = function (
      */
     getAuthoritiesByType(
       requestParameters: V1alpha1AuthorityApiGetAuthoritiesByTypeRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<Authority>> {
       return localVarFp
         .getAuthoritiesByType(requestParameters.type, options)
@@ -561,7 +561,7 @@ export const V1alpha1AuthorityApiFactory = function (
      * @throws {RequiredError}
      */
     getAuthorityTypes(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<string>> {
       return localVarFp
         .getAuthorityTypes(options)
@@ -677,7 +677,7 @@ export class V1alpha1AuthorityApi extends BaseAPI {
    */
   public createAuthority(
     requestParameters: V1alpha1AuthorityApiCreateAuthorityRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AuthorityApiFp(this.configuration)
       .createAuthority(requestParameters.authority, options)
@@ -693,7 +693,7 @@ export class V1alpha1AuthorityApi extends BaseAPI {
    */
   public deleteAuthorityById(
     requestParameters: V1alpha1AuthorityApiDeleteAuthorityByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AuthorityApiFp(this.configuration)
       .deleteAuthorityById(requestParameters.id, options)
@@ -709,7 +709,7 @@ export class V1alpha1AuthorityApi extends BaseAPI {
    */
   public getAuthoritiesByCondition(
     requestParameters: V1alpha1AuthorityApiGetAuthoritiesByConditionRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AuthorityApiFp(this.configuration)
       .getAuthoritiesByCondition(
@@ -719,7 +719,7 @@ export class V1alpha1AuthorityApi extends BaseAPI {
         requestParameters.authority,
         requestParameters.page,
         requestParameters.size,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -733,7 +733,7 @@ export class V1alpha1AuthorityApi extends BaseAPI {
    */
   public getAuthoritiesByType(
     requestParameters: V1alpha1AuthorityApiGetAuthoritiesByTypeRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AuthorityApiFp(this.configuration)
       .getAuthoritiesByType(requestParameters.type, options)

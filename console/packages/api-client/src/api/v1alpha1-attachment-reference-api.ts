@@ -48,7 +48,7 @@ import { BatchMatchingSubjectEpisodesAttachment } from "../models";
  * @export
  */
 export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -59,7 +59,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
      */
     deleteAttachmentReference: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("deleteAttachmentReference", "id", id);
@@ -115,7 +115,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
     findAllByTypeAndAttachmentId: async (
       type: "SUBJECT" | "EPISODE" | "USER_AVATAR",
       attachmentId: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'type' is not null or undefined
       assertParamExists("findAllByTypeAndAttachmentId", "type", type);
@@ -123,7 +123,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
       assertParamExists(
         "findAllByTypeAndAttachmentId",
         "attachmentId",
-        attachmentId
+        attachmentId,
       );
       const localVarPath = `/api/v1alpha1/attachment/references`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -179,13 +179,13 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
      */
     matchingAttachmentsAndSubjectEpisodes: async (
       batchMatchingSubjectEpisodesAttachment: BatchMatchingSubjectEpisodesAttachment,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'batchMatchingSubjectEpisodesAttachment' is not null or undefined
       assertParamExists(
         "matchingAttachmentsAndSubjectEpisodes",
         "batchMatchingSubjectEpisodesAttachment",
-        batchMatchingSubjectEpisodesAttachment
+        batchMatchingSubjectEpisodesAttachment,
       );
       const localVarPath = `/api/v1alpha1/attachment/references/subject/episodes`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -224,7 +224,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         batchMatchingSubjectEpisodesAttachment,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -240,13 +240,13 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
      */
     matchingAttachmentsForEpisode: async (
       batchMatchingEpisodeAttachment: BatchMatchingEpisodeAttachment,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'batchMatchingEpisodeAttachment' is not null or undefined
       assertParamExists(
         "matchingAttachmentsForEpisode",
         "batchMatchingEpisodeAttachment",
-        batchMatchingEpisodeAttachment
+        batchMatchingEpisodeAttachment,
       );
       const localVarPath = `/api/v1alpha1/attachment/references/episode`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -285,7 +285,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         batchMatchingEpisodeAttachment,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -301,7 +301,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
      */
     removeAllByTypeAndReferenceId: async (
       attachmentReference?: AttachmentReference,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/attachment/references`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -340,7 +340,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         attachmentReference,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -356,7 +356,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
      */
     removeByTypeAndAttachmentIdAndReferenceId: async (
       attachmentReference?: AttachmentReference,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/attachment/reference/uk`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -395,7 +395,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         attachmentReference,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -411,7 +411,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
      */
     saveAttachmentReference: async (
       attachmentReference?: AttachmentReference,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/attachment/reference`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -450,7 +450,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         attachmentReference,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -466,7 +466,7 @@ export const V1alpha1AttachmentReferenceApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1AttachmentReferenceApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     V1alpha1AttachmentReferenceApiAxiosParamCreator(configuration);
@@ -479,7 +479,7 @@ export const V1alpha1AttachmentReferenceApiFp = function (
      */
     async deleteAttachmentReference(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -489,7 +489,7 @@ export const V1alpha1AttachmentReferenceApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -502,7 +502,7 @@ export const V1alpha1AttachmentReferenceApiFp = function (
     async findAllByTypeAndAttachmentId(
       type: "SUBJECT" | "EPISODE" | "USER_AVATAR",
       attachmentId: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -510,13 +510,13 @@ export const V1alpha1AttachmentReferenceApiFp = function (
         await localVarAxiosParamCreator.findAllByTypeAndAttachmentId(
           type,
           attachmentId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -527,20 +527,20 @@ export const V1alpha1AttachmentReferenceApiFp = function (
      */
     async matchingAttachmentsAndSubjectEpisodes(
       batchMatchingSubjectEpisodesAttachment: BatchMatchingSubjectEpisodesAttachment,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.matchingAttachmentsAndSubjectEpisodes(
           batchMatchingSubjectEpisodesAttachment,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -551,20 +551,20 @@ export const V1alpha1AttachmentReferenceApiFp = function (
      */
     async matchingAttachmentsForEpisode(
       batchMatchingEpisodeAttachment: BatchMatchingEpisodeAttachment,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.matchingAttachmentsForEpisode(
           batchMatchingEpisodeAttachment,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -575,20 +575,20 @@ export const V1alpha1AttachmentReferenceApiFp = function (
      */
     async removeAllByTypeAndReferenceId(
       attachmentReference?: AttachmentReference,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.removeAllByTypeAndReferenceId(
           attachmentReference,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -599,20 +599,20 @@ export const V1alpha1AttachmentReferenceApiFp = function (
      */
     async removeByTypeAndAttachmentIdAndReferenceId(
       attachmentReference?: AttachmentReference,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.removeByTypeAndAttachmentIdAndReferenceId(
           attachmentReference,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -623,20 +623,20 @@ export const V1alpha1AttachmentReferenceApiFp = function (
      */
     async saveAttachmentReference(
       attachmentReference?: AttachmentReference,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.saveAttachmentReference(
           attachmentReference,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -649,7 +649,7 @@ export const V1alpha1AttachmentReferenceApiFp = function (
 export const V1alpha1AttachmentReferenceApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1AttachmentReferenceApiFp(configuration);
   return {
@@ -661,7 +661,7 @@ export const V1alpha1AttachmentReferenceApiFactory = function (
      */
     deleteAttachmentReference(
       requestParameters: V1alpha1AttachmentReferenceApiDeleteAttachmentReferenceRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteAttachmentReference(requestParameters.id, options)
@@ -675,13 +675,13 @@ export const V1alpha1AttachmentReferenceApiFactory = function (
      */
     findAllByTypeAndAttachmentId(
       requestParameters: V1alpha1AttachmentReferenceApiFindAllByTypeAndAttachmentIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .findAllByTypeAndAttachmentId(
           requestParameters.type,
           requestParameters.attachmentId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -693,12 +693,12 @@ export const V1alpha1AttachmentReferenceApiFactory = function (
      */
     matchingAttachmentsAndSubjectEpisodes(
       requestParameters: V1alpha1AttachmentReferenceApiMatchingAttachmentsAndSubjectEpisodesRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .matchingAttachmentsAndSubjectEpisodes(
           requestParameters.batchMatchingSubjectEpisodesAttachment,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -710,12 +710,12 @@ export const V1alpha1AttachmentReferenceApiFactory = function (
      */
     matchingAttachmentsForEpisode(
       requestParameters: V1alpha1AttachmentReferenceApiMatchingAttachmentsForEpisodeRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .matchingAttachmentsForEpisode(
           requestParameters.batchMatchingEpisodeAttachment,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -727,12 +727,12 @@ export const V1alpha1AttachmentReferenceApiFactory = function (
      */
     removeAllByTypeAndReferenceId(
       requestParameters: V1alpha1AttachmentReferenceApiRemoveAllByTypeAndReferenceIdRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .removeAllByTypeAndReferenceId(
           requestParameters.attachmentReference,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -744,12 +744,12 @@ export const V1alpha1AttachmentReferenceApiFactory = function (
      */
     removeByTypeAndAttachmentIdAndReferenceId(
       requestParameters: V1alpha1AttachmentReferenceApiRemoveByTypeAndAttachmentIdAndReferenceIdRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .removeByTypeAndAttachmentIdAndReferenceId(
           requestParameters.attachmentReference,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -761,7 +761,7 @@ export const V1alpha1AttachmentReferenceApiFactory = function (
      */
     saveAttachmentReference(
       requestParameters: V1alpha1AttachmentReferenceApiSaveAttachmentReferenceRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .saveAttachmentReference(requestParameters.attachmentReference, options)
@@ -891,7 +891,7 @@ export class V1alpha1AttachmentReferenceApi extends BaseAPI {
    */
   public deleteAttachmentReference(
     requestParameters: V1alpha1AttachmentReferenceApiDeleteAttachmentReferenceRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AttachmentReferenceApiFp(this.configuration)
       .deleteAttachmentReference(requestParameters.id, options)
@@ -907,13 +907,13 @@ export class V1alpha1AttachmentReferenceApi extends BaseAPI {
    */
   public findAllByTypeAndAttachmentId(
     requestParameters: V1alpha1AttachmentReferenceApiFindAllByTypeAndAttachmentIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AttachmentReferenceApiFp(this.configuration)
       .findAllByTypeAndAttachmentId(
         requestParameters.type,
         requestParameters.attachmentId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -927,12 +927,12 @@ export class V1alpha1AttachmentReferenceApi extends BaseAPI {
    */
   public matchingAttachmentsAndSubjectEpisodes(
     requestParameters: V1alpha1AttachmentReferenceApiMatchingAttachmentsAndSubjectEpisodesRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AttachmentReferenceApiFp(this.configuration)
       .matchingAttachmentsAndSubjectEpisodes(
         requestParameters.batchMatchingSubjectEpisodesAttachment,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -946,12 +946,12 @@ export class V1alpha1AttachmentReferenceApi extends BaseAPI {
    */
   public matchingAttachmentsForEpisode(
     requestParameters: V1alpha1AttachmentReferenceApiMatchingAttachmentsForEpisodeRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AttachmentReferenceApiFp(this.configuration)
       .matchingAttachmentsForEpisode(
         requestParameters.batchMatchingEpisodeAttachment,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -965,12 +965,12 @@ export class V1alpha1AttachmentReferenceApi extends BaseAPI {
    */
   public removeAllByTypeAndReferenceId(
     requestParameters: V1alpha1AttachmentReferenceApiRemoveAllByTypeAndReferenceIdRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AttachmentReferenceApiFp(this.configuration)
       .removeAllByTypeAndReferenceId(
         requestParameters.attachmentReference,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -984,12 +984,12 @@ export class V1alpha1AttachmentReferenceApi extends BaseAPI {
    */
   public removeByTypeAndAttachmentIdAndReferenceId(
     requestParameters: V1alpha1AttachmentReferenceApiRemoveByTypeAndAttachmentIdAndReferenceIdRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AttachmentReferenceApiFp(this.configuration)
       .removeByTypeAndAttachmentIdAndReferenceId(
         requestParameters.attachmentReference,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1003,7 +1003,7 @@ export class V1alpha1AttachmentReferenceApi extends BaseAPI {
    */
   public saveAttachmentReference(
     requestParameters: V1alpha1AttachmentReferenceApiSaveAttachmentReferenceRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1AttachmentReferenceApiFp(this.configuration)
       .saveAttachmentReference(requestParameters.attachmentReference, options)

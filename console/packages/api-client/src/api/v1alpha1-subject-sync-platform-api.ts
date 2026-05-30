@@ -46,7 +46,7 @@ import { SubjectSync } from "../models";
  * @export
  */
 export const V1alpha1SubjectSyncPlatformApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,13 +57,13 @@ export const V1alpha1SubjectSyncPlatformApiAxiosParamCreator = function (
      */
     getSubjectSyncsBySubjectId: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getSubjectSyncsBySubjectId", "id", id);
       const localVarPath = `/api/v1alpha1/subject/syncs/subjectId/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -123,7 +123,7 @@ export const V1alpha1SubjectSyncPlatformApiAxiosParamCreator = function (
       platformId: string,
       subjectId?: number,
       action?: "PULL" | "MERGE",
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'platform' is not null or undefined
       assertParamExists("syncSubjectAndPlatform", "platform", platform);
@@ -191,7 +191,7 @@ export const V1alpha1SubjectSyncPlatformApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1SubjectSyncPlatformApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     V1alpha1SubjectSyncPlatformApiAxiosParamCreator(configuration);
@@ -204,11 +204,11 @@ export const V1alpha1SubjectSyncPlatformApiFp = function (
      */
     async getSubjectSyncsBySubjectId(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<Array<SubjectSync>>
     > {
       const localVarAxiosArgs =
@@ -217,7 +217,7 @@ export const V1alpha1SubjectSyncPlatformApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -241,7 +241,7 @@ export const V1alpha1SubjectSyncPlatformApiFp = function (
       platformId: string,
       subjectId?: number,
       action?: "PULL" | "MERGE",
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Subject>
     > {
@@ -251,13 +251,13 @@ export const V1alpha1SubjectSyncPlatformApiFp = function (
           platformId,
           subjectId,
           action,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -270,7 +270,7 @@ export const V1alpha1SubjectSyncPlatformApiFp = function (
 export const V1alpha1SubjectSyncPlatformApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1SubjectSyncPlatformApiFp(configuration);
   return {
@@ -282,7 +282,7 @@ export const V1alpha1SubjectSyncPlatformApiFactory = function (
      */
     getSubjectSyncsBySubjectId(
       requestParameters: V1alpha1SubjectSyncPlatformApiGetSubjectSyncsBySubjectIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<SubjectSync>> {
       return localVarFp
         .getSubjectSyncsBySubjectId(requestParameters.id, options)
@@ -296,7 +296,7 @@ export const V1alpha1SubjectSyncPlatformApiFactory = function (
      */
     syncSubjectAndPlatform(
       requestParameters: V1alpha1SubjectSyncPlatformApiSyncSubjectAndPlatformRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Subject> {
       return localVarFp
         .syncSubjectAndPlatform(
@@ -304,7 +304,7 @@ export const V1alpha1SubjectSyncPlatformApiFactory = function (
           requestParameters.platformId,
           requestParameters.subjectId,
           requestParameters.action,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -383,7 +383,7 @@ export class V1alpha1SubjectSyncPlatformApi extends BaseAPI {
    */
   public getSubjectSyncsBySubjectId(
     requestParameters: V1alpha1SubjectSyncPlatformApiGetSubjectSyncsBySubjectIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1SubjectSyncPlatformApiFp(this.configuration)
       .getSubjectSyncsBySubjectId(requestParameters.id, options)
@@ -399,7 +399,7 @@ export class V1alpha1SubjectSyncPlatformApi extends BaseAPI {
    */
   public syncSubjectAndPlatform(
     requestParameters: V1alpha1SubjectSyncPlatformApiSyncSubjectAndPlatformRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1SubjectSyncPlatformApiFp(this.configuration)
       .syncSubjectAndPlatform(
@@ -407,7 +407,7 @@ export class V1alpha1SubjectSyncPlatformApi extends BaseAPI {
         requestParameters.platformId,
         requestParameters.subjectId,
         requestParameters.action,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

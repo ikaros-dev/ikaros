@@ -42,7 +42,7 @@ import {
  * @export
  */
 export const V1alpha1StaticApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -51,7 +51,7 @@ export const V1alpha1StaticApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     listStaticsFonts: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/static/fonts`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -108,7 +108,7 @@ export const V1alpha1StaticApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async listStaticsFonts(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>
     > {
@@ -118,7 +118,7 @@ export const V1alpha1StaticApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -131,7 +131,7 @@ export const V1alpha1StaticApiFp = function (configuration?: Configuration) {
 export const V1alpha1StaticApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1StaticApiFp(configuration);
   return {
@@ -141,7 +141,7 @@ export const V1alpha1StaticApiFactory = function (
      * @throws {RequiredError}
      */
     listStaticsFonts(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<string>> {
       return localVarFp
         .listStaticsFonts(options)

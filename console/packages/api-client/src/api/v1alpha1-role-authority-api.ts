@@ -46,7 +46,7 @@ import { RoleAuthorityReqParams } from "../models";
  * @export
  */
 export const V1alpha1RoleAuthorityApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,7 +57,7 @@ export const V1alpha1RoleAuthorityApiAxiosParamCreator = function (
      */
     addAuthoritiesForRole: async (
       roleAuthorityReqParams?: RoleAuthorityReqParams,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/role/authorities`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -96,7 +96,7 @@ export const V1alpha1RoleAuthorityApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         roleAuthorityReqParams,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -112,7 +112,7 @@ export const V1alpha1RoleAuthorityApiAxiosParamCreator = function (
      */
     deleteAuthoritiesForRole: async (
       roleAuthorityReqParams?: RoleAuthorityReqParams,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/role/authorities`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -151,7 +151,7 @@ export const V1alpha1RoleAuthorityApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         roleAuthorityReqParams,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -167,14 +167,14 @@ export const V1alpha1RoleAuthorityApiAxiosParamCreator = function (
      */
     getAuthoritiesForRole: async (
       roleId: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'roleId' is not null or undefined
       assertParamExists("getAuthoritiesForRole", "roleId", roleId);
       const localVarPath =
         `/api/v1alpha1/role/authorities/roleId/{roleId}`.replace(
           `{${"roleId"}}`,
-          encodeURIComponent(String(roleId))
+          encodeURIComponent(String(roleId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -221,7 +221,7 @@ export const V1alpha1RoleAuthorityApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1RoleAuthorityApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     V1alpha1RoleAuthorityApiAxiosParamCreator(configuration);
@@ -234,23 +234,23 @@ export const V1alpha1RoleAuthorityApiFp = function (
      */
     async addAuthoritiesForRole(
       roleAuthorityReqParams?: RoleAuthorityReqParams,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<Array<Authority>>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.addAuthoritiesForRole(
           roleAuthorityReqParams,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -261,20 +261,20 @@ export const V1alpha1RoleAuthorityApiFp = function (
      */
     async deleteAuthoritiesForRole(
       roleAuthorityReqParams?: RoleAuthorityReqParams,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.deleteAuthoritiesForRole(
           roleAuthorityReqParams,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -285,11 +285,11 @@ export const V1alpha1RoleAuthorityApiFp = function (
      */
     async getAuthoritiesForRole(
       roleId: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<Array<Authority>>
     > {
       const localVarAxiosArgs =
@@ -298,7 +298,7 @@ export const V1alpha1RoleAuthorityApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -311,7 +311,7 @@ export const V1alpha1RoleAuthorityApiFp = function (
 export const V1alpha1RoleAuthorityApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1RoleAuthorityApiFp(configuration);
   return {
@@ -323,12 +323,12 @@ export const V1alpha1RoleAuthorityApiFactory = function (
      */
     addAuthoritiesForRole(
       requestParameters: V1alpha1RoleAuthorityApiAddAuthoritiesForRoleRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<Authority>> {
       return localVarFp
         .addAuthoritiesForRole(
           requestParameters.roleAuthorityReqParams,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -340,12 +340,12 @@ export const V1alpha1RoleAuthorityApiFactory = function (
      */
     deleteAuthoritiesForRole(
       requestParameters: V1alpha1RoleAuthorityApiDeleteAuthoritiesForRoleRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteAuthoritiesForRole(
           requestParameters.roleAuthorityReqParams,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -357,7 +357,7 @@ export const V1alpha1RoleAuthorityApiFactory = function (
      */
     getAuthoritiesForRole(
       requestParameters: V1alpha1RoleAuthorityApiGetAuthoritiesForRoleRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<Authority>> {
       return localVarFp
         .getAuthoritiesForRole(requestParameters.roleId, options)
@@ -424,7 +424,7 @@ export class V1alpha1RoleAuthorityApi extends BaseAPI {
    */
   public addAuthoritiesForRole(
     requestParameters: V1alpha1RoleAuthorityApiAddAuthoritiesForRoleRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1RoleAuthorityApiFp(this.configuration)
       .addAuthoritiesForRole(requestParameters.roleAuthorityReqParams, options)
@@ -440,12 +440,12 @@ export class V1alpha1RoleAuthorityApi extends BaseAPI {
    */
   public deleteAuthoritiesForRole(
     requestParameters: V1alpha1RoleAuthorityApiDeleteAuthoritiesForRoleRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1RoleAuthorityApiFp(this.configuration)
       .deleteAuthoritiesForRole(
         requestParameters.roleAuthorityReqParams,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -459,7 +459,7 @@ export class V1alpha1RoleAuthorityApi extends BaseAPI {
    */
   public getAuthoritiesForRole(
     requestParameters: V1alpha1RoleAuthorityApiGetAuthoritiesForRoleRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1RoleAuthorityApiFp(this.configuration)
       .getAuthoritiesForRole(requestParameters.roleId, options)

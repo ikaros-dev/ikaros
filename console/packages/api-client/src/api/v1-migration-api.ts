@@ -42,7 +42,7 @@ import {
  * @export
  */
 export const V1MigrationApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -53,7 +53,7 @@ export const V1MigrationApiAxiosParamCreator = function (
      */
     exportDatabaseTable: async (
       name?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/migration/export/databse/table`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -103,7 +103,7 @@ export const V1MigrationApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     exportDatabaseTables: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/migration/export/databse/tables`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -143,6 +143,70 @@ export const V1MigrationApiAxiosParamCreator = function (
         options: localVarRequestOptions,
       };
     },
+    /**
+     * 从v1.0.x导出的CSV导入表数据
+     * @param {any} file File
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    importDatabaseTables4csv: async (
+      file: any,
+      options: AxiosRequestConfig = {},
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'file' is not null or undefined
+      assertParamExists("importDatabaseTables4csv", "file", file);
+      const localVarPath = `/api/v1/migration/import/database/tables/csv/410x`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+      const localVarFormParams = new (
+        (configuration && configuration.formDataCtor) ||
+        FormData
+      )();
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (file !== undefined) {
+        localVarFormParams.append(
+          "file",
+          new Blob([JSON.stringify(file)], { type: "application/json" }),
+        );
+      }
+
+      localVarHeaderParameter["Content-Type"] = "multipart/form-data";
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = localVarFormParams;
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
   };
 };
 
@@ -162,7 +226,7 @@ export const V1MigrationApiFp = function (configuration?: Configuration) {
      */
     async exportDatabaseTable(
       name?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -172,7 +236,7 @@ export const V1MigrationApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -181,7 +245,7 @@ export const V1MigrationApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async exportDatabaseTables(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -191,7 +255,28 @@ export const V1MigrationApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
+      );
+    },
+    /**
+     * 从v1.0.x导出的CSV导入表数据
+     * @param {any} file File
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async importDatabaseTables4csv(
+      file: any,
+      options?: AxiosRequestConfig,
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.importDatabaseTables4csv(file, options);
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration,
       );
     },
   };
@@ -204,7 +289,7 @@ export const V1MigrationApiFp = function (configuration?: Configuration) {
 export const V1MigrationApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1MigrationApiFp(configuration);
   return {
@@ -216,7 +301,7 @@ export const V1MigrationApiFactory = function (
      */
     exportDatabaseTable(
       requestParameters: V1MigrationApiExportDatabaseTableRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .exportDatabaseTable(requestParameters.name, options)
@@ -230,6 +315,20 @@ export const V1MigrationApiFactory = function (
     exportDatabaseTables(options?: AxiosRequestConfig): AxiosPromise<any> {
       return localVarFp
         .exportDatabaseTables(options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * 从v1.0.x导出的CSV导入表数据
+     * @param {V1MigrationApiImportDatabaseTables4csvRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    importDatabaseTables4csv(
+      requestParameters: V1MigrationApiImportDatabaseTables4csvRequest,
+      options?: AxiosRequestConfig,
+    ): AxiosPromise<any> {
+      return localVarFp
+        .importDatabaseTables4csv(requestParameters.file, options)
         .then((request) => request(axios, basePath));
     },
   };
@@ -250,6 +349,20 @@ export interface V1MigrationApiExportDatabaseTableRequest {
 }
 
 /**
+ * Request parameters for importDatabaseTables4csv operation in V1MigrationApi.
+ * @export
+ * @interface V1MigrationApiImportDatabaseTables4csvRequest
+ */
+export interface V1MigrationApiImportDatabaseTables4csvRequest {
+  /**
+   * File
+   * @type {any}
+   * @memberof V1MigrationApiImportDatabaseTables4csv
+   */
+  readonly file: any;
+}
+
+/**
  * V1MigrationApi - object-oriented interface
  * @export
  * @class V1MigrationApi
@@ -265,7 +378,7 @@ export class V1MigrationApi extends BaseAPI {
    */
   public exportDatabaseTable(
     requestParameters: V1MigrationApiExportDatabaseTableRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1MigrationApiFp(this.configuration)
       .exportDatabaseTable(requestParameters.name, options)
@@ -281,6 +394,22 @@ export class V1MigrationApi extends BaseAPI {
   public exportDatabaseTables(options?: AxiosRequestConfig) {
     return V1MigrationApiFp(this.configuration)
       .exportDatabaseTables(options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * 从v1.0.x导出的CSV导入表数据
+   * @param {V1MigrationApiImportDatabaseTables4csvRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1MigrationApi
+   */
+  public importDatabaseTables4csv(
+    requestParameters: V1MigrationApiImportDatabaseTables4csvRequest,
+    options?: AxiosRequestConfig,
+  ) {
+    return V1MigrationApiFp(this.configuration)
+      .importDatabaseTables4csv(requestParameters.file, options)
       .then((request) => request(this.axios, this.basePath));
   }
 }

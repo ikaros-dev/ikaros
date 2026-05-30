@@ -46,7 +46,7 @@ import { PagingWrap } from "../models";
  * @export
  */
 export const V1AttachmentDriverApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,13 +57,13 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
      */
     deleteAttachmentDriverById: async (
       id: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("deleteAttachmentDriverById", "id", id);
       const localVarPath = `/api/v1/attachment/driver/id/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -112,7 +112,7 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
     deleteByTypeAndName: async (
       type: any,
       name: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'type' is not null or undefined
       assertParamExists("deleteByTypeAndName", "type", type);
@@ -172,13 +172,13 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
      */
     enableDriver: async (
       id: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("enableDriver", "id", id);
       const localVarPath = `/api/v1/attachment/driver/disable/id/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -225,13 +225,13 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
      */
     enableDriver1: async (
       id: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("enableDriver1", "id", id);
       const localVarPath = `/api/v1/attachment/driver/enable/id/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -278,13 +278,13 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
      */
     getAttachmentDriverById: async (
       id: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getAttachmentDriverById", "id", id);
       const localVarPath = `/api/v1/attachment/driver/id/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -333,7 +333,7 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
     getByTypeAndName: async (
       type: any,
       name: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'type' is not null or undefined
       assertParamExists("getByTypeAndName", "type", type);
@@ -401,7 +401,7 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
       name?: any,
       parentId?: any,
       refresh?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/attachment/driver/attachments/condition`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -471,7 +471,7 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
     listDriversByCondition: async (
       page?: any,
       size?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/attachment/drivers/condition`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -525,7 +525,7 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     listDriversFetchers: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/attachment/drivers/fetchers`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -573,7 +573,7 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
      */
     saveAttachmentDriver: async (
       attachmentDriver?: AttachmentDriver,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/attachment/driver`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -612,7 +612,7 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         attachmentDriver,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -628,7 +628,7 @@ export const V1AttachmentDriverApiAxiosParamCreator = function (
  * @export
  */
 export const V1AttachmentDriverApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     V1AttachmentDriverApiAxiosParamCreator(configuration);
@@ -641,7 +641,7 @@ export const V1AttachmentDriverApiFp = function (
      */
     async deleteAttachmentDriverById(
       id: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -651,7 +651,7 @@ export const V1AttachmentDriverApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -664,7 +664,7 @@ export const V1AttachmentDriverApiFp = function (
     async deleteByTypeAndName(
       type: any,
       name: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -672,13 +672,13 @@ export const V1AttachmentDriverApiFp = function (
         await localVarAxiosParamCreator.deleteByTypeAndName(
           type,
           name,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -689,19 +689,19 @@ export const V1AttachmentDriverApiFp = function (
      */
     async enableDriver(
       id: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.enableDriver(
         id,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -712,19 +712,19 @@ export const V1AttachmentDriverApiFp = function (
      */
     async enableDriver1(
       id: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.enableDriver1(
         id,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -735,11 +735,11 @@ export const V1AttachmentDriverApiFp = function (
      */
     async getAttachmentDriverById(
       id: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<AttachmentDriver>
     > {
       const localVarAxiosArgs =
@@ -748,7 +748,7 @@ export const V1AttachmentDriverApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -761,11 +761,11 @@ export const V1AttachmentDriverApiFp = function (
     async getByTypeAndName(
       type: any,
       name: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<AttachmentDriver>
     > {
       const localVarAxiosArgs =
@@ -774,7 +774,7 @@ export const V1AttachmentDriverApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -793,7 +793,7 @@ export const V1AttachmentDriverApiFp = function (
       name?: any,
       parentId?: any,
       refresh?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -804,13 +804,13 @@ export const V1AttachmentDriverApiFp = function (
           name,
           parentId,
           refresh,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -823,7 +823,7 @@ export const V1AttachmentDriverApiFp = function (
     async listDriversByCondition(
       page?: any,
       size?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -831,13 +831,13 @@ export const V1AttachmentDriverApiFp = function (
         await localVarAxiosParamCreator.listDriversByCondition(
           page,
           size,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -846,7 +846,7 @@ export const V1AttachmentDriverApiFp = function (
      * @throws {RequiredError}
      */
     async listDriversFetchers(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -856,7 +856,7 @@ export const V1AttachmentDriverApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -867,23 +867,23 @@ export const V1AttachmentDriverApiFp = function (
      */
     async saveAttachmentDriver(
       attachmentDriver?: AttachmentDriver,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<AttachmentDriver>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.saveAttachmentDriver(
           attachmentDriver,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -896,7 +896,7 @@ export const V1AttachmentDriverApiFp = function (
 export const V1AttachmentDriverApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1AttachmentDriverApiFp(configuration);
   return {
@@ -908,7 +908,7 @@ export const V1AttachmentDriverApiFactory = function (
      */
     deleteAttachmentDriverById(
       requestParameters: V1AttachmentDriverApiDeleteAttachmentDriverByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteAttachmentDriverById(requestParameters.id, options)
@@ -922,13 +922,13 @@ export const V1AttachmentDriverApiFactory = function (
      */
     deleteByTypeAndName(
       requestParameters: V1AttachmentDriverApiDeleteByTypeAndNameRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteByTypeAndName(
           requestParameters.type,
           requestParameters.name,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -940,7 +940,7 @@ export const V1AttachmentDriverApiFactory = function (
      */
     enableDriver(
       requestParameters: V1AttachmentDriverApiEnableDriverRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .enableDriver(requestParameters.id, options)
@@ -954,7 +954,7 @@ export const V1AttachmentDriverApiFactory = function (
      */
     enableDriver1(
       requestParameters: V1AttachmentDriverApiEnableDriver1Request,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .enableDriver1(requestParameters.id, options)
@@ -968,7 +968,7 @@ export const V1AttachmentDriverApiFactory = function (
      */
     getAttachmentDriverById(
       requestParameters: V1AttachmentDriverApiGetAttachmentDriverByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<AttachmentDriver> {
       return localVarFp
         .getAttachmentDriverById(requestParameters.id, options)
@@ -982,13 +982,13 @@ export const V1AttachmentDriverApiFactory = function (
      */
     getByTypeAndName(
       requestParameters: V1AttachmentDriverApiGetByTypeAndNameRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<AttachmentDriver> {
       return localVarFp
         .getByTypeAndName(
           requestParameters.type,
           requestParameters.name,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1000,7 +1000,7 @@ export const V1AttachmentDriverApiFactory = function (
      */
     listAttachmentsByCondition(
       requestParameters: V1AttachmentDriverApiListAttachmentsByConditionRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .listAttachmentsByCondition(
@@ -1009,7 +1009,7 @@ export const V1AttachmentDriverApiFactory = function (
           requestParameters.name,
           requestParameters.parentId,
           requestParameters.refresh,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1021,13 +1021,13 @@ export const V1AttachmentDriverApiFactory = function (
      */
     listDriversByCondition(
       requestParameters: V1AttachmentDriverApiListDriversByConditionRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .listDriversByCondition(
           requestParameters.page,
           requestParameters.size,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1049,7 +1049,7 @@ export const V1AttachmentDriverApiFactory = function (
      */
     saveAttachmentDriver(
       requestParameters: V1AttachmentDriverApiSaveAttachmentDriverRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<AttachmentDriver> {
       return localVarFp
         .saveAttachmentDriver(requestParameters.attachmentDriver, options)
@@ -1249,7 +1249,7 @@ export class V1AttachmentDriverApi extends BaseAPI {
    */
   public deleteAttachmentDriverById(
     requestParameters: V1AttachmentDriverApiDeleteAttachmentDriverByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentDriverApiFp(this.configuration)
       .deleteAttachmentDriverById(requestParameters.id, options)
@@ -1265,13 +1265,13 @@ export class V1AttachmentDriverApi extends BaseAPI {
    */
   public deleteByTypeAndName(
     requestParameters: V1AttachmentDriverApiDeleteByTypeAndNameRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentDriverApiFp(this.configuration)
       .deleteByTypeAndName(
         requestParameters.type,
         requestParameters.name,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1285,7 +1285,7 @@ export class V1AttachmentDriverApi extends BaseAPI {
    */
   public enableDriver(
     requestParameters: V1AttachmentDriverApiEnableDriverRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentDriverApiFp(this.configuration)
       .enableDriver(requestParameters.id, options)
@@ -1301,7 +1301,7 @@ export class V1AttachmentDriverApi extends BaseAPI {
    */
   public enableDriver1(
     requestParameters: V1AttachmentDriverApiEnableDriver1Request,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentDriverApiFp(this.configuration)
       .enableDriver1(requestParameters.id, options)
@@ -1317,7 +1317,7 @@ export class V1AttachmentDriverApi extends BaseAPI {
    */
   public getAttachmentDriverById(
     requestParameters: V1AttachmentDriverApiGetAttachmentDriverByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentDriverApiFp(this.configuration)
       .getAttachmentDriverById(requestParameters.id, options)
@@ -1333,7 +1333,7 @@ export class V1AttachmentDriverApi extends BaseAPI {
    */
   public getByTypeAndName(
     requestParameters: V1AttachmentDriverApiGetByTypeAndNameRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentDriverApiFp(this.configuration)
       .getByTypeAndName(requestParameters.type, requestParameters.name, options)
@@ -1349,7 +1349,7 @@ export class V1AttachmentDriverApi extends BaseAPI {
    */
   public listAttachmentsByCondition(
     requestParameters: V1AttachmentDriverApiListAttachmentsByConditionRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentDriverApiFp(this.configuration)
       .listAttachmentsByCondition(
@@ -1358,7 +1358,7 @@ export class V1AttachmentDriverApi extends BaseAPI {
         requestParameters.name,
         requestParameters.parentId,
         requestParameters.refresh,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1372,13 +1372,13 @@ export class V1AttachmentDriverApi extends BaseAPI {
    */
   public listDriversByCondition(
     requestParameters: V1AttachmentDriverApiListDriversByConditionRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentDriverApiFp(this.configuration)
       .listDriversByCondition(
         requestParameters.page,
         requestParameters.size,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1404,7 +1404,7 @@ export class V1AttachmentDriverApi extends BaseAPI {
    */
   public saveAttachmentDriver(
     requestParameters: V1AttachmentDriverApiSaveAttachmentDriverRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentDriverApiFp(this.configuration)
       .saveAttachmentDriver(requestParameters.attachmentDriver, options)

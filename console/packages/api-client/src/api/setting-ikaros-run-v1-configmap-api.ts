@@ -46,7 +46,7 @@ import { PagingWrap } from "../models";
  * @export
  */
 export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,7 +57,7 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
      */
     createConfigmap: async (
       configMap?: ConfigMap,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/apis/setting.ikaros.run/v1/configmap`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -96,7 +96,7 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         configMap,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -112,14 +112,14 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
      */
     deleteConfigmap: async (
       name: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("deleteConfigmap", "name", name);
       const localVarPath =
         `/apis/setting.ikaros.run/v1/configmap/{name}`.replace(
           `{${"name"}}`,
-          encodeURIComponent(String(name))
+          encodeURIComponent(String(name)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -166,14 +166,14 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
      */
     getConfigmap: async (
       name: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("getConfigmap", "name", name);
       const localVarPath =
         `/apis/setting.ikaros.run/v1/configmap/{name}`.replace(
           `{${"name"}}`,
-          encodeURIComponent(String(name))
+          encodeURIComponent(String(name)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -222,7 +222,7 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
     getConfigmapMeta: async (
       name: any,
       metaName: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("getConfigmapMeta", "name", name);
@@ -279,7 +279,7 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
     getConfigmapsByPaging: async (
       page: any,
       size: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'page' is not null or undefined
       assertParamExists("getConfigmapsByPaging", "page", page);
@@ -332,7 +332,7 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     listConfigmaps: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/apis/setting.ikaros.run/v1/configmaps`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -380,7 +380,7 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
      */
     updateConfigmap: async (
       configMap?: ConfigMap,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/apis/setting.ikaros.run/v1/configmap`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -419,7 +419,7 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         configMap,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -439,7 +439,7 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
       name: any,
       metaName: any,
       body: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("updateConfigmapMeta", "name", name);
@@ -487,7 +487,7 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         body,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -503,7 +503,7 @@ export const SettingIkarosRunV1ConfigmapApiAxiosParamCreator = function (
  * @export
  */
 export const SettingIkarosRunV1ConfigmapApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     SettingIkarosRunV1ConfigmapApiAxiosParamCreator(configuration);
@@ -516,19 +516,19 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
      */
     async createConfigmap(
       configMap?: ConfigMap,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.createConfigmap(
         configMap,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -539,19 +539,19 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
      */
     async deleteConfigmap(
       name: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.deleteConfigmap(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -562,19 +562,19 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
      */
     async getConfigmap(
       name: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getConfigmap(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -587,7 +587,7 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
     async getConfigmapMeta(
       name: any,
       metaName: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -595,13 +595,13 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
         await localVarAxiosParamCreator.getConfigmapMeta(
           name,
           metaName,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -614,7 +614,7 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
     async getConfigmapsByPaging(
       page: any,
       size: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -622,13 +622,13 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
         await localVarAxiosParamCreator.getConfigmapsByPaging(
           page,
           size,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -637,18 +637,17 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
      * @throws {RequiredError}
      */
     async listConfigmaps(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.listConfigmaps(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listConfigmaps(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -659,19 +658,19 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
      */
     async updateConfigmap(
       configMap?: ConfigMap,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.updateConfigmap(
         configMap,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -686,7 +685,7 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
       name: any,
       metaName: any,
       body: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigMap>
     > {
@@ -695,13 +694,13 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
           name,
           metaName,
           body,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -714,7 +713,7 @@ export const SettingIkarosRunV1ConfigmapApiFp = function (
 export const SettingIkarosRunV1ConfigmapApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = SettingIkarosRunV1ConfigmapApiFp(configuration);
   return {
@@ -726,7 +725,7 @@ export const SettingIkarosRunV1ConfigmapApiFactory = function (
      */
     createConfigmap(
       requestParameters: SettingIkarosRunV1ConfigmapApiCreateConfigmapRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<ConfigMap> {
       return localVarFp
         .createConfigmap(requestParameters.configMap, options)
@@ -740,7 +739,7 @@ export const SettingIkarosRunV1ConfigmapApiFactory = function (
      */
     deleteConfigmap(
       requestParameters: SettingIkarosRunV1ConfigmapApiDeleteConfigmapRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteConfigmap(requestParameters.name, options)
@@ -754,7 +753,7 @@ export const SettingIkarosRunV1ConfigmapApiFactory = function (
      */
     getConfigmap(
       requestParameters: SettingIkarosRunV1ConfigmapApiGetConfigmapRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<ConfigMap> {
       return localVarFp
         .getConfigmap(requestParameters.name, options)
@@ -768,13 +767,13 @@ export const SettingIkarosRunV1ConfigmapApiFactory = function (
      */
     getConfigmapMeta(
       requestParameters: SettingIkarosRunV1ConfigmapApiGetConfigmapMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .getConfigmapMeta(
           requestParameters.name,
           requestParameters.metaName,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -786,13 +785,13 @@ export const SettingIkarosRunV1ConfigmapApiFactory = function (
      */
     getConfigmapsByPaging(
       requestParameters: SettingIkarosRunV1ConfigmapApiGetConfigmapsByPagingRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .getConfigmapsByPaging(
           requestParameters.page,
           requestParameters.size,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -814,7 +813,7 @@ export const SettingIkarosRunV1ConfigmapApiFactory = function (
      */
     updateConfigmap(
       requestParameters: SettingIkarosRunV1ConfigmapApiUpdateConfigmapRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<ConfigMap> {
       return localVarFp
         .updateConfigmap(requestParameters.configMap, options)
@@ -828,14 +827,14 @@ export const SettingIkarosRunV1ConfigmapApiFactory = function (
      */
     updateConfigmapMeta(
       requestParameters: SettingIkarosRunV1ConfigmapApiUpdateConfigmapMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<ConfigMap> {
       return localVarFp
         .updateConfigmapMeta(
           requestParameters.name,
           requestParameters.metaName,
           requestParameters.body,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -984,7 +983,7 @@ export class SettingIkarosRunV1ConfigmapApi extends BaseAPI {
    */
   public createConfigmap(
     requestParameters: SettingIkarosRunV1ConfigmapApiCreateConfigmapRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return SettingIkarosRunV1ConfigmapApiFp(this.configuration)
       .createConfigmap(requestParameters.configMap, options)
@@ -1000,7 +999,7 @@ export class SettingIkarosRunV1ConfigmapApi extends BaseAPI {
    */
   public deleteConfigmap(
     requestParameters: SettingIkarosRunV1ConfigmapApiDeleteConfigmapRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return SettingIkarosRunV1ConfigmapApiFp(this.configuration)
       .deleteConfigmap(requestParameters.name, options)
@@ -1016,7 +1015,7 @@ export class SettingIkarosRunV1ConfigmapApi extends BaseAPI {
    */
   public getConfigmap(
     requestParameters: SettingIkarosRunV1ConfigmapApiGetConfigmapRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return SettingIkarosRunV1ConfigmapApiFp(this.configuration)
       .getConfigmap(requestParameters.name, options)
@@ -1032,13 +1031,13 @@ export class SettingIkarosRunV1ConfigmapApi extends BaseAPI {
    */
   public getConfigmapMeta(
     requestParameters: SettingIkarosRunV1ConfigmapApiGetConfigmapMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return SettingIkarosRunV1ConfigmapApiFp(this.configuration)
       .getConfigmapMeta(
         requestParameters.name,
         requestParameters.metaName,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1052,13 +1051,13 @@ export class SettingIkarosRunV1ConfigmapApi extends BaseAPI {
    */
   public getConfigmapsByPaging(
     requestParameters: SettingIkarosRunV1ConfigmapApiGetConfigmapsByPagingRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return SettingIkarosRunV1ConfigmapApiFp(this.configuration)
       .getConfigmapsByPaging(
         requestParameters.page,
         requestParameters.size,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1084,7 +1083,7 @@ export class SettingIkarosRunV1ConfigmapApi extends BaseAPI {
    */
   public updateConfigmap(
     requestParameters: SettingIkarosRunV1ConfigmapApiUpdateConfigmapRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return SettingIkarosRunV1ConfigmapApiFp(this.configuration)
       .updateConfigmap(requestParameters.configMap, options)
@@ -1100,14 +1099,14 @@ export class SettingIkarosRunV1ConfigmapApi extends BaseAPI {
    */
   public updateConfigmapMeta(
     requestParameters: SettingIkarosRunV1ConfigmapApiUpdateConfigmapMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return SettingIkarosRunV1ConfigmapApiFp(this.configuration)
       .updateConfigmapMeta(
         requestParameters.name,
         requestParameters.metaName,
         requestParameters.body,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

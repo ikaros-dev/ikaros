@@ -37,13 +37,12 @@ import {
   BaseAPI,
   RequiredError,
 } from "../base";
-import { Link } from "../models/link";
 /**
  * ActuatorApi - axios parameter creator
  * @export
  */
 export const ActuatorApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -98,7 +97,7 @@ export const ActuatorApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     conditions: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/actuator/conditions`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -145,7 +144,7 @@ export const ActuatorApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     configurationProperties: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/actuator/configprops`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -194,13 +193,13 @@ export const ActuatorApiAxiosParamCreator = function (
      */
     configurationPropertiesWithPrefix: async (
       prefix: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'prefix' is not null or undefined
       assertParamExists("configurationPropertiesWithPrefix", "prefix", prefix);
       const localVarPath = `/actuator/configprops/{prefix}`.replace(
         `{${"prefix"}}`,
-        encodeURIComponent(String(prefix))
+        encodeURIComponent(String(prefix)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -250,13 +249,13 @@ export const ActuatorApiAxiosParamCreator = function (
     configureLogLevel: async (
       name: any,
       body?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("configureLogLevel", "name", name);
       const localVarPath = `/actuator/loggers/{name}`.replace(
         `{${"name"}}`,
-        encodeURIComponent(String(name))
+        encodeURIComponent(String(name)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -294,7 +293,7 @@ export const ActuatorApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         body,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -311,7 +310,7 @@ export const ActuatorApiAxiosParamCreator = function (
      */
     environment: async (
       pattern?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/actuator/env`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -364,13 +363,13 @@ export const ActuatorApiAxiosParamCreator = function (
      */
     environmentEntry: async (
       toMatch: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'toMatch' is not null or undefined
       assertParamExists("environmentEntry", "toMatch", toMatch);
       const localVarPath = `/actuator/env/{toMatch}`.replace(
         `{${"toMatch"}}`,
-        encodeURIComponent(String(toMatch))
+        encodeURIComponent(String(toMatch)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -418,13 +417,13 @@ export const ActuatorApiAxiosParamCreator = function (
      */
     health: async (
       path: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'path' is not null or undefined
       assertParamExists("health", "path", path);
       const localVarPath = `/actuator/health/{path}`.replace(
         `{${"path"}}`,
-        encodeURIComponent(String(path))
+        encodeURIComponent(String(path)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -605,7 +604,7 @@ export const ActuatorApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     listNames: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/actuator/metrics`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -654,13 +653,13 @@ export const ActuatorApiAxiosParamCreator = function (
      */
     loggerLevels: async (
       name: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("loggerLevels", "name", name);
       const localVarPath = `/actuator/loggers/{name}`.replace(
         `{${"name"}}`,
-        encodeURIComponent(String(name))
+        encodeURIComponent(String(name)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -751,7 +750,7 @@ export const ActuatorApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     mappings: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/actuator/mappings`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -802,13 +801,13 @@ export const ActuatorApiAxiosParamCreator = function (
     metric: async (
       requiredMetricName: any,
       tag?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'requiredMetricName' is not null or undefined
       assertParamExists("metric", "requiredMetricName", requiredMetricName);
       const localVarPath = `/actuator/metrics/{requiredMetricName}`.replace(
         `{${"requiredMetricName"}}`,
-        encodeURIComponent(String(requiredMetricName))
+        encodeURIComponent(String(requiredMetricName)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -860,13 +859,13 @@ export const ActuatorApiAxiosParamCreator = function (
      */
     sbom: async (
       id: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("sbom", "id", id);
       const localVarPath = `/actuator/sbom/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -957,7 +956,7 @@ export const ActuatorApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     scheduledTasks: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/actuator/scheduledtasks`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1008,7 +1007,7 @@ export const ActuatorApiAxiosParamCreator = function (
     scrape: async (
       format?: any,
       includedNames?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/actuator/prometheus`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1063,7 +1062,7 @@ export const ActuatorApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     threadDump: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/actuator/threaddump`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1120,7 +1119,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async beans(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -1129,7 +1128,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1139,18 +1138,17 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async conditions(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.conditions(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.conditions(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1160,7 +1158,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async configurationProperties(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -1170,7 +1168,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1182,20 +1180,20 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      */
     async configurationPropertiesWithPrefix(
       prefix: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.configurationPropertiesWithPrefix(
           prefix,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1209,7 +1207,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
     async configureLogLevel(
       name: any,
       body?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -1219,7 +1217,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1231,19 +1229,19 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      */
     async environment(
       pattern?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.environment(
         pattern,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1255,7 +1253,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      */
     async environmentEntry(
       toMatch: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -1265,7 +1263,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1277,19 +1275,19 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      */
     async health(
       path: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.health(
         path,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1299,18 +1297,17 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async health1(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.health1(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.health1(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1320,7 +1317,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async info(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -1329,7 +1326,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1339,11 +1336,11 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async links(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<{ [key: string]: { [key: string]: Link } }>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.links(options);
@@ -1351,7 +1348,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1361,18 +1358,17 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async listNames(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.listNames(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listNames(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1384,19 +1380,19 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      */
     async loggerLevels(
       name: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.loggerLevels(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1406,18 +1402,17 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async loggers(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.loggers(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.loggers(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1427,18 +1422,17 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async mappings(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.mappings(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.mappings(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1452,20 +1446,20 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
     async metric(
       requiredMetricName: any,
       tag?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.metric(
         requiredMetricName,
         tag,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1477,19 +1471,19 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      */
     async sbom(
       id: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.sbom(
         id,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1499,7 +1493,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async sboms(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -1508,7 +1502,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1518,18 +1512,17 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async scheduledTasks(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.scheduledTasks(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.scheduledTasks(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1543,20 +1536,20 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
     async scrape(
       format?: any,
       includedNames?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.scrape(
         format,
         includedNames,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -1566,18 +1559,17 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async threadDump(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.threadDump(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.threadDump(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -1590,7 +1582,7 @@ export const ActuatorApiFp = function (configuration?: Configuration) {
 export const ActuatorApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = ActuatorApiFp(configuration);
   return {
@@ -1636,7 +1628,7 @@ export const ActuatorApiFactory = function (
      */
     configurationPropertiesWithPrefix(
       requestParameters: ActuatorApiConfigurationPropertiesWithPrefixRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .configurationPropertiesWithPrefix(requestParameters.prefix, options)
@@ -1651,13 +1643,13 @@ export const ActuatorApiFactory = function (
      */
     configureLogLevel(
       requestParameters: ActuatorApiConfigureLogLevelRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .configureLogLevel(
           requestParameters.name,
           requestParameters.body,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1670,7 +1662,7 @@ export const ActuatorApiFactory = function (
      */
     environment(
       requestParameters: ActuatorApiEnvironmentRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .environment(requestParameters.pattern, options)
@@ -1685,7 +1677,7 @@ export const ActuatorApiFactory = function (
      */
     environmentEntry(
       requestParameters: ActuatorApiEnvironmentEntryRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .environmentEntry(requestParameters.toMatch, options)
@@ -1700,7 +1692,7 @@ export const ActuatorApiFactory = function (
      */
     health(
       requestParameters: ActuatorApiHealthRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .health(requestParameters.path, options)
@@ -1735,7 +1727,7 @@ export const ActuatorApiFactory = function (
      * @throws {RequiredError}
      */
     links(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<{ [key: string]: { [key: string]: Link } }> {
       return localVarFp
         .links(options)
@@ -1761,7 +1753,7 @@ export const ActuatorApiFactory = function (
      */
     loggerLevels(
       requestParameters: ActuatorApiLoggerLevelsRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .loggerLevels(requestParameters.name, options)
@@ -1798,13 +1790,13 @@ export const ActuatorApiFactory = function (
      */
     metric(
       requestParameters: ActuatorApiMetricRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .metric(
           requestParameters.requiredMetricName,
           requestParameters.tag,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1817,7 +1809,7 @@ export const ActuatorApiFactory = function (
      */
     sbom(
       requestParameters: ActuatorApiSbomRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .sbom(requestParameters.id, options)
@@ -1854,13 +1846,13 @@ export const ActuatorApiFactory = function (
      */
     scrape(
       requestParameters: ActuatorApiScrapeRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .scrape(
           requestParameters.format,
           requestParameters.includedNames,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -2081,7 +2073,7 @@ export class ActuatorApi extends BaseAPI {
    */
   public configurationPropertiesWithPrefix(
     requestParameters: ActuatorApiConfigurationPropertiesWithPrefixRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return ActuatorApiFp(this.configuration)
       .configurationPropertiesWithPrefix(requestParameters.prefix, options)
@@ -2098,13 +2090,13 @@ export class ActuatorApi extends BaseAPI {
    */
   public configureLogLevel(
     requestParameters: ActuatorApiConfigureLogLevelRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return ActuatorApiFp(this.configuration)
       .configureLogLevel(
         requestParameters.name,
         requestParameters.body,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -2119,7 +2111,7 @@ export class ActuatorApi extends BaseAPI {
    */
   public environment(
     requestParameters: ActuatorApiEnvironmentRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return ActuatorApiFp(this.configuration)
       .environment(requestParameters.pattern, options)
@@ -2136,7 +2128,7 @@ export class ActuatorApi extends BaseAPI {
    */
   public environmentEntry(
     requestParameters: ActuatorApiEnvironmentEntryRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return ActuatorApiFp(this.configuration)
       .environmentEntry(requestParameters.toMatch, options)
@@ -2153,7 +2145,7 @@ export class ActuatorApi extends BaseAPI {
    */
   public health(
     requestParameters: ActuatorApiHealthRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return ActuatorApiFp(this.configuration)
       .health(requestParameters.path, options)
@@ -2222,7 +2214,7 @@ export class ActuatorApi extends BaseAPI {
    */
   public loggerLevels(
     requestParameters: ActuatorApiLoggerLevelsRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return ActuatorApiFp(this.configuration)
       .loggerLevels(requestParameters.name, options)
@@ -2265,13 +2257,13 @@ export class ActuatorApi extends BaseAPI {
    */
   public metric(
     requestParameters: ActuatorApiMetricRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return ActuatorApiFp(this.configuration)
       .metric(
         requestParameters.requiredMetricName,
         requestParameters.tag,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -2286,7 +2278,7 @@ export class ActuatorApi extends BaseAPI {
    */
   public sbom(
     requestParameters: ActuatorApiSbomRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return ActuatorApiFp(this.configuration)
       .sbom(requestParameters.id, options)
@@ -2329,13 +2321,13 @@ export class ActuatorApi extends BaseAPI {
    */
   public scrape(
     requestParameters: ActuatorApiScrapeRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return ActuatorApiFp(this.configuration)
       .scrape(
         requestParameters.format,
         requestParameters.includedNames,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

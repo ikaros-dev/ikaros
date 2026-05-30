@@ -38,32 +38,36 @@ import {
   RequiredError,
 } from "../base";
 // @ts-ignore
-import { SubjectRelation } from "../models";
+import { DirectoryBindingWorkflowEntity } from "../models";
 /**
- * V1SubjectRelationApi - axios parameter creator
+ * V1BindingApi - axios parameter creator
  * @export
  */
-export const V1SubjectRelationApiAxiosParamCreator = function (
+export const V1BindingApiAxiosParamCreator = function (
   configuration?: Configuration,
 ) {
   return {
     /**
-     * Create subject relation
-     * @param {SubjectRelation} subjectRelation SubjectRelation
+     * Batch bind all subdirectories under a parent directory.
+     * @param {any} parentDirectoryId Parent directory attachment ID.
+     * @param {any} platform Metadata platform.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    createSubjectRelation: async (
-      subjectRelation: SubjectRelation,
+    bindDirectories: async (
+      parentDirectoryId: any,
+      platform: any,
       options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
-      // verify required parameter 'subjectRelation' is not null or undefined
+      // verify required parameter 'parentDirectoryId' is not null or undefined
       assertParamExists(
-        "createSubjectRelation",
-        "subjectRelation",
-        subjectRelation,
+        "bindDirectories",
+        "parentDirectoryId",
+        parentDirectoryId,
       );
-      const localVarPath = `/api/v1/subject/relation`;
+      // verify required parameter 'platform' is not null or undefined
+      assertParamExists("bindDirectories", "platform", platform);
+      const localVarPath = `/api/v1/binding/directories`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -87,7 +91,13 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      localVarHeaderParameter["Content-Type"] = "application/json";
+      if (parentDirectoryId !== undefined) {
+        localVarQueryParameter["parentDirectoryId"] = parentDirectoryId;
+      }
+
+      if (platform !== undefined) {
+        localVarQueryParameter["platform"] = platform;
+      }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions =
@@ -97,11 +107,6 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
         ...headersFromBaseOptions,
         ...options.headers,
       };
-      localVarRequestOptions.data = serializeDataIfNeeded(
-        subjectRelation,
-        localVarRequestOptions,
-        configuration,
-      );
 
       return {
         url: toPathString(localVarUrlObj),
@@ -109,35 +114,86 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
       };
     },
     /**
-     *
-     * @param {any} subjectId Subject id
-     * @param {any} relationType Subject relation type
+     * Bind a single directory to a subject. Automatically finds subject, creates entries, and binds files.
+     * @param {any} directoryId Directory attachment ID.
+     * @param {any} platform Metadata platform.
+     * @param {any} [keyword] Search keyword, overrides directory name if set.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getSubjectRelationByIdAndType: async (
-      subjectId: any,
-      relationType: any,
+    bindDirectory: async (
+      directoryId: any,
+      platform: any,
+      keyword?: any,
       options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
-      // verify required parameter 'subjectId' is not null or undefined
-      assertParamExists(
-        "getSubjectRelationByIdAndType",
-        "subjectId",
-        subjectId,
-      );
-      // verify required parameter 'relationType' is not null or undefined
-      assertParamExists(
-        "getSubjectRelationByIdAndType",
-        "relationType",
-        relationType,
-      );
-      const localVarPath = `/api/v1/subject/relation/{subjectId}/{relationType}`
-        .replace(`{${"subjectId"}}`, encodeURIComponent(String(subjectId)))
-        .replace(
-          `{${"relationType"}}`,
-          encodeURIComponent(String(relationType)),
-        );
+      // verify required parameter 'directoryId' is not null or undefined
+      assertParamExists("bindDirectory", "directoryId", directoryId);
+      // verify required parameter 'platform' is not null or undefined
+      assertParamExists("bindDirectory", "platform", platform);
+      const localVarPath = `/api/v1/binding/directory`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (directoryId !== undefined) {
+        localVarQueryParameter["directoryId"] = directoryId;
+      }
+
+      if (platform !== undefined) {
+        localVarQueryParameter["platform"] = platform;
+      }
+
+      if (keyword !== undefined) {
+        localVarQueryParameter["keyword"] = keyword;
+      }
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Get binding workflow status by workflow ID.
+     * @param {any} id Workflow ID.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getBindingWorkflow: async (
+      id: any,
+      options: AxiosRequestConfig = {},
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("getBindingWorkflow", "id", id);
+      const localVarPath = `/api/v1/binding/workflow/{id}`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -161,6 +217,10 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
+      if (id !== undefined) {
+        localVarQueryParameter["id"] = id;
+      }
+
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions =
         baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -176,21 +236,18 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
       };
     },
     /**
-     *
-     * @param {any} subjectId Subject id
+     * Get binding workflow status by task ID.
+     * @param {any} taskId Task ID.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getSubjectRelationsById: async (
-      subjectId: any,
+    getBindingWorkflowByTaskId: async (
+      taskId: any,
       options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
-      // verify required parameter 'subjectId' is not null or undefined
-      assertParamExists("getSubjectRelationsById", "subjectId", subjectId);
-      const localVarPath = `/api/v1/subject/relations/{subjectId}`.replace(
-        `{${"subjectId"}}`,
-        encodeURIComponent(String(subjectId)),
-      );
+      // verify required parameter 'taskId' is not null or undefined
+      assertParamExists("getBindingWorkflowByTaskId", "taskId", taskId);
+      const localVarPath = `/api/v1/binding/workflow/task/{taskId}`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -214,78 +271,8 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      setSearchParams(localVarUrlObj, localVarQueryParameter);
-      let headersFromBaseOptions =
-        baseOptions && baseOptions.headers ? baseOptions.headers : {};
-      localVarRequestOptions.headers = {
-        ...localVarHeaderParameter,
-        ...headersFromBaseOptions,
-        ...options.headers,
-      };
-
-      return {
-        url: toPathString(localVarUrlObj),
-        options: localVarRequestOptions,
-      };
-    },
-    /**
-     * Remove subject relation
-     * @param {any} subjectId Subject id
-     * @param {any} relationType Subject relation type code
-     * @param {any} relationSubjects Relation subjects
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    removeSubjectRelation: async (
-      subjectId: any,
-      relationType: any,
-      relationSubjects: any,
-      options: AxiosRequestConfig = {},
-    ): Promise<RequestArgs> => {
-      // verify required parameter 'subjectId' is not null or undefined
-      assertParamExists("removeSubjectRelation", "subjectId", subjectId);
-      // verify required parameter 'relationType' is not null or undefined
-      assertParamExists("removeSubjectRelation", "relationType", relationType);
-      // verify required parameter 'relationSubjects' is not null or undefined
-      assertParamExists(
-        "removeSubjectRelation",
-        "relationSubjects",
-        relationSubjects,
-      );
-      const localVarPath =
-        `/api/v1/subject/relation/subjectId/{subjectId}`.replace(
-          `{${"subjectId"}}`,
-          encodeURIComponent(String(subjectId)),
-        );
-      // use dummy base URL string because the URL constructor only accepts absolute URLs.
-      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-      let baseOptions;
-      if (configuration) {
-        baseOptions = configuration.baseOptions;
-      }
-
-      const localVarRequestOptions = {
-        method: "DELETE",
-        ...baseOptions,
-        ...options,
-      };
-      const localVarHeaderParameter = {} as any;
-      const localVarQueryParameter = {} as any;
-
-      // authentication BasicAuth required
-      // http basic authentication required
-      setBasicAuthToObject(localVarRequestOptions, configuration);
-
-      // authentication BearerAuth required
-      // http bearer authentication required
-      await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-      if (relationType !== undefined) {
-        localVarQueryParameter["relation_type"] = relationType;
-      }
-
-      if (relationSubjects !== undefined) {
-        localVarQueryParameter["relation_subjects"] = relationSubjects;
+      if (taskId !== undefined) {
+        localVarQueryParameter["taskId"] = taskId;
       }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -306,30 +293,32 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
 };
 
 /**
- * V1SubjectRelationApi - functional programming interface
+ * V1BindingApi - functional programming interface
  * @export
  */
-export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
+export const V1BindingApiFp = function (configuration?: Configuration) {
   const localVarAxiosParamCreator =
-    V1SubjectRelationApiAxiosParamCreator(configuration);
+    V1BindingApiAxiosParamCreator(configuration);
   return {
     /**
-     * Create subject relation
-     * @param {SubjectRelation} subjectRelation SubjectRelation
+     * Batch bind all subdirectories under a parent directory.
+     * @param {any} parentDirectoryId Parent directory attachment ID.
+     * @param {any} platform Metadata platform.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async createSubjectRelation(
-      subjectRelation: SubjectRelation,
+    async bindDirectories(
+      parentDirectoryId: any,
+      platform: any,
       options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
-      const localVarAxiosArgs =
-        await localVarAxiosParamCreator.createSubjectRelation(
-          subjectRelation,
-          options,
-        );
+      const localVarAxiosArgs = await localVarAxiosParamCreator.bindDirectories(
+        parentDirectoryId,
+        platform,
+        options,
+      );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
@@ -338,25 +327,30 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
       );
     },
     /**
-     *
-     * @param {any} subjectId Subject id
-     * @param {any} relationType Subject relation type
+     * Bind a single directory to a subject. Automatically finds subject, creates entries, and binds files.
+     * @param {any} directoryId Directory attachment ID.
+     * @param {any} platform Metadata platform.
+     * @param {any} [keyword] Search keyword, overrides directory name if set.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async getSubjectRelationByIdAndType(
-      subjectId: any,
-      relationType: any,
+    async bindDirectory(
+      directoryId: any,
+      platform: any,
+      keyword?: any,
       options?: AxiosRequestConfig,
     ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+      (
+        axios?: AxiosInstance,
+        basePath?: string,
+      ) => AxiosPromise<DirectoryBindingWorkflowEntity>
     > {
-      const localVarAxiosArgs =
-        await localVarAxiosParamCreator.getSubjectRelationByIdAndType(
-          subjectId,
-          relationType,
-          options,
-        );
+      const localVarAxiosArgs = await localVarAxiosParamCreator.bindDirectory(
+        directoryId,
+        platform,
+        keyword,
+        options,
+      );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
@@ -365,22 +359,22 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
       );
     },
     /**
-     *
-     * @param {any} subjectId Subject id
+     * Get binding workflow status by workflow ID.
+     * @param {any} id Workflow ID.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async getSubjectRelationsById(
-      subjectId: any,
+    async getBindingWorkflow(
+      id: any,
       options?: AxiosRequestConfig,
     ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
+      (
+        axios?: AxiosInstance,
+        basePath?: string,
+      ) => AxiosPromise<DirectoryBindingWorkflowEntity>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.getSubjectRelationsById(
-          subjectId,
-          options,
-        );
+        await localVarAxiosParamCreator.getBindingWorkflow(id, options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
@@ -389,26 +383,23 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
       );
     },
     /**
-     * Remove subject relation
-     * @param {any} subjectId Subject id
-     * @param {any} relationType Subject relation type code
-     * @param {any} relationSubjects Relation subjects
+     * Get binding workflow status by task ID.
+     * @param {any} taskId Task ID.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async removeSubjectRelation(
-      subjectId: any,
-      relationType: any,
-      relationSubjects: any,
+    async getBindingWorkflowByTaskId(
+      taskId: any,
       options?: AxiosRequestConfig,
     ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+      (
+        axios?: AxiosInstance,
+        basePath?: string,
+      ) => AxiosPromise<DirectoryBindingWorkflowEntity>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.removeSubjectRelation(
-          subjectId,
-          relationType,
-          relationSubjects,
+        await localVarAxiosParamCreator.getBindingWorkflowByTaskId(
+          taskId,
           options,
         );
       return createRequestFunction(
@@ -422,238 +413,238 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
 };
 
 /**
- * V1SubjectRelationApi - factory interface
+ * V1BindingApi - factory interface
  * @export
  */
-export const V1SubjectRelationApiFactory = function (
+export const V1BindingApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
   axios?: AxiosInstance,
 ) {
-  const localVarFp = V1SubjectRelationApiFp(configuration);
+  const localVarFp = V1BindingApiFp(configuration);
   return {
     /**
-     * Create subject relation
-     * @param {V1SubjectRelationApiCreateSubjectRelationRequest} requestParameters Request parameters.
+     * Batch bind all subdirectories under a parent directory.
+     * @param {V1BindingApiBindDirectoriesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    createSubjectRelation(
-      requestParameters: V1SubjectRelationApiCreateSubjectRelationRequest,
+    bindDirectories(
+      requestParameters: V1BindingApiBindDirectoriesRequest,
       options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
-        .createSubjectRelation(requestParameters.subjectRelation, options)
-        .then((request) => request(axios, basePath));
-    },
-    /**
-     *
-     * @param {V1SubjectRelationApiGetSubjectRelationByIdAndTypeRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    getSubjectRelationByIdAndType(
-      requestParameters: V1SubjectRelationApiGetSubjectRelationByIdAndTypeRequest,
-      options?: AxiosRequestConfig,
-    ): AxiosPromise<void> {
-      return localVarFp
-        .getSubjectRelationByIdAndType(
-          requestParameters.subjectId,
-          requestParameters.relationType,
+        .bindDirectories(
+          requestParameters.parentDirectoryId,
+          requestParameters.platform,
           options,
         )
         .then((request) => request(axios, basePath));
     },
     /**
-     *
-     * @param {V1SubjectRelationApiGetSubjectRelationsByIdRequest} requestParameters Request parameters.
+     * Bind a single directory to a subject. Automatically finds subject, creates entries, and binds files.
+     * @param {V1BindingApiBindDirectoryRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getSubjectRelationsById(
-      requestParameters: V1SubjectRelationApiGetSubjectRelationsByIdRequest,
+    bindDirectory(
+      requestParameters: V1BindingApiBindDirectoryRequest,
       options?: AxiosRequestConfig,
-    ): AxiosPromise<any> {
+    ): AxiosPromise<DirectoryBindingWorkflowEntity> {
       return localVarFp
-        .getSubjectRelationsById(requestParameters.subjectId, options)
+        .bindDirectory(
+          requestParameters.directoryId,
+          requestParameters.platform,
+          requestParameters.keyword,
+          options,
+        )
         .then((request) => request(axios, basePath));
     },
     /**
-     * Remove subject relation
-     * @param {V1SubjectRelationApiRemoveSubjectRelationRequest} requestParameters Request parameters.
+     * Get binding workflow status by workflow ID.
+     * @param {V1BindingApiGetBindingWorkflowRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    removeSubjectRelation(
-      requestParameters: V1SubjectRelationApiRemoveSubjectRelationRequest,
+    getBindingWorkflow(
+      requestParameters: V1BindingApiGetBindingWorkflowRequest,
       options?: AxiosRequestConfig,
-    ): AxiosPromise<void> {
+    ): AxiosPromise<DirectoryBindingWorkflowEntity> {
       return localVarFp
-        .removeSubjectRelation(
-          requestParameters.subjectId,
-          requestParameters.relationType,
-          requestParameters.relationSubjects,
-          options,
-        )
+        .getBindingWorkflow(requestParameters.id, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Get binding workflow status by task ID.
+     * @param {V1BindingApiGetBindingWorkflowByTaskIdRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getBindingWorkflowByTaskId(
+      requestParameters: V1BindingApiGetBindingWorkflowByTaskIdRequest,
+      options?: AxiosRequestConfig,
+    ): AxiosPromise<DirectoryBindingWorkflowEntity> {
+      return localVarFp
+        .getBindingWorkflowByTaskId(requestParameters.taskId, options)
         .then((request) => request(axios, basePath));
     },
   };
 };
 
 /**
- * Request parameters for createSubjectRelation operation in V1SubjectRelationApi.
+ * Request parameters for bindDirectories operation in V1BindingApi.
  * @export
- * @interface V1SubjectRelationApiCreateSubjectRelationRequest
+ * @interface V1BindingApiBindDirectoriesRequest
  */
-export interface V1SubjectRelationApiCreateSubjectRelationRequest {
+export interface V1BindingApiBindDirectoriesRequest {
   /**
-   * SubjectRelation
-   * @type {SubjectRelation}
-   * @memberof V1SubjectRelationApiCreateSubjectRelation
+   * Parent directory attachment ID.
+   * @type {any}
+   * @memberof V1BindingApiBindDirectories
    */
-  readonly subjectRelation: SubjectRelation;
+  readonly parentDirectoryId: any;
+
+  /**
+   * Metadata platform.
+   * @type {any}
+   * @memberof V1BindingApiBindDirectories
+   */
+  readonly platform: any;
 }
 
 /**
- * Request parameters for getSubjectRelationByIdAndType operation in V1SubjectRelationApi.
+ * Request parameters for bindDirectory operation in V1BindingApi.
  * @export
- * @interface V1SubjectRelationApiGetSubjectRelationByIdAndTypeRequest
+ * @interface V1BindingApiBindDirectoryRequest
  */
-export interface V1SubjectRelationApiGetSubjectRelationByIdAndTypeRequest {
+export interface V1BindingApiBindDirectoryRequest {
   /**
-   * Subject id
+   * Directory attachment ID.
    * @type {any}
-   * @memberof V1SubjectRelationApiGetSubjectRelationByIdAndType
+   * @memberof V1BindingApiBindDirectory
    */
-  readonly subjectId: any;
+  readonly directoryId: any;
 
   /**
-   * Subject relation type
+   * Metadata platform.
    * @type {any}
-   * @memberof V1SubjectRelationApiGetSubjectRelationByIdAndType
+   * @memberof V1BindingApiBindDirectory
    */
-  readonly relationType: any;
+  readonly platform: any;
+
+  /**
+   * Search keyword, overrides directory name if set.
+   * @type {any}
+   * @memberof V1BindingApiBindDirectory
+   */
+  readonly keyword?: any;
 }
 
 /**
- * Request parameters for getSubjectRelationsById operation in V1SubjectRelationApi.
+ * Request parameters for getBindingWorkflow operation in V1BindingApi.
  * @export
- * @interface V1SubjectRelationApiGetSubjectRelationsByIdRequest
+ * @interface V1BindingApiGetBindingWorkflowRequest
  */
-export interface V1SubjectRelationApiGetSubjectRelationsByIdRequest {
+export interface V1BindingApiGetBindingWorkflowRequest {
   /**
-   * Subject id
+   * Workflow ID.
    * @type {any}
-   * @memberof V1SubjectRelationApiGetSubjectRelationsById
+   * @memberof V1BindingApiGetBindingWorkflow
    */
-  readonly subjectId: any;
+  readonly id: any;
 }
 
 /**
- * Request parameters for removeSubjectRelation operation in V1SubjectRelationApi.
+ * Request parameters for getBindingWorkflowByTaskId operation in V1BindingApi.
  * @export
- * @interface V1SubjectRelationApiRemoveSubjectRelationRequest
+ * @interface V1BindingApiGetBindingWorkflowByTaskIdRequest
  */
-export interface V1SubjectRelationApiRemoveSubjectRelationRequest {
+export interface V1BindingApiGetBindingWorkflowByTaskIdRequest {
   /**
-   * Subject id
+   * Task ID.
    * @type {any}
-   * @memberof V1SubjectRelationApiRemoveSubjectRelation
+   * @memberof V1BindingApiGetBindingWorkflowByTaskId
    */
-  readonly subjectId: any;
-
-  /**
-   * Subject relation type code
-   * @type {any}
-   * @memberof V1SubjectRelationApiRemoveSubjectRelation
-   */
-  readonly relationType: any;
-
-  /**
-   * Relation subjects
-   * @type {any}
-   * @memberof V1SubjectRelationApiRemoveSubjectRelation
-   */
-  readonly relationSubjects: any;
+  readonly taskId: any;
 }
 
 /**
- * V1SubjectRelationApi - object-oriented interface
+ * V1BindingApi - object-oriented interface
  * @export
- * @class V1SubjectRelationApi
+ * @class V1BindingApi
  * @extends {BaseAPI}
  */
-export class V1SubjectRelationApi extends BaseAPI {
+export class V1BindingApi extends BaseAPI {
   /**
-   * Create subject relation
-   * @param {V1SubjectRelationApiCreateSubjectRelationRequest} requestParameters Request parameters.
+   * Batch bind all subdirectories under a parent directory.
+   * @param {V1BindingApiBindDirectoriesRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
-   * @memberof V1SubjectRelationApi
+   * @memberof V1BindingApi
    */
-  public createSubjectRelation(
-    requestParameters: V1SubjectRelationApiCreateSubjectRelationRequest,
+  public bindDirectories(
+    requestParameters: V1BindingApiBindDirectoriesRequest,
     options?: AxiosRequestConfig,
   ) {
-    return V1SubjectRelationApiFp(this.configuration)
-      .createSubjectRelation(requestParameters.subjectRelation, options)
-      .then((request) => request(this.axios, this.basePath));
-  }
-
-  /**
-   *
-   * @param {V1SubjectRelationApiGetSubjectRelationByIdAndTypeRequest} requestParameters Request parameters.
-   * @param {*} [options] Override http request option.
-   * @throws {RequiredError}
-   * @memberof V1SubjectRelationApi
-   */
-  public getSubjectRelationByIdAndType(
-    requestParameters: V1SubjectRelationApiGetSubjectRelationByIdAndTypeRequest,
-    options?: AxiosRequestConfig,
-  ) {
-    return V1SubjectRelationApiFp(this.configuration)
-      .getSubjectRelationByIdAndType(
-        requestParameters.subjectId,
-        requestParameters.relationType,
+    return V1BindingApiFp(this.configuration)
+      .bindDirectories(
+        requestParameters.parentDirectoryId,
+        requestParameters.platform,
         options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
 
   /**
-   *
-   * @param {V1SubjectRelationApiGetSubjectRelationsByIdRequest} requestParameters Request parameters.
+   * Bind a single directory to a subject. Automatically finds subject, creates entries, and binds files.
+   * @param {V1BindingApiBindDirectoryRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
-   * @memberof V1SubjectRelationApi
+   * @memberof V1BindingApi
    */
-  public getSubjectRelationsById(
-    requestParameters: V1SubjectRelationApiGetSubjectRelationsByIdRequest,
+  public bindDirectory(
+    requestParameters: V1BindingApiBindDirectoryRequest,
     options?: AxiosRequestConfig,
   ) {
-    return V1SubjectRelationApiFp(this.configuration)
-      .getSubjectRelationsById(requestParameters.subjectId, options)
+    return V1BindingApiFp(this.configuration)
+      .bindDirectory(
+        requestParameters.directoryId,
+        requestParameters.platform,
+        requestParameters.keyword,
+        options,
+      )
       .then((request) => request(this.axios, this.basePath));
   }
 
   /**
-   * Remove subject relation
-   * @param {V1SubjectRelationApiRemoveSubjectRelationRequest} requestParameters Request parameters.
+   * Get binding workflow status by workflow ID.
+   * @param {V1BindingApiGetBindingWorkflowRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
-   * @memberof V1SubjectRelationApi
+   * @memberof V1BindingApi
    */
-  public removeSubjectRelation(
-    requestParameters: V1SubjectRelationApiRemoveSubjectRelationRequest,
+  public getBindingWorkflow(
+    requestParameters: V1BindingApiGetBindingWorkflowRequest,
     options?: AxiosRequestConfig,
   ) {
-    return V1SubjectRelationApiFp(this.configuration)
-      .removeSubjectRelation(
-        requestParameters.subjectId,
-        requestParameters.relationType,
-        requestParameters.relationSubjects,
-        options,
-      )
+    return V1BindingApiFp(this.configuration)
+      .getBindingWorkflow(requestParameters.id, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Get binding workflow status by task ID.
+   * @param {V1BindingApiGetBindingWorkflowByTaskIdRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1BindingApi
+   */
+  public getBindingWorkflowByTaskId(
+    requestParameters: V1BindingApiGetBindingWorkflowByTaskIdRequest,
+    options?: AxiosRequestConfig,
+  ) {
+    return V1BindingApiFp(this.configuration)
+      .getBindingWorkflowByTaskId(requestParameters.taskId, options)
       .then((request) => request(this.axios, this.basePath));
   }
 }

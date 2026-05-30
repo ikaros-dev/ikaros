@@ -46,7 +46,7 @@ import { JwtApplyResponse } from "../models";
  * @export
  */
 export const V1alpha1SecurityApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,7 +57,7 @@ export const V1alpha1SecurityApiAxiosParamCreator = function (
      */
     applyJwtToken: async (
       jwtApplyParam?: JwtApplyParam,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/security/auth/token/jwt/apply`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -96,7 +96,7 @@ export const V1alpha1SecurityApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         jwtApplyParam,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -112,7 +112,7 @@ export const V1alpha1SecurityApiAxiosParamCreator = function (
      */
     refreshToken: async (
       body?: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/security/auth/token/jwt/refresh`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -151,7 +151,7 @@ export const V1alpha1SecurityApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         body,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -178,22 +178,22 @@ export const V1alpha1SecurityApiFp = function (configuration?: Configuration) {
      */
     async applyJwtToken(
       jwtApplyParam?: JwtApplyParam,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<JwtApplyResponse>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.applyJwtToken(
         jwtApplyParam,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -204,19 +204,19 @@ export const V1alpha1SecurityApiFp = function (configuration?: Configuration) {
      */
     async refreshToken(
       body?: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.refreshToken(
         body,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -229,7 +229,7 @@ export const V1alpha1SecurityApiFp = function (configuration?: Configuration) {
 export const V1alpha1SecurityApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1SecurityApiFp(configuration);
   return {
@@ -241,7 +241,7 @@ export const V1alpha1SecurityApiFactory = function (
      */
     applyJwtToken(
       requestParameters: V1alpha1SecurityApiApplyJwtTokenRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<JwtApplyResponse> {
       return localVarFp
         .applyJwtToken(requestParameters.jwtApplyParam, options)
@@ -255,7 +255,7 @@ export const V1alpha1SecurityApiFactory = function (
      */
     refreshToken(
       requestParameters: V1alpha1SecurityApiRefreshTokenRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<string> {
       return localVarFp
         .refreshToken(requestParameters.body, options)
@@ -308,7 +308,7 @@ export class V1alpha1SecurityApi extends BaseAPI {
    */
   public applyJwtToken(
     requestParameters: V1alpha1SecurityApiApplyJwtTokenRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1SecurityApiFp(this.configuration)
       .applyJwtToken(requestParameters.jwtApplyParam, options)
@@ -324,7 +324,7 @@ export class V1alpha1SecurityApi extends BaseAPI {
    */
   public refreshToken(
     requestParameters: V1alpha1SecurityApiRefreshTokenRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1SecurityApiFp(this.configuration)
       .refreshToken(requestParameters.body, options)

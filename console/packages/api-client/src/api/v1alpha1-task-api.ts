@@ -46,7 +46,7 @@ import { TaskEntity } from "../models";
  * @export
  */
 export const V1alpha1TaskApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,13 +57,13 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
      */
     findTaskById: async (
       id: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("findTaskById", "id", id);
       const localVarPath = `/api/v1alpha1/task/id/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -110,13 +110,13 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
      */
     findTaskProcessById: async (
       id: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("findTaskProcessById", "id", id);
       const localVarPath = `/api/v1alpha1/task/process/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -169,7 +169,7 @@ export const V1alpha1TaskApiAxiosParamCreator = function (
       size?: number,
       name?: string,
       status?: "CREATE" | "RUNNING" | "FINISH" | "CANCEL" | "FAIL",
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/tasks/condition`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -244,19 +244,19 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
      */
     async findTaskById(
       id: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<TaskEntity>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.findTaskById(
         id,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -267,7 +267,7 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
      */
     async findTaskProcessById(
       id: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>
     > {
@@ -277,7 +277,7 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -294,7 +294,7 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
       size?: number,
       name?: string,
       status?: "CREATE" | "RUNNING" | "FINISH" | "CANCEL" | "FAIL",
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -304,13 +304,13 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
           size,
           name,
           status,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -323,7 +323,7 @@ export const V1alpha1TaskApiFp = function (configuration?: Configuration) {
 export const V1alpha1TaskApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1TaskApiFp(configuration);
   return {
@@ -335,7 +335,7 @@ export const V1alpha1TaskApiFactory = function (
      */
     findTaskById(
       requestParameters: V1alpha1TaskApiFindTaskByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<TaskEntity> {
       return localVarFp
         .findTaskById(requestParameters.id, options)
@@ -349,7 +349,7 @@ export const V1alpha1TaskApiFactory = function (
      */
     findTaskProcessById(
       requestParameters: V1alpha1TaskApiFindTaskProcessByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<number> {
       return localVarFp
         .findTaskProcessById(requestParameters.id, options)
@@ -363,7 +363,7 @@ export const V1alpha1TaskApiFactory = function (
      */
     listTasksByCondition(
       requestParameters: V1alpha1TaskApiListTasksByConditionRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .listTasksByCondition(
@@ -371,7 +371,7 @@ export const V1alpha1TaskApiFactory = function (
           requestParameters.size,
           requestParameters.name,
           requestParameters.status,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -457,7 +457,7 @@ export class V1alpha1TaskApi extends BaseAPI {
    */
   public findTaskById(
     requestParameters: V1alpha1TaskApiFindTaskByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1TaskApiFp(this.configuration)
       .findTaskById(requestParameters.id, options)
@@ -473,7 +473,7 @@ export class V1alpha1TaskApi extends BaseAPI {
    */
   public findTaskProcessById(
     requestParameters: V1alpha1TaskApiFindTaskProcessByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1TaskApiFp(this.configuration)
       .findTaskProcessById(requestParameters.id, options)
@@ -489,7 +489,7 @@ export class V1alpha1TaskApi extends BaseAPI {
    */
   public listTasksByCondition(
     requestParameters: V1alpha1TaskApiListTasksByConditionRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1TaskApiFp(this.configuration)
       .listTasksByCondition(
@@ -497,7 +497,7 @@ export class V1alpha1TaskApi extends BaseAPI {
         requestParameters.size,
         requestParameters.name,
         requestParameters.status,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

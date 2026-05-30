@@ -48,7 +48,7 @@ import { EpisodeResource } from "../models";
  * @export
  */
 export const V1alpha1EpisodeApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -59,13 +59,13 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
      */
     deleteById: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("deleteById", "id", id);
       const localVarPath = `/api/v1alpha1/episode/id/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -112,13 +112,13 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
      */
     getAllBySubjectId: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getAllBySubjectId", "id", id);
       const localVarPath = `/api/v1alpha1/episodes/subjectId/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -165,13 +165,13 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
      */
     getAttachmentRefsById: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getAttachmentRefsById", "id", id);
       const localVarPath = `/api/v1alpha1/episode/attachment/refs/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -241,7 +241,7 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
         | "OTHER",
       sequence: number,
       name: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getById", "id", id);
@@ -253,7 +253,7 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
       assertParamExists("getById", "name", name);
       const localVarPath = `/api/v1alpha1/episode/subjectId/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -312,13 +312,13 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
      */
     getById1: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getById1", "id", id);
       const localVarPath = `/api/v1alpha1/episode/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -365,14 +365,14 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
      */
     getCountMatchingBySubjectId: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getCountMatchingBySubjectId", "id", id);
       const localVarPath =
         `/api/v1alpha1/episode/count/matching/subjectId/{id}`.replace(
           `{${"id"}}`,
-          encodeURIComponent(String(id))
+          encodeURIComponent(String(id)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -419,14 +419,14 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
      */
     getCountTotalBySubjectId: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getCountTotalBySubjectId", "id", id);
       const localVarPath =
         `/api/v1alpha1/episode/count/total/subjectId/{id}`.replace(
           `{${"id"}}`,
-          encodeURIComponent(String(id))
+          encodeURIComponent(String(id)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -473,14 +473,14 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
      */
     getRecordsBySubjectId: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getRecordsBySubjectId", "id", id);
       const localVarPath =
         `/api/v1alpha1/episode/records/subjectId/{id}`.replace(
           `{${"id"}}`,
-          encodeURIComponent(String(id))
+          encodeURIComponent(String(id)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -527,7 +527,7 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
      */
     postEpisode: async (
       episode?: Episode,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/episode`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -566,7 +566,7 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         episode,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -582,7 +582,7 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
      */
     putEpisode: async (
       episode?: Episode,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/episode`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -621,7 +621,7 @@ export const V1alpha1EpisodeApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         episode,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -648,19 +648,19 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
      */
     async deleteById(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Episode>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.deleteById(
         id,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -671,7 +671,7 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
      */
     async getAllBySubjectId(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Episode>>
     > {
@@ -681,7 +681,7 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -692,11 +692,11 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
      */
     async getAttachmentRefsById(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<Array<EpisodeResource>>
     > {
       const localVarAxiosArgs =
@@ -705,7 +705,7 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -739,7 +739,7 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
         | "OTHER",
       sequence: number,
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Episode>
     > {
@@ -748,13 +748,13 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
         group,
         sequence,
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -765,19 +765,19 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
      */
     async getById1(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Episode>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getById1(
         id,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -788,20 +788,20 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
      */
     async getCountMatchingBySubjectId(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.getCountMatchingBySubjectId(
           id,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -812,7 +812,7 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
      */
     async getCountTotalBySubjectId(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>
     > {
@@ -822,7 +822,7 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -833,11 +833,11 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
      */
     async getRecordsBySubjectId(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<Array<EpisodeRecord>>
     > {
       const localVarAxiosArgs =
@@ -846,7 +846,7 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -857,19 +857,19 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
      */
     async postEpisode(
       episode?: Episode,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Episode>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.postEpisode(
         episode,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -880,19 +880,19 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
      */
     async putEpisode(
       episode?: Episode,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Episode>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.putEpisode(
         episode,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -905,7 +905,7 @@ export const V1alpha1EpisodeApiFp = function (configuration?: Configuration) {
 export const V1alpha1EpisodeApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1EpisodeApiFp(configuration);
   return {
@@ -917,7 +917,7 @@ export const V1alpha1EpisodeApiFactory = function (
      */
     deleteById(
       requestParameters: V1alpha1EpisodeApiDeleteByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Episode> {
       return localVarFp
         .deleteById(requestParameters.id, options)
@@ -931,7 +931,7 @@ export const V1alpha1EpisodeApiFactory = function (
      */
     getAllBySubjectId(
       requestParameters: V1alpha1EpisodeApiGetAllBySubjectIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<Episode>> {
       return localVarFp
         .getAllBySubjectId(requestParameters.id, options)
@@ -945,7 +945,7 @@ export const V1alpha1EpisodeApiFactory = function (
      */
     getAttachmentRefsById(
       requestParameters: V1alpha1EpisodeApiGetAttachmentRefsByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<EpisodeResource>> {
       return localVarFp
         .getAttachmentRefsById(requestParameters.id, options)
@@ -959,7 +959,7 @@ export const V1alpha1EpisodeApiFactory = function (
      */
     getById(
       requestParameters: V1alpha1EpisodeApiGetByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Episode> {
       return localVarFp
         .getById(
@@ -967,7 +967,7 @@ export const V1alpha1EpisodeApiFactory = function (
           requestParameters.group,
           requestParameters.sequence,
           requestParameters.name,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -979,7 +979,7 @@ export const V1alpha1EpisodeApiFactory = function (
      */
     getById1(
       requestParameters: V1alpha1EpisodeApiGetById1Request,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Episode> {
       return localVarFp
         .getById1(requestParameters.id, options)
@@ -993,7 +993,7 @@ export const V1alpha1EpisodeApiFactory = function (
      */
     getCountMatchingBySubjectId(
       requestParameters: V1alpha1EpisodeApiGetCountMatchingBySubjectIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<number> {
       return localVarFp
         .getCountMatchingBySubjectId(requestParameters.id, options)
@@ -1007,7 +1007,7 @@ export const V1alpha1EpisodeApiFactory = function (
      */
     getCountTotalBySubjectId(
       requestParameters: V1alpha1EpisodeApiGetCountTotalBySubjectIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<number> {
       return localVarFp
         .getCountTotalBySubjectId(requestParameters.id, options)
@@ -1021,7 +1021,7 @@ export const V1alpha1EpisodeApiFactory = function (
      */
     getRecordsBySubjectId(
       requestParameters: V1alpha1EpisodeApiGetRecordsBySubjectIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Array<EpisodeRecord>> {
       return localVarFp
         .getRecordsBySubjectId(requestParameters.id, options)
@@ -1035,7 +1035,7 @@ export const V1alpha1EpisodeApiFactory = function (
      */
     postEpisode(
       requestParameters: V1alpha1EpisodeApiPostEpisodeRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Episode> {
       return localVarFp
         .postEpisode(requestParameters.episode, options)
@@ -1049,7 +1049,7 @@ export const V1alpha1EpisodeApiFactory = function (
      */
     putEpisode(
       requestParameters: V1alpha1EpisodeApiPutEpisodeRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Episode> {
       return localVarFp
         .putEpisode(requestParameters.episode, options)
@@ -1252,7 +1252,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
    */
   public deleteById(
     requestParameters: V1alpha1EpisodeApiDeleteByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .deleteById(requestParameters.id, options)
@@ -1268,7 +1268,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
    */
   public getAllBySubjectId(
     requestParameters: V1alpha1EpisodeApiGetAllBySubjectIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .getAllBySubjectId(requestParameters.id, options)
@@ -1284,7 +1284,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
    */
   public getAttachmentRefsById(
     requestParameters: V1alpha1EpisodeApiGetAttachmentRefsByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .getAttachmentRefsById(requestParameters.id, options)
@@ -1300,7 +1300,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
    */
   public getById(
     requestParameters: V1alpha1EpisodeApiGetByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .getById(
@@ -1308,7 +1308,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
         requestParameters.group,
         requestParameters.sequence,
         requestParameters.name,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1322,7 +1322,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
    */
   public getById1(
     requestParameters: V1alpha1EpisodeApiGetById1Request,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .getById1(requestParameters.id, options)
@@ -1338,7 +1338,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
    */
   public getCountMatchingBySubjectId(
     requestParameters: V1alpha1EpisodeApiGetCountMatchingBySubjectIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .getCountMatchingBySubjectId(requestParameters.id, options)
@@ -1354,7 +1354,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
    */
   public getCountTotalBySubjectId(
     requestParameters: V1alpha1EpisodeApiGetCountTotalBySubjectIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .getCountTotalBySubjectId(requestParameters.id, options)
@@ -1370,7 +1370,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
    */
   public getRecordsBySubjectId(
     requestParameters: V1alpha1EpisodeApiGetRecordsBySubjectIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .getRecordsBySubjectId(requestParameters.id, options)
@@ -1386,7 +1386,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
    */
   public postEpisode(
     requestParameters: V1alpha1EpisodeApiPostEpisodeRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .postEpisode(requestParameters.episode, options)
@@ -1402,7 +1402,7 @@ export class V1alpha1EpisodeApi extends BaseAPI {
    */
   public putEpisode(
     requestParameters: V1alpha1EpisodeApiPutEpisodeRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1EpisodeApiFp(this.configuration)
       .putEpisode(requestParameters.episode, options)

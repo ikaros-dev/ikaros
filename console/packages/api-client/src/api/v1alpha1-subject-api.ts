@@ -46,7 +46,7 @@ import { Subject } from "../models";
  * @export
  */
 export const V1alpha1SubjectApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,7 +57,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
      */
     createSubject: async (
       subject: Subject,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subject' is not null or undefined
       assertParamExists("createSubject", "subject", subject);
@@ -98,7 +98,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         subject,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -114,13 +114,13 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
      */
     deleteSubjectById: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("deleteSubjectById", "id", id);
       const localVarPath = `/api/v1alpha1/subject/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -185,7 +185,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
       airTimeDesc?: boolean,
       updateTimeDesc?: boolean,
       scoreDesc?: boolean,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/subjects/condition`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -275,7 +275,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
     searchAllSubjectByPaging: async (
       page: number,
       size: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'page' is not null or undefined
       assertParamExists("searchAllSubjectByPaging", "page", page);
@@ -329,13 +329,13 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
      */
     searchSubjectById: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("searchSubjectById", "id", id);
       const localVarPath = `/api/v1alpha1/subject/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -382,7 +382,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
      */
     updateSubject: async (
       subject: Subject,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subject' is not null or undefined
       assertParamExists("updateSubject", "subject", subject);
@@ -423,7 +423,7 @@ export const V1alpha1SubjectApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         subject,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -450,19 +450,19 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
      */
     async createSubject(
       subject: Subject,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Subject>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.createSubject(
         subject,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -473,7 +473,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
      */
     async deleteSubjectById(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -483,7 +483,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -512,7 +512,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
       airTimeDesc?: boolean,
       updateTimeDesc?: boolean,
       scoreDesc?: boolean,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -528,13 +528,13 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
           airTimeDesc,
           updateTimeDesc,
           scoreDesc,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -547,7 +547,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
     async searchAllSubjectByPaging(
       page: number,
       size: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -555,13 +555,13 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.searchAllSubjectByPaging(
           page,
           size,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -572,7 +572,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
      */
     async searchSubjectById(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Subject>
     > {
@@ -582,7 +582,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -593,19 +593,19 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
      */
     async updateSubject(
       subject: Subject,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.updateSubject(
         subject,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -618,7 +618,7 @@ export const V1alpha1SubjectApiFp = function (configuration?: Configuration) {
 export const V1alpha1SubjectApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1SubjectApiFp(configuration);
   return {
@@ -630,7 +630,7 @@ export const V1alpha1SubjectApiFactory = function (
      */
     createSubject(
       requestParameters: V1alpha1SubjectApiCreateSubjectRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Subject> {
       return localVarFp
         .createSubject(requestParameters.subject, options)
@@ -644,7 +644,7 @@ export const V1alpha1SubjectApiFactory = function (
      */
     deleteSubjectById(
       requestParameters: V1alpha1SubjectApiDeleteSubjectByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteSubjectById(requestParameters.id, options)
@@ -658,7 +658,7 @@ export const V1alpha1SubjectApiFactory = function (
      */
     listSubjectsByCondition(
       requestParameters: V1alpha1SubjectApiListSubjectsByConditionRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .listSubjectsByCondition(
@@ -672,7 +672,7 @@ export const V1alpha1SubjectApiFactory = function (
           requestParameters.airTimeDesc,
           requestParameters.updateTimeDesc,
           requestParameters.scoreDesc,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -684,13 +684,13 @@ export const V1alpha1SubjectApiFactory = function (
      */
     searchAllSubjectByPaging(
       requestParameters: V1alpha1SubjectApiSearchAllSubjectByPagingRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .searchAllSubjectByPaging(
           requestParameters.page,
           requestParameters.size,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -702,7 +702,7 @@ export const V1alpha1SubjectApiFactory = function (
      */
     searchSubjectById(
       requestParameters: V1alpha1SubjectApiSearchSubjectByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Subject> {
       return localVarFp
         .searchSubjectById(requestParameters.id, options)
@@ -716,7 +716,7 @@ export const V1alpha1SubjectApiFactory = function (
      */
     updateSubject(
       requestParameters: V1alpha1SubjectApiUpdateSubjectRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .updateSubject(requestParameters.subject, options)
@@ -902,7 +902,7 @@ export class V1alpha1SubjectApi extends BaseAPI {
    */
   public createSubject(
     requestParameters: V1alpha1SubjectApiCreateSubjectRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1SubjectApiFp(this.configuration)
       .createSubject(requestParameters.subject, options)
@@ -918,7 +918,7 @@ export class V1alpha1SubjectApi extends BaseAPI {
    */
   public deleteSubjectById(
     requestParameters: V1alpha1SubjectApiDeleteSubjectByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1SubjectApiFp(this.configuration)
       .deleteSubjectById(requestParameters.id, options)
@@ -934,7 +934,7 @@ export class V1alpha1SubjectApi extends BaseAPI {
    */
   public listSubjectsByCondition(
     requestParameters: V1alpha1SubjectApiListSubjectsByConditionRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1SubjectApiFp(this.configuration)
       .listSubjectsByCondition(
@@ -948,7 +948,7 @@ export class V1alpha1SubjectApi extends BaseAPI {
         requestParameters.airTimeDesc,
         requestParameters.updateTimeDesc,
         requestParameters.scoreDesc,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -962,13 +962,13 @@ export class V1alpha1SubjectApi extends BaseAPI {
    */
   public searchAllSubjectByPaging(
     requestParameters: V1alpha1SubjectApiSearchAllSubjectByPagingRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1SubjectApiFp(this.configuration)
       .searchAllSubjectByPaging(
         requestParameters.page,
         requestParameters.size,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -982,7 +982,7 @@ export class V1alpha1SubjectApi extends BaseAPI {
    */
   public searchSubjectById(
     requestParameters: V1alpha1SubjectApiSearchSubjectByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1SubjectApiFp(this.configuration)
       .searchSubjectById(requestParameters.id, options)
@@ -998,7 +998,7 @@ export class V1alpha1SubjectApi extends BaseAPI {
    */
   public updateSubject(
     requestParameters: V1alpha1SubjectApiUpdateSubjectRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1SubjectApiFp(this.configuration)
       .updateSubject(requestParameters.subject, options)

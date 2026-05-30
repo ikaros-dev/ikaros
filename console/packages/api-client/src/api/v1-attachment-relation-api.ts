@@ -46,7 +46,7 @@ import { PostAttachmentRelationsParam } from "../models";
  * @export
  */
 export const V1AttachmentRelationApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -61,26 +61,26 @@ export const V1AttachmentRelationApiAxiosParamCreator = function (
       masterAttachmentId: any,
       relAttachmentId: any,
       type: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'masterAttachmentId' is not null or undefined
       assertParamExists(
         "deleteAttachmentRelation",
         "masterAttachmentId",
-        masterAttachmentId
+        masterAttachmentId,
       );
       // verify required parameter 'relAttachmentId' is not null or undefined
       assertParamExists(
         "deleteAttachmentRelation",
         "relAttachmentId",
-        relAttachmentId
+        relAttachmentId,
       );
       // verify required parameter 'type' is not null or undefined
       assertParamExists("deleteAttachmentRelation", "type", type);
       const localVarPath =
         `/api/v1/attachment/relation/{masterAttachmentId}`.replace(
           `{${"masterAttachmentId"}}`,
-          encodeURIComponent(String(masterAttachmentId))
+          encodeURIComponent(String(masterAttachmentId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -137,19 +137,19 @@ export const V1AttachmentRelationApiAxiosParamCreator = function (
     findAttachmentRelations: async (
       attachmentId: any,
       relationType: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'attachmentId' is not null or undefined
       assertParamExists(
         "findAttachmentRelations",
         "attachmentId",
-        attachmentId
+        attachmentId,
       );
       // verify required parameter 'relationType' is not null or undefined
       assertParamExists(
         "findAttachmentRelations",
         "relationType",
-        relationType
+        relationType,
       );
       const localVarPath = `/api/v1/attachment/relations`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -205,18 +205,18 @@ export const V1AttachmentRelationApiAxiosParamCreator = function (
      */
     findAttachmentVideoSubtitles: async (
       attachmentId: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'attachmentId' is not null or undefined
       assertParamExists(
         "findAttachmentVideoSubtitles",
         "attachmentId",
-        attachmentId
+        attachmentId,
       );
       const localVarPath =
         `/api/v1/attachment/relation/videoSubtitle/subtitles/{attachmentId}`.replace(
           `{${"attachmentId"}}`,
-          encodeURIComponent(String(attachmentId))
+          encodeURIComponent(String(attachmentId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -263,13 +263,13 @@ export const V1AttachmentRelationApiAxiosParamCreator = function (
      */
     postAttachmentRelations: async (
       postAttachmentRelationsParam: PostAttachmentRelationsParam,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'postAttachmentRelationsParam' is not null or undefined
       assertParamExists(
         "postAttachmentRelations",
         "postAttachmentRelationsParam",
-        postAttachmentRelationsParam
+        postAttachmentRelationsParam,
       );
       const localVarPath = `/api/v1/attachment/relations`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -308,7 +308,7 @@ export const V1AttachmentRelationApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         postAttachmentRelationsParam,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -328,26 +328,26 @@ export const V1AttachmentRelationApiAxiosParamCreator = function (
       masterAttachmentId: any,
       relAttachmentId: any,
       type: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'masterAttachmentId' is not null or undefined
       assertParamExists(
         "putAttachmentRelation",
         "masterAttachmentId",
-        masterAttachmentId
+        masterAttachmentId,
       );
       // verify required parameter 'relAttachmentId' is not null or undefined
       assertParamExists(
         "putAttachmentRelation",
         "relAttachmentId",
-        relAttachmentId
+        relAttachmentId,
       );
       // verify required parameter 'type' is not null or undefined
       assertParamExists("putAttachmentRelation", "type", type);
       const localVarPath =
         `/api/v1/attachment/relation/{masterAttachmentId}`.replace(
           `{${"masterAttachmentId"}}`,
-          encodeURIComponent(String(masterAttachmentId))
+          encodeURIComponent(String(masterAttachmentId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -402,7 +402,7 @@ export const V1AttachmentRelationApiAxiosParamCreator = function (
  * @export
  */
 export const V1AttachmentRelationApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     V1AttachmentRelationApiAxiosParamCreator(configuration);
@@ -419,11 +419,11 @@ export const V1AttachmentRelationApiFp = function (
       masterAttachmentId: any,
       relAttachmentId: any,
       type: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<AttachmentRelation>
     > {
       const localVarAxiosArgs =
@@ -431,13 +431,13 @@ export const V1AttachmentRelationApiFp = function (
           masterAttachmentId,
           relAttachmentId,
           type,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -450,7 +450,7 @@ export const V1AttachmentRelationApiFp = function (
     async findAttachmentRelations(
       attachmentId: any,
       relationType: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -458,13 +458,13 @@ export const V1AttachmentRelationApiFp = function (
         await localVarAxiosParamCreator.findAttachmentRelations(
           attachmentId,
           relationType,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -475,20 +475,20 @@ export const V1AttachmentRelationApiFp = function (
      */
     async findAttachmentVideoSubtitles(
       attachmentId: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.findAttachmentVideoSubtitles(
           attachmentId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -499,20 +499,20 @@ export const V1AttachmentRelationApiFp = function (
      */
     async postAttachmentRelations(
       postAttachmentRelationsParam: PostAttachmentRelationsParam,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.postAttachmentRelations(
           postAttachmentRelationsParam,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -527,11 +527,11 @@ export const V1AttachmentRelationApiFp = function (
       masterAttachmentId: any,
       relAttachmentId: any,
       type: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<AttachmentRelation>
     > {
       const localVarAxiosArgs =
@@ -539,13 +539,13 @@ export const V1AttachmentRelationApiFp = function (
           masterAttachmentId,
           relAttachmentId,
           type,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -558,7 +558,7 @@ export const V1AttachmentRelationApiFp = function (
 export const V1AttachmentRelationApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1AttachmentRelationApiFp(configuration);
   return {
@@ -570,14 +570,14 @@ export const V1AttachmentRelationApiFactory = function (
      */
     deleteAttachmentRelation(
       requestParameters: V1AttachmentRelationApiDeleteAttachmentRelationRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<AttachmentRelation> {
       return localVarFp
         .deleteAttachmentRelation(
           requestParameters.masterAttachmentId,
           requestParameters.relAttachmentId,
           requestParameters.type,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -589,13 +589,13 @@ export const V1AttachmentRelationApiFactory = function (
      */
     findAttachmentRelations(
       requestParameters: V1AttachmentRelationApiFindAttachmentRelationsRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .findAttachmentRelations(
           requestParameters.attachmentId,
           requestParameters.relationType,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -607,7 +607,7 @@ export const V1AttachmentRelationApiFactory = function (
      */
     findAttachmentVideoSubtitles(
       requestParameters: V1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .findAttachmentVideoSubtitles(requestParameters.attachmentId, options)
@@ -621,12 +621,12 @@ export const V1AttachmentRelationApiFactory = function (
      */
     postAttachmentRelations(
       requestParameters: V1AttachmentRelationApiPostAttachmentRelationsRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .postAttachmentRelations(
           requestParameters.postAttachmentRelationsParam,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -638,14 +638,14 @@ export const V1AttachmentRelationApiFactory = function (
      */
     putAttachmentRelation(
       requestParameters: V1AttachmentRelationApiPutAttachmentRelationRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<AttachmentRelation> {
       return localVarFp
         .putAttachmentRelation(
           requestParameters.masterAttachmentId,
           requestParameters.relAttachmentId,
           requestParameters.type,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -773,14 +773,14 @@ export class V1AttachmentRelationApi extends BaseAPI {
    */
   public deleteAttachmentRelation(
     requestParameters: V1AttachmentRelationApiDeleteAttachmentRelationRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentRelationApiFp(this.configuration)
       .deleteAttachmentRelation(
         requestParameters.masterAttachmentId,
         requestParameters.relAttachmentId,
         requestParameters.type,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -794,13 +794,13 @@ export class V1AttachmentRelationApi extends BaseAPI {
    */
   public findAttachmentRelations(
     requestParameters: V1AttachmentRelationApiFindAttachmentRelationsRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentRelationApiFp(this.configuration)
       .findAttachmentRelations(
         requestParameters.attachmentId,
         requestParameters.relationType,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -814,7 +814,7 @@ export class V1AttachmentRelationApi extends BaseAPI {
    */
   public findAttachmentVideoSubtitles(
     requestParameters: V1AttachmentRelationApiFindAttachmentVideoSubtitlesRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentRelationApiFp(this.configuration)
       .findAttachmentVideoSubtitles(requestParameters.attachmentId, options)
@@ -830,12 +830,12 @@ export class V1AttachmentRelationApi extends BaseAPI {
    */
   public postAttachmentRelations(
     requestParameters: V1AttachmentRelationApiPostAttachmentRelationsRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentRelationApiFp(this.configuration)
       .postAttachmentRelations(
         requestParameters.postAttachmentRelationsParam,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -849,14 +849,14 @@ export class V1AttachmentRelationApi extends BaseAPI {
    */
   public putAttachmentRelation(
     requestParameters: V1AttachmentRelationApiPutAttachmentRelationRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1AttachmentRelationApiFp(this.configuration)
       .putAttachmentRelation(
         requestParameters.masterAttachmentId,
         requestParameters.relAttachmentId,
         requestParameters.type,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

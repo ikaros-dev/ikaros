@@ -38,80 +38,36 @@ import {
   RequiredError,
 } from "../base";
 // @ts-ignore
-import { SubjectHints } from "../models";
+import { SubjectRecord } from "../models";
 /**
- * V1alpha1IndicesApi - axios parameter creator
+ * V1MetaInfoApi - axios parameter creator
  * @export
  */
-export const V1alpha1IndicesApiAxiosParamCreator = function (
+export const V1MetaInfoApiAxiosParamCreator = function (
   configuration?: Configuration,
 ) {
   return {
     /**
-     * Build or rebuild subject indices for full text search
+     * Get subject record from third-party metadata platform by platform id.
+     * @param {any} platform Platform.
+     * @param {any} platformId Platform id.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    buildSubjectIndices: async (
+    getMetaInfoSubjectByPlatformId: async (
+      platform: any,
+      platformId: any,
       options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
-      const localVarPath = `/api/v1alpha1/indices/subject`;
-      // use dummy base URL string because the URL constructor only accepts absolute URLs.
-      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-      let baseOptions;
-      if (configuration) {
-        baseOptions = configuration.baseOptions;
-      }
-
-      const localVarRequestOptions = {
-        method: "POST",
-        ...baseOptions,
-        ...options,
-      };
-      const localVarHeaderParameter = {} as any;
-      const localVarQueryParameter = {} as any;
-
-      // authentication BasicAuth required
-      // http basic authentication required
-      setBasicAuthToObject(localVarRequestOptions, configuration);
-
-      // authentication BearerAuth required
-      // http bearer authentication required
-      await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-      setSearchParams(localVarUrlObj, localVarQueryParameter);
-      let headersFromBaseOptions =
-        baseOptions && baseOptions.headers ? baseOptions.headers : {};
-      localVarRequestOptions.headers = {
-        ...localVarHeaderParameter,
-        ...headersFromBaseOptions,
-        ...options.headers,
-      };
-
-      return {
-        url: toPathString(localVarUrlObj),
-        options: localVarRequestOptions,
-      };
-    },
-    /**
-     * Search subjects with fuzzy query
-     * @param {string} keyword
-     * @param {number} [limit]
-     * @param {string} [highlightPostTag]
-     * @param {string} [highlightPreTag]
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    searchSubject: async (
-      keyword: string,
-      limit?: number,
-      highlightPostTag?: string,
-      highlightPreTag?: string,
-      options: AxiosRequestConfig = {},
-    ): Promise<RequestArgs> => {
-      // verify required parameter 'keyword' is not null or undefined
-      assertParamExists("searchSubject", "keyword", keyword);
-      const localVarPath = `/api/v1alpha1/indices/subject`;
+      // verify required parameter 'platform' is not null or undefined
+      assertParamExists("getMetaInfoSubjectByPlatformId", "platform", platform);
+      // verify required parameter 'platformId' is not null or undefined
+      assertParamExists(
+        "getMetaInfoSubjectByPlatformId",
+        "platformId",
+        platformId,
+      );
+      const localVarPath = `/api/v1/metaInfo/subject`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -135,16 +91,70 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      if (limit !== undefined) {
-        localVarQueryParameter["limit"] = limit;
+      if (platform !== undefined) {
+        localVarQueryParameter["platform"] = platform;
       }
 
-      if (highlightPostTag !== undefined) {
-        localVarQueryParameter["highlightPostTag"] = highlightPostTag;
+      if (platformId !== undefined) {
+        localVarQueryParameter["platformId"] = platformId;
       }
 
-      if (highlightPreTag !== undefined) {
-        localVarQueryParameter["highlightPreTag"] = highlightPreTag;
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Search subjects from third-party metadata platform by keyword.
+     * @param {any} platform Platform.
+     * @param {any} keyword Search keyword.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    searchMetaInfoSubjects: async (
+      platform: any,
+      keyword: any,
+      options: AxiosRequestConfig = {},
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'platform' is not null or undefined
+      assertParamExists("searchMetaInfoSubjects", "platform", platform);
+      // verify required parameter 'keyword' is not null or undefined
+      assertParamExists("searchMetaInfoSubjects", "keyword", keyword);
+      const localVarPath = `/api/v1/metaInfo/search`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "GET",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      if (platform !== undefined) {
+        localVarQueryParameter["platform"] = platform;
       }
 
       if (keyword !== undefined) {
@@ -169,25 +179,33 @@ export const V1alpha1IndicesApiAxiosParamCreator = function (
 };
 
 /**
- * V1alpha1IndicesApi - functional programming interface
+ * V1MetaInfoApi - functional programming interface
  * @export
  */
-export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
+export const V1MetaInfoApiFp = function (configuration?: Configuration) {
   const localVarAxiosParamCreator =
-    V1alpha1IndicesApiAxiosParamCreator(configuration);
+    V1MetaInfoApiAxiosParamCreator(configuration);
   return {
     /**
-     * Build or rebuild subject indices for full text search
+     * Get subject record from third-party metadata platform by platform id.
+     * @param {any} platform Platform.
+     * @param {any} platformId Platform id.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async buildSubjectIndices(
+    async getMetaInfoSubjectByPlatformId(
+      platform: any,
+      platformId: any,
       options?: AxiosRequestConfig,
     ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubjectRecord>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.buildSubjectIndices(options);
+        await localVarAxiosParamCreator.getMetaInfoSubjectByPlatformId(
+          platform,
+          platformId,
+          options,
+        );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
@@ -196,30 +214,25 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
       );
     },
     /**
-     * Search subjects with fuzzy query
-     * @param {string} keyword
-     * @param {number} [limit]
-     * @param {string} [highlightPostTag]
-     * @param {string} [highlightPreTag]
+     * Search subjects from third-party metadata platform by keyword.
+     * @param {any} platform Platform.
+     * @param {any} keyword Search keyword.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async searchSubject(
-      keyword: string,
-      limit?: number,
-      highlightPostTag?: string,
-      highlightPreTag?: string,
+    async searchMetaInfoSubjects(
+      platform: any,
+      keyword: any,
       options?: AxiosRequestConfig,
     ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubjectHints>
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.searchSubject(
-        keyword,
-        limit,
-        highlightPostTag,
-        highlightPreTag,
-        options,
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.searchMetaInfoSubjects(
+          platform,
+          keyword,
+          options,
+        );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
@@ -231,42 +244,48 @@ export const V1alpha1IndicesApiFp = function (configuration?: Configuration) {
 };
 
 /**
- * V1alpha1IndicesApi - factory interface
+ * V1MetaInfoApi - factory interface
  * @export
  */
-export const V1alpha1IndicesApiFactory = function (
+export const V1MetaInfoApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
   axios?: AxiosInstance,
 ) {
-  const localVarFp = V1alpha1IndicesApiFp(configuration);
+  const localVarFp = V1MetaInfoApiFp(configuration);
   return {
     /**
-     * Build or rebuild subject indices for full text search
+     * Get subject record from third-party metadata platform by platform id.
+     * @param {V1MetaInfoApiGetMetaInfoSubjectByPlatformIdRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    buildSubjectIndices(options?: AxiosRequestConfig): AxiosPromise<void> {
+    getMetaInfoSubjectByPlatformId(
+      requestParameters: V1MetaInfoApiGetMetaInfoSubjectByPlatformIdRequest,
+      options?: AxiosRequestConfig,
+    ): AxiosPromise<SubjectRecord> {
       return localVarFp
-        .buildSubjectIndices(options)
+        .getMetaInfoSubjectByPlatformId(
+          requestParameters.platform,
+          requestParameters.platformId,
+          options,
+        )
         .then((request) => request(axios, basePath));
     },
     /**
-     * Search subjects with fuzzy query
-     * @param {V1alpha1IndicesApiSearchSubjectRequest} requestParameters Request parameters.
+     * Search subjects from third-party metadata platform by keyword.
+     * @param {V1MetaInfoApiSearchMetaInfoSubjectsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    searchSubject(
-      requestParameters: V1alpha1IndicesApiSearchSubjectRequest,
+    searchMetaInfoSubjects(
+      requestParameters: V1MetaInfoApiSearchMetaInfoSubjectsRequest,
       options?: AxiosRequestConfig,
-    ): AxiosPromise<SubjectHints> {
+    ): AxiosPromise<any> {
       return localVarFp
-        .searchSubject(
+        .searchMetaInfoSubjects(
+          requestParameters.platform,
           requestParameters.keyword,
-          requestParameters.limit,
-          requestParameters.highlightPostTag,
-          requestParameters.highlightPreTag,
           options,
         )
         .then((request) => request(axios, basePath));
@@ -275,76 +294,89 @@ export const V1alpha1IndicesApiFactory = function (
 };
 
 /**
- * Request parameters for searchSubject operation in V1alpha1IndicesApi.
+ * Request parameters for getMetaInfoSubjectByPlatformId operation in V1MetaInfoApi.
  * @export
- * @interface V1alpha1IndicesApiSearchSubjectRequest
+ * @interface V1MetaInfoApiGetMetaInfoSubjectByPlatformIdRequest
  */
-export interface V1alpha1IndicesApiSearchSubjectRequest {
+export interface V1MetaInfoApiGetMetaInfoSubjectByPlatformIdRequest {
   /**
-   *
-   * @type {string}
-   * @memberof V1alpha1IndicesApiSearchSubject
+   * Platform.
+   * @type {any}
+   * @memberof V1MetaInfoApiGetMetaInfoSubjectByPlatformId
    */
-  readonly keyword: string;
+  readonly platform: any;
 
   /**
-   *
-   * @type {number}
-   * @memberof V1alpha1IndicesApiSearchSubject
+   * Platform id.
+   * @type {any}
+   * @memberof V1MetaInfoApiGetMetaInfoSubjectByPlatformId
    */
-  readonly limit?: number;
-
-  /**
-   *
-   * @type {string}
-   * @memberof V1alpha1IndicesApiSearchSubject
-   */
-  readonly highlightPostTag?: string;
-
-  /**
-   *
-   * @type {string}
-   * @memberof V1alpha1IndicesApiSearchSubject
-   */
-  readonly highlightPreTag?: string;
+  readonly platformId: any;
 }
 
 /**
- * V1alpha1IndicesApi - object-oriented interface
+ * Request parameters for searchMetaInfoSubjects operation in V1MetaInfoApi.
  * @export
- * @class V1alpha1IndicesApi
+ * @interface V1MetaInfoApiSearchMetaInfoSubjectsRequest
+ */
+export interface V1MetaInfoApiSearchMetaInfoSubjectsRequest {
+  /**
+   * Platform.
+   * @type {any}
+   * @memberof V1MetaInfoApiSearchMetaInfoSubjects
+   */
+  readonly platform: any;
+
+  /**
+   * Search keyword.
+   * @type {any}
+   * @memberof V1MetaInfoApiSearchMetaInfoSubjects
+   */
+  readonly keyword: any;
+}
+
+/**
+ * V1MetaInfoApi - object-oriented interface
+ * @export
+ * @class V1MetaInfoApi
  * @extends {BaseAPI}
  */
-export class V1alpha1IndicesApi extends BaseAPI {
+export class V1MetaInfoApi extends BaseAPI {
   /**
-   * Build or rebuild subject indices for full text search
+   * Get subject record from third-party metadata platform by platform id.
+   * @param {V1MetaInfoApiGetMetaInfoSubjectByPlatformIdRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
-   * @memberof V1alpha1IndicesApi
+   * @memberof V1MetaInfoApi
    */
-  public buildSubjectIndices(options?: AxiosRequestConfig) {
-    return V1alpha1IndicesApiFp(this.configuration)
-      .buildSubjectIndices(options)
+  public getMetaInfoSubjectByPlatformId(
+    requestParameters: V1MetaInfoApiGetMetaInfoSubjectByPlatformIdRequest,
+    options?: AxiosRequestConfig,
+  ) {
+    return V1MetaInfoApiFp(this.configuration)
+      .getMetaInfoSubjectByPlatformId(
+        requestParameters.platform,
+        requestParameters.platformId,
+        options,
+      )
       .then((request) => request(this.axios, this.basePath));
   }
 
   /**
-   * Search subjects with fuzzy query
-   * @param {V1alpha1IndicesApiSearchSubjectRequest} requestParameters Request parameters.
+   * Search subjects from third-party metadata platform by keyword.
+   * @param {V1MetaInfoApiSearchMetaInfoSubjectsRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
-   * @memberof V1alpha1IndicesApi
+   * @memberof V1MetaInfoApi
    */
-  public searchSubject(
-    requestParameters: V1alpha1IndicesApiSearchSubjectRequest,
+  public searchMetaInfoSubjects(
+    requestParameters: V1MetaInfoApiSearchMetaInfoSubjectsRequest,
     options?: AxiosRequestConfig,
   ) {
-    return V1alpha1IndicesApiFp(this.configuration)
-      .searchSubject(
+    return V1MetaInfoApiFp(this.configuration)
+      .searchMetaInfoSubjects(
+        requestParameters.platform,
         requestParameters.keyword,
-        requestParameters.limit,
-        requestParameters.highlightPostTag,
-        requestParameters.highlightPreTag,
         options,
       )
       .then((request) => request(this.axios, this.basePath));

@@ -46,7 +46,7 @@ import { SubjectCollection } from "../models";
  * @export
  */
 export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -65,7 +65,7 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
       isPrivate?: boolean,
       comment?: string,
       score?: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists("collectSubject", "subjectId", subjectId);
@@ -137,14 +137,14 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
      */
     findCollectionSubject: async (
       subjectId: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists("findCollectionSubject", "subjectId", subjectId);
       const localVarPath =
         `/api/v1alpha1/collection/subject/{subjectId}`.replace(
           `{${"subjectId"}}`,
-          encodeURIComponent(String(subjectId))
+          encodeURIComponent(String(subjectId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -197,7 +197,7 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
       size?: number,
       type?: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD",
       isPrivate?: boolean,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/collection/subjects`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -261,7 +261,7 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
      */
     removeSubjectCollect: async (
       subjectId: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists("removeSubjectCollect", "subjectId", subjectId);
@@ -317,19 +317,19 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
     updateCollectionSubjectMainEpProgress: async (
       subjectId: number,
       progress: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists(
         "updateCollectionSubjectMainEpProgress",
         "subjectId",
-        subjectId
+        subjectId,
       );
       // verify required parameter 'progress' is not null or undefined
       assertParamExists(
         "updateCollectionSubjectMainEpProgress",
         "progress",
-        progress
+        progress,
       );
       const localVarPath =
         `/api/v1alpha1/collection/subject/mainEpisodeProgress/{subjectId}/{progress}`
@@ -380,7 +380,7 @@ export const V1alpha1CollectionSubjectApiAxiosParamCreator = function (
  * @export
  */
 export const V1alpha1CollectionSubjectApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     V1alpha1CollectionSubjectApiAxiosParamCreator(configuration);
@@ -401,7 +401,7 @@ export const V1alpha1CollectionSubjectApiFp = function (
       isPrivate?: boolean,
       comment?: string,
       score?: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -411,13 +411,13 @@ export const V1alpha1CollectionSubjectApiFp = function (
         isPrivate,
         comment,
         score,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -428,23 +428,23 @@ export const V1alpha1CollectionSubjectApiFp = function (
      */
     async findCollectionSubject(
       subjectId: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<SubjectCollection>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.findCollectionSubject(
           subjectId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -461,7 +461,7 @@ export const V1alpha1CollectionSubjectApiFp = function (
       size?: number,
       type?: "WISH" | "DOING" | "DONE" | "SHELVE" | "DISCARD",
       isPrivate?: boolean,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -471,13 +471,13 @@ export const V1alpha1CollectionSubjectApiFp = function (
           size,
           type,
           isPrivate,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -488,20 +488,20 @@ export const V1alpha1CollectionSubjectApiFp = function (
      */
     async removeSubjectCollect(
       subjectId: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.removeSubjectCollect(
           subjectId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -514,7 +514,7 @@ export const V1alpha1CollectionSubjectApiFp = function (
     async updateCollectionSubjectMainEpProgress(
       subjectId: number,
       progress: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -522,13 +522,13 @@ export const V1alpha1CollectionSubjectApiFp = function (
         await localVarAxiosParamCreator.updateCollectionSubjectMainEpProgress(
           subjectId,
           progress,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -541,7 +541,7 @@ export const V1alpha1CollectionSubjectApiFp = function (
 export const V1alpha1CollectionSubjectApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1CollectionSubjectApiFp(configuration);
   return {
@@ -553,7 +553,7 @@ export const V1alpha1CollectionSubjectApiFactory = function (
      */
     collectSubject(
       requestParameters: V1alpha1CollectionSubjectApiCollectSubjectRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .collectSubject(
@@ -562,7 +562,7 @@ export const V1alpha1CollectionSubjectApiFactory = function (
           requestParameters.isPrivate,
           requestParameters.comment,
           requestParameters.score,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -574,7 +574,7 @@ export const V1alpha1CollectionSubjectApiFactory = function (
      */
     findCollectionSubject(
       requestParameters: V1alpha1CollectionSubjectApiFindCollectionSubjectRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<SubjectCollection> {
       return localVarFp
         .findCollectionSubject(requestParameters.subjectId, options)
@@ -588,7 +588,7 @@ export const V1alpha1CollectionSubjectApiFactory = function (
      */
     findCollectionSubjects(
       requestParameters: V1alpha1CollectionSubjectApiFindCollectionSubjectsRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .findCollectionSubjects(
@@ -596,7 +596,7 @@ export const V1alpha1CollectionSubjectApiFactory = function (
           requestParameters.size,
           requestParameters.type,
           requestParameters.isPrivate,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -608,7 +608,7 @@ export const V1alpha1CollectionSubjectApiFactory = function (
      */
     removeSubjectCollect(
       requestParameters: V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .removeSubjectCollect(requestParameters.subjectId, options)
@@ -622,13 +622,13 @@ export const V1alpha1CollectionSubjectApiFactory = function (
      */
     updateCollectionSubjectMainEpProgress(
       requestParameters: V1alpha1CollectionSubjectApiUpdateCollectionSubjectMainEpProgressRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .updateCollectionSubjectMainEpProgress(
           requestParameters.subjectId,
           requestParameters.progress,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -777,7 +777,7 @@ export class V1alpha1CollectionSubjectApi extends BaseAPI {
    */
   public collectSubject(
     requestParameters: V1alpha1CollectionSubjectApiCollectSubjectRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1CollectionSubjectApiFp(this.configuration)
       .collectSubject(
@@ -786,7 +786,7 @@ export class V1alpha1CollectionSubjectApi extends BaseAPI {
         requestParameters.isPrivate,
         requestParameters.comment,
         requestParameters.score,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -800,7 +800,7 @@ export class V1alpha1CollectionSubjectApi extends BaseAPI {
    */
   public findCollectionSubject(
     requestParameters: V1alpha1CollectionSubjectApiFindCollectionSubjectRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1CollectionSubjectApiFp(this.configuration)
       .findCollectionSubject(requestParameters.subjectId, options)
@@ -816,7 +816,7 @@ export class V1alpha1CollectionSubjectApi extends BaseAPI {
    */
   public findCollectionSubjects(
     requestParameters: V1alpha1CollectionSubjectApiFindCollectionSubjectsRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1CollectionSubjectApiFp(this.configuration)
       .findCollectionSubjects(
@@ -824,7 +824,7 @@ export class V1alpha1CollectionSubjectApi extends BaseAPI {
         requestParameters.size,
         requestParameters.type,
         requestParameters.isPrivate,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -838,7 +838,7 @@ export class V1alpha1CollectionSubjectApi extends BaseAPI {
    */
   public removeSubjectCollect(
     requestParameters: V1alpha1CollectionSubjectApiRemoveSubjectCollectRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1CollectionSubjectApiFp(this.configuration)
       .removeSubjectCollect(requestParameters.subjectId, options)
@@ -854,13 +854,13 @@ export class V1alpha1CollectionSubjectApi extends BaseAPI {
    */
   public updateCollectionSubjectMainEpProgress(
     requestParameters: V1alpha1CollectionSubjectApiUpdateCollectionSubjectMainEpProgressRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1CollectionSubjectApiFp(this.configuration)
       .updateCollectionSubjectMainEpProgress(
         requestParameters.subjectId,
         requestParameters.progress,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

@@ -46,7 +46,7 @@ import { PagingWrap } from "../models";
  * @export
  */
 export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,7 +57,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
      */
     createPolicy: async (
       filePolicy?: FilePolicy,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/apis/file.ikaros.run/v1alpha1/policy`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -96,7 +96,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         filePolicy,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -112,14 +112,14 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
      */
     deletePolicy: async (
       name: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("deletePolicy", "name", name);
       const localVarPath =
         `/apis/file.ikaros.run/v1alpha1/policy/{name}`.replace(
           `{${"name"}}`,
-          encodeURIComponent(String(name))
+          encodeURIComponent(String(name)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -168,7 +168,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
     getPoliciesByPaging: async (
       page: string,
       size: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'page' is not null or undefined
       assertParamExists("getPoliciesByPaging", "page", page);
@@ -223,14 +223,14 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
      */
     getPolicy: async (
       name: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("getPolicy", "name", name);
       const localVarPath =
         `/apis/file.ikaros.run/v1alpha1/policy/{name}`.replace(
           `{${"name"}}`,
-          encodeURIComponent(String(name))
+          encodeURIComponent(String(name)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -279,7 +279,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
     getPolicyMeta: async (
       name: string,
       metaName: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("getPolicyMeta", "name", name);
@@ -332,7 +332,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     listPolicies: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/apis/file.ikaros.run/v1alpha1/policies`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -382,13 +382,13 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
     updatePolicy: async (
       name: string,
       filePolicy?: FilePolicy,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("updatePolicy", "name", name);
       const localVarPath = `/apis/file.ikaros.run/v1alpha1/policy`.replace(
         `{${"name"}}`,
-        encodeURIComponent(String(name))
+        encodeURIComponent(String(name)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -426,7 +426,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         filePolicy,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -446,7 +446,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
       name: string,
       metaName: string,
       body: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("updatePolicyMeta", "name", name);
@@ -494,7 +494,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         body,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -510,7 +510,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator = function (
  * @export
  */
 export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     FileIkarosRunV1alpha1FilePolicyApiAxiosParamCreator(configuration);
@@ -523,19 +523,19 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
      */
     async createPolicy(
       filePolicy?: FilePolicy,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.createPolicy(
         filePolicy,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -546,19 +546,19 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
      */
     async deletePolicy(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.deletePolicy(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -571,7 +571,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
     async getPoliciesByPaging(
       page: string,
       size: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -579,13 +579,13 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
         await localVarAxiosParamCreator.getPoliciesByPaging(
           page,
           size,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -596,19 +596,19 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
      */
     async getPolicy(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getPolicy(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -621,20 +621,20 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
     async getPolicyMeta(
       name: string,
       metaName: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getPolicyMeta(
         name,
         metaName,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -643,18 +643,17 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
      * @throws {RequiredError}
      */
     async listPolicies(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.listPolicies(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listPolicies(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -667,20 +666,20 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
     async updatePolicy(
       name: string,
       filePolicy?: FilePolicy,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.updatePolicy(
         name,
         filePolicy,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -695,7 +694,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
       name: string,
       metaName: string,
       body: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FilePolicy>
     > {
@@ -704,13 +703,13 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
           name,
           metaName,
           body,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -723,7 +722,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiFp = function (
 export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = FileIkarosRunV1alpha1FilePolicyApiFp(configuration);
   return {
@@ -735,7 +734,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
      */
     createPolicy(
       requestParameters: FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<FilePolicy> {
       return localVarFp
         .createPolicy(requestParameters.filePolicy, options)
@@ -749,7 +748,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
      */
     deletePolicy(
       requestParameters: FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deletePolicy(requestParameters.name, options)
@@ -763,13 +762,13 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
      */
     getPoliciesByPaging(
       requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .getPoliciesByPaging(
           requestParameters.page,
           requestParameters.size,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -781,7 +780,7 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
      */
     getPolicy(
       requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<FilePolicy> {
       return localVarFp
         .getPolicy(requestParameters.name, options)
@@ -795,13 +794,13 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
      */
     getPolicyMeta(
       requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .getPolicyMeta(
           requestParameters.name,
           requestParameters.metaName,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -823,13 +822,13 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
      */
     updatePolicy(
       requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<FilePolicy> {
       return localVarFp
         .updatePolicy(
           requestParameters.name,
           requestParameters.filePolicy,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -841,14 +840,14 @@ export const FileIkarosRunV1alpha1FilePolicyApiFactory = function (
      */
     updatePolicyMeta(
       requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<FilePolicy> {
       return localVarFp
         .updatePolicyMeta(
           requestParameters.name,
           requestParameters.metaName,
           requestParameters.body,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1004,7 +1003,7 @@ export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
    */
   public createPolicy(
     requestParameters: FileIkarosRunV1alpha1FilePolicyApiCreatePolicyRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
       .createPolicy(requestParameters.filePolicy, options)
@@ -1020,7 +1019,7 @@ export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
    */
   public deletePolicy(
     requestParameters: FileIkarosRunV1alpha1FilePolicyApiDeletePolicyRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
       .deletePolicy(requestParameters.name, options)
@@ -1036,13 +1035,13 @@ export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
    */
   public getPoliciesByPaging(
     requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPoliciesByPagingRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
       .getPoliciesByPaging(
         requestParameters.page,
         requestParameters.size,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1056,7 +1055,7 @@ export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
    */
   public getPolicy(
     requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
       .getPolicy(requestParameters.name, options)
@@ -1072,13 +1071,13 @@ export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
    */
   public getPolicyMeta(
     requestParameters: FileIkarosRunV1alpha1FilePolicyApiGetPolicyMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
       .getPolicyMeta(
         requestParameters.name,
         requestParameters.metaName,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1104,13 +1103,13 @@ export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
    */
   public updatePolicy(
     requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
       .updatePolicy(
         requestParameters.name,
         requestParameters.filePolicy,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1124,14 +1123,14 @@ export class FileIkarosRunV1alpha1FilePolicyApi extends BaseAPI {
    */
   public updatePolicyMeta(
     requestParameters: FileIkarosRunV1alpha1FilePolicyApiUpdatePolicyMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return FileIkarosRunV1alpha1FilePolicyApiFp(this.configuration)
       .updatePolicyMeta(
         requestParameters.name,
         requestParameters.metaName,
         requestParameters.body,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

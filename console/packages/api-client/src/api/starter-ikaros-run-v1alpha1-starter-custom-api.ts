@@ -56,7 +56,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
        */
       createStarter: async (
         starterCustom?: StarterCustom,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         const localVarPath = `/apis/starter.ikaros.run/v1alpha1/starter`;
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -95,7 +95,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
         localVarRequestOptions.data = serializeDataIfNeeded(
           starterCustom,
           localVarRequestOptions,
-          configuration
+          configuration,
         );
 
         return {
@@ -111,14 +111,14 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
        */
       deleteStarter: async (
         name: string,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'name' is not null or undefined
         assertParamExists("deleteStarter", "name", name);
         const localVarPath =
           `/apis/starter.ikaros.run/v1alpha1/starter/{name}`.replace(
             `{${"name"}}`,
-            encodeURIComponent(String(name))
+            encodeURIComponent(String(name)),
           );
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
         const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -165,14 +165,14 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
        */
       getStarter: async (
         name: string,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'name' is not null or undefined
         assertParamExists("getStarter", "name", name);
         const localVarPath =
           `/apis/starter.ikaros.run/v1alpha1/starter/{name}`.replace(
             `{${"name"}}`,
-            encodeURIComponent(String(name))
+            encodeURIComponent(String(name)),
           );
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
         const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -221,7 +221,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
       getStarterMeta: async (
         name: string,
         metaName: string,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'name' is not null or undefined
         assertParamExists("getStarterMeta", "name", name);
@@ -278,7 +278,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
       getStartersByPaging: async (
         page: string,
         size: string,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'page' is not null or undefined
         assertParamExists("getStartersByPaging", "page", page);
@@ -331,7 +331,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
        * @throws {RequiredError}
        */
       listStarters: async (
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         const localVarPath = `/apis/starter.ikaros.run/v1alpha1/starters`;
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -381,14 +381,14 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
       updateStarter: async (
         name: string,
         starterCustom?: StarterCustom,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'name' is not null or undefined
         assertParamExists("updateStarter", "name", name);
         const localVarPath =
           `/apis/starter.ikaros.run/v1alpha1/starter`.replace(
             `{${"name"}}`,
-            encodeURIComponent(String(name))
+            encodeURIComponent(String(name)),
           );
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
         const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -426,7 +426,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
         localVarRequestOptions.data = serializeDataIfNeeded(
           starterCustom,
           localVarRequestOptions,
-          configuration
+          configuration,
         );
 
         return {
@@ -446,7 +446,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
         name: string,
         metaName: string,
         body: string,
-        options: AxiosRequestConfig = {}
+        options: AxiosRequestConfig = {},
       ): Promise<RequestArgs> => {
         // verify required parameter 'name' is not null or undefined
         assertParamExists("updateStarterMeta", "name", name);
@@ -494,7 +494,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
         localVarRequestOptions.data = serializeDataIfNeeded(
           body,
           localVarRequestOptions,
-          configuration
+          configuration,
         );
 
         return {
@@ -510,7 +510,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator =
  * @export
  */
 export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     StarterIkarosRunV1alpha1StarterCustomApiAxiosParamCreator(configuration);
@@ -523,19 +523,19 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
      */
     async createStarter(
       starterCustom?: StarterCustom,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<StarterCustom>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.createStarter(
         starterCustom,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -546,19 +546,19 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
      */
     async deleteStarter(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.deleteStarter(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -569,19 +569,19 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
      */
     async getStarter(
       name: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<StarterCustom>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getStarter(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -594,20 +594,20 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
     async getStarterMeta(
       name: string,
       metaName: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getStarterMeta(
         name,
         metaName,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -620,7 +620,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
     async getStartersByPaging(
       page: string,
       size: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -628,13 +628,13 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
         await localVarAxiosParamCreator.getStartersByPaging(
           page,
           size,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -643,18 +643,17 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
      * @throws {RequiredError}
      */
     async listStarters(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<StarterCustom>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.listStarters(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listStarters(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -667,20 +666,20 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
     async updateStarter(
       name: string,
       starterCustom?: StarterCustom,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<StarterCustom>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.updateStarter(
         name,
         starterCustom,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -695,7 +694,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
       name: string,
       metaName: string,
       body: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<StarterCustom>
     > {
@@ -704,13 +703,13 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
           name,
           metaName,
           body,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -723,7 +722,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFp = function (
 export const StarterIkarosRunV1alpha1StarterCustomApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = StarterIkarosRunV1alpha1StarterCustomApiFp(configuration);
   return {
@@ -735,7 +734,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFactory = function (
      */
     createStarter(
       requestParameters: StarterIkarosRunV1alpha1StarterCustomApiCreateStarterRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<StarterCustom> {
       return localVarFp
         .createStarter(requestParameters.starterCustom, options)
@@ -749,7 +748,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFactory = function (
      */
     deleteStarter(
       requestParameters: StarterIkarosRunV1alpha1StarterCustomApiDeleteStarterRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteStarter(requestParameters.name, options)
@@ -763,7 +762,7 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFactory = function (
      */
     getStarter(
       requestParameters: StarterIkarosRunV1alpha1StarterCustomApiGetStarterRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<StarterCustom> {
       return localVarFp
         .getStarter(requestParameters.name, options)
@@ -777,13 +776,13 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFactory = function (
      */
     getStarterMeta(
       requestParameters: StarterIkarosRunV1alpha1StarterCustomApiGetStarterMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .getStarterMeta(
           requestParameters.name,
           requestParameters.metaName,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -795,13 +794,13 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFactory = function (
      */
     getStartersByPaging(
       requestParameters: StarterIkarosRunV1alpha1StarterCustomApiGetStartersByPagingRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .getStartersByPaging(
           requestParameters.page,
           requestParameters.size,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -823,13 +822,13 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFactory = function (
      */
     updateStarter(
       requestParameters: StarterIkarosRunV1alpha1StarterCustomApiUpdateStarterRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<StarterCustom> {
       return localVarFp
         .updateStarter(
           requestParameters.name,
           requestParameters.starterCustom,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -841,14 +840,14 @@ export const StarterIkarosRunV1alpha1StarterCustomApiFactory = function (
      */
     updateStarterMeta(
       requestParameters: StarterIkarosRunV1alpha1StarterCustomApiUpdateStarterMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<StarterCustom> {
       return localVarFp
         .updateStarterMeta(
           requestParameters.name,
           requestParameters.metaName,
           requestParameters.body,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1004,7 +1003,7 @@ export class StarterIkarosRunV1alpha1StarterCustomApi extends BaseAPI {
    */
   public createStarter(
     requestParameters: StarterIkarosRunV1alpha1StarterCustomApiCreateStarterRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return StarterIkarosRunV1alpha1StarterCustomApiFp(this.configuration)
       .createStarter(requestParameters.starterCustom, options)
@@ -1020,7 +1019,7 @@ export class StarterIkarosRunV1alpha1StarterCustomApi extends BaseAPI {
    */
   public deleteStarter(
     requestParameters: StarterIkarosRunV1alpha1StarterCustomApiDeleteStarterRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return StarterIkarosRunV1alpha1StarterCustomApiFp(this.configuration)
       .deleteStarter(requestParameters.name, options)
@@ -1036,7 +1035,7 @@ export class StarterIkarosRunV1alpha1StarterCustomApi extends BaseAPI {
    */
   public getStarter(
     requestParameters: StarterIkarosRunV1alpha1StarterCustomApiGetStarterRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return StarterIkarosRunV1alpha1StarterCustomApiFp(this.configuration)
       .getStarter(requestParameters.name, options)
@@ -1052,13 +1051,13 @@ export class StarterIkarosRunV1alpha1StarterCustomApi extends BaseAPI {
    */
   public getStarterMeta(
     requestParameters: StarterIkarosRunV1alpha1StarterCustomApiGetStarterMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return StarterIkarosRunV1alpha1StarterCustomApiFp(this.configuration)
       .getStarterMeta(
         requestParameters.name,
         requestParameters.metaName,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1072,13 +1071,13 @@ export class StarterIkarosRunV1alpha1StarterCustomApi extends BaseAPI {
    */
   public getStartersByPaging(
     requestParameters: StarterIkarosRunV1alpha1StarterCustomApiGetStartersByPagingRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return StarterIkarosRunV1alpha1StarterCustomApiFp(this.configuration)
       .getStartersByPaging(
         requestParameters.page,
         requestParameters.size,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1104,13 +1103,13 @@ export class StarterIkarosRunV1alpha1StarterCustomApi extends BaseAPI {
    */
   public updateStarter(
     requestParameters: StarterIkarosRunV1alpha1StarterCustomApiUpdateStarterRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return StarterIkarosRunV1alpha1StarterCustomApiFp(this.configuration)
       .updateStarter(
         requestParameters.name,
         requestParameters.starterCustom,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1124,14 +1123,14 @@ export class StarterIkarosRunV1alpha1StarterCustomApi extends BaseAPI {
    */
   public updateStarterMeta(
     requestParameters: StarterIkarosRunV1alpha1StarterCustomApiUpdateStarterMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return StarterIkarosRunV1alpha1StarterCustomApiFp(this.configuration)
       .updateStarterMeta(
         requestParameters.name,
         requestParameters.metaName,
         requestParameters.body,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

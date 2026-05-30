@@ -44,7 +44,7 @@ import { Folder } from "../models";
  * @export
  */
 export const V1alpha1FolderApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,7 +57,7 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
     createFolder: async (
       name: string,
       parentId?: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("createFolder", "name", name);
@@ -117,7 +117,7 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
     deleteFolder: async (
       id: number,
       allowDeleteWhenChildExists?: boolean,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("deleteFolder", "id", id);
@@ -176,13 +176,13 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
      */
     findById: async (
       id: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("findById", "id", id);
       const localVarPath = `/api/v1alpha1/folder/id/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -231,7 +231,7 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
     findByParentIdAndName: async (
       parentId?: number,
       name?: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/folder/name`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -289,7 +289,7 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
     findByParentIdAndNameLike: async (
       parentId?: number,
       name?: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/folder/name/like`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -347,7 +347,7 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
     moveFolder: async (
       id?: number,
       newParentId?: number,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/folder/parent`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -405,7 +405,7 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
     pullFolder4Remote: async (
       id: string,
       remote: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("pullFolder4Remote", "id", id);
@@ -467,7 +467,7 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
     pushFolder2Remote: async (
       id: string,
       remote: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("pushFolder2Remote", "id", id);
@@ -529,7 +529,7 @@ export const V1alpha1FolderApiAxiosParamCreator = function (
     updateFolderName: async (
       id?: number,
       newName?: string,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1alpha1/folder/name`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -598,20 +598,20 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
     async createFolder(
       name: string,
       parentId?: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.createFolder(
         name,
         parentId,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -624,20 +624,20 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
     async deleteFolder(
       id: number,
       allowDeleteWhenChildExists?: boolean,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.deleteFolder(
         id,
         allowDeleteWhenChildExists,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -648,19 +648,19 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
      */
     async findById(
       id: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.findById(
         id,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -673,7 +673,7 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
     async findByParentIdAndName(
       parentId?: number,
       name?: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
     > {
@@ -681,13 +681,13 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.findByParentIdAndName(
           parentId,
           name,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -700,7 +700,7 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
     async findByParentIdAndNameLike(
       parentId?: number,
       name?: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
     > {
@@ -708,13 +708,13 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.findByParentIdAndNameLike(
           parentId,
           name,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -727,20 +727,20 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
     async moveFolder(
       id?: number,
       newParentId?: number,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.moveFolder(
         id,
         newParentId,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -753,7 +753,7 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
     async pullFolder4Remote(
       id: string,
       remote: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -763,7 +763,7 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -776,7 +776,7 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
     async pushFolder2Remote(
       id: string,
       remote: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -786,7 +786,7 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -799,7 +799,7 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
     async updateFolderName(
       id?: number,
       newName?: string,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Folder>
     > {
@@ -809,7 +809,7 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -822,7 +822,7 @@ export const V1alpha1FolderApiFp = function (configuration?: Configuration) {
 export const V1alpha1FolderApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1alpha1FolderApiFp(configuration);
   return {
@@ -834,13 +834,13 @@ export const V1alpha1FolderApiFactory = function (
      */
     createFolder(
       requestParameters: V1alpha1FolderApiCreateFolderRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Folder> {
       return localVarFp
         .createFolder(
           requestParameters.name,
           requestParameters.parentId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -852,13 +852,13 @@ export const V1alpha1FolderApiFactory = function (
      */
     deleteFolder(
       requestParameters: V1alpha1FolderApiDeleteFolderRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteFolder(
           requestParameters.id,
           requestParameters.allowDeleteWhenChildExists,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -870,7 +870,7 @@ export const V1alpha1FolderApiFactory = function (
      */
     findById(
       requestParameters: V1alpha1FolderApiFindByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Folder> {
       return localVarFp
         .findById(requestParameters.id, options)
@@ -884,13 +884,13 @@ export const V1alpha1FolderApiFactory = function (
      */
     findByParentIdAndName(
       requestParameters: V1alpha1FolderApiFindByParentIdAndNameRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Folder> {
       return localVarFp
         .findByParentIdAndName(
           requestParameters.parentId,
           requestParameters.name,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -902,13 +902,13 @@ export const V1alpha1FolderApiFactory = function (
      */
     findByParentIdAndNameLike(
       requestParameters: V1alpha1FolderApiFindByParentIdAndNameLikeRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Folder> {
       return localVarFp
         .findByParentIdAndNameLike(
           requestParameters.parentId,
           requestParameters.name,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -920,13 +920,13 @@ export const V1alpha1FolderApiFactory = function (
      */
     moveFolder(
       requestParameters: V1alpha1FolderApiMoveFolderRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Folder> {
       return localVarFp
         .moveFolder(
           requestParameters.id,
           requestParameters.newParentId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -938,13 +938,13 @@ export const V1alpha1FolderApiFactory = function (
      */
     pullFolder4Remote(
       requestParameters: V1alpha1FolderApiPullFolder4RemoteRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .pullFolder4Remote(
           requestParameters.id,
           requestParameters.remote,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -956,13 +956,13 @@ export const V1alpha1FolderApiFactory = function (
      */
     pushFolder2Remote(
       requestParameters: V1alpha1FolderApiPushFolder2RemoteRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .pushFolder2Remote(
           requestParameters.id,
           requestParameters.remote,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -974,13 +974,13 @@ export const V1alpha1FolderApiFactory = function (
      */
     updateFolderName(
       requestParameters: V1alpha1FolderApiUpdateFolderNameRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Folder> {
       return localVarFp
         .updateFolderName(
           requestParameters.id,
           requestParameters.newName,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -1185,7 +1185,7 @@ export class V1alpha1FolderApi extends BaseAPI {
    */
   public createFolder(
     requestParameters: V1alpha1FolderApiCreateFolderRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FolderApiFp(this.configuration)
       .createFolder(requestParameters.name, requestParameters.parentId, options)
@@ -1201,13 +1201,13 @@ export class V1alpha1FolderApi extends BaseAPI {
    */
   public deleteFolder(
     requestParameters: V1alpha1FolderApiDeleteFolderRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FolderApiFp(this.configuration)
       .deleteFolder(
         requestParameters.id,
         requestParameters.allowDeleteWhenChildExists,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1221,7 +1221,7 @@ export class V1alpha1FolderApi extends BaseAPI {
    */
   public findById(
     requestParameters: V1alpha1FolderApiFindByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FolderApiFp(this.configuration)
       .findById(requestParameters.id, options)
@@ -1237,13 +1237,13 @@ export class V1alpha1FolderApi extends BaseAPI {
    */
   public findByParentIdAndName(
     requestParameters: V1alpha1FolderApiFindByParentIdAndNameRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FolderApiFp(this.configuration)
       .findByParentIdAndName(
         requestParameters.parentId,
         requestParameters.name,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1257,13 +1257,13 @@ export class V1alpha1FolderApi extends BaseAPI {
    */
   public findByParentIdAndNameLike(
     requestParameters: V1alpha1FolderApiFindByParentIdAndNameLikeRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FolderApiFp(this.configuration)
       .findByParentIdAndNameLike(
         requestParameters.parentId,
         requestParameters.name,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1277,7 +1277,7 @@ export class V1alpha1FolderApi extends BaseAPI {
    */
   public moveFolder(
     requestParameters: V1alpha1FolderApiMoveFolderRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FolderApiFp(this.configuration)
       .moveFolder(requestParameters.id, requestParameters.newParentId, options)
@@ -1293,13 +1293,13 @@ export class V1alpha1FolderApi extends BaseAPI {
    */
   public pullFolder4Remote(
     requestParameters: V1alpha1FolderApiPullFolder4RemoteRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FolderApiFp(this.configuration)
       .pullFolder4Remote(
         requestParameters.id,
         requestParameters.remote,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1313,13 +1313,13 @@ export class V1alpha1FolderApi extends BaseAPI {
    */
   public pushFolder2Remote(
     requestParameters: V1alpha1FolderApiPushFolder2RemoteRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FolderApiFp(this.configuration)
       .pushFolder2Remote(
         requestParameters.id,
         requestParameters.remote,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1333,13 +1333,13 @@ export class V1alpha1FolderApi extends BaseAPI {
    */
   public updateFolderName(
     requestParameters: V1alpha1FolderApiUpdateFolderNameRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1alpha1FolderApiFp(this.configuration)
       .updateFolderName(
         requestParameters.id,
         requestParameters.newName,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
