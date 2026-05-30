@@ -4,10 +4,49 @@
 
 # 1.1.13
 
+## 服务端
+
 - 核心内部插件接口设计统一
 - 新增MetadataService调用三方源数据接口
 - 新增责任链工作流实现半自动化导入
 - 刷新本地挂载的目录时并发执行计算SHA1的逻辑
+
+### 剧集序号正则责任链
+
+- EpisodeSequenceRegularHandler 接口从 server 模块迁移至 api 模块，插件可实现该接口自定义匹配逻辑
+- 新增 EpisodeSequenceRegularPluginHook 插件拓展点，插件可注册自定义 Handler 到匹配链
+- EpisodeSequenceRegularChain 合并 DB 规则与插件规则，统一按优先级排序
+- 修复 save 更新时乐观锁版本号丢失导致的 OptimisticLockingFailureException
+
+### 内置正则规则初始化
+
+- 新增 EpisodeSequenceRegularInitializer，应用启动时自动插入内置规则（按名称去重，可重复执行）
+- 方括号格式：`[01]`~`[100]`、`[EP01]`~`[EP100]`、`[01v2]`~`[100vX]`
+- 带前缀固定匹配：`[NCOP]`→OP、`[NCED]`→ED、`[SP]`→SP、`[CM]`→CM、`[OVA]`→OVA、`[OAD]`→OAD
+- 带前缀序号匹配：`[NCOP01]`~`[NCOP100]`、`[NCED01]`~`[NCED100]`、`[SP01]`~`[SP100]`、等
+- 空格包裹格式：` 01 `~` 99 `
+- 所有格式均有通用兜底规则（最低优先级 Integer.MIN_VALUE）
+
+### 批量匹配接口迁移
+
+- BindEpisodesStep、ProcessSpSubdirectoriesStep 从 RegexUtils 静态调用改为 EpisodeSequenceRegularService.match()
+- AttachmentReferenceServiceImpl 移除 getSeqMono 静态方法，改用责任链匹配
+
+### 路由修复
+
+- GET/DELETE `/api/v1/episode/sequence-regular/{id}` → `/api/v1/episode/sequence-regular/id/{id}`
+- 避免与 `/api/v1/episode/sequence-regular/match` 路径冲突
+
+## Console
+
+### 正则规则管理页面
+
+- 新增 RegularRules.vue 列表页：分页表格、启用/禁用（即时 switch）、编辑、删除
+- 新增 RegularRuleEditDialog.vue：增改表单（名称、正则、剧集分组、序号覆盖、优先级、描述、启用）
+- 新增 RegularRuleDetailDrawer.vue：右侧抽屉详情，展示完整字段含创建时间、更新时间
+- 新增测试匹配对话框：输入文件名调后端 match 接口，展示匹配结果
+- 新增模块路由 `/regulars`，侧边栏注册到「内容」分组
+- 新建规则优先级默认值改为 100001
 
 # 1.1.12
 
