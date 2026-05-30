@@ -234,6 +234,20 @@ module:
       move_atts: 批量移动
       refresh: 刷新
       driver: 驱动
+      bind: 绑定目录
+    bind:
+      confirm:
+        content: 确定要根据当前目录自动创建条目并绑定剧集吗？
+        title: 目录绑定
+        btn:
+          confirm: 确认绑定
+          cancel: 取消
+      platform:
+        prompt: 请输入搜索平台
+        placeholder: 'BGM_TV / TMDB / AniDB / TVDB / VNDB / DOU_BAN / OTHER'
+        title: 搜索平台
+      success: 目录绑定请求已提交，请查看任务状态
+      error: 目录绑定请求失败
     popconfirm:
       title: 您确定批量删除附件吗？
       btn: 批量删除

@@ -37,6 +37,7 @@ import {
   BaseAPI,
   RequiredError,
 } from "../base";
+import { Link } from "../models";
 /**
  * ActuatorApi - axios parameter creator
  * @export

@@ -35,6 +35,7 @@ import {
 	Download,
 	Refresh,
 	MostlyCloudy,
+	Link,
 } from '@element-plus/icons-vue';
 import {
 	ElRow,
@@ -506,6 +507,48 @@ const toAttachmentDrivers = () => {
 	router.push('/attachment/drivers');
 };
 
+const onBindDirectoryClick = async () => {
+	try {
+		await ElMessageBox.confirm(
+			t('module.attachment.bind.confirm.content'),
+			t('module.attachment.bind.confirm.title'),
+			{
+				confirmButtonText: t('module.attachment.bind.confirm.btn.confirm'),
+				cancelButtonText: t('module.attachment.bind.confirm.btn.cancel'),
+				type: 'info',
+			}
+		);
+	} catch {
+		return;
+	}
+
+	try {
+		const { value: platform } = await ElMessageBox.prompt(
+			t('module.attachment.bind.platform.prompt'),
+			t('module.attachment.bind.platform.title'),
+			{
+				inputPlaceholder: t('module.attachment.bind.platform.placeholder'),
+				confirmButtonText: t('module.attachment.bind.confirm.btn.confirm'),
+				cancelButtonText: t('module.attachment.bind.confirm.btn.cancel'),
+			}
+		);
+
+		if (!platform) {
+			return;
+		}
+
+		await apiClient.v1Binding.bindDirectory({
+			directoryId: attachmentCondition.value.parentId,
+			platform: platform,
+		});
+
+		ElMessage.success(t('module.attachment.bind.success'));
+	} catch (e) {
+		console.error('bind directory error', e);
+		ElMessage.error(t('module.attachment.bind.error'));
+	}
+};
+
 watch(
 	() => route.query,
 	(newValue) => {
@@ -612,6 +655,9 @@ const onAttachmentDetailDrawerClose = () => {
 			</el-button>
 			<el-button :icon="MostlyCloudy" @click="toAttachmentDrivers">
 				{{ t('module.attachment.btn.driver') }}
+			</el-button>
+			<el-button :icon="Link" @click="onBindDirectoryClick">
+				{{ t('module.attachment.btn.bind') }}
 			</el-button>
 
 			<el-button
