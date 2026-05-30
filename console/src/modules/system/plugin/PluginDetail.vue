@@ -116,9 +116,7 @@ const fetchConfigMap = async () => {
 
 const onSubmit = (form) => {
 	console.log('form', form);
-	// @ts-expect-error
 	for (const key in configMap.value.data) {
-		// @ts-expect-error
 		configMap.value.data[key] = form[key];
 	}
 	updateConfigMap();
@@ -148,7 +146,6 @@ const convertValToStr = (obj) => {
 const updateConfigMap = async () => {
 	// console.log('plugin.value.name', plugin.value.name);
 	console.debug('configMap.value', configMap.value);
-	// @ts-expect-error
 	configMap.value.name = plugin.value.name;
 	await apiClient.configmap.updateConfigmap({
 		configMap: {
