@@ -55,7 +55,7 @@ public class EpisodeSequenceRegularEndpoint implements CoreEndpoint {
                         .implementation(EpisodeSequenceRegular.class))
             )
 
-            .DELETE("/episode/sequence-regular/{id}", this::deleteRegular,
+            .DELETE("/episode/sequence-regular/id/{id}", this::deleteRegular,
                 builder -> builder.operationId("DeleteEpisodeSequenceRegular")
                     .tag(tag)
                     .description("Delete an episode sequence regular rule by ID.")
@@ -66,7 +66,20 @@ public class EpisodeSequenceRegularEndpoint implements CoreEndpoint {
                         .implementation(UUID.class))
             )
 
-            .GET("/episode/sequence-regular/{id}", this::getRegular,
+            .GET("/episode/sequence-regular/match", this::matchAttachment,
+                builder -> builder.operationId("MatchEpisodeSequenceRegular")
+                    .tag(tag)
+                    .description("Match an attachment name against all enabled rules.")
+                    .parameter(parameterBuilder()
+                        .name("attachmentName")
+                        .description("The attachment name to match.")
+                        .required(true)
+                        .implementation(String.class))
+                    .response(responseBuilder()
+                        .implementation(EpisodeSequenceRegularResult.class))
+            )
+
+            .GET("/episode/sequence-regular/id/{id}", this::getRegular,
                 builder -> builder.operationId("GetEpisodeSequenceRegular")
                     .tag(tag)
                     .description("Get a single rule by ID.")
@@ -95,19 +108,6 @@ public class EpisodeSequenceRegularEndpoint implements CoreEndpoint {
                         .implementation(Integer.class))
                     .response(responseBuilder()
                         .implementation(PagingWrap.class))
-            )
-
-            .GET("/episode/sequence-regular/match", this::matchAttachment,
-                builder -> builder.operationId("MatchEpisodeSequenceRegular")
-                    .tag(tag)
-                    .description("Match an attachment name against all enabled rules.")
-                    .parameter(parameterBuilder()
-                        .name("attachmentName")
-                        .description("The attachment name to match.")
-                        .required(true)
-                        .implementation(String.class))
-                    .response(responseBuilder()
-                        .implementation(EpisodeSequenceRegularResult.class))
             )
 
             .build();

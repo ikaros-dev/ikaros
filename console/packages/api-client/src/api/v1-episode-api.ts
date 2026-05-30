@@ -179,7 +179,7 @@ export const V1EpisodeApiAxiosParamCreator = function (
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("deleteEpisodeSequenceRegular", "id", id);
-      const localVarPath = `/api/v1/episode/sequence-regular/{id}`;
+      const localVarPath = `/api/v1/episode/sequence-regular/id/{id}`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -576,7 +576,7 @@ export const V1EpisodeApiAxiosParamCreator = function (
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getEpisodeSequenceRegular", "id", id);
-      const localVarPath = `/api/v1/episode/sequence-regular/{id}`;
+      const localVarPath = `/api/v1/episode/sequence-regular/id/{id}`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;

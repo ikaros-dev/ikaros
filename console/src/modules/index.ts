@@ -1,6 +1,7 @@
 import Dashboard from './dashboard/module';
 import User from './user/module';
 import Attachment from './content/attachment/module';
+import Regular from './content/regular/module';
 import Subject from './content/subject/module';
 import Plugin from './system/plugin/module';
 import Setting from './system/setting/module';
@@ -13,6 +14,7 @@ const coreModules = [
 	Dashboard,
 	User,
 	Attachment,
+	Regular,
 	Subject,
 	Plugin,
 	Setting,

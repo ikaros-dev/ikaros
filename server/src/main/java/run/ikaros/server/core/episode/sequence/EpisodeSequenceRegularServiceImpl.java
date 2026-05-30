@@ -29,15 +29,20 @@ public class EpisodeSequenceRegularServiceImpl implements EpisodeSequenceRegular
 
     @Override
     public Mono<EpisodeSequenceRegular> save(EpisodeSequenceRegular regular) {
-        return copyProperties(regular, EpisodeSequenceRegularEntity.builder().build())
-            .flatMap(entity -> {
-                if (entity.getId() == null) {
-                    entity.setId(UUID.randomUUID());
-                    return repository.insert(entity);
-                }
-                return repository.update(entity);
-            })
-            .flatMap(saved -> copyProperties(saved, EpisodeSequenceRegular.builder().build()));
+        if (regular.getId() == null) {
+            return copyProperties(regular, EpisodeSequenceRegularEntity.builder().build())
+                .flatMap(repository::insert)
+                .flatMap(saved -> copyProperties(saved,
+                    EpisodeSequenceRegular.builder().build()));
+        }
+        // For updates, fetch existing entity first to preserve optimisticLockVersion
+        return repository.findById(regular.getId())
+            .switchIfEmpty(Mono.error(
+                new IllegalArgumentException("Rule not found for id: " + regular.getId())))
+            .flatMap(existing -> copyProperties(regular, existing))
+            .flatMap(repository::update)
+            .flatMap(saved -> copyProperties(saved,
+                EpisodeSequenceRegular.builder().build()));
     }
 
     @Override
