@@ -2,8 +2,6 @@ package run.ikaros.server.core.binding.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +23,6 @@ import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.episode.EpisodeService;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
-import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 
@@ -94,7 +91,7 @@ class BindEpisodesStepTest {
             .name("Episode 1").sequence(1f).group(EpisodeGroup.MAIN).build();
 
         when(episodeRepository.findBySubjectIdAndGroupAndSequence(
-            any(), any(), anyFloat()))
+            any(), any(), any()))
             .thenReturn(Flux.empty());
         when(episodeService.save(any(Episode.class)))
             .thenReturn(Mono.just(savedEpisode));
@@ -148,7 +145,7 @@ class BindEpisodesStepTest {
 
         // findAllBy returns empty, then save is called for each new episode
         when(episodeRepository.findBySubjectIdAndGroupAndSequence(
-            any(), any(), anyFloat()))
+            any(), any(), any()))
             .thenReturn(Flux.empty());
         when(episodeService.save(any(Episode.class)))
             .thenReturn(Mono.just(savedEp1))

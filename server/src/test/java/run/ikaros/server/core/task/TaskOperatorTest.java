@@ -8,14 +8,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.api.infra.utils.UuidV7Utils;
-import run.ikaros.api.store.enums.TaskStatus;
-import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.TaskRepository;
 
 class TaskOperatorTest {

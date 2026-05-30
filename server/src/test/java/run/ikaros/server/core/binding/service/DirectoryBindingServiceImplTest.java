@@ -1,7 +1,6 @@
 package run.ikaros.server.core.binding.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,7 +26,6 @@ import run.ikaros.server.core.task.TaskService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.DirectoryBindingWorkflowEntity;
-import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.DirectoryBindingWorkflowRepository;
 import run.ikaros.server.store.repository.TaskRepository;
@@ -140,12 +138,12 @@ class DirectoryBindingServiceImplTest {
         AttachmentEntity subDir2 = AttachmentEntity.builder()
             .id(subDir2Id).parentId(directoryId)
             .name("Sub Anime 2").type(AttachmentType.Directory).build();
-        AttachmentEntity aFile = AttachmentEntity.builder()
+        AttachmentEntity file = AttachmentEntity.builder()
             .id(fileId).parentId(directoryId)
             .name("readme.txt").type(AttachmentType.File).build();
 
         when(attachmentRepository.findAllByParentId(directoryId))
-            .thenReturn(Flux.just(subDir1, subDir2, aFile));
+            .thenReturn(Flux.just(subDir1, subDir2, file));
         when(attachmentRepository.findById(subDir1Id))
             .thenReturn(Mono.just(subDir1));
         when(attachmentRepository.findById(subDir2Id))
@@ -208,7 +206,7 @@ class DirectoryBindingServiceImplTest {
     @Test
     void bindDirectory_withDriverDirectoryType() {
         // Driver_Directory type should also be accepted for the main directory
-        // (it's queried by id directly, so the type check is on the parent query in bindDirectories)
+        // (queried by id directly; type check is on the parent query in bindDirectories)
         AttachmentEntity dirEntity = AttachmentEntity.builder()
             .id(directoryId).name("Driver Anime")
             .type(AttachmentType.Driver_Directory).build();
