@@ -59,6 +59,12 @@ class EpisodeSequenceRegularServiceImplTest {
             .id(id).name("Updated Rule").regex("SP")
             .epGroup(EpisodeGroup.SPECIAL_PROMOTION).priority(50).enabled(true).build();
 
+        EpisodeSequenceRegularEntity existingEntity = EpisodeSequenceRegularEntity.builder()
+            .name("Old Rule").regex("OLD")
+            .epGroup(EpisodeGroup.SPECIAL_PROMOTION).priority(50).enabled(true).build();
+        existingEntity.setId(id);
+
+        when(repository.findById(id)).thenReturn(Mono.just(existingEntity));
         when(repository.update(any(EpisodeSequenceRegularEntity.class)))
             .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 

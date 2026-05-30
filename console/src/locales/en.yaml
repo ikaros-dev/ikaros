@@ -257,6 +257,9 @@ module:
       platformId:
         label: Platform ID
         placeholder: Enter the subject ID on the selected platform (optional)
+      keyword:
+        label: Search Keyword
+        placeholder: Search keyword, overrides directory name (optional)
       success: Directory bind request submitted, please check the task status
       error: Directory bind request failed
     popconfirm:

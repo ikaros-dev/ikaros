@@ -2,6 +2,7 @@ package run.ikaros.server.core.binding.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,11 +17,13 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.binding.DirectoryBindingContext;
+import run.ikaros.api.core.episode.EpisodeSequenceRegularResult;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.episode.EpisodeService;
+import run.ikaros.server.core.episode.sequence.EpisodeSequenceRegularService;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
@@ -34,6 +37,8 @@ class ProcessSpSubdirectoriesStepTest {
     private EpisodeService episodeService;
     @Mock
     private AttachmentReferenceRepository attachmentReferenceRepository;
+    @Mock
+    private EpisodeSequenceRegularService episodeSequenceRegularService;
     private ProcessSpSubdirectoriesStep step;
     private UUID subjectId;
     private UUID directoryId;
@@ -42,7 +47,8 @@ class ProcessSpSubdirectoriesStepTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         step = new ProcessSpSubdirectoriesStep(
-            attachmentRepository, episodeService, attachmentReferenceRepository);
+            attachmentRepository, episodeService,
+            attachmentReferenceRepository, episodeSequenceRegularService);
         subjectId = UUID.randomUUID();
         directoryId = UUID.randomUUID();
     }
@@ -63,6 +69,9 @@ class ProcessSpSubdirectoriesStepTest {
             .id(UUID.randomUUID()).subjectId(subjectId)
             .name("OP").sequence(1f).group(EpisodeGroup.OPENING_SONG).build();
 
+        when(episodeSequenceRegularService.match(anyString()))
+            .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
+                .matched(true).sequence(1f).epGroup(EpisodeGroup.OPENING_SONG).build()));
         when(episodeService.save(any(Episode.class)))
             .thenReturn(Mono.just(savedEpisode));
         when(attachmentReferenceRepository.insert(any(AttachmentReferenceEntity.class)))
@@ -100,6 +109,9 @@ class ProcessSpSubdirectoriesStepTest {
         when(attachmentRepository.findAllByParentId(spDirId1)).thenReturn(Flux.just(opFile));
         when(attachmentRepository.findAllByParentId(spDirId2)).thenReturn(Flux.just(edFile));
 
+        when(episodeSequenceRegularService.match(anyString()))
+            .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
+                .matched(true).sequence(1f).epGroup(EpisodeGroup.OPENING_SONG).build()));
         when(episodeService.save(any(Episode.class)))
             .thenReturn(Mono.just(Episode.builder()
                 .id(UUID.randomUUID()).subjectId(subjectId)
@@ -136,6 +148,9 @@ class ProcessSpSubdirectoriesStepTest {
 
         when(attachmentRepository.findAllByParentId(spDirId)).thenReturn(Flux.just(ovaFile));
 
+        when(episodeSequenceRegularService.match(anyString()))
+            .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
+                .matched(true).sequence(1f).epGroup(EpisodeGroup.ORIGINAL_VIDEO_ANIMATION).build()));
         when(episodeService.save(any(Episode.class)))
             .thenReturn(Mono.just(Episode.builder()
                 .id(UUID.randomUUID()).subjectId(subjectId)
@@ -167,6 +182,9 @@ class ProcessSpSubdirectoriesStepTest {
 
         when(attachmentRepository.findAllByParentId(spDirId)).thenReturn(Flux.just(miscFile));
 
+        when(episodeSequenceRegularService.match(anyString()))
+            .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
+                .matched(true).sequence(1f).epGroup(EpisodeGroup.SPECIAL_PROMOTION).build()));
         when(episodeService.save(any(Episode.class)))
             .thenReturn(Mono.just(Episode.builder()
                 .id(UUID.randomUUID()).subjectId(subjectId)

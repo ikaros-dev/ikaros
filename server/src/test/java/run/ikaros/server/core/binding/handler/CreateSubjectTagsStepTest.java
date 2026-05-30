@@ -2,6 +2,7 @@ package run.ikaros.server.core.binding.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.binding.DirectoryBindingContext;
@@ -35,6 +37,8 @@ class CreateSubjectTagsStepTest {
 
     @Test
     void execute_createsTagsFromBracketTags() {
+        when(tagService.findAll(any(), any(), any(), anyString()))
+            .thenReturn(Flux.empty());
         when(tagService.create(any(Tag.class)))
             .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 

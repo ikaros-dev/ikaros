@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.binding.DirectoryBindingContext;
 import run.ikaros.api.core.binding.DirectoryBindingStep;
+import run.ikaros.api.core.episode.EpisodeSequenceRegularResult;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
@@ -38,10 +39,10 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
     private final EpisodeSequenceRegularService episodeSequenceRegularService;
 
     public ProcessSpSubdirectoriesStep(AttachmentRepository attachmentRepository,
-                                        EpisodeService episodeService,
-                                        AttachmentReferenceRepository referenceRepository,
-                                        EpisodeSequenceRegularService
-                                            episodeSequenceRegularService) {
+                                       EpisodeService episodeService,
+                                       AttachmentReferenceRepository referenceRepository,
+                                       EpisodeSequenceRegularService
+                                           episodeSequenceRegularService) {
         this.attachmentRepository = attachmentRepository;
         this.episodeService = episodeService;
         this.attachmentReferenceRepository = referenceRepository;
@@ -74,33 +75,29 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
     }
 
     private Mono<Void> processSpDirectory(Attachment spDir, UUID subjectId,
-                                           DirectoryBindingContext context) {
-        EpisodeGroup group = mapToEpisodeGroup(spDir.getName());
+                                          DirectoryBindingContext context) {
         return attachmentRepository.findAllByParentId(spDir.getId())
             .filter(att -> att.getType() == AttachmentType.File
                 || att.getType() == AttachmentType.Driver_File)
             .concatMap(entity -> copyProperties(entity, Attachment.builder().build()))
-            .concatMap(file -> createSpEpisodeAndBind(file, subjectId, group, context))
+            .concatMap(file -> createSpEpisodeAndBind(file, subjectId, context))
             .then();
     }
 
     private Mono<Void> createSpEpisodeAndBind(Attachment file, UUID subjectId,
-                                               EpisodeGroup group,
-                                               DirectoryBindingContext context) {
+                                              DirectoryBindingContext context) {
         return episodeSequenceRegularService.match(file.getName())
-            .flatMap(result -> {
-                float seq = (!result.isMatched() || result.getSequence() == null)
-                    ? 1f : result.getSequence();
-                return doCreateSpEpisode(file, subjectId, group, seq, context);
-            });
+            .filter(obj -> true)
+            .filter(EpisodeSequenceRegularResult::isMatched)
+            .flatMap(res ->
+                doCreateSpEpisode(file, subjectId, res.getEpGroup(), res.getSequence(), context));
     }
 
     private Mono<Void> doCreateSpEpisode(Attachment file, UUID subjectId,
-                                          EpisodeGroup group,
-                                          float seq,
-                                          DirectoryBindingContext context) {
+                                         EpisodeGroup group,
+                                         float seq,
+                                         DirectoryBindingContext context) {
         Episode newEpisode = Episode.builder()
-            .id(UuidV7Utils.generateUuid())
             .subjectId(subjectId)
             .name(cleanFileName(file.getName()))
             .sequence(seq)
@@ -135,34 +132,6 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
             });
     }
 
-    private EpisodeGroup mapToEpisodeGroup(String dirName) {
-        if (dirName == null) {
-            return EpisodeGroup.OTHER;
-        }
-        String upper = dirName.toUpperCase();
-        if (upper.contains("OP")) {
-            return EpisodeGroup.OPENING_SONG;
-        }
-        if (upper.contains("ED")) {
-            return EpisodeGroup.ENDING_SONG;
-        }
-        if (upper.contains("OVA")) {
-            return EpisodeGroup.ORIGINAL_VIDEO_ANIMATION;
-        }
-        if (upper.contains("OAD")) {
-            return EpisodeGroup.ORIGINAL_ANIMATION_DISC;
-        }
-        if (upper.contains("PV") || upper.contains("PROMO")) {
-            return EpisodeGroup.PROMOTION_VIDEO;
-        }
-        if (upper.contains("CM")) {
-            return EpisodeGroup.COMMERCIAL_MESSAGE;
-        }
-        if (upper.contains("OST")) {
-            return EpisodeGroup.ORIGINAL_SOUND_TRACK;
-        }
-        return EpisodeGroup.SPECIAL_PROMOTION;
-    }
 
     private String cleanFileName(String name) {
         if (name == null) {

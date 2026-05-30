@@ -33,12 +33,6 @@ public class EpisodeSequenceRegularInitializer {
 
         return Flux.fromIterable(builtInRules)
             .flatMap(this::insertIfNotExists)
-            .doOnEach(signal -> {
-                if (signal.isOnNext() && signal.get() != null) {
-                    log.debug("Inserted built-in episode sequence regular rule: [{}] {}",
-                        signal.get().getName(), signal.get().getRegex());
-                }
-            })
             .then();
     }
 

@@ -513,7 +513,8 @@ const toAttachmentDrivers = () => {
 
 const bindDialogVisible = ref(false);
 const bindPlatform = ref('');
-const bindKeyword = ref('');
+const bindPlatformId = ref('');
+const bindSearchKeyword = ref('');
 const bindPlatformArr = ref<string[]>([]);
 
 const { pluginModules } = usePluginModuleStore();
@@ -553,7 +554,8 @@ const onBindDirectoryClick = async () => {
 	} else {
 		bindPlatform.value = '';
 	}
-	bindKeyword.value = '';
+	bindPlatformId.value = '';
+	bindSearchKeyword.value = '';
 	bindDialogVisible.value = true;
 };
 
@@ -562,7 +564,8 @@ const onBindDirectoryConfirm = async () => {
 		await apiClient.binding.bindDirectory({
 			directoryId: attachmentCondition.value.parentId,
 			platform: bindPlatform.value,
-			keyword: bindKeyword.value || undefined,
+			platformId: bindPlatformId.value || undefined,
+			keyword: bindSearchKeyword.value || undefined,
 		});
 		ElMessage.success(t('module.attachment.bind.success'));
 		bindDialogVisible.value = false;
@@ -673,8 +676,16 @@ const onAttachmentDetailDrawerClose = () => {
 				:label="t('module.attachment.bind.platformId.label')"
 			>
 				<el-input
-					v-model="bindKeyword"
+					v-model="bindPlatformId"
 					:placeholder="t('module.attachment.bind.platformId.placeholder')"
+				/>
+			</el-form-item>
+			<el-form-item
+				:label="t('module.attachment.bind.keyword.label')"
+			>
+				<el-input
+					v-model="bindSearchKeyword"
+					:placeholder="t('module.attachment.bind.keyword.placeholder')"
 				/>
 			</el-form-item>
 		</el-form>

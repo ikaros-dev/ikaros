@@ -87,7 +87,8 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
 
                         DirectoryBindingTask task = new DirectoryBindingTask(
                             taskEntity, taskRepository, savedWorkflow, workflowRepository,
-                            dirName, directoryId, platform, keyword, buildAllSteps());
+                            dirName, directoryId, platform, platformId, keyword,
+                            buildAllSteps());
 
                         return taskService.submit(task)
                             .then(workflowRepository.update(savedWorkflow));
@@ -134,6 +135,7 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
         private final String directoryName;
         private final UUID directoryId;
         private final SubjectSyncPlatform platform;
+        private final String platformId;
         private final String keyword;
         private final List<DirectoryBindingStep> steps;
 
@@ -141,17 +143,19 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
                              DirectoryBindingWorkflowEntity workflow,
                              DirectoryBindingWorkflowRepository workflowRepository,
                              String directoryName, UUID directoryId,
-                             SubjectSyncPlatform platform, String keyword,
-                             List<DirectoryBindingStep> steps) {
+                             SubjectSyncPlatform platform, String platformId,
+                             String keyword, List<DirectoryBindingStep> steps) {
             super(entity, repository);
             this.workflow = workflow;
             this.workflowRepository = workflowRepository;
             this.directoryName = directoryName;
             this.directoryId = directoryId;
             this.platform = platform;
+            this.platformId = platformId;
             this.keyword = keyword;
             this.steps = steps;
         }
+
 
         @Override
         protected String getTaskEntityName() {
@@ -167,6 +171,9 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
                 DirectoryBindingContext.create(directoryId, directoryName, platform);
             if (keyword != null && !keyword.isBlank()) {
                 context.setKeyword(keyword);
+            }
+            if (platformId != null && !platformId.isBlank()) {
+                context.setPlatformId(platformId);
             }
 
             getEntity().setTotal((long) steps.size());

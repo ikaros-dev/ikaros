@@ -112,7 +112,8 @@ class DirectoryBindingServiceImplTest {
             .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(
-                service.bindDirectory(directoryId, SubjectSyncPlatform.BGM_TV, "Custom Keyword", null))
+                service.bindDirectory(directoryId, SubjectSyncPlatform.BGM_TV,
+                    "Custom Keyword", null))
             .expectNextCount(1)
             .verifyComplete();
     }

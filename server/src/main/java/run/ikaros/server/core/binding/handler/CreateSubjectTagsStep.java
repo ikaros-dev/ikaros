@@ -45,18 +45,30 @@ public class CreateSubjectTagsStep implements DirectoryBindingStep {
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
         UUID subjectId = context.getSubjectId();
         return Flux.fromIterable(context.getBracketTags())
-            .concatMap(tagName -> {
-                Tag tag = Tag.builder()
-                    .type(TagType.SUBJECT)
-                    .masterId(subjectId)
-                    .name(tagName)
-                    .build();
-                return tagService.create(tag);
-            })
-            .doOnNext(tag -> {
-                context.getCreatedTags().add(tag);
-                log.info("Created subject tag: name={}, subjectId={}", tag.getName(), subjectId);
-            })
+            .concatMap(tagName ->
+                tagService.findAll(TagType.SUBJECT, subjectId, null, tagName)
+                    .next()
+                    .flatMap(existing -> {
+                        log.info("Tag [{}] already exists for subject [{}], skip",
+                            tagName, subjectId);
+                        return Mono.just(existing);
+                    })
+                    .switchIfEmpty(Mono.defer(() -> {
+                        Tag tag = Tag.builder()
+                            .type(TagType.SUBJECT)
+                            .masterId(subjectId)
+                            .name(tagName)
+                            .build();
+                        return tagService.create(tag)
+                            .doOnSuccess(t ->
+                                log.info("Created subject tag: name={}, subjectId={}",
+                                    t.getName(), subjectId));
+                    }))
+                    .doOnNext(t -> {
+                        context.getCreatedTags().add(t);
+                    })
+            )
+
             .then(Mono.just(context));
     }
 

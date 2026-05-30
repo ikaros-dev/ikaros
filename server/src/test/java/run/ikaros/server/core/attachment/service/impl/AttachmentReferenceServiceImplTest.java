@@ -20,6 +20,7 @@ import run.ikaros.api.core.attachment.AttachmentReference;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.server.core.attachment.event.AttachmentReferenceSaveEvent;
+import run.ikaros.server.core.episode.sequence.EpisodeSequenceRegularService;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
@@ -36,13 +37,16 @@ class AttachmentReferenceServiceImplTest {
     private EpisodeRepository episodeRepository;
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
+    @Mock
+    private EpisodeSequenceRegularService episodeSequenceRegularService;
     private AttachmentReferenceServiceImpl service;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         service = new AttachmentReferenceServiceImpl(
-            repository, attachmentRepository, episodeRepository, applicationEventPublisher);
+            repository, attachmentRepository, episodeRepository,
+            applicationEventPublisher, episodeSequenceRegularService);
     }
 
     @Test

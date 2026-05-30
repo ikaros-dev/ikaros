@@ -249,6 +249,9 @@ module:
       platformId:
         label: 平台ID
         placeholder: 请输入条目在所选平台的ID（可选）
+      keyword:
+        label: 搜索关键词
+        placeholder: 搜索关键词，覆盖目录名（可选）
       success: 目录绑定请求已提交，请查看任务状态
       error: 目录绑定请求失败
     popconfirm:

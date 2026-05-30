@@ -30,7 +30,8 @@ public class CleanDirectoryNameStep implements DirectoryBindingStep {
 
     @Override
     public boolean shouldSkip(DirectoryBindingContext context) {
-        return context.getCleanName() == null || context.getCleanName().isBlank();
+        return context.getCleanName() == null || context.getCleanName().isBlank()
+            || context.getSubjectId() != null;
     }
 
     @Override

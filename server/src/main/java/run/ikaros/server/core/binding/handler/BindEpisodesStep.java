@@ -1,5 +1,8 @@
 package run.ikaros.server.core.binding.handler;
 
+import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
+
+import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -68,11 +71,11 @@ public class BindEpisodesStep implements DirectoryBindingStep {
         UUID subjectId = context.getSubjectId();
         return Flux.fromIterable(context.getChildAttachments())
             .concatMap(attachment -> bindFileToEpisode(attachment, subjectId, context))
-            .then(Mono.just(context));
+            .last();
     }
 
-    private Mono<Void> bindFileToEpisode(Attachment attachment, UUID subjectId,
-                                         DirectoryBindingContext context) {
+    private Mono<DirectoryBindingContext> bindFileToEpisode(Attachment attachment, UUID subjectId,
+                                                            DirectoryBindingContext context) {
         return episodeSequenceRegularService.match(attachment.getName())
             .flatMap(result -> {
                 if (!result.isMatched() || result.getSequence() == null) {
@@ -84,17 +87,20 @@ public class BindEpisodesStep implements DirectoryBindingStep {
                 EpisodeGroup group = result.getEpGroup() != null
                     ? result.getEpGroup() : EpisodeGroup.MAIN;
                 return doBindFile(attachment, subjectId, seq, group, context);
-            });
+            })
+            .flatMap(episode -> Mono.just(context));
     }
 
-    private Mono<Void> doBindFile(Attachment attachment, UUID subjectId,
-                                   float seq, EpisodeGroup group,
-                                   DirectoryBindingContext context) {
+    private Mono<Episode> doBindFile(Attachment attachment, UUID subjectId,
+                                     float seq, EpisodeGroup group,
+                                     DirectoryBindingContext context) {
         return episodeRepository.findBySubjectIdAndGroupAndSequence(
                 subjectId, group, seq)
             .collectList()
             .filter(list -> !list.isEmpty())
-            .map(list -> list.get(0))
+            .map(List::getFirst)
+            .flatMap(e -> copyProperties(e, new Episode()))
+            .switchIfEmpty(createEpisodeAndBind(attachment, subjectId, seq, group, context))
             .flatMap(episodeEntity -> {
                 Episode episode = Episode.builder()
                     .id(episodeEntity.getId())
@@ -103,14 +109,14 @@ public class BindEpisodesStep implements DirectoryBindingStep {
                     .sequence(episodeEntity.getSequence())
                     .group(episodeEntity.getGroup())
                     .build();
-                return createRefAndRecord(attachment, episode, context);
-            })
-            .switchIfEmpty(createEpisodeAndBind(attachment, subjectId, seq, group, context));
+                return createRefAndRecord(attachment, episode, context)
+                    .flatMap(saved -> Mono.just(episode));
+            });
     }
 
-    private Mono<Void> createEpisodeAndBind(Attachment attachment, UUID subjectId,
-                                            float seq, EpisodeGroup group,
-                                            DirectoryBindingContext context) {
+    private Mono<Episode> createEpisodeAndBind(Attachment attachment, UUID subjectId,
+                                               float seq, EpisodeGroup group,
+                                               DirectoryBindingContext context) {
         Episode newEpisode = Episode.builder()
             .id(UuidV7Utils.generateUuid())
             .subjectId(subjectId)
@@ -125,38 +131,48 @@ public class BindEpisodesStep implements DirectoryBindingStep {
                 log.info("Created episode: name={}, seq={}, subjectId={}",
                     saved.getName(), saved.getSequence(), subjectId);
             })
-            .flatMap(saved -> createRefAndRecord(attachment, saved, context));
+            .flatMap(saved -> createRefAndRecord(attachment, saved, context))
+            .flatMap(saved -> Mono.just(newEpisode));
     }
 
-    private Mono<Void> createRefAndRecord(Attachment attachment, Episode episode,
-                                          DirectoryBindingContext context) {
-        AttachmentReferenceEntity ref = AttachmentReferenceEntity.builder()
-            .id(UuidV7Utils.generateUuid())
-            .type(AttachmentReferenceType.EPISODE)
-            .attachmentId(attachment.getId())
-            .referenceId(episode.getId())
-            .build();
-
-        return attachmentReferenceRepository.insert(ref)
-            .doOnNext(saved -> {
-                context.getCreatedAttachmentRefs().add(
-                    run.ikaros.api.core.attachment.AttachmentReference.builder()
-                        .id(saved.getId())
-                        .type(saved.getType())
-                        .attachmentId(saved.getAttachmentId())
-                        .referenceId(saved.getReferenceId())
-                        .build()
-                );
-                log.info("Bound file [{}] to episode seq [{}]",
+    private Mono<AttachmentReferenceEntity> createRefAndRecord(
+        Attachment attachment, Episode episode, DirectoryBindingContext context) {
+        return attachmentReferenceRepository
+            .findByTypeAndAttachmentIdAndReferenceId(
+                AttachmentReferenceType.EPISODE,
+                attachment.getId(), episode.getId())
+            .flatMap(existing -> {
+                log.info("File [{}] already bound to episode seq [{}], skip",
                     attachment.getName(), episode.getSequence());
-
-                eventPublisher.publishEvent(new EpisodeAttachmentUpdateEvent(
-                    this, episode.getId(), attachment.getId(), false));
-                log.debug("Published EpisodeAttachmentUpdateEvent "
-                        + "for episodeId={}, attachmentId={}",
-                    episode.getId(), attachment.getId());
+                return Mono.just(existing);
             })
-            .then();
+            .switchIfEmpty(Mono.just(AttachmentReferenceEntity.builder()
+                    .id(UuidV7Utils.generateUuid())
+                    .type(AttachmentReferenceType.EPISODE)
+                    .attachmentId(attachment.getId())
+                    .referenceId(episode.getId())
+                    .build())
+                .flatMap(attachmentReferenceRepository::insert)
+                .doOnNext(saved -> {
+                    context.getCreatedAttachmentRefs().add(
+                        run.ikaros.api.core.attachment.AttachmentReference.builder()
+                            .id(saved.getId())
+                            .type(saved.getType())
+                            .attachmentId(saved.getAttachmentId())
+                            .referenceId(saved.getReferenceId())
+                            .build()
+                    );
+                    log.info("Bound file [{}] to episode seq [{}]",
+                        attachment.getName(), episode.getSequence());
+
+                    eventPublisher.publishEvent(new EpisodeAttachmentUpdateEvent(
+                        this, episode.getId(), attachment.getId(), false));
+                    log.debug("Published EpisodeAttachmentUpdateEvent "
+                            + "for episodeId={}, attachmentId={}",
+                        episode.getId(), attachment.getId());
+                })
+
+            );
     }
 
     @Override

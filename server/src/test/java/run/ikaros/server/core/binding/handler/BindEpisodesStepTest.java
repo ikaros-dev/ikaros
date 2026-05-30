@@ -2,11 +2,13 @@ package run.ikaros.server.core.binding.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -17,11 +19,13 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.binding.DirectoryBindingContext;
+import run.ikaros.api.core.episode.EpisodeSequenceRegularResult;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.episode.EpisodeService;
+import run.ikaros.server.core.episode.sequence.EpisodeSequenceRegularService;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
@@ -36,6 +40,8 @@ class BindEpisodesStepTest {
     private AttachmentReferenceRepository attachmentReferenceRepository;
     @Mock
     private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private EpisodeSequenceRegularService episodeSequenceRegularService;
     private BindEpisodesStep step;
     private UUID subjectId;
     private UUID directoryId;
@@ -45,9 +51,21 @@ class BindEpisodesStepTest {
         MockitoAnnotations.openMocks(this);
         step = new BindEpisodesStep(
             episodeRepository, episodeService,
-            attachmentReferenceRepository, eventPublisher);
+            attachmentReferenceRepository, eventPublisher, episodeSequenceRegularService);
         subjectId = UUID.randomUUID();
         directoryId = UUID.randomUUID();
+
+        // findByTypeAndAttachmentIdAndReferenceId is called twice when creating a new episode:
+        // once in createEpisodeAndBind, once in doBindFile. Alternate empty / existing
+        // so the first call creates a ref and the second finds the existing one.
+        AtomicInteger findByTypeCallCount = new AtomicInteger(0);
+        AttachmentReferenceEntity dummyExistingRef = AttachmentReferenceEntity.builder()
+            .id(UUID.randomUUID()).type(AttachmentReferenceType.EPISODE)
+            .attachmentId(UUID.randomUUID()).referenceId(UUID.randomUUID()).build();
+        when(attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
+            any(), any(), any()))
+            .thenAnswer(inv -> findByTypeCallCount.incrementAndGet() % 2 == 1
+                ? Mono.empty() : Mono.just(dummyExistingRef));
     }
 
     @Test
@@ -56,6 +74,9 @@ class BindEpisodesStepTest {
         Attachment video = Attachment.builder()
             .id(UUID.randomUUID()).name("[01].mkv").build();
 
+        when(episodeSequenceRegularService.match(anyString()))
+            .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
+                .matched(true).sequence(1f).epGroup(EpisodeGroup.MAIN).build()));
         when(episodeRepository.findBySubjectIdAndGroupAndSequence(
             any(), any(), any()))
             .thenReturn(Flux.empty());
@@ -90,6 +111,9 @@ class BindEpisodesStepTest {
             .id(UUID.randomUUID()).subjectId(subjectId)
             .name("Episode 1").sequence(1f).group(EpisodeGroup.MAIN).build();
 
+        when(episodeSequenceRegularService.match(anyString()))
+            .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
+                .matched(true).sequence(1f).epGroup(EpisodeGroup.MAIN).build()));
         when(episodeRepository.findBySubjectIdAndGroupAndSequence(
             any(), any(), any()))
             .thenReturn(Flux.empty());
@@ -115,16 +139,35 @@ class BindEpisodesStepTest {
     void execute_skipsFileWithUnparseableSequence() {
         Attachment video = Attachment.builder()
             .id(UUID.randomUUID()).name("cover.jpg").build();
+        Attachment video2 = Attachment.builder()
+            .id(UUID.randomUUID()).name("[01].mkv").build();
+
+        when(episodeSequenceRegularService.match("cover.jpg"))
+            .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
+                .matched(false).build()));
+        when(episodeSequenceRegularService.match("[01].mkv"))
+            .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
+                .matched(true).sequence(1f).epGroup(EpisodeGroup.MAIN).build()));
+        when(episodeRepository.findBySubjectIdAndGroupAndSequence(
+            any(), any(), any()))
+            .thenReturn(Flux.empty());
+        when(episodeService.save(any(Episode.class)))
+            .thenReturn(Mono.just(Episode.builder()
+                .id(UUID.randomUUID()).subjectId(subjectId)
+                .name("Episode 1").sequence(1f).group(EpisodeGroup.MAIN).build()));
+        when(attachmentReferenceRepository.insert(any(AttachmentReferenceEntity.class)))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         DirectoryBindingContext context = DirectoryBindingContext.create(
             directoryId, "Test Anime", SubjectSyncPlatform.BGM_TV);
         context.setSubjectId(subjectId);
-        context.setChildAttachments(List.of(video));
+        context.setChildAttachments(List.of(video, video2));
 
         StepVerifier.create(step.execute(context))
             .assertNext(ctx -> {
-                assertThat(ctx.getCreatedEpisodes()).isEmpty();
-                assertThat(ctx.getCreatedAttachmentRefs()).isEmpty();
+                // Only the parseable file [01].mkv should produce an episode
+                assertThat(ctx.getCreatedEpisodes()).hasSize(1);
+                assertThat(ctx.getCreatedAttachmentRefs()).hasSize(1);
             })
             .verifyComplete();
     }
@@ -143,6 +186,12 @@ class BindEpisodesStepTest {
             .id(UUID.randomUUID()).subjectId(subjectId)
             .name("Episode 2").sequence(2f).group(EpisodeGroup.MAIN).build();
 
+        when(episodeSequenceRegularService.match("[01].mkv"))
+            .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
+                .matched(true).sequence(1f).epGroup(EpisodeGroup.MAIN).build()));
+        when(episodeSequenceRegularService.match("[02].mkv"))
+            .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
+                .matched(true).sequence(2f).epGroup(EpisodeGroup.MAIN).build()));
         // findAllBy returns empty, then save is called for each new episode
         when(episodeRepository.findBySubjectIdAndGroupAndSequence(
             any(), any(), any()))
