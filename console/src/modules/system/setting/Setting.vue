@@ -99,7 +99,7 @@ const getSettingFromServer = async () => {
 		name: settingConfigMapName,
 		metaName: 'data',
 	});
-	setting.value = data;
+	setting.value = data as unknown as typeof setting.value;
 };
 
 const settingSaveBtnLoading = ref(false);

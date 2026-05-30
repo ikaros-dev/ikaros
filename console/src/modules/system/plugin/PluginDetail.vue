@@ -101,7 +101,7 @@ const fetchPlugin = async () => {
 	plugin.value = data;
 };
 
-const configMap = ref<ConfigMap>();
+const configMap = ref<ConfigMap>({});
 
 const fetchConfigMap = async () => {
 	// console.log('plugin.value.configMapSchemas', plugin.value.configMapSchemas);
