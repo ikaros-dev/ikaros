@@ -13,7 +13,7 @@ import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.binding.DirectoryBindingContext;
 import run.ikaros.api.core.binding.DirectoryBindingStep;
 import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.infra.utils.RegexUtils;
+import run.ikaros.server.core.episode.sequence.EpisodeSequenceRegularService;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.AttachmentType;
@@ -35,13 +35,17 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
     private final AttachmentRepository attachmentRepository;
     private final EpisodeService episodeService;
     private final AttachmentReferenceRepository attachmentReferenceRepository;
+    private final EpisodeSequenceRegularService episodeSequenceRegularService;
 
     public ProcessSpSubdirectoriesStep(AttachmentRepository attachmentRepository,
                                         EpisodeService episodeService,
-                                        AttachmentReferenceRepository referenceRepository) {
+                                        AttachmentReferenceRepository referenceRepository,
+                                        EpisodeSequenceRegularService
+                                            episodeSequenceRegularService) {
         this.attachmentRepository = attachmentRepository;
         this.episodeService = episodeService;
         this.attachmentReferenceRepository = referenceRepository;
+        this.episodeSequenceRegularService = episodeSequenceRegularService;
     }
 
     @Override
@@ -83,9 +87,18 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
     private Mono<Void> createSpEpisodeAndBind(Attachment file, UUID subjectId,
                                                EpisodeGroup group,
                                                DirectoryBindingContext context) {
-        double seqDouble = RegexUtils.parseEpisodeSeqByFileName(file.getName());
-        float seq = seqDouble == -1 ? 1 : (float) seqDouble;
+        return episodeSequenceRegularService.match(file.getName())
+            .flatMap(result -> {
+                float seq = (!result.isMatched() || result.getSequence() == null)
+                    ? 1f : result.getSequence();
+                return doCreateSpEpisode(file, subjectId, group, seq, context);
+            });
+    }
 
+    private Mono<Void> doCreateSpEpisode(Attachment file, UUID subjectId,
+                                          EpisodeGroup group,
+                                          float seq,
+                                          DirectoryBindingContext context) {
         Episode newEpisode = Episode.builder()
             .id(UuidV7Utils.generateUuid())
             .subjectId(subjectId)

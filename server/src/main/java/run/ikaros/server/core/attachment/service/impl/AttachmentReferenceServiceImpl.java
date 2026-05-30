@@ -13,9 +13,8 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.AttachmentReference;
 import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.core.attachment.exception.AttachmentRefMatchingException;
-import run.ikaros.api.infra.exception.RegexMatchingException;
 import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
-import run.ikaros.api.infra.utils.RegexUtils;
+import run.ikaros.server.core.episode.sequence.EpisodeSequenceRegularService;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.EpisodeGroup;
@@ -36,6 +35,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     private final AttachmentRepository attachmentRepository;
     private final EpisodeRepository episodeRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final EpisodeSequenceRegularService episodeSequenceRegularService;
 
     /**
      * Construct.
@@ -43,11 +43,14 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
     public AttachmentReferenceServiceImpl(AttachmentReferenceRepository repository,
                                           AttachmentRepository attachmentRepository,
                                           EpisodeRepository episodeRepository,
-                                          ApplicationEventPublisher applicationEventPublisher) {
+                                          ApplicationEventPublisher applicationEventPublisher,
+                                          EpisodeSequenceRegularService
+                                              episodeSequenceRegularService) {
         this.repository = repository;
         this.attachmentRepository = attachmentRepository;
         this.episodeRepository = episodeRepository;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.episodeSequenceRegularService = episodeSequenceRegularService;
     }
 
 
@@ -136,38 +139,52 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
             .flatMap(attId -> attachmentRepository.findById(attId)
                 .switchIfEmpty(Mono.error(new AttachmentNotFoundException(
                     "Check fail, current attachment not found for id=" + attId))))
-            .flatMap(entity -> getSeqMono(entity.getName())
-                .flatMap(seq -> episodeRepository.findBySubjectIdAndGroupAndSequence(subjectId,
-                        group == null ? EpisodeGroup.MAIN : group, seq)
-                    .switchIfEmpty(Mono.error(new AttachmentRefMatchingException(
-                        "Matching fail, episode not fond by seq=" + seq
-                            + " and subjectId=" + subjectId
-                            + " and ep group=" + group)))
-                    .collectList().map(episodeEntities -> episodeEntities.get(0)))
-                .flatMap(episodeEntity -> repository
-                    .existsByTypeAndReferenceId(EPISODE, episodeEntity.getId())
-                    .filter(exists -> !exists)
-                    .flatMap(exists -> repository
-                        .insert(AttachmentReferenceEntity.builder()
-                            .id(UuidV7Utils.generateUuid())
-                            .type(EPISODE)
-                            .attachmentId(entity.getId())
-                            .referenceId(episodeEntity.getId())
-                            .build())
-                        .doOnSuccess(attachmentReferenceEntity -> {
-                            log.info("save episode file matching "
-                                    + "for attachment name:[{}] and episode seq:[{}] "
-                                    + "when subjectId=[{}].",
-                                entity.getName(), episodeEntity.getSequence(), subjectId);
-                            EpisodeAttachmentUpdateEvent event =
-                                new EpisodeAttachmentUpdateEvent(this,
-                                    episodeEntity.getId(),
-                                    entity.getId(), notify);
-                            applicationEventPublisher.publishEvent(event);
-                            log.debug("publish event EpisodeAttachmentUpdateEvent "
-                                + "for attachmentReferenceEntity: {}", attachmentReferenceEntity);
-                        }))
-                ))
+            .flatMap(entity ->
+                episodeSequenceRegularService.match(entity.getName())
+                    .flatMap(result -> {
+                        if (!result.isMatched() || result.getSequence() == null) {
+                            return Mono.<run.ikaros.server.store.entity.EpisodeEntity>error(
+                                new AttachmentRefMatchingException(
+                                    "Matching fail, cannot parse episode seq from file: "
+                                        + entity.getName()));
+                        }
+                        float seq = result.getSequence();
+                        EpisodeGroup targetGroup = group != null ? group
+                            : (result.getEpGroup() != null ? result.getEpGroup()
+                                : EpisodeGroup.MAIN);
+                        return episodeRepository
+                            .findBySubjectIdAndGroupAndSequence(subjectId, targetGroup, seq)
+                            .switchIfEmpty(Mono.error(new AttachmentRefMatchingException(
+                                "Matching fail, episode not found by seq=" + seq
+                                    + " and subjectId=" + subjectId
+                                    + " and ep group=" + targetGroup)))
+                            .collectList().map(list -> list.get(0));
+                    })
+                    .flatMap(episodeEntity -> repository
+                        .existsByTypeAndReferenceId(EPISODE, episodeEntity.getId())
+                        .filter(exists -> !exists)
+                        .flatMap(exists -> repository
+                            .insert(AttachmentReferenceEntity.builder()
+                                .id(UuidV7Utils.generateUuid())
+                                .type(EPISODE)
+                                .attachmentId(entity.getId())
+                                .referenceId(episodeEntity.getId())
+                                .build())
+                            .doOnSuccess(attachmentReferenceEntity -> {
+                                log.info("save episode file matching "
+                                        + "for attachment name:[{}] and episode seq:[{}] "
+                                        + "when subjectId=[{}].",
+                                    entity.getName(), episodeEntity.getSequence(), subjectId);
+                                EpisodeAttachmentUpdateEvent event =
+                                    new EpisodeAttachmentUpdateEvent(this,
+                                        episodeEntity.getId(),
+                                        entity.getId(), notify);
+                                applicationEventPublisher.publishEvent(event);
+                                log.debug("publish event EpisodeAttachmentUpdateEvent "
+                                    + "for attachmentReferenceEntity: {}",
+                                    attachmentReferenceEntity);
+                            }))
+                    ))
             .then();
     }
 
@@ -213,22 +230,6 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
             .then();
     }
 
-    private static Mono<Float> getSeqMono(String name) {
-        Float seq;
-        try {
-            seq = Float.parseFloat(String.valueOf(RegexUtils.parseEpisodeSeqByFileName(name)));
-            if (-1 == seq) {
-                throw new RegexMatchingException("Matching fail");
-            }
-        } catch (RegexMatchingException regexMatchingException) {
-            log.warn("parse episode seq by file name fail", regexMatchingException);
-            return Mono.error(new AttachmentRefMatchingException(
-                "Matching fail, current attachment name seq illegal, "
-                    + "please rename you attachment name such as '[0x]' or ' 0x '",
-                regexMatchingException));
-        }
-        return Mono.justOrEmpty(seq);
-    }
 
 
     private Mono<AttachmentReference> checkAttachmentRef(AttachmentReference attachmentReference) {

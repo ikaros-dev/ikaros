@@ -9,9 +9,10 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.binding.DirectoryBindingContext;
 import run.ikaros.api.core.binding.DirectoryBindingStep;
+import run.ikaros.api.core.episode.EpisodeSequenceRegularResult;
 import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.infra.utils.RegexUtils;
 import run.ikaros.api.infra.utils.UuidV7Utils;
+import run.ikaros.server.core.episode.sequence.EpisodeSequenceRegularService;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.core.attachment.event.EpisodeAttachmentUpdateEvent;
@@ -33,15 +34,18 @@ public class BindEpisodesStep implements DirectoryBindingStep {
     private final EpisodeService episodeService;
     private final AttachmentReferenceRepository attachmentReferenceRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final EpisodeSequenceRegularService episodeSequenceRegularService;
 
     public BindEpisodesStep(EpisodeRepository episodeRepository,
                             EpisodeService episodeService,
                             AttachmentReferenceRepository attachmentReferenceRepository,
-                            ApplicationEventPublisher eventPublisher) {
+                            ApplicationEventPublisher eventPublisher,
+                            EpisodeSequenceRegularService episodeSequenceRegularService) {
         this.episodeRepository = episodeRepository;
         this.episodeService = episodeService;
         this.attachmentReferenceRepository = attachmentReferenceRepository;
         this.eventPublisher = eventPublisher;
+        this.episodeSequenceRegularService = episodeSequenceRegularService;
     }
 
     @Override
@@ -70,15 +74,25 @@ public class BindEpisodesStep implements DirectoryBindingStep {
 
     private Mono<Void> bindFileToEpisode(Attachment attachment, UUID subjectId,
                                          DirectoryBindingContext context) {
-        double seqDouble = RegexUtils.parseEpisodeSeqByFileName(attachment.getName());
-        if (seqDouble == -1) {
-            log.warn("Cannot parse episode sequence from file: {}", attachment.getName());
-            return Mono.empty();
-        }
-        float seq = (float) seqDouble;
+        return episodeSequenceRegularService.match(attachment.getName())
+            .flatMap(result -> {
+                if (!result.isMatched() || result.getSequence() == null) {
+                    log.warn("Cannot parse episode sequence from file: {}",
+                        attachment.getName());
+                    return Mono.<Void>empty();
+                }
+                float seq = result.getSequence();
+                EpisodeGroup group = result.getEpGroup() != null
+                    ? result.getEpGroup() : EpisodeGroup.MAIN;
+                return doBindFile(attachment, subjectId, seq, group, context);
+            });
+    }
 
+    private Mono<Void> doBindFile(Attachment attachment, UUID subjectId,
+                                   float seq, EpisodeGroup group,
+                                   DirectoryBindingContext context) {
         return episodeRepository.findBySubjectIdAndGroupAndSequence(
-                subjectId, EpisodeGroup.MAIN, seq)
+                subjectId, group, seq)
             .collectList()
             .filter(list -> !list.isEmpty())
             .map(list -> list.get(0))
@@ -92,17 +106,18 @@ public class BindEpisodesStep implements DirectoryBindingStep {
                     .build();
                 return createRefAndRecord(attachment, episode, context);
             })
-            .switchIfEmpty(createEpisodeAndBind(attachment, subjectId, seq, context));
+            .switchIfEmpty(createEpisodeAndBind(attachment, subjectId, seq, group, context));
     }
 
     private Mono<Void> createEpisodeAndBind(Attachment attachment, UUID subjectId,
-                                            float seq, DirectoryBindingContext context) {
+                                            float seq, EpisodeGroup group,
+                                            DirectoryBindingContext context) {
         Episode newEpisode = Episode.builder()
             .id(UuidV7Utils.generateUuid())
             .subjectId(subjectId)
             .name("Episode " + (int) seq)
             .sequence(seq)
-            .group(EpisodeGroup.MAIN)
+            .group(group)
             .build();
 
         return episodeService.save(newEpisode)
