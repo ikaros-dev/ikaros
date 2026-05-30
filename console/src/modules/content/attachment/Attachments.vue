@@ -5,6 +5,8 @@ import { Attachment, AttachmentTypeEnum } from '@runikaros/api-client';
 import { isImage, isVideo, isVoice } from '@/utils/file';
 import moment from 'moment';
 import { apiClient } from '@/utils/api-client';
+import { usePluginModuleStore } from '@/stores/plugin';
+import { PluginModule } from '@runikaros/shared';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import AttachmentDeatilDrawer from './AttachmentDeatilDrawer.vue';
 import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
@@ -35,6 +37,7 @@ import {
 	Download,
 	Refresh,
 	MostlyCloudy,
+	Link,
 } from '@element-plus/icons-vue';
 import {
 	ElRow,
@@ -53,6 +56,8 @@ import {
 	ElMessage,
 	ElPopconfirm,
 	ElMessageBox,
+	ElOption,
+	ElSelect,
 } from 'element-plus';
 import router from '@/router';
 import { getCompleteFileUrl } from '@/utils/url-tuils';
@@ -506,6 +511,70 @@ const toAttachmentDrivers = () => {
 	router.push('/attachment/drivers');
 };
 
+const bindDialogVisible = ref(false);
+const bindPlatform = ref('');
+const bindPlatformId = ref('');
+const bindSearchKeyword = ref('');
+const bindPlatformArr = ref<string[]>([]);
+
+const { pluginModules } = usePluginModuleStore();
+
+onMounted(() => {
+	pluginModules.forEach((pluginModule: PluginModule) => {
+		const { extensionPoints } = pluginModule;
+		if (!extensionPoints?.['subject:sync:platform']) {
+			return;
+		}
+		const subjectPlatform = extensionPoints[
+			'subject:sync:platform'
+		] as unknown as string;
+		if (subjectPlatform) {
+			bindPlatformArr.value.push(subjectPlatform);
+		}
+	});
+});
+
+const onBindDirectoryClick = async () => {
+	try {
+		await ElMessageBox.confirm(
+			t('module.attachment.bind.confirm.content'),
+			t('module.attachment.bind.confirm.title'),
+			{
+				confirmButtonText: t('module.attachment.bind.confirm.btn.confirm'),
+				cancelButtonText: t('module.attachment.bind.confirm.btn.cancel'),
+				type: 'info',
+			}
+		);
+	} catch {
+		return;
+	}
+
+	if (bindPlatformArr.value.length == 1) {
+		bindPlatform.value = bindPlatformArr.value[0];
+	} else {
+		bindPlatform.value = '';
+	}
+	bindPlatformId.value = '';
+	bindSearchKeyword.value = '';
+	bindDialogVisible.value = true;
+};
+
+const onBindDirectoryConfirm = async () => {
+	try {
+		await apiClient.binding.bindDirectory({
+			directoryId: attachmentCondition.value.parentId,
+			platform: bindPlatform.value,
+			platformId: bindPlatformId.value || undefined,
+			keyword: bindSearchKeyword.value || undefined,
+		});
+		ElMessage.success(t('module.attachment.bind.success'));
+		bindDialogVisible.value = false;
+	} catch (e) {
+		console.error('bind directory error', e);
+		ElMessage.error(t('module.attachment.bind.error'));
+	}
+};
+
 watch(
 	() => route.query,
 	(newValue) => {
@@ -585,6 +654,60 @@ const onAttachmentDetailDrawerClose = () => {
 		@close-with-target-dir-id="onDirSelected"
 	/>
 
+	<el-dialog
+		v-model="bindDialogVisible"
+		:title="t('module.attachment.bind.confirm.title')"
+		width="400px"
+	>
+		<el-form v-if="bindPlatformArr.length > 0">
+			<el-form-item
+				:label="t('module.attachment.bind.platform.title')"
+			>
+				<el-select v-model="bindPlatform">
+					<el-option
+						v-for="platform in bindPlatformArr"
+						:key="platform"
+						:label="platform"
+						:value="platform"
+					/>
+				</el-select>
+			</el-form-item>
+			<el-form-item
+				:label="t('module.attachment.bind.platformId.label')"
+			>
+				<el-input
+					v-model="bindPlatformId"
+					:placeholder="t('module.attachment.bind.platformId.placeholder')"
+				/>
+			</el-form-item>
+			<el-form-item
+				:label="t('module.attachment.bind.keyword.label')"
+			>
+				<el-input
+					v-model="bindSearchKeyword"
+					:placeholder="t('module.attachment.bind.keyword.placeholder')"
+				/>
+			</el-form-item>
+		</el-form>
+		<span v-else>
+			{{ t('module.subject.dialog.sync.text.platform-no-available-hint-msg') }}
+		</span>
+		<template #footer>
+			<span>
+				<el-button @click="bindDialogVisible = false">
+					{{ t('module.attachment.bind.confirm.btn.cancel') }}
+				</el-button>
+				<el-button
+					type="primary"
+					:disabled="bindPlatformArr.length === 0"
+					@click="onBindDirectoryConfirm"
+				>
+					{{ t('module.attachment.bind.confirm.btn.confirm') }}
+				</el-button>
+			</span>
+		</template>
+	</el-dialog>
+
 	<el-row>
 		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
 			<el-button
@@ -612,6 +735,9 @@ const onAttachmentDetailDrawerClose = () => {
 			</el-button>
 			<el-button :icon="MostlyCloudy" @click="toAttachmentDrivers">
 				{{ t('module.attachment.btn.driver') }}
+			</el-button>
+			<el-button :icon="Link" @click="onBindDirectoryClick">
+				{{ t('module.attachment.btn.bind') }}
 			</el-button>
 
 			<el-button

@@ -44,7 +44,7 @@ import { Tag } from "../models";
  * @export
  */
 export const V1TagApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -55,7 +55,7 @@ export const V1TagApiAxiosParamCreator = function (
      */
     createTag: async (
       tag?: Tag,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/tag`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -94,7 +94,7 @@ export const V1TagApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         tag,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -110,18 +110,18 @@ export const V1TagApiAxiosParamCreator = function (
      */
     listAttachmentTagsByAttachmentId: async (
       attachmentId: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'attachmentId' is not null or undefined
       assertParamExists(
         "listAttachmentTagsByAttachmentId",
         "attachmentId",
-        attachmentId
+        attachmentId,
       );
       const localVarPath =
         `/api/v1/tags/attachment/attachmentId/{attachmentId}`.replace(
           `{${"attachmentId"}}`,
-          encodeURIComponent(String(attachmentId))
+          encodeURIComponent(String(attachmentId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -168,13 +168,13 @@ export const V1TagApiAxiosParamCreator = function (
      */
     listSubjectTagsBySubjectId: async (
       subjectId: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists("listSubjectTagsBySubjectId", "subjectId", subjectId);
       const localVarPath = `/api/v1/tags/subject/subjectId/{subjectId}`.replace(
         `{${"subjectId"}}`,
-        encodeURIComponent(String(subjectId))
+        encodeURIComponent(String(subjectId)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -227,7 +227,7 @@ export const V1TagApiAxiosParamCreator = function (
       masterId?: any,
       userId?: any,
       name?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/tags/condition`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -295,7 +295,7 @@ export const V1TagApiAxiosParamCreator = function (
       type?: any,
       masterId?: any,
       name?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/tag/condition`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -355,13 +355,13 @@ export const V1TagApiAxiosParamCreator = function (
      */
     removeTagById: async (
       id: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("removeTagById", "id", id);
       const localVarPath = `/api/v1/tag/id/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -418,19 +418,19 @@ export const V1TagApiFp = function (configuration?: Configuration) {
      */
     async createTag(
       tag?: Tag,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Tag>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.createTag(
         tag,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -441,20 +441,20 @@ export const V1TagApiFp = function (configuration?: Configuration) {
      */
     async listAttachmentTagsByAttachmentId(
       attachmentId: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.listAttachmentTagsByAttachmentId(
           attachmentId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -465,20 +465,20 @@ export const V1TagApiFp = function (configuration?: Configuration) {
      */
     async listSubjectTagsBySubjectId(
       subjectId: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.listSubjectTagsBySubjectId(
           subjectId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -495,7 +495,7 @@ export const V1TagApiFp = function (configuration?: Configuration) {
       masterId?: any,
       userId?: any,
       name?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -505,13 +505,13 @@ export const V1TagApiFp = function (configuration?: Configuration) {
           masterId,
           userId,
           name,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -526,7 +526,7 @@ export const V1TagApiFp = function (configuration?: Configuration) {
       type?: any,
       masterId?: any,
       name?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -535,13 +535,13 @@ export const V1TagApiFp = function (configuration?: Configuration) {
           type,
           masterId,
           name,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -552,19 +552,19 @@ export const V1TagApiFp = function (configuration?: Configuration) {
      */
     async removeTagById(
       id: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.removeTagById(
         id,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -577,7 +577,7 @@ export const V1TagApiFp = function (configuration?: Configuration) {
 export const V1TagApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1TagApiFp(configuration);
   return {
@@ -589,7 +589,7 @@ export const V1TagApiFactory = function (
      */
     createTag(
       requestParameters: V1TagApiCreateTagRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Tag> {
       return localVarFp
         .createTag(requestParameters.tag, options)
@@ -603,12 +603,12 @@ export const V1TagApiFactory = function (
      */
     listAttachmentTagsByAttachmentId(
       requestParameters: V1TagApiListAttachmentTagsByAttachmentIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .listAttachmentTagsByAttachmentId(
           requestParameters.attachmentId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -620,7 +620,7 @@ export const V1TagApiFactory = function (
      */
     listSubjectTagsBySubjectId(
       requestParameters: V1TagApiListSubjectTagsBySubjectIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .listSubjectTagsBySubjectId(requestParameters.subjectId, options)
@@ -634,7 +634,7 @@ export const V1TagApiFactory = function (
      */
     listTagsByCondition(
       requestParameters: V1TagApiListTagsByConditionRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .listTagsByCondition(
@@ -642,7 +642,7 @@ export const V1TagApiFactory = function (
           requestParameters.masterId,
           requestParameters.userId,
           requestParameters.name,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -654,14 +654,14 @@ export const V1TagApiFactory = function (
      */
     removeTagByCondition(
       requestParameters: V1TagApiRemoveTagByConditionRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .removeTagByCondition(
           requestParameters.type,
           requestParameters.masterId,
           requestParameters.name,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -673,7 +673,7 @@ export const V1TagApiFactory = function (
      */
     removeTagById(
       requestParameters: V1TagApiRemoveTagByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .removeTagById(requestParameters.id, options)
@@ -817,7 +817,7 @@ export class V1TagApi extends BaseAPI {
    */
   public createTag(
     requestParameters: V1TagApiCreateTagRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1TagApiFp(this.configuration)
       .createTag(requestParameters.tag, options)
@@ -833,7 +833,7 @@ export class V1TagApi extends BaseAPI {
    */
   public listAttachmentTagsByAttachmentId(
     requestParameters: V1TagApiListAttachmentTagsByAttachmentIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1TagApiFp(this.configuration)
       .listAttachmentTagsByAttachmentId(requestParameters.attachmentId, options)
@@ -849,7 +849,7 @@ export class V1TagApi extends BaseAPI {
    */
   public listSubjectTagsBySubjectId(
     requestParameters: V1TagApiListSubjectTagsBySubjectIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1TagApiFp(this.configuration)
       .listSubjectTagsBySubjectId(requestParameters.subjectId, options)
@@ -865,7 +865,7 @@ export class V1TagApi extends BaseAPI {
    */
   public listTagsByCondition(
     requestParameters: V1TagApiListTagsByConditionRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1TagApiFp(this.configuration)
       .listTagsByCondition(
@@ -873,7 +873,7 @@ export class V1TagApi extends BaseAPI {
         requestParameters.masterId,
         requestParameters.userId,
         requestParameters.name,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -887,14 +887,14 @@ export class V1TagApi extends BaseAPI {
    */
   public removeTagByCondition(
     requestParameters: V1TagApiRemoveTagByConditionRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1TagApiFp(this.configuration)
       .removeTagByCondition(
         requestParameters.type,
         requestParameters.masterId,
         requestParameters.name,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -908,7 +908,7 @@ export class V1TagApi extends BaseAPI {
    */
   public removeTagById(
     requestParameters: V1TagApiRemoveTagByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1TagApiFp(this.configuration)
       .removeTagById(requestParameters.id, options)

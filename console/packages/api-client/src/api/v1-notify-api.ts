@@ -42,7 +42,7 @@ import {
  * @export
  */
 export const V1NotifyApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -51,7 +51,7 @@ export const V1NotifyApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     testMailSend: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/notify/mail/test`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -107,18 +107,17 @@ export const V1NotifyApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async testMailSend(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.testMailSend(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.testMailSend(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -131,7 +130,7 @@ export const V1NotifyApiFp = function (configuration?: Configuration) {
 export const V1NotifyApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1NotifyApiFp(configuration);
   return {

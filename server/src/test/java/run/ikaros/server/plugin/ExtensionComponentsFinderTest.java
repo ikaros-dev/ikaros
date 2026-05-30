@@ -6,15 +6,15 @@ import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.pf4j.ExtensionPoint;
 import org.springframework.context.ApplicationContext;
+import run.ikaros.api.plugin.IkarosExtensionPoint;
 
 class ExtensionComponentsFinderTest {
 
     static class NotExtensionPoint {
     }
 
-    static class UnitTestExtensionPoint implements ExtensionPoint {
+    static class UnitTestExtensionPoint implements IkarosExtensionPoint {
     }
 
     @Test
@@ -25,7 +25,7 @@ class ExtensionComponentsFinderTest {
             new ExtensionComponentsFinder(ikarosPluginManager, applicationContext);
         Assertions.assertThatExceptionOfType(IllegalArgumentException.class)
             .isThrownBy(() -> extensionComponentsFinder.getExtensions(NotExtensionPoint.class))
-            .withMessage("The type must be a subclass of ExtensionPoint");
+            .withMessage("The type must be a subclass of IkarosExtensionPoint");
     }
 
     @Test

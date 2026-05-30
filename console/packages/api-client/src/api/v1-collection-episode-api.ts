@@ -44,7 +44,7 @@ import { EpisodeCollection } from "../models";
  * @export
  */
 export const V1CollectionEpisodeApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -55,13 +55,13 @@ export const V1CollectionEpisodeApiAxiosParamCreator = function (
      */
     deleteCollectionEpisode: async (
       episodeId: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'episodeId' is not null or undefined
       assertParamExists("deleteCollectionEpisode", "episodeId", episodeId);
       const localVarPath = `/api/v1/collection/episode/{episodeId}`.replace(
         `{${"episodeId"}}`,
-        encodeURIComponent(String(episodeId))
+        encodeURIComponent(String(episodeId)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -108,13 +108,13 @@ export const V1CollectionEpisodeApiAxiosParamCreator = function (
      */
     findCollectionEpisode: async (
       episodeId: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'episodeId' is not null or undefined
       assertParamExists("findCollectionEpisode", "episodeId", episodeId);
       const localVarPath = `/api/v1/collection/episode/{episodeId}`.replace(
         `{${"episodeId"}}`,
-        encodeURIComponent(String(episodeId))
+        encodeURIComponent(String(episodeId)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -161,18 +161,18 @@ export const V1CollectionEpisodeApiAxiosParamCreator = function (
      */
     findCollectionEpisodesByUserIdAndSubjectId: async (
       subjectId: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists(
         "findCollectionEpisodesByUserIdAndSubjectId",
         "subjectId",
-        subjectId
+        subjectId,
       );
       const localVarPath =
         `/api/v1/collection/episodes/subjectId/{subjectId}`.replace(
           `{${"subjectId"}}`,
-          encodeURIComponent(String(subjectId))
+          encodeURIComponent(String(subjectId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -219,13 +219,13 @@ export const V1CollectionEpisodeApiAxiosParamCreator = function (
      */
     saveCollectionEpisode: async (
       episodeId: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'episodeId' is not null or undefined
       assertParamExists("saveCollectionEpisode", "episodeId", episodeId);
       const localVarPath = `/api/v1/collection/episode/{episodeId}`.replace(
         `{${"episodeId"}}`,
-        encodeURIComponent(String(episodeId))
+        encodeURIComponent(String(episodeId)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -276,7 +276,7 @@ export const V1CollectionEpisodeApiAxiosParamCreator = function (
       episodeId: any,
       progress: any,
       duration?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'episodeId' is not null or undefined
       assertParamExists("updateCollectionEpisode", "episodeId", episodeId);
@@ -284,7 +284,7 @@ export const V1CollectionEpisodeApiAxiosParamCreator = function (
       assertParamExists("updateCollectionEpisode", "progress", progress);
       const localVarPath = `/api/v1/collection/episode/{episodeId}`.replace(
         `{${"episodeId"}}`,
-        encodeURIComponent(String(episodeId))
+        encodeURIComponent(String(episodeId)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -341,13 +341,13 @@ export const V1CollectionEpisodeApiAxiosParamCreator = function (
     updateCollectionEpisodeFinish: async (
       episodeId: any,
       finish: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'episodeId' is not null or undefined
       assertParamExists(
         "updateCollectionEpisodeFinish",
         "episodeId",
-        episodeId
+        episodeId,
       );
       // verify required parameter 'finish' is not null or undefined
       assertParamExists("updateCollectionEpisodeFinish", "finish", finish);
@@ -400,7 +400,7 @@ export const V1CollectionEpisodeApiAxiosParamCreator = function (
  * @export
  */
 export const V1CollectionEpisodeApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     V1CollectionEpisodeApiAxiosParamCreator(configuration);
@@ -413,23 +413,23 @@ export const V1CollectionEpisodeApiFp = function (
      */
     async deleteCollectionEpisode(
       episodeId: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<EpisodeCollection>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.deleteCollectionEpisode(
           episodeId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -440,23 +440,23 @@ export const V1CollectionEpisodeApiFp = function (
      */
     async findCollectionEpisode(
       episodeId: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<EpisodeCollection>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.findCollectionEpisode(
           episodeId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -467,20 +467,20 @@ export const V1CollectionEpisodeApiFp = function (
      */
     async findCollectionEpisodesByUserIdAndSubjectId(
       subjectId: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.findCollectionEpisodesByUserIdAndSubjectId(
           subjectId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -491,23 +491,23 @@ export const V1CollectionEpisodeApiFp = function (
      */
     async saveCollectionEpisode(
       episodeId: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (
         axios?: AxiosInstance,
-        basePath?: string
+        basePath?: string,
       ) => AxiosPromise<EpisodeCollection>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.saveCollectionEpisode(
           episodeId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -522,7 +522,7 @@ export const V1CollectionEpisodeApiFp = function (
       episodeId: any,
       progress: any,
       duration?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -531,13 +531,13 @@ export const V1CollectionEpisodeApiFp = function (
           episodeId,
           progress,
           duration,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -550,7 +550,7 @@ export const V1CollectionEpisodeApiFp = function (
     async updateCollectionEpisodeFinish(
       episodeId: any,
       finish: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -558,13 +558,13 @@ export const V1CollectionEpisodeApiFp = function (
         await localVarAxiosParamCreator.updateCollectionEpisodeFinish(
           episodeId,
           finish,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -577,7 +577,7 @@ export const V1CollectionEpisodeApiFp = function (
 export const V1CollectionEpisodeApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1CollectionEpisodeApiFp(configuration);
   return {
@@ -589,7 +589,7 @@ export const V1CollectionEpisodeApiFactory = function (
      */
     deleteCollectionEpisode(
       requestParameters: V1CollectionEpisodeApiDeleteCollectionEpisodeRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<EpisodeCollection> {
       return localVarFp
         .deleteCollectionEpisode(requestParameters.episodeId, options)
@@ -603,7 +603,7 @@ export const V1CollectionEpisodeApiFactory = function (
      */
     findCollectionEpisode(
       requestParameters: V1CollectionEpisodeApiFindCollectionEpisodeRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<EpisodeCollection> {
       return localVarFp
         .findCollectionEpisode(requestParameters.episodeId, options)
@@ -617,12 +617,12 @@ export const V1CollectionEpisodeApiFactory = function (
      */
     findCollectionEpisodesByUserIdAndSubjectId(
       requestParameters: V1CollectionEpisodeApiFindCollectionEpisodesByUserIdAndSubjectIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .findCollectionEpisodesByUserIdAndSubjectId(
           requestParameters.subjectId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -634,7 +634,7 @@ export const V1CollectionEpisodeApiFactory = function (
      */
     saveCollectionEpisode(
       requestParameters: V1CollectionEpisodeApiSaveCollectionEpisodeRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<EpisodeCollection> {
       return localVarFp
         .saveCollectionEpisode(requestParameters.episodeId, options)
@@ -648,14 +648,14 @@ export const V1CollectionEpisodeApiFactory = function (
      */
     updateCollectionEpisode(
       requestParameters: V1CollectionEpisodeApiUpdateCollectionEpisodeRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .updateCollectionEpisode(
           requestParameters.episodeId,
           requestParameters.progress,
           requestParameters.duration,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -667,13 +667,13 @@ export const V1CollectionEpisodeApiFactory = function (
      */
     updateCollectionEpisodeFinish(
       requestParameters: V1CollectionEpisodeApiUpdateCollectionEpisodeFinishRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .updateCollectionEpisodeFinish(
           requestParameters.episodeId,
           requestParameters.finish,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -801,7 +801,7 @@ export class V1CollectionEpisodeApi extends BaseAPI {
    */
   public deleteCollectionEpisode(
     requestParameters: V1CollectionEpisodeApiDeleteCollectionEpisodeRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1CollectionEpisodeApiFp(this.configuration)
       .deleteCollectionEpisode(requestParameters.episodeId, options)
@@ -817,7 +817,7 @@ export class V1CollectionEpisodeApi extends BaseAPI {
    */
   public findCollectionEpisode(
     requestParameters: V1CollectionEpisodeApiFindCollectionEpisodeRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1CollectionEpisodeApiFp(this.configuration)
       .findCollectionEpisode(requestParameters.episodeId, options)
@@ -833,12 +833,12 @@ export class V1CollectionEpisodeApi extends BaseAPI {
    */
   public findCollectionEpisodesByUserIdAndSubjectId(
     requestParameters: V1CollectionEpisodeApiFindCollectionEpisodesByUserIdAndSubjectIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1CollectionEpisodeApiFp(this.configuration)
       .findCollectionEpisodesByUserIdAndSubjectId(
         requestParameters.subjectId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -852,7 +852,7 @@ export class V1CollectionEpisodeApi extends BaseAPI {
    */
   public saveCollectionEpisode(
     requestParameters: V1CollectionEpisodeApiSaveCollectionEpisodeRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1CollectionEpisodeApiFp(this.configuration)
       .saveCollectionEpisode(requestParameters.episodeId, options)
@@ -868,14 +868,14 @@ export class V1CollectionEpisodeApi extends BaseAPI {
    */
   public updateCollectionEpisode(
     requestParameters: V1CollectionEpisodeApiUpdateCollectionEpisodeRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1CollectionEpisodeApiFp(this.configuration)
       .updateCollectionEpisode(
         requestParameters.episodeId,
         requestParameters.progress,
         requestParameters.duration,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -889,13 +889,13 @@ export class V1CollectionEpisodeApi extends BaseAPI {
    */
   public updateCollectionEpisodeFinish(
     requestParameters: V1CollectionEpisodeApiUpdateCollectionEpisodeFinishRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1CollectionEpisodeApiFp(this.configuration)
       .updateCollectionEpisodeFinish(
         requestParameters.episodeId,
         requestParameters.finish,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

@@ -44,7 +44,7 @@ import { SubjectHints } from "../models";
  * @export
  */
 export const V1IndicesApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -53,7 +53,7 @@ export const V1IndicesApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     buildSubjectIndices: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/indices/subject`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -107,7 +107,7 @@ export const V1IndicesApiAxiosParamCreator = function (
       limit?: any,
       highlightPostTag?: any,
       highlightPreTag?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'keyword' is not null or undefined
       assertParamExists("searchSubject", "keyword", keyword);
@@ -182,7 +182,7 @@ export const V1IndicesApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async buildSubjectIndices(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -192,7 +192,7 @@ export const V1IndicesApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -209,7 +209,7 @@ export const V1IndicesApiFp = function (configuration?: Configuration) {
       limit?: any,
       highlightPostTag?: any,
       highlightPreTag?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubjectHints>
     > {
@@ -218,13 +218,13 @@ export const V1IndicesApiFp = function (configuration?: Configuration) {
         limit,
         highlightPostTag,
         highlightPreTag,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -237,7 +237,7 @@ export const V1IndicesApiFp = function (configuration?: Configuration) {
 export const V1IndicesApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1IndicesApiFp(configuration);
   return {
@@ -259,7 +259,7 @@ export const V1IndicesApiFactory = function (
      */
     searchSubject(
       requestParameters: V1IndicesApiSearchSubjectRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<SubjectHints> {
       return localVarFp
         .searchSubject(
@@ -267,7 +267,7 @@ export const V1IndicesApiFactory = function (
           requestParameters.limit,
           requestParameters.highlightPostTag,
           requestParameters.highlightPreTag,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -337,7 +337,7 @@ export class V1IndicesApi extends BaseAPI {
    */
   public searchSubject(
     requestParameters: V1IndicesApiSearchSubjectRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1IndicesApiFp(this.configuration)
       .searchSubject(
@@ -345,7 +345,7 @@ export class V1IndicesApi extends BaseAPI {
         requestParameters.limit,
         requestParameters.highlightPostTag,
         requestParameters.highlightPreTag,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

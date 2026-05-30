@@ -44,7 +44,7 @@ import { Subject } from "../models";
  * @export
  */
 export const V1SubjectSyncApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,19 +57,19 @@ export const V1SubjectSyncApiAxiosParamCreator = function (
     getSubjectSyncsByPlatformAndPlatformId: async (
       platform: any,
       platformId: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'platform' is not null or undefined
       assertParamExists(
         "getSubjectSyncsByPlatformAndPlatformId",
         "platform",
-        platform
+        platform,
       );
       // verify required parameter 'platformId' is not null or undefined
       assertParamExists(
         "getSubjectSyncsByPlatformAndPlatformId",
         "platformId",
-        platformId
+        platformId,
       );
       const localVarPath = `/api/v1/subject/syncs/platform`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -125,13 +125,13 @@ export const V1SubjectSyncApiAxiosParamCreator = function (
      */
     getSubjectSyncsBySubjectId: async (
       id: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getSubjectSyncsBySubjectId", "id", id);
       const localVarPath = `/api/v1/subject/syncs/subjectId/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -182,7 +182,7 @@ export const V1SubjectSyncApiAxiosParamCreator = function (
       platform: any,
       platformId: any,
       subjectId?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'platform' is not null or undefined
       assertParamExists("syncSubjectAndPlatform", "platform", platform);
@@ -259,7 +259,7 @@ export const V1SubjectSyncApiFp = function (configuration?: Configuration) {
     async getSubjectSyncsByPlatformAndPlatformId(
       platform: any,
       platformId: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -267,13 +267,13 @@ export const V1SubjectSyncApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.getSubjectSyncsByPlatformAndPlatformId(
           platform,
           platformId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -284,7 +284,7 @@ export const V1SubjectSyncApiFp = function (configuration?: Configuration) {
      */
     async getSubjectSyncsBySubjectId(
       id: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -294,7 +294,7 @@ export const V1SubjectSyncApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -309,7 +309,7 @@ export const V1SubjectSyncApiFp = function (configuration?: Configuration) {
       platform: any,
       platformId: any,
       subjectId?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Subject>
     > {
@@ -318,13 +318,13 @@ export const V1SubjectSyncApiFp = function (configuration?: Configuration) {
           platform,
           platformId,
           subjectId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -337,7 +337,7 @@ export const V1SubjectSyncApiFp = function (configuration?: Configuration) {
 export const V1SubjectSyncApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1SubjectSyncApiFp(configuration);
   return {
@@ -349,13 +349,13 @@ export const V1SubjectSyncApiFactory = function (
      */
     getSubjectSyncsByPlatformAndPlatformId(
       requestParameters: V1SubjectSyncApiGetSubjectSyncsByPlatformAndPlatformIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .getSubjectSyncsByPlatformAndPlatformId(
           requestParameters.platform,
           requestParameters.platformId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -367,7 +367,7 @@ export const V1SubjectSyncApiFactory = function (
      */
     getSubjectSyncsBySubjectId(
       requestParameters: V1SubjectSyncApiGetSubjectSyncsBySubjectIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .getSubjectSyncsBySubjectId(requestParameters.id, options)
@@ -381,14 +381,14 @@ export const V1SubjectSyncApiFactory = function (
      */
     syncSubjectAndPlatform(
       requestParameters: V1SubjectSyncApiSyncSubjectAndPlatformRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Subject> {
       return localVarFp
         .syncSubjectAndPlatform(
           requestParameters.platform,
           requestParameters.platformId,
           requestParameters.subjectId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -474,13 +474,13 @@ export class V1SubjectSyncApi extends BaseAPI {
    */
   public getSubjectSyncsByPlatformAndPlatformId(
     requestParameters: V1SubjectSyncApiGetSubjectSyncsByPlatformAndPlatformIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1SubjectSyncApiFp(this.configuration)
       .getSubjectSyncsByPlatformAndPlatformId(
         requestParameters.platform,
         requestParameters.platformId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -494,7 +494,7 @@ export class V1SubjectSyncApi extends BaseAPI {
    */
   public getSubjectSyncsBySubjectId(
     requestParameters: V1SubjectSyncApiGetSubjectSyncsBySubjectIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1SubjectSyncApiFp(this.configuration)
       .getSubjectSyncsBySubjectId(requestParameters.id, options)
@@ -510,14 +510,14 @@ export class V1SubjectSyncApi extends BaseAPI {
    */
   public syncSubjectAndPlatform(
     requestParameters: V1SubjectSyncApiSyncSubjectAndPlatformRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1SubjectSyncApiFp(this.configuration)
       .syncSubjectAndPlatform(
         requestParameters.platform,
         requestParameters.platformId,
         requestParameters.subjectId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

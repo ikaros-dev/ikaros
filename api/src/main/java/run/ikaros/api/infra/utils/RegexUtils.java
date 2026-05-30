@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,22 +41,21 @@ public class RegexUtils {
         if ("[]".equalsIgnoreCase(fileName)) {
             return List.of();
         }
-        List<String> stringList = new ArrayList<>();
-        Matcher tagMatcher = Pattern.compile(RegexConst.FILE_NAME_TAG).matcher(fileName);
-        while (tagMatcher.find()) {
-            stringList.add(tagMatcher.group());
-        }
-        return stringList.stream()
-            .map(postfix -> postfix.replace("[", "")
-                .replace("]", ""))
-            .filter(tag -> {
-                String seqStr = String.valueOf(getFileNameTagEpSeq(fileName));
-                if (seqStr.length() == 1) {
-                    seqStr = "0" + seqStr;
+        List<String> tags = new ArrayList<>();
+        Matcher matcher = Pattern.compile("\\[([^\\[\\]]+)\\]").matcher(fileName);
+        while (matcher.find()) {
+            String content = matcher.group(1);
+            if (content.contains("&")) {
+                for (String part : content.split("&")) {
+                    if (!part.trim().isEmpty()) {
+                        tags.add(part.trim());
+                    }
                 }
-                return !tag.equalsIgnoreCase(seqStr);
-            })
-            .collect(Collectors.toList());
+            } else {
+                tags.add(content);
+            }
+        }
+        return tags;
     }
 
     /**

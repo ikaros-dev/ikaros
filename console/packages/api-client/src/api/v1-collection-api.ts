@@ -44,7 +44,7 @@ import { PagingWrap } from "../models";
  * @export
  */
 export const V1CollectionApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -65,7 +65,7 @@ export const V1CollectionApiAxiosParamCreator = function (
       size?: any,
       time?: any,
       updateTimeDesc?: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/collections/condition`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -137,13 +137,13 @@ export const V1CollectionApiAxiosParamCreator = function (
      */
     getTypeBySubjectId: async (
       id: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getTypeBySubjectId", "id", id);
       const localVarPath = `/api/v1/collection/type/subjectId/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -211,7 +211,7 @@ export const V1CollectionApiFp = function (configuration?: Configuration) {
       size?: any,
       time?: any,
       updateTimeDesc?: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -223,13 +223,13 @@ export const V1CollectionApiFp = function (configuration?: Configuration) {
           size,
           time,
           updateTimeDesc,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -240,7 +240,7 @@ export const V1CollectionApiFp = function (configuration?: Configuration) {
      */
     async getTypeBySubjectId(
       id: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -250,7 +250,7 @@ export const V1CollectionApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -263,7 +263,7 @@ export const V1CollectionApiFp = function (configuration?: Configuration) {
 export const V1CollectionApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1CollectionApiFp(configuration);
   return {
@@ -275,7 +275,7 @@ export const V1CollectionApiFactory = function (
      */
     getCollectionsWithCondition(
       requestParameters: V1CollectionApiGetCollectionsWithConditionRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .getCollectionsWithCondition(
@@ -285,7 +285,7 @@ export const V1CollectionApiFactory = function (
           requestParameters.size,
           requestParameters.time,
           requestParameters.updateTimeDesc,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -297,7 +297,7 @@ export const V1CollectionApiFactory = function (
      */
     getTypeBySubjectId(
       requestParameters: V1CollectionApiGetTypeBySubjectIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .getTypeBySubjectId(requestParameters.id, options)
@@ -385,7 +385,7 @@ export class V1CollectionApi extends BaseAPI {
    */
   public getCollectionsWithCondition(
     requestParameters: V1CollectionApiGetCollectionsWithConditionRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1CollectionApiFp(this.configuration)
       .getCollectionsWithCondition(
@@ -395,7 +395,7 @@ export class V1CollectionApi extends BaseAPI {
         requestParameters.size,
         requestParameters.time,
         requestParameters.updateTimeDesc,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -409,7 +409,7 @@ export class V1CollectionApi extends BaseAPI {
    */
   public getTypeBySubjectId(
     requestParameters: V1CollectionApiGetTypeBySubjectIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1CollectionApiFp(this.configuration)
       .getTypeBySubjectId(requestParameters.id, options)

@@ -99,7 +99,6 @@ const getSettingFromServer = async () => {
 		name: settingConfigMapName,
 		metaName: 'data',
 	});
-	// @ts-expect-error
 	setting.value = data;
 };
 

@@ -1,9 +1,9 @@
 package run.ikaros.api.core.meta;
 
-import org.pf4j.ExtensionPoint;
 import reactor.core.publisher.Flux;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.plugin.IkarosExtensionPoint;
 
-public interface DelegateMetaService extends ExtensionPoint {
+public interface DelegateMetaService extends IkarosExtensionPoint {
     Flux<Subject> findAll(String keyword);
 }

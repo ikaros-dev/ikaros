@@ -16,6 +16,10 @@ common:
   button:
     confirm: Confirm
     cancel: Cancel
+    submit: Submit
+    edit: Edit
+    delete: Delete
+    detail: Detail
 router:
   title:
     notfound: NotFound
@@ -234,10 +238,30 @@ module:
           cancel: Cancel
     btn:
       upload: Upload
-      mkdir: Crate
+      mkdir: Create
       move_atts: Batch move
       refresh: Refresh
       driver: Driver
+      bind: Bind Directory
+    bind:
+      confirm:
+        content: Are you sure you want to auto-create subjects and bind episodes for the current directory?
+        title: Directory Binding
+        btn:
+          confirm: Confirm Bind
+          cancel: Cancel
+      platform:
+        prompt: Please input search platform
+        placeholder: 'BGM_TV / TMDB / AniDB / TVDB / VNDB / DOU_BAN / OTHER'
+        title: Search Platform
+      platformId:
+        label: Platform ID
+        placeholder: Enter the subject ID on the selected platform (optional)
+      keyword:
+        label: Search Keyword
+        placeholder: Search keyword, overrides directory name (optional)
+      success: Directory bind request submitted, please check the task status
+      error: Directory bind request failed
     popconfirm:
       title: Are you sure to delete attachments in bulk?
       btn: Batch delete
@@ -343,6 +367,82 @@ module:
           button:
             subject:
               update: Update
+  regular:
+    title: Episode Regex Rules
+    sidebar: Regex
+    page:
+      title: Attachment Name Regex Rules
+    add: Add Rule
+    match:
+      button: Test Match
+      title: Test Filename Matching
+      placeholder: Enter attachment filename to test matching
+      submit: Match
+      failed: Match request failed
+      result:
+        matched: Matched
+        ruleName: Rule Name
+        regex: Regex
+        epGroup: Episode Group
+        sequence: Sequence
+    enable:
+      success: Rule "{name}" enabled
+    disable:
+      success: Rule "{name}" disabled
+    delete:
+      confirm:
+        title: Confirm Delete
+        message: Are you sure you want to delete rule "{name}"?
+    success:
+      delete: Rule "{name}" has been deleted
+    table:
+      column:
+        name: Name
+        regex: Regex Pattern
+        epGroup: Episode Group
+        sequence: Sequence
+        priority: Priority
+        description: Description
+        enabled: Enabled
+        actions: Actions
+    dialog:
+      title:
+        create: Create Regex Rule
+        edit: Edit Regex Rule
+      label:
+        name: Name
+        regex: Regex Pattern
+        epGroup: Episode Group
+        sequence: Sequence (Override)
+        priority: Priority
+        description: Description
+        enabled: Enabled
+      placeholder:
+        name: Enter rule name
+        regex: Enter regex pattern
+        sequence: Leave empty to parse from filename
+        description: Enter description (optional)
+      hint:
+        regex: Java regex to match attachment filenames, e.g. .*NCED.*
+        sequence: If empty, sequence will be parsed from the filename on match
+      form-rule:
+        name:
+          required: Rule name is required
+        regex:
+          required: Regex pattern is required
+        epGroup:
+          required: Please select an episode group
+        priority:
+          required: Priority is required
+      message:
+        create-success: Rule "{name}" created successfully
+        update-success: Rule "{name}" updated successfully
+    detail:
+      title: Regex Rule Details
+      noData: No data
+      label:
+        createTime: Created At
+        updateTime: Updated At
   subject:
     title: Subjects
     sidebar: Subjects

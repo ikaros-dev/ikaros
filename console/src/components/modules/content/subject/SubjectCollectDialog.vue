@@ -62,7 +62,7 @@ const onSubjectCollectionSubmit = async () => {
 	<el-dialog v-model="dialogVisible" title="条目收藏盒子" width="30%">
 		<el-radio-group v-model="collectType">
 			<el-radio-button
-				v-for="type in Object.values(SubjectCollectionTypeEnum)"
+				v-for="type in (Object.values(SubjectCollectionTypeEnum) as string[])"
 				:key="type"
 				:label="type"
 				border

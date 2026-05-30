@@ -16,6 +16,10 @@ common:
   button:
     confirm: 确认
     cancel: 返回
+    submit: 提交
+    edit: 编辑
+    delete: 删除
+    detail: 详细
 router:
   title:
     notfound: 没有找到
@@ -230,6 +234,26 @@ module:
       move_atts: 批量移动
       refresh: 刷新
       driver: 驱动
+      bind: 绑定目录
+    bind:
+      confirm:
+        content: 确定要根据当前目录自动创建条目并绑定剧集吗？
+        title: 目录绑定
+        btn:
+          confirm: 确认绑定
+          cancel: 取消
+      platform:
+        prompt: 请输入搜索平台
+        placeholder: 'BGM_TV / TMDB / AniDB / TVDB / VNDB / DOU_BAN / OTHER'
+        title: 搜索平台
+      platformId:
+        label: 平台ID
+        placeholder: 请输入条目在所选平台的ID（可选）
+      keyword:
+        label: 搜索关键词
+        placeholder: 搜索关键词，覆盖目录名（可选）
+      success: 目录绑定请求已提交，请查看任务状态
+      error: 目录绑定请求失败
     popconfirm:
       title: 您确定批量删除附件吗？
       btn: 批量删除
@@ -330,6 +354,82 @@ module:
           button:
             subject:
               update: 更新
+  regular:
+    title: 剧集序号正则
+    sidebar: 正则
+    page:
+      title: 附件名序号匹配正则管理
+    add: 新增规则
+    match:
+      button: 测试匹配
+      title: 测试文件名匹配
+      placeholder: 输入附件文件名进行匹配测试
+      submit: 匹配
+      failed: 匹配请求失败
+      result:
+        matched: 是否匹配
+        ruleName: 匹配规则
+        regex: 匹配正则
+        epGroup: 剧集分组
+        sequence: 集序号
+    enable:
+      success: 已启用规则「{name}」
+    disable:
+      success: 已禁用规则「{name}」
+    delete:
+      confirm:
+        title: 删除确认
+        message: 确定要删除规则「{name}」吗？
+    success:
+      delete: 已删除规则「{name}」
+    table:
+      column:
+        name: 名称
+        regex: 正则表达式
+        epGroup: 剧集分组
+        sequence: 序号
+        priority: 优先级
+        description: 描述
+        enabled: 启用
+        actions: 操作
+    dialog:
+      title:
+        create: 新增正则规则
+        edit: 编辑正则规则
+      label:
+        name: 名称
+        regex: 正则表达式
+        epGroup: 剧集分组
+        sequence: 序号（覆盖）
+        priority: 优先级
+        description: 描述
+        enabled: 启用
+      placeholder:
+        name: 输入规则名称
+        regex: 输入正则表达式
+        sequence: 留空则从文件名解析
+        description: 输入描述（可选）
+      hint:
+        regex: 匹配附件文件名的 Java 正则表达式，如 .*NCED.*
+        sequence: 如果留空，匹配时会尝试从文件名中解析序号
+      form-rule:
+        name:
+          required: 规则名称不能为空
+        regex:
+          required: 正则表达式不能为空
+        epGroup:
+          required: 请选择剧集分组
+        priority:
+          required: 优先级不能为空
+      message:
+        create-success: 新增规则「{name}」成功
+        update-success: 更新规则「{name}」成功
+    detail:
+      title: 正则规则详情
+      noData: 暂无数据
+      label:
+        createTime: 创建时间
+        updateTime: 更新时间
   subject:
     title: 条目
     sidebar: 条目

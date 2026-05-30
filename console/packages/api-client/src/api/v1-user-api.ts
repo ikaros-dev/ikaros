@@ -48,7 +48,7 @@ import { User } from "../models";
  * @export
  */
 export const V1UserApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -61,7 +61,7 @@ export const V1UserApiAxiosParamCreator = function (
     changeUserRole: async (
       username: any,
       roleId: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'username' is not null or undefined
       assertParamExists("changeUserRole", "username", username);
@@ -69,7 +69,7 @@ export const V1UserApiAxiosParamCreator = function (
       assertParamExists("changeUserRole", "roleId", roleId);
       const localVarPath = `/api/v1/user/{username}/role`.replace(
         `{${"username"}}`,
-        encodeURIComponent(String(username))
+        encodeURIComponent(String(username)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -120,13 +120,13 @@ export const V1UserApiAxiosParamCreator = function (
      */
     deleteById1: async (
       id: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("deleteById1", "id", id);
       const localVarPath = `/api/v1/user/id/{id}`.replace(
         `{${"id"}}`,
-        encodeURIComponent(String(id))
+        encodeURIComponent(String(id)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -173,13 +173,13 @@ export const V1UserApiAxiosParamCreator = function (
      */
     existUserByEmail: async (
       email: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'email' is not null or undefined
       assertParamExists("existUserByEmail", "email", email);
       const localVarPath = `/api/v1/user/email/exists/{email}`.replace(
         `{${"email"}}`,
-        encodeURIComponent(String(email))
+        encodeURIComponent(String(email)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -226,13 +226,13 @@ export const V1UserApiAxiosParamCreator = function (
      */
     existUserByUsername: async (
       username: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'username' is not null or undefined
       assertParamExists("existUserByUsername", "username", username);
       const localVarPath = `/api/v1/user/username/exists/{username}`.replace(
         `{${"username"}}`,
-        encodeURIComponent(String(username))
+        encodeURIComponent(String(username)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -277,7 +277,7 @@ export const V1UserApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     getUsers: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/api/v1/users`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -325,7 +325,7 @@ export const V1UserApiAxiosParamCreator = function (
      */
     postUser: async (
       createUserReqParams: CreateUserReqParams,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'createUserReqParams' is not null or undefined
       assertParamExists("postUser", "createUserReqParams", createUserReqParams);
@@ -366,7 +366,7 @@ export const V1UserApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         createUserReqParams,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -382,7 +382,7 @@ export const V1UserApiAxiosParamCreator = function (
      */
     updateUser: async (
       updateUserRequest: UpdateUserRequest,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'updateUserRequest' is not null or undefined
       assertParamExists("updateUser", "updateUserRequest", updateUserRequest);
@@ -423,7 +423,7 @@ export const V1UserApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         updateUserRequest,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -451,20 +451,20 @@ export const V1UserApiFp = function (configuration?: Configuration) {
     async changeUserRole(
       username: any,
       roleId: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.changeUserRole(
         username,
         roleId,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -475,19 +475,19 @@ export const V1UserApiFp = function (configuration?: Configuration) {
      */
     async deleteById1(
       id: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.deleteById1(
         id,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -498,7 +498,7 @@ export const V1UserApiFp = function (configuration?: Configuration) {
      */
     async existUserByEmail(
       email: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -508,7 +508,7 @@ export const V1UserApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -519,7 +519,7 @@ export const V1UserApiFp = function (configuration?: Configuration) {
      */
     async existUserByUsername(
       username: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
@@ -529,7 +529,7 @@ export const V1UserApiFp = function (configuration?: Configuration) {
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -538,18 +538,17 @@ export const V1UserApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     async getUsers(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.getUsers(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.getUsers(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -560,19 +559,19 @@ export const V1UserApiFp = function (configuration?: Configuration) {
      */
     async postUser(
       createUserReqParams: CreateUserReqParams,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<User>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.postUser(
         createUserReqParams,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -583,19 +582,19 @@ export const V1UserApiFp = function (configuration?: Configuration) {
      */
     async updateUser(
       updateUserRequest: UpdateUserRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<User>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.updateUser(
         updateUserRequest,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -608,7 +607,7 @@ export const V1UserApiFp = function (configuration?: Configuration) {
 export const V1UserApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1UserApiFp(configuration);
   return {
@@ -620,13 +619,13 @@ export const V1UserApiFactory = function (
      */
     changeUserRole(
       requestParameters: V1UserApiChangeUserRoleRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .changeUserRole(
           requestParameters.username,
           requestParameters.roleId,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -638,7 +637,7 @@ export const V1UserApiFactory = function (
      */
     deleteById1(
       requestParameters: V1UserApiDeleteById1Request,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deleteById1(requestParameters.id, options)
@@ -652,7 +651,7 @@ export const V1UserApiFactory = function (
      */
     existUserByEmail(
       requestParameters: V1UserApiExistUserByEmailRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .existUserByEmail(requestParameters.email, options)
@@ -666,7 +665,7 @@ export const V1UserApiFactory = function (
      */
     existUserByUsername(
       requestParameters: V1UserApiExistUserByUsernameRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .existUserByUsername(requestParameters.username, options)
@@ -690,7 +689,7 @@ export const V1UserApiFactory = function (
      */
     postUser(
       requestParameters: V1UserApiPostUserRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<User> {
       return localVarFp
         .postUser(requestParameters.createUserReqParams, options)
@@ -704,7 +703,7 @@ export const V1UserApiFactory = function (
      */
     updateUser(
       requestParameters: V1UserApiUpdateUserRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<User> {
       return localVarFp
         .updateUser(requestParameters.updateUserRequest, options)
@@ -820,13 +819,13 @@ export class V1UserApi extends BaseAPI {
    */
   public changeUserRole(
     requestParameters: V1UserApiChangeUserRoleRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1UserApiFp(this.configuration)
       .changeUserRole(
         requestParameters.username,
         requestParameters.roleId,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -840,7 +839,7 @@ export class V1UserApi extends BaseAPI {
    */
   public deleteById1(
     requestParameters: V1UserApiDeleteById1Request,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1UserApiFp(this.configuration)
       .deleteById1(requestParameters.id, options)
@@ -856,7 +855,7 @@ export class V1UserApi extends BaseAPI {
    */
   public existUserByEmail(
     requestParameters: V1UserApiExistUserByEmailRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1UserApiFp(this.configuration)
       .existUserByEmail(requestParameters.email, options)
@@ -872,7 +871,7 @@ export class V1UserApi extends BaseAPI {
    */
   public existUserByUsername(
     requestParameters: V1UserApiExistUserByUsernameRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1UserApiFp(this.configuration)
       .existUserByUsername(requestParameters.username, options)
@@ -900,7 +899,7 @@ export class V1UserApi extends BaseAPI {
    */
   public postUser(
     requestParameters: V1UserApiPostUserRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1UserApiFp(this.configuration)
       .postUser(requestParameters.createUserReqParams, options)
@@ -916,7 +915,7 @@ export class V1UserApi extends BaseAPI {
    */
   public updateUser(
     requestParameters: V1UserApiUpdateUserRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1UserApiFp(this.configuration)
       .updateUser(requestParameters.updateUserRequest, options)

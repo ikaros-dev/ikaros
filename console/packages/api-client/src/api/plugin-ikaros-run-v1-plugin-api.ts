@@ -46,7 +46,7 @@ import { Plugin } from "../models";
  * @export
  */
 export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -57,7 +57,7 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
      */
     createPlugin: async (
       plugin?: Plugin,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/apis/plugin.ikaros.run/v1/plugin`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -96,7 +96,7 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         plugin,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -112,13 +112,13 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
      */
     deletePlugin: async (
       name: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("deletePlugin", "name", name);
       const localVarPath = `/apis/plugin.ikaros.run/v1/plugin/{name}`.replace(
         `{${"name"}}`,
-        encodeURIComponent(String(name))
+        encodeURIComponent(String(name)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -165,13 +165,13 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
      */
     getPlugin: async (
       name: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("getPlugin", "name", name);
       const localVarPath = `/apis/plugin.ikaros.run/v1/plugin/{name}`.replace(
         `{${"name"}}`,
-        encodeURIComponent(String(name))
+        encodeURIComponent(String(name)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -220,7 +220,7 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
     getPluginMeta: async (
       name: any,
       metaName: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("getPluginMeta", "name", name);
@@ -276,7 +276,7 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
     getPluginsByPaging: async (
       page: any,
       size: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'page' is not null or undefined
       assertParamExists("getPluginsByPaging", "page", page);
@@ -328,7 +328,7 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
      * @throws {RequiredError}
      */
     listPlugins: async (
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/apis/plugin.ikaros.run/v1/plugins`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -376,7 +376,7 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
      */
     updatePlugin: async (
       plugin?: Plugin,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/apis/plugin.ikaros.run/v1/plugin`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -415,7 +415,7 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         plugin,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -435,7 +435,7 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
       name: any,
       metaName: any,
       body: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'name' is not null or undefined
       assertParamExists("updatePluginMeta", "name", name);
@@ -482,7 +482,7 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         body,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -498,7 +498,7 @@ export const PluginIkarosRunV1PluginApiAxiosParamCreator = function (
  * @export
  */
 export const PluginIkarosRunV1PluginApiFp = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   const localVarAxiosParamCreator =
     PluginIkarosRunV1PluginApiAxiosParamCreator(configuration);
@@ -511,19 +511,19 @@ export const PluginIkarosRunV1PluginApiFp = function (
      */
     async createPlugin(
       plugin?: Plugin,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.createPlugin(
         plugin,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -534,19 +534,19 @@ export const PluginIkarosRunV1PluginApiFp = function (
      */
     async deletePlugin(
       name: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.deletePlugin(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -557,19 +557,19 @@ export const PluginIkarosRunV1PluginApiFp = function (
      */
     async getPlugin(
       name: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getPlugin(
         name,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -582,20 +582,20 @@ export const PluginIkarosRunV1PluginApiFp = function (
     async getPluginMeta(
       name: any,
       metaName: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.getPluginMeta(
         name,
         metaName,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -608,7 +608,7 @@ export const PluginIkarosRunV1PluginApiFp = function (
     async getPluginsByPaging(
       page: any,
       size: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagingWrap>
     > {
@@ -618,7 +618,7 @@ export const PluginIkarosRunV1PluginApiFp = function (
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -627,18 +627,17 @@ export const PluginIkarosRunV1PluginApiFp = function (
      * @throws {RequiredError}
      */
     async listPlugins(
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.listPlugins(
-        options
-      );
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listPlugins(options);
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -649,19 +648,19 @@ export const PluginIkarosRunV1PluginApiFp = function (
      */
     async updatePlugin(
       plugin?: Plugin,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
     > {
       const localVarAxiosArgs = await localVarAxiosParamCreator.updatePlugin(
         plugin,
-        options
+        options,
       );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -676,7 +675,7 @@ export const PluginIkarosRunV1PluginApiFp = function (
       name: any,
       metaName: any,
       body: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<Plugin>
     > {
@@ -685,13 +684,13 @@ export const PluginIkarosRunV1PluginApiFp = function (
           name,
           metaName,
           body,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -704,7 +703,7 @@ export const PluginIkarosRunV1PluginApiFp = function (
 export const PluginIkarosRunV1PluginApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = PluginIkarosRunV1PluginApiFp(configuration);
   return {
@@ -716,7 +715,7 @@ export const PluginIkarosRunV1PluginApiFactory = function (
      */
     createPlugin(
       requestParameters: PluginIkarosRunV1PluginApiCreatePluginRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Plugin> {
       return localVarFp
         .createPlugin(requestParameters.plugin, options)
@@ -730,7 +729,7 @@ export const PluginIkarosRunV1PluginApiFactory = function (
      */
     deletePlugin(
       requestParameters: PluginIkarosRunV1PluginApiDeletePluginRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .deletePlugin(requestParameters.name, options)
@@ -744,7 +743,7 @@ export const PluginIkarosRunV1PluginApiFactory = function (
      */
     getPlugin(
       requestParameters: PluginIkarosRunV1PluginApiGetPluginRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Plugin> {
       return localVarFp
         .getPlugin(requestParameters.name, options)
@@ -758,13 +757,13 @@ export const PluginIkarosRunV1PluginApiFactory = function (
      */
     getPluginMeta(
       requestParameters: PluginIkarosRunV1PluginApiGetPluginMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .getPluginMeta(
           requestParameters.name,
           requestParameters.metaName,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -776,13 +775,13 @@ export const PluginIkarosRunV1PluginApiFactory = function (
      */
     getPluginsByPaging(
       requestParameters: PluginIkarosRunV1PluginApiGetPluginsByPagingRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<PagingWrap> {
       return localVarFp
         .getPluginsByPaging(
           requestParameters.page,
           requestParameters.size,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -804,7 +803,7 @@ export const PluginIkarosRunV1PluginApiFactory = function (
      */
     updatePlugin(
       requestParameters: PluginIkarosRunV1PluginApiUpdatePluginRequest = {},
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Plugin> {
       return localVarFp
         .updatePlugin(requestParameters.plugin, options)
@@ -818,14 +817,14 @@ export const PluginIkarosRunV1PluginApiFactory = function (
      */
     updatePluginMeta(
       requestParameters: PluginIkarosRunV1PluginApiUpdatePluginMetaRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<Plugin> {
       return localVarFp
         .updatePluginMeta(
           requestParameters.name,
           requestParameters.metaName,
           requestParameters.body,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -974,7 +973,7 @@ export class PluginIkarosRunV1PluginApi extends BaseAPI {
    */
   public createPlugin(
     requestParameters: PluginIkarosRunV1PluginApiCreatePluginRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return PluginIkarosRunV1PluginApiFp(this.configuration)
       .createPlugin(requestParameters.plugin, options)
@@ -990,7 +989,7 @@ export class PluginIkarosRunV1PluginApi extends BaseAPI {
    */
   public deletePlugin(
     requestParameters: PluginIkarosRunV1PluginApiDeletePluginRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return PluginIkarosRunV1PluginApiFp(this.configuration)
       .deletePlugin(requestParameters.name, options)
@@ -1006,7 +1005,7 @@ export class PluginIkarosRunV1PluginApi extends BaseAPI {
    */
   public getPlugin(
     requestParameters: PluginIkarosRunV1PluginApiGetPluginRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return PluginIkarosRunV1PluginApiFp(this.configuration)
       .getPlugin(requestParameters.name, options)
@@ -1022,13 +1021,13 @@ export class PluginIkarosRunV1PluginApi extends BaseAPI {
    */
   public getPluginMeta(
     requestParameters: PluginIkarosRunV1PluginApiGetPluginMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return PluginIkarosRunV1PluginApiFp(this.configuration)
       .getPluginMeta(
         requestParameters.name,
         requestParameters.metaName,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1042,13 +1041,13 @@ export class PluginIkarosRunV1PluginApi extends BaseAPI {
    */
   public getPluginsByPaging(
     requestParameters: PluginIkarosRunV1PluginApiGetPluginsByPagingRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return PluginIkarosRunV1PluginApiFp(this.configuration)
       .getPluginsByPaging(
         requestParameters.page,
         requestParameters.size,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -1074,7 +1073,7 @@ export class PluginIkarosRunV1PluginApi extends BaseAPI {
    */
   public updatePlugin(
     requestParameters: PluginIkarosRunV1PluginApiUpdatePluginRequest = {},
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return PluginIkarosRunV1PluginApiFp(this.configuration)
       .updatePlugin(requestParameters.plugin, options)
@@ -1090,14 +1089,14 @@ export class PluginIkarosRunV1PluginApi extends BaseAPI {
    */
   public updatePluginMeta(
     requestParameters: PluginIkarosRunV1PluginApiUpdatePluginMetaRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return PluginIkarosRunV1PluginApiFp(this.configuration)
       .updatePluginMeta(
         requestParameters.name,
         requestParameters.metaName,
         requestParameters.body,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }

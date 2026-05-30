@@ -10,6 +10,7 @@ import {
 	V1AttachmentReferenceApi,
 	V1AttachmentRelationApi,
 	V1AuthorityApi,
+	V1BindingApi,
 	V1CollectionEpisodeApi,
 	V1CollectionSubjectApi,
 	V1EpisodeApi,
@@ -183,6 +184,7 @@ function setupApiClient(axios: AxiosInstance) {
 		staticRes: new V1StaticApi(undefined, baseURL, axios),
 		security: new V1SecurityApi(undefined, baseURL, axios),
 		notify: new V1NotifyApi(undefined, baseURL, axios),
+		binding: new V1BindingApi(undefined, baseURL, axios),
 		// custom endpoints
 		plugin: new PluginIkarosRunV1PluginApi(undefined, baseURL, axios),
 		configmap: new SettingIkarosRunV1ConfigmapApi(undefined, baseURL, axios),

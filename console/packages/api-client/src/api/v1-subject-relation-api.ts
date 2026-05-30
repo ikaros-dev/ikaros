@@ -44,7 +44,7 @@ import { SubjectRelation } from "../models";
  * @export
  */
 export const V1SubjectRelationApiAxiosParamCreator = function (
-  configuration?: Configuration
+  configuration?: Configuration,
 ) {
   return {
     /**
@@ -55,13 +55,13 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
      */
     createSubjectRelation: async (
       subjectRelation: SubjectRelation,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectRelation' is not null or undefined
       assertParamExists(
         "createSubjectRelation",
         "subjectRelation",
-        subjectRelation
+        subjectRelation,
       );
       const localVarPath = `/api/v1/subject/relation`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -100,7 +100,7 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
       localVarRequestOptions.data = serializeDataIfNeeded(
         subjectRelation,
         localVarRequestOptions,
-        configuration
+        configuration,
       );
 
       return {
@@ -118,25 +118,25 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
     getSubjectRelationByIdAndType: async (
       subjectId: any,
       relationType: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists(
         "getSubjectRelationByIdAndType",
         "subjectId",
-        subjectId
+        subjectId,
       );
       // verify required parameter 'relationType' is not null or undefined
       assertParamExists(
         "getSubjectRelationByIdAndType",
         "relationType",
-        relationType
+        relationType,
       );
       const localVarPath = `/api/v1/subject/relation/{subjectId}/{relationType}`
         .replace(`{${"subjectId"}}`, encodeURIComponent(String(subjectId)))
         .replace(
           `{${"relationType"}}`,
-          encodeURIComponent(String(relationType))
+          encodeURIComponent(String(relationType)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -183,13 +183,13 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
      */
     getSubjectRelationsById: async (
       subjectId: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists("getSubjectRelationsById", "subjectId", subjectId);
       const localVarPath = `/api/v1/subject/relations/{subjectId}`.replace(
         `{${"subjectId"}}`,
-        encodeURIComponent(String(subjectId))
+        encodeURIComponent(String(subjectId)),
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -240,7 +240,7 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
       subjectId: any,
       relationType: any,
       relationSubjects: any,
-      options: AxiosRequestConfig = {}
+      options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'subjectId' is not null or undefined
       assertParamExists("removeSubjectRelation", "subjectId", subjectId);
@@ -250,12 +250,12 @@ export const V1SubjectRelationApiAxiosParamCreator = function (
       assertParamExists(
         "removeSubjectRelation",
         "relationSubjects",
-        relationSubjects
+        relationSubjects,
       );
       const localVarPath =
         `/api/v1/subject/relation/subjectId/{subjectId}`.replace(
           `{${"subjectId"}}`,
-          encodeURIComponent(String(subjectId))
+          encodeURIComponent(String(subjectId)),
         );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -321,20 +321,20 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
      */
     async createSubjectRelation(
       subjectRelation: SubjectRelation,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.createSubjectRelation(
           subjectRelation,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -347,7 +347,7 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
     async getSubjectRelationByIdAndType(
       subjectId: any,
       relationType: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -355,13 +355,13 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.getSubjectRelationByIdAndType(
           subjectId,
           relationType,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -372,20 +372,20 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
      */
     async getSubjectRelationsById(
       subjectId: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
     > {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.getSubjectRelationsById(
           subjectId,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
     /**
@@ -400,7 +400,7 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
       subjectId: any,
       relationType: any,
       relationSubjects: any,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>
     > {
@@ -409,13 +409,13 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
           subjectId,
           relationType,
           relationSubjects,
-          options
+          options,
         );
       return createRequestFunction(
         localVarAxiosArgs,
         globalAxios,
         BASE_PATH,
-        configuration
+        configuration,
       );
     },
   };
@@ -428,7 +428,7 @@ export const V1SubjectRelationApiFp = function (configuration?: Configuration) {
 export const V1SubjectRelationApiFactory = function (
   configuration?: Configuration,
   basePath?: string,
-  axios?: AxiosInstance
+  axios?: AxiosInstance,
 ) {
   const localVarFp = V1SubjectRelationApiFp(configuration);
   return {
@@ -440,7 +440,7 @@ export const V1SubjectRelationApiFactory = function (
      */
     createSubjectRelation(
       requestParameters: V1SubjectRelationApiCreateSubjectRelationRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .createSubjectRelation(requestParameters.subjectRelation, options)
@@ -454,13 +454,13 @@ export const V1SubjectRelationApiFactory = function (
      */
     getSubjectRelationByIdAndType(
       requestParameters: V1SubjectRelationApiGetSubjectRelationByIdAndTypeRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .getSubjectRelationByIdAndType(
           requestParameters.subjectId,
           requestParameters.relationType,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -472,7 +472,7 @@ export const V1SubjectRelationApiFactory = function (
      */
     getSubjectRelationsById(
       requestParameters: V1SubjectRelationApiGetSubjectRelationsByIdRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<any> {
       return localVarFp
         .getSubjectRelationsById(requestParameters.subjectId, options)
@@ -486,14 +486,14 @@ export const V1SubjectRelationApiFactory = function (
      */
     removeSubjectRelation(
       requestParameters: V1SubjectRelationApiRemoveSubjectRelationRequest,
-      options?: AxiosRequestConfig
+      options?: AxiosRequestConfig,
     ): AxiosPromise<void> {
       return localVarFp
         .removeSubjectRelation(
           requestParameters.subjectId,
           requestParameters.relationType,
           requestParameters.relationSubjects,
-          options
+          options,
         )
         .then((request) => request(axios, basePath));
     },
@@ -593,7 +593,7 @@ export class V1SubjectRelationApi extends BaseAPI {
    */
   public createSubjectRelation(
     requestParameters: V1SubjectRelationApiCreateSubjectRelationRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1SubjectRelationApiFp(this.configuration)
       .createSubjectRelation(requestParameters.subjectRelation, options)
@@ -609,13 +609,13 @@ export class V1SubjectRelationApi extends BaseAPI {
    */
   public getSubjectRelationByIdAndType(
     requestParameters: V1SubjectRelationApiGetSubjectRelationByIdAndTypeRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1SubjectRelationApiFp(this.configuration)
       .getSubjectRelationByIdAndType(
         requestParameters.subjectId,
         requestParameters.relationType,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
@@ -629,7 +629,7 @@ export class V1SubjectRelationApi extends BaseAPI {
    */
   public getSubjectRelationsById(
     requestParameters: V1SubjectRelationApiGetSubjectRelationsByIdRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1SubjectRelationApiFp(this.configuration)
       .getSubjectRelationsById(requestParameters.subjectId, options)
@@ -645,14 +645,14 @@ export class V1SubjectRelationApi extends BaseAPI {
    */
   public removeSubjectRelation(
     requestParameters: V1SubjectRelationApiRemoveSubjectRelationRequest,
-    options?: AxiosRequestConfig
+    options?: AxiosRequestConfig,
   ) {
     return V1SubjectRelationApiFp(this.configuration)
       .removeSubjectRelation(
         requestParameters.subjectId,
         requestParameters.relationType,
         requestParameters.relationSubjects,
-        options
+        options,
       )
       .then((request) => request(this.axios, this.basePath));
   }
