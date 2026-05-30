@@ -150,7 +150,8 @@ class ProcessSpSubdirectoriesStepTest {
 
         when(episodeSequenceRegularService.match(anyString()))
             .thenReturn(Mono.just(EpisodeSequenceRegularResult.builder()
-                .matched(true).sequence(1f).epGroup(EpisodeGroup.ORIGINAL_VIDEO_ANIMATION).build()));
+                .matched(true).sequence(1f)
+                .epGroup(EpisodeGroup.ORIGINAL_VIDEO_ANIMATION).build()));
         when(episodeService.save(any(Episode.class)))
             .thenReturn(Mono.just(Episode.builder()
                 .id(UUID.randomUUID()).subjectId(subjectId)
