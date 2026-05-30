@@ -31,6 +31,10 @@ public class EpisodeSequenceRegularServiceImpl implements EpisodeSequenceRegular
     public Mono<EpisodeSequenceRegular> save(EpisodeSequenceRegular regular) {
         if (regular.getId() == null) {
             return copyProperties(regular, EpisodeSequenceRegularEntity.builder().build())
+                .map(entity -> {
+                    entity.setId(UUID.randomUUID());
+                    return entity;
+                })
                 .flatMap(repository::insert)
                 .flatMap(saved -> copyProperties(saved,
                     EpisodeSequenceRegular.builder().build()));

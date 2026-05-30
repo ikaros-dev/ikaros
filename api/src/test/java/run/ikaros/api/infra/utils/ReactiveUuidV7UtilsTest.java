@@ -1,13 +1,16 @@
 package run.ikaros.api.infra.utils;
 
-import org.junit.jupiter.api.Test;
-import reactor.test.StepVerifier;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import reactor.test.StepVerifier;
 
 class ReactiveUuidV7UtilsTest {
 
@@ -40,7 +43,8 @@ class ReactiveUuidV7UtilsTest {
     void generate_ShouldHaveCorrectFormat() {
         StepVerifier.create(ReactiveUuidV7Utils.generate())
             .assertNext(uuid -> {
-                assertTrue(uuid.matches("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"));
+                assertTrue(uuid.matches(
+                    "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"));
             })
             .verifyComplete();
     }

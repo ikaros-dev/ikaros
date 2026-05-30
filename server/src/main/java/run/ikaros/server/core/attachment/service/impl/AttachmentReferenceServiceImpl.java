@@ -14,7 +14,6 @@ import run.ikaros.api.core.attachment.AttachmentReference;
 import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.core.attachment.exception.AttachmentRefMatchingException;
 import run.ikaros.api.infra.exception.subject.EpisodeNotFoundException;
-import run.ikaros.server.core.episode.sequence.EpisodeSequenceRegularService;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.EpisodeGroup;
@@ -23,6 +22,7 @@ import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.core.attachment.event.AttachmentReferenceSaveEvent;
 import run.ikaros.server.core.attachment.event.EpisodeAttachmentUpdateEvent;
 import run.ikaros.server.core.attachment.service.AttachmentReferenceService;
+import run.ikaros.server.core.episode.sequence.EpisodeSequenceRegularService;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
@@ -151,7 +151,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                         float seq = result.getSequence();
                         EpisodeGroup targetGroup = group != null ? group
                             : (result.getEpGroup() != null ? result.getEpGroup()
-                                : EpisodeGroup.MAIN);
+                               : EpisodeGroup.MAIN);
                         return episodeRepository
                             .findBySubjectIdAndGroupAndSequence(subjectId, targetGroup, seq)
                             .switchIfEmpty(Mono.error(new AttachmentRefMatchingException(
@@ -181,7 +181,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                                         entity.getId(), notify);
                                 applicationEventPublisher.publishEvent(event);
                                 log.debug("publish event EpisodeAttachmentUpdateEvent "
-                                    + "for attachmentReferenceEntity: {}",
+                                        + "for attachmentReferenceEntity: {}",
                                     attachmentReferenceEntity);
                             }))
                     ))
@@ -229,7 +229,6 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                     }))
             .then();
     }
-
 
 
     private Mono<AttachmentReference> checkAttachmentRef(AttachmentReference attachmentReference) {

@@ -8,8 +8,8 @@ import run.ikaros.api.plugin.IkarosExtensionPoint;
  * into the episode sequence regular matching chain.
  * <p>
  * Plugins implement this interface to add regex-based episode sequence matchers
- * alongside DB-configured rules. Each handler is sorted by {@link EpisodeSequenceRegularHandler#order()}
- * with higher values running first.
+ * alongside DB-configured rules. Each handler is sorted by
+ * {@link EpisodeSequenceRegularHandler#order()} with higher values running first.
  * <p>
  * Usage example by a plugin:
  * <pre>{@code

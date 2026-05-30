@@ -1,33 +1,35 @@
 package run.ikaros.api.constant;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class StringConstTest {
 
     @Test
-    void SPACE_ShouldBeSpaceCharacter() {
+    void space_ShouldBeSpaceCharacter() {
         assertEquals(" ", StringConst.SPACE);
     }
 
     @Test
-    void SPACE_ShouldHaveLengthOne() {
+    void space_ShouldHaveLengthOne() {
         assertEquals(1, StringConst.SPACE.length());
     }
 
     @Test
-    void SPACE_ShouldNotBeEmpty() {
+    void space_ShouldNotBeEmpty() {
         assertFalse(StringConst.SPACE.isEmpty());
     }
 
     @Test
-    void SPACE_ShouldBeTrimmedToEmpty() {
+    void space_ShouldBeTrimmedToEmpty() {
         assertEquals("", StringConst.SPACE.trim());
     }
 
     @Test
-    void SPACE_ShouldBeWhitespace() {
+    void space_ShouldBeWhitespace() {
         assertTrue(Character.isWhitespace(StringConst.SPACE.charAt(0)));
     }
 }

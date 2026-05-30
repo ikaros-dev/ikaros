@@ -1,10 +1,11 @@
 package run.ikaros.api.infra.utils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ReactiveBeanUtilsTest {
 

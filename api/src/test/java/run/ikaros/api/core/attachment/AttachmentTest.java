@@ -1,12 +1,14 @@
 package run.ikaros.api.core.attachment;
 
-import org.junit.jupiter.api.Test;
-import run.ikaros.api.store.enums.AttachmentType;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import run.ikaros.api.store.enums.AttachmentType;
 
 class AttachmentTest {
 
