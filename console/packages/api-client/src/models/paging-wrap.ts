@@ -43,17 +43,17 @@ export interface PagingWrap {
    */
   items: any;
   /**
-   * Indicates whether current page is the first page.
-   * @type {any}
-   * @memberof PagingWrap
-   */
-  firstPage: any;
-  /**
    * Indicates whether current page is the last page.
    * @type {any}
    * @memberof PagingWrap
    */
   lastPage: any;
+  /**
+   * Indicates whether current page is the first page.
+   * @type {any}
+   * @memberof PagingWrap
+   */
+  firstPage: any;
   /**
    * Indicates whether current page has previous page.
    * @type {any}

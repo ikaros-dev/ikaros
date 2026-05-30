@@ -38,7 +38,8 @@ public class FetchAndCreateSubjectStep implements DirectoryBindingStep {
 
     @Override
     public boolean shouldSkip(DirectoryBindingContext context) {
-        return context.getPlatformId() == null || context.getPlatform() == null;
+        return context.getPlatformId() == null || context.getPlatform() == null
+            || context.getSubjectId() != null;
     }
 
     @Override

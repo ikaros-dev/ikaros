@@ -117,6 +117,7 @@ export const V1BindingApiAxiosParamCreator = function (
      * Bind a single directory to a subject. Automatically finds subject, creates entries, and binds files.
      * @param {any} directoryId Directory attachment ID.
      * @param {any} platform Metadata platform.
+     * @param {any} [platformId] Search platform id, overrides and keyword directory name if set.
      * @param {any} [keyword] Search keyword, overrides directory name if set.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -124,6 +125,7 @@ export const V1BindingApiAxiosParamCreator = function (
     bindDirectory: async (
       directoryId: any,
       platform: any,
+      platformId?: any,
       keyword?: any,
       options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
@@ -161,6 +163,10 @@ export const V1BindingApiAxiosParamCreator = function (
 
       if (platform !== undefined) {
         localVarQueryParameter["platform"] = platform;
+      }
+
+      if (platformId !== undefined) {
+        localVarQueryParameter["platformId"] = platformId;
       }
 
       if (keyword !== undefined) {
@@ -330,6 +336,7 @@ export const V1BindingApiFp = function (configuration?: Configuration) {
      * Bind a single directory to a subject. Automatically finds subject, creates entries, and binds files.
      * @param {any} directoryId Directory attachment ID.
      * @param {any} platform Metadata platform.
+     * @param {any} [platformId] Search platform id, overrides and keyword directory name if set.
      * @param {any} [keyword] Search keyword, overrides directory name if set.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -337,6 +344,7 @@ export const V1BindingApiFp = function (configuration?: Configuration) {
     async bindDirectory(
       directoryId: any,
       platform: any,
+      platformId?: any,
       keyword?: any,
       options?: AxiosRequestConfig,
     ): Promise<
@@ -348,6 +356,7 @@ export const V1BindingApiFp = function (configuration?: Configuration) {
       const localVarAxiosArgs = await localVarAxiosParamCreator.bindDirectory(
         directoryId,
         platform,
+        platformId,
         keyword,
         options,
       );
@@ -455,6 +464,7 @@ export const V1BindingApiFactory = function (
         .bindDirectory(
           requestParameters.directoryId,
           requestParameters.platform,
+          requestParameters.platformId,
           requestParameters.keyword,
           options,
         )
@@ -531,6 +541,13 @@ export interface V1BindingApiBindDirectoryRequest {
    * @memberof V1BindingApiBindDirectory
    */
   readonly platform: any;
+
+  /**
+   * Search platform id, overrides and keyword directory name if set.
+   * @type {any}
+   * @memberof V1BindingApiBindDirectory
+   */
+  readonly platformId?: any;
 
   /**
    * Search keyword, overrides directory name if set.
@@ -610,6 +627,7 @@ export class V1BindingApi extends BaseAPI {
       .bindDirectory(
         requestParameters.directoryId,
         requestParameters.platform,
+        requestParameters.platformId,
         requestParameters.keyword,
         options,
       )

@@ -254,6 +254,9 @@ module:
         prompt: Please input search platform
         placeholder: 'BGM_TV / TMDB / AniDB / TVDB / VNDB / DOU_BAN / OTHER'
         title: Search Platform
+      platformId:
+        label: Platform ID
+        placeholder: Enter the subject ID on the selected platform (optional)
       success: Directory bind request submitted, please check the task status
       error: Directory bind request failed
     popconfirm:

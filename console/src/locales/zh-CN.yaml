@@ -246,6 +246,9 @@ module:
         prompt: 请输入搜索平台
         placeholder: 'BGM_TV / TMDB / AniDB / TVDB / VNDB / DOU_BAN / OTHER'
         title: 搜索平台
+      platformId:
+        label: 平台ID
+        placeholder: 请输入条目在所选平台的ID（可选）
       success: 目录绑定请求已提交，请查看任务状态
       error: 目录绑定请求失败
     popconfirm:

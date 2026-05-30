@@ -47,6 +47,12 @@ public class DirectoryBindingEndpoint implements CoreEndpoint {
                         .required(true)
                         .implementation(SubjectSyncPlatform.class))
                     .parameter(parameterBuilder()
+                        .name("platformId")
+                        .description("Search platform id, overrides and "
+                            + "keyword directory name if set.")
+                        .required(false)
+                        .implementation(String.class))
+                    .parameter(parameterBuilder()
                         .name("keyword")
                         .description("Search keyword, overrides directory name if set.")
                         .required(false)
@@ -113,7 +119,8 @@ public class DirectoryBindingEndpoint implements CoreEndpoint {
         SubjectSyncPlatform platform =
             SubjectSyncPlatform.valueOf(request.queryParam("platform").orElseThrow());
         String keyword = request.queryParam("keyword").orElse(null);
-        return service.bindDirectory(directoryId, platform, keyword)
+        String platformId = request.queryParam("platformId").orElse(null);
+        return service.bindDirectory(directoryId, platform, keyword, platformId)
             .flatMap(workflow -> ServerResponse.ok().bodyValue(workflow));
     }
 

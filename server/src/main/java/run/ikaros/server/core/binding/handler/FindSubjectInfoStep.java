@@ -33,11 +33,12 @@ public class FindSubjectInfoStep implements DirectoryBindingStep {
 
     @Override
     public boolean shouldSkip(DirectoryBindingContext context) {
-        return context.getPlatform() == null;
+        return context.getPlatform() == null || context.getSubjectId() != null;
     }
 
     @Override
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
+        log.info("Find subject info for keyword: {}", context.getCleanName());
         String searchKeyword = context.getKeyword() != null && !context.getKeyword().isBlank()
             ? context.getKeyword() : context.getCleanName();
         return metaInfoService.searchSubjects(context.getPlatform(), searchKeyword)

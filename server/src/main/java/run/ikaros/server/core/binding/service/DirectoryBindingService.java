@@ -14,14 +14,15 @@ public interface DirectoryBindingService {
      */
     Mono<DirectoryBindingWorkflowEntity> bindDirectory(UUID directoryId,
                                                        SubjectSyncPlatform platform,
-                                                       String keyword);
+                                                       String keyword,
+                                                       String platformId);
 
     /**
      * Bind a single directory to a subject without keyword.
      */
     default Mono<DirectoryBindingWorkflowEntity> bindDirectory(UUID directoryId,
                                                                 SubjectSyncPlatform platform) {
-        return bindDirectory(directoryId, platform, null);
+        return bindDirectory(directoryId, platform, null, null);
     }
 
     /**

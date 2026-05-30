@@ -41,7 +41,7 @@ class DirectoryBindingEndpointTest {
     @Test
     void bindDirectory_delegatesToService() {
         UUID dirId = UUID.randomUUID();
-        when(service.bindDirectory(dirId, SubjectSyncPlatform.BGM_TV, null))
+        when(service.bindDirectory(dirId, SubjectSyncPlatform.BGM_TV, null, null))
             .thenReturn(Mono.just(DirectoryBindingWorkflowEntity.builder()
                 .id(UUID.randomUUID()).directoryId(dirId)
                 .directoryName("Test Anime").platform(SubjectSyncPlatform.BGM_TV)
@@ -49,7 +49,7 @@ class DirectoryBindingEndpointTest {
 
         // Verify service is called correctly
         DirectoryBindingWorkflowEntity result =
-            service.bindDirectory(dirId, SubjectSyncPlatform.BGM_TV, null).block();
+            service.bindDirectory(dirId, SubjectSyncPlatform.BGM_TV, null, null).block();
         assertThat(result).isNotNull();
         assertThat(result.getDirectoryId()).isEqualTo(dirId);
     }
@@ -58,14 +58,14 @@ class DirectoryBindingEndpointTest {
     void bindDirectory_withKeyword_delegatesToService() {
         UUID dirId = UUID.randomUUID();
         String keyword = "Custom Keyword";
-        when(service.bindDirectory(dirId, SubjectSyncPlatform.BGM_TV, keyword))
+        when(service.bindDirectory(dirId, SubjectSyncPlatform.BGM_TV, keyword, null))
             .thenReturn(Mono.just(DirectoryBindingWorkflowEntity.builder()
                 .id(UUID.randomUUID()).directoryId(dirId)
                 .directoryName("Test Anime").platform(SubjectSyncPlatform.BGM_TV)
                 .status(TaskStatus.CREATE).build()));
 
         DirectoryBindingWorkflowEntity result =
-            service.bindDirectory(dirId, SubjectSyncPlatform.BGM_TV, keyword).block();
+            service.bindDirectory(dirId, SubjectSyncPlatform.BGM_TV, keyword, null).block();
         assertThat(result).isNotNull();
     }
 

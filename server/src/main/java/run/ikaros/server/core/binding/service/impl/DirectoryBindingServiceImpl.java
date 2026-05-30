@@ -56,7 +56,8 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
     @Override
     public Mono<DirectoryBindingWorkflowEntity> bindDirectory(UUID directoryId,
                                                               SubjectSyncPlatform platform,
-                                                              String keyword) {
+                                                              String keyword,
+                                                              String platformId) {
         return attachmentRepository.findById(directoryId)
             .switchIfEmpty(Mono.error(new IllegalArgumentException(
                 "Directory not found for id: " + directoryId)))
@@ -68,6 +69,7 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
                     .directoryId(directoryId)
                     .directoryName(dirName)
                     .platform(platform)
+                    .platformId(platformId)
                     .status(TaskStatus.CREATE)
                     .createTime(LocalDateTime.now())
                     .build();
