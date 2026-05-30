@@ -1,43 +1,65 @@
 package run.ikaros.api.infra.utils;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class StringUtilsTest {
 
     @Test
-    void hasText_WithNullString_ShouldReturnFalse() {
-        assertFalse(StringUtils.hasText(null));
+    void isBlank_withNullString_shouldReturnTrue() {
+        assertTrue(StringUtils.isBlank(null));
     }
 
     @Test
-    void hasText_WithEmptyString_ShouldReturnFalse() {
-        assertFalse(StringUtils.hasText(""));
+    void isBlank_withEmptyString_shouldReturnTrue() {
+        assertTrue(StringUtils.isBlank(""));
     }
 
     @Test
-    void hasText_WithWhitespaceOnly_ShouldReturnFalse() {
-        assertFalse(StringUtils.hasText("   "));
-        assertFalse(StringUtils.hasText("\t\n"));
+    void isBlank_withWhitespaceOnly_shouldReturnTrue() {
+        assertTrue(StringUtils.isBlank("   "));
+        assertTrue(StringUtils.isBlank("\t\n"));
     }
 
     @Test
-    void hasText_WithNonWhitespaceString_ShouldReturnTrue() {
-        assertTrue(StringUtils.hasText("test"));
-        assertTrue(StringUtils.hasText("  test  "));
-        assertTrue(StringUtils.hasText("a"));
+    void isBlank_withNonWhitespaceString_shouldReturnFalse() {
+        assertFalse(StringUtils.isBlank("test"));
+        assertFalse(StringUtils.isBlank("  test  "));
+        assertFalse(StringUtils.isBlank("a"));
     }
 
     @Test
-    void hasText_WithMixedContent_ShouldReturnTrue() {
-        assertTrue(StringUtils.hasText("  hello world  "));
-        assertTrue(StringUtils.hasText("\ttest\n"));
+    void isBlank_withMixedContent_shouldReturnFalse() {
+        assertFalse(StringUtils.isBlank("  hello world  "));
+        assertFalse(StringUtils.isBlank("\ttest\n"));
     }
 
     @Test
-    void hasText_WithSpecialCharacters_ShouldReturnTrue() {
-        assertTrue(StringUtils.hasText("!@#$%"));
-        assertTrue(StringUtils.hasText("  中文测试  "));
+    void isBlank_withSpecialCharacters_shouldReturnFalse() {
+        assertFalse(StringUtils.isBlank("!@#$%"));
+        assertFalse(StringUtils.isBlank("  中文测试  "));
+    }
+
+    @Test
+    void isNotBlank_withNonBlank_shouldReturnTrue() {
+        assertTrue(StringUtils.isNotBlank("test"));
+    }
+
+    @Test
+    void isNotBlank_withBlank_shouldReturnFalse() {
+        assertFalse(StringUtils.isNotBlank(""));
+    }
+
+    @Test
+    void upperCaseFirst_shouldCapitalizeFirstChar() {
+        assertEquals("Hello", StringUtils.upperCaseFirst("hello"));
+    }
+
+    @Test
+    void upperCaseFirst_withSingleChar_shouldCapitalize() {
+        assertEquals("A", StringUtils.upperCaseFirst("a"));
     }
 }

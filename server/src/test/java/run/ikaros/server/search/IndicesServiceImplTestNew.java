@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ public class IndicesServiceImplTestNew {
     }
     
     @Test
-    void rebuildSubjectIndices_withSubjects_rebuildsIndices() {
+    void rebuildSubjectIndices_withSubjects_rebuildsIndices() throws IOException {
         SubjectEntity subject = new SubjectEntity();
         subject.setId(UUID.randomUUID());
         subject.setName("Test Subject");

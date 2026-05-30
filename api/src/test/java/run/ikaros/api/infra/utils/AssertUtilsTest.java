@@ -1,8 +1,10 @@
 package run.ikaros.api.infra.utils;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class AssertUtilsTest {
 
@@ -17,7 +19,7 @@ class AssertUtilsTest {
             IllegalArgumentException.class,
             () -> AssertUtils.isTrue(false, "Test message")
         );
-        assertEquals("Test message", exception.getMessage());
+        assertEquals("'Test message' must be true", exception.getMessage());
     }
 
     @Test
@@ -26,12 +28,12 @@ class AssertUtilsTest {
     }
 
     @Test
-    void isTrue_WithFalseConditionAndNullMessage_ShouldThrowExceptionWithNullMessage() {
+    void isTrue_WithFalseConditionAndNullMessage_ShouldThrowException() {
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> AssertUtils.isTrue(false, null)
         );
-        assertNull(exception.getMessage());
+        assertEquals("'null' must be true", exception.getMessage());
     }
 
     @Test
@@ -40,11 +42,11 @@ class AssertUtilsTest {
     }
 
     @Test
-    void isTrue_WithFalseConditionAndEmptyMessage_ShouldThrowExceptionWithEmptyMessage() {
+    void isTrue_WithFalseConditionAndEmptyMessage_ShouldThrowException() {
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> AssertUtils.isTrue(false, "")
         );
-        assertEquals("", exception.getMessage());
+        assertEquals("'' must be true", exception.getMessage());
     }
 }

@@ -3,10 +3,12 @@ package run.ikaros.server.search;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +53,7 @@ class IndicesServiceImplTest2 {
     }
 
     @Test
-    void rebuildSubjectIndices_withSubjects_rebuildsIndices() {
+    void rebuildSubjectIndices_withSubjects_rebuildsIndices() throws IOException {
         SubjectEntity subject = new SubjectEntity();
         subject.setId(UUID.randomUUID());
         subject.setName("Test Subject");
@@ -77,7 +79,7 @@ class IndicesServiceImplTest2 {
     }
 
     @Test
-    void rebuildSubjectIndices_withException_handlesError() {
+    void rebuildSubjectIndices_withException_handlesError() throws IOException {
         SubjectEntity subject = new SubjectEntity();
         subject.setId(UUID.randomUUID());
         subject.setName("Test Subject");
@@ -85,8 +87,8 @@ class IndicesServiceImplTest2 {
         when(subjectRepository.findAll()).thenReturn(Flux.just(subject));
         when(tagRepository.findAllByTypeAndMasterId(any(TagType.class), any(UUID.class)))
             .thenReturn(Flux.empty());
-        when(subjectSearchService.rebuild(anyList()))
-            .thenThrow(new RuntimeException("Test exception"));
+        doThrow(new RuntimeException("Test exception"))
+            .when(subjectSearchService).rebuild(any());
         
         StepVerifier.create(indicesService.rebuildSubjectIndices())
             .verifyComplete();

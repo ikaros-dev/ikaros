@@ -1,10 +1,12 @@
 package run.ikaros.api.infra.utils;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class SystemVarUtilsTest {
 
@@ -19,32 +21,32 @@ class SystemVarUtilsTest {
     void getCurrentAppDirPath_ShouldReturnValidDirectory() {
         String path = SystemVarUtils.getCurrentAppDirPath();
         File dir = new File(path);
-        assertTrue(dir.exists() || dir.isDirectory() || path.contains("ikaros"));
+        assertTrue(dir.exists() || path.contains("ikaros"));
     }
 
     @Test
-    void getOriginalDirPath_ShouldReturnNonNullPath() {
-        String path = SystemVarUtils.getOriginalDirPath();
+    void getCurrentAppOriginalDirPath_ShouldReturnNonNullPath() {
+        String path = SystemVarUtils.getCurrentAppOriginalDirPath();
         assertNotNull(path);
         assertFalse(path.isEmpty());
     }
 
     @Test
-    void getOriginalDirPath_ShouldContainOriginalDirName() {
-        String path = SystemVarUtils.getOriginalDirPath();
+    void getCurrentAppOriginalDirPath_ShouldContainOriginalDirName() {
+        String path = SystemVarUtils.getCurrentAppOriginalDirPath();
         assertTrue(path.contains("original") || path.contains("ORIGINAL"));
     }
 
     @Test
-    void getOriginalDirPath_ShouldBeSubdirectoryOfAppDir() {
+    void getCurrentAppOriginalDirPath_ShouldBeSubdirectoryOfAppDir() {
         String appDir = SystemVarUtils.getCurrentAppDirPath();
-        String originalDir = SystemVarUtils.getOriginalDirPath();
+        String originalDir = SystemVarUtils.getCurrentAppOriginalDirPath();
         assertTrue(originalDir.startsWith(appDir));
     }
 
     @Test
-    void getOriginalDirPath_ShouldEndWithOriginal() {
-        String path = SystemVarUtils.getOriginalDirPath();
+    void getCurrentAppOriginalDirPath_ShouldEndWithOriginal() {
+        String path = SystemVarUtils.getCurrentAppOriginalDirPath();
         assertTrue(path.endsWith("original"));
     }
 
@@ -56,9 +58,9 @@ class SystemVarUtilsTest {
     }
 
     @Test
-    void getOriginalDirPath_ShouldBeConsistent() {
-        String path1 = SystemVarUtils.getOriginalDirPath();
-        String path2 = SystemVarUtils.getOriginalDirPath();
+    void getCurrentAppOriginalDirPath_ShouldBeConsistent() {
+        String path1 = SystemVarUtils.getCurrentAppOriginalDirPath();
+        String path2 = SystemVarUtils.getCurrentAppOriginalDirPath();
         assertEquals(path1, path2);
     }
 }
