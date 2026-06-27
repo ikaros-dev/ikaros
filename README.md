@@ -48,8 +48,8 @@ Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
 
 # 相关文档
 
-- [CONTRIBUTING.MD](CONTRIBUTING.MD) : 贡献指南
-- [CHANGELOG.MD](CHANGELOG.MD) : 更新日志
+- [CONTRIBUTING.md](CONTRIBUTING.md) : 贡献指南
+- [CHANGELOG.md](CHANGELOG.md) : 更新日志
 
 # 免责声明
 
