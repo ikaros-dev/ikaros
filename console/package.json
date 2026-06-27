@@ -33,7 +33,7 @@
     "@vueuse/router": "^14.3.0",
     "@vueuse/shared": "^14.3.0",
     "artplayer": "^5.4.0",
-    "axios": "^1.16.1",
+    "axios": "^1.18.1",
     "cropperjs": "^1.6.2",
     "crypto-js": "^4.2.0",
     "element-plus": "^2.14.0",
@@ -88,12 +88,12 @@
     "sass": "^1.99.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
-    "vite": "^5.4.21",
+    "vite": "^6.4.3",
     "vite-plugin-compression2": "^2.5.3",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-externals": "^0.6.2",
     "vite-plugin-html": "^3.2.2",
-    "vitest": "^1.6.1",
+    "vitest": "^3.2.6",
     "vue-tsc": "^3.3.0"
   },
   "lint-staged": {

@@ -58,12 +58,12 @@
     "dist"
   ],
   "devDependencies": {
-    "@openapitools/openapi-generator-cli": "^2.27.0",
+    "@openapitools/openapi-generator-cli": "^2.39.0",
     "@types/node": "^18.13.0",
-    "axios": "^1.16.1",
-    "bumpp": "^8.2.1",
-    "typescript": "^4.9.5",
-    "unbuild": "^0.7.6",
-    "vitest": "^0.18.1"
+    "axios": "^1.18.1",
+    "bumpp": "^10.4.1",
+    "typescript": "^5.9.3",
+    "unbuild": "^3.6.1",
+    "vitest": "^3.2.6"
   }
 }
