@@ -1,2 +1,18 @@
 packages:
   - "packages/**"
+allowBuilds:
+  '@nestjs/core': true
+  '@openapitools/openapi-generator-cli': true
+  '@parcel/watcher': true
+  esbuild: true
+  vue-demi: true
+minimumReleaseAgeExclude:
+  - js-yaml@4.3.0
+overrides:
+  '@babel/core': ^7.29.7
+  ajv: ^6.14.0
+  form-data: ^4.0.6
+  ip-address: ^10.1.1
+  js-yaml: ^4.3.0
+  lodash: ^4.18.1
+  validator: ^13.15.22
