@@ -49,3 +49,4 @@ out/
 ### Console ###
 /server/src/main/resources/console/
 /.reasonix/truncated-results/
+/.proxyai/
