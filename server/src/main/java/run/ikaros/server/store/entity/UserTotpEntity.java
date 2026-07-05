@@ -1,6 +1,5 @@
 package run.ikaros.server.store.entity;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,7 +35,4 @@ public class UserTotpEntity extends BaseEntity {
      * 是否已启用二步验证.
      */
     private Boolean enabled;
-
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
 }
