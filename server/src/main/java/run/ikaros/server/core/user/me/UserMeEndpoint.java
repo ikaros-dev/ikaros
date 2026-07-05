@@ -161,10 +161,18 @@ public class UserMeEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> putProfile(ServerRequest request) {
         return request.bodyToMono(UpdateUserRequest.class)
-            .map(user -> {
-                user.setEnable(null);
-                return user;
-            })
+            .flatMap(updateUserRequest ->
+                // BOLA prevention: force username from authenticated principal,
+                // ignore any username in the request body
+                userService.getUserFromSecurityContext()
+                    .map(User::entity)
+                    .map(UserEntity::getUsername)
+                    .map(username -> {
+                        updateUserRequest.setUsername(username);
+                        updateUserRequest.setEnable(null);
+                        return updateUserRequest;
+                    })
+            )
             .flatMap(userService::update)
             .flatMap(user -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(user))

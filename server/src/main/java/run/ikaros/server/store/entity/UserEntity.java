@@ -1,6 +1,7 @@
 package run.ikaros.server.store.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,6 +32,7 @@ public class UserEntity extends BaseEntity {
     /**
      * password that encrypted by md5.
      */
+    @JsonIgnore
     private String password;
 
     /**
