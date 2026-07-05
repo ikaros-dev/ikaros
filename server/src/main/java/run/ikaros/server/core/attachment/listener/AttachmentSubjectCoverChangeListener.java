@@ -2,6 +2,8 @@ package run.ikaros.server.core.attachment.listener;
 
 import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.UUID;
@@ -10,12 +12,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.infra.utils.SsrfUtils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.subject.SubjectOperator;
@@ -35,7 +39,7 @@ public class AttachmentSubjectCoverChangeListener {
     private final AttachmentRepository attachmentRepository;
     private final AttachmentService attachmentService;
     private final AttachmentReferenceRepository attachmentReferenceRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = createRestTemplate();
     private final SubjectRepository subjectRepository;
 
     /**
@@ -50,6 +54,17 @@ public class AttachmentSubjectCoverChangeListener {
         this.attachmentService = attachmentService;
         this.attachmentReferenceRepository = attachmentReferenceRepository;
         this.subjectRepository = subjectRepository;
+    }
+
+    private static RestTemplate createRestTemplate() {
+        return new RestTemplate(new SimpleClientHttpRequestFactory() {
+            @Override
+            protected void prepareConnection(HttpURLConnection connection, String httpMethod)
+                throws IOException {
+                super.prepareConnection(connection, httpMethod);
+                connection.setInstanceFollowRedirects(false);
+            }
+        });
     }
 
 
@@ -108,7 +123,7 @@ public class AttachmentSubjectCoverChangeListener {
             // 条目三方同步会发布更新事件
             .then(Mono.just(newCover))
             .filter(StringUtils::isNotBlank)
-            .filter(url -> url.startsWith("http"))
+            .filter(url -> SsrfUtils.isSafeUrl(url))
             .publishOn(Schedulers.boundedElastic())
             .flatMap(url -> {
                 byte[] bytes = restTemplate.getForObject(url, byte[].class);

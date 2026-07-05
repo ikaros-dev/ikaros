@@ -4,6 +4,8 @@ import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import jakarta.validation.constraints.NotNull;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +20,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
@@ -31,6 +34,7 @@ import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.core.subject.SubjectSynchronizer;
 import run.ikaros.api.infra.exception.subject.NoAvailableSubjectPlatformSynchronizerException;
 import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.infra.utils.SsrfUtils;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.AttachmentType;
@@ -82,7 +86,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     private final SubjectSyncRepository subjectSyncRepository;
     private final AttachmentReferenceRepository attachmentReferenceRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final AttachmentService attachmentService;
 
     /**
@@ -115,6 +119,18 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
         this.applicationEventPublisher = applicationEventPublisher;
         this.attachmentService = attachmentService;
         this.attachmentRepository = attachmentRepository;
+        this.restTemplate = createRestTemplate();
+    }
+
+    private static RestTemplate createRestTemplate() {
+        return new RestTemplate(new SimpleClientHttpRequestFactory() {
+            @Override
+            protected void prepareConnection(HttpURLConnection connection, String httpMethod)
+                throws IOException {
+                super.prepareConnection(connection, httpMethod);
+                connection.setInstanceFollowRedirects(false);
+            }
+        });
     }
 
     class SyncTargetExistsException extends RuntimeException {
@@ -318,7 +334,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
 
     private Mono<SubjectEntity> downloadCoverAndSaveRef(SubjectEntity entity) {
         final String url = entity.getCover();
-        if (StringUtils.isBlank(url) || !url.startsWith("http")) {
+        if (StringUtils.isBlank(url) || !SsrfUtils.isSafeUrl(url)) {
             return Mono.just(entity);
         }
         byte[] bytes;
