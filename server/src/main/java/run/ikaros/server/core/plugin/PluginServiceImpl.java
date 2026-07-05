@@ -101,15 +101,32 @@ public class PluginServiceImpl implements PluginService {
         Assert.notNull(filePart, "'filePart' must not null.");
         String pluginDir = System.getProperty("pf4j.pluginsDir");
         try {
-            File pluginDirFile = new File(pluginDir);
-            if (!pluginDirFile.exists()) {
-                pluginDirFile.mkdirs();
+            Path pluginDirPath = new File(pluginDir).toPath().normalize();
+            if (Files.notExists(pluginDirPath)) {
+                Files.createDirectories(pluginDirPath);
             }
-            Path destPath = Path.of(pluginDirFile.toURI()).resolve(filePart.filename());
+
+            // Sanitize filename: strip directory components to prevent path traversal
+            String filename = filePart.filename();
+            if (StringUtils.isBlank(filename)) {
+                return Mono.error(new PluginInstallException("Plugin filename must not be empty."));
+            }
+            String safeFilename = Path.of(filename).normalize().getFileName().toString();
+            if (StringUtils.isBlank(safeFilename)) {
+                return Mono.error(new PluginInstallException("Invalid plugin filename."));
+            }
+
+            Path destPath = pluginDirPath.resolve(safeFilename).normalize();
+
+            // Zip Slip prevention: ensure resolved path stays within plugin directory
+            if (!destPath.startsWith(pluginDirPath)) {
+                return Mono.error(new PluginInstallException(
+                    "Path traversal detected in plugin filename: " + filename));
+            }
 
             return filePart.transferTo(destPath.toFile())
                 .doOnSuccess(unused -> log.debug("Upload plugin file [{}] to plugin dir [{}].",
-                    filePart.filename(), destPath))
+                    safeFilename, destPath))
                 .then(Mono.fromCallable(() -> pluginManager.loadPlugin(destPath)))
                 .doOnSuccess(pluginId ->
                     log.debug("Load plugin by path success, pluginId: [{}].", pluginId))
