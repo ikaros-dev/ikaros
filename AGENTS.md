@@ -109,6 +109,8 @@ type(scope): message
 
 `message`: 中文描述，首字母无需大写，末尾不加句号
 
+`Co-Authored-By` 和 `Signed-off-by` 等尾部信息**一律禁止出现**，commit 消息纯净只含 type / scope / message
+
 示例：
 ```
 feat(db): 为表及字段添加中文 COMMENT ON
