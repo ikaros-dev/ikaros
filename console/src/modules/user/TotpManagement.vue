@@ -151,6 +151,12 @@ function handleVerifyKeydown(index: number, e: KeyboardEvent) {
   }
 }
 
+function copySecret() {
+  navigator.clipboard.writeText(secret.value)
+    .then(() => ElMessage.success('密钥已复制'))
+    .catch(() => ElMessage.error('复制失败'));
+}
+
 onMounted(() => {
   fetchStatus();
 });
@@ -247,7 +253,7 @@ onMounted(() => {
             <code class="m3-totp-page__secret-value">{{ secret }}</code>
             <button
               class="m3-totp-page__secret-copy"
-              @click="navigator.clipboard.writeText(secret); ElMessage.success('密钥已复制')"
+              @click="copySecret"
             >
               复制
             </button>
