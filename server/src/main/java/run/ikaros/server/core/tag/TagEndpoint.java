@@ -118,10 +118,8 @@ public class TagEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> listByCondition(ServerRequest request) {
         Optional<String> typeOp = request.queryParam("type");
-        TagType type = null;
-        if (typeOp.isPresent() && StringUtils.isNotBlank(typeOp.get())) {
-            type = TagType.valueOf(typeOp.get());
-        }
+        TagType type = typeOp.isPresent() && StringUtils.isNotBlank(typeOp.get())
+            ? TagType.valueOf(typeOp.get()) : null;
 
         UUID masterId = UuidV7Utils.fromString(request.queryParam("masterId").orElse(""));
 
