@@ -33,6 +33,7 @@ export * from "./api/v1-plugin-api";
 export * from "./api/v1-role-api";
 export * from "./api/v1-role-authority-api";
 export * from "./api/v1-security-api";
+export * from "./api/v1-security-auth-totp-api";
 export * from "./api/v1-static-api";
 export * from "./api/v1-subject-api";
 export * from "./api/v1-subject-relation-api";

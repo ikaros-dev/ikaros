@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,6 +53,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.Attachment;
+import run.ikaros.api.core.attachment.AccessUrlCondition;
+import run.ikaros.api.core.attachment.AttachmentAccessUrlProvider;
 import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
@@ -143,6 +146,11 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheEvict
     public Mono<Attachment> save(Attachment attachment) {
         Assert.notNull(attachment, "'attachment' must not be null.");
+        // Path traversal prevention: validate fsPath before persisting
+        String fsPath = attachment.getFsPath();
+        if (StringUtils.hasText(fsPath) && !fsPath.startsWith("http")) {
+            validateFsPath(fsPath);
+        }
         attachment.setParentId(Optional.ofNullable(attachment.getParentId())
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID));
         final UUID newParentId = attachment.getParentId();
@@ -851,7 +859,12 @@ public class AttachmentServiceImpl implements AttachmentService {
                     });
             })
             .switchIfEmpty(repository.findById(aid).map(att -> {
-                File file = new File(att.getFsPath());
+                // Path traversal prevention: validate fsPath before reading
+                String rawFsPath = att.getFsPath();
+                if (StringUtils.hasText(rawFsPath) && !rawFsPath.startsWith("http")) {
+                    validateFsPath(rawFsPath);
+                }
+                File file = new File(rawFsPath);
                 Path path = Path.of(file.toURI());
                 long size = 0;
                 try {
@@ -894,7 +907,12 @@ public class AttachmentServiceImpl implements AttachmentService {
             })
             .switchIfEmpty(repository.findById(aid)
                 .map(att -> {
-                    File file = new File(att.getFsPath());
+                    String rawFsPath = att.getFsPath();
+                    if (StringUtils.hasText(rawFsPath)
+                        && !rawFsPath.startsWith("http")) {
+                        validateFsPath(rawFsPath);
+                    }
+                    File file = new File(rawFsPath);
                     Path path = Path.of(file.toURI());
                     return Flux.create(sink -> {
                         try {
@@ -981,7 +999,12 @@ public class AttachmentServiceImpl implements AttachmentService {
             })
             .switchIfEmpty(repository.findById(aid)
                 .map(att -> {
-                    File file = new File(att.getFsPath());
+                    String rawFsPath = att.getFsPath();
+                    if (StringUtils.hasText(rawFsPath)
+                        && !rawFsPath.startsWith("http")) {
+                        validateFsPath(rawFsPath);
+                    }
+                    File file = new File(rawFsPath);
                     Path path = Path.of(file.toURI());
                     return org.springframework.core.io.buffer.DataBufferUtils
                         .readAsynchronousFileChannel(
@@ -991,6 +1014,70 @@ public class AttachmentServiceImpl implements AttachmentService {
                             BUFFER_SIZE
                         );
                 }));
+    }
+
+    @Override
+    public Mono<String> getUrlWithConditions(UUID attachmentId,
+                                              Map<String, Object> conditions) {
+        Map<String, Object> finalConditions = conditions == null
+            ? Collections.emptyMap() : conditions;
+        return repository.findById(attachmentId)
+            .flatMap(att -> {
+                UUID driverId = att.getDriverId();
+                if (driverId == null) {
+                    return Mono.just(att.getUrl());
+                }
+                return driverRepository.findById(driverId)
+                    .flatMap(driverEntity -> copyProperties(driverEntity,
+                        new AttachmentDriver()))
+                    .flatMap(driver -> {
+                        // 先查附件DTO
+                        return copyProperties(att, new Attachment())
+                            .flatMap(attachment -> {
+                                // 查找匹配的 AttachmentAccessUrlProvider
+                                for (AttachmentAccessUrlProvider provider :
+                                    extensionComponentsFinder.getExtensions(
+                                        AttachmentAccessUrlProvider.class)) {
+                                    if (provider.supports(attachment)) {
+                                        return provider.getAccessUrl(
+                                            attachment, finalConditions);
+                                    }
+                                }
+                                // 回退到driver的parseReadUrl
+                                AttachmentDriverFetcher fetcher = getAttDriverFetcher(
+                                    driver.getType(), driver.getName());
+                                return fetcher.parseReadUrl(attachment);
+                            });
+                    })
+                    .switchIfEmpty(Mono.just(att.getUrl()));
+            });
+    }
+
+    @Override
+    public Mono<List<AccessUrlCondition>> getUrlConditions(UUID attachmentId) {
+        return repository.findById(attachmentId)
+            .flatMap(att -> {
+                UUID driverId = att.getDriverId();
+                if (driverId == null) {
+                    return Mono.just(List.of());
+                }
+                return driverRepository.findById(driverId)
+                    .flatMap(driverEntity -> copyProperties(driverEntity,
+                        new AttachmentDriver()))
+                    .flatMap(driver ->
+                        copyProperties(att, new Attachment())
+                            .flatMap(attachment -> {
+                                for (AttachmentAccessUrlProvider provider :
+                                    extensionComponentsFinder.getExtensions(
+                                        AttachmentAccessUrlProvider.class)) {
+                                    if (provider.supports(attachment)) {
+                                        return Mono.just(
+                                            provider.getConditionDefinitions());
+                                    }
+                                }
+                                return Mono.just(List.<AccessUrlCondition>of());
+                            }));
+            });
     }
 
     private String buildContentType(String postfix) {
@@ -1042,6 +1129,8 @@ public class AttachmentServiceImpl implements AttachmentService {
         if (!StringUtils.hasText(fsPath) || fsPath.startsWith("http")) {
             return attachmentEntity;
         }
+        // Path traversal prevention: validate fsPath before deleting
+        validateFsPath(fsPath);
         try {
             Files.deleteIfExists(Path.of(fsPath));
         } catch (IOException e) {
@@ -1049,5 +1138,32 @@ public class AttachmentServiceImpl implements AttachmentService {
                 "Attachment delete fail for file system path：" + fsPath, e);
         }
         return attachmentEntity;
+    }
+
+    /**
+     * Validate that the fsPath is contained within the application work directory
+     * to prevent path traversal attacks (CWE-22).
+     *
+     * @param fsPath the file system path to validate
+     * @throws IllegalArgumentException if fsPath escapes the work directory
+     */
+    private void validateFsPath(String fsPath) {
+        Path path = Path.of(fsPath);
+        if (!path.isAbsolute()) {
+            // 相对路径：检查是否存在路径穿越（../）
+            // 如 ../../etc/passwd 会包含 ..，而网盘驱动标识符如 "0" 则不会
+            Path normalized = path.normalize();
+            if (normalized.toString().contains("..")) {
+                throw new IllegalArgumentException(
+                    "Path traversal detected in fsPath: " + fsPath);
+            }
+            return;
+        }
+        Path normalized = path.normalize();
+        Path workDirPath = ikarosProperties.getWorkDir().normalize();
+        if (!normalized.startsWith(workDirPath)) {
+            throw new IllegalArgumentException(
+                "fsPath escapes work directory: " + fsPath);
+        }
     }
 }

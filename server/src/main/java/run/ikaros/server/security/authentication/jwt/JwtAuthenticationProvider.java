@@ -52,6 +52,43 @@ public class JwtAuthenticationProvider {
     }
 
     /**
+     * 生成临时令牌（短时效，用于二步验证流程）.
+     */
+    public String generateTempToken(String username) {
+        long tempTokenExpiry = 5 * 60 * 1000L;
+        return generateToken(username, tempTokenExpiry);
+    }
+
+    /**
+     * validateToken.
+     */
+    public boolean validateToken(String token) {
+        try {
+            extractClaims(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * 提取token中的用户名.
+     */
+    public String extractUsername(String token) {
+        return extractClaims(token).getSubject();
+    }
+
+    /**
+     * 验证tempToken并提取用户名.
+     */
+    public String tempTokenUsername(String tempToken) {
+        if (!validateToken(tempToken)) {
+            throw new InvalidTokenException("Invalid or expired temp token.");
+        }
+        return extractUsername(tempToken);
+    }
+
+    /**
      * 刷新token.
      *
      * @return 新的accessToken
@@ -83,21 +120,5 @@ public class JwtAuthenticationProvider {
             .build()
             .parseClaimsJws(token)
             .getBody();
-    }
-
-    /**
-     * validateToken.
-     */
-    public boolean validateToken(String token) {
-        try {
-            extractClaims(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public String extractUsername(String token) {
-        return extractClaims(token).getSubject();
     }
 }

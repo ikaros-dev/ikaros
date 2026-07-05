@@ -51,7 +51,7 @@ const subitUserFrom = async (formEl: FormInstance | undefined) => {
 					createUserReqParams: {
 						enabled: true,
 						username: user.value.username as string,
-						password: user.value.password as string,
+						password: (user.value as any).password as string,
 					},
 				});
 				ElMessage.success(
@@ -187,7 +187,7 @@ onMounted(() => {
 					<el-input v-model="user.username" />
 				</el-form-item>
 				<el-form-item v-if="!user.id" label="Password">
-					<el-input v-model="user.password" show-password />
+					<el-input v-model="(user as any).password" show-password />
 				</el-form-item>
 				<el-form-item v-if="user.id && user.id >= 0" label="Nickname">
 					<el-input v-model="user.nickname" />

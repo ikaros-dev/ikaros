@@ -23,6 +23,9 @@ import run.ikaros.server.security.authentication.jwt.JwtApplyParam;
 import run.ikaros.server.security.authentication.jwt.JwtApplyResponse;
 import run.ikaros.server.security.authentication.jwt.JwtAuthenticationProvider;
 import run.ikaros.server.security.authentication.jwt.JwtReactiveAuthenticationManager;
+import run.ikaros.server.store.entity.UserTotpEntity;
+import run.ikaros.server.store.repository.UserRepository;
+import run.ikaros.server.store.repository.UserTotpRepository;
 
 @Slf4j
 @Component
@@ -30,6 +33,8 @@ public class SecurityEndpoint implements CoreEndpoint {
     private final JwtReactiveAuthenticationManager authenticationManager;
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
     private final ReactiveUserDetailsService userDetailsService;
+    private final UserRepository userRepository;
+    private final UserTotpRepository userTotpRepository;
 
     /**
      * Construct.
@@ -37,10 +42,14 @@ public class SecurityEndpoint implements CoreEndpoint {
     public SecurityEndpoint(
         JwtReactiveAuthenticationManager authenticationManager,
         JwtAuthenticationProvider jwtAuthenticationProvider,
-        ReactiveUserDetailsService userDetailsService) {
+        ReactiveUserDetailsService userDetailsService,
+        UserRepository userRepository,
+        UserTotpRepository userTotpRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtAuthenticationProvider = jwtAuthenticationProvider;
         this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
+        this.userTotpRepository = userTotpRepository;
     }
 
     @Override
@@ -79,8 +88,24 @@ public class SecurityEndpoint implements CoreEndpoint {
             .map(principal -> (UserDetails) principal)
             .map(UserDetails::getUsername)
             .map(String::valueOf)
-            .flatMap(userDetailsService::findByUsername)
-            .flatMap(jwtAuthenticationProvider::generateJwtResp)
+            .flatMap(username -> userRepository
+                .findByUsernameAndEnableAndDeleteStatus(username, true, false)
+                .flatMap(userEntity -> userTotpRepository.findByUserId(userEntity.getId())
+                    .defaultIfEmpty(new UserTotpEntity().setEnabled(false))
+                    .flatMap(totpEntity -> {
+                        if (Boolean.TRUE.equals(totpEntity.getEnabled())) {
+                            String tempToken =
+                                jwtAuthenticationProvider.generateTempToken(username);
+                            return Mono.just(JwtApplyResponse.builder()
+                                .username(username)
+                                .totpRequired(true)
+                                .tempToken(tempToken)
+                                .build());
+                        }
+                        return userDetailsService.findByUsername(username)
+                            .flatMap(jwtAuthenticationProvider::generateJwtResp);
+                    })
+                ))
             .flatMap(token -> ServerResponse.ok().bodyValue(token))
             .onErrorResume(UserNotFoundException.class,
                 e -> Mono.error(new UserAuthenticationException(e.getLocalizedMessage(), e)));

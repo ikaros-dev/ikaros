@@ -19,6 +19,10 @@ public class JwtApplyResponse {
     private String accessToken;
     @Schema(description = "Refresh Token")
     private String refreshToken;
+    @Schema(description = "是否要求二步验证(TOTP)")
+    private Boolean totpRequired;
+    @Schema(description = "二步验证临时令牌，在totpRequired=true时返回")
+    private String tempToken;
 }
 
 

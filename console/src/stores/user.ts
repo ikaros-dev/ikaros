@@ -4,6 +4,7 @@ import { ref, computed } from 'vue';
 import type { Role, User } from '@runikaros/api-client';
 import { JwtApplyParamAuthTypeEnum } from '@runikaros/api-client';
 import { apiClient, setApiClientJwtToken } from '@/utils/api-client';
+import axios from 'axios';
 
 export const useUserStore = defineStore('user', () => {
 	const authType = ref<JwtApplyParamAuthTypeEnum>(JwtApplyParamAuthTypeEnum.UsernamePassword);
@@ -12,6 +13,8 @@ export const useUserStore = defineStore('user', () => {
 	const isAnonymous = ref(true);
 	const jwtToken = ref<string | undefined>(undefined);
 	const refreshToken = ref<string | undefined>(undefined);
+	const totpTempToken = ref<string | undefined>(undefined);
+	const totpRequired = ref(false);
 
 	async function fetchCurrentUser() {
 		if (jwtToken.value) setApiClientJwtToken(jwtToken.value);
@@ -41,19 +44,55 @@ export const useUserStore = defineStore('user', () => {
 					password: password,
 				},
 			});
-			if (status === 200) {
+			if (status === 200 && !data.totpRequired) {
+				// 正常登录 - 无二步验证
 				jwtToken.value = data.accessToken;
 				refreshToken.value = data.refreshToken;
 				isAnonymous.value = false;
+				totpRequired.value = false;
+				totpTempToken.value = undefined;
+			} else if (status === 200 && data.totpRequired) {
+				// 需要二步验证
+				totpRequired.value = true;
+				totpTempToken.value = data.tempToken;
+				jwtToken.value = undefined;
+				refreshToken.value = undefined;
+				isAnonymous.value = true;
 			} else {
 				jwtToken.value = undefined;
 				refreshToken.value = undefined;
 				isAnonymous.value = true;
+				totpRequired.value = false;
 			}
 		} catch (e) {
 			console.error('Failed to apply jwt token', e);
 			isAnonymous.value = true;
+			totpRequired.value = false;
 		}
+	}
+
+	async function validateTotp(code: string): Promise<boolean> {
+		try {
+			const baseURL = import.meta.env.VITE_API_URL || '/api';
+			const { data, status } = await axios.post(
+				`${baseURL}/v1/security/auth/totp/validate`,
+				{
+					tempToken: totpTempToken.value,
+					code: code,
+				}
+			);
+			if (status === 200 && data.accessToken) {
+				jwtToken.value = data.accessToken;
+				refreshToken.value = data.refreshToken;
+				isAnonymous.value = false;
+				totpRequired.value = false;
+				totpTempToken.value = undefined;
+				return true;
+			}
+		} catch (e) {
+			console.error('Failed to validate TOTP', e);
+		}
+		return false;
 	}
 
 	function jwtTokenLogout() {
@@ -61,6 +100,8 @@ export const useUserStore = defineStore('user', () => {
 		refreshToken.value = undefined;
 		isAnonymous.value = true;
 		currentUser.value = undefined;
+		totpRequired.value = false;
+		totpTempToken.value = undefined;
 	}
 
 	async function fetchCurrentRole() {
@@ -81,8 +122,11 @@ export const useUserStore = defineStore('user', () => {
 		isAnonymous,
 		jwtToken,
 		refreshToken,
+		totpTempToken,
+		totpRequired,
 		fetchCurrentUser,
 		applyJwtToken,
+		validateTotp,
 		jwtTokenLogout,
 		fetchCurrentRole,
 		roleHasMaster,

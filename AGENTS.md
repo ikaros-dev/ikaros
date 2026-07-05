@@ -109,9 +109,25 @@ type(scope): message
 
 `message`: 中文描述，首字母无需大写，末尾不加句号
 
+`Co-Authored-By` 和 `Signed-off-by` 等尾部信息**一律禁止出现**，commit 消息纯净只含 type / scope / message
+
 示例：
 ```
 feat(db): 为表及字段添加中文 COMMENT ON
 fix(web): 修复日期选择器时区问题
 chore: 升级 Spring Boot 至 3.4.0
 ```
+
+---
+
+# 项目版本升级规范
+
+升级项目版本时需要同时修改以下 **3 个文件**（缺一不可）：
+
+| 文件 | 说明 | 示例 |
+|------|------|------|
+| `gradle.properties` | 项目版本号 | `version=1.2.0` |
+| `server/src/main/resources/application.yaml` | `ikaros.plugin.system-version` 字段 | `system-version: 1.2.0` |
+| `CHANGELOG.md` | 在文件最顶部新增版本标题行 | `# 1.2.0`（后跟空行） |
+
+commit 消息统一使用 `chore: 升级版本至x.x.x`。

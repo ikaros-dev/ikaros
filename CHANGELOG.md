@@ -2,6 +2,57 @@
 
 更新日志文档，版本顺序从新到旧，最新版本在最前(上)面。
 
+# 1.2.0
+
+## 前言
+
+感谢 @Fewword 对项目安全审计方面的贡献 #848 ，除了此issue之外，这位朋友还给项目报告了8个security advisories
+
+本次更新主要大大增强了项目的公网部署安全性，除了是安全漏洞方面的修复，现在也支持在用户个人中心配置自己的2FA登录验证，现在可以放心的部署到公网了。
+
+## 服务端
+
+### 安全修复
+- Zip Slip 路径遍历漏洞修复 — Migration CSV 导入解压时校验路径穿越
+- 密码哈希泄漏修复 — UserEntity.password 添加 @JsonIgnore，防止序列化到接口响应
+- BOLA 越权修改修复 — PUT /user/me 使用 SecurityContext 认证用户名而非请求体
+- Plugin JAR 上传路径穿越和文件名注入漏洞修复
+- Migration 导出接口 SQL 注入漏洞修复
+- Subject 封面 URL SSRF 漏洞修复（新增 SsrfUtils 工具类）
+- 附件 fsPath 路径穿越导致任意文件读写漏洞修复（validateFsPath 校验）
+
+### 新功能
+- TOTP 二步验证（2FA）完整支持（后端 + 前端）
+  - TOTP 核心服务（RFC 6238，HMAC-SHA1，30s，6位）
+  - 登录分步认证：凭据 → TOTP 验证码
+  - TOTP 管理页面：开启/关闭/重绑定/Authenticator 二维码
+- 新增插件附件访问地址抽象接口 AttachmentAccessUrlProvider
+- 新增附件 URL 条件参数查询和带条件 URL 获取端点
+
+### 修复
+- TagEndpoint lambda 变量必须为 effectively final 修复
+- UserTotpEntity 移除重复的 createTime/updateTime 字段
+- ikuser_totp 表补充 BaseEntity 继承字段
+- Users.vue 密码字段类型断言修复
+- TotpManagement.vue 复制方法声明修复
+
+### 配置和构建
+- 升级版本至 1.2.0
+- 升级 Gradle 至 8.14.5
+- 新增 qrcode 依赖用于 TOTP 二维码生成
+
+## 前端
+
+- 使用 Material 3 Design 重构登录页面
+- 个人中心新增二步验证 Tab
+- TOTP 设置页显示真实二维码（qrcode 库生成）
+
+## 文档
+
+- BUILD.md 本地开发章节增加 PostgreSQL 创建库和用户 SQL 命令
+
+---
+
 # 1.1.13
 
 ## 服务端

@@ -17,6 +17,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -206,6 +207,26 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("Read url.")
                         .implementation(String.class))
                     .response(responseBuilder().implementation(String.class)))
+
+            .GET("/attachment/{id}/url/conditions", this::getUrlConditions,
+                builder -> builder.operationId("GetUrlConditions")
+                    .tag(tag).description("Get URL conditions for attachment's driver.")
+                    .parameter(parameterBuilder()
+                        .in(ParameterIn.PATH).name("id")
+                        .implementation(String.class))
+                    .response(responseBuilder()
+                        .implementationArray(run.ikaros.api.core.attachment
+                            .AccessUrlCondition.class)))
+
+            .POST("/attachment/url/with/conditions", this::postUrlWithConditions,
+                builder -> builder.operationId("PostUrlWithConditions")
+                    .tag(tag).description("Get attachment URL with conditions.")
+                    .requestBody(org.springdoc.core.fn.builders.requestbody
+                        .Builder.requestBodyBuilder()
+                        .required(true)
+                        .implementation(UrlWithConditionsRequest.class))
+                    .response(responseBuilder()
+                        .implementation(String.class)))
 
             .GET("/attachment/stream/id/{id}", this::getStreamById,
                 builder -> builder.operationId("GetStreamById")
@@ -434,6 +455,19 @@ public class AttachmentEndpoint implements CoreEndpoint {
             .flatMap(url -> ServerResponse.ok().bodyValue(url));
     }
 
+    private Mono<ServerResponse> getUrlConditions(ServerRequest request) {
+        UUID id = UUID.fromString(request.pathVariable("id"));
+        return attachmentService.getUrlConditions(id)
+            .flatMap(conditions -> ServerResponse.ok().bodyValue(conditions));
+    }
+
+    private Mono<ServerResponse> postUrlWithConditions(ServerRequest request) {
+        return request.bodyToMono(UrlWithConditionsRequest.class)
+            .flatMap(req -> attachmentService.getUrlWithConditions(
+                req.attachmentId(), req.conditions()))
+            .flatMap(url -> ServerResponse.ok().bodyValue(url));
+    }
+
     private Mono<ServerResponse> getStreamById(ServerRequest request) {
         UUID id = UUID.fromString(request.pathVariable("id"));
         return Mono.fromCallable(() -> {
@@ -512,4 +546,14 @@ public class AttachmentEndpoint implements CoreEndpoint {
         return contentType;
     }
 
+    /**
+     * 带条件的附件访问地址请求参数.
+     */
+    public record UrlWithConditionsRequest(
+        @io.swagger.v3.oas.annotations.media.Schema(
+            description = "附件ID") java.util.UUID attachmentId,
+        @io.swagger.v3.oas.annotations.media.Schema(
+            description = "条件参数，如 {\"quality\":\"4k\",\"vipToken\":\"xxx\"}")
+        java.util.Map<String, Object> conditions
+    ) {}
 }

@@ -112,6 +112,13 @@ public class DefaultMigrationService implements MigrationService {
     public Flux<DefaultDataBuffer> exportDatabaseTable(String name) {
         Assert.hasText(name, "'name' must has text.");
         final boolean isNotAll = StringUtils.isNotBlank(name);
+
+        // SQL Injection prevention: validate table name format
+        if (!name.matches("^[a-zA-Z_][a-zA-Z0-9_]*$")) {
+            return Flux.error(new IllegalArgumentException(
+                "Invalid table name: " + name));
+        }
+
         return template.getDatabaseClient()
             .sql("select * from " + name + ";")
             .fetch()
@@ -237,15 +244,24 @@ public class DefaultMigrationService implements MigrationService {
                  new ZipInputStream(new FileInputStream(zipFilePath.toFile()))) {
             ZipEntry zipEntry = zipInputStream.getNextEntry();
             while (zipEntry != null) {
-                if (zipEntry.isDirectory()) {
-                    Path unzipFilePath = desDirectoryPath.resolve(zipEntry.getName());
+                // Normalize entry name to resolve "../" sequences (Zip Slip prevention)
+                Path entryPath = Path.of(zipEntry.getName()).normalize();
+                Path unzipFilePath = desDirectoryPath.resolve(entryPath).normalize();
 
-                    Files.createDirectory(unzipFilePath);
+                // Zip Slip: ensure the resolved path is within the target directory
+                if (!unzipFilePath.startsWith(desDirectoryPath.normalize())) {
+                    throw new IOException(
+                        "Blocked Zip Slip path traversal: " + zipEntry.getName());
+                }
+
+                if (zipEntry.isDirectory()) {
+                    if (Files.notExists(unzipFilePath)) {
+                        Files.createDirectories(unzipFilePath);
+                    }
                 } else {
-                    Path unzipFilePath = desDirectoryPath.resolve(zipEntry.getName());
                     // 父目录
                     if (Files.notExists(unzipFilePath.getParent())) {
-                        Files.createDirectory(unzipFilePath.getParent());
+                        Files.createDirectories(unzipFilePath.getParent());
                     }
 
                     BufferedOutputStream bufferedOutputStream =

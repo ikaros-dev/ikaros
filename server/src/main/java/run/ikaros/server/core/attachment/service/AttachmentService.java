@@ -4,10 +4,12 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.attachment.AccessUrlCondition;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentStreamVo;
@@ -76,4 +78,20 @@ public interface AttachmentService {
     Mono<Flux<DataBuffer>> getStreamByIdWithRange(UUID aid, long start, long end);
 
     Mono<Flux<DataBuffer>> getStreamByIdWithoutRange(UUID aid);
+
+    /**
+     * 根据附件ID和条件参数获取访问地址（由插件实现的AttachmentAccessUrlProvider提供）.
+     * 若无匹配的provider，回退到默认的getReadUrl().
+     *
+     * @param attachmentId 附件ID
+     * @param conditions   条件参数，如 {"quality":"4k","vipToken":"xxx"}
+     */
+    Mono<String> getUrlWithConditions(UUID attachmentId, Map<String, Object> conditions);
+
+    /**
+     * 获取指定附件对应驱动支持的条件参数定义列表.
+     *
+     * @param attachmentId 附件ID
+     */
+    Mono<List<AccessUrlCondition>> getUrlConditions(UUID attachmentId);
 }

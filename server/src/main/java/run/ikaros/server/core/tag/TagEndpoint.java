@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -20,21 +21,36 @@ import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.tag.AttachmentTag;
 import run.ikaros.api.core.tag.SubjectTag;
 import run.ikaros.api.core.tag.Tag;
+import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.TagType;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.endpoint.CoreEndpoint;
+import run.ikaros.server.store.repository.TagRepository;
 
 @Slf4j
 @Component
 public class TagEndpoint implements CoreEndpoint {
     private final TagService tagService;
     private final UserService userService;
+    private final TagRepository tagRepository;
 
-    public TagEndpoint(TagService tagService, UserService userService) {
+    public TagEndpoint(TagService tagService, UserService userService,
+                       TagRepository tagRepository) {
         this.tagService = tagService;
         this.userService = userService;
+        this.tagRepository = tagRepository;
+    }
+
+    /**
+     * 获取当前认证用户的ID.
+     */
+    private Mono<UUID> getCurrentUserId(ServerRequest request) {
+        return request.principal()
+            .map(Principal::getName)
+            .flatMap(userService::getUserByUsername)
+            .map(user -> user.entity().getId());
     }
 
     @Override
@@ -49,10 +65,7 @@ public class TagEndpoint implements CoreEndpoint {
                         .implementation(TagType.class))
                     .parameter(parameterBuilder()
                         .name("masterId").required(false)
-                        .implementation(Long.class))
-                    .parameter(parameterBuilder()
-                        .name("userId").required(false)
-                        .implementation(Long.class))
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .name("name").required(false)
                         .implementation(String.class))
@@ -105,18 +118,17 @@ public class TagEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> listByCondition(ServerRequest request) {
         Optional<String> typeOp = request.queryParam("type");
-        TagType type = null;
-        if (typeOp.isPresent() && StringUtils.isNotBlank(typeOp.get())) {
-            type = TagType.valueOf(typeOp.get());
-        }
+        TagType type = typeOp.isPresent() && StringUtils.isNotBlank(typeOp.get())
+            ? TagType.valueOf(typeOp.get()) : null;
 
         UUID masterId = UuidV7Utils.fromString(request.queryParam("masterId").orElse(""));
-        UUID userId = UuidV7Utils.fromString(request.queryParam("userId").orElse(""));
 
         Optional<String> nameOp = request.queryParam("name");
         String name = nameOp.orElse(null);
 
-        return tagService.findAll(type, masterId, userId, name)
+        return getCurrentUserId(request)
+            .flatMapMany(currentUserId ->
+                tagService.findAll(type, masterId, currentUserId, name))
             .collectList()
             .flatMap(tags -> ServerResponse.ok().bodyValue(tags));
     }
@@ -151,8 +163,17 @@ public class TagEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> removeById(ServerRequest request) {
         UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
-        return tagService.removeById(id)
-            .then(ServerResponse.ok().build());
+        return tagRepository.findById(id)
+            .switchIfEmpty(Mono.error(
+                new NotFoundException("Tag not found for id = " + id)))
+            .flatMap(tag -> getCurrentUserId(request)
+                .flatMap(currentUserId -> {
+                    if (!currentUserId.equals(tag.getUserId())) {
+                        return ServerResponse.status(HttpStatus.FORBIDDEN).build();
+                    }
+                    return tagService.removeById(id)
+                        .then(ServerResponse.ok().build());
+                }));
     }
 
     private Mono<ServerResponse> removeByCondition(ServerRequest request) {
@@ -166,7 +187,9 @@ public class TagEndpoint implements CoreEndpoint {
 
         UUID masterId = UuidV7Utils.fromString(request.queryParam("masterId").orElse(""));
         Assert.notNull(masterId, "'masterId' must not null.");
-        return tagService.remove(type, masterId, name)
+        return getCurrentUserId(request)
+            .flatMap(currentUserId ->
+                tagService.remove(type, masterId, name, currentUserId))
             .then(ServerResponse.ok().build());
     }
 

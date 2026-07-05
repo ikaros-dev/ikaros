@@ -217,7 +217,6 @@ export const V1TagApiAxiosParamCreator = function (
      * List tags by condition.
      * @param {any} [type]
      * @param {any} [masterId]
-     * @param {any} [userId]
      * @param {any} [name]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -225,7 +224,6 @@ export const V1TagApiAxiosParamCreator = function (
     listTagsByCondition: async (
       type?: any,
       masterId?: any,
-      userId?: any,
       name?: any,
       options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
@@ -259,10 +257,6 @@ export const V1TagApiAxiosParamCreator = function (
 
       if (masterId !== undefined) {
         localVarQueryParameter["masterId"] = masterId;
-      }
-
-      if (userId !== undefined) {
-        localVarQueryParameter["userId"] = userId;
       }
 
       if (name !== undefined) {
@@ -485,7 +479,6 @@ export const V1TagApiFp = function (configuration?: Configuration) {
      * List tags by condition.
      * @param {any} [type]
      * @param {any} [masterId]
-     * @param {any} [userId]
      * @param {any} [name]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -493,7 +486,6 @@ export const V1TagApiFp = function (configuration?: Configuration) {
     async listTagsByCondition(
       type?: any,
       masterId?: any,
-      userId?: any,
       name?: any,
       options?: AxiosRequestConfig,
     ): Promise<
@@ -503,7 +495,6 @@ export const V1TagApiFp = function (configuration?: Configuration) {
         await localVarAxiosParamCreator.listTagsByCondition(
           type,
           masterId,
-          userId,
           name,
           options,
         );
@@ -640,7 +631,6 @@ export const V1TagApiFactory = function (
         .listTagsByCondition(
           requestParameters.type,
           requestParameters.masterId,
-          requestParameters.userId,
           requestParameters.name,
           options,
         )
@@ -743,13 +733,6 @@ export interface V1TagApiListTagsByConditionRequest {
    * @memberof V1TagApiListTagsByCondition
    */
   readonly masterId?: any;
-
-  /**
-   *
-   * @type {any}
-   * @memberof V1TagApiListTagsByCondition
-   */
-  readonly userId?: any;
 
   /**
    *
@@ -871,7 +854,6 @@ export class V1TagApi extends BaseAPI {
       .listTagsByCondition(
         requestParameters.type,
         requestParameters.masterId,
-        requestParameters.userId,
         requestParameters.name,
         options,
       )

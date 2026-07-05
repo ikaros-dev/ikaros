@@ -71,12 +71,6 @@ export interface UserEntity {
    * @type {any}
    * @memberof UserEntity
    */
-  password?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof UserEntity
-   */
   nickname?: any;
   /**
    *

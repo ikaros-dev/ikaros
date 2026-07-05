@@ -1,7 +1,7 @@
 # 编译环境
 
 - JDK: 21
-- Gradle: 8.14.4
+- Gradle: 8.14.5
 - SpringBoot: 4.0.1
 - CheckStyle: 9.3
 - Vue: 3
@@ -94,6 +94,21 @@ docker run -d \
 -e POSTGRES_PASSWORD=openpostgresql \
 postgres:18.3-alpine
 ```
+当然如果不运行测试，Windows本地也可安装PG18数据库，下载地址：<https://www.enterprisedb.com/downloads/postgres-postgresql-downloads>，安装时端口使用`5432`，然后通过pgAdmin或psql执行以下命令创建用户和数据库：
+
+```sql
+CREATE USER ikaros WITH PASSWORD 'openpostgresql';
+CREATE DATABASE ikaros OWNER ikaros;
+GRANT ALL PRIVILEGES ON DATABASE ikaros TO ikaros;
+```
+
+也可使用`psql`命令行快速完成：
+```shell
+psql -U postgres -c "CREATE USER ikaros WITH PASSWORD 'openpostgresql';"
+psql -U postgres -c "CREATE DATABASE ikaros OWNER ikaros;"
+psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE ikaros TO ikaros;"
+```
+
 
 在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,local`
 
