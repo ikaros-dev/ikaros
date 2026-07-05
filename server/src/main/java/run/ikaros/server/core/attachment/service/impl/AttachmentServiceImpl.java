@@ -1148,7 +1148,18 @@ public class AttachmentServiceImpl implements AttachmentService {
      * @throws IllegalArgumentException if fsPath escapes the work directory
      */
     private void validateFsPath(String fsPath) {
-        Path normalized = Path.of(fsPath).normalize();
+        Path path = Path.of(fsPath);
+        if (!path.isAbsolute()) {
+            // 相对路径：检查是否存在路径穿越（../）
+            // 如 ../../etc/passwd 会包含 ..，而网盘驱动标识符如 "0" 则不会
+            Path normalized = path.normalize();
+            if (normalized.toString().contains("..")) {
+                throw new IllegalArgumentException(
+                    "Path traversal detected in fsPath: " + fsPath);
+            }
+            return;
+        }
+        Path normalized = path.normalize();
         Path workDirPath = ikarosProperties.getWorkDir().normalize();
         if (!normalized.startsWith(workDirPath)) {
             throw new IllegalArgumentException(
