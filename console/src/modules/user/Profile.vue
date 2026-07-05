@@ -18,6 +18,7 @@ import {
 } from 'element-plus';
 import AttachmentSelectDialog from '../content/attachment/AttachmentSelectDialog.vue';
 import { useI18n } from 'vue-i18n';
+import TotpManagement from './TotpManagement.vue';
 
 const userStore = useUserStore();
 const { t } = useI18n();
@@ -83,7 +84,6 @@ const attachmentSelectDialogVisible = ref(false);
 const onAttachmentSelectDialogColseWithAttachment = (
 	attachment: Attachment
 ) => {
-	// console.log('receive file entity: ', file);
 	profile.value.avatar = attachment.url as string;
 	attachmentSelectDialogVisible.value = false;
 };
@@ -190,6 +190,10 @@ onMounted(initProfileAndUsername);
 						t('module.user.profile.label.btn_save')
 					}}</el-button>
 				</el-form-item>
+			</el-tab-pane>
+			<!-- 2FA -->
+			<el-tab-pane label="二步验证">
+				<TotpManagement />
 			</el-tab-pane>
 		</el-tabs>
 	</el-form>
