@@ -29,14 +29,17 @@ import run.ikaros.server.store.repository.UserTotpRepository;
 
 @Slf4j
 @Component
-public class TOTPEndpoint implements CoreEndpoint {
-    private final TOTPService totpService;
+public class TotpEndpoint implements CoreEndpoint {
+    private final TotpService totpService;
     private final UserTotpRepository userTotpRepository;
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
     private final ReactiveUserDetailsService userDetailsService;
     private final UserRepository userRepository;
 
-    public TOTPEndpoint(TOTPService totpService,
+    /**
+     * Construct.
+     */
+    public TotpEndpoint(TotpService totpService,
                         UserTotpRepository userTotpRepository,
                         JwtAuthenticationProvider jwtAuthenticationProvider,
                         ReactiveUserDetailsService userDetailsService,

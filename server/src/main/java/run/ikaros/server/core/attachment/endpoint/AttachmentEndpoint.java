@@ -551,9 +551,9 @@ public class AttachmentEndpoint implements CoreEndpoint {
      */
     public record UrlWithConditionsRequest(
         @io.swagger.v3.oas.annotations.media.Schema(
-            description = "附件ID") java.util.UUID attachmentId,
+            description = "附件ID") UUID attachmentId,
         @io.swagger.v3.oas.annotations.media.Schema(
             description = "条件参数，如 {\"quality\":\"4k\",\"vipToken\":\"xxx\"}")
-        java.util.Map<String, Object> conditions
+        Map<String, Object> conditions
     ) {}
 }
