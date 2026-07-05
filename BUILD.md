@@ -94,6 +94,8 @@ docker run -d \
 -e POSTGRES_PASSWORD=openpostgresql \
 postgres:18.3-alpine
 ```
+当然如果不运行测试，Windows本地也可安装PG18数据库，下载地址：<https://www.enterprisedb.com/downloads/postgres-postgresql-downloads>，安装时端口使用`5432`，设置好密码为`openpostgresql`（或与下方Docker配置一致），并创建数据库`ikaros`即可，
+
 
 在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,local`
 
