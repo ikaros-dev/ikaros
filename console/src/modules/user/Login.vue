@@ -1,234 +1,368 @@
 <script setup lang="ts">
-import { ElMessage, ElInput, ElForm, ElFormItem, ElButton } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import { AxiosError } from 'axios';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
 import { randomUUID } from '@/utils/id';
 import { onMounted, ref } from 'vue';
 import LanguageSelect from '@/layouts/components/LanguageSelect.vue';
-// import Dashboard from '@/modules/dashboard/Dashboard.vue';
 
 const { t } = useI18n();
-// const route = useRoute();
-// const router = useRouter();
 
 const handleGenerateToken = async () => {
-	const token = randomUUID();
-	form.value._csrf = token;
-	document.cookie = `XSRF-TOKEN=${token}; Path=/;`;
+  const token = randomUUID();
+  form.value._csrf = token;
+  document.cookie = `XSRF-TOKEN=${token}; Path=/;`;
 };
 
 const form = ref({
-	username: '',
-	password: '',
-	_csrf: '',
+  username: '',
+  password: '',
+  _csrf: '',
 });
 
-const rules = ref({
-	username: [
-		{
-			required: true,
-			message: t('module.user.login.field.username.rule'),
-			trigger: 'blur',
-		},
-	],
-	password: [
-		{
-			required: true,
-			message: t('module.user.login.field.password.rule'),
-			trigger: 'blur',
-		},
-	],
-});
-
-const formRef = ref(null);
+const formRef = ref<HTMLFormElement | null>(null);
 const userStore = useUserStore();
 
 const handleLogin = async () => {
-	try {
-		// const url = `${import.meta.env.VITE_API_URL}/login`;
-		// await axios.post(url, qs.stringify(form.value), {
-		// 	withCredentials: true,
-		// 	headers: {
-		// 		'Content-Type': 'application/x-www-form-urlencoded',
-		// 	},
-		// });
+  try {
+    await userStore.applyJwtToken(form.value.username, form.value.password);
 
-		// await userStore.fetchCurrentUser();
+    if (!userStore.isAnonymous) {
+      window.location.reload();
+    }
+  } catch (e: unknown) {
+    console.error('Failed to login', e);
 
-		await userStore.applyJwtToken(form.value.username, form.value.password);
+    if (e instanceof AxiosError) {
+      if (/Network Error/.test(e.message)) {
+        ElMessage.error(t('common.exception.network_error'));
+        return;
+      }
 
-		// Reload page
-		// if (route.query.redirect_uri) {
-		// 	window.location.reload();
-		// } else {
-		// 	router.push(Dashboard);
-		// }
-		if (!userStore.isAnonymous) {
-			window.location.reload();
-		}
-	} catch (e: unknown) {
-		console.error('Failed to login', e);
+      if (e.response?.status === 403) {
+        ElMessage.warning(t('module.user.login.operation.submit.toast_csrf'));
+        await handleGenerateToken();
+        return;
+      }
 
-		if (e instanceof AxiosError) {
-			if (/Network Error/.test(e.message)) {
-				ElMessage.error(t('common.exception.network_error'));
-				return;
-			}
+      ElMessage.error(t('module.user.login.operation.submit.toast_failed'));
+    } else {
+      ElMessage.error(t('common.exception.unknown_error_with_title'));
+    }
 
-			if (e.response?.status === 403) {
-				ElMessage.warning(t('module.user.login.operation.submit.toast_csrf'));
-				await handleGenerateToken();
-				return;
-			}
-
-			ElMessage.error(t('module.user.login.operation.submit.toast_failed'));
-		} else {
-			ElMessage.error(t('common.exception.unknown_error_with_title'));
-		}
-
-		form.value.password = '';
-	}
+    form.value.password = '';
+  }
 };
 
-const usernameRef = ref();
+const usernameRef = ref<HTMLInputElement | null>(null);
 
 onMounted(() => {
-	handleGenerateToken();
-	usernameRef.value.focus();
+  handleGenerateToken();
+  usernameRef.value?.focus();
 });
 </script>
 
 <template>
-	<div class="login-container">
-		<el-form ref="formRef" :model="form" class="login-form" :rules="rules">
-			<div class="title-container">
-				<h3 class="title">{{ t('module.user.login.title') }}</h3>
-			</div>
-			<el-form-item prop="username">
-				<el-input
-					ref="usernameRef"
-					v-model="form.username"
-					:placeholder="t('module.user.login.field.username.placeholder')"
-				>
-				</el-input>
-			</el-form-item>
-			<el-form-item prop="password">
-				<el-input
-					v-model="form.password"
-					type="password"
-					:placeholder="t('module.user.login.field.password.placeholder')"
-					@keyup.enter="handleLogin"
-				></el-input>
-			</el-form-item>
-			<LanguageSelect />
-			<el-button type="primary" class="login-button" @click="handleLogin">{{
-				t('module.user.login.button')
-			}}</el-button>
-		</el-form>
-	</div>
+  <div class="m3-login">
+    <div class="m3-login__card">
+      <div class="m3-login__header">
+        <h1 class="m3-login__title">{{ t('module.user.login.title') }}</h1>
+      </div>
+
+      <form ref="formRef" class="m3-login__form" @submit.prevent="handleLogin">
+        <div class="m3-field">
+          <div class="m3-field__container">
+            <input
+              ref="usernameRef"
+              id="username"
+              v-model="form.username"
+              type="text"
+              class="m3-field__input"
+              :placeholder="t('module.user.login.field.username.placeholder')"
+              required
+            />
+            <label for="username" class="m3-field__label">
+              {{ t('module.user.login.field.username.placeholder') }}
+            </label>
+            <div class="m3-field__underline"></div>
+          </div>
+        </div>
+
+        <div class="m3-field">
+          <div class="m3-field__container">
+            <input
+              id="password"
+              v-model="form.password"
+              type="password"
+              class="m3-field__input"
+              :placeholder="t('module.user.login.field.password.placeholder')"
+              required
+              @keyup.enter="handleLogin"
+            />
+            <label for="password" class="m3-field__label">
+              {{ t('module.user.login.field.password.placeholder') }}
+            </label>
+            <div class="m3-field__underline"></div>
+          </div>
+        </div>
+
+        <div class="m3-login__actions">
+          <LanguageSelect />
+          <button type="submit" class="m3-btn m3-btn--filled">
+            <span class="m3-btn__ripple"></span>
+            <span class="m3-btn__content">{{ t('module.user.login.button') }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </template>
 
-<style lang="scss" scoped>
-$bg: #2d3a4b;
-$dark_gray: #889aa4;
-$light_gray: #eee;
-$cursor: #fff;
+<style scoped>
+/* ========== M3 Color System & Layout ========== */
+.m3-login {
+  --m3-primary: #409eff;
+  --m3-on-primary: #ffffff;
+  --m3-primary-container: #d6e4ff;
+  --m3-on-primary-container: #001b3e;
+  --m3-secondary: #565f71;
+  --m3-on-secondary: #ffffff;
+  --m3-surface: #ffffff;
+  --m3-surface-dim: #f0f5fa;
+  --m3-surface-container: #ffffff;
+  --m3-surface-container-high: #f8faff;
+  --m3-surface-container-highest: #eef3f8;
+  --m3-on-surface: #1f1f1f;
+  --m3-on-surface-variant: #44474f;
+  --m3-outline: #c4c6d0;
+  --m3-error: #ba1a1a;
+  --m3-elevation-1: 0 1px 2px 0 rgba(0,0,0,0.04);
+  --m3-elevation-3: 0 4px 8px 0 rgba(0,0,0,0.04), 0 1px 3px 0 rgba(0,0,0,0.04);
+  --m3-elevation-5: 0 8px 16px 0 rgba(0,0,0,0.04), 0 2px 6px 0 rgba(0,0,0,0.04);
 
-.login-container {
-	min-height: 100%;
-	width: 100%;
-	background-color: $bg;
-	overflow: hidden;
+  min-height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m3-surface-dim);
+  padding: 24px;
+  box-sizing: border-box;
+}
 
-	.login-form {
-		position: relative;
-		width: 520px;
-		max-width: 100%;
-		padding: 160px 35px 0;
-		margin: 0 auto;
-		overflow: hidden;
+/* ========== Card (M3 Surface Container) ========== */
+.m3-login__card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--m3-surface-container);
+  border-radius: 28px;
+  box-shadow: var(--m3-elevation-3);
+  padding: 48px 32px 32px;
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease;
+}
 
-		::deep .el-form-item {
-			border: 1px solid rgba(255, 255, 255, 0.1);
-			background: rgba(0, 0, 0, 0.1);
-			border-radius: 5px;
-			color: #454545;
-		}
+/* ========== Header ========== */
+.m3-login__header {
+  margin-bottom: 32px;
+  text-align: center;
+}
 
-		::deep .el-input {
-			display: inline-block;
-			height: 47px;
-			width: 85%;
+.m3-login__title {
+  margin: 0;
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 36px;
+  letter-spacing: 0;
+  color: var(--m3-on-surface);
+}
 
-			input {
-				background: transparent;
-				border: 0px;
-				-webkit-appearance: none;
-				border-radius: 0px;
-				padding: 12px 5px 12px 15px;
-				color: $light_gray;
-				height: 47px;
-				caret-color: $cursor;
-			}
-		}
-		.login-button {
-			width: 80%;
-			box-sizing: border-box;
-		}
-	}
+/* ========== Form ========== */
+.m3-login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-	.tips {
-		font-size: 16px;
-		line-height: 28px;
-		color: #fff;
-		margin-bottom: 10px;
+/* ========== M3 Filled Text Field ========== */
+.m3-field {
+  width: 100%;
+}
 
-		span {
-			&:first-of-type {
-				margin-right: 16px;
-			}
-		}
-	}
+.m3-field__container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--m3-surface-container-highest);
+  border-radius: 4px 4px 0 0;
+  height: 56px;
+  cursor: text;
+  transition: background 0.15s ease;
+}
 
-	.svg-container {
-		padding: 6px 5px 6px 15px;
-		color: $dark_gray;
-		vertical-align: middle;
-		display: inline-block;
-	}
+.m3-field__container:hover {
+  background: var(--m3-surface-container-high);
+}
 
-	.title-container {
-		position: relative;
+.m3-field__container:focus-within {
+  background: var(--m3-surface-container-highest);
+}
 
-		.title {
-			font-size: 26px;
-			color: $light_gray;
-			margin: 0px auto 40px auto;
-			text-align: center;
-			font-weight: bold;
-		}
+.m3-field__input {
+  width: 100%;
+  height: 100%;
+  padding: 24px 16px 8px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--m3-on-surface);
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.5px;
+  box-sizing: border-box;
+}
 
-		::deep .lang-select {
-			position: absolute;
-			top: 4px;
-			right: 0;
-			background-color: white;
-			font-size: 22px;
-			padding: 4px;
-			border-radius: 4px;
-			cursor: pointer;
-		}
-	}
+.m3-field__input::placeholder {
+  color: transparent;
+}
 
-	.show-pwd {
-		// position: absolute;
-		// right: 10px;
-		// top: 7px;
-		font-size: 16px;
-		color: $dark_gray;
-		cursor: pointer;
-		user-select: none;
-	}
+.m3-field__input:-webkit-autofill,
+.m3-field__input:-webkit-autofill:hover,
+.m3-field__input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--m3-surface-container-highest) inset;
+  -webkit-text-fill-color: var(--m3-on-surface);
+  caret-color: var(--m3-primary);
+  border-radius: 4px 4px 0 0;
+}
+
+.m3-field__label {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.5px;
+  color: var(--m3-on-surface-variant);
+  pointer-events: none;
+  transition: all 0.15s ease;
+  transform-origin: left top;
+}
+
+.m3-field__input:focus + .m3-field__label,
+.m3-field__input:not(:placeholder-shown) + .m3-field__label {
+  top: 8px;
+  transform: translateY(0) scale(0.75);
+  color: var(--m3-primary);
+  font-weight: 500;
+}
+
+.m3-field__underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--m3-outline);
+  transition: all 0.15s ease;
+}
+
+.m3-field__container:hover .m3-field__underline {
+  background: var(--m3-on-surface);
+  height: 1px;
+}
+
+.m3-field__container:focus-within .m3-field__underline {
+  background: var(--m3-primary);
+  height: 2px;
+}
+
+/* ========== Actions ========== */
+.m3-login__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  gap: 16px;
+}
+
+.m3-login__actions :deep(.lang-select) {
+  flex-shrink: 0;
+}
+
+/* ========== M3 Filled Button ========== */
+.m3-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 40px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.1px;
+  text-transform: none;
+  overflow: hidden;
+  transition: background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.m3-btn--filled {
+  background: var(--m3-primary);
+  color: var(--m3-on-primary);
+}
+
+.m3-btn--filled:hover {
+  background: #66b1ff;
+}
+
+.m3-btn--filled:active {
+  background: #3a8ee6;
+}
+
+.m3-btn--filled:focus-visible {
+  outline: 2px solid var(--m3-on-surface);
+  outline-offset: 2px;
+}
+
+.m3-btn__content {
+  position: relative;
+  z-index: 1;
+}
+
+.m3-btn__ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 480px) {
+  .m3-login__card {
+    padding: 32px 24px 24px;
+    border-radius: 24px;
+  }
+
+  .m3-login__actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .m3-btn {
+    width: 100%;
+  }
 }
 </style>
