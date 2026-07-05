@@ -206,8 +206,8 @@ public class TOTPEndpoint implements CoreEndpoint {
             .flatMap(userId -> userTotpRepository.findByUserId(userId)
                 .switchIfEmpty(Mono.error(new NotFoundException(
                     "TOTP not configured"))))
-            .map(totpEntity -> totpEntity.setEnabled(false).setSecret(null))
-            .flatMap(userTotpRepository::save)
+            .flatMap(totpEntity -> userTotpRepository.deleteById(totpEntity.getId())
+                .then(Mono.just(totpEntity)))
             .then(ServerResponse.ok().bodyValue("TOTP disabled"));
     }
 
