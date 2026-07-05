@@ -139,16 +139,16 @@ export const V1IndicesApiAxiosParamCreator = function (
         localVarQueryParameter["limit"] = limit;
       }
 
-      if (keyword !== undefined) {
-        localVarQueryParameter["keyword"] = keyword;
-      }
-
       if (highlightPreTag !== undefined) {
         localVarQueryParameter["highlightPreTag"] = highlightPreTag;
       }
 
       if (highlightPostTag !== undefined) {
         localVarQueryParameter["highlightPostTag"] = highlightPostTag;
+      }
+
+      if (keyword !== undefined) {
+        localVarQueryParameter["keyword"] = keyword;
       }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);

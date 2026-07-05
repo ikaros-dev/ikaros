@@ -36,4 +36,16 @@ export interface JwtApplyResponse {
    * @memberof JwtApplyResponse
    */
   refreshToken?: any;
+  /**
+   * 是否要求二步验证(TOTP)
+   * @type {any}
+   * @memberof JwtApplyResponse
+   */
+  totpRequired?: any;
+  /**
+   * 二步验证临时令牌，在totpRequired=true时返回
+   * @type {any}
+   * @memberof JwtApplyResponse
+   */
+  tempToken?: any;
 }
