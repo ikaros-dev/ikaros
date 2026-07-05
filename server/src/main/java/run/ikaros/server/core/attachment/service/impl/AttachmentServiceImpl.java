@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,6 +53,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.Attachment;
+import run.ikaros.api.core.attachment.AccessUrlCondition;
+import run.ikaros.api.core.attachment.AttachmentAccessUrlProvider;
 import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
@@ -1011,6 +1014,70 @@ public class AttachmentServiceImpl implements AttachmentService {
                             BUFFER_SIZE
                         );
                 }));
+    }
+
+    @Override
+    public Mono<String> getUrlWithConditions(UUID attachmentId,
+                                              Map<String, Object> conditions) {
+        Map<String, Object> finalConditions = conditions == null
+            ? Collections.emptyMap() : conditions;
+        return repository.findById(attachmentId)
+            .flatMap(att -> {
+                UUID driverId = att.getDriverId();
+                if (driverId == null) {
+                    return Mono.just(att.getUrl());
+                }
+                return driverRepository.findById(driverId)
+                    .flatMap(driverEntity -> copyProperties(driverEntity,
+                        new AttachmentDriver()))
+                    .flatMap(driver -> {
+                        // 先查附件DTO
+                        return copyProperties(att, new Attachment())
+                            .flatMap(attachment -> {
+                                // 查找匹配的 AttachmentAccessUrlProvider
+                                for (AttachmentAccessUrlProvider provider :
+                                    extensionComponentsFinder.getExtensions(
+                                        AttachmentAccessUrlProvider.class)) {
+                                    if (provider.supports(attachment)) {
+                                        return provider.getAccessUrl(
+                                            attachment, finalConditions);
+                                    }
+                                }
+                                // 回退到driver的parseReadUrl
+                                AttachmentDriverFetcher fetcher = getAttDriverFetcher(
+                                    driver.getType(), driver.getName());
+                                return fetcher.parseReadUrl(attachment);
+                            });
+                    })
+                    .switchIfEmpty(Mono.just(att.getUrl()));
+            });
+    }
+
+    @Override
+    public Mono<List<AccessUrlCondition>> getUrlConditions(UUID attachmentId) {
+        return repository.findById(attachmentId)
+            .flatMap(att -> {
+                UUID driverId = att.getDriverId();
+                if (driverId == null) {
+                    return Mono.just(List.of());
+                }
+                return driverRepository.findById(driverId)
+                    .flatMap(driverEntity -> copyProperties(driverEntity,
+                        new AttachmentDriver()))
+                    .flatMap(driver ->
+                        copyProperties(att, new Attachment())
+                            .flatMap(attachment -> {
+                                for (AttachmentAccessUrlProvider provider :
+                                    extensionComponentsFinder.getExtensions(
+                                        AttachmentAccessUrlProvider.class)) {
+                                    if (provider.supports(attachment)) {
+                                        return Mono.just(
+                                            provider.getConditionDefinitions());
+                                    }
+                                }
+                                return Mono.just(List.<AccessUrlCondition>of());
+                            }));
+            });
     }
 
     private String buildContentType(String postfix) {
