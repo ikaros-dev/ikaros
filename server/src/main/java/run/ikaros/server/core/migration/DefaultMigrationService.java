@@ -112,6 +112,13 @@ public class DefaultMigrationService implements MigrationService {
     public Flux<DefaultDataBuffer> exportDatabaseTable(String name) {
         Assert.hasText(name, "'name' must has text.");
         final boolean isNotAll = StringUtils.isNotBlank(name);
+
+        // SQL Injection prevention: validate table name format
+        if (!name.matches("^[a-zA-Z_][a-zA-Z0-9_]*$")) {
+            return Flux.error(new IllegalArgumentException(
+                "Invalid table name: " + name));
+        }
+
         return template.getDatabaseClient()
             .sql("select * from " + name + ";")
             .fetch()
