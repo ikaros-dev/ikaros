@@ -127,10 +127,11 @@ public class DefaultTagService implements TagService {
     }
 
     @Override
-    public Mono<Void> remove(TagType type, UUID masterId, String name) {
+    public Mono<Void> remove(TagType type, UUID masterId, String name, UUID userId) {
         Assert.notNull(type, "'type' must not null.");
         Assert.hasText(name, "'name' must has text.");
-        return findAll(type, masterId, null, name)
+        Assert.notNull(userId, "'userId' must not null.");
+        return findAll(type, masterId, userId, name)
             .flatMap(tag -> removeById(tag.getId()))
             .then();
     }

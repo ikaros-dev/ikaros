@@ -17,7 +17,7 @@ public interface TagService {
 
     Mono<Tag> create(Tag tag);
 
-    Mono<Void> remove(TagType type, UUID masterId, String name);
+    Mono<Void> remove(TagType type, UUID masterId, String name, UUID userId);
 
     Mono<Void> removeById(UUID tagId);
 
