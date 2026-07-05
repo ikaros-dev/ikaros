@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ElMessage } from 'element-plus';
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
 import axios from 'axios';
+import QRCode from 'qrcode';
 
 const { t } = useI18n();
 const userStore = useUserStore();
@@ -19,6 +20,7 @@ const isLoading = ref(false);
 const step = ref<'idle' | 'setup' | 'verify'>('idle');
 const secret = ref('');
 const otpAuthUri = ref('');
+const qrDataUrl = ref('');
 const verifyCode = ref(['', '', '', '', '', '']);
 const verifyCodeRefs = ref<(HTMLInputElement | null)[]>([]);
 
@@ -66,6 +68,21 @@ async function handleSetup() {
     isLoading.value = false;
   }
 }
+
+// otpAuthUri变化时生成二维码
+watch(otpAuthUri, async (uri) => {
+  if (uri) {
+    try {
+      qrDataUrl.value = await QRCode.toDataURL(uri, {
+        width: 200,
+        margin: 2,
+        color: { dark: '#1f1f1f', light: '#ffffff' },
+      });
+    } catch (e) {
+      console.error('Failed to generate QR code', e);
+    }
+  }
+});
 
 // 验证并启用
 async function handleEnable() {
@@ -220,28 +237,9 @@ onMounted(() => {
             使用 Authenticator 应用扫描此二维码或手动输入密钥
           </p>
 
-          <!-- QR 码 (使用内联 SVG 渲染 otpauth URI) -->
-          <div class="m3-totp-page__qr-container" v-if="otpAuthUri">
-            <svg
-              :width="200"
-              :height="200"
-              viewBox="0 0 200 200"
-              style="display: block; margin: 0 auto; background: #fff; border-radius: 12px; padding: 12px;"
-            >
-              <rect width="200" height="200" fill="white" rx="12" />
-              <text
-                x="100"
-                y="100"
-                text-anchor="middle"
-                dominant-baseline="middle"
-                font-family="monospace"
-                font-size="11"
-                fill="#666"
-              >
-                <tspan x="100" dy="-20">请使用 Authenticator</tspan>
-                <tspan x="100" dy="20">扫描下方二维码</tspan>
-              </text>
-            </svg>
+          <!-- QR 码 -->
+          <div class="m3-totp-page__qr-container" v-if="qrDataUrl">
+            <img :src="qrDataUrl" alt="TOTP QR Code" width="200" height="200" />
           </div>
 
           <div class="m3-totp-page__secret">
@@ -424,6 +422,14 @@ onMounted(() => {
 .m3-totp-page__qr-container {
   text-align: center;
   margin: 16px 0;
+}
+
+.m3-totp-page__qr-container img {
+  display: block;
+  margin: 0 auto;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
 }
 
 .m3-totp-page__secret {
