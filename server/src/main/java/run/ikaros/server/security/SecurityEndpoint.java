@@ -18,16 +18,11 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.infra.exception.security.UserAuthenticationException;
 import run.ikaros.api.infra.exception.user.UserNotFoundException;
-import run.ikaros.server.core.user.User;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.security.authentication.jwt.JwtApplyParam;
 import run.ikaros.server.security.authentication.jwt.JwtApplyResponse;
 import run.ikaros.server.security.authentication.jwt.JwtAuthenticationProvider;
 import run.ikaros.server.security.authentication.jwt.JwtReactiveAuthenticationManager;
-import run.ikaros.server.security.authentication.totp.TOTPService;
-import run.ikaros.server.store.entity.UserEntity;
-import run.ikaros.server.store.entity.UserTotpEntity;
-import run.ikaros.server.store.repository.UserTotpRepository;
 
 @Slf4j
 @Component
@@ -35,8 +30,6 @@ public class SecurityEndpoint implements CoreEndpoint {
     private final JwtReactiveAuthenticationManager authenticationManager;
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
     private final ReactiveUserDetailsService userDetailsService;
-    private final TOTPService totpService;
-    private final UserTotpRepository userTotpRepository;
 
     /**
      * Construct.
@@ -44,14 +37,10 @@ public class SecurityEndpoint implements CoreEndpoint {
     public SecurityEndpoint(
         JwtReactiveAuthenticationManager authenticationManager,
         JwtAuthenticationProvider jwtAuthenticationProvider,
-        ReactiveUserDetailsService userDetailsService,
-        TOTPService totpService,
-        UserTotpRepository userTotpRepository) {
+        ReactiveUserDetailsService userDetailsService) {
         this.authenticationManager = authenticationManager;
         this.jwtAuthenticationProvider = jwtAuthenticationProvider;
         this.userDetailsService = userDetailsService;
-        this.totpService = totpService;
-        this.userTotpRepository = userTotpRepository;
     }
 
     @Override
@@ -91,23 +80,7 @@ public class SecurityEndpoint implements CoreEndpoint {
             .map(UserDetails::getUsername)
             .map(String::valueOf)
             .flatMap(userDetailsService::findByUsername)
-            .flatMap(userDetails -> userTotpRepository.findByUserId(
-                    ((UserEntity) userDetails).getId())
-                .defaultIfEmpty(new UserTotpEntity().setEnabled(false))
-                .flatMap(totpEntity -> {
-                    if (Boolean.TRUE.equals(totpEntity.getEnabled())) {
-                        // 用户已启用TOTP，返回临时令牌
-                        String tempToken =
-                            jwtAuthenticationProvider.generateTempToken(userDetails.getUsername());
-                        return Mono.just(JwtApplyResponse.builder()
-                            .username(userDetails.getUsername())
-                            .totpRequired(true)
-                            .tempToken(tempToken)
-                            .build());
-                    }
-                    // 未启用TOTP，正常返回JWT
-                    return jwtAuthenticationProvider.generateJwtResp(userDetails);
-                }))
+            .flatMap(jwtAuthenticationProvider::generateJwtResp)
             .flatMap(token -> ServerResponse.ok().bodyValue(token))
             .onErrorResume(UserNotFoundException.class,
                 e -> Mono.error(new UserAuthenticationException(e.getLocalizedMessage(), e)));
