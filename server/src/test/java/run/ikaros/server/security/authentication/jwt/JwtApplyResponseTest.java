@@ -62,7 +62,9 @@ class JwtApplyResponseTest {
         JwtApplyResponse response = new JwtApplyResponse(
             "allArgUser",
             "allArgAccess",
-            "allArgRefresh"
+            "allArgRefresh",
+            false,
+            null
         );
 
         assertEquals("allArgUser", response.getUsername());
