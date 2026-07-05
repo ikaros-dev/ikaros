@@ -16,7 +16,7 @@ jobs:
       - uses: taiki-e/create-gh-release-action@v1
         with:
           # (Optional)
-          changelog: CHANGELOG.MD
+          changelog: CHANGELOG.md
           # (Optional) Create a draft release.
           # [default value: false]
           draft: true
