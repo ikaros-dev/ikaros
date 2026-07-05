@@ -15,7 +15,7 @@ import org.springframework.util.Assert;
  */
 @Slf4j
 @Service
-public class TOTPService {
+public class TotpService {
 
     private static final int SECRET_SIZE = 20; // 160 bits
     private static final int CODE_DIGITS = 6;
@@ -73,7 +73,7 @@ public class TOTPService {
         // 检查当前窗口和前一个窗口（共3个窗口，容忍1步偏差）
         for (int i = -1; i <= 1; i++) {
             long counter = currentCounter + i;
-            String expected = generateTOTP(secret, counter);
+            String expected = generateTotp(secret, counter);
             if (expected.equals(code)) {
                 return true;
             }
@@ -84,7 +84,7 @@ public class TOTPService {
     /**
      * 生成指定计数器的TOTP验证码.
      */
-    private String generateTOTP(String secret, long counter) {
+    private String generateTotp(String secret, long counter) {
         try {
             Base32 base32 = new Base32();
             byte[] keyBytes = base32.decode(secret);
