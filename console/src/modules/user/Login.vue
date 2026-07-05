@@ -4,10 +4,12 @@ import { AxiosError } from 'axios';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
 import { randomUUID } from '@/utils/id';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import LanguageSelect from '@/layouts/components/LanguageSelect.vue';
 
 const { t } = useI18n();
+
+const step = ref<'credentials' | 'totp'>('credentials');
 
 const handleGenerateToken = async () => {
   const token = randomUUID();
@@ -21,12 +23,25 @@ const form = ref({
   _csrf: '',
 });
 
+const totpCode = ref(['', '', '', '', '', '']);
+const totpCodeRefs = ref<(HTMLInputElement | null)[]>([]);
+
 const formRef = ref<HTMLFormElement | null>(null);
 const userStore = useUserStore();
+
+const isTotpCodeComplete = computed(() => {
+  return totpCode.value.every((d) => d !== '');
+});
 
 const handleLogin = async () => {
   try {
     await userStore.applyJwtToken(form.value.username, form.value.password);
+
+    if (userStore.totpRequired) {
+      step.value = 'totp';
+      setTimeout(() => totpCodeRefs.value[0]?.focus(), 100);
+      return;
+    }
 
     if (!userStore.isAnonymous) {
       window.location.reload();
@@ -55,7 +70,42 @@ const handleLogin = async () => {
   }
 };
 
+const handleTotpInput = (index: number) => {
+  if (totpCode.value[index] && index < 5) {
+    totpCodeRefs.value[index + 1]?.focus();
+  }
+};
+
+const handleTotpKeydown = (index: number, e: KeyboardEvent) => {
+  if (e.key === 'Backspace' && !totpCode.value[index] && index > 0) {
+    totpCodeRefs.value[index - 1]?.focus();
+  }
+  if (e.key === 'Enter' && isTotpCodeComplete.value) {
+    handleTotpSubmit();
+  }
+};
+
+const handleTotpSubmit = async () => {
+  const code = totpCode.value.join('');
+  if (code.length !== 6) return;
+
+  const success = await userStore.validateTotp(code);
+  if (success) {
+    window.location.reload();
+  } else {
+    ElMessage.error(t('common.exception.unknown_error_with_title'));
+    totpCode.value = ['', '', '', '', '', ''];
+    setTimeout(() => totpCodeRefs.value[0]?.focus(), 100);
+  }
+};
+
+const handleBackToLogin = () => {
+  step.value = 'credentials';
+  totpCode.value = ['', '', '', '', '', ''];
+};
+
 const usernameRef = ref<HTMLInputElement | null>(null);
+const totpContainerRef = ref<HTMLDivElement | null>(null);
 
 onMounted(() => {
   handleGenerateToken();
@@ -66,55 +116,108 @@ onMounted(() => {
 <template>
   <div class="m3-login">
     <div class="m3-login__card">
-      <div class="m3-login__header">
-        <h1 class="m3-login__title">{{ t('module.user.login.title') }}</h1>
-      </div>
+      <!-- Step 1: 用户名密码 -->
+      <template v-if="step === 'credentials'">
+        <div class="m3-login__header">
+          <h1 class="m3-login__title">{{ t('module.user.login.title') }}</h1>
+        </div>
 
-      <form ref="formRef" class="m3-login__form" @submit.prevent="handleLogin">
-        <div class="m3-field">
-          <div class="m3-field__container">
+        <form ref="formRef" class="m3-login__form" @submit.prevent="handleLogin">
+          <div class="m3-field">
+            <div class="m3-field__container">
+              <input
+                ref="usernameRef"
+                id="username"
+                v-model="form.username"
+                type="text"
+                class="m3-field__input"
+                :placeholder="t('module.user.login.field.username.placeholder')"
+                required
+              />
+              <label for="username" class="m3-field__label">
+                {{ t('module.user.login.field.username.placeholder') }}
+              </label>
+              <div class="m3-field__underline"></div>
+            </div>
+          </div>
+
+          <div class="m3-field">
+            <div class="m3-field__container">
+              <input
+                id="password"
+                v-model="form.password"
+                type="password"
+                class="m3-field__input"
+                :placeholder="t('module.user.login.field.password.placeholder')"
+                required
+                @keyup.enter="handleLogin"
+              />
+              <label for="password" class="m3-field__label">
+                {{ t('module.user.login.field.password.placeholder') }}
+              </label>
+              <div class="m3-field__underline"></div>
+            </div>
+          </div>
+
+          <div class="m3-login__actions">
+            <LanguageSelect />
+            <button type="submit" class="m3-btn m3-btn--filled">
+              <span class="m3-btn__content">{{ t('module.user.login.button') }}</span>
+            </button>
+          </div>
+        </form>
+      </template>
+
+      <!-- Step 2: TOTP 验证码 -->
+      <template v-else>
+        <div class="m3-login__header">
+          <h1 class="m3-login__title">二步验证</h1>
+          <p class="m3-login__subtitle">
+            请在 Authenticator 应用中输入当前显示的验证码
+          </p>
+        </div>
+
+        <div ref="totpContainerRef" class="m3-totp">
+          <div class="m3-totp__inputs">
             <input
-              ref="usernameRef"
-              id="username"
-              v-model="form.username"
+              v-for="(digit, index) in totpCode"
+              :key="index"
+              :ref="(el) => { totpCodeRefs[index] = el as HTMLInputElement; }"
+              v-model="totpCode[index]"
               type="text"
-              class="m3-field__input"
-              :placeholder="t('module.user.login.field.username.placeholder')"
-              required
+              maxlength="1"
+              class="m3-totp__digit"
+              inputmode="numeric"
+              pattern="[0-9]"
+              autocomplete="off"
+              @input="handleTotpInput(index)"
+              @keydown="handleTotpKeydown(index, $event)"
             />
-            <label for="username" class="m3-field__label">
-              {{ t('module.user.login.field.username.placeholder') }}
-            </label>
-            <div class="m3-field__underline"></div>
+          </div>
+
+          <p v-if="userStore.totpTempToken" class="m3-totp__hint">
+            已验证身份，请输入验证码
+          </p>
+
+          <div class="m3-totp__actions">
+            <button
+              type="button"
+              class="m3-btn m3-btn--outlined"
+              @click="handleBackToLogin"
+            >
+              <span class="m3-btn__content">返回登录</span>
+            </button>
+            <button
+              type="button"
+              class="m3-btn m3-btn--filled"
+              :disabled="!isTotpCodeComplete"
+              @click="handleTotpSubmit"
+            >
+              <span class="m3-btn__content">验证</span>
+            </button>
           </div>
         </div>
-
-        <div class="m3-field">
-          <div class="m3-field__container">
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              class="m3-field__input"
-              :placeholder="t('module.user.login.field.password.placeholder')"
-              required
-              @keyup.enter="handleLogin"
-            />
-            <label for="password" class="m3-field__label">
-              {{ t('module.user.login.field.password.placeholder') }}
-            </label>
-            <div class="m3-field__underline"></div>
-          </div>
-        </div>
-
-        <div class="m3-login__actions">
-          <LanguageSelect />
-          <button type="submit" class="m3-btn m3-btn--filled">
-            <span class="m3-btn__ripple"></span>
-            <span class="m3-btn__content">{{ t('module.user.login.button') }}</span>
-          </button>
-        </div>
-      </form>
+      </template>
     </div>
   </div>
 </template>
@@ -151,7 +254,7 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-/* ========== Card (M3 Surface Container) ========== */
+/* ========== Card ========== */
 .m3-login__card {
   width: 100%;
   max-width: 400px;
@@ -170,13 +273,23 @@ onMounted(() => {
 }
 
 .m3-login__title {
-  margin: 0;
+  margin: 0 0 8px;
   font-family: 'Roboto', system-ui, sans-serif;
   font-size: 28px;
   font-weight: 400;
   line-height: 36px;
   letter-spacing: 0;
   color: var(--m3-on-surface);
+}
+
+.m3-login__subtitle {
+  margin: 0;
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  color: var(--m3-on-surface-variant);
 }
 
 /* ========== Form ========== */
@@ -283,7 +396,7 @@ onMounted(() => {
   height: 2px;
 }
 
-/* ========== Actions ========== */
+/* ========== Actions (step 1) ========== */
 .m3-login__actions {
   display: flex;
   align-items: center;
@@ -294,6 +407,62 @@ onMounted(() => {
 
 .m3-login__actions :deep(.lang-select) {
   flex-shrink: 0;
+}
+
+/* ========== TOTP Input ========== */
+.m3-totp {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.m3-totp__inputs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.m3-totp__digit {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  color: var(--m3-on-surface);
+  background: var(--m3-surface-container-highest);
+  border: none;
+  border-radius: 8px;
+  outline: none;
+  caret-color: var(--m3-primary);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.m3-totp__digit:focus {
+  background: var(--m3-surface-container-high);
+  box-shadow: inset 0 0 0 2px var(--m3-primary);
+}
+
+.m3-totp__digit::selection {
+  background: var(--m3-primary-container);
+}
+
+.m3-totp__hint {
+  margin: 0;
+  text-align: center;
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: 0.4px;
+  color: var(--m3-on-surface-variant);
+}
+
+.m3-totp__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
 }
 
 /* ========== M3 Filled Button ========== */
@@ -332,21 +501,31 @@ onMounted(() => {
   background: #3a8ee6;
 }
 
+.m3-btn--filled:disabled {
+  background: rgba(31, 31, 31, 0.12);
+  color: rgba(31, 31, 31, 0.38);
+  cursor: not-allowed;
+}
+
 .m3-btn--filled:focus-visible {
   outline: 2px solid var(--m3-on-surface);
   outline-offset: 2px;
 }
 
+/* ========== M3 Outlined Button ========== */
+.m3-btn--outlined {
+  background: transparent;
+  color: var(--m3-primary);
+  border: 1px solid var(--m3-outline);
+}
+
+.m3-btn--outlined:hover {
+  background: rgba(64, 158, 255, 0.08);
+}
+
 .m3-btn__content {
   position: relative;
   z-index: 1;
-}
-
-.m3-btn__ripple {
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  pointer-events: none;
 }
 
 /* ========== Responsive ========== */
@@ -363,6 +542,16 @@ onMounted(() => {
 
   .m3-btn {
     width: 100%;
+  }
+
+  .m3-totp__digit {
+    width: 40px;
+    height: 48px;
+    font-size: 22px;
+  }
+
+  .m3-totp__inputs {
+    gap: 8px;
   }
 }
 </style>

@@ -4,7 +4,6 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 import static run.ikaros.server.security.authentication.jwt.JwtApplyParam.Type.USERNAME_PASSWORD;
 
-import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,12 +18,14 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.infra.exception.security.UserAuthenticationException;
 import run.ikaros.api.infra.exception.user.UserNotFoundException;
+import run.ikaros.server.core.user.User;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.security.authentication.jwt.JwtApplyParam;
 import run.ikaros.server.security.authentication.jwt.JwtApplyResponse;
 import run.ikaros.server.security.authentication.jwt.JwtAuthenticationProvider;
 import run.ikaros.server.security.authentication.jwt.JwtReactiveAuthenticationManager;
 import run.ikaros.server.security.authentication.totp.TOTPService;
+import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.entity.UserTotpEntity;
 import run.ikaros.server.store.repository.UserTotpRepository;
 
@@ -91,7 +92,7 @@ public class SecurityEndpoint implements CoreEndpoint {
             .map(String::valueOf)
             .flatMap(userDetailsService::findByUsername)
             .flatMap(userDetails -> userTotpRepository.findByUserId(
-                    ((run.ikaros.server.store.entity.UserEntity) userDetails).getId())
+                    ((UserEntity) userDetails).getId())
                 .defaultIfEmpty(new UserTotpEntity().setEnabled(false))
                 .flatMap(totpEntity -> {
                     if (Boolean.TRUE.equals(totpEntity.getEnabled())) {

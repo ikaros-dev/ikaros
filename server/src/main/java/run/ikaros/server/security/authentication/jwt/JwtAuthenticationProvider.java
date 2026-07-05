@@ -33,10 +33,8 @@ public class JwtAuthenticationProvider {
 
     /**
      * generateToken and convert to {@link JwtApplyResponse}.
-     * 如果用户已启用TOTP，返回只含tempToken的响应.
      */
-    public Mono<JwtApplyResponse> generateJwtResp(UserDetails userDetails,
-                                                   JwtApplyResponse.JwtApplyResponseBuilder baseBuilder) {
+    public Mono<JwtApplyResponse> generateJwtResp(UserDetails userDetails) {
         String username = userDetails.getUsername();
         SecurityProperties.Expiry expiry = securityProperties.getExpiry();
         Integer accessTokenDay = expiry.getAccessTokenDay();
@@ -46,7 +44,7 @@ public class JwtAuthenticationProvider {
         refreshTokenExpiry = (long) refreshTokenMonth * dayOfMs * 30;
         String accessToken = generateToken(username, accessTokenExpiry);
         String refreshToken = generateToken(username, refreshTokenExpiry);
-        return Mono.just(baseBuilder
+        return Mono.just(JwtApplyResponse.builder()
             .username(username)
             .accessToken(accessToken)
             .refreshToken(refreshToken)
@@ -54,64 +52,34 @@ public class JwtAuthenticationProvider {
     }
 
     /**
-     * generateToken and convert to {@link JwtApplyResponse}.
-     */
-    public Mono<JwtApplyResponse> generateJwtResp(UserDetails userDetails) {
-        return generateJwtResp(userDetails, JwtApplyResponse.builder());
-    }
-
-    /**
      * 生成临时令牌（短时效，用于二步验证流程）.
-     *
-     * @param username 用户名
-     * @return 临时JWT令牌
      */
     public String generateTempToken(String username) {
-        // 临时令牌有效期5分钟
         long tempTokenExpiry = 5 * 60 * 1000L;
         return generateToken(username, tempTokenExpiry);
     }
 
     /**
-     * 从令牌中提取用户名，不验证过期.
+     * validateToken.
+     */
+    public boolean validateToken(String token) {
+        try {
+            extractClaims(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * 提取token中的用户名.
      */
     public String extractUsername(String token) {
         return extractClaims(token).getSubject();
     }
 
     /**
-     * validateToken.
-     */
-    public boolean validateToken(String token) {
-        try {
-            extractClaims(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public String tempTokenUsername(String tempToken) {
-        if (!validateToken(tempToken)) {
-            throw new InvalidTokenException("Invalid or expired temp token.");
-        }
-        return extractUsername(tempToken);
-    }
-
-    /**
-     * validateToken.
-     */
-    public boolean validateToken(String token) {
-        try {
-            extractClaims(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * tempTokenUsername.
+     * 验证tempToken并提取用户名.
      */
     public String tempTokenUsername(String tempToken) {
         if (!validateToken(tempToken)) {
