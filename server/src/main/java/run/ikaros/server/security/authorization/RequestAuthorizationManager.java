@@ -68,6 +68,7 @@ public class RequestAuthorizationManager
         if (path.startsWith("/api/" + CORE_VERSION + "/static/")
             || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/apply")
             || path.equals("/api/" + CORE_VERSION + "/security/auth/token/jwt/refresh")
+            || path.equals("/api/" + CORE_VERSION + "/security/auth/totp/validate")
             || path.startsWith("/api/" + CORE_VERSION + "/attachment/stream")
             || path.startsWith(DRIVER_STATIC_RESOURCE_PREFIX + '/') // todo 后续可能考虑对本地映射文件鉴权
         ) {

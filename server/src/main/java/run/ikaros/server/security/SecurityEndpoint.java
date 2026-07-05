@@ -4,6 +4,7 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 import static run.ikaros.server.security.authentication.jwt.JwtApplyParam.Type.USERNAME_PASSWORD;
 
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +24,9 @@ import run.ikaros.server.security.authentication.jwt.JwtApplyParam;
 import run.ikaros.server.security.authentication.jwt.JwtApplyResponse;
 import run.ikaros.server.security.authentication.jwt.JwtAuthenticationProvider;
 import run.ikaros.server.security.authentication.jwt.JwtReactiveAuthenticationManager;
+import run.ikaros.server.security.authentication.totp.TOTPService;
+import run.ikaros.server.store.entity.UserTotpEntity;
+import run.ikaros.server.store.repository.UserTotpRepository;
 
 @Slf4j
 @Component
@@ -30,6 +34,8 @@ public class SecurityEndpoint implements CoreEndpoint {
     private final JwtReactiveAuthenticationManager authenticationManager;
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
     private final ReactiveUserDetailsService userDetailsService;
+    private final TOTPService totpService;
+    private final UserTotpRepository userTotpRepository;
 
     /**
      * Construct.
@@ -37,10 +43,14 @@ public class SecurityEndpoint implements CoreEndpoint {
     public SecurityEndpoint(
         JwtReactiveAuthenticationManager authenticationManager,
         JwtAuthenticationProvider jwtAuthenticationProvider,
-        ReactiveUserDetailsService userDetailsService) {
+        ReactiveUserDetailsService userDetailsService,
+        TOTPService totpService,
+        UserTotpRepository userTotpRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtAuthenticationProvider = jwtAuthenticationProvider;
         this.userDetailsService = userDetailsService;
+        this.totpService = totpService;
+        this.userTotpRepository = userTotpRepository;
     }
 
     @Override
@@ -80,7 +90,23 @@ public class SecurityEndpoint implements CoreEndpoint {
             .map(UserDetails::getUsername)
             .map(String::valueOf)
             .flatMap(userDetailsService::findByUsername)
-            .flatMap(jwtAuthenticationProvider::generateJwtResp)
+            .flatMap(userDetails -> userTotpRepository.findByUserId(
+                    ((run.ikaros.server.store.entity.UserEntity) userDetails).getId())
+                .defaultIfEmpty(new UserTotpEntity().setEnabled(false))
+                .flatMap(totpEntity -> {
+                    if (Boolean.TRUE.equals(totpEntity.getEnabled())) {
+                        // 用户已启用TOTP，返回临时令牌
+                        String tempToken =
+                            jwtAuthenticationProvider.generateTempToken(userDetails.getUsername());
+                        return Mono.just(JwtApplyResponse.builder()
+                            .username(userDetails.getUsername())
+                            .totpRequired(true)
+                            .tempToken(tempToken)
+                            .build());
+                    }
+                    // 未启用TOTP，正常返回JWT
+                    return jwtAuthenticationProvider.generateJwtResp(userDetails);
+                }))
             .flatMap(token -> ServerResponse.ok().bodyValue(token))
             .onErrorResume(UserNotFoundException.class,
                 e -> Mono.error(new UserAuthenticationException(e.getLocalizedMessage(), e)));
