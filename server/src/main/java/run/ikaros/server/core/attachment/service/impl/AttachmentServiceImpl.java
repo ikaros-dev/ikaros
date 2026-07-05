@@ -143,6 +143,11 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheEvict
     public Mono<Attachment> save(Attachment attachment) {
         Assert.notNull(attachment, "'attachment' must not be null.");
+        // Path traversal prevention: validate fsPath before persisting
+        String fsPath = attachment.getFsPath();
+        if (StringUtils.hasText(fsPath) && !fsPath.startsWith("http")) {
+            validateFsPath(fsPath);
+        }
         attachment.setParentId(Optional.ofNullable(attachment.getParentId())
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID));
         final UUID newParentId = attachment.getParentId();
@@ -851,7 +856,12 @@ public class AttachmentServiceImpl implements AttachmentService {
                     });
             })
             .switchIfEmpty(repository.findById(aid).map(att -> {
-                File file = new File(att.getFsPath());
+                // Path traversal prevention: validate fsPath before reading
+                String rawFsPath = att.getFsPath();
+                if (StringUtils.hasText(rawFsPath) && !rawFsPath.startsWith("http")) {
+                    validateFsPath(rawFsPath);
+                }
+                File file = new File(rawFsPath);
                 Path path = Path.of(file.toURI());
                 long size = 0;
                 try {
@@ -894,7 +904,12 @@ public class AttachmentServiceImpl implements AttachmentService {
             })
             .switchIfEmpty(repository.findById(aid)
                 .map(att -> {
-                    File file = new File(att.getFsPath());
+                    String rawFsPath = att.getFsPath();
+                    if (StringUtils.hasText(rawFsPath)
+                        && !rawFsPath.startsWith("http")) {
+                        validateFsPath(rawFsPath);
+                    }
+                    File file = new File(rawFsPath);
                     Path path = Path.of(file.toURI());
                     return Flux.create(sink -> {
                         try {
@@ -981,7 +996,12 @@ public class AttachmentServiceImpl implements AttachmentService {
             })
             .switchIfEmpty(repository.findById(aid)
                 .map(att -> {
-                    File file = new File(att.getFsPath());
+                    String rawFsPath = att.getFsPath();
+                    if (StringUtils.hasText(rawFsPath)
+                        && !rawFsPath.startsWith("http")) {
+                        validateFsPath(rawFsPath);
+                    }
+                    File file = new File(rawFsPath);
                     Path path = Path.of(file.toURI());
                     return org.springframework.core.io.buffer.DataBufferUtils
                         .readAsynchronousFileChannel(
@@ -1042,6 +1062,8 @@ public class AttachmentServiceImpl implements AttachmentService {
         if (!StringUtils.hasText(fsPath) || fsPath.startsWith("http")) {
             return attachmentEntity;
         }
+        // Path traversal prevention: validate fsPath before deleting
+        validateFsPath(fsPath);
         try {
             Files.deleteIfExists(Path.of(fsPath));
         } catch (IOException e) {
@@ -1049,5 +1071,21 @@ public class AttachmentServiceImpl implements AttachmentService {
                 "Attachment delete fail for file system path：" + fsPath, e);
         }
         return attachmentEntity;
+    }
+
+    /**
+     * Validate that the fsPath is contained within the application work directory
+     * to prevent path traversal attacks (CWE-22).
+     *
+     * @param fsPath the file system path to validate
+     * @throws IllegalArgumentException if fsPath escapes the work directory
+     */
+    private void validateFsPath(String fsPath) {
+        Path normalized = Path.of(fsPath).normalize();
+        Path workDirPath = ikarosProperties.getWorkDir().normalize();
+        if (!normalized.startsWith(workDirPath)) {
+            throw new IllegalArgumentException(
+                "fsPath escapes work directory: " + fsPath);
+        }
     }
 }
