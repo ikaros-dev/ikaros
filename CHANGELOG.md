@@ -8,7 +8,11 @@
 
 ### 新功能
 - 新增音乐模块后端 API，支持音乐专辑和歌曲的增删改查
-- 新增 Subsonic API 核心支持，兼容 Subsonic 协议的音乐浏览和播放
+- 新增 Subsonic API 核心支持，兼容 Subsonic 协议
+  - 浏览：getArtists / getArtist / getAlbum / getSong / getAlbumList2
+  - 播放：stream（音频流） / getCoverArt（封面）
+  - 歌单：getPlaylists / getPlaylist / createPlaylist / deletePlaylist
+  - 其他：search2 / scrobble / ping
 
 ## 控制台
 
