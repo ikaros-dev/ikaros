@@ -1,37 +1,41 @@
 package run.ikaros.server.infra.utils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
 class RandomUtilsTest {
 
     @Test
-    void randomStringFiveDigits() {
-        String result = RandomUtils.randomString(5);
-        assertEquals(5, result.length());
-        assertTrue(result.matches("\\d+"), "Result should contain only digits");
+    void randomString_positiveLength_returnsString() {
+        String result = RandomUtils.randomString(10);
+        assertThat(result).hasSize(10);
     }
 
     @Test
-    void randomStringZeroDefaultsToTenDigits() {
+    void randomString_zeroLength_defaultsToLength10() {
         String result = RandomUtils.randomString(0);
-        assertEquals(10, result.length());
-        assertTrue(result.matches("\\d+"), "Result should contain only digits");
+        assertThat(result).hasSize(10);
     }
 
     @Test
-    void randomStringNegativeDefaultsToTenDigits() {
+    void randomString_negativeLength_defaultsToLength10() {
         String result = RandomUtils.randomString(-1);
-        assertEquals(10, result.length());
-        assertTrue(result.matches("\\d+"), "Result should contain only digits");
+        assertThat(result).hasSize(10);
     }
 
     @Test
-    void randomStringOneDigit() {
-        String result = RandomUtils.randomString(1);
-        assertEquals(1, result.length());
-        assertTrue(result.matches("\\d+"), "Result should contain only digits");
+    void randomString_producesNumericString() {
+        String result = RandomUtils.randomString(50);
+        assertThat(result).hasSize(50);
+        assertThat(result).matches("[0-9]+");
+    }
+
+    @Test
+    void randomString_multipleCalls_producesDifferentResults() {
+        String r1 = RandomUtils.randomString(20);
+        String r2 = RandomUtils.randomString(20);
+        // 理论上极小概率相同，但测试这个保证方法正常工作
+        assertThat(r1).isNotEqualTo(r2);
     }
 }
