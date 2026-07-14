@@ -1147,6 +1147,34 @@ module:
     sidebar: Tasks
     details:
       title: Task Details
+  music:
+    title: Music
+    sidebar: Music
+    create_album: New Album
+    edit_album: Edit Album
+    name: Name
+    name_cn: Chinese Name
+    song_count: Songs
+    score: Score
+    air_time: Release Date
+    actions: Actions
+    edit: Edit
+    delete: Delete
+    save: Save
+    cancel: Cancel
+    songs: Songs
+    song_name: Song Name
+    song_name_cn: Chinese Name
+    group: Group
+    track: Track #
+    description: Description
+    cover: Cover
+    add_song: Add Song
+    edit_song: Edit Song
+    back: Back
+    album:
+      detail:
+        title: Album Details
 login:
   operations:
     submit:
