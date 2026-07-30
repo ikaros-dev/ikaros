@@ -1,6 +1,7 @@
 package run.ikaros.server.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -39,6 +41,17 @@ class DynamicDirectoryResolverTest {
         assertThat(mappings).containsKey("/uploads/");
         assertThat(mappings.get("/uploads/")).isEqualTo(
             tempDir.toAbsolutePath().normalize());
+    }
+
+    @Test
+    void addDirectoryMapping_rejectsMissingDirectory(@TempDir Path tempDir) {
+        Path missingDirectory = tempDir.resolve("missing");
+
+        assertThatThrownBy(() -> resolver.addDirectoryMapping(
+            "/uploads", missingDirectory.toString()))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("挂载目录不存在或不可访问");
+        assertThat(Files.exists(missingDirectory)).isFalse();
     }
 
     @Test
@@ -120,6 +133,28 @@ class DynamicDirectoryResolverTest {
             exchange, "/uploads/../../secret.txt", List.of(), chain).block();
 
         // Should return null because the resolved path is outside the base directory
+        assertThat(resource).isNull();
+    }
+
+    @Test
+    void resolveResource_rejectsSymbolicLinkEscapingMappedDirectory(
+        @TempDir Path tempDir) throws IOException {
+        Path mappedDirectory = Files.createDirectory(tempDir.resolve("mapped"));
+        Path outsideFile = Files.writeString(tempDir.resolve("secret.txt"), "secret");
+        Path link = mappedDirectory.resolve("secret-link.txt");
+        try {
+            Files.createSymbolicLink(link, outsideFile);
+        } catch (IOException | UnsupportedOperationException exception) {
+            Assumptions.assumeTrue(false, "当前文件系统不允许创建符号链接");
+        }
+        resolver.addDirectoryMapping("/uploads", mappedDirectory.toString());
+
+        Resource resource = resolver.resolveResource(
+            mock(ServerWebExchange.class),
+            "/uploads/secret-link.txt",
+            List.of(),
+            mock(ResourceResolverChain.class)).block();
+
         assertThat(resource).isNull();
     }
 

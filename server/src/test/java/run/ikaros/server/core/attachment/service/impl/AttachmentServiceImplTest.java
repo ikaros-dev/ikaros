@@ -1,18 +1,23 @@
 package run.ikaros.server.core.attachment.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import java.nio.file.Path;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.UuidV7Utils;
@@ -58,6 +63,62 @@ class AttachmentServiceImplTest {
     @Test
     void constructor_withNineParams() {
         assertThat(service).isNotNull();
+    }
+
+    @Test
+    void save_allowsDriverDirectoryOutsideWorkDirectory(@TempDir Path tempDir) {
+        Path workDirectory = tempDir.resolve("work");
+        Path driverDirectory = tempDir.resolve("driver");
+        Attachment attachment = Attachment.builder()
+            .name("收藏")
+            .type(AttachmentType.Driver_Directory)
+            .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .driverId(UUID.randomUUID())
+            .fsPath(driverDirectory.toString())
+            .build();
+        when(ikarosProperties.getWorkDir()).thenReturn(workDirectory);
+        when(repository.findByTypeAndParentIdAndName(
+            AttachmentType.Driver_Directory,
+            AttachmentConst.ROOT_DIRECTORY_ID,
+            "收藏")).thenReturn(Mono.empty());
+        when(attachmentRepository.insert(any(AttachmentEntity.class)))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(service.save(attachment))
+            .assertNext(saved -> {
+                assertThat(saved.getFsPath()).isEqualTo(driverDirectory.toString());
+                assertThat(saved.getDriverId()).isEqualTo(attachment.getDriverId());
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    void save_rejectsRegularAttachmentOutsideWorkDirectory(@TempDir Path tempDir) {
+        Path workDirectory = tempDir.resolve("work");
+        Path outsideFile = tempDir.resolve("outside.mkv");
+        Attachment attachment = Attachment.builder()
+            .name("outside.mkv")
+            .type(AttachmentType.File)
+            .fsPath(outsideFile.toString())
+            .build();
+        when(ikarosProperties.getWorkDir()).thenReturn(workDirectory);
+
+        assertThatThrownBy(() -> service.save(attachment))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("fsPath escapes work directory");
+    }
+
+    @Test
+    void save_rejectsDriverAttachmentWithoutDriverId(@TempDir Path tempDir) {
+        Attachment attachment = Attachment.builder()
+            .name("driver")
+            .type(AttachmentType.Driver_Directory)
+            .fsPath(tempDir.toString())
+            .build();
+
+        assertThatThrownBy(() -> service.save(attachment))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("driverId");
     }
 
     // ===== findById =====
