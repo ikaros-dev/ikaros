@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, h, nextTick } from 'vue';
+import { computed, ref, watch, onMounted, h, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Attachment, AttachmentTypeEnum } from '@runikaros/api-client';
 import { isImage, isVideo, isVoice } from '@/utils/file';
@@ -64,6 +64,14 @@ import { getCompleteFileUrl } from '@/utils/url-tuils';
 import { attachmentRootId } from '@/modules/common/constants';
 
 const { t } = useI18n();
+
+const systemInternalAttachmentIds = new Set([
+	'019b715b-5cb5-7407-b571-6688c9e61e5a',
+	'019b715b-97dc-72dd-9e5a-0f714efc89d9',
+]);
+
+const isSystemInternalAttachment = (attachment: Attachment) =>
+	systemInternalAttachmentIds.has(attachment.id as string);
 const route = useRoute();
 
 const attachmentCondition = ref({
@@ -225,6 +233,10 @@ const onCurrentChange = (val: Attachment | undefined) => {
 
 const selectionAttachments = ref<Attachment[]>([]);
 
+const hasSystemInternalAttachmentSelected = computed(() =>
+	selectionAttachments.value.some(isSystemInternalAttachment)
+);
+
 const onSelectionChange = (selections) => {
 	// console.log('selections', selections);
 	selectionAttachments.value = selections;
@@ -275,7 +287,11 @@ const deleteAttachments = async () => {
 };
 
 const onDeleteButtonClick = async () => {
-	if (!selectionAttachments.value || selectionAttachments.value.length === 0) {
+	if (
+		hasSystemInternalAttachmentSelected.value ||
+		!selectionAttachments.value ||
+		selectionAttachments.value.length === 0
+	) {
 		return;
 	}
 
@@ -463,7 +479,11 @@ const onRowContextmenu = (row, column, event) => {
 					await fetchAttachments();
 				},
 			},
-		],
+		].filter(
+			(item) =>
+				!isSystemInternalAttachment(currentSelectionAttachment.value) ||
+				item.label !== t('module.attachment.contextmenu.delete.value')
+		) as Parameters<typeof ContextMenu.showContextMenu>[0]['items'],
 	});
 };
 
@@ -708,8 +728,8 @@ const onAttachmentDetailDrawerClose = () => {
 		</template>
 	</el-dialog>
 
-	<el-row>
-		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+	<div class="attachment-toolbar">
+		<div class="attachment-toolbar-actions">
 			<el-button
 				plain
 				:disabled="
@@ -739,7 +759,6 @@ const onAttachmentDetailDrawerClose = () => {
 			<el-button :icon="Link" @click="onBindDirectoryClick">
 				{{ t('module.attachment.btn.bind') }}
 			</el-button>
-
 			<el-button
 				v-if="selectionAttachments && selectionAttachments.length > 0"
 				:icon="Position"
@@ -748,32 +767,44 @@ const onAttachmentDetailDrawerClose = () => {
 				{{ t('module.attachment.btn.move_atts') }}
 			</el-button>
 
-			<el-popconfirm
+			<el-tooltip
 				v-if="selectionAttachments && selectionAttachments.length > 0"
-				:title="t('module.attachment.popconfirm.title')"
-				width="300"
-				@confirm="onDeleteButtonClick"
+				:disabled="!hasSystemInternalAttachmentSelected"
+				:content="t('module.attachment.popconfirm.system_internal_forbidden')"
+				placement="top"
 			>
-				<template #reference>
-					<el-button :icon="FolderDelete" type="danger">
-						{{ t('module.attachment.popconfirm.btn') }}
-					</el-button>
-				</template>
-			</el-popconfirm>
-		</el-col>
-		<el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-			<el-input
-				v-model="attachmentCondition.name"
-				:placeholder="t('module.attachment.search_input.placeholder')"
-				clearable
-				@change="fetchAttachments"
-			>
-				<template #append>
-					<el-button :icon="Search" @click="fetchAttachments" />
-				</template>
-			</el-input>
-		</el-col>
-	</el-row>
+				<span class="batch-delete-button-wrapper">
+					<el-popconfirm
+						:title="t('module.attachment.popconfirm.title')"
+						:disabled="hasSystemInternalAttachmentSelected"
+						width="300"
+						@confirm="onDeleteButtonClick"
+					>
+						<template #reference>
+							<el-button
+								:icon="FolderDelete"
+								:disabled="hasSystemInternalAttachmentSelected"
+								:type="hasSystemInternalAttachmentSelected ? '' : 'danger'"
+							>
+								{{ t('module.attachment.popconfirm.btn') }}
+							</el-button>
+						</template>
+					</el-popconfirm>
+				</span>
+			</el-tooltip>
+		</div>
+		<el-input
+			v-model="attachmentCondition.name"
+			class="attachment-search-input"
+			:placeholder="t('module.attachment.search_input.placeholder')"
+			clearable
+			@change="fetchAttachments"
+		>
+			<template #append>
+				<el-button :icon="Search" @click="fetchAttachments" />
+			</template>
+		</el-input>
+	</div>
 
 	<br />
 
@@ -906,6 +937,27 @@ const onAttachmentDetailDrawerClose = () => {
 </template>
 
 <style lang="scss" scoped>
+.attachment-toolbar {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 12px;
+}
+
+.attachment-toolbar-actions {
+	display: inline-flex;
+	flex-shrink: 0;
+}
+
+.attachment-search-input {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.batch-delete-button-wrapper {
+	display: inline-flex;
+	margin-left: 12px;
+}
+
 .ik-attachment-breadcrumb-item {
 	width: 20px;
 	cursor: pointer;
