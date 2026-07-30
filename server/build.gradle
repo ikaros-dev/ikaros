@@ -38,11 +38,25 @@ springBoot {
 }
 
 bootJar {
+    dependsOn 'buildFrontend'
     manifest {
         attributes "Implementation-Title": "Ikaros Application",
                 "Implementation-Version": archiveVersion
     }
     archiveFileName = "ikaros-server.jar"
+    doFirst {
+        def requiredResources = [
+                'templates/simple/index.html',
+                'console/index.html'
+        ]
+        requiredResources.each { resourcePath ->
+            def resourceFile = project.layout.buildDirectory
+                    .file("resources/main/${resourcePath}").get().asFile
+            if (!resourceFile.isFile()) {
+                throw new GradleException("缺少 JAR 必需资源: ${resourcePath}")
+            }
+        }
+    }
 }
 
 tasks.named('jar') {
@@ -124,6 +138,10 @@ task pnpmInstallFrontend(type: PnpmTask) {
 task buildFrontend(type: PnpmTask) {
     args = ['build']
     dependsOn("pnpmInstallFrontend")
+}
+
+tasks.named('processResources') {
+    mustRunAfter('buildFrontend')
 }
 
 task pnpmDev(type: PnpmTask) {

@@ -30,15 +30,9 @@ jobs:
       - name: Clean with gradle
         run: |
           ./gradlew clean
-      - name: Build console with pinned pnpm
-        run: |
-          ./gradlew buildFrontend -x test
-      - name: Build server with gradle
+      - name: Build complete server jar with gradle
         run: |
           ./gradlew build -x test
-      - name: Build server fast jar
-        run: |
-          ./gradlew bootJar -x test
       - name: Upload fast jar to release
         uses: svenstaro/upload-release-action@v2
         with:
