@@ -88,7 +88,15 @@ public class AttachmentDriverEnableListener {
                 .path("/" + finalMountName)
                 .deleted(Boolean.FALSE)
                 .build()))
-            .map(attachment -> attachment.setDeleted(Boolean.FALSE))
+            .map(attachment -> attachment
+                .setParentId(ROOT_DIRECTORY_ID)
+                .setType(AttachmentType.Driver_Directory)
+                .setName(finalMountName)
+                .setUrl(DRIVER_STATIC_RESOURCE_PREFIX + "/" + finalMountName)
+                .setDriverId(driver.getId())
+                .setFsPath(driver.getRemotePath())
+                .setPath("/" + finalMountName)
+                .setDeleted(Boolean.FALSE))
             .flatMap(attachmentService::save)
             .doOnError(exception -> {
                 dynamicDirectoryResolver.removeDirectoryMapping(finalMountName);

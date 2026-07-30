@@ -1,15 +1,13 @@
 package run.ikaros.api.core.attachment;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.enums.AttachmentType;
 
+/** Attachment 数据模型测试. */
 class AttachmentTest {
 
     @Test
@@ -18,7 +16,8 @@ class AttachmentTest {
         UUID parentId = UUID.randomUUID();
         UUID driverId = UUID.randomUUID();
         LocalDateTime updateTime = LocalDateTime.now();
-        
+        LocalDateTime modifiedTime = LocalDateTime.now();
+
         Attachment attachment = Attachment.builder()
             .id(id)
             .parentId(parentId)
@@ -29,41 +28,44 @@ class AttachmentTest {
             .name("test.txt")
             .size(1024L)
             .updateTime(updateTime)
+            .modifiedTime(modifiedTime)
             .deleted(false)
             .driverId(driverId)
             .sha1("abc123")
             .build();
-        
-        assertEquals(id, attachment.getId());
-        assertEquals(parentId, attachment.getParentId());
-        assertEquals(AttachmentType.File, attachment.getType());
-        assertEquals("driver://path/to/file", attachment.getUrl());
-        assertEquals("/path/to/file", attachment.getPath());
-        assertEquals("/fs/path/to/file", attachment.getFsPath());
-        assertEquals("test.txt", attachment.getName());
-        assertEquals(1024L, attachment.getSize());
-        assertEquals(updateTime, attachment.getUpdateTime());
-        assertEquals(false, attachment.getDeleted());
-        assertEquals(driverId, attachment.getDriverId());
-        assertEquals("abc123", attachment.getSha1());
+
+        assertThat(attachment.getId()).isEqualTo(id);
+        assertThat(attachment.getParentId()).isEqualTo(parentId);
+        assertThat(attachment.getType()).isEqualTo(AttachmentType.File);
+        assertThat(attachment.getUrl()).isEqualTo("driver://path/to/file");
+        assertThat(attachment.getPath()).isEqualTo("/path/to/file");
+        assertThat(attachment.getFsPath()).isEqualTo("/fs/path/to/file");
+        assertThat(attachment.getName()).isEqualTo("test.txt");
+        assertThat(attachment.getSize()).isEqualTo(1024L);
+        assertThat(attachment.getUpdateTime()).isEqualTo(updateTime);
+        assertThat(attachment.getModifiedTime()).isEqualTo(modifiedTime);
+        assertThat(attachment.getDeleted()).isFalse();
+        assertThat(attachment.getDriverId()).isEqualTo(driverId);
+        assertThat(attachment.getSha1()).isEqualTo("abc123");
     }
 
     @Test
     void noArgsConstructor_ShouldCreateEmptyAttachment() {
         Attachment attachment = new Attachment();
-        
-        assertNull(attachment.getId());
-        assertNull(attachment.getParentId());
-        assertNull(attachment.getType());
-        assertNull(attachment.getUrl());
-        assertNull(attachment.getPath());
-        assertNull(attachment.getFsPath());
-        assertNull(attachment.getName());
-        assertNull(attachment.getSize());
-        assertNull(attachment.getUpdateTime());
-        assertNull(attachment.getDeleted());
-        assertNull(attachment.getDriverId());
-        assertNull(attachment.getSha1());
+
+        assertThat(attachment.getId()).isNull();
+        assertThat(attachment.getParentId()).isNull();
+        assertThat(attachment.getType()).isNull();
+        assertThat(attachment.getUrl()).isNull();
+        assertThat(attachment.getPath()).isNull();
+        assertThat(attachment.getFsPath()).isNull();
+        assertThat(attachment.getName()).isNull();
+        assertThat(attachment.getSize()).isNull();
+        assertThat(attachment.getUpdateTime()).isNull();
+        assertThat(attachment.getModifiedTime()).isNull();
+        assertThat(attachment.getDeleted()).isNull();
+        assertThat(attachment.getDriverId()).isNull();
+        assertThat(attachment.getSha1()).isNull();
     }
 
     @Test
@@ -72,24 +74,26 @@ class AttachmentTest {
         UUID parentId = UUID.randomUUID();
         UUID driverId = UUID.randomUUID();
         LocalDateTime updateTime = LocalDateTime.now();
-        
+        LocalDateTime modifiedTime = LocalDateTime.now();
+
         Attachment attachment = new Attachment(
-            id, parentId, AttachmentType.File, "url", "path", 
-            "fsPath", "name", 1024L, updateTime, false, driverId, "sha1"
+            id, parentId, AttachmentType.File, "url", "path",
+            "fsPath", "name", 1024L, updateTime, modifiedTime, false, driverId, "sha1"
         );
-        
-        assertEquals(id, attachment.getId());
-        assertEquals(parentId, attachment.getParentId());
-        assertEquals(AttachmentType.File, attachment.getType());
-        assertEquals("url", attachment.getUrl());
-        assertEquals("path", attachment.getPath());
-        assertEquals("fsPath", attachment.getFsPath());
-        assertEquals("name", attachment.getName());
-        assertEquals(1024L, attachment.getSize());
-        assertEquals(updateTime, attachment.getUpdateTime());
-        assertEquals(false, attachment.getDeleted());
-        assertEquals(driverId, attachment.getDriverId());
-        assertEquals("sha1", attachment.getSha1());
+
+        assertThat(attachment.getId()).isEqualTo(id);
+        assertThat(attachment.getParentId()).isEqualTo(parentId);
+        assertThat(attachment.getType()).isEqualTo(AttachmentType.File);
+        assertThat(attachment.getUrl()).isEqualTo("url");
+        assertThat(attachment.getPath()).isEqualTo("path");
+        assertThat(attachment.getFsPath()).isEqualTo("fsPath");
+        assertThat(attachment.getName()).isEqualTo("name");
+        assertThat(attachment.getSize()).isEqualTo(1024L);
+        assertThat(attachment.getUpdateTime()).isEqualTo(updateTime);
+        assertThat(attachment.getModifiedTime()).isEqualTo(modifiedTime);
+        assertThat(attachment.getDeleted()).isFalse();
+        assertThat(attachment.getDriverId()).isEqualTo(driverId);
+        assertThat(attachment.getSha1()).isEqualTo("sha1");
     }
 
     @Test
@@ -99,7 +103,8 @@ class AttachmentTest {
         UUID parentId = UUID.randomUUID();
         UUID driverId = UUID.randomUUID();
         LocalDateTime updateTime = LocalDateTime.now();
-        
+        LocalDateTime modifiedTime = LocalDateTime.now();
+
         attachment.setId(id);
         attachment.setParentId(parentId);
         attachment.setType(AttachmentType.Directory);
@@ -109,28 +114,30 @@ class AttachmentTest {
         attachment.setName("name");
         attachment.setSize(2048L);
         attachment.setUpdateTime(updateTime);
+        attachment.setModifiedTime(modifiedTime);
         attachment.setDeleted(true);
         attachment.setDriverId(driverId);
         attachment.setSha1("sha1");
-        
-        assertEquals(id, attachment.getId());
-        assertEquals(parentId, attachment.getParentId());
-        assertEquals(AttachmentType.Directory, attachment.getType());
-        assertEquals("url", attachment.getUrl());
-        assertEquals("path", attachment.getPath());
-        assertEquals("fsPath", attachment.getFsPath());
-        assertEquals("name", attachment.getName());
-        assertEquals(2048L, attachment.getSize());
-        assertEquals(updateTime, attachment.getUpdateTime());
-        assertEquals(true, attachment.getDeleted());
-        assertEquals(driverId, attachment.getDriverId());
-        assertEquals("sha1", attachment.getSha1());
+
+        assertThat(attachment.getId()).isEqualTo(id);
+        assertThat(attachment.getParentId()).isEqualTo(parentId);
+        assertThat(attachment.getType()).isEqualTo(AttachmentType.Directory);
+        assertThat(attachment.getUrl()).isEqualTo("url");
+        assertThat(attachment.getPath()).isEqualTo("path");
+        assertThat(attachment.getFsPath()).isEqualTo("fsPath");
+        assertThat(attachment.getName()).isEqualTo("name");
+        assertThat(attachment.getSize()).isEqualTo(2048L);
+        assertThat(attachment.getUpdateTime()).isEqualTo(updateTime);
+        assertThat(attachment.getModifiedTime()).isEqualTo(modifiedTime);
+        assertThat(attachment.getDeleted()).isTrue();
+        assertThat(attachment.getDriverId()).isEqualTo(driverId);
+        assertThat(attachment.getSha1()).isEqualTo("sha1");
     }
 
     @Test
     void chainAccessors_ShouldReturnThis() {
         Attachment attachment = new Attachment();
-        
+
         Attachment result = attachment
             .setId(UUID.randomUUID())
             .setParentId(UUID.randomUUID())
@@ -141,11 +148,12 @@ class AttachmentTest {
             .setName("name")
             .setSize(1024L)
             .setUpdateTime(LocalDateTime.now())
+            .setModifiedTime(LocalDateTime.now())
             .setDeleted(false)
             .setDriverId(UUID.randomUUID())
             .setSha1("sha1");
-        
-        assertSame(attachment, result);
+
+        assertThat(result).isSameAs(attachment);
     }
 
     @Test
@@ -153,8 +161,8 @@ class AttachmentTest {
         UUID id = UUID.randomUUID();
         Attachment attachment1 = Attachment.builder().id(id).build();
         Attachment attachment2 = Attachment.builder().id(id).build();
-        
-        assertEquals(attachment1, attachment2);
+
+        assertThat(attachment1).isEqualTo(attachment2);
     }
 
     @Test
@@ -162,8 +170,8 @@ class AttachmentTest {
         UUID id = UUID.randomUUID();
         Attachment attachment1 = Attachment.builder().id(id).build();
         Attachment attachment2 = Attachment.builder().id(id).build();
-        
-        assertEquals(attachment1.hashCode(), attachment2.hashCode());
+
+        assertThat(attachment1).hasSameHashCodeAs(attachment2);
     }
 
     @Test
@@ -173,9 +181,8 @@ class AttachmentTest {
             .name("test.txt")
             .type(AttachmentType.File)
             .build();
-        
+
         String str = attachment.toString();
-        assertTrue(str.contains("test.txt"));
-        assertTrue(str.contains("File"));
+        assertThat(str).contains("test.txt", "File");
     }
 }

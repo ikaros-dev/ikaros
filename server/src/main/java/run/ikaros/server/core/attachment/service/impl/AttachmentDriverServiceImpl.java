@@ -2,8 +2,13 @@ package run.ikaros.server.core.attachment.service.impl;
 
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
-import java.util.Locale;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +18,7 @@ import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
@@ -20,9 +26,11 @@ import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
+import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentDriverType;
+import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
@@ -31,6 +39,7 @@ import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.attachment.vo.AttachmentDriverFetcherVo;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
+import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
@@ -44,6 +53,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
 
     private final R2dbcEntityTemplate template;
     private final ExtensionComponentsFinder extensionComponentsFinder;
+    /** 正在执行的目录刷新任务，用于合并同一目录的并发请求. */
+    private final ConcurrentMap<UUID, Mono<Void>> refreshTasks = new ConcurrentHashMap<>();
 
     /**
      * .
@@ -183,11 +194,31 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     @Override
     public Mono<Void> refresh(UUID attachmentId) {
         Assert.notNull(attachmentId, "'attachmentId' must not null.");
+        return Mono.defer(() -> refreshTasks.computeIfAbsent(
+            attachmentId, this::createRefreshTask));
+    }
+
+    private Mono<Void> createRefreshTask(UUID attachmentId) {
+        return Mono.defer(() -> performRefresh(attachmentId))
+            .doFinally(signalType -> refreshTasks.remove(attachmentId))
+            .cache();
+    }
+
+    private Mono<Void> performRefresh(UUID attachmentId) {
         return attachmentService.findById(attachmentId)
-            .filter(attachment ->
-                attachment.getType() != null
-                    && attachment.getType().name().toUpperCase(Locale.ROOT).startsWith("DRIVER_"))
-            .flatMap(attachment -> refreshRemoteFileSystem(attachment, attachment.getDriverId()));
+            .switchIfEmpty(Mono.error(new AttachmentNotFoundException(
+                "Attachment not found for id=" + attachmentId)))
+            .flatMap(attachment -> {
+                if (attachment.getType() != AttachmentType.Driver_Directory) {
+                    return Mono.error(new IllegalArgumentException(
+                        "Attachment is not a driver directory: " + attachmentId));
+                }
+                if (attachment.getDriverId() == null) {
+                    return Mono.error(new IllegalStateException(
+                        "Attachment driver id is missing: " + attachmentId));
+                }
+                return refreshRemoteFileSystem(attachment, attachment.getDriverId());
+            });
     }
 
     @Override
@@ -230,25 +261,96 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
 
     private Mono<Void> refreshRemoteFileSystem(Attachment attachment, UUID driverId) {
         final UUID pid = attachment.getId();
-        String url = attachment.getUrl();
         String remotePath = attachment.getFsPath();
         return repository.findById(driverId)
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "Attachment driver not found for id=" + driverId)))
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()))
-            .flatMapMany(attachmentDriverEntity ->
-                fetchAndUpdateEntities(attachmentDriverEntity, pid, remotePath))
-            // 递归的话太慢了，目前只刷新当前目录下的文件或者文件夹
-            // .filter(att ->
-            //     att.getType() == AttachmentType.Directory
-            //         || att.getType() == AttachmentType.Driver_Directory)
-            // .flatMap(att1 -> refreshRemoteFileSystem(att1, driverId))
-            .then();
+            .flatMap(attachmentDriver ->
+                fetchAndUpdateEntities(attachmentDriver, pid, remotePath));
     }
 
-    private Flux<Attachment> fetchAndUpdateEntities(
+    private Mono<Void> fetchAndUpdateEntities(
         AttachmentDriver driver, UUID pid, String remotePath) {
-        return getAttDriverFetcher(driver.getType(), driver.getName())
-            .getChildren(driver.getId(), pid, remotePath)
-            .flatMap(attachmentService::save);
+        AttachmentDriverFetcher fetcher =
+            getAttDriverFetcher(driver.getType(), driver.getName());
+        Mono<List<Attachment>> scannedAttachments =
+            fetcher.getChildren(driver.getId(), pid, remotePath).collectList();
+        Mono<List<AttachmentEntity>> storedAttachments = attachmentRepository
+            .findAllByParentIdAndDriverId(pid, driver.getId())
+            .collectList();
+        return Mono.zip(scannedAttachments, storedAttachments)
+            .flatMap(tuple -> synchronizeAttachments(
+                fetcher, tuple.getT1(), tuple.getT2()));
+    }
+
+    private Mono<Void> synchronizeAttachments(AttachmentDriverFetcher fetcher,
+                                              List<Attachment> scannedAttachments,
+                                              List<AttachmentEntity> storedAttachments) {
+        Map<String, AttachmentEntity> storedAttachmentMap = new HashMap<>();
+        storedAttachments.forEach(attachment ->
+            storedAttachmentMap.put(attachment.getFsPath(), attachment));
+
+        Mono<Void> saveChanges = Flux.fromIterable(scannedAttachments)
+            .concatMap(scannedAttachment -> {
+                AttachmentEntity storedAttachment =
+                    storedAttachmentMap.remove(scannedAttachment.getFsPath());
+                return saveChangedAttachment(fetcher, scannedAttachment, storedAttachment);
+            })
+            .then();
+        Mono<Void> removeMissingAttachments = Flux.fromIterable(storedAttachmentMap.values())
+            .filter(attachment -> !Boolean.TRUE.equals(attachment.getDeleted()))
+            .concatMap(attachment ->
+                attachmentService.removeByIdOnlyRecords(attachment.getId()))
+            .then();
+        return saveChanges.then(removeMissingAttachments);
+    }
+
+    private Mono<Void> saveChangedAttachment(AttachmentDriverFetcher fetcher,
+                                             Attachment scannedAttachment,
+                                             AttachmentEntity storedAttachment) {
+        boolean requiresSha1 = requiresSha1(scannedAttachment, storedAttachment);
+        if (storedAttachment != null) {
+            scannedAttachment.setId(storedAttachment.getId());
+            if (!requiresSha1) {
+                scannedAttachment.setSha1(storedAttachment.getSha1());
+            }
+        }
+        if (!attachmentChanged(scannedAttachment, storedAttachment)) {
+            return Mono.empty();
+        }
+        Mono<Attachment> attachmentMono = requiresSha1
+            ? fetcher.calculateSha1(scannedAttachment)
+            : Mono.just(scannedAttachment);
+        return attachmentMono.flatMap(attachmentService::save).then();
+    }
+
+    private boolean requiresSha1(Attachment scannedAttachment,
+                                 AttachmentEntity storedAttachment) {
+        if (scannedAttachment.getType() != AttachmentType.Driver_File) {
+            return false;
+        }
+        return storedAttachment == null
+            || !Objects.equals(scannedAttachment.getType(), storedAttachment.getType())
+            || !Objects.equals(scannedAttachment.getSize(), storedAttachment.getSize())
+            || !Objects.equals(
+                scannedAttachment.getModifiedTime(), storedAttachment.getModifiedTime())
+            || !StringUtils.hasText(storedAttachment.getSha1());
+    }
+
+    private boolean attachmentChanged(Attachment scannedAttachment,
+                                      AttachmentEntity storedAttachment) {
+        return storedAttachment == null
+            || Boolean.TRUE.equals(storedAttachment.getDeleted())
+            || !Objects.equals(scannedAttachment.getType(), storedAttachment.getType())
+            || !Objects.equals(scannedAttachment.getName(), storedAttachment.getName())
+            || !Objects.equals(scannedAttachment.getPath(), storedAttachment.getPath())
+            || !Objects.equals(scannedAttachment.getUrl(), storedAttachment.getUrl())
+            || !Objects.equals(scannedAttachment.getFsPath(), storedAttachment.getFsPath())
+            || !Objects.equals(scannedAttachment.getSize(), storedAttachment.getSize())
+            || !Objects.equals(
+                scannedAttachment.getModifiedTime(), storedAttachment.getModifiedTime())
+            || !Objects.equals(scannedAttachment.getDriverId(), storedAttachment.getDriverId());
     }
 
 }

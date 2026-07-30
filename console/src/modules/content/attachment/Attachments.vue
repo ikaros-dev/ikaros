@@ -84,38 +84,59 @@ const attachmentCondition = ref({
 });
 
 const attachments = ref<Attachment[]>([]);
+let attachmentRequestId = 0;
+
+const applyAttachmentPage = async (data, requestId: number, parentId: string) => {
+	if (
+		requestId !== attachmentRequestId ||
+		attachmentCondition.value.parentId !== parentId
+	) {
+		return;
+	}
+	attachments.value = data.items;
+	attachmentCondition.value.page = data.page;
+	attachmentCondition.value.size = data.size;
+	attachmentCondition.value.total = data.total;
+	await updateBreadcrumbByParentPath(requestId, parentId);
+};
+
 const fetchAttachments = async () => {
+	const requestId = ++attachmentRequestId;
+	const parentId = attachmentCondition.value.parentId as any as string;
 	const { data } = await apiClient.attachment.listAttachmentsByCondition1({
 		page: attachmentCondition.value.page,
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
-		parentId: attachmentCondition.value.parentId as any as string,
+		parentId,
 	});
-	attachments.value = data.items;
-	attachmentCondition.value.page = data.page;
-	attachmentCondition.value.size = data.size;
-	attachmentCondition.value.total = data.total;
-	await updateBreadcrumbByParentPath();
+	await applyAttachmentPage(data, requestId, parentId);
 };
 const fetchDriverAttachments = async () => {
+	const requestId = ++attachmentRequestId;
+	const parentId = attachmentCondition.value.parentId as any as string;
 	const { data } = await apiClient.attachmentDriver.listAttachmentsByCondition({
 		page: attachmentCondition.value.page,
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
-		parentId: attachmentCondition.value.parentId as any as string,
+		parentId,
 		refresh: true,
 	});
-	attachments.value = data.items;
-	attachmentCondition.value.page = data.page;
-	attachmentCondition.value.size = data.size;
-	attachmentCondition.value.total = data.total;
-	await updateBreadcrumbByParentPath();
+	await applyAttachmentPage(data, requestId, parentId);
 };
 
-const updateBreadcrumbByParentPath = async () => {
+async function updateBreadcrumbByParentPath(
+	requestId: number,
+	parentId: string
+) {
 	const { data } = await apiClient.attachment.getAttachmentPathDirsById({
-		id: attachmentCondition.value.parentId as string,
+		id: parentId,
 	});
+	if (
+		requestId !== attachmentRequestId ||
+		attachmentCondition.value.parentId !== parentId
+	) {
+		return;
+	}
 	paths.value = data.map((att) => {
 		const path: Path = {
 			name: att.name as string,
@@ -124,7 +145,7 @@ const updateBreadcrumbByParentPath = async () => {
 		};
 		return path;
 	});
-};
+}
 
 const onCurrentPageChange = async (val: number) => {
 	attachmentCondition.value.page = val;
@@ -155,38 +176,23 @@ const paths = ref<Path[]>([
 	},
 ]);
 
-const onBreadcrumbClick = async (path) => {
-	// console.log('path', path);
-	const index = paths.value.indexOf(path);
-	if (index !== -1) {
-		paths.value.splice(index + 1);
-	}
+const onBreadcrumbClick = (path) => {
 	attachmentCondition.value.parentId = path.id;
-	await fetchCurrentParentAttachment();
-	await fetchAttachments();
-	// console.log('parentId', attachmentCondition.value.parentId);
 };
 
-const entryAttachment = async (attachment) => {
-	// console.log('attachment', attachment);
-	// console.log('attachment id:', attachment.id);
-	// console.log('attachment name:', attachment.name);
+const entryAttachment = (attachment) => {
 	if (
 		'Directory' === attachment.type ||
 		'Driver_Directory' == attachment.type
 	) {
+		if (attachmentCondition.value.parentId === attachment.id) {
+			return;
+		}
 		attachmentCondition.value.parentId = attachment.id;
-		paths.value.push({
-			name: attachment.name,
-			parentId: attachment.parentId,
-			id: attachment.id,
-		});
-		await fetchAttachments();
 	} else {
 		currentSelectionAttachment.value = attachment;
 		attachmentDetailDrawerVisible.value = true;
 	}
-	// console.log('parentId', attachmentCondition.value.parentId);
 };
 
 const dateFormat = (row, column) => {
@@ -198,8 +204,6 @@ const dateFormat = (row, column) => {
 
 	return moment(date).format('YYYY-MM-DD HH:mm:ss');
 };
-
-onMounted(fetchAttachments);
 
 const dialogFolderVisible = ref(false);
 const createFolderName = ref('');

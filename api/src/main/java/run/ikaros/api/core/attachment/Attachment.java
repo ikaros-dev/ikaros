@@ -37,6 +37,8 @@ public class Attachment {
     private String name;
     private Long size;
     private LocalDateTime updateTime;
+    /** 文件系统中的最后修改时间，用于判断驱动附件是否发生变化. */
+    private LocalDateTime modifiedTime;
     private Boolean deleted;
     private UUID driverId;
     private String sha1;
