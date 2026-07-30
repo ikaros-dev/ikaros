@@ -3,14 +3,12 @@ package run.ikaros.server.core.attachment.extension;
 import static org.springframework.util.FileCopyUtils.BUFFER_SIZE;
 import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
@@ -32,12 +30,20 @@ import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
 
+/**
+ * 读取本地磁盘目录及文件内容的附件驱动.
+ */
 @Slf4j
 @Extension
 @Component
 public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher {
     public static String LOCAL_DISK_DRIVER_NAME = "DISK";
+    /** 本地驱动文件访问路径校验器. */
+    private final LocalAttachmentPathValidator pathValidator;
 
+    public LocalDiskAttachmentDriverFetcher(LocalAttachmentPathValidator pathValidator) {
+        this.pathValidator = pathValidator;
+    }
 
     @Override
     public AttachmentDriverType getDriverType() {
@@ -52,43 +58,49 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
     @Override
     public Flux<Attachment> getChildren(UUID driverId, UUID parentAttId, String remotePath) {
         Assert.hasText(remotePath, "remotePath must not be empty.");
-        File file = new File(remotePath);
-        Path path = Paths.get(remotePath);
-        File[] files = path.toFile().listFiles();
-        if (files == null) {
-            return Flux.empty();
-        }
-        return Flux.fromArray(files)
-            .parallel()
-            .runOn(Schedulers.boundedElastic())
-            .map(f -> {
-                long size = 0;
-                String sha1 = "";
-                try {
-                    size = Files.size(Path.of(f.toURI()));
-                    if (f.isFile()) {
-                        sha1 = FileUtils.calculateSha1(f.getAbsolutePath());
-                    }
-                } catch (IOException ioException) {
-                    log.warn("File size error: {}", ioException.getMessage());
-                } catch (NoSuchAlgorithmException e) {
-                    log.warn("File sha1 error: {}", e.getMessage());
+        return pathValidator.validate(driverId, remotePath)
+            .flatMapMany(path -> {
+                var files = path.toFile().listFiles();
+                if (files == null) {
+                    return Flux.error(
+                        new IllegalArgumentException("目标路径不是可读取目录: " + remotePath));
                 }
-                return Attachment.builder()
-                    .parentId(parentAttId)
-                    .type(f.isFile() ? AttachmentType.Driver_File : AttachmentType.Driver_Directory)
-                    .name(f.getName())
-                    .path(f.getPath())
-                    .url(f.getPath())
-                    .fsPath(f.getAbsolutePath())
-                    .size(size)
-                    .sha1(sha1)
-                    .updateTime(LocalDateTime.now())
-                    .deleted(false)
-                    .driverId(driverId)
-                    .build();
-            })
-            .sequential();
+                return Flux.fromArray(files)
+                    .parallel()
+                    .runOn(Schedulers.boundedElastic())
+                    .map(file -> {
+                        long size = 0;
+                        String sha1 = "";
+                        try {
+                            Path realFilePath = pathValidator.validateNow(
+                                driverId, file.getAbsolutePath());
+                            size = Files.size(realFilePath);
+                            if (file.isFile()) {
+                                sha1 = FileUtils.calculateSha1(realFilePath.toString());
+                            }
+                        } catch (IOException ioException) {
+                            log.warn("File size error: {}", ioException.getMessage());
+                        } catch (NoSuchAlgorithmException exception) {
+                            log.warn("File sha1 error: {}", exception.getMessage());
+                        }
+                        return Attachment.builder()
+                            .parentId(parentAttId)
+                            .type(file.isFile()
+                                ? AttachmentType.Driver_File
+                                : AttachmentType.Driver_Directory)
+                            .name(file.getName())
+                            .path(file.getPath())
+                            .url(file.getPath())
+                            .fsPath(file.getAbsolutePath())
+                            .size(size)
+                            .sha1(sha1)
+                            .updateTime(LocalDateTime.now())
+                            .deleted(false)
+                            .driverId(driverId)
+                            .build();
+                    })
+                    .sequential();
+            });
     }
 
     @Override
@@ -105,41 +117,38 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
 
     @Override
     public Flux<DataBuffer> getSteam(Attachment att) {
-        File file = new File(att.getFsPath());
-        Path path = Path.of(file.toURI());
-        return org.springframework.core.io.buffer.DataBufferUtils
-            .readAsynchronousFileChannel(
-                () -> AsynchronousFileChannel.open(path,
-                    StandardOpenOption.READ),
-                new DefaultDataBufferFactory(),
-                BUFFER_SIZE
-            );
+        return pathValidator.validate(att.getDriverId(), att.getFsPath())
+            .flatMapMany(path -> org.springframework.core.io.buffer.DataBufferUtils
+                .readAsynchronousFileChannel(
+                    () -> AsynchronousFileChannel.open(path, StandardOpenOption.READ),
+                    new DefaultDataBufferFactory(),
+                    BUFFER_SIZE
+                ));
     }
 
     @Override
     public Flux<DataBuffer> getSteam(Attachment att, long start, long end) {
-        File file = new File(att.getFsPath());
-        Path path = Path.of(file.toURI());
-        return Flux.create(sink -> {
-            try {
-                AsynchronousFileChannel channel = AsynchronousFileChannel.open(
-                    path, StandardOpenOption.READ);
+        return pathValidator.validate(att.getDriverId(), att.getFsPath())
+            .flatMapMany(path -> Flux.create(sink -> {
+                try {
+                    AsynchronousFileChannel channel = AsynchronousFileChannel.open(
+                        path, StandardOpenOption.READ);
 
-                AtomicLong position = new AtomicLong(start);
-                ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
+                    AtomicLong position = new AtomicLong(start);
+                    ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
 
-                readChunk(channel, buffer, position.get(), end, sink, () -> {
-                    try {
-                        channel.close();
-                    } catch (IOException e) {
-                        sink.error(e);
-                    }
-                });
+                    readChunk(channel, buffer, position.get(), end, sink, () -> {
+                        try {
+                            channel.close();
+                        } catch (IOException exception) {
+                            sink.error(exception);
+                        }
+                    });
 
-            } catch (IOException e) {
-                sink.error(e);
-            }
-        });
+                } catch (IOException exception) {
+                    sink.error(exception);
+                }
+            }));
     }
 
     private void readChunk(AsynchronousFileChannel channel,
