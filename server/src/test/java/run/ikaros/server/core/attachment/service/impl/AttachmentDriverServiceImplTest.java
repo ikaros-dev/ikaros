@@ -20,15 +20,19 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.attachment.Attachment;
+import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
+import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
 import run.ikaros.server.core.attachment.extension.LocalDiskAttachmentDriverFetcher;
+import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
@@ -50,6 +54,9 @@ class AttachmentDriverServiceImplTest {
     /** 附件服务. */
     @Mock
     private AttachmentService attachmentService;
+    /** 附件驱动挂载服务. */
+    @Mock
+    private AttachmentDriverMountService mountService;
     /** 响应式数据库模板. */
     @Mock
     private R2dbcEntityTemplate template;
@@ -72,7 +79,8 @@ class AttachmentDriverServiceImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         service = new AttachmentDriverServiceImpl(driverRepository, attachmentRepository,
-            eventPublisher, attachmentService, template, extensionComponentsFinder);
+            eventPublisher, attachmentService, mountService, template,
+            extensionComponentsFinder);
         driverId = UUID.randomUUID();
         parentId = UUID.randomUUID();
         remotePath = "D:/media";
@@ -178,6 +186,75 @@ class AttachmentDriverServiceImplTest {
         verify(fetcher).getChildren(driverId, parentId, remotePath);
         verify(fetcher).calculateSha1(file);
         verify(attachmentService).save(file);
+    }
+
+    @Test
+    void saveRebindsEnabledDriverWhenRemotePathChanges() {
+        String newRemotePath = "D:/new-media";
+        Sinks.One<Void> rebindCompletion = Sinks.one();
+        AttachmentDriverEntity storedDriver = AttachmentDriverEntity.builder()
+            .id(driverId)
+            .enable(true)
+            .type(AttachmentDriverType.LOCAL)
+            .name(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME)
+            .mountName("media")
+            .remotePath(remotePath)
+            .build();
+        AttachmentDriver changedDriver = AttachmentDriver.builder()
+            .id(driverId)
+            .enable(false)
+            .type(AttachmentDriverType.LOCAL)
+            .name(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME)
+            .mountName("media")
+            .remotePath(newRemotePath)
+            .build();
+        when(driverRepository.findById(driverId)).thenReturn(Mono.just(storedDriver));
+        when(driverRepository.update(any(AttachmentDriverEntity.class)))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(mountService.rebind(any(AttachmentDriverEntity.class),
+            any(AttachmentDriverEntity.class))).thenReturn(rebindCompletion.asMono());
+
+        StepVerifier.create(service.save(changedDriver))
+            .expectSubscription()
+            .expectNoEvent(Duration.ofMillis(10))
+            .then(rebindCompletion::tryEmitEmpty)
+            .assertNext(savedDriver -> {
+                assertThat(savedDriver.getRemotePath()).isEqualTo(newRemotePath);
+                assertThat(savedDriver.isEnable()).isTrue();
+            })
+            .verifyComplete();
+
+        verify(mountService).rebind(
+            argThat(driver -> remotePath.equals(driver.getRemotePath())),
+            argThat(driver -> newRemotePath.equals(driver.getRemotePath())));
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    void saveCreatesDriverDisabledWhenRequestContainsEnableTrue() {
+        AttachmentDriver newDriver = AttachmentDriver.builder()
+            .enable(true)
+            .type(AttachmentDriverType.LOCAL)
+            .name(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME)
+            .mountName("media")
+            .remotePath(remotePath)
+            .build();
+        when(driverRepository.findByTypeAndNameAndMountName(
+            AttachmentDriverType.LOCAL.name(),
+            LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME,
+            "media")).thenReturn(Mono.empty());
+        when(driverRepository.insert(any(AttachmentDriverEntity.class)))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(service.save(newDriver))
+            .assertNext(savedDriver -> {
+                assertThat(savedDriver.getId()).isNotNull();
+                assertThat(savedDriver.isEnable()).isFalse();
+            })
+            .verifyComplete();
+
+        verify(eventPublisher, never()).publishEvent(
+            any(AttachmentDriverEnableEvent.class));
     }
 
     @Test

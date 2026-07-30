@@ -34,6 +34,7 @@ import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
+import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
 import run.ikaros.server.core.attachment.service.AttachmentDriverService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.attachment.vo.AttachmentDriverFetcherVo;
@@ -50,6 +51,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private final AttachmentRepository attachmentRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final AttachmentService attachmentService;
+    /** 附件驱动挂载服务. */
+    private final AttachmentDriverMountService mountService;
 
     private final R2dbcEntityTemplate template;
     private final ExtensionComponentsFinder extensionComponentsFinder;
@@ -63,12 +66,14 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                                        AttachmentRepository attachmentRepository,
                                        ApplicationEventPublisher eventPublisher,
                                        AttachmentService attachmentService,
+                                       AttachmentDriverMountService mountService,
                                        R2dbcEntityTemplate template,
                                        ExtensionComponentsFinder extensionComponentsFinder) {
         this.repository = repository;
         this.attachmentRepository = attachmentRepository;
         this.eventPublisher = eventPublisher;
         this.attachmentService = attachmentService;
+        this.mountService = mountService;
         this.template = template;
         this.extensionComponentsFinder = extensionComponentsFinder;
     }
@@ -93,25 +98,72 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     public Mono<AttachmentDriver> save(AttachmentDriver driver) {
         Assert.notNull(driver, "'driver' must not null.");
         Assert.notNull(driver.getType(), "'driver type' must not null.");
-        AttachmentDriverFetcher attDriverFetcher =
-            getAttDriverFetcher(driver.getType(), driver.getName());
+        getAttDriverFetcher(driver.getType(), driver.getName());
+        Mono<AttachmentDriverEntity> savedEntity = driver.getId() == null
+            ? saveNewDriver(driver)
+            : updateExistingDriver(driver);
+        return savedEntity
+            .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
+    }
+
+    private Mono<AttachmentDriverEntity> saveNewDriver(AttachmentDriver driver) {
         return repository.findByTypeAndNameAndMountName(
                 driver.getType().toString(), driver.getName(), driver.getMountName())
+            .flatMap(entity -> updateExistingDriver(driver, entity))
             .switchIfEmpty(Mono.defer(() -> copyProperties(driver, new AttachmentDriverEntity())
-                    .map(entity -> {
-                        if (entity.getId() == null) {
-                            entity.setId(UuidV7Utils.generateUuid());
-                        }
-                        return entity;
-                    })
-                    .flatMap(repository::insert))
-                .doOnSuccess(entity ->
+                .map(entity -> entity
+                    .setId(UuidV7Utils.generateUuid())
+                    .setEnable(false))
+                .flatMap(repository::insert)
+                .doOnSuccess(entity -> {
                     log.debug("Created attachment driver with type={} and name={}",
                         entity == null ? null : entity.getType(),
-                        entity == null ? null : entity.getName())))
-            .flatMap(entity -> copyProperties(driver, entity))
+                        entity == null ? null : entity.getName());
+                })));
+    }
+
+    private Mono<AttachmentDriverEntity> updateExistingDriver(AttachmentDriver driver) {
+        return repository.findById(driver.getId())
+            .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                "Attachment driver not found for id=" + driver.getId())))
+            .flatMap(entity -> updateExistingDriver(driver, entity));
+    }
+
+    private Mono<AttachmentDriverEntity> updateExistingDriver(
+        AttachmentDriver driver, AttachmentDriverEntity entity) {
+        AttachmentDriverEntity previousEntity = snapshotDriver(entity);
+        return copyProperties(driver, entity, "enable")
             .flatMap(repository::update)
-            .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
+            .flatMap(updatedEntity -> synchronizeDriverMount(previousEntity, updatedEntity)
+                .thenReturn(updatedEntity));
+    }
+
+    private AttachmentDriverEntity snapshotDriver(AttachmentDriverEntity entity) {
+        return AttachmentDriverEntity.builder()
+            .id(entity.getId())
+            .enable(entity.isEnable())
+            .type(entity.getType())
+            .name(entity.getName())
+            .mountName(entity.getMountName())
+            .remotePath(entity.getRemotePath())
+            .build();
+    }
+
+    private Mono<Void> synchronizeDriverMount(AttachmentDriverEntity previousEntity,
+                                              AttachmentDriverEntity currentEntity) {
+        if (previousEntity.isEnable() && currentEntity.isEnable()
+            && requiresRemount(previousEntity, currentEntity)) {
+            return mountService.rebind(previousEntity, currentEntity);
+        }
+        return Mono.empty();
+    }
+
+    private boolean requiresRemount(AttachmentDriverEntity previousEntity,
+                                    AttachmentDriverEntity currentEntity) {
+        return !Objects.equals(previousEntity.getType(), currentEntity.getType())
+            || !Objects.equals(previousEntity.getName(), currentEntity.getName())
+            || !Objects.equals(previousEntity.getMountName(), currentEntity.getMountName())
+            || !Objects.equals(previousEntity.getRemotePath(), currentEntity.getRemotePath());
     }
 
     @Override
