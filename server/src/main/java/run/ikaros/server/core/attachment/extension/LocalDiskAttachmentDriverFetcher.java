@@ -12,8 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
@@ -72,17 +70,18 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
                     .runOn(Schedulers.boundedElastic())
                     .map(file -> {
                         long size = 0;
-                        LocalDateTime modifiedTime = null;
+                        String sha1 = "";
                         try {
                             Path realFilePath = pathValidator.validateNow(
                                 driverId, file.getAbsolutePath());
                             size = Files.size(realFilePath);
-                            modifiedTime = LocalDateTime.ofInstant(
-                                    Files.getLastModifiedTime(realFilePath).toInstant(),
-                                    ZoneId.systemDefault())
-                                .truncatedTo(ChronoUnit.MICROS);
+                            if (file.isFile()) {
+                                sha1 = FileUtils.calculateSha1(realFilePath.toString());
+                            }
                         } catch (IOException ioException) {
-                            log.warn("File metadata error: {}", ioException.getMessage());
+                            log.warn("File size error: {}", ioException.getMessage());
+                        } catch (NoSuchAlgorithmException exception) {
+                            log.warn("File sha1 error: {}", exception.getMessage());
                         }
                         return Attachment.builder()
                             .parentId(parentAttId)
@@ -94,33 +93,13 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
                             .url(file.getPath())
                             .fsPath(file.getAbsolutePath())
                             .size(size)
-                            .modifiedTime(modifiedTime)
+                            .sha1(sha1)
                             .updateTime(LocalDateTime.now())
                             .deleted(false)
                             .driverId(driverId)
                             .build();
                     })
                     .sequential();
-            });
-    }
-
-    @Override
-    public Mono<Attachment> calculateSha1(Attachment attachment) {
-        Assert.notNull(attachment, "Attachment must not be null.");
-        Assert.notNull(attachment.getDriverId(), "Attachment driverId must not be null.");
-        Assert.hasText(attachment.getFsPath(), "Attachment fsPath must not be empty.");
-        if (attachment.getType() != AttachmentType.Driver_File) {
-            return Mono.just(attachment);
-        }
-        return pathValidator.validate(attachment.getDriverId(), attachment.getFsPath())
-            .publishOn(Schedulers.boundedElastic())
-            .map(path -> {
-                try {
-                    return attachment.setSha1(FileUtils.calculateSha1(path.toString()));
-                } catch (IOException | NoSuchAlgorithmException exception) {
-                    log.warn("File sha1 error: {}", exception.getMessage());
-                    return attachment.setSha1("");
-                }
             });
     }
 
