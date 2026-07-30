@@ -27,9 +27,6 @@ jobs:
       - name: Clean with gradle
         run: |
           ./gradlew clean
-      - name: Build console with pinned pnpm
-        run: |
-          ./gradlew buildFrontend -x test
       - name: Build server with gradle
         run: |
           ./gradlew build -x test
