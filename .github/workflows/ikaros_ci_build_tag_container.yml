@@ -27,15 +27,7 @@ jobs:
       - name: Clean with gradle
         run: |
           ./gradlew clean
-      - name: Install pnpm
-        run: npm install -g pnpm
-      - name: Reduce pnpm concurrency
-        run: pnpm config set fetch-retries 5 && pnpm config set fetch-timeout 60000 && pnpm config set network-concurrency 6
-      - name: Use npm mirror
-        run: |
-          npm config set registry https://registry.npmmirror.com
-          pnpm config set registry https://registry.npmmirror.com
-      - name: Build console with npm
+      - name: Build console with pinned pnpm
         run: |
           ./gradlew buildFrontend -x test
       - name: Build server with gradle
