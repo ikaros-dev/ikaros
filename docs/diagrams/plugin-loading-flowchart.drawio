@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="插件加载流程图">
+    <mxGraphModel>
+      <root>
+        <mxCell id="p2_0" />
+        <mxCell id="p2_1" parent="p2_0" />
+
+        <!-- ========== 标题 ========== -->
+        <mxCell id="p2_title" value="Ikaros 插件加载完整生命周期" style="text;html=1;align=center;verticalAlign=middle;fontSize=16;fontStyle=1;" vertex="1" parent="p2_1">
+          <mxGeometry x="250" y="10" width="500" height="36" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== 步骤节点 (从 y=60 开始) ========== -->
+
+        <!-- 步骤 1：应用启动 -->
+        <mxCell id="p2_s1" value="① 应用启动&#xa;ApplicationReadyEvent" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="p2_1">
+          <mxGeometry x="380" y="60" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- 步骤 2：监听器触发 -->
+        <mxCell id="p2_s2" value="② PluginPropertiesEnablesInitListener&#xa;initialize() 触发" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="p2_1">
+          <mxGeometry x="380" y="160" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s1" target="p2_s2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 3：loadPlugins() -->
+        <mxCell id="p2_s3" value="③ IkarosPluginManager.loadPlugins()&#xa;(PF4J DefaultPluginManager)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="p2_1">
+          <mxGeometry x="380" y="250" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s2" target="p2_s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 4：查找插件路径 -->
+        <mxCell id="p2_s4" value="④ PluginRepository.getPluginPaths()&#xa;发现所有候选插件路径" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="p2_1">
+          <mxGeometry x="380" y="340" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s3" target="p2_s4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 决策：开发 or 部署 -->
+        <mxCell id="p2_d1" value="运行模式？" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="p2_1">
+          <mxGeometry x="410" y="430" width="180" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s4" target="p2_d1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 分支：开发模式 -->
+        <mxCell id="p2_s4d" value="开发模式&#xa;FixedPathDevelopmentPluginRepository" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="p2_1">
+          <mxGeometry x="100" y="460" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e4d" value="development" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_d1" target="p2_s4d">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 分支：部署模式 -->
+        <mxCell id="p2_s4p" value="部署模式&#xa;JarPluginRepository + DefaultPluginRepository" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="p2_1">
+          <mxGeometry x="720" y="460" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e4p" value="deployment" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_d1" target="p2_s4p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 汇合 -->
+        <mxCell id="p2_s5" value="⑤ YamlPluginDescriptorFinder.find()&#xa;解析 plugin.yaml" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="p2_1">
+          <mxGeometry x="380" y="560" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e5d" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s4d" target="p2_s5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e5p" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s4p" target="p2_s5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 6：YamlPluginFinder + YamlPluginLoader -->
+        <mxCell id="p2_s6" value="⑥ YamlPluginFinder.find()&#xa;YamlPluginLoader.load() 读取 YAML" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="p2_1">
+          <mxGeometry x="380" y="650" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s5" target="p2_s6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 7：生成 IkarosPluginDescriptor -->
+        <mxCell id="p2_s7" value="⑦ 生成 IkarosPluginDescriptor&#xa;(含 author / logo / displayName / configMapSchemas)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="p2_1">
+          <mxGeometry x="370" y="740" width="260" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s6" target="p2_s7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 8：PluginLoader 加载类 -->
+        <mxCell id="p2_s8" value="⑧ PluginLoader.loadPlugin()&#xa;使用 PluginClassLoader + APD 策略" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="p2_1">
+          <mxGeometry x="380" y="830" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s7" target="p2_s8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 决策：启用/禁用 -->
+        <mxCell id="p2_d2" value="PropertyPluginStatusProvider&#xa;插件是否启用？" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="p2_1">
+          <mxGeometry x="410" y="920" width="180" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s8" target="p2_d2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 分支：禁用 -->
+        <mxCell id="p2_end_disabled" value="插件状态 = DISABLED&#xa;跳过启动" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="p2_1">
+          <mxGeometry x="100" y="940" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e_disabled" value="否" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_d2" target="p2_end_disabled">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 分支：启用 -->
+        <mxCell id="p2_s9" value="⑨ startPlugin(pluginId)&#xa;插件状态 = RESOLVED → 开始启动" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="p2_1">
+          <mxGeometry x="720" y="940" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e_enabled" value="是" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_d2" target="p2_s9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 可见区域分隔：分支流程回归主线 -->
+        <mxCell id="p2_s10" value="⑩ 递归启动依赖插件&#xa;startPlugin(dependency pluginId)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="p2_1">
+          <mxGeometry x="720" y="1030" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s9" target="p2_s10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 11：初始化上下文 -->
+        <mxCell id="p2_s11" value="⑪ PluginApplicationInitializer&#xa;onStartUp(pluginId)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="p2_1">
+          <mxGeometry x="720" y="1120" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s10" target="p2_s11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 12：创建 PluginApplicationContext -->
+        <mxCell id="p2_s12" value="⑫ 创建 PluginApplicationContext&#xa;设置 parent = SharedApplicationContext&#xa;设置 ClassLoader = PluginClassLoader" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="p2_1">
+          <mxGeometry x="710" y="1210" width="260" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s11" target="p2_s12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 13：扫描 @Extension -->
+        <mxCell id="p2_s13" value="⑬ PluginExtensionAnnotationPostProcessor&#xa;扫描 @Extension 注解 → 注册 Bean 定义" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="p2_1">
+          <mxGeometry x="710" y="1320" width="260" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s12" target="p2_s13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 14：注册扩展 Bean / refresh -->
+        <mxCell id="p2_s14" value="⑭ 注册扩展类为 Bean&#xa;pluginApplicationContext.refresh()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="p2_1">
+          <mxGeometry x="710" y="1410" width="260" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s13" target="p2_s14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 15：注册到 Registry -->
+        <mxCell id="p2_s15" value="⑮ 注册到&#xa;PluginApplicationContextRegistry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="p2_1">
+          <mxGeometry x="710" y="1500" width="260" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s14" target="p2_s15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 步骤 16：Plugin.start() -->
+        <mxCell id="p2_s16" value="⑯ pluginWrapper.getPlugin().start()&#xa;插件自定义启动逻辑" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="p2_1">
+          <mxGeometry x="710" y="1590" width="260" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s15" target="p2_s16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 完成 -->
+        <mxCell id="p2_end" value="插件状态 = STARTED&#xa;加载完成 ✅" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="p2_1">
+          <mxGeometry x="730" y="1680" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e_end" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s16" target="p2_end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ========== 失败分支 ========== -->
+        <mxCell id="p2_fail" value="异常捕获&#xa;状态 = FAILED&#xa;记录 startingError" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="p2_1">
+          <mxGeometry x="100" y="1420" width="180" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_e_fail1" value="异常" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s14" target="p2_fail">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e_fail2" value="异常" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="p2_1" source="p2_s16" target="p2_fail">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ========== 图例 ========== -->
+        <mxCell id="p2_legend" value="图例" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;" vertex="1" parent="p2_1">
+          <mxGeometry x="30" y="1740" width="340" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_leg1" value="" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="p2_legend">
+          <mxGeometry x="10" y="30" width="30" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_leg1t" value="启动/入口/完成 — 圆角椭圆" style="text;html=1;align=left;verticalAlign=middle;" vertex="1" parent="p2_legend">
+          <mxGeometry x="50" y="28" width="260" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_leg2" value="" style="rounded=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="p2_legend">
+          <mxGeometry x="10" y="56" width="30" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_leg2t" value="核心管理步骤 — PF4J 管理流程" style="text;html=1;align=left;verticalAlign=middle;" vertex="1" parent="p2_legend">
+          <mxGeometry x="50" y="54" width="260" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_leg3" value="" style="rounded=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="p2_legend">
+          <mxGeometry x="10" y="82" width="30" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2_leg3t" value="描述符解析 — YAML 读取与转换" style="text;html=1;align=left;verticalAlign=middle;" vertex="1" parent="p2_legend">
+          <mxGeometry x="50" y="80" width="260" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
