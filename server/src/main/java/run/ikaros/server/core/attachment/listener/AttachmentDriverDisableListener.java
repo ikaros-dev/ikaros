@@ -11,27 +11,38 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.config.DynamicDirectoryResolver;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
+import run.ikaros.server.core.attachment.extension.LocalAttachmentPathValidator;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
+/**
+ * 在本地附件驱动禁用时撤销挂载目录及其访问权限.
+ */
 @Slf4j
 @Component
 public class AttachmentDriverDisableListener {
+    /** 附件仓库. */
     private final AttachmentRepository attachmentRepository;
+    /** 动态静态资源目录解析器. */
     private final DynamicDirectoryResolver dynamicDirectoryResolver;
+    /** 附件服务. */
     private final AttachmentService attachmentService;
+    /** 本地驱动路径校验器. */
+    private final LocalAttachmentPathValidator pathValidator;
 
     /**
      * Construct.
      */
     public AttachmentDriverDisableListener(AttachmentRepository attachmentRepository,
                                            DynamicDirectoryResolver dynamicDirectoryResolver,
-                                           AttachmentService attachmentService) {
+                                           AttachmentService attachmentService,
+                                           LocalAttachmentPathValidator pathValidator) {
         this.attachmentRepository = attachmentRepository;
         this.dynamicDirectoryResolver = dynamicDirectoryResolver;
         this.attachmentService = attachmentService;
+        this.pathValidator = pathValidator;
     }
 
     /**
@@ -53,7 +64,8 @@ public class AttachmentDriverDisableListener {
             mountName = driver.getType().name();
         }
 
-        dynamicDirectoryResolver.removeDirectoryMapping(driver.getMountName());
+        dynamicDirectoryResolver.removeDirectoryMapping(mountName);
+        pathValidator.unregister(driver.getId());
 
         return attachmentRepository.findByTypeAndParentIdAndName(
                 AttachmentType.Driver_Directory, ROOT_DIRECTORY_ID, mountName

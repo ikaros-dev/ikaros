@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": "22.22.1",
+    "pnpm": "10.32.1"
+  },
   "scripts": {
     "packagesBuild": "pnpm --filter ./packages/shared install && pnpm --filter ./packages/shared build && pnpm --filter ./packages/api-client install && pnpm --filter ./packages/api-client build",
     "dev": "vite",
@@ -100,8 +105,8 @@
   },
   "lint-staged": {
     "*.{js,jsx,vue,ts,tsx}": [
-      "npm run lint",
-      "npm run prettier-format"
+      "pnpm lint",
+      "pnpm prettier-format"
     ]
   }
 }

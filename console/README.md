@@ -4,9 +4,10 @@ Ikaros Web Console 模块
 
 # 环境
 
-- node: 18.16.0
-- npm: 9.6.7
-- pnpm: 8.3.0
+- Node.js: 22.22.1
+- pnpm: 10.32.1
+
+Gradle 的 `buildFrontend` 任务会自动下载并使用上述精确版本。本地直接执行前端命令时，需先通过 Corepack 启用 `package.json` 中锁定的 pnpm 版本。
 
 ### 编译依赖包
 
