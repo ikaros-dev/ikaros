@@ -15,6 +15,7 @@ export const useUserStore = defineStore('user', () => {
 	const refreshToken = ref<string | undefined>(undefined);
 	const totpTempToken = ref<string | undefined>(undefined);
 	const totpRequired = ref(false);
+	const consoleAccessDenied = ref(false);
 
 	function clearAuthentication() {
 		currentUser.value = undefined;
@@ -32,18 +33,23 @@ export const useUserStore = defineStore('user', () => {
 		try {
 			const { data, status } = await apiClient.userMe.getUserMe({
 				validateStatus: (status) =>
-					status === 401 || (status >= 200 && status < 300),
+					status === 401 ||
+					status === 403 ||
+					(status >= 200 && status < 300),
 			});
 			if (status === 200) {
+				consoleAccessDenied.value = false;
 				currentUser.value = data;
 				isAnonymous.value = false;
 				await fetchCurrentRole();
 			} else {
 				clearAuthentication();
+				consoleAccessDenied.value = status === 403;
 			}
 		} catch (e) {
 			console.error('Failed to fetch current user', e);
 			clearAuthentication();
+			consoleAccessDenied.value = false;
 		}
 	}
 
@@ -58,6 +64,7 @@ export const useUserStore = defineStore('user', () => {
 			});
 			if (status === 200 && !data.totpRequired) {
 				// 正常登录 - 无二步验证
+				consoleAccessDenied.value = false;
 				jwtToken.value = data.accessToken;
 				refreshToken.value = data.refreshToken;
 				isAnonymous.value = false;
@@ -65,6 +72,7 @@ export const useUserStore = defineStore('user', () => {
 				totpTempToken.value = undefined;
 			} else if (status === 200 && data.totpRequired) {
 				// 需要二步验证
+				consoleAccessDenied.value = false;
 				totpRequired.value = true;
 				totpTempToken.value = data.tempToken;
 				jwtToken.value = undefined;
@@ -94,6 +102,7 @@ export const useUserStore = defineStore('user', () => {
 				}
 			);
 			if (status === 200 && data.accessToken) {
+				consoleAccessDenied.value = false;
 				jwtToken.value = data.accessToken;
 				refreshToken.value = data.refreshToken;
 				isAnonymous.value = false;
@@ -109,6 +118,13 @@ export const useUserStore = defineStore('user', () => {
 
 	function jwtTokenLogout() {
 		clearAuthentication();
+		consoleAccessDenied.value = false;
+	}
+
+	function consumeConsoleAccessDenied() {
+		const accessDenied = consoleAccessDenied.value;
+		consoleAccessDenied.value = false;
+		return accessDenied;
 	}
 
 	async function fetchCurrentRole() {
@@ -131,10 +147,12 @@ export const useUserStore = defineStore('user', () => {
 		refreshToken,
 		totpTempToken,
 		totpRequired,
+		consoleAccessDenied,
 		fetchCurrentUser,
 		applyJwtToken,
 		validateTotp,
 		jwtTokenLogout,
+		consumeConsoleAccessDenied,
 		fetchCurrentRole,
 		roleHasMaster,
 	};

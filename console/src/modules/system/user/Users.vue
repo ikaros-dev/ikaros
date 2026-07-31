@@ -131,38 +131,62 @@ const fetchRoles = async () => {
 const rowUserEntity = ref<UserEntity>({});
 const openRoleDialog = async (userE: UserEntity) => {
 	rowUserEntity.value = userE;
+	if (roles.value.length === 0) {
+		await fetchRoles();
+	}
 	const { data } = await apiClient.userRole.getRolesForUser({
 		userId: rowUserEntity.value.id + '',
 	});
 	if (data.length > 0) {
 		userRoleId.value = data[0].id as string;
+	} else {
+		const masterRoleId = roles.value.find((role) => role.name === 'MASTER')?.id;
+		if (masterRoleId) {
+			userRoleId.value = masterRoleId;
+			await apiClient.userRole.addUserRoles({
+				userRoleReqParams: {
+					userId: rowUserEntity.value.id,
+					roleIds: [masterRoleId],
+				},
+			});
+		}
 	}
 	userRoleDialogVisible.value = true;
 };
 
 const submitUserRole = async () => {
 	console.debug('userRoleId', userRoleId.value);
-	if (userRoleId.value) {
+	const { data } = await apiClient.userRole.getRolesForUser({
+		userId: rowUserEntity.value.id + '',
+	});
+	const roleIds = data.map((role) => role.id) as string[];
+	if (
+		userRoleId.value &&
+		!roleIds.some((roleId) => String(roleId) === String(userRoleId.value))
+	) {
 		await apiClient.userRole.addUserRoles({
 			userRoleReqParams: {
 				userId: rowUserEntity.value.id,
 				roleIds: [userRoleId.value],
 			},
 		});
+	}
+	const roleIdsToDelete = userRoleId.value
+		? roleIds.filter((roleId) => String(roleId) !== String(userRoleId.value))
+		: roleIds;
+	if (roleIdsToDelete.length > 0) {
+		await apiClient.userRole.deleteUserRoles({
+			userRoleReqParams: {
+				userId: rowUserEntity.value.id,
+				roleIds: roleIdsToDelete,
+			},
+		});
+	}
+	if (userRoleId.value) {
 		ElMessage.success(
 			'Change user role success for user=' + rowUserEntity.value.username
 		);
 	} else {
-		const { data } = await apiClient.userRole.getRolesForUser({
-			userId: rowUserEntity.value.id + '',
-		});
-		const roleIds = data.map((role) => role.id);
-		await apiClient.userRole.deleteUserRoles({
-			userRoleReqParams: {
-				userId: rowUserEntity.value.id,
-				roleIds: roleIds as string[],
-			},
-		});
 		ElMessage.success(
 			'Delete all roles success for user=' + rowUserEntity.value.username
 		);
@@ -238,10 +262,10 @@ onMounted(() => {
 				<el-form-item label="Role">
 					<el-select
 						v-model="userRoleId"
-						clearable
 						placeholder="Select User Role"
 						size="large"
 					>
+						<el-option label="无" value="" />
 						<el-option
 							v-for="role in roles"
 							:key="role.id"
