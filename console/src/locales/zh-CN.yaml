@@ -6,6 +6,7 @@ common:
     request_parameter_error: 请求参数异常
     unauthorized: 401 未经授权
     forbidden: 403 禁止访问
+    console_access_denied: 当前账户没有控制台访问权限
     not_found: 404 没有找到
     server_internal_error_with_title: 服务端内部错误
     unknown_error_with_title: 未知的错误
@@ -318,6 +319,8 @@ module:
         title: 新建附件驱动
         sidebar: 新建附件驱动
         message:
+          hint:
+            token_optional: 局域网内目录或本地目录不必填写
           form-rule:
             type:
               required: 请选择附件驱动类型

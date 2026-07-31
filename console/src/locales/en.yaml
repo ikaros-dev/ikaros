@@ -6,6 +6,7 @@ common:
     request_parameter_error: Request parameters error
     unauthorized: 401 Unauthorized
     forbidden: 403 Forbidden
+    console_access_denied: The current account does not have console access
     not_found: 404 Not found
     server_internal_error_with_title: Server internal error with title
     unknown_error_with_title: Unknow error with title
@@ -331,6 +332,8 @@ module:
         title: New Attachment Driver
         sidebar: New Attachment Driver
         message:
+          hint:
+            token_optional: Tokens are not required for LAN or local directories
           form-rule:
             type:
               required: Please select the attachment driver type
