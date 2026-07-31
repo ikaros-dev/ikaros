@@ -209,10 +209,11 @@ public class DefaultEpisodeService implements EpisodeService {
                     subjectId, episode.getGroup(), episode.getSequence())
                 .collectList().filter(entities -> !entities.isEmpty())
                 .map(entities -> entities.get(0))
-                .flatMap(entity -> copyProperties(episode, entity, "id"))
-                .switchIfEmpty(copyProperties(episode, new EpisodeEntity())) // 如果没找到，则新增
+                .flatMap(entity -> copyProperties(episode, entity, "id")
+                    .flatMap(episodeRepository::update))
+                .switchIfEmpty(copyProperties(episode, new EpisodeEntity())
+                    .flatMap(episodeRepository::insert)) // 如果没找到，则新增
             )
-            .flatMap(episodeRepository::save)
             .flatMap(entity -> copyProperties(entity, new Episode()));
     }
 }

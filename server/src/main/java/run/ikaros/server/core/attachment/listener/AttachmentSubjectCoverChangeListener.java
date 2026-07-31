@@ -150,12 +150,13 @@ public class AttachmentSubjectCoverChangeListener {
                     .flatMap(entity ->
                         attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
                                 AttachmentReferenceType.SUBJECT, attachment.getId(), entity.getId())
-                            .switchIfEmpty(Mono.just(AttachmentReferenceEntity.builder()
+                            .flatMap(attachmentReferenceRepository::update)
+                            .switchIfEmpty(attachmentReferenceRepository.insert(
+                                AttachmentReferenceEntity.builder()
                                 .type(AttachmentReferenceType.SUBJECT)
                                 .attachmentId(attachment.getId())
                                 .referenceId(entity.getId())
                                 .build()))
-                            .flatMap(attachmentReferenceRepository::save)
                     )
 
             )

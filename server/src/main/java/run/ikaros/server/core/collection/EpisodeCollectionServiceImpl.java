@@ -106,7 +106,7 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
             .flatMap(episodeCollectionEntity -> updateSubjectId(episodeId, episodeCollectionEntity))
             .map(episodeCollectionEntity -> episodeCollectionEntity.setProgress(progress))
             .flatMap(
-                episodeCollectionEntity -> episodeCollectionRepository.save(episodeCollectionEntity)
+                episodeCollectionEntity -> episodeCollectionRepository.update(episodeCollectionEntity)
                     .doOnSuccess(episodeCollectionEntity1 -> log.info(
                         "Update episode collection process for episodeId=[{}] and userId=[{}]",
                         episodeId, userId)))
@@ -131,7 +131,7 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
                 episodeCollectionEntity.setProgress(progress).setDuration(duration)
                     .setUpdateTime(LocalDateTime.now()))
             .flatMap(
-                episodeCollectionEntity -> episodeCollectionRepository.save(episodeCollectionEntity)
+                episodeCollectionEntity -> episodeCollectionRepository.update(episodeCollectionEntity)
                     .doOnSuccess(episodeCollectionEntity1 -> log.info(
                         "Update episode collection for episodeId=[{}] and userId=[{}]",
                         episodeId, userId)))
