@@ -2,6 +2,8 @@ package run.ikaros.server.core.attachment.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,6 +36,7 @@ import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
 import run.ikaros.server.core.attachment.extension.LocalDiskAttachmentDriverFetcher;
 import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
+import run.ikaros.server.core.attachment.service.AttachmentSha1Service;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
 import run.ikaros.server.store.entity.AttachmentEntity;
@@ -57,6 +60,9 @@ class AttachmentDriverServiceImplTest {
     /** 附件驱动挂载服务. */
     @Mock
     private AttachmentDriverMountService mountService;
+    /** 附件 SHA-1 后台计算服务. */
+    @Mock
+    private AttachmentSha1Service attachmentSha1Service;
     /** 响应式数据库模板. */
     @Mock
     private R2dbcEntityTemplate template;
@@ -79,7 +85,7 @@ class AttachmentDriverServiceImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         service = new AttachmentDriverServiceImpl(driverRepository, attachmentRepository,
-            eventPublisher, attachmentService, mountService, template,
+            eventPublisher, attachmentService, mountService, attachmentSha1Service, template,
             extensionComponentsFinder);
         driverId = UUID.randomUUID();
         parentId = UUID.randomUUID();
@@ -108,7 +114,7 @@ class AttachmentDriverServiceImplTest {
     }
 
     @Test
-    void refreshCalculatesSha1ForEveryFileOnFirstScan() {
+    void refreshSchedulesSha1ForEveryFileOnFirstScan() {
         Attachment firstFile = scannedFile("D:/media/first.mkv", 100L,
             LocalDateTime.of(2026, 7, 30, 12, 0));
         Attachment secondFile = scannedFile("D:/media/second.mkv", 200L,
@@ -117,14 +123,12 @@ class AttachmentDriverServiceImplTest {
             .thenReturn(Flux.just(firstFile, secondFile));
         when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
             .thenReturn(Flux.empty());
-        when(fetcher.calculateSha1(any(Attachment.class)))
-            .thenAnswer(invocation -> Mono.just(
-                invocation.<Attachment>getArgument(0).setSha1("sha1")));
-
         StepVerifier.create(service.refresh(parentId)).verifyComplete();
 
-        verify(fetcher, times(2)).calculateSha1(any(Attachment.class));
         verify(attachmentService, times(2)).save(any(Attachment.class));
+        verify(attachmentSha1Service).calculateAsync(
+            eq(fetcher), argThat(attachments ->
+                attachments.equals(List.of(firstFile, secondFile))));
     }
 
     @Test
@@ -142,6 +146,7 @@ class AttachmentDriverServiceImplTest {
         verify(fetcher, never()).calculateSha1(any(Attachment.class));
         verify(attachmentService, never()).save(any(Attachment.class));
         verify(attachmentService, never()).removeByIdOnlyRecords(any(UUID.class));
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of());
     }
 
     @Test
@@ -158,16 +163,14 @@ class AttachmentDriverServiceImplTest {
             .thenReturn(Flux.just(changedFile));
         when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
             .thenReturn(Flux.just(storedChangedFile, missingFile));
-        when(fetcher.calculateSha1(changedFile))
-            .thenReturn(Mono.just(changedFile.setSha1("new-sha1")));
-
         StepVerifier.create(service.refresh(parentId)).verifyComplete();
 
         ArgumentCaptor<Attachment> attachmentCaptor = ArgumentCaptor.forClass(Attachment.class);
         verify(attachmentService).save(attachmentCaptor.capture());
         assertThat(attachmentCaptor.getValue().getId()).isEqualTo(storedChangedFile.getId());
-        assertThat(attachmentCaptor.getValue().getSha1()).isEqualTo("new-sha1");
+        assertThat(attachmentCaptor.getValue().getSha1()).isNull();
         verify(attachmentService).removeByIdOnlyRecords(missingFile.getId());
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of(changedFile));
     }
 
     @Test
@@ -178,14 +181,12 @@ class AttachmentDriverServiceImplTest {
             .thenReturn(Flux.just(file).delayElements(Duration.ofMillis(50)));
         when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
             .thenReturn(Flux.empty());
-        when(fetcher.calculateSha1(file)).thenReturn(Mono.just(file.setSha1("sha1")));
-
         StepVerifier.create(Flux.merge(service.refresh(parentId), service.refresh(parentId)))
             .verifyComplete();
 
         verify(fetcher).getChildren(driverId, parentId, remotePath);
-        verify(fetcher).calculateSha1(file);
         verify(attachmentService).save(file);
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of(file));
     }
 
     @Test
@@ -269,7 +270,6 @@ class AttachmentDriverServiceImplTest {
         when(fetcher.getChildren(driverId, parentId, remotePath)).thenReturn(Flux.just(video));
         when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
             .thenReturn(Flux.empty());
-        when(fetcher.calculateSha1(video)).thenReturn(Mono.just(video.setSha1("sha1")));
         when(attachmentService.listByCondition(condition)).thenReturn(Mono.just(page));
 
         StepVerifier.create(service.listAttachmentsByCondition(condition))
@@ -277,6 +277,7 @@ class AttachmentDriverServiceImplTest {
             .verifyComplete();
 
         verify(attachmentService).save(video);
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of(video));
         verify(attachmentService).listByCondition(condition);
     }
 

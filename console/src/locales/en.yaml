@@ -300,6 +300,8 @@ module:
         updateTime: Update Time
         path: Path
         fsPath: File System Path
+      descItemValue:
+        sha1Calculating: Calculating
       button:
         relation: Relation
         delete: Delete

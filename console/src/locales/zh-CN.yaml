@@ -287,6 +287,8 @@ module:
         updateTime: 更新时间
         path: 路径
         fsPath: 附件系统路径
+      descItemValue:
+        sha1Calculating: 计算中
       button:
         relation: 关联
         delete: 删除

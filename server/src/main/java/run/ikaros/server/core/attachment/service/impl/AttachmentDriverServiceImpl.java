@@ -37,6 +37,7 @@ import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
 import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
 import run.ikaros.server.core.attachment.service.AttachmentDriverService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
+import run.ikaros.server.core.attachment.service.AttachmentSha1Service;
 import run.ikaros.server.core.attachment.vo.AttachmentDriverFetcherVo;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
@@ -53,6 +54,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private final AttachmentService attachmentService;
     /** 附件驱动挂载服务. */
     private final AttachmentDriverMountService mountService;
+    /** 附件 SHA-1 后台计算服务. */
+    private final AttachmentSha1Service attachmentSha1Service;
 
     private final R2dbcEntityTemplate template;
     private final ExtensionComponentsFinder extensionComponentsFinder;
@@ -67,6 +70,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                                        ApplicationEventPublisher eventPublisher,
                                        AttachmentService attachmentService,
                                        AttachmentDriverMountService mountService,
+                                       AttachmentSha1Service attachmentSha1Service,
                                        R2dbcEntityTemplate template,
                                        ExtensionComponentsFinder extensionComponentsFinder) {
         this.repository = repository;
@@ -74,6 +78,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         this.eventPublisher = eventPublisher;
         this.attachmentService = attachmentService;
         this.mountService = mountService;
+        this.attachmentSha1Service = attachmentSha1Service;
         this.template = template;
         this.extensionComponentsFinder = extensionComponentsFinder;
     }
@@ -343,24 +348,25 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         storedAttachments.forEach(attachment ->
             storedAttachmentMap.put(attachment.getFsPath(), attachment));
 
-        Mono<Void> saveChanges = Flux.fromIterable(scannedAttachments)
-            .concatMap(scannedAttachment -> {
+        Mono<List<Attachment>> saveChanges = Flux.fromIterable(scannedAttachments)
+            .flatMap(scannedAttachment -> {
                 AttachmentEntity storedAttachment =
                     storedAttachmentMap.remove(scannedAttachment.getFsPath());
-                return saveChangedAttachment(fetcher, scannedAttachment, storedAttachment);
-            })
-            .then();
+                return saveChangedAttachment(scannedAttachment, storedAttachment);
+            }, 8)
+            .collectList();
         Mono<Void> removeMissingAttachments = Flux.fromIterable(storedAttachmentMap.values())
             .filter(attachment -> !Boolean.TRUE.equals(attachment.getDeleted()))
-            .concatMap(attachment ->
-                attachmentService.removeByIdOnlyRecords(attachment.getId()))
+            .flatMap(attachment ->
+                attachmentService.removeByIdOnlyRecords(attachment.getId()), 8)
             .then();
-        return saveChanges.then(removeMissingAttachments);
+        return saveChanges.flatMap(hashAttachments -> removeMissingAttachments
+            .doOnSuccess(ignored ->
+                attachmentSha1Service.calculateAsync(fetcher, hashAttachments)));
     }
 
-    private Mono<Void> saveChangedAttachment(AttachmentDriverFetcher fetcher,
-                                             Attachment scannedAttachment,
-                                             AttachmentEntity storedAttachment) {
+    private Mono<Attachment> saveChangedAttachment(Attachment scannedAttachment,
+                                                   AttachmentEntity storedAttachment) {
         boolean requiresSha1 = requiresSha1(scannedAttachment, storedAttachment);
         if (storedAttachment != null) {
             scannedAttachment.setId(storedAttachment.getId());
@@ -369,12 +375,11 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             }
         }
         if (!attachmentChanged(scannedAttachment, storedAttachment)) {
-            return Mono.empty();
+            return requiresSha1 ? Mono.just(scannedAttachment) : Mono.empty();
         }
-        Mono<Attachment> attachmentMono = requiresSha1
-            ? fetcher.calculateSha1(scannedAttachment)
-            : Mono.just(scannedAttachment);
-        return attachmentMono.flatMap(attachmentService::save).then();
+        return attachmentService.save(scannedAttachment)
+            .flatMap(savedAttachment ->
+                requiresSha1 ? Mono.just(savedAttachment) : Mono.empty());
     }
 
     private boolean requiresSha1(Attachment scannedAttachment,

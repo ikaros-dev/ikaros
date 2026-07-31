@@ -99,6 +99,25 @@ class LocalDiskAttachmentDriverFetcherTest {
     }
 
     @Test
+    void calculateSha1RejectsFileChangedAfterScan(@TempDir Path tempDir) throws IOException {
+        UUID driverId = UUID.randomUUID();
+        Path file = Files.writeString(tempDir.resolve("episode.mkv"), "episode-content");
+        LocalDiskAttachmentDriverFetcher fetcher = createFetcher(driverId, tempDir);
+        Attachment attachment = fetcher.getChildren(
+                driverId, UUID.randomUUID(), tempDir.toString())
+            .blockFirst();
+        assertThat(attachment).isNotNull();
+        attachment.setSize(attachment.getSize() + 1);
+
+        StepVerifier.create(fetcher.calculateSha1(attachment))
+            .expectErrorSatisfies(error -> assertThat(error)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("文件在扫描后发生变化")
+                .hasMessageContaining(file.getFileName().toString()))
+            .verify();
+    }
+
+    @Test
     void readsWholeFileAndRequestedRange(@TempDir Path tempDir) throws IOException {
         UUID driverId = UUID.randomUUID();
         Path file = Files.writeString(tempDir.resolve("episode.mkv"), "0123456789");

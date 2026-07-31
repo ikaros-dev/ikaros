@@ -15,6 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
@@ -117,16 +118,42 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
         if (attachment.getType() != AttachmentType.Driver_File) {
             return Mono.just(attachment);
         }
-        return pathValidator.validate(attachment.getDriverId(), attachment.getFsPath())
-            .publishOn(Schedulers.boundedElastic())
-            .map(path -> {
+        return Mono.fromCallable(() -> {
+                Path path = pathValidator.validateNow(
+                    attachment.getDriverId(), attachment.getFsPath());
+                BasicFileAttributes beforeAttributes = Files.readAttributes(
+                    path, BasicFileAttributes.class);
+                if (!matchesAttachmentState(attachment, beforeAttributes)) {
+                    throw new IllegalStateException("文件在扫描后发生变化: " + path);
+                }
                 try {
-                    return attachment.setSha1(FileUtils.calculateSha1(path.toString()));
+                    String sha1 = FileUtils.calculateSha1(path.toString());
+                    BasicFileAttributes afterAttributes = Files.readAttributes(
+                        path, BasicFileAttributes.class);
+                    if (!sameFileState(beforeAttributes, afterAttributes)) {
+                        throw new IllegalStateException("文件在 SHA-1 计算期间发生变化: " + path);
+                    }
+                    return attachment.setSha1(sha1);
                 } catch (IOException | NoSuchAlgorithmException exception) {
                     log.warn("File sha1 error: {}", exception.getMessage());
-                    return attachment.setSha1("");
+                    throw new IllegalStateException("文件 SHA-1 计算失败: " + path, exception);
                 }
             });
+    }
+
+    private boolean matchesAttachmentState(Attachment attachment,
+                                           BasicFileAttributes attributes) {
+        LocalDateTime modifiedTime = LocalDateTime.ofInstant(
+                attributes.lastModifiedTime().toInstant(), ZoneId.systemDefault())
+            .truncatedTo(ChronoUnit.MICROS);
+        return Objects.equals(attachment.getSize(), attributes.size())
+            && Objects.equals(attachment.getModifiedTime(), modifiedTime);
+    }
+
+    private boolean sameFileState(BasicFileAttributes beforeAttributes,
+                                  BasicFileAttributes afterAttributes) {
+        return beforeAttributes.size() == afterAttributes.size()
+            && beforeAttributes.lastModifiedTime().equals(afterAttributes.lastModifiedTime());
     }
 
     @Override
