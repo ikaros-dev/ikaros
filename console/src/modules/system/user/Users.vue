@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { useUserStore } from '@/stores/user';
 import { apiClient } from '@/utils/api-client';
 import { WarningFilled } from '@element-plus/icons-vue';
 import { Role, User, UserEntity } from '@runikaros/api-client';
 import { onMounted, reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import {
 	ElButton,
 	ElCol,
@@ -22,6 +24,8 @@ import {
 	FormRules,
 } from 'element-plus';
 
+const router = useRouter();
+const userStore = useUserStore();
 const users = ref<User[]>([]);
 const fetchUsers = async () => {
 	const { data } = await apiClient.user.getUsers();
@@ -108,6 +112,11 @@ const doDeleteUser = async (userId) => {
 	if (!userId) return;
 	await apiClient.user.deleteById1({ id: userId });
 	ElMessage.success('Delete user success for userId=' + userId);
+	if (String(userStore.currentUser?.entity?.id) === String(userId)) {
+		userStore.jwtTokenLogout();
+		await router.replace({ name: 'Login' });
+		return;
+	}
 	await fetchUsers();
 };
 
