@@ -45,7 +45,7 @@ public class PluginCompositeRouterFunction implements RouterFunction<ServerRespo
             .flatMap(applicationContext -> applicationContext
                 .getBeanProvider(RouterFunction.class)
                 .orderedStream())
-            .map(router -> (RouterFunction<ServerResponse>) router)
+            .map(PluginCompositeRouterFunction::asServerResponseRouterFunction)
             .toList();
         var reverseProxies = resourceProxyRouterFunctionRegistry.getRouterFunctions();
 
@@ -63,5 +63,11 @@ public class PluginCompositeRouterFunction implements RouterFunction<ServerRespo
         routerFunctions.addAll(reverseProxies);
         routerFunctions.add(customEndpoint);
         return routerFunctions;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static RouterFunction<ServerResponse> asServerResponseRouterFunction(
+        RouterFunction<?> routerFunction) {
+        return (RouterFunction<ServerResponse>) routerFunction;
     }
 }
