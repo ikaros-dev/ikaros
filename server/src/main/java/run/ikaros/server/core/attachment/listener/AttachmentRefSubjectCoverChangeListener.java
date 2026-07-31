@@ -61,7 +61,7 @@ public class AttachmentRefSubjectCoverChangeListener {
                 .attachmentId(attId)
                 .referenceId(subjectId)
                 .build())
-            .flatMap(attachmentReferenceRepository::save)
+            .flatMap(attachmentReferenceRepository::insert)
             .then();
     }
 

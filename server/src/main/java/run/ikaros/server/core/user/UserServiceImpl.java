@@ -205,7 +205,7 @@ public class UserServiceImpl implements UserService {
             enabled = false;
         }
 
-        return repository.save(UserEntity.builder()
+        return repository.insert(UserEntity.builder()
                 .enable(enabled)
                 .username(username)
                 .password(passwordEncoder.encode(password))

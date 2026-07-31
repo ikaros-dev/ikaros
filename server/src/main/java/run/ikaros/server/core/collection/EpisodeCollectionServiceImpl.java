@@ -149,7 +149,7 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
                 Mono.error(new EpisodeNotFoundException("Episode not found for id: " + episodeId)))
             .map(EpisodeEntity::getSubjectId)
             .flatMap(subjectId ->
-                episodeCollectionRepository.save(EpisodeCollectionEntity.builder()
+                episodeCollectionRepository.insert(EpisodeCollectionEntity.builder()
                         .userId(userId).subjectId(subjectId)
                         .episodeId(episodeId).progress(progress).duration(duration)
                         .finish(((double) progress / duration) >= AppConst.EPISODE_FINISH)

@@ -112,7 +112,7 @@ public class TaskServiceImpl implements TaskService {
             .filter(taskEntities -> taskEntities != null && !taskEntities.isEmpty())
             .flatMap(
                 taskEntities -> Mono.error(new RuntimeException("Submission failed, task exists.")))
-            .switchIfEmpty(taskRepository.save(entity)
+            .switchIfEmpty(taskRepository.insert(entity)
                 .flatMap(taskEntity -> {
                     Future<?> future = executorService.submit(task);
                     futureMap.put(taskEntity.getName(), future);

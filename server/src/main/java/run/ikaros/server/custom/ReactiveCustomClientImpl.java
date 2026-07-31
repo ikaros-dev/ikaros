@@ -89,7 +89,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
                         customMetadataEntityList.stream()))
                     .flatMap(customMetadataEntity -> metadataRepository.findByCustomIdAndKey(
                             customMetadataEntity.getCustomId(), customMetadataEntity.getKey())
-                        .switchIfEmpty(metadataRepository.save(customMetadataEntity))
+                        .switchIfEmpty(metadataRepository.insert(customMetadataEntity))
                         .filter(existsCustomMetadataEntity ->
                             !(Objects.nonNull(existsCustomMetadataEntity.getValue())
                                 && Objects.nonNull(customMetadataEntity.getValue())
