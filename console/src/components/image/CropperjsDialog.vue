@@ -4,6 +4,9 @@ import Cropperjs from './Cropperjs.vue';
 import { ElButton, ElDialog } from 'element-plus';
 import { apiClient } from '@/utils/api-client';
 import { randomUUID } from '@/utils/id';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = withDefaults(
 	defineProps<{
@@ -67,11 +70,11 @@ const base64ToFile = (base64, filename): File => {
 };
 </script>
 <template>
-	<el-dialog v-model="dialogVisible" title="Clip image" @close="onClose">
+	<el-dialog v-model="dialogVisible" :title="t('component.image.cropper.title')" @close="onClose">
 		<Cropperjs :url="props.url" @clip-img="onClipImg" />
 		<template #footer>
 			<span>
-				<el-button plain @click="onConfirm"> Confirm </el-button>
+				<el-button plain @click="onConfirm">{{ t('common.button.confirm') }}</el-button>
 			</span>
 		</template>
 	</el-dialog>

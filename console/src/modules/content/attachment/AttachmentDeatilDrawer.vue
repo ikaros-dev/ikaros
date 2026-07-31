@@ -255,7 +255,7 @@ const getArtplayerInstance = (art: any) => {
 					border
 					direction="vertical"
 				>
-					<el-descriptions-item label="ID">
+					<el-descriptions-item :label="t('common.label.id')">
 						{{ file.id }}
 					</el-descriptions-item>
 					<el-descriptions-item

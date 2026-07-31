@@ -156,7 +156,7 @@ onMounted(fetchSubjects);
 				</el-row>
 				<el-row>
 					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-form-item label="NSFW" style="width: 95%">
+						<el-form-item :label="t('common.label.nsfw')" style="width: 95%">
 							<el-select
 								v-model="findSubjectsCondition.nsfw"
 								clearable
@@ -239,7 +239,7 @@ onMounted(fetchSubjects);
 					<el-table-column type="selection" width="50" show-overflow-tooltip />
 					<el-table-column
 						prop="id"
-						label="ID"
+						:label="t('common.label.id')"
 						width="100"
 						show-overflow-tooltip
 					/>

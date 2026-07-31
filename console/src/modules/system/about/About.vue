@@ -10,7 +10,9 @@ import {
 	ElMessage,
 } from 'element-plus';
 import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const actuatorInfo = ref();
 const fetchActuatorInfo = async () => {
 	const { data } = await apiClient.actuator.info();
@@ -32,7 +34,7 @@ const onBasicInfoCopyButtonClick = () => {
 	});
 
 	copyValue2Clipboard(result).then(() => {
-		ElMessage.success('Copy To Clipboard Success.');
+		ElMessage.success(t('module.about.copy_success'));
 	});
 };
 
@@ -42,21 +44,21 @@ onMounted(fetchActuatorInfo);
 	<!-- Basic -->
 	<el-descriptions
 		class="margin-top"
-		title="Basic"
+		:title="t('module.about.basic')"
 		:column="3"
 		size="large"
 		border
 	>
 		<template #extra>
-			<el-button @click="onBasicInfoCopyButtonClick">Copy</el-button>
+			<el-button @click="onBasicInfoCopyButtonClick">{{ t('common.button.copy') }}</el-button>
 		</template>
 		<!-- git -->
 		<el-descriptions-item>
-			<template #label> Git Branch</template>
+			<template #label>{{ t('module.about.git_branch') }}</template>
 			{{ actuatorInfo?.git.branch }}
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> Git Commit</template>
+			<template #label>{{ t('module.about.git_commit') }}</template>
 			<a
 				target="_blank"
 				:href="
@@ -67,36 +69,36 @@ onMounted(fetchActuatorInfo);
 			>
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> Commit Time</template>
+			<template #label>{{ t('module.about.commit_time') }}</template>
 
 			{{ airTimeDateFormatter(actuatorInfo?.git.commit.time) }}
 		</el-descriptions-item>
 
 		<!-- build -->
 		<el-descriptions-item>
-			<template #label> Build Version</template>
+			<template #label>{{ t('module.about.build_version') }}</template>
 			{{ actuatorInfo?.build.version }}
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> Build Name</template>
+			<template #label>{{ t('module.about.build_name') }}</template>
 			{{ actuatorInfo?.build.name }}
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> Build Time</template>
+			<template #label>{{ t('module.about.build_time') }}</template>
 			{{ airTimeDateFormatter(actuatorInfo?.build.time) }}
 		</el-descriptions-item>
 
 		<!-- os -->
 		<el-descriptions-item>
-			<template #label> OS Name</template>
+			<template #label>{{ t('module.about.os_name') }}</template>
 			{{ actuatorInfo?.os.name }}
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> OS Version</template>
+			<template #label>{{ t('module.about.os_version') }}</template>
 			{{ actuatorInfo?.os.version }}
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> OS Arch</template>
+			<template #label>{{ t('module.about.os_arch') }}</template>
 			{{ actuatorInfo?.os.arch }}
 		</el-descriptions-item>
 	</el-descriptions>
@@ -106,46 +108,46 @@ onMounted(fetchActuatorInfo);
 	<!-- Jave -->
 	<el-descriptions
 		class="margin-top"
-		title="Java"
+		:title="t('module.about.java')"
 		:column="3"
 		size="large"
 		border
 	>
 		<!-- version -->
 		<el-descriptions-item>
-			<template #label> Java Version</template>
+			<template #label>{{ t('module.about.java_version') }}</template>
 			{{ actuatorInfo?.java.version }}
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> Vendor Name</template>
+			<template #label>{{ t('module.about.vendor_name') }}</template>
 			{{ actuatorInfo?.java.vendor.name }}
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> Vendor Version</template>
+			<template #label>{{ t('module.about.vendor_version') }}</template>
 			{{ actuatorInfo?.java.vendor.version }}
 		</el-descriptions-item>
 
 		<!-- runtime -->
 		<el-descriptions-item>
-			<template #label> Runtime Name</template>
+			<template #label>{{ t('module.about.runtime_name') }}</template>
 			{{ actuatorInfo?.java.runtime.name }}
 		</el-descriptions-item>
 		<el-descriptions-item :span="2">
-			<template #label> Runtime Version</template>
+			<template #label>{{ t('module.about.runtime_version') }}</template>
 			{{ actuatorInfo?.java.runtime.version }}
 		</el-descriptions-item>
 
 		<!-- jvm -->
 		<el-descriptions-item>
-			<template #label> JVM Name</template>
+			<template #label>{{ t('module.about.jvm_name') }}</template>
 			{{ actuatorInfo?.java.jvm.name }}
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> JVM Vendor</template>
+			<template #label>{{ t('module.about.jvm_vendor') }}</template>
 			{{ actuatorInfo?.java.jvm.vendor }}
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> JVM Version</template>
+			<template #label>{{ t('module.about.jvm_version') }}</template>
 			{{ actuatorInfo?.java.jvm.version }}
 		</el-descriptions-item>
 	</el-descriptions>
@@ -155,14 +157,14 @@ onMounted(fetchActuatorInfo);
 	<!-- Introduce -->
 	<el-descriptions
 		class="margin-top"
-		title="Ikaros Project"
+		:title="t('module.about.project')"
 		:column="1"
 		size="large"
 		direction="vertical"
 		border
 	>
 		<el-descriptions-item>
-			<template #label> Offical</template>
+			<template #label>{{ t('module.about.official') }}</template>
 			<a href="https://ikaros.run" target="_blank">https://ikaros.run</a>
 		</el-descriptions-item>
 		<el-descriptions-item>
@@ -172,13 +174,13 @@ onMounted(fetchActuatorInfo);
 			>
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> Open API Documentation</template>
+			<template #label>{{ t('module.about.api_documentation') }}</template>
 			<a href="/webjars/swagger-ui/index.html" target="_blank">
 				/webjars/swagger-ui/index.html
 			</a>
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> Contributors</template>
+			<template #label>{{ t('module.about.contributors') }}</template>
 			<el-image
 				style="width: 100%; height: 100%"
 				src="https://contrib.nn.ci/api?repo=ikaros-dev/ikaros&repo=ikaros-dev/docs&repo=ikaros-dev/app"
@@ -186,7 +188,7 @@ onMounted(fetchActuatorInfo);
 			/>
 		</el-descriptions-item>
 		<el-descriptions-item>
-			<template #label> Status</template>
+			<template #label>{{ t('module.about.status') }}</template>
 			<el-image
 				style="width: 100%; height: 100%"
 				src="https://repobeats.axiom.co/api/embed/f7285853048ff09f313f6483901e2af0e638f666.svg"

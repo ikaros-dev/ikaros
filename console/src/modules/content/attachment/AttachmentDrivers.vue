@@ -87,7 +87,7 @@ onMounted(fetchAttDrivers);
 	<el-row>
 		<el-col :span="24">
 			<el-table :data="attDrivers" stripe style="width: 100%">
-				<el-table-column prop="id" label="ID" width="160" />
+				<el-table-column prop="id" :label="t('common.label.id')" width="160" />
 				<el-table-column
 					prop="type"
 					:label="t('module.attachment.driver.table.colum.label.type')"
