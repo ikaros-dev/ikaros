@@ -192,13 +192,13 @@ async function initApp() {
 		loadCoreModules();
 		const userStore = useUserStore();
 		await userStore.fetchCurrentUser();
+		if (userStore.isAnonymous) {
+			return;
+		}
+
 		if (userStore.roleHasMaster()) {
 			const settingStore = useSettingStore();
 			await settingStore.fetchSystemSetting();
-
-			if (userStore.isAnonymous) {
-				return;
-			}
 
 			try {
 				await loadPluginModules();

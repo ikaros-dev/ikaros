@@ -16,22 +16,34 @@ export const useUserStore = defineStore('user', () => {
 	const totpTempToken = ref<string | undefined>(undefined);
 	const totpRequired = ref(false);
 
+	function clearAuthentication() {
+		currentUser.value = undefined;
+		currentRoles.value = undefined;
+		isAnonymous.value = true;
+		jwtToken.value = undefined;
+		refreshToken.value = undefined;
+		totpTempToken.value = undefined;
+		totpRequired.value = false;
+		setApiClientJwtToken();
+	}
+
 	async function fetchCurrentUser() {
 		if (jwtToken.value) setApiClientJwtToken(jwtToken.value);
 		try {
-			const { data, status } = await apiClient.userMe.getUserMe();
+			const { data, status } = await apiClient.userMe.getUserMe({
+				validateStatus: (status) =>
+					status === 401 || (status >= 200 && status < 300),
+			});
 			if (status === 200) {
 				currentUser.value = data;
 				isAnonymous.value = false;
 				await fetchCurrentRole();
 			} else {
-				jwtToken.value = undefined;
-				isAnonymous.value = true;
+				clearAuthentication();
 			}
 		} catch (e) {
 			console.error('Failed to fetch current user', e);
-			isAnonymous.value = true;
-			jwtToken.value = undefined;
+			clearAuthentication();
 		}
 	}
 
@@ -96,12 +108,7 @@ export const useUserStore = defineStore('user', () => {
 	}
 
 	function jwtTokenLogout() {
-		jwtToken.value = undefined;
-		refreshToken.value = undefined;
-		isAnonymous.value = true;
-		currentUser.value = undefined;
-		totpRequired.value = false;
-		totpTempToken.value = undefined;
+		clearAuthentication();
 	}
 
 	async function fetchCurrentRole() {
