@@ -4,7 +4,6 @@ import static run.ikaros.server.plugin.PluginApplicationContextRegistry.getInsta
 
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -36,7 +35,7 @@ public class PluginCompositeRouterFunction implements RouterFunction<ServerRespo
     }
 
     @Override
-    public void accept(@NonNull RouterFunctions.Visitor visitor) {
+    public void accept(RouterFunctions.Visitor visitor) {
         routerFunctions().forEach(routerFunction -> routerFunction.accept(visitor));
     }
 
