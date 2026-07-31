@@ -65,7 +65,7 @@ public class TaskServiceImpl implements TaskService {
                             taskEntity.getId() + "-" + taskEntity.getName(),
                             status, taskStatus);
                     }
-                    return taskRepository.save(taskEntity);
+                    return taskRepository.update(taskEntity);
                 })
                 .subscribe();
         }
@@ -74,10 +74,10 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void updateAllRunningAndCreatedTaskStatusToCancel() {
         taskRepository.findAllByStatus(TaskStatus.RUNNING)
-            .flatMap(taskEntity -> taskRepository.save(taskEntity.setStatus(TaskStatus.CANCEL)
+            .flatMap(taskEntity -> taskRepository.update(taskEntity.setStatus(TaskStatus.CANCEL)
                 .setFailMessage("Application stop.")))
             .thenMany(taskRepository.findAllByStatus(TaskStatus.CREATE))
-            .flatMap(taskEntity -> taskRepository.save(taskEntity.setStatus(TaskStatus.CANCEL)
+            .flatMap(taskEntity -> taskRepository.update(taskEntity.setStatus(TaskStatus.CANCEL)
                 .setFailMessage("Application stop.")))
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe();

@@ -105,7 +105,7 @@ public class UserServiceImpl implements UserService {
         return repository.findById(id)
             .switchIfEmpty(Mono.error(new NotFoundException("User not found for id=" + id)))
             .map(userEntity -> userEntity.setUsername(username))
-            .flatMap(repository::save)
+            .flatMap(repository::update)
             .then();
     }
 
@@ -126,7 +126,7 @@ public class UserServiceImpl implements UserService {
                 || !passwordEncoder.matches(rawPassword,
                 addEncodingIdPrefixIfNotExists(userEntity.getPassword())))
             .map(userEntity -> userEntity.setPassword(passwordEncoder.encode(rawPassword)))
-            .flatMap(repository::save)
+            .flatMap(repository::update)
             .then();
     }
 
@@ -288,6 +288,6 @@ public class UserServiceImpl implements UserService {
         if (updateUserRequest.getEnable() != null) {
             userEntity.setEnable(updateUserRequest.getEnable());
         }
-        return repository.save(userEntity);
+        return repository.update(userEntity);
     }
 }

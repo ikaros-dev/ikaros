@@ -180,7 +180,7 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
                 episodeCollectionEntity.setFinish(finish)
                     .setUpdateTime(LocalDateTime.now()))
             .flatMap(
-                episodeCollectionEntity -> episodeCollectionRepository.save(episodeCollectionEntity)
+                episodeCollectionEntity -> episodeCollectionRepository.update(episodeCollectionEntity)
                     .doOnSuccess(episodeCollectionEntity1 -> {
                         log.debug(
                             "Update episode collection finish for episodeId=[{}] and userId=[{}]",

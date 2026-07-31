@@ -371,7 +371,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                 .referenceId(entity.getId())
                 .build()))
             .flatMap(attachmentReferenceRepository::save)
-            .flatMap(attRefEn -> subjectRepository.save(entity));
+            .flatMap(attRefEn -> subjectRepository.update(entity));
     }
 
     @Override

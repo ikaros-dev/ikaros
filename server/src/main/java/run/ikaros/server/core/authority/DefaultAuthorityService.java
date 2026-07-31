@@ -58,7 +58,7 @@ public class DefaultAuthorityService implements AuthorityService {
                 e.setAuthority(entity.getAuthority());
                 return e;
             })
-            .flatMap(authorityRepository::save)
+            .flatMap(authorityRepository::update)
             .switchIfEmpty(authorityRepository.save(entity));
     }
 

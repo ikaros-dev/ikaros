@@ -96,7 +96,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
                                 && Arrays.equals(existsCustomMetadataEntity.getValue(),
                                 customMetadataEntity.getValue()))
                         )
-                        .flatMap(existsCustomMetadataEntity -> metadataRepository.save(
+                        .flatMap(existsCustomMetadataEntity -> metadataRepository.update(
                             existsCustomMetadataEntity.setValue(customMetadataEntity.getValue()))
                         )
                     )
