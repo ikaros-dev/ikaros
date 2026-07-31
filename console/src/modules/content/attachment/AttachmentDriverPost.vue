@@ -116,6 +116,9 @@ const updateTypeNames = async () => {
 		.filter((dr) => driver.value.type === dr.type)
 		.map((dr) => dr.name as string)
 		.filter((name) => name) as string[];
+	if (typeNames.value.length === 1) {
+		driver.value.name = typeNames.value[0];
+	}
 	console.debug('updateTypeNames', 'typeNames', typeNames.value);
 };
 
@@ -127,7 +130,10 @@ const onTypeSelectChange = () => {
 	driver.value.name = '';
 	updateTypeNames();
 };
-onMounted(fetchAttachmentDriverFetchers);
+onMounted(async () => {
+	await fetchAttachmentDriverFetchers();
+	await updateTypeNames();
+});
 </script>
 
 <template>
