@@ -10,6 +10,7 @@ import { PluginModule } from '@runikaros/shared';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import AttachmentDeatilDrawer from './AttachmentDeatilDrawer.vue';
 import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
+import DialogMessage from '@/components/dialog/DialogMessage.vue';
 import { useRoute } from 'vue-router';
 
 import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css';
@@ -559,9 +560,25 @@ onMounted(() => {
 });
 
 const onBindDirectoryClick = async () => {
+	if (bindPlatformArr.value.length === 0) {
+		await ElMessageBox.alert(
+			h(DialogMessage, {
+				message: t('module.subject.dialog.sync.text.platform-no-available-hint-msg'),
+			}),
+			t('module.attachment.bind.confirm.title'),
+			{
+				confirmButtonText: t('common.button.confirm'),
+				type: 'info',
+			}
+		);
+		return;
+	}
+
 	try {
 		await ElMessageBox.confirm(
-			t('module.attachment.bind.confirm.content'),
+			h(DialogMessage, {
+				message: t('module.attachment.bind.confirm.content'),
+			}),
 			t('module.attachment.bind.confirm.title'),
 			{
 				confirmButtonText: t('module.attachment.bind.confirm.btn.confirm'),
@@ -683,7 +700,7 @@ const onAttachmentDetailDrawerClose = () => {
 		:title="t('module.attachment.bind.confirm.title')"
 		width="400px"
 	>
-		<el-form v-if="bindPlatformArr.length > 0">
+		<el-form>
 			<el-form-item
 				:label="t('module.attachment.bind.platform.title')"
 			>
@@ -713,9 +730,6 @@ const onAttachmentDetailDrawerClose = () => {
 				/>
 			</el-form-item>
 		</el-form>
-		<span v-else>
-			{{ t('module.subject.dialog.sync.text.platform-no-available-hint-msg') }}
-		</span>
 		<template #footer>
 			<span>
 				<el-button @click="bindDialogVisible = false">
@@ -723,7 +737,6 @@ const onAttachmentDetailDrawerClose = () => {
 				</el-button>
 				<el-button
 					type="primary"
-					:disabled="bindPlatformArr.length === 0"
 					@click="onBindDirectoryConfirm"
 				>
 					{{ t('module.attachment.bind.confirm.btn.confirm') }}
