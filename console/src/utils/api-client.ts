@@ -1,4 +1,4 @@
-import type { AxiosError, AxiosInstance } from 'axios';
+import type { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import axios from 'axios';
 import { i18n } from '../locales';
 import {
@@ -158,6 +158,15 @@ const apiClient = setupApiClient(axiosInstance);
 
 function setupApiClient(axios: AxiosInstance) {
 	return {
+		// 通用HTTP方法，用于调用自定义/插件端点
+		get: (url: string, config?: AxiosRequestConfig) =>
+			axios.get(url, config),
+		post: (url: string, data?: unknown, config?: AxiosRequestConfig) =>
+			axios.post(url, data, config),
+		put: (url: string, data?: unknown, config?: AxiosRequestConfig) =>
+			axios.put(url, data, config),
+		delete: (url: string, config?: AxiosRequestConfig) =>
+			axios.delete(url, config),
 		// actuator
 		actuator: new ActuatorApi(undefined, baseURL, axios),
 		// core endpoints
