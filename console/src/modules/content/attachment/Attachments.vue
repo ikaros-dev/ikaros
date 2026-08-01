@@ -87,6 +87,101 @@ const attachmentCondition = ref({
 const attachments = ref<Attachment[]>([]);
 let attachmentRequestId = 0;
 
+type AttachmentSortProperty = 'name' | 'updateTime' | 'size';
+type AttachmentSortOrder = 'ascending' | 'descending';
+
+const attachmentSortProperty = ref<AttachmentSortProperty>('updateTime');
+const attachmentSortOrder = ref<AttachmentSortOrder>('descending');
+const englishNameCollator = new Intl.Collator('en', {
+	numeric: true,
+	sensitivity: 'base',
+});
+const chineseNameCollator = new Intl.Collator('zh-CN', {
+	numeric: true,
+	sensitivity: 'base',
+});
+
+const isEnglishName = (name: string) => /^[A-Za-z]/.test(name);
+
+const attachmentSortableColumns = computed<Record<AttachmentSortProperty, boolean>>(
+	() => ({
+		name: attachments.value.some((attachment) => Boolean(attachment.name)),
+		updateTime: attachments.value.some((attachment) => Boolean(attachment.updateTime)),
+		size: attachments.value.some(
+			(attachment) =>
+				attachment.type !== 'Directory' &&
+				attachment.type !== 'Driver_Directory' &&
+				attachment.size !== undefined &&
+				attachment.size !== null
+		),
+	})
+);
+
+const canSortAttachmentColumn = (property: AttachmentSortProperty) =>
+	attachmentSortableColumns.value[property];
+
+const compareAttachmentName = (firstName: string, secondName: string) => {
+	const firstIsEnglish = isEnglishName(firstName);
+	const secondIsEnglish = isEnglishName(secondName);
+	if (firstIsEnglish !== secondIsEnglish) {
+		return firstIsEnglish ? -1 : 1;
+	}
+	return (firstIsEnglish ? englishNameCollator : chineseNameCollator).compare(
+		firstName,
+		secondName
+	);
+};
+
+const sortedAttachments = computed(() =>
+	!canSortAttachmentColumn(attachmentSortProperty.value)
+		? attachments.value
+		: attachments.value
+		.map((attachment, index) => ({ attachment, index }))
+		.sort((first, second) => {
+			let comparison = 0;
+			if (attachmentSortProperty.value === 'name') {
+				comparison = compareAttachmentName(
+					first.attachment.name || '',
+					second.attachment.name || ''
+				);
+			} else if (attachmentSortProperty.value === 'updateTime') {
+				comparison =
+					new Date(first.attachment.updateTime || 0).getTime() -
+					new Date(second.attachment.updateTime || 0).getTime();
+			} else {
+				comparison = Number(first.attachment.size || 0) - Number(second.attachment.size || 0);
+			}
+			if (comparison === 0) {
+				return first.index - second.index;
+			}
+			return attachmentSortOrder.value === 'ascending' ? comparison : -comparison;
+		})
+		.map(({ attachment }) => attachment)
+);
+
+const toggleAttachmentSort = (property: AttachmentSortProperty) => {
+	if (!canSortAttachmentColumn(property)) {
+		return;
+	}
+	if (attachmentSortProperty.value === property) {
+		attachmentSortOrder.value =
+			attachmentSortOrder.value === 'ascending' ? 'descending' : 'ascending';
+		return;
+	}
+	attachmentSortProperty.value = property;
+	attachmentSortOrder.value = property === 'name' ? 'ascending' : 'descending';
+};
+
+const attachmentSortSymbol = (property: AttachmentSortProperty) => {
+	if (
+		attachmentSortProperty.value !== property ||
+		!canSortAttachmentColumn(property)
+	) {
+		return '';
+	}
+	return attachmentSortOrder.value === 'descending' ? '▼' : '▲';
+};
+
 const applyAttachmentPage = async (data, requestId: number, parentId: string) => {
 	if (
 		requestId !== attachmentRequestId ||
@@ -864,7 +959,7 @@ const onAttachmentDetailDrawerClose = () => {
 	<el-row>
 		<el-col :span="24">
 			<el-table
-				:data="attachments"
+				:data="sortedAttachments"
 				style="width: 100%"
 				row-key="id"
 				@current-change="onCurrentChange"
@@ -876,9 +971,19 @@ const onAttachmentDetailDrawerClose = () => {
 				<!-- <el-table-column prop="id" label="ID" width="60" /> -->
 				<el-table-column
 					prop="name"
-					:label="t('module.attachment.table.colum.label.name')"
 					show-overflow-tooltip
 				>
+					<template #header>
+						<button
+							type="button"
+							class="attachment-sort-header"
+							:disabled="!canSortAttachmentColumn('name')"
+							@click.stop="toggleAttachmentSort('name')"
+						>
+							{{ t('module.attachment.table.colum.label.name') }}
+							<span class="attachment-sort-symbol">{{ attachmentSortSymbol('name') }}</span>
+						</button>
+					</template>
 					<template #default="scoped">
 						<el-icon
 							size="25"
@@ -928,15 +1033,36 @@ const onAttachmentDetailDrawerClose = () => {
 				</el-table-column>
 				<el-table-column
 					prop="updateTime"
-					:label="t('module.attachment.table.colum.label.update_time')"
 					width="160"
 					:formatter="dateFormat"
-				/>
+				>
+					<template #header>
+						<button
+							type="button"
+							class="attachment-sort-header"
+							:disabled="!canSortAttachmentColumn('updateTime')"
+							@click.stop="toggleAttachmentSort('updateTime')"
+						>
+							{{ t('module.attachment.table.colum.label.update_time') }}
+							<span class="attachment-sort-symbol">{{ attachmentSortSymbol('updateTime') }}</span>
+						</button>
+					</template>
+				</el-table-column>
 				<el-table-column
 					prop="size"
-					:label="t('module.attachment.table.colum.label.size')"
 					width="130"
 				>
+					<template #header>
+						<button
+							type="button"
+							class="attachment-sort-header"
+							:disabled="!canSortAttachmentColumn('size')"
+							@click.stop="toggleAttachmentSort('size')"
+						>
+							{{ t('module.attachment.table.colum.label.size') }}
+							<span class="attachment-sort-symbol">{{ attachmentSortSymbol('size') }}</span>
+						</button>
+					</template>
 					<template #default="scoped">
 						<span
 							v-if="
@@ -978,5 +1104,23 @@ const onAttachmentDetailDrawerClose = () => {
 .ik-attachment-breadcrumb-item {
 	width: 20px;
 	cursor: pointer;
+}
+
+.attachment-sort-header {
+	padding: 0;
+	border: 0;
+	color: inherit;
+	font: inherit;
+	background: transparent;
+	cursor: pointer;
+
+	&:disabled {
+		cursor: default;
+	}
+}
+
+.attachment-sort-symbol {
+	margin-left: 0.25em;
+	font-size: 0.875em;
 }
 </style>
