@@ -138,6 +138,15 @@ task pnpmInstallFrontend(type: PnpmTask) {
 task buildFrontend(type: PnpmTask) {
     args = ['build']
     dependsOn("pnpmInstallFrontend")
+    inputs.files(fileTree("${rootProject.projectDir}/console") {
+        include 'src/**'
+        include 'index.html'
+        include 'vite.config.ts'
+        include 'package.json'
+        include 'pnpm-lock.yaml'
+        include 'pnpm-workspace.yaml'
+    })
+    outputs.dir(file("${rootProject.projectDir}/server/src/main/resources/console"))
 }
 
 tasks.named('processResources') {
