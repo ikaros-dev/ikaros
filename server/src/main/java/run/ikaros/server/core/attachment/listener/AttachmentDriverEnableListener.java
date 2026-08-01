@@ -9,8 +9,12 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.store.enums.AttachmentDriverType;
+import run.ikaros.api.store.enums.AttachmentType;
+import run.ikaros.server.config.DynamicDirectoryResolver;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
 import run.ikaros.server.core.attachment.extension.LocalAttachmentPathValidator;
 import run.ikaros.server.core.attachment.service.AttachmentService;
@@ -75,7 +79,8 @@ public class AttachmentDriverEnableListener {
 
         return attachmentService.findByTypeAndParentIdAndName(
                 AttachmentType.Driver_Directory, ROOT_DIRECTORY_ID, finalMountName)
-            .switchIfEmpty(Mono.just(Attachment.builder()
+            .switchIfEmpty(Mono.just(Attachment
+                .builder()
                 .parentId(ROOT_DIRECTORY_ID)
                 .type(AttachmentType.Driver_Directory)
                 .name(finalMountName)
