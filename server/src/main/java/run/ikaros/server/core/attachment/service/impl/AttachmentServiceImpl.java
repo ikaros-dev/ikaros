@@ -5,6 +5,7 @@ import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import static run.ikaros.api.store.enums.AttachmentType.Directory;
 import static run.ikaros.api.store.enums.AttachmentType.Driver_Directory;
+import static run.ikaros.api.store.enums.AttachmentType.Driver_File;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -146,10 +147,14 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheEvict
     public Mono<Attachment> save(Attachment attachment) {
         Assert.notNull(attachment, "'attachment' must not be null.");
-        // Path traversal prevention: validate fsPath before persisting
         String fsPath = attachment.getFsPath();
         if (StringUtils.hasText(fsPath) && !fsPath.startsWith("http")) {
-            validateFsPath(fsPath);
+            if (isDriverAttachment(attachment)) {
+                Assert.notNull(attachment.getDriverId(),
+                    "'driverId' must not be null for driver attachment.");
+            } else {
+                validateFsPath(fsPath);
+            }
         }
         attachment.setParentId(Optional.ofNullable(attachment.getParentId())
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID));
@@ -165,6 +170,11 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(attachmentEntity -> updatePathWhenNewParentId(attachmentEntity, newParentId))
             .flatMap(this::saveEntity)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, attachment));
+    }
+
+    private boolean isDriverAttachment(Attachment attachment) {
+        return Driver_File.equals(attachment.getType())
+            || Driver_Directory.equals(attachment.getType());
     }
 
     private Mono<AttachmentEntity> updatePathWhenNewParentId(AttachmentEntity attachmentEntity,

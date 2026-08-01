@@ -1,11 +1,13 @@
 Root: 首页
 common:
+  greeting: 你好，
   exception:
     title: 应用异常
     network_error: API网络错误
     request_parameter_error: 请求参数异常
     unauthorized: 401 未经授权
     forbidden: 403 禁止访问
+    console_access_denied: 当前账户没有控制台访问权限
     not_found: 404 没有找到
     server_internal_error_with_title: 服务端内部错误
     unknown_error_with_title: 未知的错误
@@ -20,6 +22,28 @@ common:
     edit: 编辑
     delete: 删除
     detail: 详细
+    add: 新增
+    copy: 复制
+  label:
+    id: 标识
+    name: 名称
+    description: 描述
+    operations: 操作
+    type: 类型
+    target: 目标
+    authority: 权限
+    authorities: 权限
+    username: 用户名
+    password: 密码
+    nickname: 昵称
+    introduce: 简介
+    role: 角色
+    enabled: 启用
+    stylesheets: 样式表
+    nsfw: 敏感内容
+  message:
+    validation_failed: 请检查是否有必填项未填写
+    select: 请选择
 router:
   title:
     notfound: 没有找到
@@ -50,6 +74,9 @@ router:
       collection: 收藏
       attachment: 附件
 component:
+  image:
+    cropper:
+      title: 裁剪图片
   upload:
     file-pond-upload:
       mainLabel: 点击选择附件或将附件拖拽到此处
@@ -142,6 +169,7 @@ module:
     message:
       directory: 目录
       file: 附件
+      driver_save_failed: 保存附件驱动失败
       operate:
         create_att_dir: 创建目录成功，目录名[{name}]
         delete_att:
@@ -152,6 +180,8 @@ module:
           cancel: 批量删除目录取消
         copy_short_name: 已复制附件 [{name}] 的简短名称到剪贴板
         copy_integrally_name: 已复制附件 [{name}] 的完整名称到剪贴板
+        copy_name: 已复制附件 [{name}] 的名称到剪贴板
+        copy_path: 已复制附件 [{name}] 的完整路径到剪贴板
         copy_url: 已复制附件 [{name}] 的URL到剪贴板
         move_atts: 批量移动附件成功
     confirm:
@@ -165,6 +195,7 @@ module:
       details: 详情
       copy_short_name: 复制简短名称
       copy_integrally_name: 复制完整名称
+      copy_name: 复制名称
       copy_url: 复制URL
       download: 下载
       delete:
@@ -257,6 +288,7 @@ module:
     popconfirm:
       title: 您确定批量删除附件吗？
       btn: 批量删除
+      system_internal_forbidden: 不允许删除系统内置目录
     search_input:
       placeholder: 搜索当前目录下的所有附件，模糊匹配，空格多个关键词，回车搜查
     breadcrumb:
@@ -286,6 +318,8 @@ module:
         updateTime: 更新时间
         path: 路径
         fsPath: 附件系统路径
+      descItemValue:
+        sha1Calculating: 计算中
       button:
         relation: 关联
         delete: 删除
@@ -315,6 +349,8 @@ module:
         title: 新建附件驱动
         sidebar: 新建附件驱动
         message:
+          hint:
+            token_optional: 局域网内目录或本地目录不必填写
           form-rule:
             type:
               required: 请选择附件驱动类型
@@ -926,6 +962,7 @@ module:
         license: 许可证
         entry: 入口
         logo: LOGO
+        stylesheet: 样式表
         tab-basic: 基本设置
         formkit-submit: 保存
       message:
@@ -1080,6 +1117,7 @@ module:
         alias: 请输入邮件服务用户名别名
         receive-address: 请输入收件方邮件地址
     message:
+      test_mail_sent: 测试邮件已发送
       operate:
         update: 更新成功
       form-rule:
@@ -1099,14 +1137,66 @@ module:
   about:
     title: 关于
     sidebar: 关于
+    copy_success: 已复制到剪贴板
+    basic: 基本信息
+    git_branch: Git 分支
+    git_commit: Git 提交
+    commit_time: 提交时间
+    build_version: 构建版本
+    build_name: 构建名称
+    build_time: 构建时间
+    os_name: 操作系统名称
+    os_version: 操作系统版本
+    os_arch: 操作系统架构
+    java: Java
+    java_version: Java 版本
+    vendor_name: 供应商名称
+    vendor_version: 供应商版本
+    runtime_name: 运行时名称
+    runtime_version: 运行时版本
+    jvm_name: JVM 名称
+    jvm_vendor: JVM 供应商
+    jvm_version: JVM 版本
+    project: Ikaros 项目
+    official: 官方网站
+    api_documentation: OpenAPI 文档
+    contributors: 贡献者
+    status: 状态
   users:
     title: 用户
     sidebar: 用户
+    dialog:
+      create: 新增用户
+      edit: 编辑用户
+      role: 用户角色
+    validation:
+      username_required: 用户名不能为空
+      username_length: 用户名长度须为 1 至 100 个字符
+    message:
+      create_success: 已创建用户：{username}
+      update_success: 已更新用户：{username}
+      enable_status_update_success: 已更新用户启用状态：{username}
+      delete_success: 已删除用户：{id}
+      role_update_success: 已更新用户角色：{username}
+      role_delete_success: 已移除用户的全部角色：{username}
+      delete_confirm: 确定要删除此用户吗？
   roles:
     title: 角色
     sidebar: 角色
+    dialog:
+      create: 新增角色
+      authorities: 角色权限多选
+    message:
+      create_success: 已创建角色：{name}
+      update_success: 已更新角色：{id}
+      delete_success: 已删除角色：{id}
+      delete_confirm: 确定要删除此角色吗？
     authorities:
       sidebar: 角色权限
+      placeholder: 请选择权限类型
+      create_success: 已为角色添加权限：{id}
+      delete_success: 已删除角色权限
+      delete_confirm: 确定要删除此权限吗？
   tasks:
     title: 任务
     sidebar: 任务

@@ -45,6 +45,9 @@ public class AttachmentEntity {
     private Long size;
     @Column("update_time")
     private LocalDateTime updateTime;
+    /** 文件系统中的最后修改时间，用于判断驱动附件是否发生变化. */
+    @Column("modified_time")
+    private LocalDateTime modifiedTime;
     private Boolean deleted;
     @Column("driver_id")
     private UUID driverId;

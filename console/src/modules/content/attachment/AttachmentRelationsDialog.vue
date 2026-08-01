@@ -155,7 +155,7 @@ const onAttRelationDelateBtnConfirm = async (
 					row-key="id"
 					stripe
 				>
-					<el-table-column prop="id" label="ID" width="60" />
+					<el-table-column prop="id" :label="t('common.label.id')" width="60" />
 					<el-table-column
 						prop="type"
 						:label="t('module.attachment.dialog.relation.label.type')"

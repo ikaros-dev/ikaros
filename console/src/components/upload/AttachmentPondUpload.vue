@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import VueFilePond, { setOptions } from 'vue-filepond';
+import { FileStatus } from 'filepond';
 import 'filepond/dist/filepond.min.css';
 
 // Plugins
@@ -116,9 +117,16 @@ const getFirstFile = () => {
 	return filePondRef.value.getFile(0);
 };
 
+const hasIncompleteFiles = () => {
+	// @ts-expect-error
+	const files = filePondRef.value?.getFiles() || [];
+	return files.some((file) => file.status !== FileStatus.PROCESSING_COMPLETE);
+};
+
 defineExpose({
 	handleClearFileList,
 	getFirstFile,
+	hasIncompleteFiles,
 });
 </script>
 

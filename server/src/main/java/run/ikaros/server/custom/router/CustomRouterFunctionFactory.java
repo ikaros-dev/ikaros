@@ -8,7 +8,6 @@ import static run.ikaros.api.infra.utils.StringUtils.upperCaseFirst;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -38,7 +37,6 @@ public class CustomRouterFunctionFactory {
      *
      * @return custom RouterFunction
      */
-    @NonNull
     public RouterFunction<ServerResponse> create() {
         var createHandler = new CustomCreateHandler(client, scheme, applicationEventPublisher);
         var deleteHandler = new CustomDeleteHandler(client, scheme, applicationEventPublisher);

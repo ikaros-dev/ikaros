@@ -4,7 +4,6 @@ import static run.ikaros.server.custom.router.CustomRouterFunctionFactory.PathPa
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -22,7 +21,7 @@ public class CustomListPagingHandler implements CustomRouterFunctionFactory.List
     }
 
     @Override
-    public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
+    public Mono<ServerResponse> handle(ServerRequest request) {
         var page = request.pathVariable("page");
         var size = request.pathVariable("size");
         return customClient.findAllWithPage(scheme.type(), Integer.valueOf(page),

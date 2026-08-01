@@ -3,7 +3,6 @@ package run.ikaros.server.core;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import run.ikaros.api.core.setting.ConfigMap;
 import run.ikaros.api.custom.scheme.CustomSchemeManager;
@@ -24,7 +23,7 @@ public class CoreCustomSchemeInitializer implements ApplicationListener<Applicat
     }
 
     @Override
-    public void onApplicationEvent(@NonNull ApplicationStartedEvent event) {
+    public void onApplicationEvent(ApplicationStartedEvent event) {
         // plugin.ikaros.run
         schemeManager.register(Plugin.class);
 

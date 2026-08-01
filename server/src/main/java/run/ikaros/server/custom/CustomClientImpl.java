@@ -66,7 +66,7 @@ public class CustomClientImpl implements CustomClient {
             customMetadataEntities = newCustomMetadataEntities;
         }
         customDto = new CustomDto(customEntity, customMetadataEntities);
-        return (C) CustomConverter.convertFrom(custom.getClass(), customDto);
+        return convertFrom(custom, customDto);
     }
 
     private <C> CustomEntity findCustomEntityOne(Class<C> type, String name) {
@@ -120,7 +120,7 @@ public class CustomClientImpl implements CustomClient {
             customMetadataEntities = newCustomMetadataEntities;
         }
         customDto = new CustomDto(customEntity, customMetadataEntities);
-        return (C) CustomConverter.convertFrom(custom.getClass(), customDto);
+        return convertFrom(custom, customDto);
     }
 
     @Override
@@ -244,6 +244,11 @@ public class CustomClientImpl implements CustomClient {
         }
 
         return new PagingWrap<C>(finalPage, finalSize, total, customList);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <C> C convertFrom(C custom, CustomDto customDto) {
+        return (C) CustomConverter.convertFrom(custom.getClass(), customDto);
     }
 
     @Override

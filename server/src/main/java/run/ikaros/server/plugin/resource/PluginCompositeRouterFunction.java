@@ -4,7 +4,6 @@ import static run.ikaros.server.plugin.PluginApplicationContextRegistry.getInsta
 
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -36,7 +35,7 @@ public class PluginCompositeRouterFunction implements RouterFunction<ServerRespo
     }
 
     @Override
-    public void accept(@NonNull RouterFunctions.Visitor visitor) {
+    public void accept(RouterFunctions.Visitor visitor) {
         routerFunctions().forEach(routerFunction -> routerFunction.accept(visitor));
     }
 
@@ -46,7 +45,7 @@ public class PluginCompositeRouterFunction implements RouterFunction<ServerRespo
             .flatMap(applicationContext -> applicationContext
                 .getBeanProvider(RouterFunction.class)
                 .orderedStream())
-            .map(router -> (RouterFunction<ServerResponse>) router)
+            .map(PluginCompositeRouterFunction::asServerResponseRouterFunction)
             .toList();
         var reverseProxies = resourceProxyRouterFunctionRegistry.getRouterFunctions();
 
@@ -64,5 +63,11 @@ public class PluginCompositeRouterFunction implements RouterFunction<ServerRespo
         routerFunctions.addAll(reverseProxies);
         routerFunctions.add(customEndpoint);
         return routerFunctions;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static RouterFunction<ServerResponse> asServerResponseRouterFunction(
+        RouterFunction<?> routerFunction) {
+        return (RouterFunction<ServerResponse>) routerFunction;
     }
 }

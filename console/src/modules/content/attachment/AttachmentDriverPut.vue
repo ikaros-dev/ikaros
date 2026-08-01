@@ -105,7 +105,7 @@ const submitForm = async (driverElForm: FormInstance | undefined) => {
 				})
 				.catch((err) => {
 					console.error('AttachmentDriverPut', 'submitForm', 'err', err);
-					ElMessage.error('New Fail.');
+					ElMessage.error(t('module.attachment.message.driver_save_failed'));
 				})
 				.finally(() => {
 					driverBtnLoading.value = false;

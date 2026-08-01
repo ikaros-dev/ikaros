@@ -28,7 +28,7 @@ public class SubjectAddEventListener {
         SubjectEntity subjectEntity = event.getEntity();
         if (SubjectType.GAME.equals(subjectEntity.getType())) {
             return episodeRepository.findAllBySubjectId(subjectEntity.getId())
-                .switchIfEmpty(episodeRepository.save(EpisodeEntity.builder()
+                .switchIfEmpty(episodeRepository.insert(EpisodeEntity.builder()
                     .airTime(subjectEntity.getAirTime())
                     .subjectId(subjectEntity.getId())
                     .group(EpisodeGroup.MAIN)

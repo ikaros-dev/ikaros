@@ -36,6 +36,8 @@ const driver = ref<AttachmentDriver>({
 
 const driverBtnLoading = ref(false);
 const driverElFormRef = ref<FormInstance>();
+const accessTokenHintVisible = ref(false);
+const refreshTokenHintVisible = ref(false);
 const driverFormRules = reactive<FormRules>({
 	type: [
 		{
@@ -91,7 +93,7 @@ const submitForm = async () => {
 				})
 				.catch((err) => {
 					console.error('AttachmentDriverPost', 'submitForm', 'err', err);
-					ElMessage.error('New Fail.');
+					ElMessage.error(t('module.attachment.message.driver_save_failed'));
 				})
 				.finally(() => {
 					driverBtnLoading.value = false;
@@ -116,6 +118,9 @@ const updateTypeNames = async () => {
 		.filter((dr) => driver.value.type === dr.type)
 		.map((dr) => dr.name as string)
 		.filter((name) => name) as string[];
+	if (typeNames.value.length === 1) {
+		driver.value.name = typeNames.value[0];
+	}
 	console.debug('updateTypeNames', 'typeNames', typeNames.value);
 };
 
@@ -127,7 +132,10 @@ const onTypeSelectChange = () => {
 	driver.value.name = '';
 	updateTypeNames();
 };
-onMounted(fetchAttachmentDriverFetchers);
+onMounted(async () => {
+	await fetchAttachmentDriverFetchers();
+	await updateTypeNames();
+});
 </script>
 
 <template>
@@ -191,7 +199,11 @@ onMounted(fetchAttachmentDriverFetchers);
 						v-model="driver.access_token"
 						clearable
 						placeholder="n28uf.47fe03dd47f06d07fec0e88860cc2e9e.8b2b8261cef0a0b7e38e3c96277d62e3aba29908695df66f4383fce100731ce3"
+						@focus="accessTokenHintVisible = true"
 					></el-input>
+					<div v-if="accessTokenHintVisible" class="form-item-hint">
+						{{ t('module.attachment.driver.post.message.hint.token_optional') }}
+					</div>
 				</el-form-item>
 				<el-form-item
 					:label="t('module.attachment.driver.table.colum.label.refresh_token')"
@@ -200,7 +212,11 @@ onMounted(fetchAttachmentDriverFetchers);
 						v-model="driver.refresh_token"
 						clearable
 						placeholder="n28uf.c9a4974d851f9aa42b4edd523847dadf06d84914581d05a093e532c1eeec0ced.aec3da5a8f6c72c3623f430f23b885d906eef639b18fd1be42f9810ac1880ce2"
+						@focus="refreshTokenHintVisible = true"
 					></el-input>
+					<div v-if="refreshTokenHintVisible" class="form-item-hint">
+						{{ t('module.attachment.driver.post.message.hint.token_optional') }}
+					</div>
 				</el-form-item>
 				<el-form-item
 					:label="t('module.attachment.driver.table.colum.label.comment')"
@@ -221,4 +237,14 @@ onMounted(fetchAttachmentDriverFetchers);
 	</el-row>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.form-item-hint {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	padding-top: 2px;
+	font-size: 12px;
+	line-height: 1;
+	color: var(--el-color-success);
+}
+</style>
