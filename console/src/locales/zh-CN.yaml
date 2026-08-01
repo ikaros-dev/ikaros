@@ -1202,6 +1202,34 @@ module:
     sidebar: 任务
     details:
       title: 任务详情
+  music:
+    title: 音乐
+    sidebar: 音乐
+    create_album: 新建专辑
+    edit_album: 编辑专辑
+    name: 名称
+    name_cn: 中文名
+    song_count: 歌曲数
+    score: 评分
+    air_time: 发行时间
+    actions: 操作
+    edit: 编辑
+    delete: 删除
+    save: 保存
+    cancel: 取消
+    songs: 歌曲
+    song_name: 歌曲名
+    song_name_cn: 歌曲中文名
+    group: 分组
+    track: 曲目号
+    description: 描述
+    cover: 封面
+    add_song: 添加歌曲
+    edit_song: 编辑歌曲
+    back: 返回
+    album:
+      detail:
+        title: 专辑详情
 login:
   operations:
     submit:
