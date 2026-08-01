@@ -22,7 +22,7 @@ checkstyle {
 repositories {
     mavenCentral()
 
-    maven { url 'https://repo.spring.io/milestone' }
+    maven { url = 'https://repo.spring.io/milestone' }
     mavenLocal()
 }
 
@@ -37,6 +37,8 @@ springBoot {
     buildInfo()
 }
 
+def mainResourcesDirectory = layout.buildDirectory.dir('resources/main')
+
 bootJar {
     dependsOn 'buildFrontend'
     manifest {
@@ -50,8 +52,7 @@ bootJar {
                 'console/index.html'
         ]
         requiredResources.each { resourcePath ->
-            def resourceFile = project.layout.buildDirectory
-                    .file("resources/main/${resourcePath}").get().asFile
+            def resourceFile = mainResourcesDirectory.get().file(resourcePath).asFile
             if (!resourceFile.isFile()) {
                 throw new GradleException("缺少 JAR 必需资源: ${resourcePath}")
             }
