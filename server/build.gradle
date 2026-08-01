@@ -114,6 +114,11 @@ node {
     nodeProjectDir = file("${rootProject.projectDir}/console")
 }
 
+// pnpm 10.x 在无 TTY 环境(如 Gradle/CI)删除 modules 目录前需要确认，设置 CI=true 跳过
+tasks.withType(PnpmTask).configureEach {
+    environment = ['CI': 'true']
+}
+
 task pnpmInstallPackageShared(type: PnpmTask) {
     args = ['--filter', './packages/shared', 'install']
 }
