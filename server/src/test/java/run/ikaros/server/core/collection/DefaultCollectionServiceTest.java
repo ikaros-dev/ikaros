@@ -3,32 +3,21 @@ package run.ikaros.server.core.collection;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
-import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.api.core.collection.EpisodeCollection;
-import run.ikaros.api.core.collection.SubjectCollection;
 import run.ikaros.api.core.collection.vo.FindCollectionCondition;
-import run.ikaros.api.infra.utils.ReactiveBeanUtils;
 import run.ikaros.api.store.enums.CollectionCategory;
 import run.ikaros.api.store.enums.CollectionType;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.store.entity.EpisodeCollectionEntity;
 import run.ikaros.server.store.entity.SubjectCollectionEntity;
@@ -69,7 +58,8 @@ class DefaultCollectionServiceTest {
         when(subjectCollectionRepository.findByUserIdAndSubjectId(userId, subjectId))
             .thenReturn(Mono.just(entity));
 
-        StepVerifier.create(defaultCollectionService.findTypeBySubjectId(subjectId))
+        StepVerifier
+            .create(defaultCollectionService.findTypeBySubjectId(subjectId))
             .assertNext(type -> assertThat(type).isEqualTo(CollectionType.WISH))
             .verifyComplete();
     }
@@ -80,14 +70,19 @@ class DefaultCollectionServiceTest {
         when(subjectCollectionRepository.findByUserIdAndSubjectId(userId, subjectId))
             .thenReturn(Mono.empty());
 
-        StepVerifier.create(defaultCollectionService.findTypeBySubjectId(subjectId))
+        StepVerifier
+            .create(defaultCollectionService.findTypeBySubjectId(subjectId))
             .verifyComplete();
     }
 
     @Test
     void listCollectionsByCondition_forSubject_withType() {
-        FindCollectionCondition condition = FindCollectionCondition.builder()
-            .page(1).size(10).category(CollectionCategory.SUBJECT).type(CollectionType.DONE)
+        FindCollectionCondition condition = FindCollectionCondition
+            .builder()
+            .page(1)
+            .size(10)
+            .category(CollectionCategory.SUBJECT)
+            .type(CollectionType.DONE)
             .build();
 
         SubjectCollectionEntity entity = new SubjectCollectionEntity();
@@ -103,7 +98,8 @@ class DefaultCollectionServiceTest {
         when(subjectCollectionRepository.findById(entity.getId()))
             .thenReturn(Mono.just(entity));
 
-        StepVerifier.create(defaultCollectionService.listCollectionsByCondition(condition))
+        StepVerifier
+            .create(defaultCollectionService.listCollectionsByCondition(condition))
             .assertNext(pagingWrap -> {
                 assertThat(pagingWrap.getPage()).isEqualTo(1);
                 assertThat(pagingWrap.getSize()).isEqualTo(10);
@@ -116,8 +112,11 @@ class DefaultCollectionServiceTest {
 
     @Test
     void listCollectionsByCondition_forSubject_withoutType() {
-        FindCollectionCondition condition = FindCollectionCondition.builder()
-            .page(1).size(10).category(CollectionCategory.SUBJECT)
+        FindCollectionCondition condition = FindCollectionCondition
+            .builder()
+            .page(1)
+            .size(10)
+            .category(CollectionCategory.SUBJECT)
             .build();
 
         SubjectCollectionEntity entity = new SubjectCollectionEntity();
@@ -133,7 +132,8 @@ class DefaultCollectionServiceTest {
         when(subjectCollectionRepository.findById(entity.getId()))
             .thenReturn(Mono.just(entity));
 
-        StepVerifier.create(defaultCollectionService.listCollectionsByCondition(condition))
+        StepVerifier
+            .create(defaultCollectionService.listCollectionsByCondition(condition))
             .assertNext(pagingWrap -> {
                 assertThat(pagingWrap.getTotal()).isEqualTo(1);
             })
@@ -143,8 +143,11 @@ class DefaultCollectionServiceTest {
     @Test
     void listCollectionsByCondition_forEpisode_withTimeRange() {
         long now = System.currentTimeMillis();
-        FindCollectionCondition condition = FindCollectionCondition.builder()
-            .page(1).size(10).category(CollectionCategory.EPISODE)
+        FindCollectionCondition condition = FindCollectionCondition
+            .builder()
+            .page(1)
+            .size(10)
+            .category(CollectionCategory.EPISODE)
             .updateTimeDesc(true)
             .time((now - 86400000) + "-" + now)
             .build();
@@ -162,7 +165,8 @@ class DefaultCollectionServiceTest {
         when(episodeCollectionRepository.findById(episodeId))
             .thenReturn(Mono.just(entity));
 
-        StepVerifier.create(defaultCollectionService.listCollectionsByCondition(condition))
+        StepVerifier
+            .create(defaultCollectionService.listCollectionsByCondition(condition))
             .assertNext(pagingWrap -> {
                 assertThat(pagingWrap.getTotal()).isEqualTo(1);
             })
@@ -171,8 +175,11 @@ class DefaultCollectionServiceTest {
 
     @Test
     void listCollectionsByCondition_withPageZero_throwsException() {
-        FindCollectionCondition condition = FindCollectionCondition.builder()
-            .page(0).size(10).category(CollectionCategory.SUBJECT)
+        FindCollectionCondition condition = FindCollectionCondition
+            .builder()
+            .page(0)
+            .size(10)
+            .category(CollectionCategory.SUBJECT)
             .build();
 
         org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
@@ -187,8 +194,11 @@ class DefaultCollectionServiceTest {
 
     @Test
     void listCollectionsByCondition_forEpisode_withoutUpdateTimeDesc() {
-        FindCollectionCondition condition = FindCollectionCondition.builder()
-            .page(1).size(10).category(CollectionCategory.EPISODE)
+        FindCollectionCondition condition = FindCollectionCondition
+            .builder()
+            .page(1)
+            .size(10)
+            .category(CollectionCategory.EPISODE)
             .updateTimeDesc(false)
             .build();
 
@@ -202,7 +212,8 @@ class DefaultCollectionServiceTest {
         when(episodeCollectionRepository.findById(episodeId))
             .thenReturn(Mono.just(entity));
 
-        StepVerifier.create(defaultCollectionService.listCollectionsByCondition(condition))
+        StepVerifier
+            .create(defaultCollectionService.listCollectionsByCondition(condition))
             .assertNext(pagingWrap -> assertThat(pagingWrap.getTotal()).isEqualTo(1))
             .verifyComplete();
     }

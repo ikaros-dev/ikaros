@@ -33,13 +33,15 @@ class DefaultTagServiceMoreTest {
         tagRepository = Mockito.mock(TagRepository.class);
         r2dbcEntityTemplate = Mockito.mock(R2dbcEntityTemplate.class);
         eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
-        defaultTagService = new DefaultTagService(tagRepository, r2dbcEntityTemplate, eventPublisher);
+        defaultTagService =
+            new DefaultTagService(tagRepository, r2dbcEntityTemplate, eventPublisher);
     }
 
     @Test
     void findSubjectTags() {
         UUID subjectId = UuidV7Utils.generateUuid();
-        TagEntity tagEntity = TagEntity.builder()
+        TagEntity tagEntity = TagEntity
+            .builder()
             .id(UuidV7Utils.generateUuid())
             .type(TagType.SUBJECT)
             .name("anime")
@@ -52,7 +54,8 @@ class DefaultTagServiceMoreTest {
         when(r2dbcEntityTemplate.select(any(Query.class), any(Class.class)))
             .thenReturn(Flux.just(tagEntity));
 
-        StepVerifier.create(defaultTagService.findSubjectTags(subjectId))
+        StepVerifier
+            .create(defaultTagService.findSubjectTags(subjectId))
             .assertNext(subjectTag -> {
                 assertThat(subjectTag.getName()).isEqualTo("anime");
                 assertThat(subjectTag.getSubjectId()).isEqualTo(subjectId);
@@ -65,7 +68,8 @@ class DefaultTagServiceMoreTest {
         UUID subjectId = UuidV7Utils.generateUuid();
         when(r2dbcEntityTemplate.select(any(Query.class), any(Class.class)))
             .thenReturn(Flux.empty());
-        StepVerifier.create(defaultTagService.findSubjectTags(subjectId))
+        StepVerifier
+            .create(defaultTagService.findSubjectTags(subjectId))
             .expectNextCount(0)
             .verifyComplete();
     }
@@ -73,7 +77,8 @@ class DefaultTagServiceMoreTest {
     @Test
     void findAttachmentTags() {
         UUID attachmentId = UuidV7Utils.generateUuid();
-        TagEntity tagEntity = TagEntity.builder()
+        TagEntity tagEntity = TagEntity
+            .builder()
             .id(UuidV7Utils.generateUuid())
             .type(TagType.ATTACHMENT)
             .name("cover")
@@ -85,7 +90,8 @@ class DefaultTagServiceMoreTest {
         when(r2dbcEntityTemplate.select(any(Query.class), any(Class.class)))
             .thenReturn(Flux.just(tagEntity));
 
-        StepVerifier.create(defaultTagService.findAttachmentTags(attachmentId))
+        StepVerifier
+            .create(defaultTagService.findAttachmentTags(attachmentId))
             .assertNext(attachmentTag -> {
                 assertThat(attachmentTag.getName()).isEqualTo("cover");
                 assertThat(attachmentTag.getAttachmentId()).isEqualTo(attachmentId);
@@ -99,7 +105,8 @@ class DefaultTagServiceMoreTest {
         UUID userId = UuidV7Utils.generateUuid();
         UUID tagId = UuidV7Utils.generateUuid();
 
-        TagEntity tagEntity = TagEntity.builder()
+        TagEntity tagEntity = TagEntity
+            .builder()
             .id(tagId)
             .type(TagType.SUBJECT)
             .masterId(masterId)
@@ -113,7 +120,8 @@ class DefaultTagServiceMoreTest {
         when(tagRepository.findById(tagId)).thenReturn(Mono.just(tagEntity));
         when(tagRepository.deleteById(tagId)).thenReturn(Mono.empty());
 
-        StepVerifier.create(defaultTagService.remove(TagType.SUBJECT, masterId, "action", userId))
+        StepVerifier
+            .create(defaultTagService.remove(TagType.SUBJECT, masterId, "action", userId))
             .verifyComplete();
 
         verify(eventPublisher).publishEvent(any(TagRemoveEvent.class));
@@ -122,7 +130,8 @@ class DefaultTagServiceMoreTest {
     @Test
     void removeById() {
         UUID tagId = UuidV7Utils.generateUuid();
-        TagEntity tagEntity = TagEntity.builder()
+        TagEntity tagEntity = TagEntity
+            .builder()
             .id(tagId)
             .type(TagType.SUBJECT)
             .name("test")
@@ -132,7 +141,8 @@ class DefaultTagServiceMoreTest {
         when(tagRepository.findById(tagId)).thenReturn(Mono.just(tagEntity));
         when(tagRepository.deleteById(tagId)).thenReturn(Mono.empty());
 
-        StepVerifier.create(defaultTagService.removeById(tagId))
+        StepVerifier
+            .create(defaultTagService.removeById(tagId))
             .verifyComplete();
 
         verify(eventPublisher).publishEvent(any(TagRemoveEvent.class));

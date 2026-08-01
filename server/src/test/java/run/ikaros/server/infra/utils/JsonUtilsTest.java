@@ -41,7 +41,8 @@ class JsonUtilsTest {
     @Test
     void json2ObjArr_validJson_returnsArray() {
         String json = "[{\"name\":\"a\",\"value\":1},{\"name\":\"b\",\"value\":2}]";
-        TestObj[] arr = JsonUtils.json2ObjArr(json, new TypeReference<TestObj[]>() {});
+        TestObj[] arr = JsonUtils.json2ObjArr(json, new TypeReference<TestObj[]>() {
+        });
         assertThat(arr).hasSize(2);
         assertThat(arr[0].getName()).isEqualTo("a");
         assertThat(arr[1].getName()).isEqualTo("b");
@@ -50,7 +51,8 @@ class JsonUtilsTest {
     @Test
     void json2ObjArr_invalidJson_returnsEmptyArray() {
         // implementation returns null for invalid json
-        TestObj[] arr = JsonUtils.json2ObjArr("bad json", new TypeReference<TestObj[]>() {});
+        TestObj[] arr = JsonUtils.json2ObjArr("bad json", new TypeReference<TestObj[]>() {
+        });
         assertThat(arr).isNull();
     }
 
@@ -68,12 +70,28 @@ class JsonUtilsTest {
         private String name;
         private int value;
 
-        public TestObj() {}
-        public TestObj(String name, int value) { this.name = name; this.value = value; }
+        public TestObj() {
+        }
 
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-        public int getValue() { return value; }
-        public void setValue(int value) { this.value = value; }
+        public TestObj(String name, int value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public void setValue(int value) {
+            this.value = value;
+        }
     }
 }

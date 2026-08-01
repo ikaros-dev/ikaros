@@ -2,7 +2,6 @@ package run.ikaros.server.custom.scheme;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,7 +48,9 @@ class DefaultCustomSchemeManagerTest {
     @Test
     void register() {
         manager.register(scheme);
-        assertThat(manager.schemes()).hasSize(1).contains(scheme);
+        assertThat(manager.schemes())
+            .hasSize(1)
+            .contains(scheme);
     }
 
     @Test

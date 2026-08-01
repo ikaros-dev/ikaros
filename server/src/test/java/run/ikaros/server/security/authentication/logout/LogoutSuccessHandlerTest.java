@@ -14,9 +14,8 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.WebFilterExchange;
-import org.springframework.web.server.WebFilterChain;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
+import org.springframework.web.server.WebFilterChain;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,11 +31,14 @@ class LogoutSuccessHandlerTest {
         WebFilterExchange filterExchange = new WebFilterExchange(exchange, chain);
         Authentication authentication = mock(Authentication.class);
 
-        StepVerifier.create(handler.onLogoutSuccess(filterExchange, authentication))
+        StepVerifier
+            .create(handler.onLogoutSuccess(filterExchange, authentication))
             .verifyComplete();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders().getContentType())
+        assertThat(response
+            .getHeaders()
+            .getContentType())
             .isEqualTo(MediaType.APPLICATION_JSON);
     }
 }

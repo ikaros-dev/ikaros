@@ -1,6 +1,5 @@
 package run.ikaros.server.core.notify.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -35,7 +34,8 @@ class NotifyServiceImplTest {
         when(mailService.getMailConfig()).thenReturn(mailConfig);
         when(mailService.send(any(MailRequest.class))).thenReturn(Mono.empty());
 
-        StepVerifier.create(notifyService.sendMail("Hello", "World"))
+        StepVerifier
+            .create(notifyService.sendMail("Hello", "World"))
             .verifyComplete();
         verify(mailService).send(any(MailRequest.class));
     }
@@ -69,7 +69,8 @@ class NotifyServiceImplTest {
         when(mailService.send(any(MailRequest.class), anyString(), any(Context.class)))
             .thenReturn(Mono.empty());
 
-        StepVerifier.create(notifyService.send("Hello", "mail/template", new Context()))
+        StepVerifier
+            .create(notifyService.send("Hello", "mail/template", new Context()))
             .verifyComplete();
         verify(mailService).send(any(MailRequest.class), anyString(), any(Context.class));
     }
@@ -103,7 +104,8 @@ class NotifyServiceImplTest {
         when(mailService.send(any(MailRequest.class), anyString(), any(Context.class)))
             .thenReturn(Mono.empty());
 
-        StepVerifier.create(notifyService.testMail())
+        StepVerifier
+            .create(notifyService.testMail())
             .verifyComplete();
         verify(mailService).send(any(MailRequest.class), anyString(), any(Context.class));
     }

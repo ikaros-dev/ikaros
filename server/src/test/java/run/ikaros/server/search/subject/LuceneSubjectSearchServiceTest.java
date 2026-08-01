@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.springframework.util.LinkedMultiValueMap;
-import reactor.test.StepVerifier;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.search.SearchParam;
 import run.ikaros.api.search.SearchResult;
@@ -85,7 +84,9 @@ class LuceneSubjectSearchServiceTest {
         assertThat(result.getHits()).hasSize(1);
         assertThat(result.getTotal()).isEqualTo(1);
         assertThat(result.getKeyword()).isEqualTo("Test");
-        SubjectHint hint = result.getHits().get(0);
+        SubjectHint hint = result
+            .getHits()
+            .get(0);
         assertThat(hint.id()).isEqualTo(id);
         assertThat(hint.name()).isEqualTo("Test Anime");
         assertThat(hint.nameCn()).isEqualTo("测试动画");
@@ -165,7 +166,9 @@ class LuceneSubjectSearchServiceTest {
 
         // Verify exists
         SearchParam param = createSearchParam("Bleach");
-        assertThat(searchService.search(param).getTotal()).isEqualTo(1);
+        assertThat(searchService
+            .search(param)
+            .getTotal()).isEqualTo(1);
 
         // Remove by keyword (UUIDs with hyphens confuse QueryParser, use name instead)
         searchService.removeDocuments(Set.of("Bleach"));
@@ -215,7 +218,10 @@ class LuceneSubjectSearchServiceTest {
         SearchParam param = createSearchParam("type:COMIC");
         SearchResult<SubjectHint> result = searchService.search(param);
         assertThat(result.getTotal()).isEqualTo(1);
-        assertThat(result.getHits().get(0).name()).isEqualTo("Manga One");
+        assertThat(result
+            .getHits()
+            .get(0)
+            .name()).isEqualTo("Manga One");
     }
 
     @Test

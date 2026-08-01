@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.infra.properties.IkarosProperties;
@@ -36,12 +35,14 @@ class StaticServiceImplTest {
     @AfterEach
     void tearDown() throws IOException {
         if (tempWorkDir != null) {
-            Files.walk(tempWorkDir)
+            Files
+                .walk(tempWorkDir)
                 .sorted((a, b) -> b.compareTo(a))
                 .forEach(path -> {
                     try {
                         Files.deleteIfExists(path);
                     } catch (IOException ignored) {
+                        //
                     }
                 });
         }
@@ -49,7 +50,8 @@ class StaticServiceImplTest {
 
     @Test
     void listStaticsFontsWhenDirNotExists() {
-        StepVerifier.create(staticService.listStaticsFonts())
+        StepVerifier
+            .create(staticService.listStaticsFonts())
             .expectNextCount(0)
             .verifyComplete();
     }
@@ -58,7 +60,8 @@ class StaticServiceImplTest {
     void listStaticsFontsWhenFontDirNotExists() throws IOException {
         Path staticsDir = tempWorkDir.resolve(AppConst.STATIC_DIR_NAME);
         Files.createDirectory(staticsDir);
-        StepVerifier.create(staticService.listStaticsFonts())
+        StepVerifier
+            .create(staticService.listStaticsFonts())
             .expectNextCount(0)
             .verifyComplete();
     }
@@ -72,7 +75,10 @@ class StaticServiceImplTest {
         Files.createFile(fontDir.resolve("NotoSansSC-Regular.otf"));
         Files.createFile(fontDir.resolve("NotoSerifSC-Regular.otf"));
 
-        StepVerifier.create(staticService.listStaticsFonts().collectList())
+        StepVerifier
+            .create(staticService
+                .listStaticsFonts()
+                .collectList())
             .assertNext(fonts -> {
                 assertThat(fonts).hasSize(2);
                 assertThat(fonts).anyMatch(f -> f.contains("NotoSansSC-Regular.otf"));
@@ -89,8 +95,10 @@ class StaticServiceImplTest {
         Files.createDirectory(fontDir);
         Files.createFile(fontDir.resolve("test.woff2"));
 
-        StepVerifier.create(staticService.listStaticsFonts())
-            .assertNext(font -> assertThat(font).startsWith("/static/" + AppConst.STATIC_FONT_DIR_NAME + "/"))
+        StepVerifier
+            .create(staticService.listStaticsFonts())
+            .assertNext(font -> assertThat(font).startsWith(
+                "/static/" + AppConst.STATIC_FONT_DIR_NAME + "/"))
             .verifyComplete();
     }
 
@@ -101,7 +109,10 @@ class StaticServiceImplTest {
         Path fontDir = staticsDir.resolve(AppConst.STATIC_FONT_DIR_NAME);
         Files.createDirectory(fontDir);
 
-        StepVerifier.create(staticService.listStaticsFonts().collectList())
+        StepVerifier
+            .create(staticService
+                .listStaticsFonts()
+                .collectList())
             .assertNext(fonts -> assertThat(fonts).isEmpty())
             .verifyComplete();
     }
