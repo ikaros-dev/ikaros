@@ -779,7 +779,7 @@ onMounted(fetchDatas);
 						size="large"
 						border
 					>
-						<el-descriptions-item label="ID" :span="1">
+						<el-descriptions-item :label="t('common.label.id')" :span="1">
 							{{ subject.id }}
 						</el-descriptions-item>
 						<el-descriptions-item
@@ -806,7 +806,7 @@ onMounted(fetchDatas);
 						>
 							{{ subject.type }}
 						</el-descriptions-item>
-						<el-descriptions-item label="NSFW" :span="1">
+						<el-descriptions-item :label="t('common.label.nsfw')" :span="1">
 							{{ subject.nsfw }}
 						</el-descriptions-item>
 						<el-descriptions-item
@@ -969,7 +969,7 @@ onMounted(fetchDatas);
 							<el-select
 								v-if="subjectCollection && subjectCollection.type"
 								v-model="subjectCollection.type"
-								placeholder="Select"
+								:placeholder="t('common.message.select')"
 								style="width: 100px"
 								@change="updateSubjectCollection"
 							>

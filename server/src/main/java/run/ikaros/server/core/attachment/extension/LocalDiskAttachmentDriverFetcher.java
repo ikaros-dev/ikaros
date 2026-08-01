@@ -165,6 +165,7 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
         }
 
         long bytesToRead = Math.min(buffer.capacity(), end - position + 1);
+        buffer.limit((int) bytesToRead);
 
         channel.read(buffer, position, buffer, new CompletionHandler<Integer, ByteBuffer>() {
             @Override

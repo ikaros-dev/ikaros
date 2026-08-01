@@ -22,7 +22,7 @@ checkstyle {
 repositories {
     mavenCentral()
 
-    maven { url 'https://repo.spring.io/milestone' }
+    maven { url = 'https://repo.spring.io/milestone' }
     mavenLocal()
 }
 
@@ -36,6 +36,8 @@ configurations {
 springBoot {
     buildInfo()
 }
+
+def mainResourcesDirectory = layout.buildDirectory.dir('resources/main')
 
 bootJar {
     dependsOn 'buildFrontend'
@@ -112,6 +114,11 @@ node {
     nodeProjectDir = file("${rootProject.projectDir}/console")
 }
 
+// pnpm 10.x 在无 TTY 环境(如 Gradle/CI)删除 modules 目录前需要确认，设置 CI=true 跳过
+tasks.withType(PnpmTask).configureEach {
+    environment = ['CI': 'true']
+}
+
 task pnpmInstallPackageShared(type: PnpmTask) {
     args = ['--filter', './packages/shared', 'install']
 }
@@ -138,6 +145,19 @@ task pnpmInstallFrontend(type: PnpmTask) {
 task buildFrontend(type: PnpmTask) {
     args = ['build']
     dependsOn("pnpmInstallFrontend")
+    inputs.files(fileTree("${rootProject.projectDir}/console") {
+        include 'src/**'
+        include 'index.html'
+        include 'vite.config.ts'
+        include 'package.json'
+        include 'pnpm-lock.yaml'
+        include 'pnpm-workspace.yaml'
+    })
+    outputs.dir(file("${rootProject.projectDir}/server/src/main/resources/console"))
+}
+
+tasks.named('processResources') {
+    mustRunAfter('buildFrontend')
 }
 
 tasks.named('processResources') {

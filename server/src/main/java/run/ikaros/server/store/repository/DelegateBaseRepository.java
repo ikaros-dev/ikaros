@@ -10,6 +10,7 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 
 @Transactional(readOnly = true)
+@SuppressWarnings("deprecation")
 public class DelegateBaseRepository<T> extends SimpleR2dbcRepository<T, UUID>
     implements BaseRepository<T> {
 

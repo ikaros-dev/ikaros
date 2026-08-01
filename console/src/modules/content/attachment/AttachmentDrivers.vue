@@ -29,21 +29,26 @@ const fetchAttDrivers = async () => {
 	console.debug('attDrivers', attDrivers.value);
 };
 
-const isEnableButtonLoading = ref(false);
-const chageAttDriverEnable = async (rowIndex, attDriver) => {
-	// console.debug('chageAttDriverEnable', 'rowIndex', rowIndex, 'attDriver', attDriver)
-	isEnableButtonLoading.value = true;
-	if (attDriver.enable) {
-		await apiClient.attachmentDriver.enableDriver({
-			id: attDriver.id,
-		});
-	} else {
-		await apiClient.attachmentDriver.enableDriver1({
-			id: attDriver.id,
-		});
+const enablingDriverId = ref<string>();
+const changeAttDriverEnable = async (
+	attDriver: AttachmentDriver,
+	enable: string | number | boolean
+) => {
+	enablingDriverId.value = attDriver.id;
+	try {
+		if (enable) {
+			await apiClient.attachmentDriver.enableDriver1({
+				id: attDriver.id,
+			});
+		} else {
+			await apiClient.attachmentDriver.enableDriver({
+				id: attDriver.id,
+			});
+		}
+		await fetchAttDrivers();
+	} finally {
+		enablingDriverId.value = undefined;
 	}
-	await fetchAttDrivers();
-	isEnableButtonLoading.value = false;
 };
 
 const isDeleteButtonLoading = ref(false);
@@ -82,7 +87,7 @@ onMounted(fetchAttDrivers);
 	<el-row>
 		<el-col :span="24">
 			<el-table :data="attDrivers" stripe style="width: 100%">
-				<el-table-column prop="id" label="ID" width="160" />
+				<el-table-column prop="id" :label="t('common.label.id')" width="160" />
 				<el-table-column
 					prop="type"
 					:label="t('module.attachment.driver.table.colum.label.type')"
@@ -114,7 +119,12 @@ onMounted(fetchAttDrivers);
 					width="80"
 				>
 					<template #default="scope">
-						<el-switch v-model="scope.row.enable" disabled />
+						<el-switch
+							v-model="scope.row.enable"
+							:loading="enablingDriverId === scope.row.id"
+							:disabled="enablingDriverId !== undefined"
+							@change="changeAttDriverEnable(scope.row, $event)"
+						/>
 					</template>
 				</el-table-column>
 				<el-table-column
@@ -136,10 +146,13 @@ onMounted(fetchAttDrivers);
 							:cancel-button-text="t('common.button.cancel')"
 							confirm-button-type="danger"
 							width="350px"
-							@confirm="chageAttDriverEnable(scope.$index, scope.row)"
+							@confirm="changeAttDriverEnable(scope.row, !scope.row.enable)"
 						>
 							<template #reference>
-								<el-button :loading="isEnableButtonLoading">
+								<el-button
+									:loading="enablingDriverId === scope.row.id"
+									:disabled="enablingDriverId !== undefined"
+								>
 									<span v-if="scope.row.enable">
 										{{
 											t(

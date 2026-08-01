@@ -23,17 +23,25 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 @Slf4j
 @Component
 public class AttachmentDriverDisableListener {
-    /** 附件仓库. */
+    /**
+     * 附件仓库.
+     */
     private final AttachmentRepository attachmentRepository;
-    /** 动态静态资源目录解析器. */
+    /**
+     * 动态静态资源目录解析器.
+     */
     private final DynamicDirectoryResolver dynamicDirectoryResolver;
-    /** 附件服务. */
+    /**
+     * 附件服务.
+     */
     private final AttachmentService attachmentService;
-    /** 本地驱动路径校验器. */
+    /**
+     * 本地驱动路径校验器.
+     */
     private final LocalAttachmentPathValidator pathValidator;
 
     /**
-     * Construct.
+     * 创建附件驱动禁用监听器.
      */
     public AttachmentDriverDisableListener(AttachmentRepository attachmentRepository,
                                            DynamicDirectoryResolver dynamicDirectoryResolver,
@@ -46,8 +54,10 @@ public class AttachmentDriverDisableListener {
     }
 
     /**
-     * 移除挂载的目录对应的附件，如驱动未指定挂载路径，则默认挂载在根目录下
-     * .
+     * 卸载已禁用的附件驱动目录.
+     *
+     * @param event 附件驱动禁用事件
+     * @return 卸载完成信号
      */
     @EventListener(AttachmentDriverDisableEvent.class)
     public Mono<Void> onAttachmentDriverEnableEvent(AttachmentDriverDisableEvent event) {
@@ -68,9 +78,8 @@ public class AttachmentDriverDisableListener {
         pathValidator.unregister(driver.getId());
 
         return attachmentRepository.findByTypeAndParentIdAndName(
-                AttachmentType.Driver_Directory, ROOT_DIRECTORY_ID, mountName
-            ).map(AttachmentEntity::getId)
-            .flatMap(attachmentService::removeByIdOnlyRecords);
+                        AttachmentType.Driver_Directory, ROOT_DIRECTORY_ID, mountName
+                ).map(AttachmentEntity::getId)
+                .flatMap(attachmentService::removeByIdOnlyRecords);
     }
-
 }

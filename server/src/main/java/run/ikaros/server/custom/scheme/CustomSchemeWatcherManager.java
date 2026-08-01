@@ -1,14 +1,13 @@
 package run.ikaros.server.custom.scheme;
 
 import java.util.List;
-import org.springframework.lang.NonNull;
 import run.ikaros.api.custom.scheme.CustomScheme;
 
 public interface CustomSchemeWatcherManager {
 
-    void register(@NonNull SchemeWatcher watcher);
+    void register(SchemeWatcher watcher);
 
-    void unregister(@NonNull SchemeWatcher watcher);
+    void unregister(SchemeWatcher watcher);
 
     List<SchemeWatcher> watchers();
 

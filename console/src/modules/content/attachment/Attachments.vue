@@ -10,6 +10,7 @@ import { PluginModule } from '@runikaros/shared';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import AttachmentDeatilDrawer from './AttachmentDeatilDrawer.vue';
 import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
+import DialogMessage from '@/components/dialog/DialogMessage.vue';
 import { useRoute } from 'vue-router';
 
 import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css';
@@ -84,38 +85,154 @@ const attachmentCondition = ref({
 });
 
 const attachments = ref<Attachment[]>([]);
+let attachmentRequestId = 0;
+
+type AttachmentSortProperty = 'name' | 'updateTime' | 'size';
+type AttachmentSortOrder = 'ascending' | 'descending';
+
+const attachmentSortProperty = ref<AttachmentSortProperty>('updateTime');
+const attachmentSortOrder = ref<AttachmentSortOrder>('descending');
+const englishNameCollator = new Intl.Collator('en', {
+	numeric: true,
+	sensitivity: 'base',
+});
+const chineseNameCollator = new Intl.Collator('zh-CN', {
+	numeric: true,
+	sensitivity: 'base',
+});
+
+const isEnglishName = (name: string) => /^[A-Za-z]/.test(name);
+
+const attachmentSortableColumns = computed<Record<AttachmentSortProperty, boolean>>(
+	() => ({
+		name: attachments.value.some((attachment) => Boolean(attachment.name)),
+		updateTime: attachments.value.some((attachment) => Boolean(attachment.updateTime)),
+		size: attachments.value.some(
+			(attachment) =>
+				attachment.type !== 'Directory' &&
+				attachment.type !== 'Driver_Directory' &&
+				attachment.size !== undefined &&
+				attachment.size !== null
+		),
+	})
+);
+
+const canSortAttachmentColumn = (property: AttachmentSortProperty) =>
+	attachmentSortableColumns.value[property];
+
+const compareAttachmentName = (firstName: string, secondName: string) => {
+	const firstIsEnglish = isEnglishName(firstName);
+	const secondIsEnglish = isEnglishName(secondName);
+	if (firstIsEnglish !== secondIsEnglish) {
+		return firstIsEnglish ? -1 : 1;
+	}
+	return (firstIsEnglish ? englishNameCollator : chineseNameCollator).compare(
+		firstName,
+		secondName
+	);
+};
+
+const sortedAttachments = computed(() =>
+	!canSortAttachmentColumn(attachmentSortProperty.value)
+		? attachments.value
+		: attachments.value
+		.map((attachment, index) => ({ attachment, index }))
+		.sort((first, second) => {
+			let comparison = 0;
+			if (attachmentSortProperty.value === 'name') {
+				comparison = compareAttachmentName(
+					first.attachment.name || '',
+					second.attachment.name || ''
+				);
+			} else if (attachmentSortProperty.value === 'updateTime') {
+				comparison =
+					new Date(first.attachment.updateTime || 0).getTime() -
+					new Date(second.attachment.updateTime || 0).getTime();
+			} else {
+				comparison = Number(first.attachment.size || 0) - Number(second.attachment.size || 0);
+			}
+			if (comparison === 0) {
+				return first.index - second.index;
+			}
+			return attachmentSortOrder.value === 'ascending' ? comparison : -comparison;
+		})
+		.map(({ attachment }) => attachment)
+);
+
+const toggleAttachmentSort = (property: AttachmentSortProperty) => {
+	if (!canSortAttachmentColumn(property)) {
+		return;
+	}
+	if (attachmentSortProperty.value === property) {
+		attachmentSortOrder.value =
+			attachmentSortOrder.value === 'ascending' ? 'descending' : 'ascending';
+		return;
+	}
+	attachmentSortProperty.value = property;
+	attachmentSortOrder.value = property === 'name' ? 'ascending' : 'descending';
+};
+
+const attachmentSortSymbol = (property: AttachmentSortProperty) => {
+	if (
+		attachmentSortProperty.value !== property ||
+		!canSortAttachmentColumn(property)
+	) {
+		return '';
+	}
+	return attachmentSortOrder.value === 'descending' ? '▼' : '▲';
+};
+
+const applyAttachmentPage = async (data, requestId: number, parentId: string) => {
+	if (
+		requestId !== attachmentRequestId ||
+		attachmentCondition.value.parentId !== parentId
+	) {
+		return;
+	}
+	attachments.value = data.items;
+	attachmentCondition.value.page = data.page;
+	attachmentCondition.value.size = data.size;
+	attachmentCondition.value.total = data.total;
+	await updateBreadcrumbByParentPath(requestId, parentId);
+};
+
 const fetchAttachments = async () => {
+	const requestId = ++attachmentRequestId;
+	const parentId = attachmentCondition.value.parentId as any as string;
 	const { data } = await apiClient.attachment.listAttachmentsByCondition1({
 		page: attachmentCondition.value.page,
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
-		parentId: attachmentCondition.value.parentId as any as string,
+		parentId,
 	});
-	attachments.value = data.items;
-	attachmentCondition.value.page = data.page;
-	attachmentCondition.value.size = data.size;
-	attachmentCondition.value.total = data.total;
-	await updateBreadcrumbByParentPath();
+	await applyAttachmentPage(data, requestId, parentId);
 };
 const fetchDriverAttachments = async () => {
+	const requestId = ++attachmentRequestId;
+	const parentId = attachmentCondition.value.parentId as any as string;
 	const { data } = await apiClient.attachmentDriver.listAttachmentsByCondition({
 		page: attachmentCondition.value.page,
 		size: attachmentCondition.value.size,
 		name: base64Encode(attachmentCondition.value.name),
-		parentId: attachmentCondition.value.parentId as any as string,
+		parentId,
 		refresh: true,
 	});
-	attachments.value = data.items;
-	attachmentCondition.value.page = data.page;
-	attachmentCondition.value.size = data.size;
-	attachmentCondition.value.total = data.total;
-	await updateBreadcrumbByParentPath();
+	await applyAttachmentPage(data, requestId, parentId);
 };
 
-const updateBreadcrumbByParentPath = async () => {
+async function updateBreadcrumbByParentPath(
+	requestId: number,
+	parentId: string
+) {
 	const { data } = await apiClient.attachment.getAttachmentPathDirsById({
-		id: attachmentCondition.value.parentId as string,
+		id: parentId,
 	});
+	if (
+		requestId !== attachmentRequestId ||
+		attachmentCondition.value.parentId !== parentId
+	) {
+		return;
+	}
 	paths.value = data.map((att) => {
 		const path: Path = {
 			name: att.name as string,
@@ -124,7 +241,7 @@ const updateBreadcrumbByParentPath = async () => {
 		};
 		return path;
 	});
-};
+}
 
 const onCurrentPageChange = async (val: number) => {
 	attachmentCondition.value.page = val;
@@ -155,38 +272,23 @@ const paths = ref<Path[]>([
 	},
 ]);
 
-const onBreadcrumbClick = async (path) => {
-	// console.log('path', path);
-	const index = paths.value.indexOf(path);
-	if (index !== -1) {
-		paths.value.splice(index + 1);
-	}
+const onBreadcrumbClick = (path) => {
 	attachmentCondition.value.parentId = path.id;
-	await fetchCurrentParentAttachment();
-	await fetchAttachments();
-	// console.log('parentId', attachmentCondition.value.parentId);
 };
 
-const entryAttachment = async (attachment) => {
-	// console.log('attachment', attachment);
-	// console.log('attachment id:', attachment.id);
-	// console.log('attachment name:', attachment.name);
+const entryAttachment = (attachment) => {
 	if (
 		'Directory' === attachment.type ||
 		'Driver_Directory' == attachment.type
 	) {
+		if (attachmentCondition.value.parentId === attachment.id) {
+			return;
+		}
 		attachmentCondition.value.parentId = attachment.id;
-		paths.value.push({
-			name: attachment.name,
-			parentId: attachment.parentId,
-			id: attachment.id,
-		});
-		await fetchAttachments();
 	} else {
 		currentSelectionAttachment.value = attachment;
 		attachmentDetailDrawerVisible.value = true;
 	}
-	// console.log('parentId', attachmentCondition.value.parentId);
 };
 
 const dateFormat = (row, column) => {
@@ -198,8 +300,6 @@ const dateFormat = (row, column) => {
 
 	return moment(date).format('YYYY-MM-DD HH:mm:ss');
 };
-
-onMounted(fetchAttachments);
 
 const dialogFolderVisible = ref(false);
 const createFolderName = ref('');
@@ -344,10 +444,20 @@ const copyValue = async (val: string) => {
 	}
 };
 
+const isDirectory = (attachment: Attachment) =>
+	attachment.type === AttachmentTypeEnum.Directory ||
+	attachment.type === AttachmentTypeEnum.DriverDirectory;
+
+const isTopLevelDirectory = (attachment: Attachment) =>
+	isDirectory(attachment) && attachment.parentId === attachmentRootId;
+
 const attachmentDetailDrawerVisible = ref(false);
 
 const onRowContextmenu = (row, column, event) => {
 	currentSelectionAttachment.value = row;
+	const attachment = currentSelectionAttachment.value;
+	const directory = isDirectory(attachment);
+	const topLevelDirectory = isTopLevelDirectory(attachment);
 	event.preventDefault();
 	ContextMenu.showContextMenu({
 		x: event.x,
@@ -366,13 +476,31 @@ const onRowContextmenu = (row, column, event) => {
 					entryAttachment(currentSelectionAttachment.value);
 				},
 			},
+			...(topLevelDirectory
+				? [
+						{
+							label: t('module.attachment.contextmenu.copy_name'),
+							icon: h(CopyDocument, { style: 'height: 14px' }),
+							onClick: async () => {
+								const name = attachment.name as string;
+								await copyValue(name);
+								ElMessage.success(
+									t('module.attachment.message.operate.copy_name', { name })
+								);
+							},
+						},
+					]
+				: [
 			{
 				label: t('module.attachment.contextmenu.copy_short_name'),
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
-					const name = currentSelectionAttachment.value?.name as string;
-					let simpleName = name.replace(/\[.*?\]/g, '');
-					simpleName = simpleName.substring(0, simpleName.lastIndexOf('.'));
+					const name = attachment.name as string;
+					let simpleName = name;
+					if (!directory) {
+						simpleName = name.replace(/\[.*?\]/g, '');
+						simpleName = simpleName.substring(0, simpleName.lastIndexOf('.'));
+					}
 					await copyValue(simpleName);
 					ElMessage.success(
 						t('module.attachment.message.operate.copy_short_name', {
@@ -385,22 +513,25 @@ const onRowContextmenu = (row, column, event) => {
 				label: t('module.attachment.contextmenu.copy_integrally_name'),
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
-					const name = currentSelectionAttachment.value?.name as string;
-					await copyValue(name);
+					const name = attachment.name as string;
+					const value = directory ? (attachment.path as string) : name;
+					await copyValue(value);
 					ElMessage.success(
-						t('module.attachment.message.operate.copy_integrally_name', {
-							name: name,
-						})
+						t(
+							directory
+								? 'module.attachment.message.operate.copy_path'
+								: 'module.attachment.message.operate.copy_integrally_name',
+							{ name }
+						)
 					);
 				},
 			},
+				]),
+			...(!directory
+				? [
 			{
 				label: t('module.attachment.contextmenu.copy_url'),
 				divided: 'down',
-				disabled:
-					currentSelectionAttachment.value?.type !== AttachmentTypeEnum.File &&
-					AttachmentTypeEnum.DriverFile !==
-						currentSelectionAttachment.value?.type,
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
 					const name = currentSelectionAttachment.value?.name as string;
@@ -411,6 +542,8 @@ const onRowContextmenu = (row, column, event) => {
 					);
 				},
 			},
+				]
+				: []),
 			{
 				label: t('module.attachment.contextmenu.download'),
 				disabled: currentSelectionAttachment.value?.type !== 'File',
@@ -555,9 +688,25 @@ onMounted(() => {
 });
 
 const onBindDirectoryClick = async () => {
+	if (bindPlatformArr.value.length === 0) {
+		await ElMessageBox.alert(
+			h(DialogMessage, {
+				message: t('module.subject.dialog.sync.text.platform-no-available-hint-msg'),
+			}),
+			t('module.attachment.bind.confirm.title'),
+			{
+				confirmButtonText: t('common.button.confirm'),
+				type: 'info',
+			}
+		);
+		return;
+	}
+
 	try {
 		await ElMessageBox.confirm(
-			t('module.attachment.bind.confirm.content'),
+			h(DialogMessage, {
+				message: t('module.attachment.bind.confirm.content'),
+			}),
 			t('module.attachment.bind.confirm.title'),
 			{
 				confirmButtonText: t('module.attachment.bind.confirm.btn.confirm'),
@@ -679,7 +828,7 @@ const onAttachmentDetailDrawerClose = () => {
 		:title="t('module.attachment.bind.confirm.title')"
 		width="400px"
 	>
-		<el-form v-if="bindPlatformArr.length > 0">
+		<el-form>
 			<el-form-item
 				:label="t('module.attachment.bind.platform.title')"
 			>
@@ -709,9 +858,6 @@ const onAttachmentDetailDrawerClose = () => {
 				/>
 			</el-form-item>
 		</el-form>
-		<span v-else>
-			{{ t('module.subject.dialog.sync.text.platform-no-available-hint-msg') }}
-		</span>
 		<template #footer>
 			<span>
 				<el-button @click="bindDialogVisible = false">
@@ -719,7 +865,6 @@ const onAttachmentDetailDrawerClose = () => {
 				</el-button>
 				<el-button
 					type="primary"
-					:disabled="bindPlatformArr.length === 0"
 					@click="onBindDirectoryConfirm"
 				>
 					{{ t('module.attachment.bind.confirm.btn.confirm') }}
@@ -847,7 +992,7 @@ const onAttachmentDetailDrawerClose = () => {
 	<el-row>
 		<el-col :span="24">
 			<el-table
-				:data="attachments"
+				:data="sortedAttachments"
 				style="width: 100%"
 				row-key="id"
 				@current-change="onCurrentChange"
@@ -859,9 +1004,19 @@ const onAttachmentDetailDrawerClose = () => {
 				<!-- <el-table-column prop="id" label="ID" width="60" /> -->
 				<el-table-column
 					prop="name"
-					:label="t('module.attachment.table.colum.label.name')"
 					show-overflow-tooltip
 				>
+					<template #header>
+						<button
+							type="button"
+							class="attachment-sort-header"
+							:disabled="!canSortAttachmentColumn('name')"
+							@click.stop="toggleAttachmentSort('name')"
+						>
+							{{ t('module.attachment.table.colum.label.name') }}
+							<span class="attachment-sort-symbol">{{ attachmentSortSymbol('name') }}</span>
+						</button>
+					</template>
 					<template #default="scoped">
 						<el-icon
 							size="25"
@@ -911,15 +1066,36 @@ const onAttachmentDetailDrawerClose = () => {
 				</el-table-column>
 				<el-table-column
 					prop="updateTime"
-					:label="t('module.attachment.table.colum.label.update_time')"
 					width="160"
 					:formatter="dateFormat"
-				/>
+				>
+					<template #header>
+						<button
+							type="button"
+							class="attachment-sort-header"
+							:disabled="!canSortAttachmentColumn('updateTime')"
+							@click.stop="toggleAttachmentSort('updateTime')"
+						>
+							{{ t('module.attachment.table.colum.label.update_time') }}
+							<span class="attachment-sort-symbol">{{ attachmentSortSymbol('updateTime') }}</span>
+						</button>
+					</template>
+				</el-table-column>
 				<el-table-column
 					prop="size"
-					:label="t('module.attachment.table.colum.label.size')"
 					width="130"
 				>
+					<template #header>
+						<button
+							type="button"
+							class="attachment-sort-header"
+							:disabled="!canSortAttachmentColumn('size')"
+							@click.stop="toggleAttachmentSort('size')"
+						>
+							{{ t('module.attachment.table.colum.label.size') }}
+							<span class="attachment-sort-symbol">{{ attachmentSortSymbol('size') }}</span>
+						</button>
+					</template>
 					<template #default="scoped">
 						<span
 							v-if="
@@ -961,5 +1137,23 @@ const onAttachmentDetailDrawerClose = () => {
 .ik-attachment-breadcrumb-item {
 	width: 20px;
 	cursor: pointer;
+}
+
+.attachment-sort-header {
+	padding: 0;
+	border: 0;
+	color: inherit;
+	font: inherit;
+	background: transparent;
+	cursor: pointer;
+
+	&:disabled {
+		cursor: default;
+	}
+}
+
+.attachment-sort-symbol {
+	margin-left: 0.25em;
+	font-size: 0.875em;
 }
 </style>

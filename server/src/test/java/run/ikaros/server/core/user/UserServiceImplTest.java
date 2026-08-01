@@ -160,7 +160,7 @@ class UserServiceImplTest {
         savedEntity.setId(UuidV7Utils.generateUuid());
 
         when(passwordEncoder.encode(password)).thenReturn("encodedpassword");
-        when(repository.save(any(UserEntity.class))).thenReturn(Mono.just(savedEntity));
+        when(repository.insert(any(UserEntity.class))).thenReturn(Mono.just(savedEntity));
 
         StepVerifier.create(userService.create(params))
             .assertNext(user -> {
@@ -182,7 +182,7 @@ class UserServiceImplTest {
         params.setPassword("password");
 
         when(passwordEncoder.encode("password")).thenReturn("encodedpassword");
-        when(repository.save(any(UserEntity.class)))
+        when(repository.insert(any(UserEntity.class)))
             .thenReturn(Mono.error(
                 new org.springframework.dao.DuplicateKeyException("duplicate key")));
 
@@ -204,7 +204,7 @@ class UserServiceImplTest {
         savedEntity.setId(UuidV7Utils.generateUuid());
 
         when(passwordEncoder.encode("password")).thenReturn("encodedpassword");
-        when(repository.save(any(UserEntity.class))).thenReturn(Mono.just(savedEntity));
+        when(repository.insert(any(UserEntity.class))).thenReturn(Mono.just(savedEntity));
 
         StepVerifier.create(userService.create(params))
             .assertNext(user -> {
@@ -251,7 +251,7 @@ class UserServiceImplTest {
         entity.setId(id);
 
         when(repository.findById(id)).thenReturn(Mono.just(entity));
-        when(repository.save(any(UserEntity.class))).thenReturn(Mono.just(entity));
+        when(repository.update(any(UserEntity.class))).thenReturn(Mono.just(entity));
 
         StepVerifier.create(userService.updateUsername(id, "newname"))
             .verifyComplete();
@@ -286,14 +286,14 @@ class UserServiceImplTest {
         when(passwordEncoder.matches(eq(newPassword), any(String.class)))
             .thenReturn(false);
         when(passwordEncoder.encode(newPassword)).thenReturn("encodednewpass");
-        when(repository.save(any(UserEntity.class)))
+        when(repository.update(any(UserEntity.class)))
             .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(userService.updatePassword(username, oldPassword, newPassword))
             .verifyComplete();
 
         verify(passwordEncoder).encode(newPassword);
-        verify(repository).save(any(UserEntity.class));
+        verify(repository).update(any(UserEntity.class));
     }
 
     @Test
@@ -332,7 +332,7 @@ class UserServiceImplTest {
 
         when(repository.findByUsernameAndDeleteStatus("testuser", false))
             .thenReturn(Mono.just(entity));
-        when(repository.save(any(UserEntity.class)))
+        when(repository.update(any(UserEntity.class)))
             .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(userService.update(request))

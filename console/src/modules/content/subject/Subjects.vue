@@ -223,7 +223,7 @@ onMounted(fetchSubjectByRouterQuery);
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="5" :xl="5">
-						<el-form-item label="NSFW" style="width: 95%">
+						<el-form-item :label="t('common.label.nsfw')" style="width: 95%">
 							<el-select
 								v-model="findSubjectsCondition.nsfw"
 								clearable
