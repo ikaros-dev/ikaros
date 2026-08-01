@@ -67,7 +67,7 @@ class AttachmentReferenceServiceImplTest {
             .referenceId(referenceId)
             .build();
 
-        when(repository.save(any(AttachmentReferenceEntity.class)))
+        when(repository.insert(any(AttachmentReferenceEntity.class)))
             .thenReturn(Mono.just(savedEntity));
 
         StepVerifier.create(service.save(attachmentReference))
@@ -110,7 +110,7 @@ class AttachmentReferenceServiceImplTest {
 
         when(attachmentRepository.findById(attachmentId))
             .thenReturn(Mono.just(attachmentEntity));
-        when(repository.save(any(AttachmentReferenceEntity.class)))
+        when(repository.insert(any(AttachmentReferenceEntity.class)))
             .thenReturn(Mono.just(savedEntity));
 
         StepVerifier.create(service.save(attachmentReference))

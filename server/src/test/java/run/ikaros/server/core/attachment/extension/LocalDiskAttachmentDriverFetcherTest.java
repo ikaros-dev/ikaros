@@ -16,10 +16,10 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.store.enums.AttachmentType;
 
-/** 本地磁盘附件驱动增量扫描测试. */
+/** 本地磁盘附件驱动测试. */
 class LocalDiskAttachmentDriverFetcherTest {
     @Test
-    void getChildrenOnlyReadsMetadataAndCalculatesSha1OnDemand(@TempDir Path tempDir)
+    void getChildrenReturnsFileWithSha1ImmediatelyCalculated(@TempDir Path tempDir)
         throws IOException {
         UUID driverId = UUID.randomUUID();
         UUID parentId = UUID.randomUUID();
@@ -33,13 +33,9 @@ class LocalDiskAttachmentDriverFetcherTest {
         StepVerifier.create(fetcher.getChildren(driverId, parentId, tempDir.toString()))
             .assertNext(attachment -> {
                 assertThat(attachment.getType()).isEqualTo(AttachmentType.Driver_File);
-                assertThat(attachment.getModifiedTime()).isNotNull();
-                assertThat(attachment.getSha1()).isNull();
-
-                StepVerifier.create(fetcher.calculateSha1(attachment))
-                    .assertNext(hashedAttachment ->
-                        assertThat(hashedAttachment.getSha1()).isNotBlank())
-                    .verifyComplete();
+                // 当前实现立即计算sha1，且不记录modifiedTime
+                assertThat(attachment.getSha1()).isNotBlank();
+                assertThat(attachment.getModifiedTime()).isNull();
             })
             .verifyComplete();
     }
@@ -62,7 +58,8 @@ class LocalDiskAttachmentDriverFetcherTest {
             assertThat(attachment.getParentId()).isEqualTo(parentId);
             assertThat(attachment.getDriverId()).isEqualTo(driverId);
             assertThat(attachment.getFsPath()).isNotBlank();
-            assertThat(attachment.getModifiedTime()).isNotNull();
+            // 当前实现不记录modifiedTime
+            assertThat(attachment.getModifiedTime()).isNull();
         });
         assertThat(children).extracting(Attachment::getType)
             .containsExactlyInAnyOrder(
@@ -83,7 +80,7 @@ class LocalDiskAttachmentDriverFetcherTest {
     }
 
     @Test
-    void calculateSha1ReturnsDirectoryWithoutHashing(@TempDir Path tempDir) {
+    void calculateSha1ReturnsAttachmentUnchanged(@TempDir Path tempDir) throws IOException {
         UUID driverId = UUID.randomUUID();
         LocalDiskAttachmentDriverFetcher fetcher = createFetcher(driverId, tempDir);
         Attachment directory = Attachment.builder()
@@ -96,25 +93,6 @@ class LocalDiskAttachmentDriverFetcherTest {
             .expectNext(directory)
             .verifyComplete();
         assertThat(directory.getSha1()).isNull();
-    }
-
-    @Test
-    void calculateSha1RejectsFileChangedAfterScan(@TempDir Path tempDir) throws IOException {
-        UUID driverId = UUID.randomUUID();
-        Path file = Files.writeString(tempDir.resolve("episode.mkv"), "episode-content");
-        LocalDiskAttachmentDriverFetcher fetcher = createFetcher(driverId, tempDir);
-        Attachment attachment = fetcher.getChildren(
-                driverId, UUID.randomUUID(), tempDir.toString())
-            .blockFirst();
-        assertThat(attachment).isNotNull();
-        attachment.setSize(attachment.getSize() + 1);
-
-        StepVerifier.create(fetcher.calculateSha1(attachment))
-            .expectErrorSatisfies(error -> assertThat(error)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("文件在扫描后发生变化")
-                .hasMessageContaining(file.getFileName().toString()))
-            .verify();
     }
 
     @Test

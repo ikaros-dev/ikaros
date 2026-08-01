@@ -209,13 +209,13 @@ class EpisodeCollectionServiceImplTest {
             .thenReturn(Mono.just(entity));
         when(episodeRepository.findById(episodeId))
             .thenReturn(Mono.just(episodeEntity));
-        when(episodeCollectionRepository.save(any(EpisodeCollectionEntity.class)))
+        when(episodeCollectionRepository.update(any(EpisodeCollectionEntity.class)))
             .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.updateEpisodeCollectionProgress(userId, episodeId, 100L))
             .verifyComplete();
 
-        verify(episodeCollectionRepository).save(any(EpisodeCollectionEntity.class));
+        verify(episodeCollectionRepository).update(any(EpisodeCollectionEntity.class));
     }
 
     @Test
@@ -234,13 +234,13 @@ class EpisodeCollectionServiceImplTest {
 
         when(episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId))
             .thenReturn(Mono.just(entity));
-        when(episodeCollectionRepository.save(any(EpisodeCollectionEntity.class)))
+        when(episodeCollectionRepository.update(any(EpisodeCollectionEntity.class)))
             .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.updateEpisodeCollectionFinish(userId, episodeId, true))
             .verifyComplete();
 
-        verify(episodeCollectionRepository).save(any(EpisodeCollectionEntity.class));
+        verify(episodeCollectionRepository).update(any(EpisodeCollectionEntity.class));
         verify(applicationEventPublisher).publishEvent(any());
     }
 
