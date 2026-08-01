@@ -180,6 +180,8 @@ module:
           cancel: 批量删除目录取消
         copy_short_name: 已复制附件 [{name}] 的简短名称到剪贴板
         copy_integrally_name: 已复制附件 [{name}] 的完整名称到剪贴板
+        copy_name: 已复制附件 [{name}] 的名称到剪贴板
+        copy_path: 已复制附件 [{name}] 的完整路径到剪贴板
         copy_url: 已复制附件 [{name}] 的URL到剪贴板
         move_atts: 批量移动附件成功
     confirm:
@@ -193,6 +195,7 @@ module:
       details: 详情
       copy_short_name: 复制简短名称
       copy_integrally_name: 复制完整名称
+      copy_name: 复制名称
       copy_url: 复制URL
       download: 下载
       delete:

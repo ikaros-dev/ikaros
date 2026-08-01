@@ -180,6 +180,8 @@ module:
           cancel: Deleting directories in batch is cancelled.
         copy_short_name: Copy short name of attachment [{name}] to clipboard.
         copy_integrally_name: Full name of attachment [{name}] has been copied to the clipboard.
+        copy_name: Name of attachment [{name}] has been copied to the clipboard.
+        copy_path: Full path of attachment [{name}] has been copied to the clipboard.
         copy_url: Copy the URL of attachment [{name}] to the clipboard.
         move_atts: Succeeded in batch moving attachments.
     confirm:
@@ -196,6 +198,7 @@ module:
       details: Details
       copy_short_name: Copy short name
       copy_integrally_name: Copy integrally name
+      copy_name: Copy name
       copy_url: Copy url
       download: Download
       delete:

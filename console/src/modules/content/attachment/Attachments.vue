@@ -444,10 +444,20 @@ const copyValue = async (val: string) => {
 	}
 };
 
+const isDirectory = (attachment: Attachment) =>
+	attachment.type === AttachmentTypeEnum.Directory ||
+	attachment.type === AttachmentTypeEnum.DriverDirectory;
+
+const isTopLevelDirectory = (attachment: Attachment) =>
+	isDirectory(attachment) && attachment.parentId === attachmentRootId;
+
 const attachmentDetailDrawerVisible = ref(false);
 
 const onRowContextmenu = (row, column, event) => {
 	currentSelectionAttachment.value = row;
+	const attachment = currentSelectionAttachment.value;
+	const directory = isDirectory(attachment);
+	const topLevelDirectory = isTopLevelDirectory(attachment);
 	event.preventDefault();
 	ContextMenu.showContextMenu({
 		x: event.x,
@@ -466,13 +476,31 @@ const onRowContextmenu = (row, column, event) => {
 					entryAttachment(currentSelectionAttachment.value);
 				},
 			},
+			...(topLevelDirectory
+				? [
+						{
+							label: t('module.attachment.contextmenu.copy_name'),
+							icon: h(CopyDocument, { style: 'height: 14px' }),
+							onClick: async () => {
+								const name = attachment.name as string;
+								await copyValue(name);
+								ElMessage.success(
+									t('module.attachment.message.operate.copy_name', { name })
+								);
+							},
+						},
+					]
+				: [
 			{
 				label: t('module.attachment.contextmenu.copy_short_name'),
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
-					const name = currentSelectionAttachment.value?.name as string;
-					let simpleName = name.replace(/\[.*?\]/g, '');
-					simpleName = simpleName.substring(0, simpleName.lastIndexOf('.'));
+					const name = attachment.name as string;
+					let simpleName = name;
+					if (!directory) {
+						simpleName = name.replace(/\[.*?\]/g, '');
+						simpleName = simpleName.substring(0, simpleName.lastIndexOf('.'));
+					}
 					await copyValue(simpleName);
 					ElMessage.success(
 						t('module.attachment.message.operate.copy_short_name', {
@@ -485,22 +513,25 @@ const onRowContextmenu = (row, column, event) => {
 				label: t('module.attachment.contextmenu.copy_integrally_name'),
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
-					const name = currentSelectionAttachment.value?.name as string;
-					await copyValue(name);
+					const name = attachment.name as string;
+					const value = directory ? (attachment.path as string) : name;
+					await copyValue(value);
 					ElMessage.success(
-						t('module.attachment.message.operate.copy_integrally_name', {
-							name: name,
-						})
+						t(
+							directory
+								? 'module.attachment.message.operate.copy_path'
+								: 'module.attachment.message.operate.copy_integrally_name',
+							{ name }
+						)
 					);
 				},
 			},
+				]),
+			...(!directory
+				? [
 			{
 				label: t('module.attachment.contextmenu.copy_url'),
 				divided: 'down',
-				disabled:
-					currentSelectionAttachment.value?.type !== AttachmentTypeEnum.File &&
-					AttachmentTypeEnum.DriverFile !==
-						currentSelectionAttachment.value?.type,
 				icon: h(CopyDocument, { style: 'height: 14px' }),
 				onClick: async () => {
 					const name = currentSelectionAttachment.value?.name as string;
@@ -511,6 +542,8 @@ const onRowContextmenu = (row, column, event) => {
 					);
 				},
 			},
+				]
+				: []),
 			{
 				label: t('module.attachment.contextmenu.download'),
 				disabled: currentSelectionAttachment.value?.type !== 'File',
