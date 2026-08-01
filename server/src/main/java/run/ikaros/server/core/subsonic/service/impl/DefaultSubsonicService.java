@@ -1,8 +1,6 @@
 package run.ikaros.server.core.subsonic.service.impl;
 
 import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +11,10 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.core.attachment.AttachmentStreamVo;
 import run.ikaros.api.core.music.Music;
 import run.ikaros.api.core.music.Song;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
-import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subsonic.SubsonicResponse;
 import run.ikaros.api.core.subsonic.SubsonicResponse.AlbumChild;
 import run.ikaros.api.core.subsonic.SubsonicResponse.AlbumList;
@@ -32,9 +28,7 @@ import run.ikaros.api.core.subsonic.SubsonicResponse.SearchResult;
 import run.ikaros.api.core.subsonic.SubsonicResponse.SongChild;
 import run.ikaros.api.core.subsonic.SubsonicResponse.SubsonicResponseBody;
 import run.ikaros.api.infra.utils.UuidV7Utils;
-import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectType;
-import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.episode.EpisodeService;
 import run.ikaros.server.core.music.service.MusicService;
@@ -43,7 +37,6 @@ import run.ikaros.server.core.subsonic.SubsonicContext;
 import run.ikaros.server.core.subsonic.service.SubsonicService;
 import run.ikaros.server.store.entity.EpisodeListEntity;
 import run.ikaros.server.store.entity.EpisodeListEpisodeEntity;
-import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.repository.EpisodeListEpisodeRepository;
 import run.ikaros.server.store.repository.EpisodeListRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
@@ -141,7 +134,9 @@ public class DefaultSubsonicService implements SubsonicService {
                 var groups = new java.util.LinkedHashMap<String, List<ArtistChild>>();
                 for (ArtistChild a : artists) {
                     String key = a.getName().substring(0, 1).toUpperCase();
-                    if (!key.matches("[A-Z]")) key = "#";
+                    if (!key.matches("[A-Z]")) {
+                        key = "#";
+                    }
                     groups.computeIfAbsent(key, k -> new ArrayList<>()).add(a);
                 }
                 groups.forEach((letter, list) ->
@@ -161,22 +156,25 @@ public class DefaultSubsonicService implements SubsonicService {
                 String name = subject.getNameCn() != null ? subject.getNameCn() : subject.getName();
                 // 获取该专辑下的歌曲数
                 return episodeService.countBySubjectId(id)
-                    .map(count -> ok().toBuilder()
-                        .artist(SubsonicResponse.Artist.builder()
-                            .id(id.toString())
-                            .name(name)
-                            .albumCount(1)
-                            .coverArt("al-" + id)
-                            .album(List.of(AlbumChild.builder()
+                    .map(count -> {
+                        int songCount = count.intValue();
+                        return ok().toBuilder()
+                            .artist(SubsonicResponse.Artist.builder()
                                 .id(id.toString())
                                 .name(name)
+                                .albumCount(1)
                                 .coverArt("al-" + id)
-                                .songCount((int) count)
-                                .artist(name)
-                                .parent(id.toString())
-                                .build()))
-                            .build())
-                        .build());
+                                .album(List.of(AlbumChild.builder()
+                                    .id(id.toString())
+                                    .name(name)
+                                    .coverArt("al-" + id)
+                                    .songCount(songCount)
+                                    .artist(name)
+                                    .parent(id.toString())
+                                    .build()))
+                                .build())
+                            .build();
+                    });
             })
             .switchIfEmpty(Mono.just(err(70, "未找到艺术家: " + artistId)));
     }
@@ -230,7 +228,8 @@ public class DefaultSubsonicService implements SubsonicService {
                     // 获取专辑名
                     return subjectService.findById(episode.getSubjectId())
                         .map(subject -> {
-                            song.setAlbum(subject.getNameCn() != null ? subject.getNameCn() : subject.getName());
+                            song.setAlbum(subject.getNameCn() != null
+                                ? subject.getNameCn() : subject.getName());
                             song.setArtist(subject.getName());
                             song.setAlbumId(subject.getId().toString());
                             return ok().toBuilder().song(song).build();
@@ -255,7 +254,8 @@ public class DefaultSubsonicService implements SubsonicService {
                         .name(music.getNameCn() != null ? music.getNameCn() : music.getName())
                         .artist(music.getName())
                         .coverArt("al-" + music.getId())
-                        .songCount(music.getSongCount() != null ? music.getSongCount().intValue() : 0)
+                        .songCount(music.getSongCount() != null
+                            ? music.getSongCount().intValue() : 0)
                         .created(music.getAirTime() != null
                             ? music.getAirTime().format(DateTimeFormatter.ISO_LOCAL_DATE)
                             : null)
@@ -281,7 +281,8 @@ public class DefaultSubsonicService implements SubsonicService {
                         .name(music.getNameCn() != null ? music.getNameCn() : music.getName())
                         .artist(music.getName())
                         .coverArt("al-" + music.getId())
-                        .songCount(music.getSongCount() != null ? music.getSongCount().intValue() : 0)
+                        .songCount(music.getSongCount() != null
+                            ? music.getSongCount().intValue() : 0)
                         .parent(music.getId().toString())
                         .build())
                     .toList();
@@ -310,9 +311,12 @@ public class DefaultSubsonicService implements SubsonicService {
                     bufs.forEach(buf -> {
                         byte[] b = new byte[buf.readableByteCount()];
                         buf.read(b);
-                        try { os.write(b); } catch (Exception ignored) {}
+                        try {
+                            os.write(b);
+                        } catch (Exception expected) { }
                     });
-                    return (Resource) new org.springframework.core.io.ByteArrayResource(os.toByteArray());
+                    return (Resource) new org.springframework.core.io.ByteArrayResource(
+                        os.toByteArray());
                 }));
     }
 
@@ -332,7 +336,8 @@ public class DefaultSubsonicService implements SubsonicService {
                     URI uri = URI.create(subject.getCover());
                     return Mono.just((Resource) new UrlResource(uri));
                 } catch (Exception e) {
-                    return Mono.error(new RuntimeException("无法读取封面: " + e.getMessage()));
+                    return Mono.error(new RuntimeException(
+                        "无法读取封面: " + e.getMessage()));
                 }
             });
     }
@@ -458,6 +463,24 @@ public class DefaultSubsonicService implements SubsonicService {
             .isDir(false)
             .year(0)
             .albumId(episode.getSubjectId() != null ? episode.getSubjectId().toString() : "")
+            .type("music")
+            .build();
+    }
+
+    private SongChild toSongChild(Song song) {
+        return SongChild.builder()
+            .id(song.getId().toString())
+            .parent(song.getSubjectId() != null ? song.getSubjectId().toString() : "")
+            .title(song.getNameCn() != null ? song.getNameCn() : song.getName())
+            .album("")
+            .artist("")
+            .track(song.getSequence() != null ? song.getSequence().intValue() : 0)
+            .duration(song.getDuration() != null ? song.getDuration().intValue() : 0)
+            .contentType("audio/mpeg")
+            .coverArt(song.getSubjectId() != null ? "al-" + song.getSubjectId() : "")
+            .isDir(false)
+            .year(0)
+            .albumId(song.getSubjectId() != null ? song.getSubjectId().toString() : "")
             .type("music")
             .build();
     }

@@ -139,10 +139,9 @@ public class DefaultMusicService implements MusicService {
             .name(subject.getName())
             .nameCn(subject.getNameCn())
             .cover(subject.getCover())
-            .description(subject.getDescription())
+            .description(subject.getSummary())
             .airTime(subject.getAirTime())
-            .score(subject.getScore())
-            .rank(subject.getRank())
+            .score(subject.getScore() == null ? null : subject.getScore().floatValue())
             .nsfw(subject.getNsfw())
             .songCount(0L)
             .build();

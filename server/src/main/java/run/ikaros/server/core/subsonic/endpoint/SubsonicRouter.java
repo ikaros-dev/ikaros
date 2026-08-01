@@ -1,14 +1,9 @@
 package run.ikaros.server.core.subsonic.endpoint;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
@@ -31,11 +26,9 @@ import run.ikaros.server.core.subsonic.service.SubsonicService;
 public class SubsonicRouter implements RouterFunction<ServerResponse> {
 
     private final SubsonicService subsonicService;
-    private final ObjectMapper objectMapper;
 
-    public SubsonicRouter(SubsonicService subsonicService, ObjectMapper objectMapper) {
+    public SubsonicRouter(SubsonicService subsonicService) {
         this.subsonicService = subsonicService;
-        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -53,8 +46,7 @@ public class SubsonicRouter implements RouterFunction<ServerResponse> {
 
     @Override
     public void accept(RouterFunctions.Visitor visitor) {
-        visitor.startGroup("/rest");
-        visitor.endGroup();
+        visitor.unknown(this);
     }
 
     private Mono<ServerResponse> handleRequest(ServerRequest request) {
@@ -100,7 +92,7 @@ public class SubsonicRouter implements RouterFunction<ServerResponse> {
         }
 
         // 其余方法返回 JSON
-        return switch (method) {
+        Mono<SubsonicResponseBody> bodyMono = switch (method) {
             case "ping" -> subsonicService.ping();
             case "getArtists" -> subsonicService.getArtists();
             case "getArtist" -> {
@@ -139,7 +131,8 @@ public class SubsonicRouter implements RouterFunction<ServerResponse> {
             case "createPlaylist" -> {
                 String id = request.queryParam("playlistId").orElse("");
                 String name = request.queryParam("name").orElse("");
-                List<String> songIds = request.queryParams("songId");
+                List<String> songIds =
+                    request.queryParams().getOrDefault("songId", List.of());
                 yield subsonicService.createPlaylist(id, name, songIds);
             }
             case "deletePlaylist" -> {
@@ -161,7 +154,8 @@ public class SubsonicRouter implements RouterFunction<ServerResponse> {
                         .code(70).message("未知方法: " + method).build())
                     .build()
             );
-        }.flatMap(body -> formatResponse(body, "json"));
+        };
+        return bodyMono.flatMap(body -> formatResponse(body, "json"));
     }
 
     private Mono<ServerResponse> handleStream(String id) {
@@ -198,16 +192,15 @@ public class SubsonicRouter implements RouterFunction<ServerResponse> {
 
     private Mono<ServerResponse> formatResponse(SubsonicResponseBody body, String format) {
         SubsonicResponse response = SubsonicResponse.builder().body(body).build();
-        try {
-            String json = objectMapper.writeValueAsString(response);
-            return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(json);
-        } catch (JsonProcessingException e) {
-            return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"subsonic-response\":{\"status\":\"failed\",\"version\":\"1.16.0\",\"type\":\"ikaros\",\"serverVersion\":\"1.2.1\"}}");
+        String json = run.ikaros.server.infra.utils.JsonUtils.obj2Json(response);
+        if (json == null) {
+            json = "{\"subsonic-response\":{\"status\":\"failed\","
+                + "\"version\":\"1.16.0\",\"type\":\"ikaros\","
+                + "\"serverVersion\":\"1.2.1\"}}";
         }
+        return ServerResponse.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(json);
     }
 
     private String extractMethod(String path) {

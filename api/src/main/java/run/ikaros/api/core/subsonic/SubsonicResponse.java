@@ -47,27 +47,39 @@ public class SubsonicResponse {
         private PlaylistWithSongs playlist;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Error {
         private int code;
         private String message;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Artists {
         private List<ArtistIndex> index;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ArtistIndex {
         private String name;
         private List<ArtistChild> artist;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ArtistChild {
         private String id;
@@ -78,7 +90,10 @@ public class SubsonicResponse {
         private String coverArt;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Artist {
         private String id;
@@ -90,7 +105,10 @@ public class SubsonicResponse {
         private List<AlbumChild> album;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class AlbumChild {
         private String id;
@@ -107,13 +125,19 @@ public class SubsonicResponse {
         private String parent;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class AlbumList {
         private List<AlbumChild> album;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class AlbumWithSongs {
         private String id;
@@ -129,7 +153,10 @@ public class SubsonicResponse {
         private List<SongChild> song;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class SongChild {
         private String id;
@@ -156,7 +183,10 @@ public class SubsonicResponse {
         private String type;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class SearchResult {
         private List<ArtistChild> artist;
@@ -164,13 +194,19 @@ public class SubsonicResponse {
         private List<SongChild> song;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Playlists {
         private List<PlaylistChild> playlist;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class PlaylistChild {
         private String id;
@@ -185,7 +221,10 @@ public class SubsonicResponse {
         private boolean isPublic;
     }
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class PlaylistWithSongs {
         private String id;
