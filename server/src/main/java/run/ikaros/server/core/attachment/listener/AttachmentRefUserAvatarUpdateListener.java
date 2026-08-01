@@ -54,7 +54,7 @@ public class AttachmentRefUserAvatarUpdateListener {
                 .attachmentId(attachmentEntity.getId())
                 .referenceId(userId)
                 .build())
-            .flatMap(attachmentReferenceRepository::save)
+            .flatMap(attachmentReferenceRepository::insert)
             .then();
     }
 

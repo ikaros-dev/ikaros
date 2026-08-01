@@ -1,391 +1,376 @@
 package run.ikaros.server.core.attachment.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
-import org.springframework.data.relational.core.query.Criteria;
-import org.springframework.data.relational.core.query.Query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
-import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
-import run.ikaros.api.infra.utils.UuidV7Utils;
+import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
-import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
+import run.ikaros.server.core.attachment.extension.LocalDiskAttachmentDriverFetcher;
+import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
-import run.ikaros.server.core.attachment.vo.AttachmentDriverFetcherVo;
+import run.ikaros.server.core.attachment.service.AttachmentSha1Service;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
+import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
+/** 附件驱动增量刷新服务测试. */
 class AttachmentDriverServiceImplTest {
-    private AttachmentDriverRepository repository;
+    /** 附件驱动仓库. */
+    @Mock
+    private AttachmentDriverRepository driverRepository;
+    /** 附件仓库. */
+    @Mock
     private AttachmentRepository attachmentRepository;
+    /** 应用事件发布器. */
+    @Mock
     private ApplicationEventPublisher eventPublisher;
+    /** 附件服务. */
+    @Mock
     private AttachmentService attachmentService;
+    /** 附件驱动挂载服务. */
+    @Mock
+    private AttachmentDriverMountService mountService;
+    /** 附件 SHA-1 后台计算服务. */
+    @Mock
+    private AttachmentSha1Service attachmentSha1Service;
+    /** 响应式数据库模板. */
+    @Mock
     private R2dbcEntityTemplate template;
+    /** 扩展组件查找器. */
+    @Mock
     private ExtensionComponentsFinder extensionComponentsFinder;
-    private AttachmentDriverServiceImpl attachmentDriverService;
+    /** 附件驱动扫描器. */
+    @Mock
+    private AttachmentDriverFetcher fetcher;
+    /** 被测试的附件驱动服务. */
+    private AttachmentDriverServiceImpl service;
+    /** 驱动ID. */
+    private UUID driverId;
+    /** 当前目录附件ID. */
+    private UUID parentId;
+    /** 当前目录磁盘路径. */
+    private String remotePath;
 
     @BeforeEach
     void setUp() {
-        repository = Mockito.mock(AttachmentDriverRepository.class);
-        attachmentRepository = Mockito.mock(AttachmentRepository.class);
-        eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
-        attachmentService = Mockito.mock(AttachmentService.class);
-        template = Mockito.mock(R2dbcEntityTemplate.class);
-        extensionComponentsFinder = Mockito.mock(ExtensionComponentsFinder.class);
-        attachmentDriverService = new AttachmentDriverServiceImpl(
-            repository, attachmentRepository, eventPublisher, attachmentService,
-            template, extensionComponentsFinder
-        );
-    }
-
-    // === save() tests ===
-
-    @Test
-    void save_whenDriverExists_updates() {
-        UUID driverId = UuidV7Utils.generateUuid();
-        AttachmentDriver driver = new AttachmentDriver();
-        driver.setType(AttachmentDriverType.LOCAL);
-        driver.setName("local-fs");
-        driver.setMountName("default");
-
-        AttachmentDriverEntity existingEntity = new AttachmentDriverEntity();
-        existingEntity.setId(driverId);
-        existingEntity.setType(AttachmentDriverType.LOCAL);
-        existingEntity.setName("local-fs");
-        existingEntity.setMountName("default");
-
-        AttachmentDriverFetcher fetcher = Mockito.mock(AttachmentDriverFetcher.class);
-        when(fetcher.getDriverType()).thenReturn(AttachmentDriverType.LOCAL);
-        when(fetcher.getDriverName()).thenReturn("local-fs");
+        MockitoAnnotations.openMocks(this);
+        service = new AttachmentDriverServiceImpl(driverRepository, attachmentRepository,
+            eventPublisher, attachmentService, mountService, attachmentSha1Service, template,
+            extensionComponentsFinder);
+        driverId = UUID.randomUUID();
+        parentId = UUID.randomUUID();
+        remotePath = "D:/media";
+        Attachment parentAttachment = Attachment.builder()
+            .id(parentId)
+            .driverId(driverId)
+            .type(AttachmentType.Driver_Directory)
+            .fsPath(remotePath)
+            .build();
+        AttachmentDriverEntity driver = AttachmentDriverEntity.builder()
+            .id(driverId)
+            .type(AttachmentDriverType.LOCAL)
+            .name(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME)
+            .build();
+        when(attachmentService.findById(parentId)).thenReturn(Mono.just(parentAttachment));
+        when(driverRepository.findById(driverId)).thenReturn(Mono.just(driver));
         when(extensionComponentsFinder.getExtensions(AttachmentDriverFetcher.class))
             .thenReturn(List.of(fetcher));
-        when(repository.findByTypeAndNameAndMountName(
-            eq("LOCAL"), eq("local-fs"), eq("default")))
-            .thenReturn(Mono.just(existingEntity));
-        when(repository.update(any(AttachmentDriverEntity.class)))
-            .thenReturn(Mono.just(existingEntity));
-
-        StepVerifier.create(attachmentDriverService.save(driver))
-            .assertNext(result -> assertThat(result).isNotNull())
-            .verifyComplete();
-    }
-
-    @Test
-    void save_whenNoFetcher_throwsException() {
-        AttachmentDriver driver = new AttachmentDriver();
-        driver.setType(AttachmentDriverType.LOCAL);
-        driver.setName("unknown-driver");
-
-        when(extensionComponentsFinder.getExtensions(AttachmentDriverFetcher.class))
-            .thenReturn(List.of());
-
-        assertThrows(NoAvailableAttDriverFetcherException.class,
-            () -> attachmentDriverService.save(driver));
-    }
-
-    @Test
-    void save_withNullDriver_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-            () -> attachmentDriverService.save(null));
-    }
-
-    // === removeById() tests ===
-
-    @Test
-    void removeById() {
-        UUID driverId = UuidV7Utils.generateUuid();
-        AttachmentDriverEntity entity = new AttachmentDriverEntity();
-        entity.setId(driverId);
-
-        when(repository.findById(driverId)).thenReturn(Mono.just(entity));
-        when(repository.deleteById(driverId)).thenReturn(Mono.empty());
-
-        StepVerifier.create(attachmentDriverService.removeById(driverId))
-            .verifyComplete();
-        verify(eventPublisher).publishEvent(any(AttachmentDriverDisableEvent.class));
-    }
-
-    @Test
-    void removeById_withNullId_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-            () -> attachmentDriverService.removeById(null));
-    }
-
-    @Test
-    void removeById_whenNotFound() {
-        UUID driverId = UuidV7Utils.generateUuid();
-        when(repository.findById(driverId)).thenReturn(Mono.empty());
-
-        StepVerifier.create(attachmentDriverService.removeById(driverId))
-            .verifyComplete();
-    }
-
-    // === removeByTypeAndName() tests ===
-
-    @Test
-    void removeByTypeAndName() {
-        AttachmentDriverEntity entity = new AttachmentDriverEntity();
-        entity.setId(UuidV7Utils.generateUuid());
-
-        when(repository.findByTypeAndName("LOCAL", "local-fs"))
-            .thenReturn(Mono.just(entity));
-        when(repository.deleteById(entity.getId())).thenReturn(Mono.empty());
-
-        StepVerifier.create(
-                attachmentDriverService.removeByTypeAndName("LOCAL", "local-fs"))
-            .verifyComplete();
-        verify(eventPublisher).publishEvent(any(AttachmentDriverDisableEvent.class));
-    }
-
-    @Test
-    void removeByTypeAndName_withNullType_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-            () -> attachmentDriverService.removeByTypeAndName(null, "local-fs"));
-    }
-
-    // === findById() tests ===
-
-    @Test
-    void findById() {
-        UUID driverId = UuidV7Utils.generateUuid();
-        AttachmentDriverEntity entity = new AttachmentDriverEntity();
-        entity.setId(driverId);
-        entity.setType(AttachmentDriverType.LOCAL);
-        entity.setName("local-fs");
-
-        when(repository.findById(driverId)).thenReturn(Mono.just(entity));
-
-        StepVerifier.create(attachmentDriverService.findById(driverId))
-            .assertNext(driver -> {
-                assertThat(driver.getId()).isEqualTo(driverId);
-                assertThat(driver.getType()).isEqualTo(AttachmentDriverType.LOCAL);
-                assertThat(driver.getName()).isEqualTo("local-fs");
-            })
-            .verifyComplete();
-    }
-
-    @Test
-    void findById_withNullId_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-            () -> attachmentDriverService.findById(null));
-    }
-
-    @Test
-    void findById_whenNotFound() {
-        UUID driverId = UuidV7Utils.generateUuid();
-        when(repository.findById(driverId)).thenReturn(Mono.empty());
-        StepVerifier.create(attachmentDriverService.findById(driverId))
-            .verifyComplete();
-    }
-
-    // === findByTypeAndName() tests ===
-
-    @Test
-    void findByTypeAndName() {
-        AttachmentDriverEntity entity = new AttachmentDriverEntity();
-        entity.setId(UuidV7Utils.generateUuid());
-        entity.setType(AttachmentDriverType.LOCAL);
-        entity.setName("local-fs");
-
-        when(repository.findByTypeAndName("LOCAL", "local-fs"))
-            .thenReturn(Mono.just(entity));
-
-        StepVerifier.create(attachmentDriverService.findByTypeAndName("LOCAL", "local-fs"))
-            .assertNext(driver -> assertThat(driver.getName()).isEqualTo("local-fs"))
-            .verifyComplete();
-    }
-
-    @Test
-    void findByTypeAndName_withNullType_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-            () -> attachmentDriverService.findByTypeAndName(null, "local-fs"));
-    }
-
-    // === enable/disable tests ===
-
-    @Test
-    void enable() {
-        UUID driverId = UuidV7Utils.generateUuid();
-        AttachmentDriverEntity entity = new AttachmentDriverEntity();
-        entity.setId(driverId);
-        entity.setEnable(false);
-
-        when(repository.findById(driverId)).thenReturn(Mono.just(entity));
-        when(repository.update(any(AttachmentDriverEntity.class)))
-            .thenReturn(Mono.just(entity.setEnable(true)));
-
-        StepVerifier.create(attachmentDriverService.enable(driverId))
-            .verifyComplete();
-        verify(eventPublisher).publishEvent(any(AttachmentDriverEnableEvent.class));
-    }
-
-    @Test
-    void disable() {
-        UUID driverId = UuidV7Utils.generateUuid();
-        AttachmentDriverEntity entity = new AttachmentDriverEntity();
-        entity.setId(driverId);
-        entity.setEnable(true);
-
-        when(repository.findById(driverId)).thenReturn(Mono.just(entity));
-        when(repository.update(any(AttachmentDriverEntity.class)))
-            .thenReturn(Mono.just(entity.setEnable(false)));
-
-        StepVerifier.create(attachmentDriverService.disable(driverId))
-            .verifyComplete();
-        verify(eventPublisher).publishEvent(any(AttachmentDriverDisableEvent.class));
-    }
-
-    @Test
-    void enable_withNullId_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-            () -> attachmentDriverService.enable(null));
-    }
-
-    // === listAttachmentsByCondition tests ===
-
-    @Test
-    void listAttachmentsByCondition_withoutRefresh() {
-        AttachmentSearchCondition condition = AttachmentSearchCondition.builder()
-            .page(1).size(10).refresh(false)
-            .parentId(UuidV7Utils.generateUuid()).build();
-
-        when(attachmentService.listByCondition(condition))
-            .thenReturn(Mono.just(new PagingWrap<>(1, 10, 0L, List.of())));
-
-        StepVerifier.create(attachmentDriverService.listAttachmentsByCondition(condition))
-            .assertNext(wrap -> assertThat(wrap.getTotal()).isZero())
-            .verifyComplete();
-    }
-
-    @Test
-    void listAttachmentsByCondition_withRefresh() {
-        UUID parentId = UuidV7Utils.generateUuid();
-        AttachmentSearchCondition condition = AttachmentSearchCondition.builder()
-            .page(1).size(10).refresh(true).parentId(parentId).build();
-
-        Attachment attachment = new Attachment();
-        attachment.setId(parentId);
-        attachment.setType(AttachmentType.Driver_Directory);
-        attachment.setDriverId(UuidV7Utils.generateUuid());
-
-        AttachmentDriverEntity driverEntity = new AttachmentDriverEntity();
-        driverEntity.setId(attachment.getDriverId());
-        driverEntity.setType(AttachmentDriverType.LOCAL);
-        driverEntity.setName("local-fs");
-
-        AttachmentDriverFetcher fetcher = Mockito.mock(AttachmentDriverFetcher.class);
         when(fetcher.getDriverType()).thenReturn(AttachmentDriverType.LOCAL);
-        when(fetcher.getDriverName()).thenReturn("local-fs");
-
-        when(attachmentService.findById(parentId)).thenReturn(Mono.just(attachment));
-        when(repository.findById(attachment.getDriverId())).thenReturn(Mono.just(driverEntity));
-        when(extensionComponentsFinder.getExtensions(AttachmentDriverFetcher.class))
-            .thenReturn(List.of(fetcher));
-        when(fetcher.getChildren(any(), any(), any())).thenReturn(Flux.empty());
-        when(attachmentService.listByCondition(condition))
-            .thenReturn(Mono.just(new PagingWrap<>(1, 10, 0L, List.of())));
-
-        StepVerifier.create(attachmentDriverService.listAttachmentsByCondition(condition))
-            .assertNext(wrap -> assertThat(wrap.getTotal()).isZero())
-            .verifyComplete();
+        when(fetcher.getDriverName())
+            .thenReturn(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME);
+        when(attachmentService.save(any(Attachment.class)))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(attachmentService.removeByIdOnlyRecords(any(UUID.class))).thenReturn(Mono.empty());
     }
 
     @Test
-    void listAttachmentsByCondition_withNullRefresh_throwsException() {
+    void refreshSchedulesSha1ForEveryFileOnFirstScan() {
+        Attachment firstFile = scannedFile("D:/media/first.mkv", 100L,
+            LocalDateTime.of(2026, 7, 30, 12, 0));
+        Attachment secondFile = scannedFile("D:/media/second.mkv", 200L,
+            LocalDateTime.of(2026, 7, 30, 12, 1));
+        when(fetcher.getChildren(driverId, parentId, remotePath))
+            .thenReturn(Flux.just(firstFile, secondFile));
+        when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
+            .thenReturn(Flux.empty());
+        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+
+        verify(attachmentService, times(2)).save(any(Attachment.class));
+        verify(attachmentSha1Service).calculateAsync(
+            eq(fetcher), argThat(attachments ->
+                attachments.equals(List.of(firstFile, secondFile))));
+    }
+
+    @Test
+    void refreshSkipsUnchangedFiles() {
+        LocalDateTime modifiedTime = LocalDateTime.of(2026, 7, 30, 12, 0);
+        Attachment scannedFile = scannedFile("D:/media/unchanged.mkv", 100L, modifiedTime);
+        AttachmentEntity storedFile = storedFile(scannedFile, modifiedTime, "stored-sha1");
+        when(fetcher.getChildren(driverId, parentId, remotePath))
+            .thenReturn(Flux.just(scannedFile));
+        when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
+            .thenReturn(Flux.just(storedFile));
+
+        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+
+        verify(fetcher, never()).calculateSha1(any(Attachment.class));
+        verify(attachmentService, never()).save(any(Attachment.class));
+        verify(attachmentService, never()).removeByIdOnlyRecords(any(UUID.class));
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of());
+    }
+
+    @Test
+    void refreshOnlyHashesChangedFilesAndRemovesMissingFiles() {
+        LocalDateTime oldModifiedTime = LocalDateTime.of(2026, 7, 30, 12, 0);
+        LocalDateTime newModifiedTime = oldModifiedTime.plusMinutes(1);
+        Attachment changedFile = scannedFile("D:/media/changed.mkv", 101L, newModifiedTime);
+        AttachmentEntity storedChangedFile = storedFile(changedFile, oldModifiedTime, "old-sha1")
+            .setSize(100L);
+        AttachmentEntity missingFile = storedFile(
+            scannedFile("D:/media/missing.mkv", 200L, oldModifiedTime),
+            oldModifiedTime, "missing-sha1");
+        when(fetcher.getChildren(driverId, parentId, remotePath))
+            .thenReturn(Flux.just(changedFile));
+        when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
+            .thenReturn(Flux.just(storedChangedFile, missingFile));
+        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+
+        ArgumentCaptor<Attachment> attachmentCaptor = ArgumentCaptor.forClass(Attachment.class);
+        verify(attachmentService).save(attachmentCaptor.capture());
+        assertThat(attachmentCaptor.getValue().getId()).isEqualTo(storedChangedFile.getId());
+        assertThat(attachmentCaptor.getValue().getSha1()).isNull();
+        verify(attachmentService).removeByIdOnlyRecords(missingFile.getId());
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of(changedFile));
+    }
+
+    @Test
+    void refreshMergesConcurrentRequestsForSameDirectory() {
+        Attachment file = scannedFile("D:/media/concurrent.mkv", 100L,
+            LocalDateTime.of(2026, 7, 30, 12, 0));
+        when(fetcher.getChildren(driverId, parentId, remotePath))
+            .thenReturn(Flux.just(file).delayElements(Duration.ofMillis(50)));
+        when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
+            .thenReturn(Flux.empty());
+        StepVerifier.create(Flux.merge(service.refresh(parentId), service.refresh(parentId)))
+            .verifyComplete();
+
+        verify(fetcher).getChildren(driverId, parentId, remotePath);
+        verify(attachmentService).save(file);
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of(file));
+    }
+
+    @Test
+    void saveRebindsEnabledDriverWhenRemotePathChanges() {
+        String newRemotePath = "D:/new-media";
+        Sinks.One<Void> rebindCompletion = Sinks.one();
+        AttachmentDriverEntity storedDriver = AttachmentDriverEntity.builder()
+            .id(driverId)
+            .enable(true)
+            .type(AttachmentDriverType.LOCAL)
+            .name(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME)
+            .mountName("media")
+            .remotePath(remotePath)
+            .build();
+        AttachmentDriver changedDriver = AttachmentDriver.builder()
+            .id(driverId)
+            .enable(false)
+            .type(AttachmentDriverType.LOCAL)
+            .name(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME)
+            .mountName("media")
+            .remotePath(newRemotePath)
+            .build();
+        when(driverRepository.findById(driverId)).thenReturn(Mono.just(storedDriver));
+        when(driverRepository.update(any(AttachmentDriverEntity.class)))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(mountService.rebind(any(AttachmentDriverEntity.class),
+            any(AttachmentDriverEntity.class))).thenReturn(rebindCompletion.asMono());
+
+        StepVerifier.create(service.save(changedDriver))
+            .expectSubscription()
+            .expectNoEvent(Duration.ofMillis(10))
+            .then(rebindCompletion::tryEmitEmpty)
+            .assertNext(savedDriver -> {
+                assertThat(savedDriver.getRemotePath()).isEqualTo(newRemotePath);
+                assertThat(savedDriver.isEnable()).isTrue();
+            })
+            .verifyComplete();
+
+        verify(mountService).rebind(
+            argThat(driver -> remotePath.equals(driver.getRemotePath())),
+            argThat(driver -> newRemotePath.equals(driver.getRemotePath())));
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    void saveCreatesDriverDisabledWhenRequestContainsEnableTrue() {
+        AttachmentDriver newDriver = AttachmentDriver.builder()
+            .enable(true)
+            .type(AttachmentDriverType.LOCAL)
+            .name(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME)
+            .mountName("media")
+            .remotePath(remotePath)
+            .build();
+        when(driverRepository.findByTypeAndNameAndMountName(
+            AttachmentDriverType.LOCAL.name(),
+            LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME,
+            "media")).thenReturn(Mono.empty());
+        when(driverRepository.insert(any(AttachmentDriverEntity.class)))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(service.save(newDriver))
+            .assertNext(savedDriver -> {
+                assertThat(savedDriver.getId()).isNotNull();
+                assertThat(savedDriver.isEnable()).isFalse();
+            })
+            .verifyComplete();
+
+        verify(eventPublisher, never()).publishEvent(
+            any(AttachmentDriverEnableEvent.class));
+    }
+
+    @Test
+    void listAttachmentsRefreshesDirectoryBeforeReturningFiles() {
+        Attachment video = scannedFile("D:/media/episode.mkv", 100L,
+            LocalDateTime.of(2026, 7, 30, 12, 0));
         AttachmentSearchCondition condition = AttachmentSearchCondition.builder()
-            .page(1).size(10).build();
+            .parentId(parentId)
+            .refresh(true)
+            .build();
+        PagingWrap<Attachment> page = new PagingWrap<>(1, 10, 1L, List.of(video));
+        when(fetcher.getChildren(driverId, parentId, remotePath)).thenReturn(Flux.just(video));
+        when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
+            .thenReturn(Flux.empty());
+        when(attachmentService.listByCondition(condition)).thenReturn(Mono.just(page));
 
-        assertThrows(IllegalArgumentException.class,
-            () -> attachmentDriverService.listAttachmentsByCondition(condition));
+        StepVerifier.create(service.listAttachmentsByCondition(condition))
+            .assertNext(result -> assertThat(result.getItems()).containsExactly(video))
+            .verifyComplete();
+
+        verify(attachmentService).save(video);
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of(video));
+        verify(attachmentService).listByCondition(condition);
     }
 
-    // === listDriversByCondition tests ===
-
     @Test
-    void listDriversByCondition_withDefaults() {
-        AttachmentDriverEntity entity = new AttachmentDriverEntity();
-        entity.setId(UuidV7Utils.generateUuid());
-        entity.setType(AttachmentDriverType.LOCAL);
-        entity.setName("local-fs");
+    void refreshRejectsMissingAttachment() {
+        UUID missingAttachmentId = UUID.randomUUID();
+        when(attachmentService.findById(missingAttachmentId)).thenReturn(Mono.empty());
 
-        when(template.select(any(Query.class), eq(AttachmentDriverEntity.class)))
-            .thenReturn(Flux.just(entity));
-        when(template.count(any(Query.class), eq(AttachmentDriverEntity.class)))
-            .thenReturn(Mono.just(1L));
-
-        StepVerifier.create(attachmentDriverService.listDriversByCondition(null, null))
-            .assertNext(wrap -> {
-                assertThat(wrap.getPage()).isEqualTo(1);
-                assertThat(wrap.getSize()).isEqualTo(10);
-                assertThat(wrap.getTotal()).isEqualTo(1);
+        StepVerifier.create(service.refresh(missingAttachmentId))
+            .expectErrorSatisfies(error -> {
+                assertThat(error).isInstanceOf(AttachmentNotFoundException.class);
+                assertThat(error).hasMessageContaining(missingAttachmentId.toString());
             })
-            .verifyComplete();
+            .verify();
     }
 
     @Test
-    void listDriversByCondition_withCustomPage() {
-        AttachmentDriverEntity entity = new AttachmentDriverEntity();
-        entity.setId(UuidV7Utils.generateUuid());
-        entity.setType(AttachmentDriverType.LOCAL);
-        entity.setName("local-fs");
+    void refreshRejectsNonDriverDirectory() {
+        UUID fileId = UUID.randomUUID();
+        Attachment file = Attachment.builder()
+            .id(fileId)
+            .driverId(driverId)
+            .type(AttachmentType.Driver_File)
+            .build();
+        when(attachmentService.findById(fileId)).thenReturn(Mono.just(file));
 
-        when(template.select(any(Query.class), eq(AttachmentDriverEntity.class)))
-            .thenReturn(Flux.just(entity));
-        when(template.count(any(Query.class), eq(AttachmentDriverEntity.class)))
-            .thenReturn(Mono.just(1L));
-
-        StepVerifier.create(attachmentDriverService.listDriversByCondition(2, 20))
-            .assertNext(wrap -> {
-                assertThat(wrap.getPage()).isEqualTo(2);
-                assertThat(wrap.getSize()).isEqualTo(20);
+        StepVerifier.create(service.refresh(fileId))
+            .expectErrorSatisfies(error -> {
+                assertThat(error).isInstanceOf(IllegalArgumentException.class);
+                assertThat(error).hasMessageContaining(fileId.toString());
             })
-            .verifyComplete();
+            .verify();
     }
 
-    // === listDriversFetchers test ===
+    @Test
+    void refreshRejectsDirectoryWithoutDriverId() {
+        UUID directoryId = UUID.randomUUID();
+        Attachment directory = Attachment.builder()
+            .id(directoryId)
+            .type(AttachmentType.Driver_Directory)
+            .build();
+        when(attachmentService.findById(directoryId)).thenReturn(Mono.just(directory));
+
+        StepVerifier.create(service.refresh(directoryId))
+            .expectErrorSatisfies(error -> {
+                assertThat(error).isInstanceOf(IllegalStateException.class);
+                assertThat(error).hasMessageContaining(directoryId.toString());
+            })
+            .verify();
+    }
 
     @Test
-    void listDriversFetchers() {
-        AttachmentDriverFetcher fetcher1 = Mockito.mock(AttachmentDriverFetcher.class);
-        when(fetcher1.getDriverType()).thenReturn(AttachmentDriverType.LOCAL);
-        when(fetcher1.getDriverName()).thenReturn("local-fs");
+    void refreshRejectsMissingDriver() {
+        when(driverRepository.findById(driverId)).thenReturn(Mono.empty());
 
-        AttachmentDriverFetcher fetcher2 = Mockito.mock(AttachmentDriverFetcher.class);
-        when(fetcher2.getDriverType()).thenReturn(AttachmentDriverType.WEBDAV);
-        when(fetcher2.getDriverName()).thenReturn("webdav-fs");
+        StepVerifier.create(service.refresh(parentId))
+            .expectErrorSatisfies(error -> {
+                assertThat(error).isInstanceOf(IllegalStateException.class);
+                assertThat(error).hasMessageContaining(driverId.toString());
+            })
+            .verify();
+    }
 
-        when(extensionComponentsFinder.getExtensions(AttachmentDriverFetcher.class))
-            .thenReturn(List.of(fetcher1, fetcher2));
+    private Attachment scannedFile(String fsPath, Long size, LocalDateTime modifiedTime) {
+        return Attachment.builder()
+            .parentId(parentId)
+            .driverId(driverId)
+            .type(AttachmentType.Driver_File)
+            .name(fsPath.substring(fsPath.lastIndexOf('/') + 1))
+            .path(fsPath)
+            .url(fsPath)
+            .fsPath(fsPath)
+            .size(size)
+            .modifiedTime(modifiedTime)
+            .deleted(false)
+            .build();
+    }
 
-        StepVerifier.create(attachmentDriverService.listDriversFetchers())
-            .expectNextMatches(vo -> "local-fs".equals(vo.getName())
-                && AttachmentDriverType.LOCAL == vo.getType())
-            .expectNextMatches(vo -> "webdav-fs".equals(vo.getName())
-                && AttachmentDriverType.WEBDAV == vo.getType())
-            .verifyComplete();
+    private AttachmentEntity storedFile(Attachment attachment, LocalDateTime modifiedTime,
+                                        String sha1) {
+        return AttachmentEntity.builder()
+            .id(UUID.randomUUID())
+            .parentId(parentId)
+            .driverId(driverId)
+            .type(attachment.getType())
+            .name(attachment.getName())
+            .path(attachment.getPath())
+            .url(attachment.getUrl())
+            .fsPath(attachment.getFsPath())
+            .size(attachment.getSize())
+            .modifiedTime(modifiedTime)
+            .sha1(sha1)
+            .deleted(false)
+            .build();
     }
 }

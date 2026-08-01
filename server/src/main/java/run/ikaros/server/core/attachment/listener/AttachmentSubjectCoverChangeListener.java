@@ -146,16 +146,17 @@ public class AttachmentSubjectCoverChangeListener {
                         newEntity.getNsfw(), newEntity.getType(),
                         newEntity.getName(), newEntity.getSummary())
                     .map(entity -> entity.setCover(attachment.getUrl()))
-                    .flatMap(subjectRepository::save)
+                    .flatMap(subjectRepository::update)
                     .flatMap(entity ->
                         attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
                                 AttachmentReferenceType.SUBJECT, attachment.getId(), entity.getId())
-                            .switchIfEmpty(Mono.just(AttachmentReferenceEntity.builder()
+                            .flatMap(attachmentReferenceRepository::update)
+                            .switchIfEmpty(attachmentReferenceRepository.insert(
+                                AttachmentReferenceEntity.builder()
                                 .type(AttachmentReferenceType.SUBJECT)
                                 .attachmentId(attachment.getId())
                                 .referenceId(entity.getId())
                                 .build()))
-                            .flatMap(attachmentReferenceRepository::save)
                     )
 
             )
@@ -183,7 +184,7 @@ public class AttachmentSubjectCoverChangeListener {
             .filter(entity -> !entity.getParentId().equals(COVER_DIRECTORY_ID))
             .map(entity -> entity.setParentId(COVER_DIRECTORY_ID)
                 .setName(getCoverName(newEntity)))
-            .flatMap(attachmentRepository::save);
+            .flatMap(attachmentRepository::update);
     }
 }
 

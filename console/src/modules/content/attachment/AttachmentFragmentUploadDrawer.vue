@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { computed, ref, watch } from 'vue';
+import { computed, h, ref, watch } from 'vue';
 import { ElDrawer } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+import DialogMessage from '@/components/dialog/DialogMessage.vue';
 import AttachmentPondUpload from '@/components/upload/AttachmentPondUpload.vue';
 
 const { t } = useI18n();
@@ -66,10 +67,27 @@ watch(
 
 const filePondUploadRef = ref(null);
 
+const closeDrawer = (done: () => void) => {
+	// @ts-expect-error
+	const firstFile = filePondUploadRef.value?.getFirstFile();
+	// @ts-expect-error
+	filePondUploadRef.value?.handleClearFileList();
+	emit('fileUploadDrawerCloes', firstFile);
+	done();
+	handleVisibleChange(false);
+};
+
 const handleClose = (done: () => void) => {
-	// console.log('firstFile', firstFile);
+	// @ts-expect-error
+	if (!filePondUploadRef.value?.hasIncompleteFiles()) {
+		closeDrawer(done);
+		return;
+	}
+
 	ElMessageBox.confirm(
-		t('module.attachment.drawer.fragment-upload.confirm.message'),
+		h(DialogMessage, {
+			message: t('module.attachment.drawer.fragment-upload.confirm.message'),
+		}),
 		t('module.attachment.drawer.fragment-upload.confirm.title'),
 		{
 			confirmButtonText: t(
@@ -78,17 +96,12 @@ const handleClose = (done: () => void) => {
 			cancelButtonText: t(
 				'module.attachment.drawer.fragment-upload.confirm.cancel'
 			),
+			confirmButtonClass: 'el-button--danger',
 			type: 'warning',
 		}
 	)
 		.then(() => {
-			// @ts-expect-error
-			const firstFile = filePondUploadRef.value.getFirstFile();
-			// @ts-expect-error
-			filePondUploadRef.value.handleClearFileList();
-			emit('fileUploadDrawerCloes', firstFile);
-			done();
-			handleVisibleChange(false);
+			closeDrawer(done);
 		})
 		.catch(() => {
 			ElMessage.warning(

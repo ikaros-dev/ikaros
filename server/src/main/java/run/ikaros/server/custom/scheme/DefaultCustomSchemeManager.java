@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import run.ikaros.api.custom.scheme.CustomScheme;
 import run.ikaros.api.custom.scheme.CustomSchemeManager;
@@ -29,7 +28,7 @@ public class DefaultCustomSchemeManager implements CustomSchemeManager {
     }
 
     @Override
-    public void register(@NonNull CustomScheme scheme) {
+    public void register(CustomScheme scheme) {
         if (!schemes.contains(scheme)) {
             schemes.add(scheme);
             getWatchers().forEach(watcher -> watcher.onChange(
@@ -38,7 +37,7 @@ public class DefaultCustomSchemeManager implements CustomSchemeManager {
     }
 
     @Override
-    public void unregister(@NonNull CustomScheme scheme) {
+    public void unregister(CustomScheme scheme) {
         if (schemes.contains(scheme)) {
             schemes.remove(scheme);
             getWatchers().forEach(watcher -> watcher.onChange(
@@ -47,12 +46,10 @@ public class DefaultCustomSchemeManager implements CustomSchemeManager {
     }
 
     @Override
-    @NonNull
     public List<CustomScheme> schemes() {
         return Collections.unmodifiableList(schemes);
     }
 
-    @NonNull
     private List<CustomSchemeWatcherManager.SchemeWatcher> getWatchers() {
         if (this.watcherManager == null) {
             return Collections.emptyList();

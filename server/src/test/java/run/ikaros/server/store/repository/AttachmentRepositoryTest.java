@@ -1,7 +1,9 @@
 package run.ikaros.server.store.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,5 +92,28 @@ class AttachmentRepositoryTest {
                 AttachmentType.File, fileName + "%"
             ).collectList().map(List::size))
             .expectNext(3).verifyComplete();
+    }
+
+    @Test
+    void findAllByParentIdAndDriverId() {
+        UUID parentId = UUID.randomUUID();
+        UUID driverId = UUID.randomUUID();
+        LocalDateTime modifiedTime = LocalDateTime.of(2026, 7, 30, 18, 0);
+        AttachmentEntity attachment = AttachmentEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .parentId(parentId)
+            .driverId(driverId)
+            .name("snapshot.mkv")
+            .type(AttachmentType.Driver_File)
+            .modifiedTime(modifiedTime)
+            .build();
+
+        StepVerifier.create(repository.insert(attachment)
+                .thenMany(repository.findAllByParentIdAndDriverId(parentId, driverId)))
+            .assertNext(storedAttachment -> {
+                Assertions.assertThat(storedAttachment.getId()).isEqualTo(attachment.getId());
+                Assertions.assertThat(storedAttachment.getModifiedTime()).isEqualTo(modifiedTime);
+            })
+            .verifyComplete();
     }
 }
