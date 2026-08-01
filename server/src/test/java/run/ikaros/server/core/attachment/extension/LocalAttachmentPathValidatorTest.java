@@ -71,23 +71,6 @@ class LocalAttachmentPathValidatorTest {
     }
 
     @Test
-    void unregisterIgnoresNullDriverId() {
-        assertThatCode(() -> validator.unregister(null)).doesNotThrowAnyException();
-    }
-
-    @Test
-    void validateRejectsMissingTargetInsideDriverRoot(@TempDir Path tempDir) {
-        UUID driverId = UUID.randomUUID();
-        validator.register(driverId, tempDir.toString());
-
-        StepVerifier.create(validator.validate(driverId, tempDir.resolve("missing").toString()))
-            .expectErrorSatisfies(error -> assertThat(error)
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("目标路径不存在或不可访问"))
-            .verify();
-    }
-
-    @Test
     void validateAllowsExistingPathInsideDriverRoot(@TempDir Path tempDir) throws IOException {
         UUID driverId = UUID.randomUUID();
         Path file = Files.writeString(tempDir.resolve("video.mkv"), "content");

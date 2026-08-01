@@ -1,5 +1,9 @@
 package run.ikaros.server.core.attachment.listener;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
+import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
+
+import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -8,7 +12,8 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
-import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
+import run.ikaros.server.core.attachment.extension.LocalAttachmentPathValidator;
+import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
 
@@ -18,18 +23,26 @@ import run.ikaros.server.store.repository.AttachmentDriverRepository;
 @Slf4j
 @Component
 public class AttachmentDriverEnableListener {
-    /** 附件驱动挂载服务. */
-    private final AttachmentDriverMountService mountService;
+    /** 附件服务. */
+    private final AttachmentService attachmentService;
+    /** 动态静态资源目录解析器. */
+    private final DynamicDirectoryResolver dynamicDirectoryResolver;
     /** 附件驱动仓库. */
     private final AttachmentDriverRepository driverRepository;
+    /** 本地驱动路径校验器. */
+    private final LocalAttachmentPathValidator pathValidator;
 
     /**
      * 创建附件驱动启用监听器.
      */
-    public AttachmentDriverEnableListener(AttachmentDriverMountService mountService,
-                                          AttachmentDriverRepository driverRepository) {
-        this.mountService = mountService;
+    public AttachmentDriverEnableListener(AttachmentService attachmentService,
+                                          DynamicDirectoryResolver dynamicDirectoryResolver,
+                                          AttachmentDriverRepository driverRepository,
+                                          LocalAttachmentPathValidator pathValidator) {
+        this.attachmentService = attachmentService;
+        this.dynamicDirectoryResolver = dynamicDirectoryResolver;
         this.driverRepository = driverRepository;
+        this.pathValidator = pathValidator;
     }
 
     /**
@@ -44,7 +57,42 @@ public class AttachmentDriverEnableListener {
         Assert.notNull(event, "Attachment driver event cannot be null");
         AttachmentDriverEntity driver = event.getEntity();
         Assert.notNull(driver, "Attachment driver cannot be null");
-        return mountService.mount(driver);
+        return mount(driver);
+    }
+
+    private Mono<Void> mount(AttachmentDriverEntity driver) {
+        String mountName = driver.getMountName();
+        if (!StringUtils.hasText(mountName)) {
+            mountName = driver.getName();
+        }
+        if (!StringUtils.hasText(mountName)) {
+            mountName = driver.getType().name();
+        }
+        final String finalMountName = mountName;
+
+        pathValidator.register(driver.getId(), driver.getRemotePath());
+        dynamicDirectoryResolver.addDirectoryMapping(finalMountName, driver.getRemotePath());
+
+        return attachmentService.findByTypeAndParentIdAndName(
+                AttachmentType.Driver_Directory, ROOT_DIRECTORY_ID, finalMountName)
+            .switchIfEmpty(Mono.just(Attachment.builder()
+                .parentId(ROOT_DIRECTORY_ID)
+                .type(AttachmentType.Driver_Directory)
+                .name(finalMountName)
+                .updateTime(LocalDateTime.now())
+                .url(DRIVER_STATIC_RESOURCE_PREFIX + "/" + finalMountName)
+                .driverId(driver.getId())
+                .fsPath(driver.getRemotePath())
+                .path("/" + finalMountName)
+                .deleted(Boolean.FALSE)
+                .build()))
+            .map(attachment -> attachment.setDeleted(Boolean.FALSE))
+            .flatMap(attachmentService::save)
+            .doOnError(exception -> {
+                dynamicDirectoryResolver.removeDirectoryMapping(finalMountName);
+                pathValidator.unregister(driver.getId());
+            })
+            .then();
     }
 
     /**
@@ -56,7 +104,7 @@ public class AttachmentDriverEnableListener {
     public Mono<Void> initialize() {
         return driverRepository
             .findAllByTypeAndEnable(AttachmentDriverType.LOCAL.name(), true)
-            .flatMap(mountService::mount)
+            .flatMap(this::mount)
             .then();
     }
 }

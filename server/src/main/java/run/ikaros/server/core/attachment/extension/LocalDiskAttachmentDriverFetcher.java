@@ -74,25 +74,22 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
                     .runOn(Schedulers.boundedElastic())
                     .map(file -> {
                         long size = 0;
-                        LocalDateTime modifiedTime = null;
-                        boolean regularFile = false;
+                        String sha1 = "";
                         try {
                             Path realFilePath = pathValidator.validateNow(
                                 driverId, file.getAbsolutePath());
-                            BasicFileAttributes attributes = Files.readAttributes(
-                                realFilePath, BasicFileAttributes.class);
-                            regularFile = attributes.isRegularFile();
-                            size = attributes.size();
-                            modifiedTime = LocalDateTime.ofInstant(
-                                    attributes.lastModifiedTime().toInstant(),
-                                    ZoneId.systemDefault())
-                                .truncatedTo(ChronoUnit.MICROS);
+                            size = Files.size(realFilePath);
+                            if (file.isFile()) {
+                                sha1 = FileUtils.calculateSha1(realFilePath.toString());
+                            }
                         } catch (IOException ioException) {
-                            log.warn("File metadata error: {}", ioException.getMessage());
+                            log.warn("File size error: {}", ioException.getMessage());
+                        } catch (NoSuchAlgorithmException exception) {
+                            log.warn("File sha1 error: {}", exception.getMessage());
                         }
                         return Attachment.builder()
                             .parentId(parentAttId)
-                            .type(regularFile
+                            .type(file.isFile()
                                 ? AttachmentType.Driver_File
                                 : AttachmentType.Driver_Directory)
                             .name(file.getName())
@@ -100,7 +97,7 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
                             .url(file.getPath())
                             .fsPath(file.getAbsolutePath())
                             .size(size)
-                            .modifiedTime(modifiedTime)
+                            .sha1(sha1)
                             .updateTime(LocalDateTime.now())
                             .deleted(false)
                             .driverId(driverId)
@@ -108,52 +105,6 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
                     })
                     .sequential();
             });
-    }
-
-    @Override
-    public Mono<Attachment> calculateSha1(Attachment attachment) {
-        Assert.notNull(attachment, "Attachment must not be null.");
-        Assert.notNull(attachment.getDriverId(), "Attachment driverId must not be null.");
-        Assert.hasText(attachment.getFsPath(), "Attachment fsPath must not be empty.");
-        if (attachment.getType() != AttachmentType.Driver_File) {
-            return Mono.just(attachment);
-        }
-        return Mono.fromCallable(() -> {
-                Path path = pathValidator.validateNow(
-                    attachment.getDriverId(), attachment.getFsPath());
-                BasicFileAttributes beforeAttributes = Files.readAttributes(
-                    path, BasicFileAttributes.class);
-                if (!matchesAttachmentState(attachment, beforeAttributes)) {
-                    throw new IllegalStateException("文件在扫描后发生变化: " + path);
-                }
-                try {
-                    String sha1 = FileUtils.calculateSha1(path.toString());
-                    BasicFileAttributes afterAttributes = Files.readAttributes(
-                        path, BasicFileAttributes.class);
-                    if (!sameFileState(beforeAttributes, afterAttributes)) {
-                        throw new IllegalStateException("文件在 SHA-1 计算期间发生变化: " + path);
-                    }
-                    return attachment.setSha1(sha1);
-                } catch (IOException | NoSuchAlgorithmException exception) {
-                    log.warn("File sha1 error: {}", exception.getMessage());
-                    throw new IllegalStateException("文件 SHA-1 计算失败: " + path, exception);
-                }
-            });
-    }
-
-    private boolean matchesAttachmentState(Attachment attachment,
-                                           BasicFileAttributes attributes) {
-        LocalDateTime modifiedTime = LocalDateTime.ofInstant(
-                attributes.lastModifiedTime().toInstant(), ZoneId.systemDefault())
-            .truncatedTo(ChronoUnit.MICROS);
-        return Objects.equals(attachment.getSize(), attributes.size())
-            && Objects.equals(attachment.getModifiedTime(), modifiedTime);
-    }
-
-    private boolean sameFileState(BasicFileAttributes beforeAttributes,
-                                  BasicFileAttributes afterAttributes) {
-        return beforeAttributes.size() == afterAttributes.size()
-            && beforeAttributes.lastModifiedTime().equals(afterAttributes.lastModifiedTime());
     }
 
     @Override

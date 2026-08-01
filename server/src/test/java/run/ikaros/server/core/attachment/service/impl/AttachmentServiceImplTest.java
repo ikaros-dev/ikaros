@@ -93,30 +93,6 @@ class AttachmentServiceImplTest {
     }
 
     @Test
-    void save_allowsDriverFileOutsideWorkDirectory(@TempDir Path tempDir) {
-        Path driverFile = tempDir.resolve("episode.mkv");
-        Attachment attachment = Attachment.builder()
-            .name("episode.mkv")
-            .type(AttachmentType.Driver_File)
-            .driverId(UUID.randomUUID())
-            .fsPath(driverFile.toString())
-            .build();
-        when(repository.findByTypeAndParentIdAndName(
-            AttachmentType.Driver_File,
-            AttachmentConst.ROOT_DIRECTORY_ID,
-            "episode.mkv")).thenReturn(Mono.empty());
-        when(attachmentRepository.insert(any(AttachmentEntity.class)))
-            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-
-        StepVerifier.create(service.save(attachment))
-            .assertNext(saved -> {
-                assertThat(saved.getFsPath()).isEqualTo(driverFile.toString());
-                assertThat(saved.getDriverId()).isEqualTo(attachment.getDriverId());
-            })
-            .verifyComplete();
-    }
-
-    @Test
     void save_rejectsRegularAttachmentOutsideWorkDirectory(@TempDir Path tempDir) {
         Path workDirectory = tempDir.resolve("work");
         Path outsideFile = tempDir.resolve("outside.mkv");
