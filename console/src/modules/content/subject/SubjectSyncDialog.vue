@@ -2,7 +2,10 @@
 import { usePluginModuleStore } from '@/stores/plugin';
 import { apiClient } from '@/utils/api-client';
 import { PluginModule } from '@runikaros/shared';
-import { Subject } from '@runikaros/api-client';
+import {
+	Subject,
+	SubjectSyncPlatformEnum,
+} from '@runikaros/api-client';
 import {
 	ElButton,
 	ElDialog,
@@ -61,14 +64,28 @@ const subjectId = computed({
 	},
 });
 
-const subjectSync = ref({
+interface SubjectSyncForm {
+	platform: SubjectSyncPlatformEnum | '';
+	platformId: string;
+	subjectId?: string;
+	action: string;
+}
+
+const subjectSync = ref<SubjectSyncForm>({
 	platform: '',
 	platformId: '',
 	subjectId: undefined,
 	action: props.isMerge ? 'MERGE' : 'PULL',
 });
 
-const subjectPlatformArr = ref<string[]>([]);
+const subjectPlatformArr = ref<SubjectSyncPlatformEnum[]>([]);
+const subjectPlatformSet = new Set<string>(
+	Object.values(SubjectSyncPlatformEnum)
+);
+const isSubjectSyncPlatform = (
+	platform: unknown
+): platform is SubjectSyncPlatformEnum =>
+	typeof platform === 'string' && subjectPlatformSet.has(platform);
 
 const { pluginModules } = usePluginModuleStore();
 
@@ -81,20 +98,22 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 		if (!formEl) return;
 		await formEl.validate(async (valid, fields) => {
 			if (valid) {
+				const platform = subjectSync.value.platform;
+				if (!platform) return;
 				syncButtonLoading.value = true;
 				console.log('subjectSync', subjectSync.value);
 				await apiClient.subjectSync
 					.syncSubjectAndPlatform({
-						platform: subjectSync.value.platform,
+						platform,
 						platformId: subjectSync.value.platformId,
-						subjectId: subjectId.value as string,
+						subjectId: subjectId.value,
 					})
 					.finally(() => {
 						syncButtonLoading.value = false;
 					});
 				const { data } =
 					await apiClient.subjectSync.getSubjectSyncsByPlatformAndPlatformId({
-						platform: subjectSync.value.platform,
+						platform,
 						platformId: subjectSync.value.platformId,
 					});
 				if (data.length > 0) {
@@ -145,17 +164,19 @@ const subjectSyncFormRules = reactive<FormRules>({
 	],
 });
 
-onMounted(() => {
-	pluginModules.forEach((pluginModule: PluginModule) => {
+onMounted(async () => {
+	for (const pluginModule of pluginModules as PluginModule[]) {
 		const { extensionPoints } = pluginModule;
-		if (!extensionPoints?.['subject:sync:platform']) {
-			return;
+		const getSubjectPlatform = extensionPoints?.['subject:sync:platform'];
+		if (!getSubjectPlatform) continue;
+		const subjectPlatform = await getSubjectPlatform();
+		if (
+			isSubjectSyncPlatform(subjectPlatform) &&
+			!subjectPlatformArr.value.includes(subjectPlatform)
+		) {
+			subjectPlatformArr.value.push(subjectPlatform);
 		}
-		const subjectPlatform = extensionPoints[
-			'subject:sync:platform'
-		] as unknown as string;
-		subjectPlatformArr.value.push(subjectPlatform);
-	});
+	}
 	if (subjectPlatformArr.value.length == 1) {
 		subjectSync.value.platform = subjectPlatformArr.value[0];
 	}
