@@ -1,6 +1,7 @@
 package run.ikaros.api.core.binding;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,11 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class MediaTrack {
+    /** 外置轨道对应的附件标识，内嵌轨道为空。 */
+    @JsonProperty("attachment_id")
+    private UUID attachmentId;
+    /** 外置轨道的受控播放地址，内嵌轨道为空。 */
+    private String url;
     /** 轨道在媒体容器中的序号。 */
     private Integer index;
     /** 轨道类别。 */

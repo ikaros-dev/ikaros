@@ -35,6 +35,12 @@ public interface EpisodeService {
      */
     Mono<Long> countMatchingBySubjectId(UUID subjectId);
 
+    /**
+     * 查询剧集的媒体资源，并投影本地扫描产生的内嵌和外置轨道信息。
+     *
+     * @param episodeId 剧集标识
+     * @return 按自然数字顺序排列的剧集媒体资源
+     */
     Flux<EpisodeResource> findResourcesById(UUID episodeId);
 
     /**
