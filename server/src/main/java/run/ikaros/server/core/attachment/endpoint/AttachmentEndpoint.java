@@ -17,6 +17,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -237,6 +238,23 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("Attachment id.")
                         .implementation(String.class))
                     .response(responseBuilder().implementation(String.class)))
+
+            .GET("/attachment/svg-preview/id/{id}", this::getSvgPreviewById,
+                builder -> builder.operationId("GetSvgPreviewById")
+                    .tag(tag)
+                    .description("在隔离策略下预览指定的 SVG 附件，仅允许读取 SVG 文件。")
+                    .parameter(parameterBuilder()
+                        .in(ParameterIn.PATH)
+                        .name("id")
+                        .description("待预览 SVG 附件的标识。")
+                        .required(true)
+                        .implementation(UUID.class))
+                    .response(responseBuilder().responseCode("200")
+                        .description("附件存在且为 SVG，返回带固定安全响应头的文件流。")
+                        .implementation(String.class))
+                    .response(responseBuilder().responseCode("404")
+                        .description("附件不存在或附件不是 SVG 文件。")
+                        .implementation(String.class)))
 
             .build();
     }
@@ -484,6 +502,26 @@ public class AttachmentEndpoint implements CoreEndpoint {
                 doGetFullContentRsp(id, att.getSize(), att.getName()));
             // return handleFullContent(filePath, fileSize);
         }).flatMap(response -> response);
+    }
+
+    private Mono<ServerResponse> getSvgPreviewById(ServerRequest request) {
+        UUID id = UUID.fromString(request.pathVariable("id"));
+        return attachmentService.findById(id)
+            .filter(this::isSvg)
+            .flatMap(attachment -> attachmentService.getStreamByIdWithoutRange(id))
+            .flatMap(body -> ServerResponse.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "image/svg+xml")
+                .header("Content-Security-Policy",
+                    "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:")
+                .header("X-Content-Type-Options", "nosniff")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .body(body, DataBuffer.class))
+            .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    private boolean isSvg(Attachment attachment) {
+        String name = attachment.getName();
+        return name != null && name.toLowerCase(Locale.ROOT).endsWith(".svg");
     }
 
     private Mono<ServerResponse> doGetPartialContentRsp(
