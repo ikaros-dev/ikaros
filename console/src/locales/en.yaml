@@ -395,6 +395,10 @@ module:
     details:
       title: File details
       descTitle: File Details
+      preview:
+        svgLoading: Loading SVG preview
+        svgFailed: Failed to load SVG preview
+        svgTitle: SVG attachment preview
       descItemLabel:
         name: Name (Double-click the value to rename it)
         type: Type
@@ -801,6 +805,36 @@ module:
       episode:
         details:
           title: Episode Details
+          media:
+            track:
+              audio: Audio
+              subtitle: Subtitle
+              unknown: Unnamed track
+              index: Track {index}
+              default: Default
+              external: External
+              embedded: Embedded
+              unknownLanguage: Unknown language
+              embeddedUnavailable: Embedded tracks cannot be switched separately
+              browserUnsupported: This codec is not supported by the browser
+              playable: Playable
+              unavailable: Unavailable
+              switch: Switch
+              selected: Selected
+            subtitle:
+              enable: Subtitles
+              show: Show
+              hide: Hide
+              select: Select
+            image:
+              empty: The image sequence is empty
+              loading: Restoring reading progress
+              loadFailed: Failed to load the current image
+              retry: Reload
+              page: Page {page}
+              progress: Page {page} of {total}
+              saving: Saving
+              saveFailed: Failed to save progress
           message:
             operate:
               remove-episode-all-att-refs:

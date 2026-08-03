@@ -382,6 +382,10 @@ module:
     details:
       title: 附件详情
       descTitle: 附件详情
+      preview:
+        svgLoading: 正在加载 SVG 预览
+        svgFailed: SVG 预览加载失败
+        svgTitle: SVG 附件预览
       descItemLabel:
         name: 名称（双击值进行重命名）
         type: 类型
@@ -852,6 +856,36 @@ module:
       episode:
         details:
           title: 剧集详情
+          media:
+            track:
+              audio: 音频
+              subtitle: 字幕
+              unknown: 未命名轨道
+              index: 轨道 {index}
+              default: 默认
+              external: 外置
+              embedded: 内嵌
+              unknownLanguage: 未知语言
+              embeddedUnavailable: 内嵌轨道不可单独切换
+              browserUnsupported: 浏览器不支持此编码
+              playable: 可播放
+              unavailable: 不可播放
+              switch: 切换
+              selected: 已选择
+            subtitle:
+              enable: 字幕
+              show: 显示
+              hide: 隐藏
+              select: 选择
+            image:
+              empty: 图片序列为空
+              loading: 正在恢复阅读进度
+              loadFailed: 当前图片加载失败
+              retry: 重新加载
+              page: 第 {page} 页
+              progress: 第 {page} / {total} 页
+              saving: 正在保存
+              saveFailed: 进度保存失败
           message:
             operate:
               remove-episode-all-att-refs:
