@@ -285,6 +285,77 @@ module:
         placeholder: 搜索关键词，覆盖目录名（可选）
       success: 目录绑定请求已提交，请查看任务状态
       error: 目录绑定请求失败
+      local:
+        option: 本地扫描
+        title: 本地目录扫描与确认
+        workflowId: 工作流 ID
+        taskId: 任务 ID
+        file: 文件
+        metadata: 扫描元数据
+        trackStatus: 轨道探测
+        probeSuccess: 已发现 {count} 条轨道
+        unknownFile: 未知文件
+        cancel: 取消
+        confirm: 确认并创建任务
+        success: '本地绑定任务已创建，工作流 ID：{workflowId}，任务 ID：{taskId}'
+        error:
+          unknown: 本地扫描请求失败
+        mode:
+          label: 扫描模式
+          EPISODE: 剧集视频
+          AUDIO: 音频
+          IMAGE: 图片序列
+        preview:
+          title: 扫描预览
+          action: 开始扫描
+          empty: 当前目录没有可扫描的媒体文件
+          noPrimary: 扫描结果中没有可确认的主资源
+          noItems: 暂无文件
+        role:
+          PRIMARY: 主资源
+          AUTO_ASSOCIATED: 自动关联
+          PENDING_CONFIRMATION: 待确认
+          UNASSOCIATED: 未关联
+          UNKNOWN: 未知文件
+        physicalType:
+          label: 媒体类型
+          VIDEO: 视频
+          AUDIO: 音频
+          SUBTITLE: 字幕
+          LYRICS: 歌词
+          IMAGE: 图片
+          UNKNOWN: 未知
+        assignment:
+          label: 关联到主资源
+          placeholder: 请选择关联结果
+          unassociated: 保持未关联
+          invalid: 文件缺少附件 ID，无法确认
+        subject:
+          title: 目标条目
+          existing: 选择已有条目
+          new: 创建新条目
+          select: 已有条目
+          searchPlaceholder: 输入条目名称搜索
+          name: 条目名称
+          nameCn: 条目中文名
+          type: 条目类型
+          nsfw: 标记为 NSFW
+          typeValue:
+            ANIME: 动画
+            COMIC: 漫画
+            GAME: 游戏
+            MUSIC: 音乐
+            NOVEL: 小说
+            REAL: 真人
+            OTHER: 其他
+        rescan:
+          entry: 重扫本地目录
+          title: 已有本地工作流
+          action: 提交重扫任务
+          submitted: '重扫任务已创建，任务 ID：{taskId}'
+          missing: 消失或重命名的文件
+          probeFailures: 轨道探测失败
+          unreadable: 重扫已完成，但无法读取扫描结果明细
     popconfirm:
       title: 您确定批量删除附件吗？
       btn: 批量删除

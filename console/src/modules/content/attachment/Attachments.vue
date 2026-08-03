@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, h, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Attachment, AttachmentTypeEnum } from '@runikaros/api-client';
+import {
+	Attachment,
+	AttachmentTypeEnum,
+	DirectoryBindingWorkflowEntity,
+} from '@runikaros/api-client';
 import { isImage, isVideo, isVoice } from '@/utils/file';
 import moment from 'moment';
 import { apiClient } from '@/utils/api-client';
@@ -10,6 +14,7 @@ import { PluginModule } from '@runikaros/shared';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import AttachmentDeatilDrawer from './AttachmentDeatilDrawer.vue';
 import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
+import LocalDirectoryBindingDialog from './LocalDirectoryBindingDialog.vue';
 import DialogMessage from '@/components/dialog/DialogMessage.vue';
 import { useRoute } from 'vue-router';
 
@@ -665,12 +670,29 @@ const toAttachmentDrivers = () => {
 };
 
 const bindDialogVisible = ref(false);
+const localBindingDialogVisible = ref(false);
+const localBindingWorkflow = ref<DirectoryBindingWorkflowEntity>();
 const bindPlatform = ref('');
 const bindPlatformId = ref('');
 const bindSearchKeyword = ref('');
 const bindPlatformArr = ref<string[]>([]);
 
 const { pluginModules } = usePluginModuleStore();
+const bindPlatformOptions = computed(() => [
+	{
+		value: 'local',
+		label: t('module.attachment.bind.local.option'),
+	},
+	...bindPlatformArr.value.map((platform) => ({
+		value: platform,
+		label: platform,
+	})),
+]);
+const currentLocalBindingWorkflow = computed(() =>
+	localBindingWorkflow.value?.directoryId === attachmentCondition.value.parentId
+		? localBindingWorkflow.value
+		: undefined
+);
 
 onMounted(() => {
 	pluginModules.forEach((pluginModule: PluginModule) => {
@@ -689,16 +711,28 @@ onMounted(() => {
 
 const onBindDirectoryClick = async () => {
 	if (bindPlatformArr.value.length === 0) {
-		await ElMessageBox.alert(
-			h(DialogMessage, {
-				message: t('module.subject.dialog.sync.text.platform-no-available-hint-msg'),
-			}),
-			t('module.attachment.bind.confirm.title'),
-			{
-				confirmButtonText: t('common.button.confirm'),
-				type: 'info',
-			}
-		);
+		bindPlatform.value = 'local';
+	} else if (bindPlatformArr.value.length == 1) {
+		bindPlatform.value = bindPlatformArr.value[0];
+	} else {
+		bindPlatform.value = '';
+	}
+	bindPlatformId.value = '';
+	bindSearchKeyword.value = '';
+	bindDialogVisible.value = true;
+};
+
+const onBindPlatformChange = (platform: string) => {
+	if (platform === 'local') {
+		bindDialogVisible.value = false;
+		localBindingDialogVisible.value = true;
+	}
+};
+
+const onBindDirectoryConfirm = async () => {
+	if (bindPlatform.value === 'local') {
+		bindDialogVisible.value = false;
+		localBindingDialogVisible.value = true;
 		return;
 	}
 
@@ -714,34 +748,46 @@ const onBindDirectoryClick = async () => {
 				type: 'info',
 			}
 		);
-	} catch {
-		return;
-	}
-
-	if (bindPlatformArr.value.length == 1) {
-		bindPlatform.value = bindPlatformArr.value[0];
-	} else {
-		bindPlatform.value = '';
-	}
-	bindPlatformId.value = '';
-	bindSearchKeyword.value = '';
-	bindDialogVisible.value = true;
-};
-
-const onBindDirectoryConfirm = async () => {
-	try {
 		await apiClient.binding.bindDirectory({
 			directoryId: attachmentCondition.value.parentId,
-			platform: bindPlatform.value,
+			platform: bindPlatform.value as
+				| 'BGM_TV'
+				| 'TMDB'
+				| 'AniDB'
+				| 'TVDB'
+				| 'VNDB'
+				| 'DOU_BAN'
+				| 'OTHER',
 			platformId: bindPlatformId.value || undefined,
 			keyword: bindSearchKeyword.value || undefined,
 		});
 		ElMessage.success(t('module.attachment.bind.success'));
 		bindDialogVisible.value = false;
 	} catch (e) {
+		if (e === 'cancel' || e === 'close') {
+			return;
+		}
 		console.error('bind directory error', e);
 		ElMessage.error(t('module.attachment.bind.error'));
 	}
+};
+
+const onLocalBindingConfirmed = (workflow: DirectoryBindingWorkflowEntity) => {
+	localBindingWorkflow.value = workflow;
+	ElMessage.success(
+		t('module.attachment.bind.local.success', {
+			workflowId: workflow.id || '-',
+			taskId: workflow.taskId || '-',
+		})
+	);
+};
+
+const onLocalBindingRescanned = (workflow: DirectoryBindingWorkflowEntity) => {
+	localBindingWorkflow.value = workflow;
+};
+
+const onLocalRescanClick = () => {
+	localBindingDialogVisible.value = true;
 };
 
 watch(
@@ -823,6 +869,14 @@ const onAttachmentDetailDrawerClose = () => {
 		@close-with-target-dir-id="onDirSelected"
 	/>
 
+	<LocalDirectoryBindingDialog
+		v-model:visible="localBindingDialogVisible"
+		:directory-id="attachmentCondition.parentId as string"
+		:workflow="currentLocalBindingWorkflow"
+		@confirmed="onLocalBindingConfirmed"
+		@rescanned="onLocalBindingRescanned"
+	/>
+
 	<el-dialog
 		v-model="bindDialogVisible"
 		:title="t('module.attachment.bind.confirm.title')"
@@ -832,16 +886,17 @@ const onAttachmentDetailDrawerClose = () => {
 			<el-form-item
 				:label="t('module.attachment.bind.platform.title')"
 			>
-				<el-select v-model="bindPlatform">
+				<el-select v-model="bindPlatform" @change="onBindPlatformChange">
 					<el-option
-						v-for="platform in bindPlatformArr"
-						:key="platform"
-						:label="platform"
-						:value="platform"
+						v-for="platform in bindPlatformOptions"
+						:key="platform.value"
+						:label="platform.label"
+						:value="platform.value"
 					/>
 				</el-select>
 			</el-form-item>
 			<el-form-item
+				v-if="bindPlatform !== 'local'"
 				:label="t('module.attachment.bind.platformId.label')"
 			>
 				<el-input
@@ -850,6 +905,7 @@ const onAttachmentDetailDrawerClose = () => {
 				/>
 			</el-form-item>
 			<el-form-item
+				v-if="bindPlatform !== 'local'"
 				:label="t('module.attachment.bind.keyword.label')"
 			>
 				<el-input
@@ -865,6 +921,7 @@ const onAttachmentDetailDrawerClose = () => {
 				</el-button>
 				<el-button
 					type="primary"
+					:disabled="!bindPlatform"
 					@click="onBindDirectoryConfirm"
 				>
 					{{ t('module.attachment.bind.confirm.btn.confirm') }}
@@ -903,6 +960,13 @@ const onAttachmentDetailDrawerClose = () => {
 			</el-button>
 			<el-button :icon="Link" @click="onBindDirectoryClick">
 				{{ t('module.attachment.btn.bind') }}
+			</el-button>
+			<el-button
+				v-if="currentLocalBindingWorkflow"
+				:icon="Refresh"
+				@click="onLocalRescanClick"
+			>
+				{{ t('module.attachment.bind.local.rescan.entry') }}
 			</el-button>
 			<el-button
 				v-if="selectionAttachments && selectionAttachments.length > 0"
