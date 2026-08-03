@@ -151,7 +151,7 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/variables.module.scss';
+@use '@/styles/variables.module.scss' as variables;
 .ik-blc-main {
 	// background-color: rgb(245, 245, 245);
 	background-color: rgba(212, 226, 248, 0.244);
@@ -167,7 +167,7 @@ onUnmounted(() => {
 	height: 100%;
 }
 .container {
-	width: calc(100% - $sideBarWidth);
+	width: calc(100% - variables.$sideBarWidth);
 	height: 100%;
 
 	position: fixed;
@@ -176,7 +176,7 @@ onUnmounted(() => {
 	z-index: 9;
 	transition: all 0.28s;
 	&.hidderContainer {
-		width: calc(100% - $hideSideBarWidth);
+		width: calc(100% - variables.$hideSideBarWidth);
 	}
 }
 </style>
