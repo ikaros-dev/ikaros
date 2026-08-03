@@ -102,8 +102,10 @@ const fetchSubjectById = async () => {
 };
 
 const fetchEpisodeRecords = async () => {
+	const subjectId = subject.value.id;
+	if (!subjectId) return;
 	const { data } = await apiClient.episode.getRecordsBySubjectId({
-		id: subject.value.id,
+		id: subjectId,
 	});
 	episodeRecords.value = data;
 	if (!episodeRecords.value || episodeRecords.value.length === 0) {
@@ -285,7 +287,7 @@ const openFileRemoteActionDialog = (fileId, fileCanRead) => {
 
 const subjectRemoteActionDialogVisible = ref(false);
 const subjectRemoteIsPush = ref(true);
-const subjectRemoteFileId = ref(subject.value.id);
+const subjectRemoteFileId = ref(subject.value.id ?? '');
 const onSubjectRemoteActionDialogClose = () => {
 	subjectRemoteActionDialogVisible.value = false;
 	router.push('/tasks');
@@ -410,8 +412,9 @@ const udpateEpisodeCollectionProgress = async (
 };
 
 const fetchDatas = async () => {
-	//@ts-ignore
-	subject.value.id = route.params.id;
+	const subjectId = route.params.id;
+	if (typeof subjectId !== 'string') return;
+	subject.value.id = subjectId;
 	await fetchSubjectById();
 	await fetchTags();
 	await initEpisodeHasMultiResource();
@@ -662,8 +665,10 @@ const loadEpisodeGroupLabels = () => {
 
 const subjectSyncs = ref<SubjectSync[]>([]);
 const fetchSubjectSyncs = async () => {
+	const subjectId = subject.value.id;
+	if (!subjectId) return;
 	const { data } = await apiClient.subjectSync.getSubjectSyncsBySubjectId({
-		id: subject.value.id,
+		id: subjectId,
 	});
 	subjectSyncs.value = data;
 };
@@ -718,6 +723,7 @@ onMounted(fetchDatas);
 	/>
 
 	<SubjectCollectDialog
+		v-if="subject.id"
 		v-model:visible="subjectCollectDialogVisible"
 		v-model:subjectId="subject.id"
 		@close="fetchSubjectCollection"

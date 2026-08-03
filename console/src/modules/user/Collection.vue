@@ -118,7 +118,7 @@ onMounted(fetchCollections);
 
 	<el-row :gutter="10" justify="start" align="middle">
 		<el-col
-			v-for="subjectCollection in subjectCollections"
+			v-for="subjectCollection in subjectCollections.filter((item) => item.subject_id)"
 			:key="subjectCollection.id"
 			:xs="24"
 			:sm="12"
@@ -127,10 +127,10 @@ onMounted(fetchCollections);
 			:xl="4"
 		>
 			<subject-card-link
-				:id="subjectCollection.subject_id"
-				:name="subjectCollection?.name"
+				:id="subjectCollection.subject_id!"
+				:name="subjectCollection?.name ?? ''"
 				:name-cn="subjectCollection?.name_cn"
-				:cover="subjectCollection?.cover"
+				:cover="subjectCollection?.cover ?? ''"
 				:percentage="0"
 			/>
 		</el-col>

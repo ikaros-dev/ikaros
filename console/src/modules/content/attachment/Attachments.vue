@@ -238,14 +238,19 @@ async function updateBreadcrumbByParentPath(
 	) {
 		return;
 	}
-	paths.value = data.map((att) => {
-		const path: Path = {
-			name: att.name as string,
-			id: att.id,
-			parentId: att.parentId,
-		};
-		return path;
-	});
+	paths.value = data
+		.filter(
+			(att): att is Attachment & { id: string; parentId: string } =>
+				Boolean(att.id && att.parentId)
+		)
+		.map((att) => {
+			const path: Path = {
+				name: att.name as string,
+				id: att.id,
+				parentId: att.parentId,
+			};
+			return path;
+		});
 }
 
 const onCurrentPageChange = async (val: number) => {
@@ -265,15 +270,15 @@ const onFileUploadDrawerClose = async () => {
 
 interface Path {
 	name: string;
-	parentId: number;
-	id: number;
+	parentId: string;
+	id: string;
 }
 
 const paths = ref<Path[]>([
 	{
 		name: '/',
-		parentId: 0,
-		id: 0,
+		parentId: attachmentRootId,
+		id: attachmentRootId,
 	},
 ]);
 
@@ -348,9 +353,11 @@ const onSelectionChange = (selections) => {
 };
 
 const deleteAttachment = async (attachment: Attachment) => {
+	const attachmentId = attachment.id;
+	if (!attachmentId) return;
 	await apiClient.attachment
 		.deleteAttachment({
-			id: attachment?.id,
+			id: attachmentId,
 		})
 		.then(() => {
 			ElMessage.success(

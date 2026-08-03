@@ -392,8 +392,9 @@ const getArtplayerInstance = (art: any) => {
 		</template>
 
 		<AttachmentRelationsDialog
+			v-if="file.id"
 			v-model:visible="attachmentRelationsDialogVisible"
-			:attachmentId="file.id"
+			:attachment-id="file.id"
 			@close="onAttachmentRelationsDialogClose"
 		/>
 	</el-drawer>

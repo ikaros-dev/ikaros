@@ -41,7 +41,7 @@ const subitUserFrom = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid, fields) => {
 		if (valid) {
-			if (user.value.id && user.value.id >= 0) {
+			if (user.value.id) {
 				await apiClient.user.updateUser({
 					updateUserRequest: {
 						username: user.value.username as string,
@@ -121,6 +121,9 @@ const doDeleteUser = async (userId) => {
 	}
 	await fetchUsers();
 };
+
+const isCurrentUser = (userEntity: UserEntity) =>
+	userEntity.id === userStore.currentUser?.entity?.id;
 
 const userRoleDialogVisible = ref(false);
 const userRoleId = ref(); // user role id
@@ -206,7 +209,7 @@ onMounted(() => {
 		<el-dialog
 			v-model="userDetailsDialogVisible"
 			width="500"
-			:title="user.id && user.id >= 0 ? t('module.users.dialog.edit') : t('module.users.dialog.create')"
+			:title="user.id ? t('module.users.dialog.edit') : t('module.users.dialog.create')"
 			@closed="user = {}"
 		>
 			<el-form
@@ -215,7 +218,7 @@ onMounted(() => {
 				:rules="userFormRules"
 				label-width="auto"
 			>
-				<el-form-item v-if="user.id && user.id >= 0" :label="t('common.label.id')">
+				<el-form-item v-if="user.id" :label="t('common.label.id')">
 					<el-input v-model="user.id" disabled />
 				</el-form-item>
 				<el-form-item :label="t('common.label.username')">
@@ -224,10 +227,10 @@ onMounted(() => {
 				<el-form-item v-if="!user.id" :label="t('common.label.password')">
 					<el-input v-model="(user as any).password" show-password />
 				</el-form-item>
-				<el-form-item v-if="user.id && user.id >= 0" :label="t('common.label.nickname')">
+				<el-form-item v-if="user.id" :label="t('common.label.nickname')">
 					<el-input v-model="user.nickname" />
 				</el-form-item>
-				<el-form-item v-if="user.id && user.id >= 0" :label="t('common.label.introduce')">
+				<el-form-item v-if="user.id" :label="t('common.label.introduce')">
 					<el-input v-model="user.introduce" type="textarea" :rows="2" />
 				</el-form-item>
 			</el-form>
@@ -306,7 +309,7 @@ onMounted(() => {
 						<template #default="scope">
 							<el-switch
 								v-model="scope.row.entity.enable"
-								:disabled="scope.row.entity.id === 1"
+								:disabled="isCurrentUser(scope.row.entity)"
 								@change="changeUserEnableStatus(scope.row.entity)"
 							/>
 						</template>
@@ -330,7 +333,7 @@ onMounted(() => {
 								<template #reference>
 									<el-button
 										type="danger"
-										:disabled="scope.row.entity.id === 1"
+										:disabled="isCurrentUser(scope.row.entity)"
 									>
 									{{ t('common.button.delete') }}
 									</el-button>
@@ -338,7 +341,7 @@ onMounted(() => {
 							</el-popconfirm>
 							<el-button
 								type="primary"
-								:disabled="scope.row.entity.id === 1"
+								:disabled="isCurrentUser(scope.row.entity)"
 								@click="openRoleDialog(scope.row.entity)"
 							>
 								{{ t('common.label.role') }}

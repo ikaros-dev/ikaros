@@ -48,8 +48,9 @@ const subjectStore = useSubjectStore();
 const { t } = useI18n();
 
 watch(route, () => {
-	//@ts-ignore
-	subject.value.id = route.params.id;
+	const subjectId = route.params.id;
+	if (typeof subjectId !== 'string') return;
+	subject.value.id = subjectId;
 	fetchSubjectById();
 });
 
@@ -140,7 +141,9 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 				await apiClient.episode.putEpisode({ episode: episode });
 			}
 			for (const remEp of removeEpisodes.value) {
-				await apiClient.episode.deleteById({ id: remEp.id });
+				if (remEp.id) {
+					await apiClient.episode.deleteById({ id: remEp.id });
+				}
 			}
 			removeEpisodes.value = [];
 			submitBtnLoading.value = false;
@@ -149,7 +152,9 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 					name: subject.value.name,
 				})
 			);
-			subjectStore.clearSubjectCacheById(subject.value.id);
+			if (subject.value.id) {
+				subjectStore.clearSubjectCacheById(subject.value.id);
+			}
 			router.push(
 				'/subjects?name=' +
 					base64Encode(encodeURI(subject.value.name)) +
@@ -239,8 +244,9 @@ const oepnCropperjsDialog = () => {
 };
 
 onMounted(() => {
-	//@ts-ignore
-	subject.value.id = route.params.id;
+	const subjectId = route.params.id;
+	if (typeof subjectId !== 'string') return;
+	subject.value.id = subjectId;
 	fetchSubjectById();
 	initEpisodeHasMultiResource();
 });

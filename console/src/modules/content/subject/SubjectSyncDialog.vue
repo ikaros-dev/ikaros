@@ -98,8 +98,10 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 						platformId: subjectSync.value.platformId,
 					});
 				if (data.length > 0) {
+					const subjectId = data[0].subjectId;
+					if (!subjectId) return;
 					const rsp = await apiClient.subject.searchSubjectById({
-						id: data[0].subjectId,
+						id: subjectId,
 					});
 					emit('closeWithSubjectName', rsp.data);
 				}

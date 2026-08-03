@@ -28,15 +28,16 @@ const fetchRoles = async () => {
 };
 
 const editRow = ref(false);
-const editRowId = ref(-1);
+const editRowId = ref<string>();
 const editBtn = ref({
 	type: 'primary' as 'primary' | 'success',
 	text: t('common.button.edit'),
 	loading: false,
 });
 
-const changeEditBtnStatus = async (id) => {
-	if (editRowId.value === -1) {
+const changeEditBtnStatus = async (id: string | undefined) => {
+	if (!id) return;
+	if (!editRowId.value) {
 		editRowId.value = id;
 		editRow.value = true;
 		editBtn.value.type = 'success' as const;
@@ -50,7 +51,7 @@ const changeEditBtnStatus = async (id) => {
 			})
 			.then(() => {
 				ElMessage.success(t('module.roles.message.update_success', { id: editRowId.value }));
-				editRowId.value = -1;
+				editRowId.value = undefined;
 				editBtn.value.type = 'primary';
 				editBtn.value.text = t('common.button.edit');
 			})
@@ -164,14 +165,14 @@ onMounted(() => {
 								@confirm="deleteRole(scope.row.id)"
 							>
 								<template #reference>
-									<el-button type="danger" :disabled="scope.row.id === 1"
+									<el-button type="danger" :disabled="scope.row.name === 'MASTER'"
 									>{{ t('common.button.delete') }}
 									</el-button>
 								</template>
 							</el-popconfirm>
 							<el-button
 								type="primary"
-								:disabled="scope.row.id === 1"
+								:disabled="scope.row.name === 'MASTER'"
 								@click="toRoleAuthiritiesPage(scope.row.id)"
 							>
 								{{ t('common.label.authorities') }}
