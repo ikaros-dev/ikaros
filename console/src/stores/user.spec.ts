@@ -1,4 +1,6 @@
+import { createApp, nextTick } from 'vue';
 import { createPinia, setActivePinia } from 'pinia';
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const apiMocks = vi.hoisted(() => ({
@@ -26,7 +28,45 @@ import { useUserStore } from './user';
 
 describe('用户状态管理', () => {
 	beforeEach(() => {
-		setActivePinia(createPinia());
+		localStorage.clear();
+		const app = createApp({});
+		const pinia = createPinia().use(piniaPluginPersistedstate);
+		app.use(pinia);
+		setActivePinia(pinia);
+	});
+
+	it('从原有本地存储 key 恢复用户状态', () => {
+		localStorage.setItem(
+			'ikaros-store-user',
+			JSON.stringify({
+				isAnonymous: false,
+				jwtToken: 'persisted-token',
+				refreshToken: 'persisted-refresh-token',
+			})
+		);
+
+		const store = useUserStore();
+
+		expect(store.isAnonymous).toBe(false);
+		expect(store.jwtToken).toBe('persisted-token');
+		expect(store.refreshToken).toBe('persisted-refresh-token');
+	});
+
+	it('将用户状态写入原有本地存储 key', async () => {
+		const store = useUserStore();
+
+		store.isAnonymous = false;
+		store.jwtToken = 'jwt-token';
+		store.refreshToken = 'refresh-token';
+		await nextTick();
+
+		expect(
+			JSON.parse(localStorage.getItem('ikaros-store-user') ?? '{}')
+		).toMatchObject({
+			isAnonymous: false,
+			jwtToken: 'jwt-token',
+			refreshToken: 'refresh-token',
+		});
 	});
 
 	it('获取当前用户及角色并恢复登录状态', async () => {

@@ -158,12 +158,7 @@ export const useUserStore = defineStore('user', () => {
 	};
 }, {
 	persist: {
-		enabled: true,
-		strategies: [
-			{
-				key: 'ikaros-store-user',
-				storage: localStorage,
-			},
-		],
+		key: 'ikaros-store-user',
+		storage: localStorage,
 	},
 });
