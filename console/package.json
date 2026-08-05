@@ -52,7 +52,6 @@
     "filepond-plugin-image-preview": "^4.6.12",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
-    "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.2",
     "lodash.sortby": "^4.7.0",
     "moment": "^2.30.1",
@@ -71,7 +70,6 @@
     "@types/eslint": "^9.6.1",
     "@types/lodash.clonedeep": "4.5.9",
     "@types/lodash.debounce": "^4.0.9",
-    "@types/lodash.isequal": "^4.5.8",
     "@types/lodash.merge": "^4.6.9",
     "@types/node": "^25.9.0",
     "@types/qrcode": "^1.5.6",
@@ -104,7 +102,6 @@
     "vite": "^6.4.3",
     "vite-plugin-compression2": "^2.5.3",
     "vite-plugin-eslint": "^1.8.1",
-    "vite-plugin-externals": "^0.6.2",
     "vite-plugin-html": "^3.2.2",
     "vitest": "^3.2.6",
     "vue-tsc": "^3.3.0"
