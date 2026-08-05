@@ -1366,6 +1366,9 @@ module:
     cover: Cover
     add_song: Add Song
     edit_song: Edit Song
+    play: Play
+    no_playable_resource: This song has no playable audio resource
+    play_failed: Failed to load the song resource
     back: Back
     album:
       detail:

@@ -30,6 +30,7 @@ import run.ikaros.api.core.binding.MediaTrack;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.core.attachment.service.AttachmentReferenceService;
 import run.ikaros.server.core.episode.EpisodeService;
 import run.ikaros.server.core.subject.service.SubjectService;
@@ -228,6 +229,34 @@ class DefaultLocalDirectoryBindingServiceTest {
                 .primaryAttachmentId(UUID.randomUUID()).build())).build()).block())
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("主资源不存在");
+        verify(taskService, never()).submit(any());
+    }
+
+    @Test
+    void confirmAudioShouldRequireMusicSubject() {
+        UUID directoryId = UUID.randomUUID();
+        UUID audioId = UUID.randomUUID();
+        LocalScanPreview preview = LocalScanPreview.builder().directoryId(directoryId)
+            .mode(LocalMediaMode.AUDIO)
+            .items(List.of(LocalScanItem.builder().attachmentId(audioId)
+                .relativePath("Track 1.flac").physicalType(MediaPhysicalType.AUDIO)
+                .role(MediaRole.PRIMARY).build()))
+            .build();
+        when(localMediaScanner.scan(any())).thenReturn(Mono.just(preview));
+
+        Subject anime = new Subject().setType(SubjectType.ANIME);
+        assertThatThrownBy(() -> service.confirm(LocalScanConfirmRequest.builder()
+            .directoryId(directoryId).mode(LocalMediaMode.AUDIO).subject(anime).build()).block())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("只能创建音乐条目");
+
+        UUID subjectId = UUID.randomUUID();
+        when(subjectService.findById(subjectId)).thenReturn(Mono.just(anime.setId(subjectId)));
+        assertThatThrownBy(() -> service.confirm(LocalScanConfirmRequest.builder()
+            .directoryId(directoryId).mode(LocalMediaMode.AUDIO).subjectId(subjectId).build()).block())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("只能绑定音乐条目");
+        verify(subjectService, never()).create(any());
         verify(taskService, never()).submit(any());
     }
 

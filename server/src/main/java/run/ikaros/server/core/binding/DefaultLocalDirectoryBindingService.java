@@ -28,6 +28,7 @@ import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
+import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.api.store.enums.TaskStatus;
 import run.ikaros.server.core.attachment.service.AttachmentReferenceService;
 import run.ikaros.server.core.episode.EpisodeService;
@@ -156,9 +157,19 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
 
     private Mono<UUID> selectSubjectId(LocalScanConfirmRequest request) {
         if (request.getSubjectId() != null) {
+            if (request.getMode() == LocalMediaMode.AUDIO) {
+                return subjectService.findById(request.getSubjectId())
+                    .filter(subject -> subject.getType() == SubjectType.MUSIC)
+                    .map(Subject::getId)
+                    .switchIfEmpty(Mono.error(
+                        new IllegalArgumentException("音频扫描只能绑定音乐条目")));
+            }
             return Mono.just(request.getSubjectId());
         }
         Subject subject = request.getSubject();
+        if (request.getMode() == LocalMediaMode.AUDIO && subject.getType() != SubjectType.MUSIC) {
+            return Mono.error(new IllegalArgumentException("音频扫描只能创建音乐条目"));
+        }
         return subjectService.create(subject).map(Subject::getId)
             .filter(Objects::nonNull)
             .switchIfEmpty(Mono.error(new IllegalStateException("创建本地条目后未返回标识")));

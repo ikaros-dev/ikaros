@@ -14,7 +14,6 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.music.Music;
 import run.ikaros.api.core.music.Song;
 import run.ikaros.api.core.subject.Episode;
-import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.core.subsonic.SubsonicResponse;
 import run.ikaros.api.core.subsonic.SubsonicResponse.AlbumChild;
 import run.ikaros.api.core.subsonic.SubsonicResponse.AlbumList;
@@ -483,25 +482,6 @@ public class DefaultSubsonicService implements SubsonicService {
             .albumId(song.getSubjectId() != null ? song.getSubjectId().toString() : "")
             .type("music")
             .build();
-    }
-
-    private SongChild toSongChildWithAttachment(Episode episode) {
-        SongChild song = toSongChild(episode);
-        // 尝试获取附件信息
-        try {
-            EpisodeResource res = episodeService.findResourcesById(episode.getId())
-                .next().block();
-            if (res != null) {
-                song.setId(res.getAttachmentId().toString());
-                song.setContentType("audio/mpeg");
-                song.setSize(0);
-                song.setSuffix("mp3");
-                song.setPath(episode.getName());
-            }
-        } catch (Exception e) {
-            // 忽略附件查询异常
-        }
-        return song;
     }
 
     private Mono<Void> updatePlaylistSongs(UUID listId, List<String> songIds) {

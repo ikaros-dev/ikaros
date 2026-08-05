@@ -87,7 +87,11 @@ const scanModes: ScanMode[] = [
 	LocalScanPreviewRequestModeEnum.Audio,
 	LocalScanPreviewRequestModeEnum.Image,
 ];
-const subjectTypes = Object.values(SubjectTypeEnum);
+const subjectTypes = computed(() =>
+	mode.value === LocalScanPreviewRequestModeEnum.Audio
+		? [SubjectTypeEnum.Music]
+		: Object.values(SubjectTypeEnum)
+);
 const roles = [
 	'PRIMARY',
 	'AUTO_ASSOCIATED',
@@ -194,6 +198,10 @@ const searchSubjects = async (keyword: string) => {
 			page: 1,
 			size: 20,
 			name: base64Encode(keyword),
+			type:
+				mode.value === LocalScanPreviewRequestModeEnum.Audio
+					? SubjectTypeEnum.Music
+					: undefined,
 		});
 		subjectOptions.value = ((data.items || []) as Subject[]).filter((subject) =>
 			Boolean(subject.id)
@@ -318,9 +326,11 @@ const itemFailureMessages = (item: LocalScanItem) => [
 
 watch(mode, (value) => {
 	preview.value = undefined;
+	selectedSubjectId.value = '';
 	errorMessage.value = '';
 	clearAssignments();
 	newSubject.type = defaultSubjectType(value);
+	void searchSubjects('');
 });
 
 watch(

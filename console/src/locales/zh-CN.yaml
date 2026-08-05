@@ -1331,6 +1331,9 @@ module:
     cover: 封面
     add_song: 添加歌曲
     edit_song: 编辑歌曲
+    play: 播放
+    no_playable_resource: 该歌曲没有可播放的音频资源
+    play_failed: 加载歌曲资源失败
     back: 返回
     album:
       detail:
