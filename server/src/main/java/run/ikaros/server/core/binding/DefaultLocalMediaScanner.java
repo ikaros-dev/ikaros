@@ -54,7 +54,8 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
             .switchIfEmpty(Mono.error(new IllegalArgumentException("待扫描目录附件不存在")))
             .filter(this::isDirectory)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("待扫描附件不是目录")))
-            .flatMap(directory -> pathValidator.validate(directory.getDriverId(), directory.getFsPath())
+            .flatMap(directory -> pathValidator.validate(
+                directory.getDriverId(), directory.getFsPath())
                 .flatMap(rootPath -> scanDirectory(directory, rootPath, request.getMode())))
             .map(items -> LocalScanPreview.builder()
                 .directoryId(request.getDirectoryId())
@@ -107,7 +108,8 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
     private ScanDraft toDraft(ScannedAttachment scannedAttachment, LocalMediaMode mode) {
         String extension = extensionOf(scannedAttachment.attachment().getName());
         MediaPhysicalType physicalType = physicalTypeOf(extension, mode);
-        return new ScanDraft(scannedAttachment, extension, physicalType, roleFor(physicalType, mode), null);
+        return new ScanDraft(scannedAttachment, extension, physicalType,
+            roleFor(physicalType, mode), null);
     }
 
     private List<ScanDraft> mergeVobSubCandidates(List<ScanDraft> drafts) {
@@ -122,14 +124,16 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
         Map<String, List<ScanDraft>> primaryByKey = new LinkedHashMap<>();
         for (ScanDraft draft : drafts) {
             if (draft.role() == MediaRole.PRIMARY) {
-                primaryByKey.computeIfAbsent(draft.associationKey(), ignored -> new ArrayList<>()).add(draft);
+                primaryByKey.computeIfAbsent(
+                    draft.associationKey(), ignored -> new ArrayList<>()).add(draft);
             }
         }
         return drafts.stream().map(draft -> {
             if (draft.role() != MediaRole.PENDING_CONFIRMATION) {
                 return draft;
             }
-            List<ScanDraft> primaries = primaryByKey.getOrDefault(draft.associationKey(), List.of());
+            List<ScanDraft> primaries = primaryByKey.getOrDefault(
+                draft.associationKey(), List.of());
             return primaries.size() == 1
                 ? draft.withAssociation(MediaRole.AUTO_ASSOCIATED,
                     primaries.get(0).attachment().getId())
@@ -177,7 +181,8 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
         }
         return switch (mode) {
             case EPISODE -> physicalType == MediaPhysicalType.VIDEO ? MediaRole.PRIMARY
-                : physicalType == MediaPhysicalType.AUDIO || physicalType == MediaPhysicalType.SUBTITLE
+                : physicalType == MediaPhysicalType.AUDIO
+                    || physicalType == MediaPhysicalType.SUBTITLE
                     || physicalType == MediaPhysicalType.LYRICS
                     ? MediaRole.PENDING_CONFIRMATION
                     : MediaRole.UNASSOCIATED;
@@ -199,14 +204,16 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
             case ".ttml" -> mode == LocalMediaMode.EPISODE ? MediaPhysicalType.SUBTITLE
                 : MediaPhysicalType.LYRICS;
             case ".lrc" -> MediaPhysicalType.LYRICS;
-            case ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".avif" -> MediaPhysicalType.IMAGE;
+            case ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".avif"
+                -> MediaPhysicalType.IMAGE;
             default -> MediaPhysicalType.UNKNOWN;
         };
     }
 
     private String extensionOf(String filename) {
         int extensionStart = filename == null ? -1 : filename.lastIndexOf('.');
-        return extensionStart < 0 ? "" : filename.substring(extensionStart).toLowerCase(Locale.ROOT);
+        return extensionStart < 0 ? ""
+            : filename.substring(extensionStart).toLowerCase(Locale.ROOT);
     }
 
     private static String filenameWithoutExtension(String filename) {
@@ -278,7 +285,8 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
         return value.substring(index);
     }
 
-    private record ScannedAttachment(AttachmentEntity attachment, Path realPath, String relativePath) {
+    private record ScannedAttachment(AttachmentEntity attachment, Path realPath,
+                                     String relativePath) {
     }
 
     private record ScanDraft(ScannedAttachment scannedAttachment, String extension,
@@ -305,18 +313,21 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
                 matcher = TRAILING_ASSOCIATION_TOKEN.matcher(key);
             }
             int filenameStart = relativePath().lastIndexOf('/');
-            String parentPath = filenameStart < 0 ? "" : relativePath().substring(0, filenameStart + 1);
+            String parentPath = filenameStart < 0 ? ""
+                : relativePath().substring(0, filenameStart + 1);
             return parentPath + key.toLowerCase(Locale.ROOT);
         }
 
         private String vobSubKey() {
             int extensionStart = relativePath().lastIndexOf('.');
-            return (extensionStart < 0 ? relativePath() : relativePath().substring(0, extensionStart))
+            return (extensionStart < 0 ? relativePath()
+                : relativePath().substring(0, extensionStart))
                 .toLowerCase(Locale.ROOT);
         }
 
         private ScanDraft withAssociation(MediaRole role, UUID primaryAttachmentId) {
-            return new ScanDraft(scannedAttachment, extension, physicalType, role, primaryAttachmentId);
+            return new ScanDraft(
+                scannedAttachment, extension, physicalType, role, primaryAttachmentId);
         }
     }
 

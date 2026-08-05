@@ -68,6 +68,7 @@ class DirectoryBindingWorkflowRepositoryTest {
             .assertNext(updated -> assertThat(updated.getCurrentStep()).isEqualTo("已确认"))
             .verifyComplete();
         StepVerifier.create(repository.deleteById(entity.getId())).verifyComplete();
-        StepVerifier.create(repository.existsById(entity.getId())).expectNext(false).verifyComplete();
+        StepVerifier.create(repository.existsById(entity.getId()))
+            .expectNext(false).verifyComplete();
     }
 }

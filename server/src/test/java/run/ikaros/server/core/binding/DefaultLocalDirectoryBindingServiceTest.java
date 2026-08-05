@@ -61,8 +61,9 @@ class DefaultLocalDirectoryBindingServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        service = new DefaultLocalDirectoryBindingService(localMediaScanner, subjectService, episodeService,
-            attachmentReferenceService, taskService, taskRepository, workflowRepository);
+        service = new DefaultLocalDirectoryBindingService(
+            localMediaScanner, subjectService, episodeService, attachmentReferenceService,
+            taskService, taskRepository, workflowRepository);
     }
 
     @Test
@@ -89,7 +90,8 @@ class DefaultLocalDirectoryBindingServiceTest {
         LocalScanPreview emptyPreview = LocalScanPreview.builder().directoryId(directoryId)
             .mode(LocalMediaMode.EPISODE).items(List.of()).build();
         AtomicReference<DirectoryBindingWorkflowEntity> storedWorkflow = new AtomicReference<>();
-        AttachmentReference reference = AttachmentReference.builder().type(AttachmentReferenceType.EPISODE)
+        AttachmentReference reference = AttachmentReference.builder()
+            .type(AttachmentReferenceType.EPISODE)
             .attachmentId(videoId).referenceId(episodeId).build();
         LocalScanConfirmRequest request = LocalScanConfirmRequest.builder()
             .directoryId(directoryId).mode(LocalMediaMode.EPISODE).subjectId(subjectId)
@@ -99,7 +101,8 @@ class DefaultLocalDirectoryBindingServiceTest {
 
         when(localMediaScanner.scan(any())).thenReturn(Mono.just(preview), Mono.just(preview),
             Mono.just(emptyPreview));
-        when(workflowRepository.findLocalWorkflow(directoryId, subjectId, LocalMediaMode.EPISODE.name()))
+        when(workflowRepository.findLocalWorkflow(
+            directoryId, subjectId, LocalMediaMode.EPISODE.name()))
             .thenAnswer(invocation -> Mono.justOrEmpty(storedWorkflow.get()));
         when(workflowRepository.insert(any())).thenAnswer(invocation -> {
             DirectoryBindingWorkflowEntity entity = invocation.getArgument(0);
@@ -111,9 +114,11 @@ class DefaultLocalDirectoryBindingServiceTest {
             storedWorkflow.set(entity);
             return Mono.just(entity);
         });
-        when(attachmentReferenceService.findAllByTypeAndAttachmentId(AttachmentReferenceType.EPISODE,
-            videoId)).thenReturn(Flux.empty(), Flux.just(reference));
-        when(episodeService.save(any())).thenReturn(Mono.just(Episode.defaultEpisode(subjectId).setId(episodeId)));
+        when(attachmentReferenceService.findAllByTypeAndAttachmentId(
+            AttachmentReferenceType.EPISODE, videoId))
+            .thenReturn(Flux.empty(), Flux.just(reference));
+        when(episodeService.save(any())).thenReturn(
+            Mono.just(Episode.defaultEpisode(subjectId).setId(episodeId)));
         when(attachmentReferenceService.save(any())).thenReturn(Mono.just(reference));
         when(taskService.submit(any())).thenReturn(Mono.empty());
 
@@ -144,16 +149,20 @@ class DefaultLocalDirectoryBindingServiceTest {
             .type(AttachmentReferenceType.EPISODE).attachmentId(videoId)
             .referenceId(UUID.randomUUID()).build();
 
-        when(localMediaScanner.scan(any())).thenReturn(Mono.just(preview(directoryId, videoId, null)));
-        when(workflowRepository.findLocalWorkflow(directoryId, subjectId, LocalMediaMode.EPISODE.name()))
+        when(localMediaScanner.scan(any())).thenReturn(
+            Mono.just(preview(directoryId, videoId, null)));
+        when(workflowRepository.findLocalWorkflow(
+            directoryId, subjectId, LocalMediaMode.EPISODE.name()))
             .thenReturn(Mono.just(workflow));
-        when(workflowRepository.update(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-        when(attachmentReferenceService.findAllByTypeAndAttachmentId(AttachmentReferenceType.EPISODE,
-            videoId)).thenReturn(Flux.just(userReference));
+        when(workflowRepository.update(any()))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(attachmentReferenceService.findAllByTypeAndAttachmentId(
+            AttachmentReferenceType.EPISODE, videoId)).thenReturn(Flux.just(userReference));
         when(taskService.submit(any())).thenReturn(Mono.empty());
 
         DirectoryBindingWorkflowEntity result = service.confirm(LocalScanConfirmRequest.builder()
-            .directoryId(directoryId).mode(LocalMediaMode.EPISODE).subjectId(subjectId).build()).block();
+            .directoryId(directoryId).mode(LocalMediaMode.EPISODE).subjectId(subjectId)
+            .build()).block();
 
         assertThat(result.getLocalScanState()).contains(MediaRole.PENDING_CONFIRMATION.name());
         verify(episodeService, never()).save(any());
@@ -169,23 +178,29 @@ class DefaultLocalDirectoryBindingServiceTest {
         Subject requestedSubject = new Subject();
         Subject createdSubject = new Subject().setId(subjectId);
         AttachmentReference reference = AttachmentReference.builder()
-            .type(AttachmentReferenceType.EPISODE).attachmentId(videoId).referenceId(episodeId).build();
+            .type(AttachmentReferenceType.EPISODE).attachmentId(videoId)
+            .referenceId(episodeId).build();
 
-        when(localMediaScanner.scan(any())).thenReturn(Mono.just(preview(directoryId, videoId, null)));
+        when(localMediaScanner.scan(any())).thenReturn(
+            Mono.just(preview(directoryId, videoId, null)));
         when(subjectService.create(requestedSubject)).thenReturn(Mono.just(createdSubject));
-        when(workflowRepository.findLocalWorkflow(directoryId, subjectId, LocalMediaMode.EPISODE.name()))
+        when(workflowRepository.findLocalWorkflow(
+            directoryId, subjectId, LocalMediaMode.EPISODE.name()))
             .thenReturn(Mono.empty());
-        when(workflowRepository.insert(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-        when(workflowRepository.update(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-        when(attachmentReferenceService.findAllByTypeAndAttachmentId(AttachmentReferenceType.EPISODE,
-            videoId)).thenReturn(Flux.empty());
+        when(workflowRepository.insert(any()))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(workflowRepository.update(any()))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(attachmentReferenceService.findAllByTypeAndAttachmentId(
+            AttachmentReferenceType.EPISODE, videoId)).thenReturn(Flux.empty());
         when(episodeService.save(any()))
             .thenReturn(Mono.just(Episode.defaultEpisode(subjectId).setId(episodeId)));
         when(attachmentReferenceService.save(any())).thenReturn(Mono.just(reference));
         when(taskService.submit(any())).thenReturn(Mono.empty());
 
         DirectoryBindingWorkflowEntity workflow = service.confirm(LocalScanConfirmRequest.builder()
-            .directoryId(directoryId).mode(LocalMediaMode.EPISODE).subject(requestedSubject).build()).block();
+            .directoryId(directoryId).mode(LocalMediaMode.EPISODE).subject(requestedSubject)
+            .build()).block();
 
         assertThat(workflow.getSubjectId()).isEqualTo(subjectId);
         assertThat(workflow.getTaskId()).isNotNull();
@@ -215,14 +230,16 @@ class DefaultLocalDirectoryBindingServiceTest {
             .directoryId(directoryId).mode(LocalMediaMode.EPISODE).items(List.of()).build()));
 
         assertThatThrownBy(() -> service.confirm(LocalScanConfirmRequest.builder()
-            .directoryId(directoryId).mode(LocalMediaMode.EPISODE).subjectId(UUID.randomUUID()).build()).block())
+            .directoryId(directoryId).mode(LocalMediaMode.EPISODE)
+            .subjectId(UUID.randomUUID()).build()).block())
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("没有可确认的主资源");
         verify(taskService, never()).submit(any());
 
         UUID videoId = UUID.randomUUID();
         UUID subtitleId = UUID.randomUUID();
-        when(localMediaScanner.scan(any())).thenReturn(Mono.just(preview(directoryId, videoId, subtitleId)));
+        when(localMediaScanner.scan(any())).thenReturn(
+            Mono.just(preview(directoryId, videoId, subtitleId)));
         assertThatThrownBy(() -> service.confirm(LocalScanConfirmRequest.builder()
             .directoryId(directoryId).mode(LocalMediaMode.EPISODE).subjectId(UUID.randomUUID())
             .assignments(List.of(LocalScanAssignment.builder().attachmentId(subtitleId)

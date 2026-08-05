@@ -64,9 +64,12 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
     public DefaultLocalDirectoryBindingService(LocalMediaScanner localMediaScanner,
                                                SubjectService subjectService,
                                                EpisodeService episodeService,
-                                               AttachmentReferenceService attachmentReferenceService,
-                                               TaskService taskService, TaskRepository taskRepository,
-                                               DirectoryBindingWorkflowRepository workflowRepository) {
+                                               AttachmentReferenceService
+                                                   attachmentReferenceService,
+                                               TaskService taskService,
+                                               TaskRepository taskRepository,
+                                               DirectoryBindingWorkflowRepository
+                                                   workflowRepository) {
         this.localMediaScanner = localMediaScanner;
         this.subjectService = subjectService;
         this.episodeService = episodeService;
@@ -86,7 +89,8 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
 
     @Override
     public Mono<DirectoryBindingWorkflowEntity> confirm(LocalScanConfirmRequest request) {
-        if (request == null || !request.isSubjectSelectionValid() || request.getDirectoryId() == null
+        if (request == null || !request.isSubjectSelectionValid()
+            || request.getDirectoryId() == null
             || request.getMode() == null) {
             return Mono.error(new IllegalArgumentException("必须恰好提供一个条目，且目录和扫描模式不能为空"));
         }
@@ -95,7 +99,8 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
             .flatMap(preview -> requirePrimaryItems(preview)
                 .then(validateAssignments(preview, request.getAssignments()))
                 .then(selectSubjectId(request))
-                .flatMap(subjectId -> loadWorkflow(request.getDirectoryId(), subjectId, request.getMode())
+                .flatMap(subjectId -> loadWorkflow(
+                    request.getDirectoryId(), subjectId, request.getMode())
                     .flatMap(holder -> reconcile(holder.workflow(), preview, subjectId,
                         mergeAssignments(parseState(holder.workflow().getLocalScanState()),
                             request.getAssignments()))
@@ -113,7 +118,8 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
             .flatMap(workflow -> preview(LocalScanPreviewRequest.builder().directoryId(directoryId)
                 .mode(mode).build()).flatMap(preview -> reconcile(workflow, preview, subjectId,
                     parseState(workflow.getLocalScanState()).manualAssignments())
-                .flatMap(result -> persistAndSubmit(new WorkflowHolder(workflow, true), preview, result))));
+                .flatMap(result -> persistAndSubmit(
+                    new WorkflowHolder(workflow, true), preview, result))));
     }
 
     private Mono<Void> requirePrimaryItems(LocalScanPreview preview) {
@@ -175,7 +181,8 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
             .switchIfEmpty(Mono.error(new IllegalStateException("创建本地条目后未返回标识")));
     }
 
-    private Mono<WorkflowHolder> loadWorkflow(UUID directoryId, UUID subjectId, LocalMediaMode mode) {
+    private Mono<WorkflowHolder> loadWorkflow(UUID directoryId, UUID subjectId,
+                                              LocalMediaMode mode) {
         return workflowRepository.findLocalWorkflow(directoryId, subjectId, mode.name())
             .map(workflow -> new WorkflowHolder(workflow, true))
             .switchIfEmpty(Mono.fromSupplier(() -> new WorkflowHolder(
@@ -207,7 +214,8 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
     private Mono<PrimaryBinding> bindPrimary(LocalScanItem item, UUID subjectId, Float sequence,
                                              Map<UUID, UUID> episodeMappings) {
         UUID mappedEpisodeId = episodeMappings.get(item.getAttachmentId());
-        return attachmentReferenceService.findAllByTypeAndAttachmentId(AttachmentReferenceType.EPISODE,
+        return attachmentReferenceService.findAllByTypeAndAttachmentId(
+                AttachmentReferenceType.EPISODE,
                 item.getAttachmentId())
             .collectList()
             .flatMap(references -> {
@@ -215,10 +223,12 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
                     boolean conflicts = references.stream().anyMatch(reference ->
                         !mappedEpisodeId.equals(reference.getReferenceId()));
                     if (conflicts) {
-                        return Mono.just(PrimaryBinding.pending(item.getAttachmentId(), mappedEpisodeId));
+                        return Mono.just(PrimaryBinding.pending(
+                            item.getAttachmentId(), mappedEpisodeId));
                     }
                     if (!references.isEmpty()) {
-                        return Mono.just(PrimaryBinding.mapped(item.getAttachmentId(), mappedEpisodeId));
+                        return Mono.just(PrimaryBinding.mapped(
+                            item.getAttachmentId(), mappedEpisodeId));
                     }
                     return saveReference(item.getAttachmentId(), mappedEpisodeId)
                         .thenReturn(PrimaryBinding.mapped(item.getAttachmentId(), mappedEpisodeId));
@@ -254,7 +264,8 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
         return persist.flatMap(this::submitTask);
     }
 
-    private Mono<DirectoryBindingWorkflowEntity> submitTask(DirectoryBindingWorkflowEntity workflow) {
+    private Mono<DirectoryBindingWorkflowEntity> submitTask(
+        DirectoryBindingWorkflowEntity workflow) {
         TaskEntity entity = TaskEntity.builder()
             .id(UuidV7Utils.generateUuid())
             .status(TaskStatus.CREATE)

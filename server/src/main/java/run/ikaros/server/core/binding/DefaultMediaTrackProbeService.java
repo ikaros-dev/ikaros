@@ -116,6 +116,7 @@ public class DefaultMediaTrackProbeService implements MediaTrackProbeService {
     }
 
     private String normalizeLanguage(String language) {
-        return language == null || language.isBlank() || language.equalsIgnoreCase("und") ? null : language;
+        return language == null || language.isBlank() || language.equalsIgnoreCase("und")
+            ? null : language;
     }
 }

@@ -34,5 +34,6 @@ public interface LocalDirectoryBindingService {
      * @param mode 本地扫描模式
      * @return 已提交重扫任务的本地工作流
      */
-    Mono<DirectoryBindingWorkflowEntity> rescan(UUID directoryId, UUID subjectId, LocalMediaMode mode);
+    Mono<DirectoryBindingWorkflowEntity> rescan(UUID directoryId, UUID subjectId,
+                                                LocalMediaMode mode);
 }

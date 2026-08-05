@@ -62,8 +62,8 @@ class DefaultLocalMediaScannerTest {
         AttachmentEntity externalAudio = file(directoryId, driverId, tempDir, "Episode 2.flac");
         AttachmentEntity unknown = file(directoryId, driverId, tempDir, "class");
 
-        configureTree(directory, List.of(episode10, subtitle, vobSubIndex, unknown, episode2, timedText,
-            externalAudio, vobSub));
+        configureTree(directory, List.of(
+            episode10, subtitle, vobSubIndex, unknown, episode2, timedText, externalAudio, vobSub));
 
         LocalScanPreview preview = localMediaScanner.scan(LocalScanPreviewRequest.builder()
             .directoryId(directoryId).mode(LocalMediaMode.EPISODE).build()).block();
@@ -71,7 +71,8 @@ class DefaultLocalMediaScannerTest {
         assertThat(preview.getItems()).extracting(LocalScanItem::getRelativePath)
             .containsExactly("class", "Episode 2.flac", "Episode 2.MKV", "Episode 2.ttml",
                 "Episode 2.zh.ASS", "Episode 10.mp4", "Episode 10.sub");
-        assertThat(findByName(preview, "class").getPhysicalType()).isEqualTo(MediaPhysicalType.UNKNOWN);
+        assertThat(findByName(preview, "class").getPhysicalType())
+            .isEqualTo(MediaPhysicalType.UNKNOWN);
         assertThat(findByName(preview, "class").getRole()).isEqualTo(MediaRole.UNKNOWN);
         assertThat(findByName(preview, "Episode 2.flac").getRole())
             .isEqualTo(MediaRole.AUTO_ASSOCIATED);
@@ -81,7 +82,8 @@ class DefaultLocalMediaScannerTest {
             .isEqualTo(MediaPhysicalType.SUBTITLE);
         assertThat(findByName(preview, "Episode 10.sub").getRole())
             .isEqualTo(MediaRole.AUTO_ASSOCIATED);
-        assertThat(preview.getItems()).noneMatch(item -> item.getRelativePath().equals("Episode 10.idx"));
+        assertThat(preview.getItems())
+            .noneMatch(item -> item.getRelativePath().equals("Episode 10.idx"));
     }
 
     @Test
@@ -110,22 +112,29 @@ class DefaultLocalMediaScannerTest {
     }
 
     @Test
-    void scan_recursesFilesWithoutReturningDirectoriesOrCrossDirectoryAssociations(@TempDir Path tempDir) {
+    void scan_recursesFilesWithoutReturningDirectoriesOrCrossDirectoryAssociations(
+        @TempDir Path tempDir) {
         UUID directoryId = UUID.randomUUID();
         UUID driverId = UUID.randomUUID();
         AttachmentEntity directory = directory(directoryId, driverId, tempDir);
-        AttachmentEntity firstDirectory = directory(UUID.randomUUID(), driverId, tempDir.resolve("first"));
+        AttachmentEntity firstDirectory = directory(
+            UUID.randomUUID(), driverId, tempDir.resolve("first"));
         firstDirectory.setParentId(directoryId);
-        AttachmentEntity secondDirectory = directory(UUID.randomUUID(), driverId, tempDir.resolve("second"));
+        AttachmentEntity secondDirectory = directory(
+            UUID.randomUUID(), driverId, tempDir.resolve("second"));
         secondDirectory.setParentId(directoryId);
-        AttachmentEntity video = file(firstDirectory.getId(), driverId, tempDir.resolve("first"), "Episode 1.mkv");
-        AttachmentEntity subtitle = file(secondDirectory.getId(), driverId, tempDir.resolve("second"), "Episode 1.srt");
+        AttachmentEntity video = file(
+            firstDirectory.getId(), driverId, tempDir.resolve("first"), "Episode 1.mkv");
+        AttachmentEntity subtitle = file(
+            secondDirectory.getId(), driverId, tempDir.resolve("second"), "Episode 1.srt");
 
         when(attachmentRepository.findById(directoryId)).thenReturn(Mono.just(directory));
         when(attachmentRepository.findAllByParentId(directoryId))
             .thenReturn(Flux.just(firstDirectory, secondDirectory));
-        when(attachmentRepository.findAllByParentId(firstDirectory.getId())).thenReturn(Flux.just(video));
-        when(attachmentRepository.findAllByParentId(secondDirectory.getId())).thenReturn(Flux.just(subtitle));
+        when(attachmentRepository.findAllByParentId(firstDirectory.getId()))
+            .thenReturn(Flux.just(video));
+        when(attachmentRepository.findAllByParentId(secondDirectory.getId()))
+            .thenReturn(Flux.just(subtitle));
         when(pathValidator.validate(eq(driverId), anyString()))
             .thenAnswer(invocation -> Mono.just(Path.of(invocation.getArgument(1, String.class))));
         when(mediaTrackProbeService.probe(org.mockito.ArgumentMatchers.any(Path.class)))
@@ -142,7 +151,8 @@ class DefaultLocalMediaScannerTest {
 
     private void configureTree(AttachmentEntity directory, List<AttachmentEntity> children) {
         when(attachmentRepository.findById(directory.getId())).thenReturn(Mono.just(directory));
-        when(attachmentRepository.findAllByParentId(directory.getId())).thenReturn(Flux.fromIterable(children));
+        when(attachmentRepository.findAllByParentId(directory.getId()))
+            .thenReturn(Flux.fromIterable(children));
         when(pathValidator.validate(eq(directory.getDriverId()), anyString()))
             .thenAnswer(invocation -> Mono.just(Path.of(invocation.getArgument(1, String.class))));
         when(mediaTrackProbeService.probe(org.mockito.ArgumentMatchers.any(Path.class)))
@@ -155,12 +165,14 @@ class DefaultLocalMediaScannerTest {
     }
 
     private AttachmentEntity file(UUID directoryId, UUID driverId, Path root, String filename) {
-        return AttachmentEntity.builder().id(UUID.randomUUID()).parentId(directoryId).driverId(driverId)
-            .fsPath(root.resolve(filename).toString()).type(AttachmentType.Driver_File).name(filename).build();
+        return AttachmentEntity.builder().id(UUID.randomUUID()).parentId(directoryId)
+            .driverId(driverId).fsPath(root.resolve(filename).toString())
+            .type(AttachmentType.Driver_File).name(filename).build();
     }
 
     private LocalScanItem findByName(LocalScanPreview preview, String name) {
-        return preview.getItems().stream().filter(item -> item.getRelativePath().equals(name)).findFirst()
+        return preview.getItems().stream()
+            .filter(item -> item.getRelativePath().equals(name)).findFirst()
             .orElseThrow();
     }
 }

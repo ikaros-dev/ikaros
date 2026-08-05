@@ -12,7 +12,8 @@ import org.junit.jupiter.api.io.TempDir;
 class DefaultMediaTrackProbeServiceTest {
 
     /** 待测试的轨道探测服务。 */
-    private final MediaTrackProbeService mediaTrackProbeService = new DefaultMediaTrackProbeService();
+    private final MediaTrackProbeService mediaTrackProbeService =
+        new DefaultMediaTrackProbeService();
 
     @Test
     void probe_returnsAudioAndSubtitleTracksInContainerOrder() throws Exception {
@@ -38,12 +39,15 @@ class DefaultMediaTrackProbeServiceTest {
     }
 
     @Test
-    void probe_returnsFailureForCorruptAndUnsupportedContainers(@TempDir Path tempDir) throws Exception {
+    void probe_returnsFailureForCorruptAndUnsupportedContainers(
+        @TempDir Path tempDir) throws Exception {
         Path corrupt = fixture("corrupt.mp4");
         Path unsupported = Files.createFile(tempDir.resolve("video.mkv"));
 
-        MediaTrackProbeService.ProbeResult corruptResult = mediaTrackProbeService.probe(corrupt).block();
-        MediaTrackProbeService.ProbeResult unsupportedResult = mediaTrackProbeService.probe(unsupported).block();
+        MediaTrackProbeService.ProbeResult corruptResult =
+            mediaTrackProbeService.probe(corrupt).block();
+        MediaTrackProbeService.ProbeResult unsupportedResult =
+            mediaTrackProbeService.probe(unsupported).block();
 
         assertThat(corruptResult.tracks()).isEmpty();
         assertThat(corruptResult.failureReason()).isEqualTo("媒体容器解析失败");
