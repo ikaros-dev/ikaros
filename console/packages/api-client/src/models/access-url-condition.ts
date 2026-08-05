@@ -15,61 +15,49 @@
 /**
  *
  * @export
- * @interface EpisodeResource
+ * @interface AccessUrlCondition
  */
-export interface EpisodeResource {
+export interface AccessUrlCondition {
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
-   */
-  attachmentId?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  parentAttachmentId?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  episodeId?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  url?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  canRead?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
+   * @memberof AccessUrlCondition
    */
   name?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof AccessUrlCondition
    */
-  tags?: any;
+  type?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof AccessUrlCondition
    */
-  tracks?: any;
+  label?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof AccessUrlCondition
    */
-  imageSequence?: any;
+  required?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof AccessUrlCondition
+   */
+  defaultValue?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof AccessUrlCondition
+   */
+  description?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof AccessUrlCondition
+   */
+  options?: any;
 }

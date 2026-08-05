@@ -15,61 +15,67 @@
 /**
  *
  * @export
- * @interface EpisodeResource
+ * @interface MediaTrack
  */
-export interface EpisodeResource {
+export interface MediaTrack {
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
-   */
-  attachmentId?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  parentAttachmentId?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  episodeId?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
+   * @memberof MediaTrack
    */
   url?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof MediaTrack
    */
-  canRead?: any;
+  index?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof MediaTrack
    */
-  name?: any;
+  kind?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof MediaTrack
    */
-  tags?: any;
+  language?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof MediaTrack
    */
-  tracks?: any;
+  title?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof MediaTrack
    */
-  imageSequence?: any;
+  codec?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof MediaTrack
+   */
+  playable?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof MediaTrack
+   */
+  attachment_id?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof MediaTrack
+   */
+  default_track?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof MediaTrack
+   */
+  failure_reason?: any;
 }

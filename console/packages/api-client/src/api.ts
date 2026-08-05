@@ -28,6 +28,7 @@ export * from "./api/v1-episode-api";
 export * from "./api/v1-indices-api";
 export * from "./api/v1-meta-info-api";
 export * from "./api/v1-migration-api";
+export * from "./api/v1-music-api";
 export * from "./api/v1-notify-api";
 export * from "./api/v1-plugin-api";
 export * from "./api/v1-role-api";

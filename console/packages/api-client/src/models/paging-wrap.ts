@@ -55,12 +55,6 @@ export interface PagingWrap {
    */
   firstPage: any;
   /**
-   * Indicates total pages.
-   * @type {any}
-   * @memberof PagingWrap
-   */
-  totalPages: any;
-  /**
    * Indicates whether current page has previous page.
    * @type {any}
    * @memberof PagingWrap
@@ -72,4 +66,10 @@ export interface PagingWrap {
    * @memberof PagingWrap
    */
   hasPrevious: any;
+  /**
+   * Indicates total pages.
+   * @type {any}
+   * @memberof PagingWrap
+   */
+  totalPages: any;
 }

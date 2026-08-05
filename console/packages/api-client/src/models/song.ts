@@ -15,61 +15,73 @@
 /**
  *
  * @export
- * @interface EpisodeResource
+ * @interface Song
  */
-export interface EpisodeResource {
+export interface Song {
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof Song
    */
-  attachmentId?: any;
+  id?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
-   */
-  parentAttachmentId?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  episodeId?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  url?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  canRead?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
+   * @memberof Song
    */
   name?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof Song
    */
-  tags?: any;
+  description?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof Song
    */
-  tracks?: any;
+  sequence?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof Song
    */
-  imageSequence?: any;
+  group?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Song
+   */
+  duration?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Song
+   */
+  subject_id?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Song
+   */
+  name_cn?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Song
+   */
+  air_time?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Song
+   */
+  attachment_id?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Song
+   */
+  attachment_url?: any;
 }

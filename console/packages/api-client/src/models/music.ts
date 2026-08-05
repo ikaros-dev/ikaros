@@ -15,61 +15,67 @@
 /**
  *
  * @export
- * @interface EpisodeResource
+ * @interface Music
  */
-export interface EpisodeResource {
+export interface Music {
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof Music
    */
-  attachmentId?: any;
+  id?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
-   */
-  parentAttachmentId?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  episodeId?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  url?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
-   */
-  canRead?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof EpisodeResource
+   * @memberof Music
    */
   name?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof Music
    */
-  tags?: any;
+  cover?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof Music
    */
-  tracks?: any;
+  description?: any;
   /**
    *
    * @type {any}
-   * @memberof EpisodeResource
+   * @memberof Music
    */
-  imageSequence?: any;
+  score?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Music
+   */
+  rank?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Music
+   */
+  nsfw?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Music
+   */
+  name_cn?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Music
+   */
+  air_time?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof Music
+   */
+  song_count?: any;
 }
