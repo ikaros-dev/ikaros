@@ -7,7 +7,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +76,7 @@ class DefaultEpisodeServiceTest {
         defaultEpisodeService = new DefaultEpisodeService(
             episodeRepository, attachmentReferenceRepository,
             attachmentRepository, applicationEventPublisher,
-            databaseClient, new ObjectMapper());
+            databaseClient);
     }
 
     @Test

@@ -30,6 +30,7 @@ import run.ikaros.server.cache.annotation.FluxCacheEvict;
 import run.ikaros.server.cache.annotation.FluxCacheable;
 import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.cache.annotation.MonoCacheable;
+import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
@@ -54,7 +55,7 @@ public class DefaultEpisodeService implements EpisodeService {
     /** 响应式数据库客户端。 */
     private final DatabaseClient databaseClient;
     /** 本地扫描状态 JSON 转换器。 */
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = JsonUtils.getObjectMapper();
 
     /**
      * Construct.
@@ -63,13 +64,12 @@ public class DefaultEpisodeService implements EpisodeService {
                                  AttachmentReferenceRepository attachmentReferenceRepository,
                                  AttachmentRepository attachmentRepository,
                                  ApplicationEventPublisher applicationEventPublisher,
-                                 DatabaseClient databaseClient, ObjectMapper objectMapper) {
+                                 DatabaseClient databaseClient) {
         this.episodeRepository = episodeRepository;
         this.attachmentReferenceRepository = attachmentReferenceRepository;
         this.attachmentRepository = attachmentRepository;
         this.applicationEventPublisher = applicationEventPublisher;
         this.databaseClient = databaseClient;
-        this.objectMapper = objectMapper;
     }
 
 
