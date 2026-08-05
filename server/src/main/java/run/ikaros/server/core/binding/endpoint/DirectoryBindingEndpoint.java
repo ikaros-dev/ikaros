@@ -4,6 +4,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 
 import java.util.UUID;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.apiresponse.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -103,6 +104,7 @@ public class DirectoryBindingEndpoint implements CoreEndpoint {
                     .description("Get binding workflow status by workflow ID.")
                     .parameter(parameterBuilder()
                         .name("id")
+                        .in(ParameterIn.PATH)
                         .description("Workflow ID.")
                         .required(true)
                         .implementation(UUID.class))
@@ -118,6 +120,7 @@ public class DirectoryBindingEndpoint implements CoreEndpoint {
                     .description("Get binding workflow status by task ID.")
                     .parameter(parameterBuilder()
                         .name("taskId")
+                        .in(ParameterIn.PATH)
                         .description("Task ID.")
                         .required(true)
                         .implementation(UUID.class))
@@ -177,6 +180,7 @@ public class DirectoryBindingEndpoint implements CoreEndpoint {
                     .description("根据已有本地绑定工作流重新扫描目录，并提交新的后台任务。")
                     .parameter(parameterBuilder()
                         .name("id")
+                        .in(ParameterIn.PATH)
                         .description("要重扫的本地目录绑定工作流标识。")
                         .required(true)
                         .implementation(UUID.class))
