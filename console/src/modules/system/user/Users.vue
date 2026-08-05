@@ -50,7 +50,9 @@ const subitUserFrom = async (formEl: FormInstance | undefined) => {
 					},
 				});
 				ElMessage.success(
-					t('module.users.message.update_success', { username: user.value.username })
+					t('module.users.message.update_success', {
+						username: user.value.username,
+					})
 				);
 			} else {
 				await apiClient.user.postUser({
@@ -61,7 +63,9 @@ const subitUserFrom = async (formEl: FormInstance | undefined) => {
 					},
 				});
 				ElMessage.success(
-					t('module.users.message.create_success', { username: user.value.username })
+					t('module.users.message.create_success', {
+						username: user.value.username,
+					})
 				);
 			}
 			user.value = {};
@@ -104,7 +108,9 @@ const changeUserEnableStatus = async (userEntity: UserEntity) => {
 		},
 	});
 	ElMessage.success(
-		t('module.users.message.enable_status_update_success', { username: userEntity.username })
+		t('module.users.message.enable_status_update_success', {
+			username: userEntity.username,
+		})
 	);
 	await fetchUsers();
 };
@@ -189,11 +195,15 @@ const submitUserRole = async () => {
 	}
 	if (userRoleId.value) {
 		ElMessage.success(
-			t('module.users.message.role_update_success', { username: rowUserEntity.value.username })
+			t('module.users.message.role_update_success', {
+				username: rowUserEntity.value.username,
+			})
 		);
 	} else {
 		ElMessage.success(
-			t('module.users.message.role_delete_success', { username: rowUserEntity.value.username })
+			t('module.users.message.role_delete_success', {
+				username: rowUserEntity.value.username,
+			})
 		);
 	}
 	userRoleDialogVisible.value = false;
@@ -209,7 +219,11 @@ onMounted(() => {
 		<el-dialog
 			v-model="userDetailsDialogVisible"
 			width="500"
-			:title="user.id ? t('module.users.dialog.edit') : t('module.users.dialog.create')"
+			:title="
+				user.id
+					? t('module.users.dialog.edit')
+					: t('module.users.dialog.create')
+			"
 			@closed="user = {}"
 		>
 			<el-form
@@ -236,9 +250,9 @@ onMounted(() => {
 			</el-form>
 			<template #footer>
 				<div>
-					<el-button @click="userDetailsDialogVisible = false"
-						>{{ t('common.button.cancel') }}</el-button
-					>
+					<el-button @click="userDetailsDialogVisible = false">{{
+						t('common.button.cancel')
+					}}</el-button>
 					<el-button type="primary" @click="subitUserFrom(userElFormRef)">
 						{{ t('common.button.submit') }}
 					</el-button>
@@ -282,30 +296,49 @@ onMounted(() => {
 			</el-form>
 			<template #footer>
 				<div>
-					<el-button @click="userRoleDialogVisible = false">{{ t('common.button.cancel') }}</el-button>
-					<el-button type="primary" @click="submitUserRole">{{ t('common.button.submit') }}</el-button>
+					<el-button @click="userRoleDialogVisible = false">{{
+						t('common.button.cancel')
+					}}</el-button>
+					<el-button type="primary" @click="submitUserRole">{{
+						t('common.button.submit')
+					}}</el-button>
 				</div>
 			</template>
 		</el-dialog>
 
 		<el-row>
 			<el-col :span="24">
-				<el-button @click="userDetailsDialogVisible = true">{{ t('common.button.add') }}</el-button>
+				<el-button @click="userDetailsDialogVisible = true">{{
+					t('common.button.add')
+				}}</el-button>
 			</el-col>
 		</el-row>
 
 		<el-row>
 			<el-col :span="24">
 				<el-table :data="users" size="large">
-					<el-table-column prop="entity.id" :label="t('common.label.id')" width="160" />
+					<el-table-column
+						prop="entity.id"
+						:label="t('common.label.id')"
+						width="160"
+					/>
 					<el-table-column
 						prop="entity.username"
 						:label="t('common.label.username')"
 						width="120"
 					/>
-					<el-table-column prop="entity.nickname" :label="t('common.label.nickname')" />
-					<el-table-column prop="entity.introduce" :label="t('common.label.introduce')" />
-					<el-table-column prop="entity.enable" :label="t('common.label.enabled')">
+					<el-table-column
+						prop="entity.nickname"
+						:label="t('common.label.nickname')"
+					/>
+					<el-table-column
+						prop="entity.introduce"
+						:label="t('common.label.introduce')"
+					/>
+					<el-table-column
+						prop="entity.enable"
+						:label="t('common.label.enabled')"
+					>
 						<template #default="scope">
 							<el-switch
 								v-model="scope.row.entity.enable"
@@ -315,19 +348,23 @@ onMounted(() => {
 						</template>
 					</el-table-column>
 
-					<el-table-column fixed="right" :label="t('common.label.operations')" min-width="120">
+					<el-table-column
+						fixed="right"
+						:label="t('common.label.operations')"
+						min-width="120"
+					>
 						<template #default="scope">
 							<el-button type="primary" @click="doEditUser(scope.row)">
 								{{ t('common.button.edit') }}
 							</el-button>
 							<el-popconfirm
 								width="300"
-							:confirm-button-text="t('common.button.delete')"
-							:cancel-button-text="t('common.button.cancel')"
+								:confirm-button-text="t('common.button.delete')"
+								:cancel-button-text="t('common.button.cancel')"
 								confirm-button-type="danger"
 								:icon="WarningFilled"
 								icon-color="red"
-							:title="t('module.users.message.delete_confirm')"
+								:title="t('module.users.message.delete_confirm')"
 								@confirm="doDeleteUser(scope.row.entity.id)"
 							>
 								<template #reference>
@@ -335,7 +372,7 @@ onMounted(() => {
 										type="danger"
 										:disabled="isCurrentUser(scope.row.entity)"
 									>
-									{{ t('common.button.delete') }}
+										{{ t('common.button.delete') }}
 									</el-button>
 								</template>
 							</el-popconfirm>

@@ -2,10 +2,7 @@
 import { usePluginModuleStore } from '@/stores/plugin';
 import { apiClient } from '@/utils/api-client';
 import { PluginModule } from '@runikaros/shared';
-import {
-	Subject,
-	SubjectSyncPlatformEnum,
-} from '@runikaros/api-client';
+import { Subject, SubjectSyncPlatformEnum } from '@runikaros/api-client';
 import {
 	ElButton,
 	ElDialog,

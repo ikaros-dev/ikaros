@@ -118,7 +118,9 @@ onMounted(fetchCollections);
 
 	<el-row :gutter="10" justify="start" align="middle">
 		<el-col
-			v-for="subjectCollection in subjectCollections.filter((item) => item.subject_id)"
+			v-for="subjectCollection in subjectCollections.filter(
+				(item) => item.subject_id
+			)"
 			:key="subjectCollection.id"
 			:xs="24"
 			:sm="12"

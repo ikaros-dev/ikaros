@@ -15,7 +15,10 @@ import {
 } from 'element-plus';
 import { computed, reactive, ref, watch } from 'vue';
 import { apiClient } from '@/utils/api-client';
-import { episodeGroupLabelMap, episodeGroups } from '@/modules/common/constants';
+import {
+	episodeGroupLabelMap,
+	episodeGroups,
+} from '@/modules/common/constants';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -188,16 +191,8 @@ const onClose = () => {
 		width="600px"
 		@close="onClose"
 	>
-		<el-form
-			ref="formRef"
-			:model="form"
-			:rules="formRules"
-			label-width="100px"
-		>
-			<el-form-item
-				:label="t('module.regular.dialog.label.name')"
-				prop="name"
-			>
+		<el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
+			<el-form-item :label="t('module.regular.dialog.label.name')" prop="name">
 				<el-input
 					v-model="form.name"
 					:placeholder="t('module.regular.dialog.placeholder.name')"
@@ -280,7 +275,11 @@ const onClose = () => {
 			<el-button @click="onClose">
 				{{ t('common.button.cancel') }}
 			</el-button>
-			<el-button type="primary" :loading="submitting" @click="onSubmit(formRef)">
+			<el-button
+				type="primary"
+				:loading="submitting"
+				@click="onSubmit(formRef)"
+			>
 				{{ t('common.button.submit') }}
 			</el-button>
 		</template>

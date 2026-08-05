@@ -1,34 +1,38 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-export const useLayoutStore = defineStore('layout', () => {
-	const asideIsExtend = ref(true);
-	const currentActivePath = ref('/dashboard');
-	const i18nCode = ref('zh-CN');
+export const useLayoutStore = defineStore(
+	'layout',
+	() => {
+		const asideIsExtend = ref(true);
+		const currentActivePath = ref('/dashboard');
+		const i18nCode = ref('zh-CN');
 
-	function switchLayoutAsideExtendState() {
-		asideIsExtend.value = !asideIsExtend.value;
-	}
+		function switchLayoutAsideExtendState() {
+			asideIsExtend.value = !asideIsExtend.value;
+		}
 
-	function updatecurrentActivePathByRoutePath(path: string) {
-		currentActivePath.value = path;
-	}
+		function updatecurrentActivePathByRoutePath(path: string) {
+			currentActivePath.value = path;
+		}
 
-	function setI18nCode(code: string) {
-		i18nCode.value = code;
-	}
+		function setI18nCode(code: string) {
+			i18nCode.value = code;
+		}
 
-	return {
-		asideIsExtend,
-		currentActivePath,
-		i18nCode,
-		switchLayoutAsideExtendState,
-		updatecurrentActivePathByRoutePath,
-		setI18nCode,
-	};
-}, {
-	persist: {
-		key: 'ikaros-store-layout',
-		storage: localStorage,
+		return {
+			asideIsExtend,
+			currentActivePath,
+			i18nCode,
+			switchLayoutAsideExtendState,
+			updatecurrentActivePathByRoutePath,
+			setI18nCode,
+		};
 	},
-});
+	{
+		persist: {
+			key: 'ikaros-store-layout',
+			storage: localStorage,
+		},
+	}
+);
