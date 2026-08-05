@@ -16,7 +16,7 @@ import run.ikaros.server.store.repository.EpisodeListEpisodeRepository;
 import run.ikaros.server.store.repository.EpisodeListRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 
-/** Subsonic 歌曲标识语义测试。 */
+/** Subsonic 歌曲标识语义测试. */
 class DefaultSubsonicServiceTest {
 
     @Test
@@ -28,7 +28,8 @@ class DefaultSubsonicServiceTest {
             episodeService, mock(AttachmentService.class), mock(EpisodeListRepository.class),
             mock(EpisodeListEpisodeRepository.class));
         UUID episodeId = UUID.randomUUID();
-        Episode episode = Episode.defaultEpisode(UUID.randomUUID()).setId(episodeId).setName("Track 1");
+        Episode episode = Episode.defaultEpisode(UUID.randomUUID())
+            .setId(episodeId).setName("Track 1");
         when(episodeService.findById(episodeId)).thenReturn(Mono.just(episode));
         when(subjectService.findById(episode.getSubjectId())).thenReturn(Mono.empty());
 

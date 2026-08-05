@@ -270,7 +270,8 @@ class DefaultLocalDirectoryBindingServiceTest {
         UUID subjectId = UUID.randomUUID();
         when(subjectService.findById(subjectId)).thenReturn(Mono.just(anime.setId(subjectId)));
         assertThatThrownBy(() -> service.confirm(LocalScanConfirmRequest.builder()
-            .directoryId(directoryId).mode(LocalMediaMode.AUDIO).subjectId(subjectId).build()).block())
+            .directoryId(directoryId).mode(LocalMediaMode.AUDIO).subjectId(subjectId)
+            .build()).block())
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("只能绑定音乐条目");
         verify(subjectService, never()).create(any());

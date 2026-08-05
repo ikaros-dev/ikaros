@@ -62,6 +62,17 @@ public class DefaultSubsonicService implements SubsonicService {
     private final EpisodeListRepository episodeListRepository;
     private final EpisodeListEpisodeRepository episodeListEpisodeRepository;
 
+    /**
+     * 创建 Subsonic 默认服务.
+     *
+     * @param musicService 音乐服务
+     * @param subjectService 条目服务
+     * @param subjectRepository 条目仓储
+     * @param episodeService 剧集服务
+     * @param attachmentService 附件服务
+     * @param episodeListRepository 剧集列表仓储
+     * @param episodeListEpisodeRepository 剧集列表关系仓储
+     */
     public DefaultSubsonicService(MusicService musicService,
                                   SubjectService subjectService,
                                   SubjectRepository subjectRepository,

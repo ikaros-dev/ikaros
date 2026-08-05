@@ -71,7 +71,6 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
      * @param taskService 任务提交服务
      * @param taskRepository 任务持久化仓储
      * @param workflowRepository 本地绑定工作流仓储
-     * @param objectMapper 扫描状态 JSON 编解码器
      */
     public DefaultLocalDirectoryBindingService(LocalMediaScanner localMediaScanner,
                                                SubjectService subjectService,

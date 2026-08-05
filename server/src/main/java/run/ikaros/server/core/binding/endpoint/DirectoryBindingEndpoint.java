@@ -3,8 +3,8 @@ package run.ikaros.server.core.binding.endpoint;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 
-import java.util.UUID;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.apiresponse.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
