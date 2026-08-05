@@ -58,8 +58,8 @@ class DefaultEpisodeServiceTest {
         DatabaseClient.GenericExecuteSpec localStateSpec =
             Mockito.mock(DatabaseClient.GenericExecuteSpec.class);
         resourceFetchSpec = Mockito.mock(FetchSpec.class);
-        FetchSpec<Map<String, Object>> localStateFetchSpec = Mockito.mock(FetchSpec.class);
-        AtomicReference<String> localStateKey = new AtomicReference<>();
+        final FetchSpec<Map<String, Object>> localStateFetchSpec = Mockito.mock(FetchSpec.class);
+        final AtomicReference<String> localStateKey = new AtomicReference<>();
         localStateRows = new HashMap<>();
         when(databaseClient.sql(anyString())).thenAnswer(invocation ->
             invocation.<String>getArgument(0).contains("ATTACHMENT_REFERENCE")
