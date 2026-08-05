@@ -40,25 +40,25 @@ import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.DirectoryBindingWorkflowRepository;
 import run.ikaros.server.store.repository.TaskRepository;
 
-/** 本地目录绑定确认和幂等重扫的默认实现。 */
+/** 本地目录绑定确认和幂等重扫的默认实现. */
 @Slf4j
 @Service
 public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindingService {
-    /** 本地媒体扫描器。 */
+    /** 本地媒体扫描器. */
     private final LocalMediaScanner localMediaScanner;
-    /** 条目服务。 */
+    /** 条目服务. */
     private final SubjectService subjectService;
-    /** 剧集服务。 */
+    /** 剧集服务. */
     private final EpisodeService episodeService;
-    /** 附件引用服务。 */
+    /** 附件引用服务. */
     private final AttachmentReferenceService attachmentReferenceService;
-    /** 任务提交服务。 */
+    /** 任务提交服务. */
     private final TaskService taskService;
-    /** 任务持久化仓储。 */
+    /** 任务持久化仓储. */
     private final TaskRepository taskRepository;
-    /** 本地绑定工作流仓储。 */
+    /** 本地绑定工作流仓储. */
     private final DirectoryBindingWorkflowRepository workflowRepository;
-    /** 扫描状态 JSON 编解码器。 */
+    /** 扫描状态 JSON 编解码器. */
     private final ObjectMapper objectMapper = JsonUtils.getObjectMapper();
 
     public DefaultLocalDirectoryBindingService(LocalMediaScanner localMediaScanner,

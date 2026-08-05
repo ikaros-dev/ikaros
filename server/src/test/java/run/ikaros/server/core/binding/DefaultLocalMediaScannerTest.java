@@ -26,19 +26,19 @@ import run.ikaros.server.core.attachment.extension.LocalAttachmentPathValidator;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
-/** 本地媒体扫描器分类与自动关联测试。 */
+/** 本地媒体扫描器分类与自动关联测试. */
 class DefaultLocalMediaScannerTest {
 
-    /** 附件树查询仓储。 */
+    /** 附件树查询仓储. */
     @Mock
     private AttachmentRepository attachmentRepository;
-    /** 本地路径校验器。 */
+    /** 本地路径校验器. */
     @Mock
     private LocalAttachmentPathValidator pathValidator;
-    /** 内嵌轨道探测服务。 */
+    /** 内嵌轨道探测服务. */
     @Mock
     private MediaTrackProbeService mediaTrackProbeService;
-    /** 待测试的本地媒体扫描器。 */
+    /** 待测试的本地媒体扫描器. */
     private LocalMediaScanner localMediaScanner;
 
     @BeforeEach

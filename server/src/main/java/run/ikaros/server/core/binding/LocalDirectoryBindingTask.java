@@ -10,11 +10,11 @@ import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.DirectoryBindingWorkflowRepository;
 import run.ikaros.server.store.repository.TaskRepository;
 
-/** 负责记录本地目录确认或重扫执行结果的后台任务。 */
+/** 负责记录本地目录确认或重扫执行结果的后台任务. */
 public class LocalDirectoryBindingTask extends Task {
-    /** 对应的本地绑定工作流。 */
+    /** 对应的本地绑定工作流. */
     private final DirectoryBindingWorkflowEntity workflow;
-    /** 工作流持久化仓储。 */
+    /** 工作流持久化仓储. */
     private final DirectoryBindingWorkflowRepository workflowRepository;
 
     public LocalDirectoryBindingTask(TaskEntity entity, TaskRepository taskRepository,

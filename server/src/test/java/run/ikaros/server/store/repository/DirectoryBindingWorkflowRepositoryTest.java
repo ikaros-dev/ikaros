@@ -16,7 +16,7 @@ import run.ikaros.api.store.enums.TaskStatus;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.store.entity.DirectoryBindingWorkflowEntity;
 
-/** 本地目录绑定工作流仓储测试。 */
+/** 本地目录绑定工作流仓储测试. */
 @SpringBootTest
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)

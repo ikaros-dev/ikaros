@@ -27,14 +27,14 @@ import run.ikaros.server.core.binding.service.DirectoryBindingService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.store.entity.DirectoryBindingWorkflowEntity;
 
-/** 提供远程和本地目录绑定的 HTTP 路由。 */
+/** 提供远程和本地目录绑定的 HTTP 路由. */
 @Slf4j
 @Component
 public class DirectoryBindingEndpoint implements CoreEndpoint {
 
-    /** 远程目录绑定服务。 */
+    /** 远程目录绑定服务. */
     private final DirectoryBindingService service;
-    /** 本地目录绑定服务。 */
+    /** 本地目录绑定服务. */
     private final LocalDirectoryBindingService localService;
 
     public DirectoryBindingEndpoint(DirectoryBindingService service,

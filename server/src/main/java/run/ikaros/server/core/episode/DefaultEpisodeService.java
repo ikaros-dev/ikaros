@@ -36,25 +36,25 @@ import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 
-/** 提供剧集持久化、查询及媒体资源投影能力。 */
+/** 提供剧集持久化、查询及媒体资源投影能力. */
 @Slf4j
 @Service
 public class DefaultEpisodeService implements EpisodeService {
-    /** 本地扫描状态查询语句。 */
+    /** 本地扫描状态查询语句. */
     private static final String LOCAL_SCAN_STATE_QUERY = "select local_scan_state "
         + "from directory_binding_workflow where platform is null "
         + "and local_scan_state is not null and local_scan_state like :attachmentId";
-    /** 剧集数据仓储。 */
+    /** 剧集数据仓储. */
     private final EpisodeRepository episodeRepository;
-    /** 附件引用数据仓储。 */
+    /** 附件引用数据仓储. */
     private final AttachmentReferenceRepository attachmentReferenceRepository;
-    /** 附件数据仓储。 */
+    /** 附件数据仓储. */
     private final AttachmentRepository attachmentRepository;
-    /** 应用事件发布器。 */
+    /** 应用事件发布器. */
     private final ApplicationEventPublisher applicationEventPublisher;
-    /** 响应式数据库客户端。 */
+    /** 响应式数据库客户端. */
     private final DatabaseClient databaseClient;
-    /** 本地扫描状态 JSON 转换器。 */
+    /** 本地扫描状态 JSON 转换器. */
     private final ObjectMapper objectMapper = JsonUtils.getObjectMapper();
 
     /**
@@ -485,7 +485,7 @@ public class DefaultEpisodeService implements EpisodeService {
         return value.substring(index);
     }
 
-    /** 携带本地相对路径排序键的剧集资源投影。 */
+    /** 携带本地相对路径排序键的剧集资源投影. */
     private record ResourceProjection(EpisodeResource resource, String sortPath) {
     }
 

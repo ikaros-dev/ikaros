@@ -25,16 +25,16 @@ import run.ikaros.server.core.attachment.extension.LocalAttachmentPathValidator;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
-/** 从受信任的本地附件树递归读取文件并生成媒体扫描预览。 */
+/** 从受信任的本地附件树递归读取文件并生成媒体扫描预览. */
 @Slf4j
 @Service
 public class DefaultLocalMediaScanner implements LocalMediaScanner {
 
-    /** 参与附件树查询的仓储。 */
+    /** 参与附件树查询的仓储. */
     private final AttachmentRepository attachmentRepository;
-    /** 本地附件真实路径的访问边界。 */
+    /** 本地附件真实路径的访问边界. */
     private final LocalAttachmentPathValidator pathValidator;
-    /** 内嵌媒体轨道探测服务。 */
+    /** 内嵌媒体轨道探测服务. */
     private final MediaTrackProbeService mediaTrackProbeService;
 
     public DefaultLocalMediaScanner(AttachmentRepository attachmentRepository,
@@ -331,7 +331,7 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
         }
     }
 
-    /** 可安全从匹配键末尾剔除的已知语义片段。 */
+    /** 可安全从匹配键末尾剔除的已知语义片段. */
     private static final Pattern TRAILING_ASSOCIATION_TOKEN = Pattern.compile(
         "(?i)[._\\s-]+(?:zh|zho|chi|chs|cht|cn|en|eng|ja|jpn|ko|kor|default|forced|"
             + "commentary|signs|mono|stereo|\\d\\.\\d)$");

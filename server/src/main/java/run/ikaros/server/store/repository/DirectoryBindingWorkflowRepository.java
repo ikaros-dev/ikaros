@@ -5,7 +5,7 @@ import org.springframework.data.r2dbc.repository.Query;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.store.entity.DirectoryBindingWorkflowEntity;
 
-/** 提供目录绑定工作流的响应式持久化操作。 */
+/** 提供目录绑定工作流的响应式持久化操作. */
 public interface DirectoryBindingWorkflowRepository
     extends BaseRepository<DirectoryBindingWorkflowEntity> {
 
@@ -14,7 +14,7 @@ public interface DirectoryBindingWorkflowRepository
     Mono<DirectoryBindingWorkflowEntity> findByDirectoryId(UUID directoryId);
 
     /**
-     * 查询指定本地目录、条目和扫描模式对应的工作流。
+     * 查询指定本地目录、条目和扫描模式对应的工作流.
      *
      * @param directoryId 目录附件标识
      * @param subjectId 条目标识

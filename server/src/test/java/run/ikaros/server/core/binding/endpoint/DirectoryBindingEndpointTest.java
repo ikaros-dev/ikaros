@@ -27,16 +27,16 @@ import run.ikaros.server.core.binding.LocalDirectoryBindingService;
 import run.ikaros.server.core.binding.service.DirectoryBindingService;
 import run.ikaros.server.store.entity.DirectoryBindingWorkflowEntity;
 
-/** 验证目录绑定接口的路由、参数委托和响应状态。 */
+/** 验证目录绑定接口的路由、参数委托和响应状态. */
 class DirectoryBindingEndpointTest {
 
-    /** 远程目录绑定服务。 */
+    /** 远程目录绑定服务. */
     @Mock
     private DirectoryBindingService service;
-    /** 本地目录绑定服务。 */
+    /** 本地目录绑定服务. */
     @Mock
     private LocalDirectoryBindingService localService;
-    /** 用于调用函数式路由的测试客户端。 */
+    /** 用于调用函数式路由的测试客户端. */
     private WebTestClient webTestClient;
 
     @BeforeEach

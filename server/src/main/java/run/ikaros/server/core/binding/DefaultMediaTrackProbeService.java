@@ -16,16 +16,16 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import run.ikaros.api.core.binding.MediaTrack;
 
-/** 使用 ISO BMFF 解析器探测本地视频文件中的音频和字幕轨道。 */
+/** 使用 ISO BMFF 解析器探测本地视频文件中的音频和字幕轨道. */
 @Slf4j
 @Service
 public class DefaultMediaTrackProbeService implements MediaTrackProbeService {
 
-    /** ISO BMFF 容器扩展名。 */
+    /** ISO BMFF 容器扩展名. */
     private static final List<String> SUPPORTED_EXTENSIONS = List.of(".mp4", ".m4v", ".mov");
-    /** 音频轨道处理器类型。 */
+    /** 音频轨道处理器类型. */
     private static final String AUDIO_HANDLER = "soun";
-    /** 已知字幕轨道处理器类型。 */
+    /** 已知字幕轨道处理器类型. */
     private static final List<String> SUBTITLE_HANDLERS = List.of("subt", "text", "sbtl", "clcp");
 
     @Override
@@ -63,7 +63,7 @@ public class DefaultMediaTrackProbeService implements MediaTrackProbeService {
         }
     }
 
-    /** 验证顶层 box 的声明长度，阻止损坏文件诱导解析器分配超大内存。 */
+    /** 验证顶层 box 的声明长度，阻止损坏文件诱导解析器分配超大内存. */
     private boolean hasValidTopLevelBox(Path mediaPath) throws IOException {
         long fileSize = Files.size(mediaPath);
         if (fileSize < 8) {
