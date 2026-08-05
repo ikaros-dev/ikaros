@@ -8,7 +8,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,7 +61,7 @@ class DefaultLocalDirectoryBindingServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         service = new DefaultLocalDirectoryBindingService(localMediaScanner, subjectService, episodeService,
-            attachmentReferenceService, taskService, taskRepository, workflowRepository, new ObjectMapper());
+            attachmentReferenceService, taskService, taskRepository, workflowRepository);
     }
 
     @Test

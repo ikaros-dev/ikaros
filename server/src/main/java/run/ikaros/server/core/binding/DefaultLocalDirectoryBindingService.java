@@ -33,6 +33,7 @@ import run.ikaros.server.core.attachment.service.AttachmentReferenceService;
 import run.ikaros.server.core.episode.EpisodeService;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.task.TaskService;
+import run.ikaros.server.infra.utils.JsonUtils;
 import run.ikaros.server.store.entity.DirectoryBindingWorkflowEntity;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.DirectoryBindingWorkflowRepository;
@@ -57,15 +58,14 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
     /** 本地绑定工作流仓储。 */
     private final DirectoryBindingWorkflowRepository workflowRepository;
     /** 扫描状态 JSON 编解码器。 */
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = JsonUtils.getObjectMapper();
 
     public DefaultLocalDirectoryBindingService(LocalMediaScanner localMediaScanner,
                                                SubjectService subjectService,
                                                EpisodeService episodeService,
                                                AttachmentReferenceService attachmentReferenceService,
                                                TaskService taskService, TaskRepository taskRepository,
-                                               DirectoryBindingWorkflowRepository workflowRepository,
-                                               ObjectMapper objectMapper) {
+                                               DirectoryBindingWorkflowRepository workflowRepository) {
         this.localMediaScanner = localMediaScanner;
         this.subjectService = subjectService;
         this.episodeService = episodeService;
@@ -73,7 +73,6 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
         this.taskService = taskService;
         this.taskRepository = taskRepository;
         this.workflowRepository = workflowRepository;
-        this.objectMapper = objectMapper;
     }
 
     @Override
