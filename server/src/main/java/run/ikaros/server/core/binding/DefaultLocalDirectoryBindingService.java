@@ -61,6 +61,18 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
     /** 扫描状态 JSON 编解码器. */
     private final ObjectMapper objectMapper = JsonUtils.getObjectMapper();
 
+    /**
+     * 创建本地目录绑定服务.
+     *
+     * @param localMediaScanner 本地媒体扫描器
+     * @param subjectService 条目服务
+     * @param episodeService 剧集服务
+     * @param attachmentReferenceService 附件引用服务
+     * @param taskService 任务提交服务
+     * @param taskRepository 任务持久化仓储
+     * @param workflowRepository 本地绑定工作流仓储
+     * @param objectMapper 扫描状态 JSON 编解码器
+     */
     public DefaultLocalDirectoryBindingService(LocalMediaScanner localMediaScanner,
                                                SubjectService subjectService,
                                                EpisodeService episodeService,

@@ -17,6 +17,14 @@ public class LocalDirectoryBindingTask extends Task {
     /** 工作流持久化仓储. */
     private final DirectoryBindingWorkflowRepository workflowRepository;
 
+    /**
+     * 创建本地目录绑定后台任务.
+     *
+     * @param entity 任务实体
+     * @param taskRepository 任务持久化仓储
+     * @param workflow 本地目录绑定工作流
+     * @param workflowRepository 工作流持久化仓储
+     */
     public LocalDirectoryBindingTask(TaskEntity entity, TaskRepository taskRepository,
                                      DirectoryBindingWorkflowEntity workflow,
                                      DirectoryBindingWorkflowRepository workflowRepository) {

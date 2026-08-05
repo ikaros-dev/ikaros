@@ -37,6 +37,13 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
     /** 内嵌媒体轨道探测服务. */
     private final MediaTrackProbeService mediaTrackProbeService;
 
+    /**
+     * 创建本地媒体扫描器.
+     *
+     * @param attachmentRepository 附件树查询仓储
+     * @param pathValidator 本地附件路径校验器
+     * @param mediaTrackProbeService 媒体轨道探测服务
+     */
     public DefaultLocalMediaScanner(AttachmentRepository attachmentRepository,
                                     LocalAttachmentPathValidator pathValidator,
                                     MediaTrackProbeService mediaTrackProbeService) {

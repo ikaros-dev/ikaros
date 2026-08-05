@@ -36,6 +36,13 @@ public class TagEndpoint implements CoreEndpoint {
     private final UserService userService;
     private final TagRepository tagRepository;
 
+    /**
+     * 创建标签接口端点.
+     *
+     * @param tagService 标签服务
+     * @param userService 用户服务
+     * @param tagRepository 标签仓储
+     */
     public TagEndpoint(TagService tagService, UserService userService,
                        TagRepository tagRepository) {
         this.tagService = tagService;
