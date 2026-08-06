@@ -21,6 +21,9 @@ class MediaFileDetectorTest {
         assertDetected(webp(), "webp", MediaFileFormat.WEBP);
         assertDetected(bmp(), "bmp", MediaFileFormat.BMP);
         assertDetected(bmff("avif", "mif1"), "avif", MediaFileFormat.AVIF);
+        assertDetected(bmff("heic", "mif1"), "heic", MediaFileFormat.HEIF);
+        assertDetected(text("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1\" "
+            + "height=\"1\"><path d=\"M0 0\"/></svg>"), "svg", MediaFileFormat.SVG);
     }
 
     @Test

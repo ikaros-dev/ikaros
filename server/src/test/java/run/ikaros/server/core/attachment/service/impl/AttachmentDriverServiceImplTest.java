@@ -29,12 +29,15 @@ import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
+import run.ikaros.api.core.media.MediaFileDetectionResult;
+import run.ikaros.api.core.media.MediaFileFormat;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
 import run.ikaros.server.core.attachment.extension.LocalDiskAttachmentDriverFetcher;
 import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
+import run.ikaros.server.core.attachment.service.AttachmentContentInspectionService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.attachment.service.AttachmentSha1Service;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
@@ -72,6 +75,9 @@ class AttachmentDriverServiceImplTest {
     /** 附件驱动扫描器. */
     @Mock
     private AttachmentDriverFetcher fetcher;
+    /** 附件内容检查服务。 */
+    @Mock
+    private AttachmentContentInspectionService contentInspectionService;
     /** 被测试的附件驱动服务. */
     private AttachmentDriverServiceImpl service;
     /** 驱动ID. */
@@ -86,7 +92,7 @@ class AttachmentDriverServiceImplTest {
         MockitoAnnotations.openMocks(this);
         service = new AttachmentDriverServiceImpl(driverRepository, attachmentRepository,
             eventPublisher, attachmentService, mountService, attachmentSha1Service, template,
-            extensionComponentsFinder);
+            extensionComponentsFinder, contentInspectionService);
         driverId = UUID.randomUUID();
         parentId = UUID.randomUUID();
         remotePath = "D:/media";
@@ -108,6 +114,8 @@ class AttachmentDriverServiceImplTest {
         when(fetcher.getDriverType()).thenReturn(AttachmentDriverType.LOCAL);
         when(fetcher.getDriverName())
             .thenReturn(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME);
+        when(contentInspectionService.inspect(any(Attachment.class), eq(fetcher)))
+            .thenReturn(Mono.just(new MediaFileDetectionResult(MediaFileFormat.MATROSKA)));
         when(attachmentService.save(any(Attachment.class)))
             .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
         when(attachmentService.removeByIdOnlyRecords(any(UUID.class))).thenReturn(Mono.empty());
@@ -171,6 +179,42 @@ class AttachmentDriverServiceImplTest {
         assertThat(attachmentCaptor.getValue().getSha1()).isNull();
         verify(attachmentService).removeByIdOnlyRecords(missingFile.getId());
         verify(attachmentSha1Service).calculateAsync(fetcher, List.of(changedFile));
+    }
+
+    @Test
+    void refreshSkipsUnsupportedDriverNameBeforeInspectionAndSave() {
+        Attachment unknownFile = scannedFile("D:/media/payload.exe", 101L,
+            LocalDateTime.of(2026, 7, 30, 12, 0));
+        when(fetcher.getChildren(driverId, parentId, remotePath))
+            .thenReturn(Flux.just(unknownFile));
+        when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
+            .thenReturn(Flux.empty());
+
+        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+
+        verify(contentInspectionService, never()).inspect(any(Attachment.class), eq(fetcher));
+        verify(attachmentService, never()).save(any(Attachment.class));
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of());
+    }
+
+    @Test
+    void refreshRemovesStoredFileWhenContentInspectionFails() {
+        Attachment invalidFile = scannedFile("D:/media/payload.mp4", 101L,
+            LocalDateTime.of(2026, 7, 30, 12, 0));
+        AttachmentEntity storedInvalidFile = storedFile(invalidFile,
+            invalidFile.getModifiedTime(), "old-sha1");
+        when(fetcher.getChildren(driverId, parentId, remotePath))
+            .thenReturn(Flux.just(invalidFile));
+        when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
+            .thenReturn(Flux.just(storedInvalidFile));
+        when(contentInspectionService.inspect(invalidFile, fetcher))
+            .thenReturn(Mono.error(new IllegalArgumentException("invalid media")));
+
+        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+
+        verify(attachmentService, never()).save(any(Attachment.class));
+        verify(attachmentService).removeByIdOnlyRecords(storedInvalidFile.getId());
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of());
     }
 
     @Test

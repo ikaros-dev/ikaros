@@ -4,17 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * 媒体文件名门禁、格式查询和最终检测结果校验策略。
  */
 public final class MediaFilePolicy {
-
-    /** 必须与扩展名严格一致的文本格式。 */
-    private static final Set<MediaFileFormat> STRICT_FORMATS = Set.of(
-        MediaFileFormat.SRT, MediaFileFormat.ASS, MediaFileFormat.SSA, MediaFileFormat.VTT,
-        MediaFileFormat.LRC, MediaFileFormat.IDX, MediaFileFormat.TTML);
 
     private MediaFilePolicy() {
     }
@@ -67,8 +61,9 @@ public final class MediaFilePolicy {
         if ("sub".equals(normalized)) {
             return format == MediaFileFormat.MICRODVD || format == MediaFileFormat.VOBSUB;
         }
-        boolean strictExtension = STRICT_FORMATS.stream()
-            .anyMatch(strictFormat -> strictFormat.extensions().contains(normalized));
+        boolean strictExtension = formatsForExtension(normalized).stream()
+            .anyMatch(candidate -> candidate.category() == MediaFileCategory.SUBTITLE
+                || candidate.category() == MediaFileCategory.LYRICS);
         if (strictExtension) {
             return format.extensions().contains(normalized);
         }

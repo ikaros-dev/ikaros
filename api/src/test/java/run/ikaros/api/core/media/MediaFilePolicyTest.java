@@ -20,10 +20,28 @@ class MediaFilePolicyTest {
             .collect(Collectors.toSet());
 
         assertThat(extensions).containsExactlyInAnyOrder(
-            "mp4", "m4v", "mov", "mkv", "avi", "webm", "flv", "ts", "m2ts", "wmv",
-            "mp3", "aac", "m4a", "flac", "ogg", "opus", "wav", "wma",
-            "jpg", "jpeg", "png", "gif", "webp", "bmp", "avif",
-            "srt", "ass", "ssa", "vtt", "sub", "idx", "ttml", "lrc");
+            "mp4", "mkv", "mov", "webm", "flv", "f4v", "3gp", "3g2", "rmvb", "rm",
+            "avi", "wmv", "asf", "ts", "m2ts", "mts", "tp", "vob", "dat", "m4v", "swf",
+            "mpg", "mpeg", "mpe", "ogv", "qt", "trp", "m1v", "m2v", "ogg", "mxf", "wtv",
+            "dvr-ms", "m4p", "amv", "viv", "ivf", "flc", "fli", "mjpeg",
+            "mp3", "aac", "m4a", "oga", "flac", "ape", "wav", "alac", "aiff", "aif", "dsf",
+            "dff", "opus", "amr", "wma", "mid", "midi", "ra", "m4r", "m4b", "mp2", "mp1",
+            "aifc", "awb", "wv", "mpc", "mka", "tak", "tta", "shn", "gsm", "au", "snd",
+            "vox", "qcp", "oma",
+            "srt", "ass", "ssa", "vtt", "ttml", "dfxp", "sbv", "sub", "idx", "sup", "pgs",
+            "smi", "smil", "scc", "sami", "rt", "pjs", "cap", "stl", "tds", "ttxt", "usf",
+            "aqt", "jss", "lrc", "krc", "qrc", "trc", "ksc", "kaj", "tlrc", "skrc",
+            "jpg", "jpeg", "jpe", "jfif", "png", "gif", "webp", "avif", "heic", "heif", "bmp",
+            "dib", "tiff", "tif", "eps", "svg", "ico", "cur", "tga", "pcx", "wmf", "emf",
+            "dds", "hdr", "exr", "pbm", "pgm", "ppm", "pnm", "fits", "fit", "jp2", "j2k",
+            "jpf", "jpm", "jpg2", "jxl", "iff", "lbm", "mac", "pct", "pict", "xbm", "xpm",
+            "cgm", "fpx", "wbm", "wbmp", "pcd", "ras", "sun");
+
+        assertThat(extensions).doesNotContain(
+            "cda", "ram", "txt", "xml", "xvid", "divx", "ai", "pdf", "psd", "psb", "pdd",
+            "svgz", "dng", "cr2", "cr3", "crw", "nef", "nrw", "arw", "srf", "sr2", "orf",
+            "ori", "rw2", "raf", "pef", "ptx", "dcr", "kdc", "k25", "mrw", "bay", "erf",
+            "fff", "mef", "mos", "srw", "x3f", "dcm", "dicom");
     }
 
     @Test

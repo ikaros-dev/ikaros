@@ -98,6 +98,9 @@ public final class MediaFileDetector {
         if (isBmp(data)) {
             return Optional.of(MediaFileFormat.BMP);
         }
+        if (isSvg(data)) {
+            return Optional.of(MediaFileFormat.SVG);
+        }
         Optional<MediaFileFormat> bmff = detectIsoBmff(data);
         if (bmff.isPresent()) {
             return bmff;
@@ -159,7 +162,7 @@ public final class MediaFileDetector {
                 ? Optional.of(MediaFileFormat.IDX) : Optional.empty();
             case "sub" -> MICRODVD_TIMELINE.matcher(text).find()
                 ? Optional.of(MediaFileFormat.MICRODVD) : Optional.empty();
-            case "ttml" -> isTtml(data)
+            case "ttml", "dfxp" -> isTtml(data)
                 ? Optional.of(MediaFileFormat.TTML) : Optional.empty();
             default -> Optional.empty();
         };
@@ -276,6 +279,10 @@ public final class MediaFileDetector {
         }
         if (containsBrand(brands, "avif", "avis")) {
             return Optional.of(MediaFileFormat.AVIF);
+        }
+        if (containsBrand(brands, "heic", "heix", "hevc", "hevx", "heim", "heis",
+            "mif1", "msf1")) {
+            return Optional.of(MediaFileFormat.HEIF);
         }
         if (containsBrand(brands, "M4A ", "M4B ", "M4P ")) {
             return Optional.of(MediaFileFormat.M4A);
@@ -589,6 +596,23 @@ public final class MediaFileDetector {
                 }
             }
             return false;
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    private static boolean isSvg(byte[] data) {
+        Optional<String> decoded = decodeUtf8(data);
+        if (decoded.isEmpty() || !decoded.get().stripLeading().startsWith("<")) {
+            return false;
+        }
+        try {
+            DocumentBuilderFactory factory = secureDocumentBuilderFactory();
+            Document document = factory.newDocumentBuilder()
+                .parse(new ByteArrayInputStream(data));
+            Element root = document.getDocumentElement();
+            return root != null && "svg".equals(root.getLocalName())
+                && "http://www.w3.org/2000/svg".equals(root.getNamespaceURI());
         } catch (Exception exception) {
             return false;
         }
