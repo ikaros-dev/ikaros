@@ -37,6 +37,10 @@ const loadMediaFileFormatHints = () => {
 					throw new TypeError('Invalid media format hints response');
 				}
 				return response.data;
+			})
+			.catch((error) => {
+				formatHintsRequest = undefined;
+				throw error;
 			});
 	}
 	return formatHintsRequest;
@@ -85,9 +89,12 @@ const createMediaFileFormatLookup = (
 
 export const loadMediaFileFormatLookup = () => {
 	if (!formatLookupRequest) {
-		formatLookupRequest = loadMediaFileFormatHints().then(
-			createMediaFileFormatLookup
-		);
+		formatLookupRequest = loadMediaFileFormatHints()
+			.then(createMediaFileFormatLookup)
+			.catch((error) => {
+				formatLookupRequest = undefined;
+				throw error;
+			});
 	}
 	return formatLookupRequest;
 };

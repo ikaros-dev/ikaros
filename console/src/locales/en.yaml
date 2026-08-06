@@ -85,6 +85,7 @@ component:
       uploadFinish: Uplaod finish
       uploadException: Uplaod exception
       notSupportFileFormat: Not support file format
+      supportedFormatHint: Select a media file supported by the server
       clickCancel: Click cancel
       clickRetry: Click retry
 view:
@@ -383,6 +384,9 @@ module:
     drawer:
       fragment-upload:
         title: Upload Files
+        formatLoading: Loading allowed attachment formats
+        formatLoadFailed: Failed to load the attachment format whitelist; uploads are blocked
+        retryFormatLoad: Retry
         confirm:
           message: >-
             When exiting the upload page, if a file has not been uploaded, the

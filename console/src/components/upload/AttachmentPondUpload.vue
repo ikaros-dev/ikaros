@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import VueFilePond, { setOptions } from 'vue-filepond';
-import { FileStatus } from 'filepond';
 import 'filepond/dist/filepond.min.css';
 
 // Plugins
@@ -14,6 +13,10 @@ import Base64 from 'crypto-js/enc-base64';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
+import {
+	detectFileExtensionType,
+	hasActiveFileTransfers,
+} from '@/components/upload/file-pond';
 
 const filePondRef = ref(null);
 const { t } = useI18n();
@@ -120,7 +123,7 @@ const getFirstFile = () => {
 const hasIncompleteFiles = () => {
 	// @ts-expect-error
 	const files = filePondRef.value?.getFiles() || [];
-	return files.some((file) => file.status !== FileStatus.PROCESSING_COMPLETE);
+	return hasActiveFileTransfers(files);
 };
 
 defineExpose({
@@ -147,7 +150,10 @@ defineExpose({
 		:chunkUploads="props.enableChunkUploads"
 		:chunkSize="props.chunkSize"
 		:chunkForce="props.enableChunkForce"
-		fileValidateTypeLabelExpectedTypes="请选择 {lastType} 格式的文件"
+		:fileValidateTypeDetectType="detectFileExtensionType"
+		:fileValidateTypeLabelExpectedTypes="
+			t('component.upload.file-pond-upload.supportedFormatHint')
+		"
 		:labelFileProcessing="t('component.upload.file-pond-upload.uploadding')"
 		:labelFileProcessingAborted="
 			t('component.upload.file-pond-upload.cancelUpload')

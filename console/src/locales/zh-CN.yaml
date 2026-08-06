@@ -85,6 +85,7 @@ component:
       uploadFinish: 上传完成
       uploadException: 上传异常
       notSupportFileFormat: 不支持的附件格式
+      supportedFormatHint: 请选择服务端支持的媒体文件
       clickCancel: 点击取消
       clickRetry: 点击重试
 view:
@@ -373,6 +374,9 @@ module:
     drawer:
       fragment-upload:
         title: 上传附件
+        formatLoading: 正在加载允许上传的附件格式
+        formatLoadFailed: 无法加载附件格式白名单，已阻止上传
+        retryFormatLoad: 重新加载
         confirm:
           message: 退出上传页时，如有附件还未上传完毕，下次需要从零开始上传，您确定要退出当前上传页吗？
           title: 温馨提示
