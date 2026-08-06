@@ -2,7 +2,7 @@
 import { apiClient } from '@/utils/api-client';
 import { Attachment } from '@runikaros/api-client';
 import { formatFileSize } from '@/utils/string-util';
-import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import {
 	ElButton,
 	ElCol,
@@ -15,11 +15,14 @@ import {
 	ElRow,
 } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { isImage, isVideo, isVoice } from '@/utils/file';
 import { Edit } from '@element-plus/icons-vue';
 import Artplayer from '@/components/video/Artplayer.vue';
 import AttachmentRelationsDialog from './AttachmentRelationsDialog.vue';
 import { getCompleteFileUrl } from '@/utils/url-tuils';
+import {
+	loadMediaFileFormatLookup,
+	type MediaFileFormatLookup,
+} from '@/utils/media-file-format';
 
 const { t } = useI18n();
 
@@ -65,7 +68,17 @@ const file = computed({
 	},
 });
 
-const isSvgFile = computed(() => /\.svg$/i.test(file.value.name ?? ''));
+const mediaFileFormatLookup = ref<MediaFileFormatLookup>();
+const mediaFileCategory = computed(() =>
+	file.value.name
+		? mediaFileFormatLookup.value?.categoryOf(file.value.name)
+		: undefined
+);
+const isSvgFile = computed(
+	() =>
+		Boolean(file.value.name) &&
+		mediaFileFormatLookup.value?.formatOf(file.value.name as string) === 'SVG'
+);
 const svgPreviewUrl = ref('');
 const svgPreviewLoading = ref(false);
 const svgPreviewFailed = ref(false);
@@ -88,10 +101,7 @@ const loadSvgPreview = async () => {
 			{ responseType: 'blob' }
 		);
 		const data = response.data as unknown;
-		const blob =
-			data instanceof Blob
-				? data
-				: new Blob([data as BlobPart], { type: 'image/svg+xml' });
+		const blob = data instanceof Blob ? data : new Blob([data as BlobPart]);
 		svgPreviewUrl.value = URL.createObjectURL(blob);
 	} catch (error) {
 		svgPreviewFailed.value = true;
@@ -141,10 +151,24 @@ watch(
 	{ immediate: true }
 );
 watch(
-	[() => props.visible, () => props.defineFile.id, () => props.defineFile.name],
+	[
+		() => props.visible,
+		() => props.defineFile.id,
+		() => props.defineFile.name,
+		mediaFileFormatLookup,
+	],
 	loadSvgPreview,
 	{ immediate: true }
 );
+onMounted(() => {
+	loadMediaFileFormatLookup()
+		.then((lookup) => {
+			mediaFileFormatLookup.value = lookup;
+		})
+		.catch(() => {
+			mediaFileFormatLookup.value = undefined;
+		});
+});
 onUnmounted(() => {
 	clearSha1RefreshTimer();
 	revokeSvgPreviewUrl();
@@ -263,7 +287,7 @@ const getArtplayerInstance = (art: any) => {
 						></iframe>
 					</div>
 					<a
-						v-else-if="isImage(file.name as string)"
+						v-else-if="mediaFileCategory === 'IMAGE'"
 						:href="getCompleteFileUrl(file.url)"
 						target="_blank"
 					>
@@ -274,7 +298,7 @@ const getArtplayerInstance = (art: any) => {
 						/>
 					</a>
 					<artplayer
-						v-else-if="isVideo(file.name as string)"
+						v-else-if="mediaFileCategory === 'VIDEO'"
 						ref="artplayerRef"
 						:attachment-id="file.id"
 						style="width: 100%"
@@ -289,7 +313,7 @@ const getArtplayerInstance = (art: any) => {
 						{{ t('module.attachment.details.message.hint.videoFormat') }}
 					</video> -->
 					<audio
-						v-else-if="isVoice(file.name as string)"
+						v-else-if="mediaFileCategory === 'AUDIO'"
 						controls
 						:volume="0.3"
 						:src="getCompleteFileUrl(file.url)"

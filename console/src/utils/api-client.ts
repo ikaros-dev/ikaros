@@ -207,4 +207,4 @@ const setApiClientJwtToken = (token?: string) => {
 	delete axiosInstance.defaults.headers.common['Authorization'];
 };
 
-export { apiClient, setApiClientJwtToken };
+export { apiClient, axiosInstance, setApiClientJwtToken };

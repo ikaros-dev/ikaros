@@ -5,6 +5,7 @@ import { ElDrawer } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import DialogMessage from '@/components/dialog/DialogMessage.vue';
 import AttachmentPondUpload from '@/components/upload/AttachmentPondUpload.vue';
+import { loadMediaFileFormatLookup } from '@/utils/media-file-format';
 
 const { t } = useI18n();
 
@@ -33,6 +34,7 @@ const emit = defineEmits<{
 
 const uploadVisible = ref(false);
 const drawerVisible = ref(false);
+const accepts = ref<string[] | undefined>();
 const uploadParentId = computed({
 	get() {
 		return props.parentId || '';
@@ -55,6 +57,13 @@ watch(
 		if (newValue) {
 			uploadVisible.value = true;
 			drawerVisible.value = props.visible;
+			loadMediaFileFormatLookup()
+				.then((lookup) => {
+					accepts.value = [...lookup.accepts];
+				})
+				.catch(() => {
+					accepts.value = undefined;
+				});
 		} else {
 			const uploadVisibleTimer = setTimeout(() => {
 				uploadVisible.value = false;
@@ -138,6 +147,7 @@ const uploadHandler = (file, onUploadProgress) => {
 					:enableChunkForce="true"
 					:enableChunkUploads="true"
 					:multiple="props.allowMultiple"
+					:accepts="accepts"
 				/>
 			</div>
 		</template>

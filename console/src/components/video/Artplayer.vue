@@ -14,22 +14,14 @@ import { apiClient } from '@/utils/api-client';
 // @ts-ignore
 import type { Setting } from 'artplayer/types/setting';
 import { subtitleNameChineseMap } from '@/modules/common/constants';
+import {
+	loadMediaFileFormatLookup,
+	type MediaFileFormatLookup,
+} from '@/utils/media-file-format';
 
 const baseUrl = import.meta.env.BASE_URL;
 const subtitlesOctopusWorkJsPath =
 	baseUrl + 'js/JavascriptSubtitlesOctopus/subtitles-octopus-worker.js';
-const audioMimeTypes: Record<string, string> = {
-	aac: 'audio/aac',
-	flac: 'audio/flac',
-	m4a: 'audio/mp4',
-	mp3: 'audio/mpeg',
-	mp4a: 'audio/mp4',
-	oga: 'audio/ogg',
-	ogg: 'audio/ogg',
-	opus: 'audio/ogg; codecs=opus',
-	wav: 'audio/wav',
-};
-
 const props = defineProps<{
 	attachmentId?: string;
 	resource?: EpisodeResource;
@@ -45,6 +37,14 @@ const effectiveAttachmentId = computed(
 	() => props.resource?.attachmentId ?? props.attachmentId
 );
 const resourceTracks = computed(() => props.resource?.tracks ?? []);
+const mediaFileFormatLookup = ref<MediaFileFormatLookup>();
+const loadMediaFileFormats = async () => {
+	try {
+		mediaFileFormatLookup.value = await loadMediaFileFormatLookup();
+	} catch {
+		mediaFileFormatLookup.value = undefined;
+	}
+};
 
 const attachment = ref<Attachment>();
 const fetchAttachment = async () => {
@@ -159,13 +159,16 @@ const isExternalTrack = (track: MediaTrack) =>
 	Boolean(track.attachment_id && track.url);
 
 const audioTrackIsSupported = (track: MediaTrack) => {
-	const codec = (track.codec ?? '').replace(/^\./, '').toLowerCase();
-	const extension = track.url
-		?.split(/[?#]/, 1)[0]
-		.split('.')
-		.pop()
-		?.toLowerCase();
-	const mimeType = audioMimeTypes[codec] ?? audioMimeTypes[extension ?? ''];
+	const codecFileName = track.codec
+		? `track.${track.codec.replace(/^\./, '')}`
+		: undefined;
+	const mimeType =
+		(codecFileName
+			? mediaFileFormatLookup.value?.mimeTypeOf(codecFileName, 'AUDIO')
+			: undefined) ??
+		(track.url
+			? mediaFileFormatLookup.value?.mimeTypeOf(track.url, 'AUDIO')
+			: undefined);
 	return Boolean(
 		mimeType && document.createElement('audio').canPlayType(mimeType)
 	);
@@ -318,6 +321,7 @@ const initialize = async () => {
 	currentSubUrl.value = '';
 	attachment.value = undefined;
 	if (!effectiveAttachmentId.value) return;
+	await loadMediaFileFormats();
 	await fetchAttachment();
 	await getVideoSubtitles();
 	await initFonts();

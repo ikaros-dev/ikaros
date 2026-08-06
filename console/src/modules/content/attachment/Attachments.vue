@@ -6,9 +6,12 @@ import {
 	AttachmentTypeEnum,
 	DirectoryBindingWorkflowEntity,
 } from '@runikaros/api-client';
-import { isImage, isVideo, isVoice } from '@/utils/file';
 import moment from 'moment';
 import { apiClient } from '@/utils/api-client';
+import {
+	loadMediaFileFormatLookup,
+	type MediaFileFormatLookup,
+} from '@/utils/media-file-format';
 import { usePluginModuleStore } from '@/stores/plugin';
 import { PluginModule } from '@runikaros/shared';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
@@ -90,6 +93,9 @@ const attachmentCondition = ref({
 });
 
 const attachments = ref<Attachment[]>([]);
+const mediaFileFormatLookup = ref<MediaFileFormatLookup>();
+const mediaFileCategory = (fileName?: string) =>
+	fileName ? mediaFileFormatLookup.value?.categoryOf(fileName) : undefined;
 let attachmentRequestId = 0;
 
 type AttachmentSortProperty = 'name' | 'updateTime' | 'size';
@@ -716,6 +722,13 @@ const currentLocalBindingWorkflow = computed(() =>
 );
 
 onMounted(() => {
+	loadMediaFileFormatLookup()
+		.then((lookup) => {
+			mediaFileFormatLookup.value = lookup;
+		})
+		.catch(() => {
+			mediaFileFormatLookup.value = undefined;
+		});
 	pluginModules.forEach((pluginModule: PluginModule) => {
 		const { extensionPoints } = pluginModule;
 		if (!extensionPoints?.['subject:sync:platform']) {
@@ -1115,19 +1128,19 @@ const onAttachmentDetailDrawerClose = () => {
 							/>
 							<span v-else>
 								<Picture
-									v-if="isImage(scoped.row.name)"
+									v-if="mediaFileCategory(scoped.row.name) === 'IMAGE'"
 									:color="
 										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
 									"
 								/>
 								<Headset
-									v-else-if="isVoice(scoped.row.name)"
+									v-else-if="mediaFileCategory(scoped.row.name) === 'AUDIO'"
 									:color="
 										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
 									"
 								/>
 								<Film
-									v-else-if="isVideo(scoped.row.name)"
+									v-else-if="mediaFileCategory(scoped.row.name) === 'VIDEO'"
 									:color="
 										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
 									"

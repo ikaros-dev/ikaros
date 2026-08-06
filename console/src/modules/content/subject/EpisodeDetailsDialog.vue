@@ -20,7 +20,10 @@ import {
 import { base64Encode } from '@/utils/string-util';
 
 import { apiClient } from '@/utils/api-client';
-import { isVideo } from '@/utils/file';
+import {
+	loadMediaFileFormatLookup,
+	type MediaFileFormatLookup,
+} from '@/utils/media-file-format';
 import { Close, Plus } from '@element-plus/icons-vue';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 import { useI18n } from 'vue-i18n';
@@ -46,10 +49,26 @@ const props = withDefaults(
 );
 
 const episode = ref<Episode>({});
+const mediaFileFormatLookup = ref<MediaFileFormatLookup>();
+const loadMediaFileFormats = async () => {
+	try {
+		mediaFileFormatLookup.value = await loadMediaFileFormatLookup();
+	} catch {
+		mediaFileFormatLookup.value = undefined;
+	}
+};
+const isVideoResource = (resource?: EpisodeResource) => {
+	const fileName = resource?.name || resource?.url;
+	return (
+		Boolean(fileName) &&
+		mediaFileFormatLookup.value?.categoryOf(fileName as string) === 'VIDEO'
+	);
+};
 
 watch(props, async (newVal) => {
 	// console.log(newVal);
 	episode.value = newVal.ep as Episode;
+	await loadMediaFileFormats();
 	await fetchEpisodeResources();
 	if (episodeResources.value) {
 		if (!episodeResources.value.some((resource) => resource.imageSequence)) {
@@ -223,7 +242,7 @@ const loadVideoAttachment = async () => {
 	if (
 		episodeResources.value &&
 		episodeResources.value.length == 1 &&
-		isVideo(episodeResources.value[0].url as string)
+		isVideoResource(episodeResources.value[0])
 	) {
 		console.debug(
 			'episodeResources.value[0].attachmentId',
@@ -324,19 +343,8 @@ const onDialogClose = () => {
 						>
 						<span v-else>{{ episodeResources[0].name }}</span>
 						<br />
-						<!-- <video
-              v-if="isVideo(episode.resources[0].url as string)"
-              style="width: 100%"
-              :src="episode.resources[0].url"
-              controls
-              preload="metadata"
-            >
-              {{
-                t('module.subject.dialog.episode.details.hint.video.unsuport')
-              }}
-            </video> -->
 						<artplayer
-							v-if="isVideo(episodeResources[0].url as string)"
+							v-if="isVideoResource(episodeResources[0])"
 							:attachment-id="episodeResources[0].attachmentId"
 							:resource="episodeResources[0]"
 							style="width: 100%"
