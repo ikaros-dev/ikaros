@@ -28,15 +28,16 @@ const fetchRoles = async () => {
 };
 
 const editRow = ref(false);
-const editRowId = ref(-1);
+const editRowId = ref<string>();
 const editBtn = ref({
 	type: 'primary' as 'primary' | 'success',
 	text: t('common.button.edit'),
 	loading: false,
 });
 
-const changeEditBtnStatus = async (id) => {
-	if (editRowId.value === -1) {
+const changeEditBtnStatus = async (id: string | undefined) => {
+	if (!id) return;
+	if (!editRowId.value) {
 		editRowId.value = id;
 		editRow.value = true;
 		editBtn.value.type = 'success' as const;
@@ -49,8 +50,10 @@ const changeEditBtnStatus = async (id) => {
 				role: role as Role,
 			})
 			.then(() => {
-				ElMessage.success(t('module.roles.message.update_success', { id: editRowId.value }));
-				editRowId.value = -1;
+				ElMessage.success(
+					t('module.roles.message.update_success', { id: editRowId.value })
+				);
+				editRowId.value = undefined;
 				editBtn.value.type = 'primary';
 				editBtn.value.text = t('common.button.edit');
 			})
@@ -67,7 +70,9 @@ const subitRoleAdd = async () => {
 	await apiClient.role.createRole({
 		role: newRole.value,
 	});
-	ElMessage.success(t('module.roles.message.create_success', { name: newRole.value.name }));
+	ElMessage.success(
+		t('module.roles.message.create_success', { name: newRole.value.name })
+	);
 	roleAddDialogVisible.value = false;
 	newRole.value = {};
 	await fetchRoles();
@@ -97,7 +102,11 @@ onMounted(() => {
 <template>
 	<div>
 		<!-- 角色添加弹框 -->
-		<el-dialog v-model="roleAddDialogVisible" :title="t('module.roles.dialog.create')" width="500">
+		<el-dialog
+			v-model="roleAddDialogVisible"
+			:title="t('module.roles.dialog.create')"
+			width="500"
+		>
 			{{ t('common.label.name') }}
 			<br />
 			<el-input v-model="newRole.name" />
@@ -108,23 +117,37 @@ onMounted(() => {
 			<el-input v-model="newRole.description" type="textarea" :rows="2" />
 			<template #footer>
 				<div>
-					<el-button @click="roleAddDialogVisible = false">{{ t('common.button.cancel') }}</el-button>
-					<el-button type="primary" @click="subitRoleAdd">{{ t('common.button.confirm') }}</el-button>
+					<el-button @click="roleAddDialogVisible = false">{{
+						t('common.button.cancel')
+					}}</el-button>
+					<el-button type="primary" @click="subitRoleAdd">{{
+						t('common.button.confirm')
+					}}</el-button>
 				</div>
 			</template>
 		</el-dialog>
 
 		<el-row>
 			<el-col :span="24">
-				<el-button @click="roleAddDialogVisible = true">{{ t('common.button.add') }}</el-button>
+				<el-button @click="roleAddDialogVisible = true">{{
+					t('common.button.add')
+				}}</el-button>
 			</el-col>
 		</el-row>
 
 		<el-row>
 			<el-col :span="24">
 				<el-table :data="roles" size="large">
-					<el-table-column prop="id" :label="t('common.label.id')" width="160" />
-					<el-table-column prop="name" :label="t('common.label.name')" width="120">
+					<el-table-column
+						prop="id"
+						:label="t('common.label.id')"
+						width="160"
+					/>
+					<el-table-column
+						prop="name"
+						:label="t('common.label.name')"
+						width="120"
+					>
 						<template #default="scope">
 							<span v-if="editRow && editRowId === scope.row.id">
 								<el-input v-model="scope.row.name" />
@@ -134,7 +157,10 @@ onMounted(() => {
 							</span>
 						</template>
 					</el-table-column>
-					<el-table-column prop="description" :label="t('common.label.description')">
+					<el-table-column
+						prop="description"
+						:label="t('common.label.description')"
+					>
 						<template #default="scope">
 							<span v-if="editRow && editRowId === scope.row.id">
 								<el-input v-model="scope.row.description" />
@@ -144,14 +170,22 @@ onMounted(() => {
 							</span>
 						</template>
 					</el-table-column>
-					<el-table-column fixed="right" :label="t('common.label.operations')" min-width="120">
+					<el-table-column
+						fixed="right"
+						:label="t('common.label.operations')"
+						min-width="120"
+					>
 						<template #default="scope">
 							<el-button
 								:loading="editBtn.loading"
 								:type="scope.row.id === editRowId ? editBtn.type : 'primary'"
 								@click="changeEditBtnStatus(scope.row.id)"
 							>
-								{{ scope.row.id === editRowId ? editBtn.text : t('common.button.edit') }}
+								{{
+									scope.row.id === editRowId
+										? editBtn.text
+										: t('common.button.edit')
+								}}
 							</el-button>
 							<el-popconfirm
 								width="300"
@@ -164,14 +198,16 @@ onMounted(() => {
 								@confirm="deleteRole(scope.row.id)"
 							>
 								<template #reference>
-									<el-button type="danger" :disabled="scope.row.id === 1"
-									>{{ t('common.button.delete') }}
+									<el-button
+										type="danger"
+										:disabled="scope.row.name === 'MASTER'"
+										>{{ t('common.button.delete') }}
 									</el-button>
 								</template>
 							</el-popconfirm>
 							<el-button
 								type="primary"
-								:disabled="scope.row.id === 1"
+								:disabled="scope.row.name === 'MASTER'"
 								@click="toRoleAuthiritiesPage(scope.row.id)"
 							>
 								{{ t('common.label.authorities') }}

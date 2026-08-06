@@ -9,10 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.binding.DirectoryBindingContext;
+import run.ikaros.api.core.media.MediaFileDetectionResult;
+import run.ikaros.api.core.media.MediaFileFormat;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
+import run.ikaros.server.core.attachment.service.AttachmentContentInspectionService;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
@@ -20,13 +24,22 @@ class ListFilesStepTest {
 
     @Mock
     private AttachmentRepository attachmentRepository;
+    @Mock
+    private AttachmentContentInspectionService contentInspectionService;
     private ListFilesStep step;
     private UUID directoryId;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        step = new ListFilesStep(attachmentRepository);
+        step = new ListFilesStep(attachmentRepository, contentInspectionService);
+        when(contentInspectionService.inspect(org.mockito.ArgumentMatchers.any()))
+            .thenAnswer(invocation -> {
+                AttachmentEntity entity = invocation.getArgument(0);
+                MediaFileFormat format = entity.getName().endsWith(".jpg")
+                    ? MediaFileFormat.JPEG : MediaFileFormat.MATROSKA;
+                return Mono.just(new MediaFileDetectionResult(format));
+            });
         directoryId = UUID.randomUUID();
     }
 
@@ -140,6 +153,24 @@ class ListFilesStepTest {
                 assertThat(ctx.getChildAttachments()).hasSize(1);
                 assertThat(ctx.getSpSubdirectoryAttachments()).hasSize(1);
             })
+            .verifyComplete();
+    }
+
+    @Test
+    void executeUsesRealCategoryInsteadOfFilenameExtension() {
+        AttachmentEntity fakeVideo = AttachmentEntity.builder()
+            .id(UUID.randomUUID()).parentId(directoryId)
+            .name("audio.mp4").type(AttachmentType.File).build();
+        when(contentInspectionService.inspect(fakeVideo))
+            .thenReturn(Mono.just(new MediaFileDetectionResult(MediaFileFormat.MP3)));
+        when(attachmentRepository.findAllByParentId(directoryId))
+            .thenReturn(Flux.just(fakeVideo));
+
+        DirectoryBindingContext context = DirectoryBindingContext.create(
+            directoryId, "Test", SubjectSyncPlatform.BGM_TV);
+
+        StepVerifier.create(step.execute(context))
+            .assertNext(ctx -> assertThat(ctx.getChildAttachments()).isEmpty())
             .verifyComplete();
     }
 

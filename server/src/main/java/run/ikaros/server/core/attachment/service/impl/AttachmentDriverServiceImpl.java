@@ -26,6 +26,7 @@ import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
+import run.ikaros.api.core.media.MediaFilePolicy;
 import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
 import run.ikaros.api.infra.utils.UuidV7Utils;
@@ -34,6 +35,7 @@ import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
+import run.ikaros.server.core.attachment.service.AttachmentContentInspectionService;
 import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
 import run.ikaros.server.core.attachment.service.AttachmentDriverService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
@@ -59,6 +61,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
 
     private final R2dbcEntityTemplate template;
     private final ExtensionComponentsFinder extensionComponentsFinder;
+    /** 对驱动扫描结果执行有限前缀真实格式检查。 */
+    private final AttachmentContentInspectionService contentInspectionService;
     /** 正在执行的目录刷新任务，用于合并同一目录的并发请求. */
     private final ConcurrentMap<UUID, Mono<Void>> refreshTasks = new ConcurrentHashMap<>();
 
@@ -72,7 +76,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                                        AttachmentDriverMountService mountService,
                                        AttachmentSha1Service attachmentSha1Service,
                                        R2dbcEntityTemplate template,
-                                       ExtensionComponentsFinder extensionComponentsFinder) {
+                                       ExtensionComponentsFinder extensionComponentsFinder,
+                                       AttachmentContentInspectionService contentInspectionService) {
         this.repository = repository;
         this.attachmentRepository = attachmentRepository;
         this.eventPublisher = eventPublisher;
@@ -81,6 +86,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         this.attachmentSha1Service = attachmentSha1Service;
         this.template = template;
         this.extensionComponentsFinder = extensionComponentsFinder;
+        this.contentInspectionService = contentInspectionService;
     }
 
     private AttachmentDriverFetcher getAttDriverFetcher(
@@ -332,7 +338,9 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         AttachmentDriverFetcher fetcher =
             getAttDriverFetcher(driver.getType(), driver.getName());
         Mono<List<Attachment>> scannedAttachments =
-            fetcher.getChildren(driver.getId(), pid, remotePath).collectList();
+            fetcher.getChildren(driver.getId(), pid, remotePath)
+                .concatMap(attachment -> validateScannedAttachment(fetcher, attachment))
+                .collectList();
         Mono<List<AttachmentEntity>> storedAttachments = attachmentRepository
             .findAllByParentIdAndDriverId(pid, driver.getId())
             .collectList();
@@ -363,6 +371,26 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         return saveChanges.flatMap(hashAttachments -> removeMissingAttachments
             .doOnSuccess(ignored ->
                 attachmentSha1Service.calculateAsync(fetcher, hashAttachments)));
+    }
+
+    private Mono<Attachment> validateScannedAttachment(AttachmentDriverFetcher fetcher,
+                                                       Attachment attachment) {
+        if (attachment.getType() == AttachmentType.Driver_Directory) {
+            return Mono.just(attachment);
+        }
+        if (attachment.getType() != AttachmentType.Driver_File
+            || !MediaFilePolicy.isAllowedFileName(attachment.getName())) {
+            log.debug("Skip unsupported driver entry: type={}, name={}",
+                attachment.getType(), attachment.getName());
+            return Mono.empty();
+        }
+        return contentInspectionService.inspect(attachment, fetcher)
+            .thenReturn(attachment)
+            .onErrorResume(exception -> {
+                log.debug("Skip invalid driver media file: {}, reason={}",
+                    attachment.getName(), exception.getClass().getSimpleName());
+                return Mono.empty();
+            });
     }
 
     private Mono<Attachment> saveChangedAttachment(Attachment scannedAttachment,

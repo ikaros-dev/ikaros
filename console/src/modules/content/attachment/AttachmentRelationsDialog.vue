@@ -22,11 +22,10 @@ const { t } = useI18n();
 const props = withDefaults(
 	defineProps<{
 		visible: boolean;
-		attachmentId?: number;
+		attachmentId: string;
 	}>(),
 	{
 		visible: false,
-		attachmentId: 0,
 	}
 );
 
@@ -34,8 +33,6 @@ const emit = defineEmits<{
 	(event: 'update:visible', visible: boolean): void;
 
 	(event: 'close'): void;
-
-	(event: 'update:attachmentId', attacmentId: number): void;
 }>();
 
 const dialogVisible = computed({
@@ -47,54 +44,49 @@ const dialogVisible = computed({
 	},
 });
 
-const masterAttachmentId = computed({
-	get() {
-		return props.attachmentId;
-	},
-	set(value) {
-		emit('update:attachmentId', value);
-	},
-});
-
 const onClose = () => {
 	dialogVisible.value = false;
-	masterAttachmentId.value = 0;
 	attachmentTableDatas.value = [];
 	emit('close');
 };
 
 type AttachmentTableColumn = {
-	id: number | undefined;
-	type: string | undefined;
-	masterId: number | undefined;
-	relationAtt: Attachment;
+	id?: string;
+	type: 'VIDEO_SUBTITLE';
+	masterId: string;
+	relationAtt: Attachment & { id: string };
 };
 
 const attachmentRelations = ref<AttachmentRelation[]>([]);
 const attachmentTableDatas = ref<AttachmentTableColumn[]>([]);
 const fetchRelations = async () => {
 	const { data } = await apiClient.attachmentRelation.findAttachmentRelations({
-		attachmentId: masterAttachmentId.value,
+		attachmentId: props.attachmentId,
 		relationType: 'VIDEO_SUBTITLE',
 	});
-	attachmentTableDatas.value = [];
 	attachmentRelations.value = data;
-	attachmentRelations.value.forEach(async (attRel) => {
-		const relationAtt: Attachment = await fetchAttComplexPathById(
-			attRel.relation_attachment_id
-		);
-		const attTabCol: AttachmentTableColumn = {
-			id: attRel.id,
-			type: attRel.type,
-			masterId: attRel.attachment_id,
-			relationAtt: relationAtt,
-		};
-		attachmentTableDatas.value.push(attTabCol);
-	});
+	const rows = await Promise.all(
+		attachmentRelations.value.map(
+			async (attRel): Promise<AttachmentTableColumn | undefined> => {
+				const relationAttachmentId = attRel.relation_attachment_id;
+				if (!relationAttachmentId) return;
+				const relationAtt = await fetchAttComplexPathById(relationAttachmentId);
+				if (!relationAtt.id) return;
+				return {
+					id: attRel.id,
+					type: 'VIDEO_SUBTITLE',
+					masterId: props.attachmentId,
+					relationAtt: { ...relationAtt, id: relationAtt.id },
+				};
+			}
+		)
+	);
+	attachmentTableDatas.value = rows.filter(
+		(row): row is AttachmentTableColumn => row !== undefined
+	);
 };
 
-const fetchAttComplexPathById = async (id: number | undefined) => {
-	if (!id) return {};
+const fetchAttComplexPathById = async (id: string) => {
 	const { data } = await apiClient.attachment.getAttachmentById({
 		id: id,
 	});
@@ -104,13 +96,11 @@ const fetchAttComplexPathById = async (id: number | undefined) => {
 const attachmentMultiSelectDialogVisible = ref(false);
 const onAttMultiSelectDialogClose = async (attachments: Attachment[]) => {
 	// console.debug("onAttMultiSelectDialogClose attachments", attachments);
-	const relationIds: string[] = [];
-	attachments.forEach((att) => {
-		relationIds.push(att.id);
-	});
+	const relationIds = attachments.flatMap((att) => (att.id ? [att.id] : []));
+	if (relationIds.length === 0) return;
 	await apiClient.attachmentRelation.postAttachmentRelations({
 		postAttachmentRelationsParam: {
-			masterId: masterAttachmentId.value,
+			masterId: props.attachmentId,
 			type: 'VIDEO_SUBTITLE',
 			relationIds: relationIds,
 		},
@@ -129,7 +119,7 @@ const onAttRelationDelateBtnConfirm = async (
 	await apiClient.attachmentRelation.deleteAttachmentRelation({
 		masterAttachmentId: attRelation.masterId,
 		relAttachmentId: attRelation.relationAtt.id,
-		type: attRelation.type as 'VIDEO_SUBTITLE',
+		type: attRelation.type,
 	});
 	ElMessage.success(
 		t('module.attachment.dialog.relation.message.delete-success')

@@ -93,7 +93,7 @@ class DefaultAttachmentDriverMountServiceTest {
     void unmountRemovesMappingAndRootAttachment(@TempDir Path remotePath) {
         UUID driverId = UUID.randomUUID();
         UUID attachmentId = UUID.randomUUID();
-        AttachmentDriverEntity driver = createDriver(driverId, remotePath);
+        final AttachmentDriverEntity driver = createDriver(driverId, remotePath);
         directoryResolver.addDirectoryMapping("media", remotePath.toString());
         pathValidator.register(driverId, remotePath.toString());
         when(attachmentRepository.findByTypeAndParentIdAndName(

@@ -56,7 +56,7 @@ class ProcessSpSubdirectoriesStepTest {
     @Test
     void execute_processesOpDir() {
         UUID spDirId = UUID.randomUUID();
-        Attachment opDir = Attachment.builder()
+        final Attachment opDir = Attachment.builder()
             .id(spDirId).name("OP").build();
         AttachmentEntity videoFile = AttachmentEntity.builder()
             .id(UUID.randomUUID()).name("OP.mkv")
@@ -96,8 +96,8 @@ class ProcessSpSubdirectoriesStepTest {
     void execute_mapsDirectoryNamesToCorrectGroups() {
         UUID spDirId1 = UUID.randomUUID();
         UUID spDirId2 = UUID.randomUUID();
-        Attachment opDir = Attachment.builder().id(spDirId1).name("OP").build();
-        Attachment edDir = Attachment.builder().id(spDirId2).name("ED").build();
+        final Attachment opDir = Attachment.builder().id(spDirId1).name("OP").build();
+        final Attachment edDir = Attachment.builder().id(spDirId2).name("ED").build();
 
         AttachmentEntity opFile = AttachmentEntity.builder()
             .id(UUID.randomUUID()).name("OP.mkv")
@@ -141,7 +141,7 @@ class ProcessSpSubdirectoriesStepTest {
     @Test
     void execute_handlesOvaAndOadDirs() {
         UUID spDirId = UUID.randomUUID();
-        Attachment ovaDir = Attachment.builder().id(spDirId).name("OVA").build();
+        final Attachment ovaDir = Attachment.builder().id(spDirId).name("OVA").build();
         AttachmentEntity ovaFile = AttachmentEntity.builder()
             .id(UUID.randomUUID()).name("OVA.mkv")
             .type(AttachmentType.File).parentId(spDirId).build();
@@ -176,7 +176,7 @@ class ProcessSpSubdirectoriesStepTest {
     @Test
     void execute_handlesDefaultCase() {
         UUID spDirId = UUID.randomUUID();
-        Attachment miscDir = Attachment.builder().id(spDirId).name("SPECIAL").build();
+        final Attachment miscDir = Attachment.builder().id(spDirId).name("SPECIAL").build();
         AttachmentEntity miscFile = AttachmentEntity.builder()
             .id(UUID.randomUUID()).name("special.mkv")
             .type(AttachmentType.File).parentId(spDirId).build();

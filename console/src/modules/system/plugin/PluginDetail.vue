@@ -12,9 +12,16 @@ import {
 	ElTabs,
 } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+import type { FormKitSchemaNode } from '@formkit/core';
 
 const route = useRoute();
 const { t } = useI18n();
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isFormKitSchemaNode = (value: unknown): value is FormKitSchemaNode =>
+	typeof value === 'string' || isRecord(value);
 
 const onPluginNameUpdate = async (pluginNewName: string) => {
 	//@ts-ignore
@@ -28,21 +35,27 @@ watch(route, () => {
 });
 
 const configMapSchemas = computed(() => {
-	let str = plugin.value?.configMapSchemas;
-	// let str = plugin.value?.configMapSchemas?.replace(/(\n|\r|\r\n|↵)/g, '');
-	// str = str.replace(/\$/g, '\\$');
-	str = str.replace(' ', '');
-	// console.log('str', str);
-	str = JSON.parse(str);
-	str = Object.values(str);
-	// console.log('str', str);
+	const schemaText = plugin.value.configMapSchemas;
+	if (!schemaText) return [];
+
+	let parsedSchemas: unknown;
+	try {
+		parsedSchemas = JSON.parse(schemaText);
+	} catch {
+		return [];
+	}
+	if (!isRecord(parsedSchemas) && !Array.isArray(parsedSchemas)) return [];
+
+	const schemas = Object.values(parsedSchemas).filter(isFormKitSchemaNode);
 	// 变量Schemas，如果找到包含字段名为 name的对象，
 	// 则从configMap中拿出对应的字段名的值，
 	// 赋值给 schema的对应value上，目的是完成初始化。
-	for (const obj of str) {
+	for (const obj of schemas) {
+		if (!isRecord(obj)) continue;
+		const schemaRecord = obj as Record<string, unknown>;
 		// console.log(obj, typeof obj.name);
-		if (obj && 'string' === typeof obj.name) {
-			const field = obj.name;
+		if ('string' === typeof schemaRecord.name) {
+			const field = schemaRecord.name;
 			// console.log(field);
 			// console.log(configMap.value);
 			if (
@@ -50,7 +63,7 @@ const configMapSchemas = computed(() => {
 				configMap.value.data &&
 				'undefined' !== typeof configMap.value?.data[field]
 			) {
-				obj.value = configMap.value?.data[field];
+				schemaRecord.value = configMap.value?.data[field];
 				// console.log(
 				// 	'configMap.value?.data[field]',
 				// 	configMap.value?.data[field]
@@ -86,8 +99,7 @@ const configMapSchemas = computed(() => {
 		// 	// 	}
 		// 	// }
 	}
-	console.log(str);
-	return str;
+	return schemas;
 });
 
 const plugin = ref<Plugin>({
@@ -251,7 +263,7 @@ onMounted(() => {
 					<FormKitSchema
 						v-if="configMap?.data"
 						:data="configMap?.data"
-						:schema="Object.values(JSON.parse(plugin?.configMapSchemas)) as any"
+						:schema="configMapSchemas"
 					/>
 				</FormKit>
 			</div>

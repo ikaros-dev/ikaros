@@ -108,7 +108,9 @@ const submitRoleAuthoritiesAdd = async () => {
 			authorityIds: authorityIds.value,
 		},
 	});
-	ElMessage.success(t('module.roles.authorities.create_success', { id: roleId.value }));
+	ElMessage.success(
+		t('module.roles.authorities.create_success', { id: roleId.value })
+	);
 	authorityDialogVisible.value = false;
 	await fetchRoleAutiorities();
 };
@@ -192,14 +194,23 @@ onMounted(() => {
 				@selection-change="onAuthTabSelectChange"
 			>
 				<el-table-column type="selection" width="55" />
-					<el-table-column prop="id" :label="t('common.label.id')" width="150" />
-					<el-table-column prop="type" :label="t('common.label.type')" width="180" />
-					<el-table-column prop="target" :label="t('common.label.target')" />
-					<el-table-column prop="authority" :label="t('common.label.authority')" />
+				<el-table-column prop="id" :label="t('common.label.id')" width="150" />
+				<el-table-column
+					prop="type"
+					:label="t('common.label.type')"
+					width="180"
+				/>
+				<el-table-column prop="target" :label="t('common.label.target')" />
+				<el-table-column
+					prop="authority"
+					:label="t('common.label.authority')"
+				/>
 			</el-table>
 			<template #footer>
 				<div class="dialog-footer">
-					<el-button @click="authorityDialogVisible = false">{{ t('common.button.cancel') }}</el-button>
+					<el-button @click="authorityDialogVisible = false">{{
+						t('common.button.cancel')
+					}}</el-button>
 					<el-button type="primary" @click="submitRoleAuthoritiesAdd">
 						{{ t('common.button.submit') }}
 					</el-button>
@@ -207,28 +218,38 @@ onMounted(() => {
 			</template>
 		</el-dialog>
 
-		<el-button @click="authorityDialogVisible = true">{{ t('common.button.add') }}</el-button>
+		<el-button @click="authorityDialogVisible = true">{{
+			t('common.button.add')
+		}}</el-button>
 
 		<el-table :data="roleAutiorities" style="width: 100%">
 			<el-table-column prop="id" :label="t('common.label.id')" width="160" />
-			<el-table-column prop="type" :label="t('common.label.type')" width="180" />
+			<el-table-column
+				prop="type"
+				:label="t('common.label.type')"
+				width="180"
+			/>
 			<el-table-column prop="target" :label="t('common.label.target')" />
 			<el-table-column prop="authority" :label="t('common.label.authority')" />
-			<el-table-column fixed="right" :label="t('common.label.operations')" min-width="120">
+			<el-table-column
+				fixed="right"
+				:label="t('common.label.operations')"
+				min-width="120"
+			>
 				<template #default="scope">
 					<el-popconfirm
 						width="300"
-					:confirm-button-text="t('common.button.delete')"
-					:cancel-button-text="t('common.button.cancel')"
+						:confirm-button-text="t('common.button.delete')"
+						:cancel-button-text="t('common.button.cancel')"
 						confirm-button-type="danger"
 						:icon="WarningFilled"
 						icon-color="red"
-					:title="t('module.roles.authorities.delete_confirm')"
+						:title="t('module.roles.authorities.delete_confirm')"
 						@confirm="deleteRoleAuthority(scope.row.id)"
 					>
 						<template #reference>
 							<el-button type="danger" :disabled="scope.row.id === 1"
-							>{{ t('common.button.delete') }}
+								>{{ t('common.button.delete') }}
 							</el-button>
 						</template>
 					</el-popconfirm>

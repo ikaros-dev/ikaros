@@ -77,7 +77,7 @@ class DefaultCollectionServiceTest {
 
     @Test
     void listCollectionsByCondition_forSubject_withType() {
-        FindCollectionCondition condition = FindCollectionCondition
+        final FindCollectionCondition condition = FindCollectionCondition
             .builder()
             .page(1)
             .size(10)
@@ -112,7 +112,7 @@ class DefaultCollectionServiceTest {
 
     @Test
     void listCollectionsByCondition_forSubject_withoutType() {
-        FindCollectionCondition condition = FindCollectionCondition
+        final FindCollectionCondition condition = FindCollectionCondition
             .builder()
             .page(1)
             .size(10)
@@ -143,7 +143,7 @@ class DefaultCollectionServiceTest {
     @Test
     void listCollectionsByCondition_forEpisode_withTimeRange() {
         long now = System.currentTimeMillis();
-        FindCollectionCondition condition = FindCollectionCondition
+        final FindCollectionCondition condition = FindCollectionCondition
             .builder()
             .page(1)
             .size(10)
@@ -194,7 +194,7 @@ class DefaultCollectionServiceTest {
 
     @Test
     void listCollectionsByCondition_forEpisode_withoutUpdateTimeDesc() {
-        FindCollectionCondition condition = FindCollectionCondition
+        final FindCollectionCondition condition = FindCollectionCondition
             .builder()
             .page(1)
             .size(10)

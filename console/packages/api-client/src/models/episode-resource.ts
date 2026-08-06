@@ -60,4 +60,16 @@ export interface EpisodeResource {
    * @memberof EpisodeResource
    */
   tags?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof EpisodeResource
+   */
+  tracks?: any;
+  /**
+   *
+   * @type {any}
+   * @memberof EpisodeResource
+   */
+  imageSequence?: any;
 }

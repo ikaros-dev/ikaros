@@ -67,18 +67,21 @@ const subject = ref<Subject>({
 	name_cn: '',
 });
 const loadSubject = async () => {
-	//@ts-ignore
-	subject.value.id = route.params.id;
+	const routeSubjectId = route.params.id;
+	if (typeof routeSubjectId !== 'string') return;
+	subject.value.id = routeSubjectId;
 	const { data } = await apiClient.subject.searchSubjectById({
-		id: subject.value.id,
+		id: routeSubjectId,
 	});
 	subject.value = data;
 	await loadSubjectRelations();
 };
 const subjectRelations = ref<SubjectRelation[]>([]);
 const loadSubjectRelations = async () => {
+	const currentSubjectId = subject.value.id;
+	if (!currentSubjectId) return;
 	const { data } = await apiClient.subjectRelation.getSubjectRelationsById({
-		subjectId: subject.value.id,
+		subjectId: currentSubjectId,
 	});
 	// console.log('subject relations rsp:', rsp);
 	if (data instanceof Array) {
@@ -154,9 +157,9 @@ const onSubjectRelationDeleteDialogClose = async () => {
 };
 
 const subjectRelationDeleteDialogVisible = ref(false);
-const subjectId = computed({
+const subjectId = computed<string>({
 	get() {
-		return subject.value.id;
+		return subject.value.id ?? '';
 	},
 	set(val) {
 		subject.value.id = val;
@@ -272,8 +275,8 @@ onMounted(() => {
 						:xl="4"
 					>
 						<SubjectCardLink
-							:id="sub.id"
-							:cover="sub.cover"
+							:id="sub.id ?? ''"
+							:cover="sub.cover ?? ''"
 							:name="sub.name"
 							:name-cn="sub.name_cn"
 							:percentage="0"

@@ -8,12 +8,21 @@ plugins {
 group = 'run.ikaros.api'
 description = 'API of ikaros project, connecting by other projects.'
 
+def baselineApiVersion = '1.2.2'
+def baselineApiJar = layout.projectDirectory.file("abi/ikaros-api-${baselineApiVersion}.jar")
+
 
 repositories {
     mavenCentral()
 }
 
+configurations {
+    japicmp
+}
+
 dependencies {
+    japicmp 'com.github.siom79.japicmp:japicmp:0.23.1'
+
     api platform(project(':platform:server'))
 
     api 'org.springframework.boot:spring-boot-starter-actuator'
@@ -70,6 +79,41 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('checkApiAbi', JavaExec) {
+    group = 'verification'
+    description = "检查 API 与 ${baselineApiVersion} 版本的二进制兼容性"
+    dependsOn tasks.named('jar')
+
+    classpath = configurations.japicmp
+    mainClass = 'japicmp.JApiCmp'
+    inputs.file(baselineApiJar)
+    inputs.file(tasks.named('jar').flatMap { it.archiveFile })
+    outputs.file(layout.buildDirectory.file('reports/japicmp/report.html'))
+
+    doFirst {
+        def baselineFile = baselineApiJar.asFile
+        if (!baselineFile.isFile()) {
+            throw new GradleException("缺少 API ABI 基线文件: ${baselineFile}")
+        }
+
+        def currentJar = tasks.named('jar').get().archiveFile.get().asFile
+        def reportFile = layout.buildDirectory.file('reports/japicmp/report.html').get().asFile
+        reportFile.parentFile.mkdirs()
+        args = [
+                '--old', baselineFile.absolutePath,
+                '--new', currentJar.absolutePath,
+                '--only-modified',
+                '--error-on-binary-incompatibility',
+                '--ignore-missing-classes',
+                '--html-file', reportFile.absolutePath
+        ]
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('checkApiAbi')
 }
 
 publishing {

@@ -71,7 +71,7 @@ class BindEpisodesStepTest {
     @Test
     void execute_bindsVideoToEpisode() {
         // Use filename format supported by RegexUtils.parseEpisodeSeqByFileName
-        Attachment video = Attachment.builder()
+        final Attachment video = Attachment.builder()
             .id(UUID.randomUUID()).name("[01].mkv").build();
 
         when(episodeSequenceRegularService.match(anyString()))
@@ -105,7 +105,7 @@ class BindEpisodesStepTest {
 
     @Test
     void execute_createsNewEpisodeWhenNotFound() {
-        Attachment video = Attachment.builder()
+        final Attachment video = Attachment.builder()
             .id(UUID.randomUUID()).name("[01].mkv").build();
         Episode savedEpisode = Episode.builder()
             .id(UUID.randomUUID()).subjectId(subjectId)
@@ -137,9 +137,9 @@ class BindEpisodesStepTest {
 
     @Test
     void execute_skipsFileWithUnparseableSequence() {
-        Attachment video = Attachment.builder()
+        final Attachment video = Attachment.builder()
             .id(UUID.randomUUID()).name("cover.jpg").build();
-        Attachment video2 = Attachment.builder()
+        final Attachment video2 = Attachment.builder()
             .id(UUID.randomUUID()).name("[01].mkv").build();
 
         when(episodeSequenceRegularService.match("cover.jpg"))
@@ -174,9 +174,9 @@ class BindEpisodesStepTest {
 
     @Test
     void execute_bindsMultipleFiles() {
-        Attachment video1 = Attachment.builder()
+        final Attachment video1 = Attachment.builder()
             .id(UUID.randomUUID()).name("[01].mkv").build();
-        Attachment video2 = Attachment.builder()
+        final Attachment video2 = Attachment.builder()
             .id(UUID.randomUUID()).name("[02].mkv").build();
 
         Episode savedEp1 = Episode.builder()

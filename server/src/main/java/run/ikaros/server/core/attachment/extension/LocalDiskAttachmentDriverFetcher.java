@@ -1,7 +1,6 @@
 package run.ikaros.server.core.attachment.extension;
 
 import static org.springframework.util.FileCopyUtils.BUFFER_SIZE;
-import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -10,7 +9,7 @@ import java.nio.channels.CompletionHandler;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.security.NoSuchAlgorithmException;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -24,11 +23,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
-import run.ikaros.api.infra.utils.FileUtils;
+import run.ikaros.api.core.media.MediaFilePolicy;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
+import run.ikaros.server.core.attachment.service.AttachmentMediaValidationService;
 
 /**
  * 读取本地磁盘目录及文件内容的附件驱动.
@@ -40,9 +41,14 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
     public static String LOCAL_DISK_DRIVER_NAME = "DISK";
     /** 本地驱动文件访问路径校验器. */
     private final LocalAttachmentPathValidator pathValidator;
+    /** 本地文件名称门禁和真实格式检测服务。 */
+    private final AttachmentMediaValidationService mediaValidationService;
 
-    public LocalDiskAttachmentDriverFetcher(LocalAttachmentPathValidator pathValidator) {
+    public LocalDiskAttachmentDriverFetcher(
+        LocalAttachmentPathValidator pathValidator,
+        AttachmentMediaValidationService mediaValidationService) {
         this.pathValidator = pathValidator;
+        this.mediaValidationService = mediaValidationService;
     }
 
     @Override
@@ -66,47 +72,66 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
                         new IllegalArgumentException("目标路径不是可读取目录: " + remotePath));
                 }
                 return Flux.fromArray(files)
-                    .parallel()
-                    .runOn(Schedulers.boundedElastic())
-                    .map(file -> {
-                        long size = 0;
-                        String sha1 = "";
-                        try {
-                            Path realFilePath = pathValidator.validateNow(
-                                driverId, file.getAbsolutePath());
-                            size = Files.size(realFilePath);
-                            if (file.isFile()) {
-                                sha1 = FileUtils.calculateSha1(realFilePath.toString());
-                            }
-                        } catch (IOException ioException) {
-                            log.warn("File size error: {}", ioException.getMessage());
-                        } catch (NoSuchAlgorithmException exception) {
-                            log.warn("File sha1 error: {}", exception.getMessage());
-                        }
-                        return Attachment.builder()
-                            .parentId(parentAttId)
-                            .type(file.isFile()
-                                ? AttachmentType.Driver_File
-                                : AttachmentType.Driver_Directory)
-                            .name(file.getName())
-                            .path(file.getPath())
-                            .url(file.getPath())
-                            .fsPath(file.getAbsolutePath())
-                            .size(size)
-                            .sha1(sha1)
-                            .updateTime(LocalDateTime.now())
-                            .deleted(false)
-                            .driverId(driverId)
-                            .build();
-                    })
-                    .sequential();
+                    .flatMap(file -> file.isDirectory()
+                        ? createAttachment(driverId, parentAttId, file.toPath(),
+                            AttachmentType.Driver_Directory)
+                        : inspectFile(driverId, parentAttId, file.toPath()), 8);
+            });
+    }
+
+    private Mono<Attachment> inspectFile(UUID driverId, UUID parentAttId, Path filePath) {
+        String filename = filePath.getFileName().toString();
+        if (!MediaFilePolicy.isAllowedFileName(filename)) {
+            log.debug("Skip local driver file with unsupported name: {}", filename);
+            return Mono.empty();
+        }
+        return Mono.fromCallable(() -> pathValidator.validateNow(driverId, filePath.toString()))
+            .subscribeOn(Schedulers.boundedElastic())
+            .flatMap(realPath -> mediaValidationService.validate(realPath, filename)
+                .then(createAttachment(driverId, parentAttId, realPath,
+                    AttachmentType.Driver_File)))
+            .onErrorResume(exception -> {
+                log.debug("Skip invalid local driver media file: {}, reason={}",
+                    filename, exception.getClass().getSimpleName());
+                return Mono.empty();
+            });
+    }
+
+    private Mono<Attachment> createAttachment(UUID driverId, UUID parentAttId, Path path,
+                                               AttachmentType type) {
+        return Mono.fromCallable(() -> {
+                Path realPath = pathValidator.validateNow(driverId, path.toString());
+                BasicFileAttributes attributes = Files.readAttributes(
+                    realPath, BasicFileAttributes.class);
+                return Attachment.builder()
+                    .parentId(parentAttId)
+                    .type(type)
+                    .name(realPath.getFileName().toString())
+                    .path(realPath.toString())
+                    .url(realPath.toString())
+                    .fsPath(realPath.toString())
+                    .size(attributes.size())
+                    .sha1("")
+                    .updateTime(LocalDateTime.now())
+                    .modifiedTime(LocalDateTime.ofInstant(attributes.lastModifiedTime().toInstant(),
+                        java.time.ZoneId.systemDefault()))
+                    .deleted(false)
+                    .driverId(driverId)
+                    .build();
+            })
+            .subscribeOn(Schedulers.boundedElastic())
+            .onErrorResume(IOException.class, exception -> {
+                log.warn("Read local driver entry attributes failed: {}",
+                    path.getFileName(), exception);
+                return Mono.empty();
             });
     }
 
     @Override
     public Mono<String> parseReadUrl(Attachment attachment) {
         Assert.notNull(attachment, "Attachment must not be null.");
-        return Mono.just(DRIVER_STATIC_RESOURCE_PREFIX + attachment.getPath());
+        Assert.notNull(attachment.getId(), "Attachment id must not be null.");
+        return Mono.just(OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX + '/' + attachment.getId());
     }
 
     @Override
@@ -165,6 +190,7 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
         }
 
         long bytesToRead = Math.min(buffer.capacity(), end - position + 1);
+        buffer.limit((int) bytesToRead);
         buffer.limit((int) bytesToRead);
 
         channel.read(buffer, position, buffer, new CompletionHandler<Integer, ByteBuffer>() {
