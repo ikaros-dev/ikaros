@@ -23,6 +23,12 @@ public interface AttachmentService {
 
     Mono<Attachment> save(Attachment attachment);
 
+    /**
+     * 验证并上传普通附件，验证失败时不创建附件记录。
+     *
+     * @param uploadCondition 上传名称、父目录和数据流
+     * @return 已保存的附件
+     */
     Mono<Attachment> upload(AttachmentUploadCondition uploadCondition);
 
     Mono<PagingWrap<AttachmentEntity>> listEntitiesByCondition(
@@ -51,13 +57,30 @@ public interface AttachmentService {
     Mono<Void> removeByTypeAndParentIdAndName(
         AttachmentType type, @Nullable UUID parentId, String name);
 
+    /**
+     * 接收分片数据流，并在会话完成后验证、合并和保存附件。
+     *
+     * @param unique 分片上传会话标识
+     * @param uploadLength 完整文件长度
+     * @param uploadOffset 当前分片起始偏移量
+     * @param uploadName 上传文件名
+     * @param content 当前分片数据流
+     * @param parentId 附件父目录 ID
+     * @return 分片处理完成信号
+     */
     Mono<Void> receiveAndHandleFragmentUploadChunkFile(@NotBlank String unique,
                                                        @Nonnull Long uploadLength,
                                                        @Nonnull Long uploadOffset,
                                                        @NotBlank String uploadName,
-                                                       byte[] bytes,
+                                                       Flux<DataBuffer> content,
                                                        @Nullable UUID parentId);
 
+    /**
+     * 清理指定分片上传会话的临时资源。
+     *
+     * @param unique 分片上传会话标识
+     * @return 清理完成信号
+     */
     Mono<Void> revertFragmentUploadFile(@NotBlank String unique);
 
     Mono<Attachment> createDirectory(@Nullable UUID parentId, @NotBlank String name);

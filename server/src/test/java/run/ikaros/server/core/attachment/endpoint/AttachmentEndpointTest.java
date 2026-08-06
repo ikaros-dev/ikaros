@@ -19,6 +19,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
+import run.ikaros.server.core.attachment.service.AttachmentMediaValidationService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 
 /** 验证附件流和隔离 SVG 预览接口的响应行为. */
@@ -30,13 +31,16 @@ class AttachmentEndpointTest {
     /** 模拟附件服务. */
     @Mock
     private AttachmentService attachmentService;
+    @Mock
+    private AttachmentMediaValidationService mediaValidationService;
     /** 用于调用附件函数式路由的测试客户端. */
     private WebTestClient webTestClient;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        AttachmentEndpoint endpoint = new AttachmentEndpoint(attachmentService);
+        AttachmentEndpoint endpoint = new AttachmentEndpoint(attachmentService,
+            mediaValidationService);
         webTestClient = WebTestClient.bindToRouterFunction(endpoint.endpoint()).build();
     }
 
@@ -143,6 +147,15 @@ class AttachmentEndpointTest {
             .expectHeader().valueEquals(HttpHeaders.CONTENT_RANGE, "bytes 5-9/20")
             .expectHeader().valueEquals(HttpHeaders.CONTENT_LENGTH, "5")
             .expectBody(byte[].class).value(body -> assertThat(body).isEqualTo(content));
+    }
+
+    @Test
+    void listMediaFormats_returnsServerPolicyHints() {
+        webTestClient.get().uri("/attachment/media-formats")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$[*].format").exists();
     }
 
     private static Attachment attachment(UUID id, String name, long size) {

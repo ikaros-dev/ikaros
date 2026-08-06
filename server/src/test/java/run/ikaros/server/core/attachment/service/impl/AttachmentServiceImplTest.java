@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 import java.nio.file.Path;
 import java.util.UUID;
@@ -16,13 +18,16 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentConst;
+import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
+import run.ikaros.server.core.attachment.service.AttachmentMediaValidationService;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
@@ -49,6 +54,8 @@ class AttachmentServiceImplTest {
     private AttachmentDriverRepository driverRepository;
     @Mock
     private ExtensionComponentsFinder extensionComponentsFinder;
+    @Mock
+    private AttachmentMediaValidationService mediaValidationService;
     private AttachmentServiceImpl service;
 
     @BeforeEach
@@ -57,12 +64,33 @@ class AttachmentServiceImplTest {
         service = new AttachmentServiceImpl(
             repository, referenceRepository, relationRepository,
             template, ikarosProperties, applicationEventPublisher,
-            attachmentRepository, driverRepository, extensionComponentsFinder);
+            attachmentRepository, driverRepository, extensionComponentsFinder,
+            mediaValidationService);
     }
 
     @Test
     void constructor_withNineParams() {
         assertThat(service).isNotNull();
+    }
+
+    @Test
+    void upload_rejectsFilenameBeforeSubscribingContent() {
+        int[] subscriptions = {0};
+        when(mediaValidationService.validateFilename("payload.exe"))
+            .thenThrow(new IllegalArgumentException("不支持的媒体文件名"));
+
+        AttachmentUploadCondition condition = AttachmentUploadCondition.builder()
+            .name("payload.exe")
+            .dataBufferFlux(Flux.defer(() -> {
+                subscriptions[0]++;
+                return Flux.empty();
+            }))
+            .build();
+
+        assertThatThrownBy(() -> service.upload(condition))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThat(subscriptions[0]).isZero();
+        verify(repository, never()).save(any());
     }
 
     @Test

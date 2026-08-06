@@ -5,14 +5,11 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.content.Builder.contentBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
-import static org.springframework.web.reactive.function.BodyExtractors.toMultipartData;
 import static org.springframework.web.reactive.function.server.RequestPredicates.contentType;
 import static run.ikaros.api.core.attachment.AttachmentConst.V_ROOT_DIRECTORY_PARENT_ID;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -30,11 +27,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePartEvent;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.http.codec.multipart.Part;
+import org.springframework.http.codec.multipart.PartEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.reactive.function.BodyExtractors;
@@ -43,18 +40,21 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
+import reactor.core.publisher.Flux;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
+import run.ikaros.api.core.media.MediaFileFormatHint;
+import run.ikaros.api.core.media.MediaFilePolicy;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.service.AttachmentService;
+import run.ikaros.server.core.attachment.service.AttachmentMediaValidationService;
 import run.ikaros.server.endpoint.CoreEndpoint;
 import run.ikaros.server.infra.utils.DataBufferUtils;
 
@@ -62,9 +62,13 @@ import run.ikaros.server.infra.utils.DataBufferUtils;
 @Component
 public class AttachmentEndpoint implements CoreEndpoint {
     private final AttachmentService attachmentService;
+    /** 附件名称和真实媒体格式验证服务。 */
+    private final AttachmentMediaValidationService mediaValidationService;
 
-    public AttachmentEndpoint(AttachmentService attachmentService) {
+    public AttachmentEndpoint(AttachmentService attachmentService,
+                              AttachmentMediaValidationService mediaValidationService) {
         this.attachmentService = attachmentService;
+        this.mediaValidationService = mediaValidationService;
     }
 
     @Override
@@ -80,8 +84,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .required(true)
                         .content(contentBuilder()
                             .mediaType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                            .schema(schemaBuilder().implementation(
-                                DefaultUploadRequest.class))
+                            .schema(schemaBuilder().implementation(FilePartEvent.class))
                         ))
                     .response(responseBuilder().implementation(Attachment.class))
                     .build())
@@ -110,6 +113,15 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .description("附件的父附件ID，父附件一般时目录类型。"))
                     .response(responseBuilder().implementation(PagingWrap.class))
             )
+
+            .GET("/attachment/media-formats", this::listMediaFormats,
+                builder -> builder.operationId("ListAttachmentMediaFormats")
+                    .tag(tag)
+                    .description("获取服务端媒体格式白名单提示。该结果仅用于客户端展示，"
+                        + "上传文件仍由服务端执行名称门禁和真实格式检测。")
+                    .response(responseBuilder().responseCode("200")
+                        .description("返回由服务端权威媒体格式枚举生成的全部格式提示。")
+                        .implementationArray(MediaFileFormatHint.class)))
 
             .GET("/attachment/{id}", this::getById,
                 builder -> builder.operationId("GetAttachmentById").tag(tag)
@@ -259,36 +271,52 @@ public class AttachmentEndpoint implements CoreEndpoint {
             .build();
     }
 
+    /** 仅供 SpringDoc 描述 multipart 文件字段的公共请求模型。 */
     public interface UploadRequest {
 
-        @Schema(requiredMode = REQUIRED, description = "File")
+        /**
+         * 获取 multipart 文件字段。
+         *
+         * @return 上传文件字段
+         */
+        @Schema(requiredMode = REQUIRED, description = "文件")
         FilePart getFile();
-
-    }
-
-    public record DefaultUploadRequest(@Schema(hidden = true) MultiValueMap<String, Part> formData)
-        implements UploadRequest {
-
-        @Override
-        public FilePart getFile() {
-            if (formData.getFirst("file") instanceof FilePart file) {
-                return file;
-            }
-            throw new ServerWebInputException("Invalid part of file");
-        }
-
     }
 
     private Mono<ServerResponse> upload(ServerRequest request) {
-        return request.body(toMultipartData())
-            .map(DefaultUploadRequest::new)
-            // Upload file by service.
-            .flatMap(uploadRequest -> attachmentService.upload(
-                AttachmentUploadCondition.builder()
-                    .name(uploadRequest.getFile().filename())
-                    .dataBufferFlux(DataBufferUtils.formFilePart(uploadRequest.getFile()))
-                    .build()
-            ))
+        return request.body(BodyExtractors.toFlux(PartEvent.class))
+            .doOnDiscard(PartEvent.class, AttachmentEndpoint::releasePartEvent)
+            .windowUntil(PartEvent::isLast)
+            .index()
+            .concatMap(indexedWindow -> indexedWindow.getT2()
+                .switchOnFirst((signal, partEvents) -> {
+                    if (!signal.hasValue()) {
+                        return partEvents.then(Mono.empty());
+                    }
+                    PartEvent firstEvent = signal.get();
+                    if (indexedWindow.getT1() != 0 || !(firstEvent instanceof FilePartEvent file)
+                        || !"file".equals(file.name())) {
+                        return releasePartEvents(partEvents)
+                            .then(Mono.error(new ServerWebInputException("无效的文件分段")));
+                    }
+                    try {
+                        mediaValidationService.validateFilename(file.filename());
+                    } catch (IllegalArgumentException exception) {
+                        return releasePartEvents(partEvents)
+                            .then(Mono.error(new ServerWebInputException(exception.getMessage(),
+                                null, exception)));
+                    }
+                    Flux<DataBuffer> content = partEvents.map(PartEvent::content)
+                        .doOnDiscard(DataBuffer.class, org.springframework.core.io.buffer
+                            .DataBufferUtils::release);
+                    return mediaValidationService.validate(content, file.filename())
+                        .flatMap(validated -> attachmentService.upload(
+                            AttachmentUploadCondition.builder()
+                                .name(file.filename())
+                                .dataBufferFlux(validated.content())
+                                .build()));
+                }))
+            .single()
             // Response upload file data
             .flatMap(file -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -297,6 +325,20 @@ public class AttachmentEndpoint implements CoreEndpoint {
                 ErrorResponse.builder(e, HttpStatusCode.valueOf(404), e.getMessage())
                     .type(URI.create(e.getClass().getSimpleName())).build()));
 
+    }
+
+    private static Mono<Void> releasePartEvents(Flux<PartEvent> partEvents) {
+        return partEvents.doOnNext(AttachmentEndpoint::releasePartEvent).then();
+    }
+
+    private static void releasePartEvent(PartEvent partEvent) {
+        org.springframework.core.io.buffer.DataBufferUtils.release(partEvent.content());
+    }
+
+    /** 返回服务端权威媒体格式提示，不承担上传安全校验。 */
+    private Mono<ServerResponse> listMediaFormats(ServerRequest request) {
+        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(MediaFilePolicy.formatHints());
     }
 
     private Mono<ServerResponse> getAttachmentTotal(ServerRequest request) {
@@ -424,6 +466,11 @@ public class AttachmentEndpoint implements CoreEndpoint {
         final var uploadName = new String(Base64.getDecoder()
             .decode(uploadNameList.get(0).getBytes(StandardCharsets.UTF_8)),
             StandardCharsets.UTF_8);
+        try {
+            mediaValidationService.validateFilename(uploadName);
+        } catch (IllegalArgumentException exception) {
+            return ServerResponse.badRequest().bodyValue(exception.getMessage());
+        }
 
         final String unique = request.pathVariable("unique");
         Assert.hasText(unique, "Request path var 'unique' must has text.");
@@ -434,24 +481,11 @@ public class AttachmentEndpoint implements CoreEndpoint {
                 ? null :
                 UUID.fromString(parentIdList.get(0));
 
-        return request.body(BodyExtractors.toDataBuffers())
-            .publishOn(Schedulers.boundedElastic())
-            .<byte[]>handle((dataBuffer, sink) -> {
-                try (InputStream inputStream = dataBuffer.asInputStream(true)) {
-                    sink.next(inputStream.readAllBytes());
-                } catch (IOException e) {
-                    sink.error(new RuntimeException(e));
-                }
-            })
-            .reduce((bytes, bytes2) -> {
-                byte[] result = new byte[bytes.length + bytes2.length];
-                System.arraycopy(bytes, 0, result, 0, bytes.length);
-                System.arraycopy(bytes2, 0, result, bytes.length, bytes2.length);
-                return result;
-            })
-            .flatMap(bytes -> attachmentService.receiveAndHandleFragmentUploadChunkFile(
-                unique, uploadLength, uploadOffset, uploadName, bytes, parentId
-            ))
+        Flux<DataBuffer> content = request.body(BodyExtractors.toDataBuffers())
+            .doOnDiscard(DataBuffer.class,
+                org.springframework.core.io.buffer.DataBufferUtils::release);
+        return attachmentService.receiveAndHandleFragmentUploadChunkFile(
+                unique, uploadLength, uploadOffset, uploadName, content, parentId)
             .then(ServerResponse.ok().bodyValue("SUCCESS"));
     }
 
