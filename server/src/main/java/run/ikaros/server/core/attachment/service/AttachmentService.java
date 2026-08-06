@@ -96,10 +96,30 @@ public interface AttachmentService {
 
     Mono<String> getReadUrl(UUID aid);
 
+    /**
+     * 验证附件真实格式并获取完整内容流。
+     *
+     * @param aid 附件 ID
+     * @return 包含真实 MIME、内容长度和完整内容的附件流
+     */
     Mono<AttachmentStreamVo> getStreamById(UUID aid);
 
-    Mono<Flux<DataBuffer>> getStreamByIdWithRange(UUID aid, long start, long end);
+    /**
+     * 先从文件头验证附件真实格式，再获取指定范围内容流。
+     *
+     * @param aid 附件 ID
+     * @param start 范围起始位置，包含该位置
+     * @param end 范围结束位置，包含该位置
+     * @return 包含真实 MIME、范围长度和范围内容的附件流
+     */
+    Mono<AttachmentStreamVo> getStreamByIdWithRange(UUID aid, long start, long end);
 
+    /**
+     * 验证附件真实格式并获取完整内容数据流。
+     *
+     * @param aid 附件 ID
+     * @return 完整内容数据流
+     */
     Mono<Flux<DataBuffer>> getStreamByIdWithoutRange(UUID aid);
 
     /**

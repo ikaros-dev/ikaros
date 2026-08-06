@@ -42,6 +42,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -999,104 +1000,116 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public Mono<AttachmentStreamVo> getStreamById(UUID aid) {
         return repository.findById(aid)
-            .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
-                .startsWith("DRIVER_"))
-            .map(AttachmentEntity::getDriverId)
-            .flatMap(driverRepository::findById)
-            .flatMap(driverEntity -> copyProperties(driverEntity, new AttachmentDriver()))
-            .flatMap(driver -> {
-                AttachmentDriverFetcher driverFetcher =
-                    getAttDriverFetcher(driver.getType(), driver.getName());
-                return repository.findById(aid)
-                    .flatMap(entity -> copyProperties(entity, new Attachment()))
-                    .map(att -> {
-                        Flux<DataBuffer> dataBufferFlux = driverFetcher.getSteam(att);
-                        String postfix = FileUtils.parseFilePostfix(att.getName());
-                        String contentType = buildContentType(postfix);
-                        AttachmentStreamVo streamVo = new AttachmentStreamVo();
-                        streamVo.setContextLength(att.getSize());
-                        streamVo.setContextType(contentType);
-                        streamVo.setDataBufferFlux(dataBufferFlux);
-                        return streamVo;
-                    });
-            })
-            .switchIfEmpty(repository.findById(aid).map(att -> {
-                // Path traversal prevention: validate fsPath before reading
-                String rawFsPath = att.getFsPath();
-                if (StringUtils.hasText(rawFsPath) && !rawFsPath.startsWith("http")) {
-                    validateFsPath(rawFsPath);
-                }
-                File file = new File(rawFsPath);
-                Path path = Path.of(file.toURI());
-                long size = 0;
-                try {
-                    size = Files.size(path);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                String postfix = FileUtils.parseFilePostfix(att.getUrl());
-                String contentType = buildContentType(postfix);
-                AttachmentStreamVo streamVo = new AttachmentStreamVo();
-                streamVo.setContextLength(size);
-                streamVo.setContextType(contentType);
-                Flux<DataBuffer> dataBufferFlux =
-                    org.springframework.core.io.buffer.DataBufferUtils
-                        .readAsynchronousFileChannel(
-                            () -> AsynchronousFileChannel.open(path,
-                                StandardOpenOption.READ),
-                            new DefaultDataBufferFactory(),
-                            BUFFER_SIZE
-                        );
-                streamVo.setDataBufferFlux(dataBufferFlux);
-                return streamVo;
-            }));
+            .flatMap(attachment -> getValidatedStream(attachment, null, null));
     }
 
     @Override
-    public Mono<Flux<DataBuffer>> getStreamByIdWithRange(UUID aid, long start, long end) {
+    public Mono<AttachmentStreamVo> getStreamByIdWithRange(UUID aid, long start, long end) {
         return repository.findById(aid)
-            .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
-                .startsWith("DRIVER_"))
-            .map(AttachmentEntity::getDriverId)
-            .flatMap(driverRepository::findById)
+            .flatMap(attachment -> {
+                if (start < 0 || start > end || attachment.getSize() == null
+                    || end >= attachment.getSize()) {
+                    return Mono.error(new IllegalArgumentException("无效的附件读取范围"));
+                }
+                return getValidatedStream(attachment, start, end);
+            });
+    }
+
+    private Mono<AttachmentStreamVo> getValidatedStream(AttachmentEntity attachment,
+                                                         Long start, Long end) {
+        validateResponseFilename(attachment.getName());
+        if (attachment.getType().toString().toUpperCase(Locale.ROOT).startsWith("DRIVER_")) {
+            return getValidatedDriverStream(attachment, start, end);
+        }
+        return getValidatedLocalStream(attachment, start, end);
+    }
+
+    private Mono<AttachmentStreamVo> getValidatedDriverStream(AttachmentEntity entity,
+                                                               Long start, Long end) {
+        return driverRepository.findById(entity.getDriverId())
             .flatMap(driverEntity -> copyProperties(driverEntity, new AttachmentDriver()))
-            .flatMap(driver -> {
-                AttachmentDriverFetcher driverFetcher =
-                    getAttDriverFetcher(driver.getType(), driver.getName());
-                return repository.findById(aid)
-                    .flatMap(entity -> copyProperties(entity, new Attachment()))
-                    .map(att -> driverFetcher.getSteam(att, start, end));
-            })
-            .switchIfEmpty(repository.findById(aid)
-                .map(att -> {
-                    String rawFsPath = att.getFsPath();
-                    if (StringUtils.hasText(rawFsPath)
-                        && !rawFsPath.startsWith("http")) {
-                        validateFsPath(rawFsPath);
-                    }
-                    File file = new File(rawFsPath);
-                    Path path = Path.of(file.toURI());
-                    return Flux.create(sink -> {
-                        try {
-                            AsynchronousFileChannel channel = AsynchronousFileChannel.open(
-                                path, StandardOpenOption.READ);
-
-                            AtomicLong position = new AtomicLong(start);
-                            ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
-
-                            readChunk(channel, buffer, position.get(), end, sink, () -> {
-                                try {
-                                    channel.close();
-                                } catch (IOException e) {
-                                    sink.error(e);
-                                }
-                            });
-
-                        } catch (IOException e) {
-                            sink.error(e);
-                        }
-                    });
+            .flatMap(driver -> copyProperties(entity, new Attachment())
+                .flatMap(attachment -> {
+                    AttachmentDriverFetcher fetcher =
+                        getAttDriverFetcher(driver.getType(), driver.getName());
+                    Supplier<Flux<DataBuffer>> responseSource = start == null
+                        ? () -> fetcher.getSteam(attachment)
+                        : () -> fetcher.getSteam(attachment, start, end);
+                    long contentLength = start == null
+                        ? attachment.getSize() : end - start + 1;
+                    return validateAndOpenStream(attachment.getName(), contentLength,
+                        () -> fetcher.getSteam(attachment), responseSource);
                 }));
+    }
+
+    private Mono<AttachmentStreamVo> getValidatedLocalStream(AttachmentEntity attachment,
+                                                              Long start, Long end) {
+        String rawFsPath = attachment.getFsPath();
+        if (StringUtils.hasText(rawFsPath) && !rawFsPath.startsWith("http")) {
+            validateFsPath(rawFsPath);
+        }
+        Path path = Path.of(new File(rawFsPath).toURI());
+        return Mono.fromCallable(() -> Files.size(path))
+            .subscribeOn(Schedulers.boundedElastic())
+            .flatMap(size -> {
+                Supplier<Flux<DataBuffer>> fullSource = () -> readFile(path);
+                Supplier<Flux<DataBuffer>> responseSource = start == null
+                    ? fullSource : () -> readFileRange(path, start, end);
+                long contentLength = start == null ? size : end - start + 1;
+                return validateAndOpenStream(attachment.getName(), contentLength,
+                    fullSource, responseSource);
+            });
+    }
+
+    private Mono<AttachmentStreamVo> validateAndOpenStream(
+        String filename, long contentLength, Supplier<Flux<DataBuffer>> validationSource,
+        Supplier<Flux<DataBuffer>> responseSource) {
+        return mediaValidationService.validate(validationSource.get(), filename)
+            .flatMap(validated -> validated.content()
+                .take(1)
+                .doOnNext(DataBufferUtils::release)
+                .then(Mono.fromSupplier(() -> {
+                    AttachmentStreamVo streamVo = new AttachmentStreamVo();
+                    streamVo.setContextLength(contentLength);
+                    streamVo.setContextType(validated.detectionResult().mimeType());
+                    streamVo.setDataBufferFlux(responseSource.get()
+                        .doOnDiscard(DataBuffer.class, DataBufferUtils::release));
+                    return streamVo;
+                })))
+            .doOnDiscard(DataBuffer.class, DataBufferUtils::release);
+    }
+
+    private void validateResponseFilename(String filename) {
+        try {
+            mediaValidationService.validateFilename(filename);
+        } catch (IllegalArgumentException exception) {
+            throw new AttachmentUploadException("附件媒体格式不受支持", exception);
+        }
+    }
+
+    private Flux<DataBuffer> readFile(Path path) {
+        return DataBufferUtils.readAsynchronousFileChannel(
+            () -> AsynchronousFileChannel.open(path, StandardOpenOption.READ),
+            new DefaultDataBufferFactory(), BUFFER_SIZE);
+    }
+
+    private Flux<DataBuffer> readFileRange(Path path, long start, long end) {
+        return Flux.create(sink -> {
+            try {
+                AsynchronousFileChannel channel = AsynchronousFileChannel.open(
+                    path, StandardOpenOption.READ);
+                ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
+                readChunk(channel, buffer, start, end, sink, () -> {
+                    try {
+                        channel.close();
+                    } catch (IOException exception) {
+                        sink.error(exception);
+                    }
+                });
+            } catch (IOException exception) {
+                sink.error(exception);
+            }
+        });
     }
 
 
@@ -1114,6 +1127,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         }
 
         long bytesToRead = Math.min(buffer.capacity(), end - position + 1);
+        buffer.limit((int) bytesToRead);
 
         channel.read(buffer, position, buffer, new CompletionHandler<Integer, ByteBuffer>() {
             @Override
@@ -1146,36 +1160,7 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public Mono<Flux<DataBuffer>> getStreamByIdWithoutRange(UUID aid) {
-        return repository.findById(aid)
-            .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
-                .startsWith("DRIVER_"))
-            .map(AttachmentEntity::getDriverId)
-            .flatMap(driverRepository::findById)
-            .flatMap(driverEntity -> copyProperties(driverEntity, new AttachmentDriver()))
-            .flatMap(driver -> {
-                AttachmentDriverFetcher driverFetcher =
-                    getAttDriverFetcher(driver.getType(), driver.getName());
-                return repository.findById(aid)
-                    .flatMap(entity -> copyProperties(entity, new Attachment()))
-                    .map(driverFetcher::getSteam);
-            })
-            .switchIfEmpty(repository.findById(aid)
-                .map(att -> {
-                    String rawFsPath = att.getFsPath();
-                    if (StringUtils.hasText(rawFsPath)
-                        && !rawFsPath.startsWith("http")) {
-                        validateFsPath(rawFsPath);
-                    }
-                    File file = new File(rawFsPath);
-                    Path path = Path.of(file.toURI());
-                    return org.springframework.core.io.buffer.DataBufferUtils
-                        .readAsynchronousFileChannel(
-                            () -> AsynchronousFileChannel.open(path,
-                                StandardOpenOption.READ),
-                            new DefaultDataBufferFactory(),
-                            BUFFER_SIZE
-                        );
-                }));
+        return getStreamById(aid).map(AttachmentStreamVo::getDataBufferFlux);
     }
 
     @Override
@@ -1241,21 +1226,6 @@ public class AttachmentServiceImpl implements AttachmentService {
                             }));
             });
     }
-
-    private String buildContentType(String postfix) {
-        String contentType = "";
-        if (FileUtils.isDocument(postfix)) {
-            contentType = "text/plain; charset=utf-8";
-        } else if (FileUtils.isImage(postfix)) {
-            contentType = "image/" + postfix;
-        } else if (FileUtils.isVoice(postfix)) {
-            contentType = "audio/mpeg";
-        } else {
-            contentType = "video/mp4";
-        }
-        return contentType;
-    }
-
 
     private Mono<List<AttachmentEntity>> findPathDirs(UUID id, List<AttachmentEntity> entities) {
         if (ROOT_DIRECTORY_ID.equals(id)) {

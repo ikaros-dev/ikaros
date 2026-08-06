@@ -1,7 +1,6 @@
 package run.ikaros.server.core.attachment.extension;
 
 import static org.springframework.util.FileCopyUtils.BUFFER_SIZE;
-import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,6 +23,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.media.MediaFilePolicy;
@@ -130,7 +130,8 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
     @Override
     public Mono<String> parseReadUrl(Attachment attachment) {
         Assert.notNull(attachment, "Attachment must not be null.");
-        return Mono.just(DRIVER_STATIC_RESOURCE_PREFIX + attachment.getPath());
+        Assert.notNull(attachment.getId(), "Attachment id must not be null.");
+        return Mono.just(OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX + '/' + attachment.getId());
     }
 
     @Override
@@ -189,6 +190,7 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
         }
 
         long bytesToRead = Math.min(buffer.capacity(), end - position + 1);
+        buffer.limit((int) bytesToRead);
         buffer.limit((int) bytesToRead);
 
         channel.read(buffer, position, buffer, new CompletionHandler<Integer, ByteBuffer>() {

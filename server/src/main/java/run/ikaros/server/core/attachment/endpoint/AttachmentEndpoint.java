@@ -23,6 +23,7 @@ import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -46,10 +47,10 @@ import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
+import run.ikaros.api.core.attachment.exception.AttachmentUploadException;
 import run.ikaros.api.core.media.MediaFileFormatHint;
 import run.ikaros.api.core.media.MediaFilePolicy;
 import run.ikaros.api.infra.exception.NotFoundException;
-import run.ikaros.api.infra.utils.FileUtils;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
@@ -522,35 +523,41 @@ public class AttachmentEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> getStreamById(ServerRequest request) {
         UUID id = UUID.fromString(request.pathVariable("id"));
-        return Mono.fromCallable(() -> {
-            Mono<Attachment> attMono =
-                attachmentService.findById(id);
-            String rangeHeader = request.headers().firstHeader(HttpHeaders.RANGE);
-            if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
-                return attMono
-                    .flatMap(att -> doGetPartialContentRsp(id, att.getSize(),
-                        att.getName(), rangeHeader));
-                // return handlePartialContent(filePath, rangeHeader, fileSize);
-            }
-            return attMono.flatMap(att ->
-                doGetFullContentRsp(id, att.getSize(), att.getName()));
-            // return handleFullContent(filePath, fileSize);
-        }).flatMap(response -> response);
+        return attachmentService.findById(id)
+            .flatMap(attachment -> {
+                String rangeHeader = request.headers().firstHeader(HttpHeaders.RANGE);
+                if (rangeHeader != null) {
+                    return doGetPartialContentRsp(id, attachment.getSize(),
+                        attachment.getName(), rangeHeader);
+                }
+                return doGetFullContentRsp(id, attachment.getName());
+            })
+            .switchIfEmpty(ServerResponse.notFound().build())
+            .onErrorResume(AttachmentUploadException.class,
+                exception -> ServerResponse.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build());
     }
 
     private Mono<ServerResponse> getSvgPreviewById(ServerRequest request) {
         UUID id = UUID.fromString(request.pathVariable("id"));
         return attachmentService.findById(id)
             .filter(this::isSvg)
-            .flatMap(attachment -> attachmentService.getStreamByIdWithoutRange(id))
-            .flatMap(body -> ServerResponse.ok()
-                .header(HttpHeaders.CONTENT_TYPE, "image/svg+xml")
-                .header("Content-Security-Policy",
-                    "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:")
-                .header("X-Content-Type-Options", "nosniff")
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
-                .body(body, DataBuffer.class))
-            .switchIfEmpty(ServerResponse.notFound().build());
+            .flatMap(attachment -> attachmentService.getStreamById(id)
+                .flatMap(stream -> {
+                    if (!"image/svg+xml".equals(stream.getContextType())) {
+                        return ServerResponse.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
+                    }
+                    return ServerResponse.ok()
+                        .header(HttpHeaders.CONTENT_TYPE, stream.getContextType())
+                        .header("Content-Security-Policy",
+                            "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:")
+                        .header("X-Content-Type-Options", "nosniff")
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                            buildContentDisposition(attachment.getName(), stream.getContextType()))
+                        .body(stream.getDataBufferFlux(), DataBuffer.class);
+                }))
+            .switchIfEmpty(ServerResponse.notFound().build())
+            .onErrorResume(AttachmentUploadException.class,
+                exception -> ServerResponse.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build());
     }
 
     private boolean isSvg(Attachment attachment) {
@@ -561,61 +568,92 @@ public class AttachmentEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> doGetPartialContentRsp(
         UUID aid, Long fileSize, String fileName, String rangeHeader) {
         try {
-            String range = rangeHeader.substring(6);
-            String[] ranges = range.split("-");
-
-            long start = Long.parseLong(ranges[0]);
-            long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : fileSize - 1;
-
-            // 确保范围有效
-            if (start < 0 || end >= fileSize || start > end) {
-                return ServerResponse.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
-                    .header(HttpHeaders.CONTENT_RANGE, "bytes */" + fileSize)
-                    .build();
-            }
-
+            long[] range = parseRange(rangeHeader, fileSize);
+            long start = range[0];
+            long end = range[1];
             long contentLength = end - start + 1;
-            String contentType = buildContentType(FileUtils.parseFilePostfix(fileName));
-
             return attachmentService.getStreamByIdWithRange(aid, start, end)
-                .flatMap(body -> ServerResponse.status(HttpStatus.PARTIAL_CONTENT)
-                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                .flatMap(stream -> ServerResponse.status(HttpStatus.PARTIAL_CONTENT)
+                    .header(HttpHeaders.CONTENT_TYPE, stream.getContextType())
+                    .header("X-Content-Type-Options", "nosniff")
                     .header(HttpHeaders.ACCEPT_RANGES, "bytes")
                     .header(HttpHeaders.CONTENT_RANGE,
                         String.format("bytes %d-%d/%d", start, end, fileSize))
                     .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength))
-                    .body(body, DataBuffer.class));
-        } catch (Exception e) {
-            return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .bodyValue("处理范围请求失败: " + e.getMessage());
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                        buildContentDisposition(fileName, stream.getContextType()))
+                    .body(stream.getDataBufferFlux(), DataBuffer.class));
+        } catch (IllegalArgumentException exception) {
+            return rangeNotSatisfiable(fileSize);
         }
     }
 
-    private Mono<ServerResponse> doGetFullContentRsp(UUID aid, Long fileSize, String fileName) {
-        String contentType = buildContentType(FileUtils.parseFilePostfix(fileName));
-        return attachmentService.getStreamByIdWithoutRange(aid)
-            .flatMap(body -> ServerResponse.ok()
-                .header(HttpHeaders.CONTENT_TYPE, contentType)
-                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileSize))
+    private Mono<ServerResponse> doGetFullContentRsp(UUID aid, String fileName) {
+        return attachmentService.getStreamById(aid)
+            .flatMap(stream -> ServerResponse.ok()
+                .header(HttpHeaders.CONTENT_TYPE, stream.getContextType())
+                .header("X-Content-Type-Options", "nosniff")
+                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(stream.getContextLength()))
                 .header(HttpHeaders.ACCEPT_RANGES, "bytes")
-                .body(body, DataBuffer.class));
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                    buildContentDisposition(fileName, stream.getContextType()))
+                .body(stream.getDataBufferFlux(), DataBuffer.class));
     }
 
-    private String buildContentType(String postfix) {
-        String contentType = "";
-        if (FileUtils.isDocument(postfix)) {
-            contentType = "text/plain; charset=utf-8";
-            if ("csv".equalsIgnoreCase(postfix)) {
-                contentType = "text/csv; charset=utf-8";
-            }
-        } else if (FileUtils.isImage(postfix)) {
-            contentType = "image/" + postfix;
-        } else if (FileUtils.isVoice(postfix)) {
-            contentType = "audio/mpeg";
-        } else {
-            contentType = "video/mp4";
+    private long[] parseRange(String rangeHeader, long fileSize) {
+        if (fileSize <= 0 || rangeHeader == null || !rangeHeader.startsWith("bytes=")) {
+            throw new IllegalArgumentException("无效的范围请求");
         }
-        return contentType;
+        String value = rangeHeader.substring(6).trim();
+        if (value.isEmpty() || value.contains(",")) {
+            throw new IllegalArgumentException("仅支持单一字节范围");
+        }
+        int separator = value.indexOf('-');
+        if (separator < 0 || separator != value.lastIndexOf('-')) {
+            throw new IllegalArgumentException("无效的字节范围格式");
+        }
+        String startValue = value.substring(0, separator).trim();
+        String endValue = value.substring(separator + 1).trim();
+        long start;
+        long end;
+        if (startValue.isEmpty()) {
+            long suffixLength = Long.parseLong(endValue);
+            if (suffixLength <= 0) {
+                throw new IllegalArgumentException("无效的后缀范围");
+            }
+            start = Math.max(0, fileSize - suffixLength);
+            end = fileSize - 1;
+        } else {
+            start = Long.parseLong(startValue);
+            end = endValue.isEmpty() ? fileSize - 1 : Long.parseLong(endValue);
+        }
+        if (start < 0 || start >= fileSize || end < start || end >= fileSize) {
+            throw new IllegalArgumentException("请求范围超出附件长度");
+        }
+        return new long[] {start, end};
+    }
+
+    private Mono<ServerResponse> rangeNotSatisfiable(Long fileSize) {
+        return ServerResponse.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+            .header(HttpHeaders.CONTENT_RANGE, "bytes */" + fileSize)
+            .build();
+    }
+
+    private String buildContentDisposition(String fileName, String contentType) {
+        String safeFileName = StringUtils.hasText(fileName)
+            ? fileName.replace('\r', '_').replace('\n', '_') : "attachment";
+        ContentDisposition.Builder builder = isTextAttachment(contentType)
+            ? ContentDisposition.attachment() : ContentDisposition.inline();
+        return builder.filename(safeFileName, StandardCharsets.UTF_8).build().toString();
+    }
+
+    private boolean isTextAttachment(String contentType) {
+        return contentType.startsWith("text/")
+            || "application/x-subrip".equals(contentType)
+            || "application/ttml+xml".equals(contentType)
+            || "application/x-sami".equals(contentType)
+            || "application/smil+xml".equals(contentType)
+            || "application/xml".equals(contentType);
     }
 
     /**

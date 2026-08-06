@@ -5,7 +5,6 @@ import static org.springframework.util.ResourceUtils.FILE_URL_PREFIX;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static run.ikaros.api.constant.AppConst.STATIC_DIR_NAME;
-import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,8 +42,6 @@ import run.ikaros.server.plugin.PluginApplicationContextRegistry;
 
 @Configuration(proxyBeanMethods = false)
 public class WebFluxConfig implements WebFluxConfigurer {
-    private final DynamicDirectoryResolver dynamicDirectoryResolver;
-
     private final ApplicationContext applicationContext;
     private final IkarosProperties ikarosProperties;
     private final ConsoleProperties consoleProperties;
@@ -57,10 +54,8 @@ public class WebFluxConfig implements WebFluxConfigurer {
      * @param consoleProperties  console prop
      */
     public WebFluxConfig(
-        DynamicDirectoryResolver dynamicDirectoryResolver, ApplicationContext applicationContext,
-        IkarosProperties ikarosProperties,
+        ApplicationContext applicationContext, IkarosProperties ikarosProperties,
         ConsoleProperties consoleProperties) {
-        this.dynamicDirectoryResolver = dynamicDirectoryResolver;
         this.applicationContext = applicationContext;
         this.ikarosProperties = ikarosProperties;
         this.consoleProperties = consoleProperties;
@@ -175,13 +170,5 @@ public class WebFluxConfig implements WebFluxConfigurer {
                     .setUseLastModified(true);
             }
         }
-
-        // add dynamic resource resolver
-        registry.addResourceHandler(DRIVER_STATIC_RESOURCE_PREFIX + "/**")
-            .setCacheControl(cacheControl)
-            .setUseLastModified(true)
-            .resourceChain(true)
-            .addResolver(dynamicDirectoryResolver)
-        ;
     }
 }

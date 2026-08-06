@@ -1,7 +1,6 @@
 package run.ikaros.server.core.attachment.extension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,6 +13,7 @@ import org.mockito.Mockito;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import reactor.test.StepVerifier;
+import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.core.attachment.service.AttachmentMediaValidationService;
@@ -131,8 +131,10 @@ class LocalDiskAttachmentDriverFetcherTest {
     void readsWholeFileAndRequestedRange(@TempDir Path tempDir) throws IOException {
         UUID driverId = UUID.randomUUID();
         Path file = Files.writeString(tempDir.resolve("episode.mkv"), "0123456789");
+        UUID attachmentId = UUID.randomUUID();
         LocalDiskAttachmentDriverFetcher fetcher = createFetcher(driverId, tempDir);
         Attachment attachment = Attachment.builder()
+            .id(attachmentId)
             .driverId(driverId)
             .type(AttachmentType.Driver_File)
             .fsPath(file.toString())
@@ -146,10 +148,10 @@ class LocalDiskAttachmentDriverFetcherTest {
             .expectNext("23456")
             .verifyComplete();
         StepVerifier.create(fetcher.parseReadUrl(attachment))
-            .expectNext(DRIVER_STATIC_RESOURCE_PREFIX + "/episode.mkv")
+            .expectNext(OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX + '/' + attachmentId)
             .verifyComplete();
         StepVerifier.create(fetcher.parseDownloadUrl(attachment))
-            .expectNext(DRIVER_STATIC_RESOURCE_PREFIX + "/episode.mkv")
+            .expectNext(OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX + '/' + attachmentId)
             .verifyComplete();
     }
 
