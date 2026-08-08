@@ -7,7 +7,7 @@
 | 文档版本 | v1.0 |
 | 编写日期 | 2026-08-08 |
 | 代码版本基线 | 1.2.1（`bbccbf32`） |
-| 关联文档 | [PRD.md](./PRD.md)、[LLD.md](./LLD.md) |
+| 关联文档 | [Product-Requirements-Document.md](./Product-Requirements-Document.md)、[Low-Level-Design.md](./Low-Level-Design.md) |
 
 ---
 
@@ -408,7 +408,7 @@ spring.r2dbc: { url: r2dbc:pool:postgresql://localhost:5432/ikaros, ... }
 
 ### 9.1 关联文档
 
-- [PRD.md](./PRD.md) — 产品需求文档（需求编号 FR-XXX / NFR-XXX 与本文档对应）
-- [LLD.md](./LLD.md) — 详细设计文档（类图、接口签名、时序、表结构 DDL）
+- [Product-Requirements-Document.md](./Product-Requirements-Document.md) — 产品需求文档（需求编号 FR-XXX / NFR-XXX 与本文档对应）
+- [Low-Level-Design.md](./Low-Level-Design.md) — 详细设计文档（类图、接口签名、时序、表结构 DDL）
 - [BUILD.md](../BUILD.md) — 编译与本地开发
 - 架构图：`diagrams/plugin-architecture.drawio`、`diagrams/plugin-loading-flowchart.drawio`

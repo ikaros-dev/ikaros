@@ -9,7 +9,7 @@
 | 代码版本基线 | 1.2.1（`bbccbf32`） |
 | 状态 | 草案（Draft） |
 
-> **文档体系**：本 PRD 为产品需求文档，配套设计文档见 [HLD.md（概要设计）](./HLD.md) 与 [LLD.md（详细设计）](./LLD.md)。本 PRD 聚焦「做什么」（需求），HLD 聚焦「整体怎么做」（架构），LLD 聚焦「具体怎么做」（类/表/时序）。
+> **文档体系**：本 PRD 为产品需求文档，配套设计文档见 [High-Level-Design.md（概要设计）](./High-Level-Design.md) 与 [Low-Level-Design.md（详细设计）](./Low-Level-Design.md)。本 PRD 聚焦「做什么」（需求），HLD 聚焦「整体怎么做」（架构），LLD 聚焦「具体怎么做」（类/表/时序）。
 
 ---
 
@@ -723,8 +723,8 @@ ikaros/
 - [CHANGELOG.md](../CHANGELOG.md) — 更新日志
 - [BUILD.md](../BUILD.md) — 编译与本地开发
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — 贡献指南
-- [HLD.md](./HLD.md) — 概要设计文档（系统架构/模块划分/数据架构/部署/接口总览）
-- [LLD.md](./LLD.md) — 详细设计文档（类结构/表结构 DDL/关键时序/测试设计）
+- [High-Level-Design.md](./High-Level-Design.md) — 概要设计文档（系统架构/模块划分/数据架构/部署/接口总览）
+- [Low-Level-Design.md](./Low-Level-Design.md) — 详细设计文档（类结构/表结构 DDL/关键时序/测试设计）
 - [官方文档](https://docs.ikaros.run/)
 - 架构图：`docs/diagrams/plugin-architecture.drawio`、`docs/diagrams/plugin-loading-flowchart.drawio`
 

@@ -7,7 +7,7 @@
 | 文档版本 | v1.0 |
 | 编写日期 | 2026-08-08 |
 | 代码版本基线 | 1.2.1（`bbccbf32`） |
-| 关联文档 | [PRD.md](./PRD.md)、[HLD.md](./HLD.md) |
+| 关联文档 | [Product-Requirements-Document.md](./Product-Requirements-Document.md)、[High-Level-Design.md](./High-Level-Design.md) |
 
 ---
 
@@ -736,9 +736,9 @@ Client ──POST /security/auth/token/jwt/apply {u,p}──▶ JwtAuthenticatio
 
 ```
 docs/
-├── PRD.md      # 产品需求（功能/非功能需求，FR/NFR 编号）
-├── HLD.md      # 概要设计（架构/模块/数据/部署/接口总览）
-├── LLD.md      # 详细设计（类级设计/表结构/时序/测试，本文档）
+├── Product-Requirements-Document.md   # 产品需求（功能/非功能需求，FR/NFR 编号）
+├── High-Level-Design.md              # 概要设计（架构/模块/数据/部署/接口总览）
+├── Low-Level-Design.md               # 详细设计（类级设计/表结构/时序/测试，本文档）
 └── diagrams/   # drawio 架构图（plugin-architecture / plugin-loading-flowchart）
 ```
 
