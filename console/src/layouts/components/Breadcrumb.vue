@@ -14,7 +14,9 @@ const breadcrumbList: Ref = ref([]);
 
 const initBreadcrumbList = () => {
 	// console.log('route.matched: ', route.matched);
-	breadcrumbList.value = route.matched.filter((item) => item.meta?.title || item.name);
+	breadcrumbList.value = route.matched.filter(
+		(item) => item.meta?.title || item.name
+	);
 };
 
 const handleRedirect = (path) => {
@@ -58,7 +60,7 @@ watch(
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/variables.module.scss';
+@use '@/styles/variables.module.scss' as variables;
 .no-redirect {
 	color: #97a8be;
 	cursor: text;
@@ -68,7 +70,7 @@ watch(
 	font-weight: 600;
 	cursor: pointer;
 	&:hover {
-		color: $menuBg;
+		color: variables.$menuBg;
 	}
 }
 </style>

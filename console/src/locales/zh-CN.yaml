@@ -85,6 +85,7 @@ component:
       uploadFinish: 上传完成
       uploadException: 上传异常
       notSupportFileFormat: 不支持的附件格式
+      supportedFormatHint: 请选择服务端支持的媒体文件
       clickCancel: 点击取消
       clickRetry: 点击重试
 view:
@@ -285,6 +286,77 @@ module:
         placeholder: 搜索关键词，覆盖目录名（可选）
       success: 目录绑定请求已提交，请查看任务状态
       error: 目录绑定请求失败
+      local:
+        option: 本地扫描
+        title: 本地目录扫描与确认
+        workflowId: 工作流 ID
+        taskId: 任务 ID
+        file: 文件
+        metadata: 扫描元数据
+        trackStatus: 轨道探测
+        probeSuccess: 已发现 {count} 条轨道
+        unknownFile: 未知文件
+        cancel: 取消
+        confirm: 确认并创建任务
+        success: '本地绑定任务已创建，工作流 ID：{workflowId}，任务 ID：{taskId}'
+        error:
+          unknown: 本地扫描请求失败
+        mode:
+          label: 扫描模式
+          EPISODE: 剧集视频
+          AUDIO: 音频
+          IMAGE: 图片序列
+        preview:
+          title: 扫描预览
+          action: 开始扫描
+          empty: 当前目录没有可扫描的媒体文件
+          noPrimary: 扫描结果中没有可确认的主资源
+          noItems: 暂无文件
+        role:
+          PRIMARY: 主资源
+          AUTO_ASSOCIATED: 自动关联
+          PENDING_CONFIRMATION: 待确认
+          UNASSOCIATED: 未关联
+          UNKNOWN: 未知文件
+        physicalType:
+          label: 媒体类型
+          VIDEO: 视频
+          AUDIO: 音频
+          SUBTITLE: 字幕
+          LYRICS: 歌词
+          IMAGE: 图片
+          UNKNOWN: 未知
+        assignment:
+          label: 关联到主资源
+          placeholder: 请选择关联结果
+          unassociated: 保持未关联
+          invalid: 文件缺少附件 ID，无法确认
+        subject:
+          title: 目标条目
+          existing: 选择已有条目
+          new: 创建新条目
+          select: 已有条目
+          searchPlaceholder: 输入条目名称搜索
+          name: 条目名称
+          nameCn: 条目中文名
+          type: 条目类型
+          nsfw: 标记为 NSFW
+          typeValue:
+            ANIME: 动画
+            COMIC: 漫画
+            GAME: 游戏
+            MUSIC: 音乐
+            NOVEL: 小说
+            REAL: 真人
+            OTHER: 其他
+        rescan:
+          entry: 重扫本地目录
+          title: 已有本地工作流
+          action: 提交重扫任务
+          submitted: '重扫任务已创建，任务 ID：{taskId}'
+          missing: 消失或重命名的文件
+          probeFailures: 轨道探测失败
+          unreadable: 重扫已完成，但无法读取扫描结果明细
     popconfirm:
       title: 您确定批量删除附件吗？
       btn: 批量删除
@@ -302,6 +374,9 @@ module:
     drawer:
       fragment-upload:
         title: 上传附件
+        formatLoading: 正在加载允许上传的附件格式
+        formatLoadFailed: 无法加载附件格式白名单，已阻止上传
+        retryFormatLoad: 重新加载
         confirm:
           message: 退出上传页时，如有附件还未上传完毕，下次需要从零开始上传，您确定要退出当前上传页吗？
           title: 温馨提示
@@ -311,6 +386,10 @@ module:
     details:
       title: 附件详情
       descTitle: 附件详情
+      preview:
+        svgLoading: 正在加载 SVG 预览
+        svgFailed: SVG 预览加载失败
+        svgTitle: SVG 附件预览
       descItemLabel:
         name: 名称（双击值进行重命名）
         type: 类型
@@ -781,6 +860,36 @@ module:
       episode:
         details:
           title: 剧集详情
+          media:
+            track:
+              audio: 音频
+              subtitle: 字幕
+              unknown: 未命名轨道
+              index: 轨道 {index}
+              default: 默认
+              external: 外置
+              embedded: 内嵌
+              unknownLanguage: 未知语言
+              embeddedUnavailable: 内嵌轨道不可单独切换
+              browserUnsupported: 浏览器不支持此编码
+              playable: 可播放
+              unavailable: 不可播放
+              switch: 切换
+              selected: 已选择
+            subtitle:
+              enable: 字幕
+              show: 显示
+              hide: 隐藏
+              select: 选择
+            image:
+              empty: 图片序列为空
+              loading: 正在恢复阅读进度
+              loadFailed: 当前图片加载失败
+              retry: 重新加载
+              page: 第 {page} 页
+              progress: 第 {page} / {total} 页
+              saving: 正在保存
+              saveFailed: 进度保存失败
           message:
             operate:
               remove-episode-all-att-refs:
@@ -1226,6 +1335,9 @@ module:
     cover: 封面
     add_song: 添加歌曲
     edit_song: 编辑歌曲
+    play: 播放
+    no_playable_resource: 该歌曲没有可播放的音频资源
+    play_failed: 加载歌曲资源失败
     back: 返回
     album:
       detail:

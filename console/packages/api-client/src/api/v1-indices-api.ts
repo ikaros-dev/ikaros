@@ -97,16 +97,16 @@ export const V1IndicesApiAxiosParamCreator = function (
      * Search subjects with fuzzy query
      * @param {any} keyword
      * @param {any} [limit]
-     * @param {any} [highlightPreTag]
      * @param {any} [highlightPostTag]
+     * @param {any} [highlightPreTag]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     searchSubject: async (
       keyword: any,
       limit?: any,
-      highlightPreTag?: any,
       highlightPostTag?: any,
+      highlightPreTag?: any,
       options: AxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       // verify required parameter 'keyword' is not null or undefined
@@ -135,20 +135,20 @@ export const V1IndicesApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      if (limit !== undefined) {
-        localVarQueryParameter["limit"] = limit;
+      if (keyword !== undefined) {
+        localVarQueryParameter["keyword"] = keyword;
       }
 
-      if (highlightPreTag !== undefined) {
-        localVarQueryParameter["highlightPreTag"] = highlightPreTag;
+      if (limit !== undefined) {
+        localVarQueryParameter["limit"] = limit;
       }
 
       if (highlightPostTag !== undefined) {
         localVarQueryParameter["highlightPostTag"] = highlightPostTag;
       }
 
-      if (keyword !== undefined) {
-        localVarQueryParameter["keyword"] = keyword;
+      if (highlightPreTag !== undefined) {
+        localVarQueryParameter["highlightPreTag"] = highlightPreTag;
       }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -199,16 +199,16 @@ export const V1IndicesApiFp = function (configuration?: Configuration) {
      * Search subjects with fuzzy query
      * @param {any} keyword
      * @param {any} [limit]
-     * @param {any} [highlightPreTag]
      * @param {any} [highlightPostTag]
+     * @param {any} [highlightPreTag]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     async searchSubject(
       keyword: any,
       limit?: any,
-      highlightPreTag?: any,
       highlightPostTag?: any,
+      highlightPreTag?: any,
       options?: AxiosRequestConfig,
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubjectHints>
@@ -216,8 +216,8 @@ export const V1IndicesApiFp = function (configuration?: Configuration) {
       const localVarAxiosArgs = await localVarAxiosParamCreator.searchSubject(
         keyword,
         limit,
-        highlightPreTag,
         highlightPostTag,
+        highlightPreTag,
         options,
       );
       return createRequestFunction(
@@ -265,8 +265,8 @@ export const V1IndicesApiFactory = function (
         .searchSubject(
           requestParameters.keyword,
           requestParameters.limit,
-          requestParameters.highlightPreTag,
           requestParameters.highlightPostTag,
+          requestParameters.highlightPreTag,
           options,
         )
         .then((request) => request(axios, basePath));
@@ -299,14 +299,14 @@ export interface V1IndicesApiSearchSubjectRequest {
    * @type {any}
    * @memberof V1IndicesApiSearchSubject
    */
-  readonly highlightPreTag?: any;
+  readonly highlightPostTag?: any;
 
   /**
    *
    * @type {any}
    * @memberof V1IndicesApiSearchSubject
    */
-  readonly highlightPostTag?: any;
+  readonly highlightPreTag?: any;
 }
 
 /**
@@ -343,8 +343,8 @@ export class V1IndicesApi extends BaseAPI {
       .searchSubject(
         requestParameters.keyword,
         requestParameters.limit,
-        requestParameters.highlightPreTag,
         requestParameters.highlightPostTag,
+        requestParameters.highlightPreTag,
         options,
       )
       .then((request) => request(this.axios, this.basePath));

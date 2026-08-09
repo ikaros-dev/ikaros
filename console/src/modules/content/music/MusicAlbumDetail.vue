@@ -2,7 +2,11 @@
 	<div class="music-album-detail">
 		<div class="page-header">
 			<el-button @click="goBack">{{ $t('module.music.back') }}</el-button>
-			<h2>{{ album?.name || album?.nameCn || $t('module.music.album.detail.title') }}</h2>
+			<h2>
+				{{
+					album?.name || album?.nameCn || $t('module.music.album.detail.title')
+				}}
+			</h2>
 		</div>
 
 		<el-card v-if="album" class="album-info-card">
@@ -19,7 +23,9 @@
 					<p v-if="album.description">{{ album.description }}</p>
 					<p class="meta">
 						<span>{{ $t('module.music.song_count') }}: {{ songs.length }}</span>
-						<span v-if="album.score">{{ $t('module.music.score') }}: {{ album.score }}</span>
+						<span v-if="album.score"
+							>{{ $t('module.music.score') }}: {{ album.score }}</span
+						>
 					</p>
 				</div>
 			</div>
@@ -33,9 +39,18 @@
 				</el-button>
 			</div>
 
-			<el-table :data="songs" v-loading="songsLoading" stripe style="width: 100%">
+			<el-table
+				:data="songs"
+				v-loading="songsLoading"
+				stripe
+				style="width: 100%"
+			>
 				<el-table-column type="index" width="50" label="#" />
-				<el-table-column prop="name" :label="$t('module.music.song_name')" min-width="200">
+				<el-table-column
+					prop="name"
+					:label="$t('module.music.song_name')"
+					min-width="200"
+				>
 					<template #default="scope">
 						<div>
 							<strong>{{ scope.row.name }}</strong>
@@ -43,14 +58,34 @@
 						</div>
 					</template>
 				</el-table-column>
-				<el-table-column prop="group" :label="$t('module.music.group')" width="120" />
-				<el-table-column prop="sequence" :label="$t('module.music.track')" width="80" />
-				<el-table-column :label="$t('module.music.actions')" width="150">
+				<el-table-column
+					prop="group"
+					:label="$t('module.music.group')"
+					width="120"
+				/>
+				<el-table-column
+					prop="sequence"
+					:label="$t('module.music.track')"
+					width="80"
+				/>
+				<el-table-column :label="$t('module.music.actions')" width="190">
 					<template #default="scope">
+						<el-tooltip :content="$t('module.music.play')" placement="top">
+							<el-button
+								:icon="VideoPlay"
+								circle
+								:loading="playingSongId === scope.row.id"
+								@click="playSong(scope.row)"
+							/>
+						</el-tooltip>
 						<el-button size="small" @click="editSong(scope.row)">
 							{{ $t('module.music.edit') }}
 						</el-button>
-						<el-button size="small" type="danger" @click="deleteSong(scope.row)">
+						<el-button
+							size="small"
+							type="danger"
+							@click="deleteSong(scope.row)"
+						>
 							{{ $t('module.music.delete') }}
 						</el-button>
 					</template>
@@ -58,10 +93,24 @@
 			</el-table>
 		</div>
 
+		<el-dialog
+			v-model="playerVisible"
+			:title="
+				playingSong?.nameCn || playingSong?.name || $t('module.music.play')
+			"
+			width="min(880px, 92vw)"
+			destroy-on-close
+			@closed="closePlayer"
+		>
+			<Artplayer v-if="playingResource" :resource="playingResource" />
+		</el-dialog>
+
 		<!-- Song Dialog -->
 		<el-dialog
 			v-model="songDialogVisible"
-			:title="editingSong ? $t('module.music.edit_song') : $t('module.music.add_song')"
+			:title="
+				editingSong ? $t('module.music.edit_song') : $t('module.music.add_song')
+			"
 			width="500px"
 		>
 			<el-form :model="songForm" label-width="100px">
@@ -76,7 +125,10 @@
 						<el-option label="MAIN" value="MAIN" />
 						<el-option label="OPENING_SONG" value="OPENING_SONG" />
 						<el-option label="ENDING_SONG" value="ENDING_SONG" />
-						<el-option label="ORIGINAL_SOUND_TRACK" value="ORIGINAL_SOUND_TRACK" />
+						<el-option
+							label="ORIGINAL_SOUND_TRACK"
+							value="ORIGINAL_SOUND_TRACK"
+						/>
 						<el-option label="MUSIC_DIST1" value="MUSIC_DIST1" />
 						<el-option label="MUSIC_DIST2" value="MUSIC_DIST2" />
 						<el-option label="MUSIC_DIST3" value="MUSIC_DIST3" />
@@ -104,8 +156,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import type { EpisodeResource } from '@runikaros/api-client';
+import { VideoPlay } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
+import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+import Artplayer from '@/components/video/Artplayer.vue';
 import { apiClient } from '@/utils/api-client';
 
 interface MusicAlbum {
@@ -134,6 +191,7 @@ interface Song {
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 const albumId = route.params.id as string;
 
 const album = ref<MusicAlbum | null>(null);
@@ -143,6 +201,10 @@ const songDialogVisible = ref(false);
 const editingSong = ref(false);
 const savingSong = ref(false);
 const songForm = ref<Partial<Song>>({});
+const playerVisible = ref(false);
+const playingSong = ref<Song>();
+const playingSongId = ref('');
+const playingResource = ref<EpisodeResource>();
 
 const fetchAlbum = async () => {
 	try {
@@ -156,7 +218,9 @@ const fetchAlbum = async () => {
 const fetchSongs = async () => {
 	songsLoading.value = true;
 	try {
-		const response = await apiClient.get(`/api/core/music/album/${albumId}/songs`);
+		const response = await apiClient.get(
+			`/api/core/music/album/${albumId}/songs`
+		);
 		songs.value = response.data || [];
 	} catch (e) {
 		console.error('Failed to fetch songs:', e);
@@ -170,7 +234,7 @@ const showAddSongDialog = () => {
 	songForm.value = {
 		subjectId: albumId,
 		group: 'MAIN',
-		sequence: (songs.value.length + 1),
+		sequence: songs.value.length + 1,
 	};
 	songDialogVisible.value = true;
 };
@@ -205,6 +269,34 @@ const deleteSong = async (song: Song) => {
 	} catch (e) {
 		console.error('Failed to delete song:', e);
 	}
+};
+
+const playSong = async (song: Song) => {
+	playingSongId.value = song.id;
+	try {
+		const { data } = await apiClient.episode.getAttachmentRefsById({
+			id: song.id,
+		});
+		const resources = (data || []) as EpisodeResource[];
+		const resource = resources.find((item) => !item.imageSequence);
+		if (!resource) {
+			ElMessage.warning(t('module.music.no_playable_resource'));
+			return;
+		}
+		playingSong.value = song;
+		playingResource.value = resource;
+		playerVisible.value = true;
+	} catch (e) {
+		console.error('Failed to load song resource:', e);
+		ElMessage.error(t('module.music.play_failed'));
+	} finally {
+		playingSongId.value = '';
+	}
+};
+
+const closePlayer = () => {
+	playingSong.value = undefined;
+	playingResource.value = undefined;
 };
 
 const goBack = () => {

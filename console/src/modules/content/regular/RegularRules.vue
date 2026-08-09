@@ -99,9 +99,7 @@ const handleDelete = async (rule: any) => {
 			}
 		);
 		await apiClient.episode.deleteEpisodeSequenceRegular({ id: rule.id });
-		ElMessage.success(
-			t('module.regular.success.delete', { name: rule.name })
-		);
+		ElMessage.success(t('module.regular.success.delete', { name: rule.name }));
 		await fetchRules();
 	} catch (e) {
 		// cancelled or error
@@ -258,10 +256,7 @@ onMounted(() => {
 				align="center"
 			>
 				<template #default="{ row }">
-					<el-switch
-						v-model="row.enabled"
-						@change="handleEnableChange(row)"
-					/>
+					<el-switch v-model="row.enabled" @change="handleEnableChange(row)" />
 				</template>
 			</el-table-column>
 			<el-table-column
@@ -340,7 +335,11 @@ onMounted(() => {
 				@keyup.enter="handleMatchSubmit"
 			/>
 			<div style="margin-top: 12px; text-align: right">
-				<el-button type="primary" :loading="matchLoading" @click="handleMatchSubmit">
+				<el-button
+					type="primary"
+					:loading="matchLoading"
+					@click="handleMatchSubmit"
+				>
 					{{ t('module.regular.match.submit') }}
 				</el-button>
 			</div>
@@ -349,7 +348,9 @@ onMounted(() => {
 				<el-divider />
 				<div class="match-result">
 					<div class="match-result-item">
-						<span class="match-result-label">{{ t('module.regular.match.result.matched') }}</span>
+						<span class="match-result-label">{{
+							t('module.regular.match.result.matched')
+						}}</span>
 						<span>
 							<el-tag :type="matchResult.matched ? 'success' : 'danger'">
 								{{ matchResult.matched ? '✔' : '✘' }}
@@ -357,24 +358,39 @@ onMounted(() => {
 						</span>
 					</div>
 					<div class="match-result-item">
-						<span class="match-result-label">{{ t('module.regular.match.result.ruleName') }}</span>
+						<span class="match-result-label">{{
+							t('module.regular.match.result.ruleName')
+						}}</span>
 						<span>{{ matchResult.matchedRuleName || '-' }}</span>
 					</div>
 					<div class="match-result-item">
-						<span class="match-result-label">{{ t('module.regular.match.result.regex') }}</span>
+						<span class="match-result-label">{{
+							t('module.regular.match.result.regex')
+						}}</span>
 						<span>
-							<el-tag v-if="matchResult.matchedRegex" type="info" effect="plain" style="font-family: monospace">
+							<el-tag
+								v-if="matchResult.matchedRegex"
+								type="info"
+								effect="plain"
+								style="font-family: monospace"
+							>
 								{{ matchResult.matchedRegex }}
 							</el-tag>
 							<span v-else>-</span>
 						</span>
 					</div>
 					<div class="match-result-item">
-						<span class="match-result-label">{{ t('module.regular.match.result.epGroup') }}</span>
-						<span>{{ matchResult.epGroup ? getEpGroupLabel(matchResult.epGroup) : '-' }}</span>
+						<span class="match-result-label">{{
+							t('module.regular.match.result.epGroup')
+						}}</span>
+						<span>{{
+							matchResult.epGroup ? getEpGroupLabel(matchResult.epGroup) : '-'
+						}}</span>
 					</div>
 					<div class="match-result-item">
-						<span class="match-result-label">{{ t('module.regular.match.result.sequence') }}</span>
+						<span class="match-result-label">{{
+							t('module.regular.match.result.sequence')
+						}}</span>
 						<span>{{ matchResult.sequence ?? '-' }}</span>
 					</div>
 				</div>

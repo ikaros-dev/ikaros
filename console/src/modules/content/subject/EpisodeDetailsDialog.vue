@@ -20,12 +20,16 @@ import {
 import { base64Encode } from '@/utils/string-util';
 
 import { apiClient } from '@/utils/api-client';
-import { isVideo } from '@/utils/file';
+import {
+	loadMediaFileFormatLookup,
+	type MediaFileFormatLookup,
+} from '@/utils/media-file-format';
 import { Close, Plus } from '@element-plus/icons-vue';
 import AttachmentMultiSelectDialog from '@/modules/content/attachment/AttachmentMultiSelectDialog.vue';
 import { useI18n } from 'vue-i18n';
 import Artplayer from '@/components/video/Artplayer.vue';
 import { useUserStore } from '@/stores/user';
+import ImageSequenceReader from './ImageSequenceReader.vue';
 
 const { t } = useI18n();
 const userStore = useUserStore();
@@ -45,13 +49,31 @@ const props = withDefaults(
 );
 
 const episode = ref<Episode>({});
+const mediaFileFormatLookup = ref<MediaFileFormatLookup>();
+const loadMediaFileFormats = async () => {
+	try {
+		mediaFileFormatLookup.value = await loadMediaFileFormatLookup();
+	} catch {
+		mediaFileFormatLookup.value = undefined;
+	}
+};
+const isVideoResource = (resource?: EpisodeResource) => {
+	const fileName = resource?.name || resource?.url;
+	return (
+		Boolean(fileName) &&
+		mediaFileFormatLookup.value?.categoryOf(fileName as string) === 'VIDEO'
+	);
+};
 
 watch(props, async (newVal) => {
 	// console.log(newVal);
 	episode.value = newVal.ep as Episode;
+	await loadMediaFileFormats();
 	await fetchEpisodeResources();
 	if (episodeResources.value) {
-		episodeResources.value?.sort(compareFun);
+		if (!episodeResources.value.some((resource) => resource.imageSequence)) {
+			episodeResources.value.sort(compareFun);
+		}
 		emit(
 			'update:multiResource',
 			episodeResources.value && episodeResources.value.length > 1
@@ -200,8 +222,11 @@ const delegateBatchMatchingEpisode = async (
 };
 
 const episodeResources = ref<EpisodeResource[]>([]);
+const imageSequenceResources = computed(() =>
+	episodeResources.value.filter((resource) => resource.imageSequence)
+);
 const fetchEpisodeResources = async () => {
-	if (!episode.value) return;
+	if (!episode.value?.id) return;
 	const { data } = await apiClient.episode.getAttachmentRefsById({
 		id: episode.value.id,
 	});
@@ -217,14 +242,16 @@ const loadVideoAttachment = async () => {
 	if (
 		episodeResources.value &&
 		episodeResources.value.length == 1 &&
-		isVideo(episodeResources.value[0].url as string)
+		isVideoResource(episodeResources.value[0])
 	) {
 		console.debug(
 			'episodeResources.value[0].attachmentId',
 			episodeResources.value[0].attachmentId
 		);
+		const attachmentId = episodeResources.value[0].attachmentId;
+		if (!attachmentId) return;
 		const { data } = await apiClient.attachment.getAttachmentById({
-			id: episodeResources.value[0].attachmentId,
+			id: attachmentId,
 		});
 		currentVideoAttachment.value = data;
 	} else {
@@ -247,13 +274,10 @@ const compareFun = (r1: EpisodeResource, r2: EpisodeResource): number => {
 };
 
 const artplayer = ref<InstanceType<typeof Artplayer>>();
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getArtplayerInstance = (art: any) => {
 	artplayer.value = art;
 };
-const currentVideoAttachment = ref<Attachment>({
-	id: 0,
-});
+const currentVideoAttachment = ref<Attachment>({});
 const onDialogClose = () => {
 	emit('close');
 };
@@ -300,7 +324,12 @@ const onDialogClose = () => {
 				:label="t('module.subject.dialog.episode.details.label.resources')"
 			>
 				<div v-if="episodeResources && episodeResources.length > 0">
-					<div v-if="!props.multiResource" align="center">
+					<ImageSequenceReader
+						v-if="imageSequenceResources.length > 0 && episode.id"
+						:episode-id="episode.id"
+						:resources="imageSequenceResources"
+					/>
+					<div v-else-if="!props.multiResource" align="center">
 						<router-link
 							v-if="userStore.roleHasMaster()"
 							target="_blank"
@@ -314,20 +343,10 @@ const onDialogClose = () => {
 						>
 						<span v-else>{{ episodeResources[0].name }}</span>
 						<br />
-						<!-- <video
-              v-if="isVideo(episode.resources[0].url as string)"
-              style="width: 100%"
-              :src="episode.resources[0].url"
-              controls
-              preload="metadata"
-            >
-              {{
-                t('module.subject.dialog.episode.details.hint.video.unsuport')
-              }}
-            </video> -->
 						<artplayer
-							v-if="isVideo(episodeResources[0].url as string)"
-							v-model:attachmentId="episodeResources[0].attachmentId"
+							v-if="isVideoResource(episodeResources[0])"
+							:attachment-id="episodeResources[0].attachmentId"
+							:resource="episodeResources[0]"
 							style="width: 100%"
 							@getInstance="getArtplayerInstance"
 						/>

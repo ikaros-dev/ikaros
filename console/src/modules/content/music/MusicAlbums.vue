@@ -8,7 +8,11 @@
 		</div>
 
 		<el-table :data="albums" v-loading="loading" stripe style="width: 100%">
-			<el-table-column prop="name" :label="$t('module.music.name')" min-width="200">
+			<el-table-column
+				prop="name"
+				:label="$t('module.music.name')"
+				min-width="200"
+			>
 				<template #default="scope">
 					<div class="album-info">
 						<el-image
@@ -28,14 +32,26 @@
 					</div>
 				</template>
 			</el-table-column>
-			<el-table-column prop="songCount" :label="$t('module.music.song_count')" width="100" />
-			<el-table-column prop="score" :label="$t('module.music.score')" width="80" />
+			<el-table-column
+				prop="songCount"
+				:label="$t('module.music.song_count')"
+				width="100"
+			/>
+			<el-table-column
+				prop="score"
+				:label="$t('module.music.score')"
+				width="80"
+			/>
 			<el-table-column :label="$t('module.music.air_time')" width="120">
 				<template #default="scope">
 					{{ formatDate(scope.row.airTime) }}
 				</template>
 			</el-table-column>
-			<el-table-column :label="$t('module.music.actions')" width="200" fixed="right">
+			<el-table-column
+				:label="$t('module.music.actions')"
+				width="200"
+				fixed="right"
+			>
 				<template #default="scope">
 					<el-button size="small" @click="handleEdit(scope.row)">
 						{{ $t('module.music.edit') }}
@@ -66,7 +82,9 @@
 		<!-- Album Edit Dialog -->
 		<el-dialog
 			v-model="dialogVisible"
-			:title="isEdit ? $t('module.music.edit_album') : $t('module.music.create_album')"
+			:title="
+				isEdit ? $t('module.music.edit_album') : $t('module.music.create_album')
+			"
 			width="600px"
 		>
 			<el-form :model="form" label-width="100px">

@@ -70,11 +70,17 @@ const base64ToFile = (base64, filename): File => {
 };
 </script>
 <template>
-	<el-dialog v-model="dialogVisible" :title="t('component.image.cropper.title')" @close="onClose">
+	<el-dialog
+		v-model="dialogVisible"
+		:title="t('component.image.cropper.title')"
+		@close="onClose"
+	>
 		<Cropperjs :url="props.url" @clip-img="onClipImg" />
 		<template #footer>
 			<span>
-				<el-button plain @click="onConfirm">{{ t('common.button.confirm') }}</el-button>
+				<el-button plain @click="onConfirm">{{
+					t('common.button.confirm')
+				}}</el-button>
 			</span>
 		</template>
 	</el-dialog>

@@ -28,8 +28,6 @@ const router = useRouter();
 const route = useRoute();
 
 watch(route, () => {
-	//@ts-ignore
-	driver.value.id = route.params.id;
 	fetchAttachmentDriverWithId();
 });
 
@@ -41,8 +39,8 @@ const driver = ref<AttachmentDriver>({
 	comment: '',
 });
 const fetchAttachmentDriverWithId = async () => {
-	//@ts-ignore
 	const attDriId = route.params.id;
+	if (typeof attDriId !== 'string') return;
 	const { data } = await apiClient.attachmentDriver.getAttachmentDriverById({
 		id: attDriId,
 	});

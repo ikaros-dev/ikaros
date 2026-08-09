@@ -55,7 +55,7 @@ class EpisodeSequenceRegularServiceImplTest {
     @Test
     void save_updateWhenIdExists() {
         UUID id = UUID.randomUUID();
-        EpisodeSequenceRegular regular = EpisodeSequenceRegular.builder()
+        final EpisodeSequenceRegular regular = EpisodeSequenceRegular.builder()
             .id(id).name("Updated Rule").regex("SP")
             .epGroup(EpisodeGroup.SPECIAL_PROMOTION).priority(50).enabled(true).build();
 

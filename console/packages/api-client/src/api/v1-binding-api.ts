@@ -39,6 +39,12 @@ import {
 } from "../base";
 // @ts-ignore
 import { DirectoryBindingWorkflowEntity } from "../models";
+// @ts-ignore
+import { LocalScanConfirmRequest } from "../models";
+// @ts-ignore
+import { LocalScanPreview } from "../models";
+// @ts-ignore
+import { LocalScanPreviewRequest } from "../models";
 /**
  * V1BindingApi - axios parameter creator
  * @export
@@ -188,6 +194,67 @@ export const V1BindingApiAxiosParamCreator = function (
       };
     },
     /**
+     * 确认本地扫描结果，创建或复用绑定工作流并提交后台任务。
+     * @param {LocalScanConfirmRequest} localScanConfirmRequest 目录、扫描模式、唯一条目选择及待确认媒体的人工关联结果。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    confirmLocalDirectoryBinding: async (
+      localScanConfirmRequest: LocalScanConfirmRequest,
+      options: AxiosRequestConfig = {},
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'localScanConfirmRequest' is not null or undefined
+      assertParamExists(
+        "confirmLocalDirectoryBinding",
+        "localScanConfirmRequest",
+        localScanConfirmRequest,
+      );
+      const localVarPath = `/api/v1/binding/local/confirm`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        localScanConfirmRequest,
+        localVarRequestOptions,
+        configuration,
+      );
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * Get binding workflow status by workflow ID.
      * @param {any} id Workflow ID.
      * @param {*} [options] Override http request option.
@@ -199,7 +266,10 @@ export const V1BindingApiAxiosParamCreator = function (
     ): Promise<RequestArgs> => {
       // verify required parameter 'id' is not null or undefined
       assertParamExists("getBindingWorkflow", "id", id);
-      const localVarPath = `/api/v1/binding/workflow/{id}`;
+      const localVarPath = `/api/v1/binding/workflow/{id}`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id)),
+      );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -222,10 +292,6 @@ export const V1BindingApiAxiosParamCreator = function (
       // authentication BearerAuth required
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-      if (id !== undefined) {
-        localVarQueryParameter["id"] = id;
-      }
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions =
@@ -253,7 +319,10 @@ export const V1BindingApiAxiosParamCreator = function (
     ): Promise<RequestArgs> => {
       // verify required parameter 'taskId' is not null or undefined
       assertParamExists("getBindingWorkflowByTaskId", "taskId", taskId);
-      const localVarPath = `/api/v1/binding/workflow/task/{taskId}`;
+      const localVarPath = `/api/v1/binding/workflow/task/{taskId}`.replace(
+        `{${"taskId"}}`,
+        encodeURIComponent(String(taskId)),
+      );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
       let baseOptions;
@@ -277,9 +346,119 @@ export const V1BindingApiAxiosParamCreator = function (
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      if (taskId !== undefined) {
-        localVarQueryParameter["taskId"] = taskId;
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * 扫描本地目录并返回无副作用的媒体预览，不创建条目、剧集或工作流。
+     * @param {LocalScanPreviewRequest} localScanPreviewRequest 待扫描目录的附件标识和媒体扫描模式。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    previewLocalDirectoryBinding: async (
+      localScanPreviewRequest: LocalScanPreviewRequest,
+      options: AxiosRequestConfig = {},
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'localScanPreviewRequest' is not null or undefined
+      assertParamExists(
+        "previewLocalDirectoryBinding",
+        "localScanPreviewRequest",
+        localScanPreviewRequest,
+      );
+      const localVarPath = `/api/v1/binding/local/preview`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
       }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions =
+        baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        localScanPreviewRequest,
+        localVarRequestOptions,
+        configuration,
+      );
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * 根据已有本地绑定工作流重新扫描目录，并提交新的后台任务。
+     * @param {any} id 要重扫的本地目录绑定工作流标识。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    rescanLocalDirectoryBinding: async (
+      id: any,
+      options: AxiosRequestConfig = {},
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'id' is not null or undefined
+      assertParamExists("rescanLocalDirectoryBinding", "id", id);
+      const localVarPath = `/api/v1/binding/local/workflow/{id}/rescan`.replace(
+        `{${"id"}}`,
+        encodeURIComponent(String(id)),
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = {
+        method: "POST",
+        ...baseOptions,
+        ...options,
+      };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication BasicAuth required
+      // http basic authentication required
+      setBasicAuthToObject(localVarRequestOptions, configuration);
+
+      // authentication BearerAuth required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions =
@@ -368,6 +547,33 @@ export const V1BindingApiFp = function (configuration?: Configuration) {
       );
     },
     /**
+     * 确认本地扫描结果，创建或复用绑定工作流并提交后台任务。
+     * @param {LocalScanConfirmRequest} localScanConfirmRequest 目录、扫描模式、唯一条目选择及待确认媒体的人工关联结果。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async confirmLocalDirectoryBinding(
+      localScanConfirmRequest: LocalScanConfirmRequest,
+      options?: AxiosRequestConfig,
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string,
+      ) => AxiosPromise<DirectoryBindingWorkflowEntity>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.confirmLocalDirectoryBinding(
+          localScanConfirmRequest,
+          options,
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration,
+      );
+    },
+    /**
      * Get binding workflow status by workflow ID.
      * @param {any} id Workflow ID.
      * @param {*} [options] Override http request option.
@@ -409,6 +615,60 @@ export const V1BindingApiFp = function (configuration?: Configuration) {
       const localVarAxiosArgs =
         await localVarAxiosParamCreator.getBindingWorkflowByTaskId(
           taskId,
+          options,
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration,
+      );
+    },
+    /**
+     * 扫描本地目录并返回无副作用的媒体预览，不创建条目、剧集或工作流。
+     * @param {LocalScanPreviewRequest} localScanPreviewRequest 待扫描目录的附件标识和媒体扫描模式。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async previewLocalDirectoryBinding(
+      localScanPreviewRequest: LocalScanPreviewRequest,
+      options?: AxiosRequestConfig,
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string,
+      ) => AxiosPromise<LocalScanPreview>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.previewLocalDirectoryBinding(
+          localScanPreviewRequest,
+          options,
+        );
+      return createRequestFunction(
+        localVarAxiosArgs,
+        globalAxios,
+        BASE_PATH,
+        configuration,
+      );
+    },
+    /**
+     * 根据已有本地绑定工作流重新扫描目录，并提交新的后台任务。
+     * @param {any} id 要重扫的本地目录绑定工作流标识。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async rescanLocalDirectoryBinding(
+      id: any,
+      options?: AxiosRequestConfig,
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string,
+      ) => AxiosPromise<DirectoryBindingWorkflowEntity>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.rescanLocalDirectoryBinding(
+          id,
           options,
         );
       return createRequestFunction(
@@ -471,6 +731,23 @@ export const V1BindingApiFactory = function (
         .then((request) => request(axios, basePath));
     },
     /**
+     * 确认本地扫描结果，创建或复用绑定工作流并提交后台任务。
+     * @param {V1BindingApiConfirmLocalDirectoryBindingRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    confirmLocalDirectoryBinding(
+      requestParameters: V1BindingApiConfirmLocalDirectoryBindingRequest,
+      options?: AxiosRequestConfig,
+    ): AxiosPromise<DirectoryBindingWorkflowEntity> {
+      return localVarFp
+        .confirmLocalDirectoryBinding(
+          requestParameters.localScanConfirmRequest,
+          options,
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
      * Get binding workflow status by workflow ID.
      * @param {V1BindingApiGetBindingWorkflowRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -496,6 +773,37 @@ export const V1BindingApiFactory = function (
     ): AxiosPromise<DirectoryBindingWorkflowEntity> {
       return localVarFp
         .getBindingWorkflowByTaskId(requestParameters.taskId, options)
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * 扫描本地目录并返回无副作用的媒体预览，不创建条目、剧集或工作流。
+     * @param {V1BindingApiPreviewLocalDirectoryBindingRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    previewLocalDirectoryBinding(
+      requestParameters: V1BindingApiPreviewLocalDirectoryBindingRequest,
+      options?: AxiosRequestConfig,
+    ): AxiosPromise<LocalScanPreview> {
+      return localVarFp
+        .previewLocalDirectoryBinding(
+          requestParameters.localScanPreviewRequest,
+          options,
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * 根据已有本地绑定工作流重新扫描目录，并提交新的后台任务。
+     * @param {V1BindingApiRescanLocalDirectoryBindingRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    rescanLocalDirectoryBinding(
+      requestParameters: V1BindingApiRescanLocalDirectoryBindingRequest,
+      options?: AxiosRequestConfig,
+    ): AxiosPromise<DirectoryBindingWorkflowEntity> {
+      return localVarFp
+        .rescanLocalDirectoryBinding(requestParameters.id, options)
         .then((request) => request(axios, basePath));
     },
   };
@@ -558,6 +866,20 @@ export interface V1BindingApiBindDirectoryRequest {
 }
 
 /**
+ * Request parameters for confirmLocalDirectoryBinding operation in V1BindingApi.
+ * @export
+ * @interface V1BindingApiConfirmLocalDirectoryBindingRequest
+ */
+export interface V1BindingApiConfirmLocalDirectoryBindingRequest {
+  /**
+   * 目录、扫描模式、唯一条目选择及待确认媒体的人工关联结果。
+   * @type {LocalScanConfirmRequest}
+   * @memberof V1BindingApiConfirmLocalDirectoryBinding
+   */
+  readonly localScanConfirmRequest: LocalScanConfirmRequest;
+}
+
+/**
  * Request parameters for getBindingWorkflow operation in V1BindingApi.
  * @export
  * @interface V1BindingApiGetBindingWorkflowRequest
@@ -583,6 +905,34 @@ export interface V1BindingApiGetBindingWorkflowByTaskIdRequest {
    * @memberof V1BindingApiGetBindingWorkflowByTaskId
    */
   readonly taskId: any;
+}
+
+/**
+ * Request parameters for previewLocalDirectoryBinding operation in V1BindingApi.
+ * @export
+ * @interface V1BindingApiPreviewLocalDirectoryBindingRequest
+ */
+export interface V1BindingApiPreviewLocalDirectoryBindingRequest {
+  /**
+   * 待扫描目录的附件标识和媒体扫描模式。
+   * @type {LocalScanPreviewRequest}
+   * @memberof V1BindingApiPreviewLocalDirectoryBinding
+   */
+  readonly localScanPreviewRequest: LocalScanPreviewRequest;
+}
+
+/**
+ * Request parameters for rescanLocalDirectoryBinding operation in V1BindingApi.
+ * @export
+ * @interface V1BindingApiRescanLocalDirectoryBindingRequest
+ */
+export interface V1BindingApiRescanLocalDirectoryBindingRequest {
+  /**
+   * 要重扫的本地目录绑定工作流标识。
+   * @type {any}
+   * @memberof V1BindingApiRescanLocalDirectoryBinding
+   */
+  readonly id: any;
 }
 
 /**
@@ -635,6 +985,25 @@ export class V1BindingApi extends BaseAPI {
   }
 
   /**
+   * 确认本地扫描结果，创建或复用绑定工作流并提交后台任务。
+   * @param {V1BindingApiConfirmLocalDirectoryBindingRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1BindingApi
+   */
+  public confirmLocalDirectoryBinding(
+    requestParameters: V1BindingApiConfirmLocalDirectoryBindingRequest,
+    options?: AxiosRequestConfig,
+  ) {
+    return V1BindingApiFp(this.configuration)
+      .confirmLocalDirectoryBinding(
+        requestParameters.localScanConfirmRequest,
+        options,
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
    * Get binding workflow status by workflow ID.
    * @param {V1BindingApiGetBindingWorkflowRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
@@ -663,6 +1032,41 @@ export class V1BindingApi extends BaseAPI {
   ) {
     return V1BindingApiFp(this.configuration)
       .getBindingWorkflowByTaskId(requestParameters.taskId, options)
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * 扫描本地目录并返回无副作用的媒体预览，不创建条目、剧集或工作流。
+   * @param {V1BindingApiPreviewLocalDirectoryBindingRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1BindingApi
+   */
+  public previewLocalDirectoryBinding(
+    requestParameters: V1BindingApiPreviewLocalDirectoryBindingRequest,
+    options?: AxiosRequestConfig,
+  ) {
+    return V1BindingApiFp(this.configuration)
+      .previewLocalDirectoryBinding(
+        requestParameters.localScanPreviewRequest,
+        options,
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * 根据已有本地绑定工作流重新扫描目录，并提交新的后台任务。
+   * @param {V1BindingApiRescanLocalDirectoryBindingRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof V1BindingApi
+   */
+  public rescanLocalDirectoryBinding(
+    requestParameters: V1BindingApiRescanLocalDirectoryBindingRequest,
+    options?: AxiosRequestConfig,
+  ) {
+    return V1BindingApiFp(this.configuration)
+      .rescanLocalDirectoryBinding(requestParameters.id, options)
       .then((request) => request(this.axios, this.basePath));
   }
 }
