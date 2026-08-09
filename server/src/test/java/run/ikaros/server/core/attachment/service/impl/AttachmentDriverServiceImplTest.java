@@ -36,8 +36,8 @@ import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
 import run.ikaros.server.core.attachment.extension.LocalDiskAttachmentDriverFetcher;
-import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
 import run.ikaros.server.core.attachment.service.AttachmentContentInspectionService;
+import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.attachment.service.AttachmentSha1Service;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
@@ -46,45 +46,75 @@ import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
-/** 附件驱动增量刷新服务测试. */
+/**
+ * 附件驱动增量刷新服务测试.
+ */
 class AttachmentDriverServiceImplTest {
-    /** 附件驱动仓库. */
+    /**
+     * 附件驱动仓库.
+     */
     @Mock
     private AttachmentDriverRepository driverRepository;
-    /** 附件仓库. */
+    /**
+     * 附件仓库.
+     */
     @Mock
     private AttachmentRepository attachmentRepository;
-    /** 应用事件发布器. */
+    /**
+     * 应用事件发布器.
+     */
     @Mock
     private ApplicationEventPublisher eventPublisher;
-    /** 附件服务. */
+    /**
+     * 附件服务.
+     */
     @Mock
     private AttachmentService attachmentService;
-    /** 附件驱动挂载服务. */
+    /**
+     * 附件驱动挂载服务.
+     */
     @Mock
     private AttachmentDriverMountService mountService;
-    /** 附件 SHA-1 后台计算服务. */
+    /**
+     * 附件 SHA-1 后台计算服务.
+     */
     @Mock
     private AttachmentSha1Service attachmentSha1Service;
-    /** 响应式数据库模板. */
+    /**
+     * 响应式数据库模板.
+     */
     @Mock
     private R2dbcEntityTemplate template;
-    /** 扩展组件查找器. */
+    /**
+     * 扩展组件查找器.
+     */
     @Mock
     private ExtensionComponentsFinder extensionComponentsFinder;
-    /** 附件驱动扫描器. */
+    /**
+     * 附件驱动扫描器.
+     */
     @Mock
     private AttachmentDriverFetcher fetcher;
-    /** 附件内容检查服务。 */
+    /**
+     * 附件内容检查服务。
+     */
     @Mock
     private AttachmentContentInspectionService contentInspectionService;
-    /** 被测试的附件驱动服务. */
+    /**
+     * 被测试的附件驱动服务.
+     */
     private AttachmentDriverServiceImpl service;
-    /** 驱动ID. */
+    /**
+     * 驱动ID.
+     */
     private UUID driverId;
-    /** 当前目录附件ID. */
+    /**
+     * 当前目录附件ID.
+     */
     private UUID parentId;
-    /** 当前目录磁盘路径. */
+    /**
+     * 当前目录磁盘路径.
+     */
     private String remotePath;
 
     @BeforeEach
@@ -96,13 +126,15 @@ class AttachmentDriverServiceImplTest {
         driverId = UUID.randomUUID();
         parentId = UUID.randomUUID();
         remotePath = "D:/media";
-        Attachment parentAttachment = Attachment.builder()
+        Attachment parentAttachment = Attachment
+            .builder()
             .id(parentId)
             .driverId(driverId)
             .type(AttachmentType.Driver_Directory)
             .fsPath(remotePath)
             .build();
-        AttachmentDriverEntity driver = AttachmentDriverEntity.builder()
+        AttachmentDriverEntity driver = AttachmentDriverEntity
+            .builder()
             .id(driverId)
             .type(AttachmentDriverType.LOCAL)
             .name(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME)
@@ -131,7 +163,9 @@ class AttachmentDriverServiceImplTest {
             .thenReturn(Flux.just(firstFile, secondFile));
         when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
             .thenReturn(Flux.empty());
-        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+        StepVerifier
+            .create(service.refresh(parentId))
+            .verifyComplete();
 
         verify(attachmentService, times(2)).save(any(Attachment.class));
         verify(attachmentSha1Service).calculateAsync(
@@ -149,7 +183,9 @@ class AttachmentDriverServiceImplTest {
         when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
             .thenReturn(Flux.just(storedFile));
 
-        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+        StepVerifier
+            .create(service.refresh(parentId))
+            .verifyComplete();
 
         verify(fetcher, never()).calculateSha1(any(Attachment.class));
         verify(attachmentService, never()).save(any(Attachment.class));
@@ -171,12 +207,18 @@ class AttachmentDriverServiceImplTest {
             .thenReturn(Flux.just(changedFile));
         when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
             .thenReturn(Flux.just(storedChangedFile, missingFile));
-        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+        StepVerifier
+            .create(service.refresh(parentId))
+            .verifyComplete();
 
         ArgumentCaptor<Attachment> attachmentCaptor = ArgumentCaptor.forClass(Attachment.class);
         verify(attachmentService).save(attachmentCaptor.capture());
-        assertThat(attachmentCaptor.getValue().getId()).isEqualTo(storedChangedFile.getId());
-        assertThat(attachmentCaptor.getValue().getSha1()).isNull();
+        assertThat(attachmentCaptor
+            .getValue()
+            .getId()).isEqualTo(storedChangedFile.getId());
+        assertThat(attachmentCaptor
+            .getValue()
+            .getSha1()).isNull();
         verify(attachmentService).removeByIdOnlyRecords(missingFile.getId());
         verify(attachmentSha1Service).calculateAsync(fetcher, List.of(changedFile));
     }
@@ -190,7 +232,9 @@ class AttachmentDriverServiceImplTest {
         when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
             .thenReturn(Flux.empty());
 
-        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+        StepVerifier
+            .create(service.refresh(parentId))
+            .verifyComplete();
 
         verify(contentInspectionService, never()).inspect(any(Attachment.class), eq(fetcher));
         verify(attachmentService, never()).save(any(Attachment.class));
@@ -210,7 +254,9 @@ class AttachmentDriverServiceImplTest {
         when(contentInspectionService.inspect(invalidFile, fetcher))
             .thenReturn(Mono.error(new IllegalArgumentException("invalid media")));
 
-        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+        StepVerifier
+            .create(service.refresh(parentId))
+            .verifyComplete();
 
         verify(attachmentService, never()).save(any(Attachment.class));
         verify(attachmentService).removeByIdOnlyRecords(storedInvalidFile.getId());
@@ -222,10 +268,13 @@ class AttachmentDriverServiceImplTest {
         Attachment file = scannedFile("D:/media/concurrent.mkv", 100L,
             LocalDateTime.of(2026, 7, 30, 12, 0));
         when(fetcher.getChildren(driverId, parentId, remotePath))
-            .thenReturn(Flux.just(file).delayElements(Duration.ofMillis(50)));
+            .thenReturn(Flux
+                .just(file)
+                .delayElements(Duration.ofMillis(50)));
         when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
             .thenReturn(Flux.empty());
-        StepVerifier.create(Flux.merge(service.refresh(parentId), service.refresh(parentId)))
+        StepVerifier
+            .create(Flux.merge(service.refresh(parentId), service.refresh(parentId)))
             .verifyComplete();
 
         verify(fetcher).getChildren(driverId, parentId, remotePath);
@@ -237,7 +286,8 @@ class AttachmentDriverServiceImplTest {
     void saveRebindsEnabledDriverWhenRemotePathChanges() {
         String newRemotePath = "D:/new-media";
         Sinks.One<Void> rebindCompletion = Sinks.one();
-        AttachmentDriverEntity storedDriver = AttachmentDriverEntity.builder()
+        AttachmentDriverEntity storedDriver = AttachmentDriverEntity
+            .builder()
             .id(driverId)
             .enable(true)
             .type(AttachmentDriverType.LOCAL)
@@ -245,7 +295,8 @@ class AttachmentDriverServiceImplTest {
             .mountName("media")
             .remotePath(remotePath)
             .build();
-        AttachmentDriver changedDriver = AttachmentDriver.builder()
+        AttachmentDriver changedDriver = AttachmentDriver
+            .builder()
             .id(driverId)
             .enable(false)
             .type(AttachmentDriverType.LOCAL)
@@ -259,7 +310,8 @@ class AttachmentDriverServiceImplTest {
         when(mountService.rebind(any(AttachmentDriverEntity.class),
             any(AttachmentDriverEntity.class))).thenReturn(rebindCompletion.asMono());
 
-        StepVerifier.create(service.save(changedDriver))
+        StepVerifier
+            .create(service.save(changedDriver))
             .expectSubscription()
             .expectNoEvent(Duration.ofMillis(10))
             .then(rebindCompletion::tryEmitEmpty)
@@ -277,7 +329,8 @@ class AttachmentDriverServiceImplTest {
 
     @Test
     void saveCreatesDriverDisabledWhenRequestContainsEnableTrue() {
-        AttachmentDriver newDriver = AttachmentDriver.builder()
+        AttachmentDriver newDriver = AttachmentDriver
+            .builder()
             .enable(true)
             .type(AttachmentDriverType.LOCAL)
             .name(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME)
@@ -291,7 +344,8 @@ class AttachmentDriverServiceImplTest {
         when(driverRepository.insert(any(AttachmentDriverEntity.class)))
             .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
-        StepVerifier.create(service.save(newDriver))
+        StepVerifier
+            .create(service.save(newDriver))
             .assertNext(savedDriver -> {
                 assertThat(savedDriver.getId()).isNotNull();
                 assertThat(savedDriver.isEnable()).isFalse();
@@ -306,7 +360,8 @@ class AttachmentDriverServiceImplTest {
     void listAttachmentsRefreshesDirectoryBeforeReturningFiles() {
         Attachment video = scannedFile("D:/media/episode.mkv", 100L,
             LocalDateTime.of(2026, 7, 30, 12, 0));
-        AttachmentSearchCondition condition = AttachmentSearchCondition.builder()
+        AttachmentSearchCondition condition = AttachmentSearchCondition
+            .builder()
             .parentId(parentId)
             .refresh(true)
             .build();
@@ -316,7 +371,8 @@ class AttachmentDriverServiceImplTest {
             .thenReturn(Flux.empty());
         when(attachmentService.listByCondition(condition)).thenReturn(Mono.just(page));
 
-        StepVerifier.create(service.listAttachmentsByCondition(condition))
+        StepVerifier
+            .create(service.listAttachmentsByCondition(condition))
             .assertNext(result -> assertThat(result.getItems()).containsExactly(video))
             .verifyComplete();
 
@@ -330,7 +386,8 @@ class AttachmentDriverServiceImplTest {
         UUID missingAttachmentId = UUID.randomUUID();
         when(attachmentService.findById(missingAttachmentId)).thenReturn(Mono.empty());
 
-        StepVerifier.create(service.refresh(missingAttachmentId))
+        StepVerifier
+            .create(service.refresh(missingAttachmentId))
             .expectErrorSatisfies(error -> {
                 assertThat(error).isInstanceOf(AttachmentNotFoundException.class);
                 assertThat(error).hasMessageContaining(missingAttachmentId.toString());
@@ -341,14 +398,16 @@ class AttachmentDriverServiceImplTest {
     @Test
     void refreshRejectsNonDriverDirectory() {
         UUID fileId = UUID.randomUUID();
-        Attachment file = Attachment.builder()
+        Attachment file = Attachment
+            .builder()
             .id(fileId)
             .driverId(driverId)
             .type(AttachmentType.Driver_File)
             .build();
         when(attachmentService.findById(fileId)).thenReturn(Mono.just(file));
 
-        StepVerifier.create(service.refresh(fileId))
+        StepVerifier
+            .create(service.refresh(fileId))
             .expectErrorSatisfies(error -> {
                 assertThat(error).isInstanceOf(IllegalArgumentException.class);
                 assertThat(error).hasMessageContaining(fileId.toString());
@@ -359,13 +418,15 @@ class AttachmentDriverServiceImplTest {
     @Test
     void refreshRejectsDirectoryWithoutDriverId() {
         UUID directoryId = UUID.randomUUID();
-        Attachment directory = Attachment.builder()
+        Attachment directory = Attachment
+            .builder()
             .id(directoryId)
             .type(AttachmentType.Driver_Directory)
             .build();
         when(attachmentService.findById(directoryId)).thenReturn(Mono.just(directory));
 
-        StepVerifier.create(service.refresh(directoryId))
+        StepVerifier
+            .create(service.refresh(directoryId))
             .expectErrorSatisfies(error -> {
                 assertThat(error).isInstanceOf(IllegalStateException.class);
                 assertThat(error).hasMessageContaining(directoryId.toString());
@@ -377,7 +438,8 @@ class AttachmentDriverServiceImplTest {
     void refreshRejectsMissingDriver() {
         when(driverRepository.findById(driverId)).thenReturn(Mono.empty());
 
-        StepVerifier.create(service.refresh(parentId))
+        StepVerifier
+            .create(service.refresh(parentId))
             .expectErrorSatisfies(error -> {
                 assertThat(error).isInstanceOf(IllegalStateException.class);
                 assertThat(error).hasMessageContaining(driverId.toString());
@@ -386,7 +448,8 @@ class AttachmentDriverServiceImplTest {
     }
 
     private Attachment scannedFile(String fsPath, Long size, LocalDateTime modifiedTime) {
-        return Attachment.builder()
+        return Attachment
+            .builder()
             .parentId(parentId)
             .driverId(driverId)
             .type(AttachmentType.Driver_File)
@@ -402,7 +465,8 @@ class AttachmentDriverServiceImplTest {
 
     private AttachmentEntity storedFile(Attachment attachment, LocalDateTime modifiedTime,
                                         String sha1) {
-        return AttachmentEntity.builder()
+        return AttachmentEntity
+            .builder()
             .id(UUID.randomUUID())
             .parentId(parentId)
             .driverId(driverId)

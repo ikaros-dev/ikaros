@@ -39,10 +39,14 @@ import run.ikaros.api.core.media.MediaFilePolicy;
 @Slf4j
 public class FileUtils {
 
-    /** 应用上传文件的基础目录名称。 */
+    /**
+     * 应用上传文件的基础目录名称。
+     */
     private static final String BASE_UPLOAD_DIR_NAME = FileConst.DEFAULT_DIR_NAME;
 
-    /** 应用上传文件的基础目录路径。 */
+    /**
+     * 应用上传文件的基础目录路径。
+     */
     private static final String BASE_UPLOAD_DIR_PATH
         = SystemVarUtils.getCurrentAppDirPath() + File.separator + BASE_UPLOAD_DIR_NAME;
 
@@ -76,7 +80,10 @@ public class FileUtils {
                                                 @NotBlank String postfix) {
         Assert.hasText(postfix, "'postfix' must not be blank");
         return buildAppUploadFileBasePath(basePath, LocalDateTime.now())
-            + File.separator + UUID.randomUUID().toString().replace("-", "")
+            + File.separator + UUID
+            .randomUUID()
+            .toString()
+            .replace("-", "")
             + (('.' == postfix.charAt(0))
             ? postfix : "." + postfix);
     }
@@ -94,7 +101,8 @@ public class FileUtils {
     }
 
     public static boolean isVideo(String url) {
-        return MediaFilePolicy.extensionHasCategory(extensionArgument(url), MediaFileCategory.VIDEO);
+        return MediaFilePolicy.extensionHasCategory(extensionArgument(url),
+            MediaFileCategory.VIDEO);
     }
 
     public static boolean isDocument(String url) {
@@ -104,11 +112,13 @@ public class FileUtils {
     }
 
     public static boolean isVoice(String url) {
-        return MediaFilePolicy.extensionHasCategory(extensionArgument(url), MediaFileCategory.AUDIO);
+        return MediaFilePolicy.extensionHasCategory(extensionArgument(url),
+            MediaFileCategory.AUDIO);
     }
 
     public static boolean isImage(String url) {
-        return MediaFilePolicy.extensionHasCategory(extensionArgument(url), MediaFileCategory.IMAGE);
+        return MediaFilePolicy.extensionHasCategory(extensionArgument(url),
+            MediaFileCategory.IMAGE);
     }
 
     public enum Hash {
@@ -117,7 +127,9 @@ public class FileUtils {
         SHA256("SHA-256"),
         SHA512("SHA-512");
 
-        /** 散列算法名称。 */
+        /**
+         * 散列算法名称。
+         */
         private final String name;
 
         Hash(String name) {
@@ -188,7 +200,9 @@ public class FileUtils {
         if (originalFilename.indexOf("?") > 0) {
             originalFilename = originalFilename.substring(0, originalFilename.indexOf("?"));
         }
-        return MediaFilePolicy.extractExtension(originalFilename).orElse("");
+        return MediaFilePolicy
+            .extractExtension(originalFilename)
+            .orElse("");
     }
 
     private static String extensionArgument(String filenameOrExtension) {
@@ -297,8 +311,12 @@ public class FileUtils {
                 "target file has exists: " + targetFile.getAbsolutePath());
         }
 
-        if (!targetFile.getParentFile().exists()) {
-            targetFile.getParentFile().mkdirs();
+        if (!targetFile
+            .getParentFile()
+            .exists()) {
+            targetFile
+                .getParentFile()
+                .mkdirs();
         }
 
         try {
@@ -309,9 +327,15 @@ public class FileUtils {
             try (RandomAccessFile accessFile = new RandomAccessFile(targetFile,
                 "rw")) {
                 long total = 0L;
-                List<Path> pathSortedList = chunkFilePaths.stream()
-                    .sorted((o1, o2) -> (int) (Long.parseLong(o1.toFile().getName())
-                        - Long.parseLong(o2.toFile().getName()))).toList();
+                List<Path> pathSortedList = chunkFilePaths
+                    .stream()
+                    .sorted((o1, o2) -> (int) (Long.parseLong(o1
+                        .toFile()
+                        .getName())
+                        - Long.parseLong(o2
+                        .toFile()
+                        .getName())))
+                    .toList();
                 for (Path path : pathSortedList) {
                     File file = path.toFile();
                     byte[] bytes = Files.readAllBytes(file.toPath());
@@ -340,7 +364,8 @@ public class FileUtils {
      * Calculate file size.
      */
     public static Mono<Long> calculateFileSize(Flux<DataBuffer> dataBufferFlux) {
-        return dataBufferFlux.map(DataBuffer::readableByteCount)
+        return dataBufferFlux
+            .map(DataBuffer::readableByteCount)
             .reduce(0L, Long::sum);
     }
 

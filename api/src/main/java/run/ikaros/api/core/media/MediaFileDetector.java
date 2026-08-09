@@ -22,44 +22,64 @@ import org.xml.sax.SAXException;
  */
 public final class MediaFileDetector {
 
-    /** 检测器允许消费的最大前缀长度。 */
+    /**
+     * 检测器允许消费的最大前缀长度。
+     */
     public static final int MAX_PREFIX_SIZE = 64 * 1024;
 
-    /** SRT 序号、时间轴和正文结构。 */
+    /**
+     * SRT 序号、时间轴和正文结构。
+     */
     private static final Pattern SRT_PATTERN = Pattern.compile(
         "(?ms)^\\s*\\d+\\s*\\R\\d{2}:\\d{2}:\\d{2},\\d{3}\\s+-->\\s+"
             + "\\d{2}:\\d{2}:\\d{2},\\d{3}[^\\r\\n]*\\R\\S.*");
 
-    /** WebVTT 点号毫秒时间轴。 */
+    /**
+     * WebVTT 点号毫秒时间轴。
+     */
     private static final Pattern VTT_TIMELINE = Pattern.compile(
         "(?m)^(?:\\S+\\R)?(?:\\d{2}:)?\\d{2}:\\d{2}\\.\\d{3}\\s+-->\\s+"
             + "(?:\\d{2}:)?\\d{2}:\\d{2}\\.\\d{3}(?:\\s+.*)?$");
 
-    /** LRC 时间标签。 */
+    /**
+     * LRC 时间标签。
+     */
     private static final Pattern LRC_TIMELINE = Pattern.compile(
         "(?m)^.*\\[\\d{1,3}:\\d{2}\\.\\d{2,3}].+$");
 
-    /** MicroDVD 帧时间轴。 */
+    /**
+     * MicroDVD 帧时间轴。
+     */
     private static final Pattern MICRODVD_TIMELINE = Pattern.compile(
         "(?m)^\\{\\d+}\\{\\d+}.+$");
 
-    /** VobSub IDX 时间戳和文件位置。 */
+    /**
+     * VobSub IDX 时间戳和文件位置。
+     */
     private static final Pattern IDX_TIMELINE = Pattern.compile(
         "(?im)^timestamp:\\s*\\d{2}:\\d{2}:\\d{2}:\\d{3},\\s*filepos:\\s*[0-9a-f]{8,16}\\s*$");
 
-    /** ASF Header Object GUID。 */
+    /**
+     * ASF Header Object GUID。
+     */
     private static final byte[] ASF_HEADER_GUID = hex(
         "3026b2758e66cf11a6d900aa0062ce6c");
 
-    /** ASF Stream Properties Object GUID。 */
+    /**
+     * ASF Stream Properties Object GUID。
+     */
     private static final byte[] ASF_STREAM_PROPERTIES_GUID = hex(
         "9107dcb7b7a9cf118ee600c00c205365");
 
-    /** ASF Audio Media GUID。 */
+    /**
+     * ASF Audio Media GUID。
+     */
     private static final byte[] ASF_AUDIO_GUID = hex(
         "409e69f84d5bcf11a8fd00805f5c442b");
 
-    /** ASF Video Media GUID。 */
+    /**
+     * ASF Video Media GUID。
+     */
     private static final byte[] ASF_VIDEO_GUID = hex(
         "c0ef19bc4d5bcf11a8fd00805f5c442b");
 
@@ -68,15 +88,19 @@ public final class MediaFileDetector {
 
     public static Optional<MediaFileDetectionResult> detect(byte[] prefix, String extension) {
         if (prefix == null || prefix.length == 0 || prefix.length > MAX_PREFIX_SIZE
-            || MediaFilePolicy.formatsForExtension(extension).isEmpty()) {
+            || MediaFilePolicy
+            .formatsForExtension(extension)
+            .isEmpty()) {
             return Optional.empty();
         }
-        MediaFileFormat format = detectBinary(prefix).orElseGet(() -> detectText(prefix, extension).orElse(null));
+        MediaFileFormat format =
+            detectBinary(prefix).orElseGet(() -> detectText(prefix, extension).orElse(null));
         if (format == null) {
             return Optional.empty();
         }
         MediaFileDetectionResult result = new MediaFileDetectionResult(format);
-        return MediaFilePolicy.isDetectionAllowed(extension, result) ? Optional.of(result) : Optional.empty();
+        return MediaFilePolicy.isDetectionAllowed(extension, result) ? Optional.of(result) :
+            Optional.empty();
     }
 
     private static Optional<MediaFileFormat> detectBinary(byte[] data) {
@@ -148,7 +172,9 @@ public final class MediaFileDetector {
         String text = decoded.get();
         String normalized = extension.toLowerCase(Locale.ROOT);
         return switch (normalized) {
-            case "srt" -> SRT_PATTERN.matcher(text).find()
+            case "srt" -> SRT_PATTERN
+                .matcher(text)
+                .find()
                 ? Optional.of(MediaFileFormat.SRT) : Optional.empty();
             case "ass" -> isAss(text, true)
                 ? Optional.of(MediaFileFormat.ASS) : Optional.empty();
@@ -156,11 +182,15 @@ public final class MediaFileDetector {
                 ? Optional.of(MediaFileFormat.SSA) : Optional.empty();
             case "vtt" -> isVtt(text)
                 ? Optional.of(MediaFileFormat.VTT) : Optional.empty();
-            case "lrc" -> LRC_TIMELINE.matcher(text).find()
+            case "lrc" -> LRC_TIMELINE
+                .matcher(text)
+                .find()
                 ? Optional.of(MediaFileFormat.LRC) : Optional.empty();
             case "idx" -> isIdx(text)
                 ? Optional.of(MediaFileFormat.IDX) : Optional.empty();
-            case "sub" -> MICRODVD_TIMELINE.matcher(text).find()
+            case "sub" -> MICRODVD_TIMELINE
+                .matcher(text)
+                .find()
                 ? Optional.of(MediaFileFormat.MICRODVD) : Optional.empty();
             case "ttml", "dfxp" -> isTtml(data)
                 ? Optional.of(MediaFileFormat.TTML) : Optional.empty();
@@ -391,7 +421,8 @@ public final class MediaFileDetector {
         int offset = 0;
         if (data.length >= 10 && asciiEquals(data, 0, "ID3")) {
             if ((data[6] | data[7] | data[8] | data[9]) < 0
-                || (unsigned(data[6]) | unsigned(data[7]) | unsigned(data[8]) | unsigned(data[9])) > 127) {
+                || (unsigned(data[6]) | unsigned(data[7]) | unsigned(data[8]) | unsigned(data[9])) >
+                127) {
                 return Optional.empty();
             }
             offset = 10 + (unsigned(data[6]) << 21) + (unsigned(data[7]) << 14)
@@ -440,9 +471,9 @@ public final class MediaFileDetector {
         int bitrateIndex = b2 >> 4 & 0x0f;
         int sampleRateIndex = b2 >> 2 & 0x03;
         int padding = b2 >> 1 & 1;
-        int[] sampleRates = version == 3 ? new int[]{44100, 48000, 32000}
-            : version == 2 ? new int[]{22050, 24000, 16000}
-            : new int[]{11025, 12000, 8000};
+        int[] sampleRates = version == 3 ? new int[] {44100, 48000, 32000}
+            : version == 2 ? new int[] {22050, 24000, 16000}
+            : new int[] {11025, 12000, 8000};
         int[][] mpeg1Bitrates = {
             {},
             {0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320},
@@ -500,7 +531,8 @@ public final class MediaFileDetector {
             return false;
         }
         long dataOffset = readUInt32Be(data, 5);
-        if (dataOffset < 9 || dataOffset + 15 > data.length || readUInt32Be(data, (int) dataOffset) != 0) {
+        if (dataOffset < 9 || dataOffset + 15 > data.length
+            || readUInt32Be(data, (int) dataOffset) != 0) {
             return false;
         }
         int tagType = unsigned(data[(int) dataOffset + 4]);
@@ -510,7 +542,7 @@ public final class MediaFileDetector {
     }
 
     private static boolean isMpegTs(byte[] data) {
-        for (int start : new int[]{0, 4}) {
+        for (int start : new int[] {0, 4}) {
             if (data.length >= start + 377 && validTsPacket(data, start)
                 && validTsPacket(data, start + 188) && validTsPacket(data, start + 376)) {
                 return true;
@@ -538,16 +570,32 @@ public final class MediaFileDetector {
     }
 
     private static boolean isAss(String text, boolean ass) {
-        String normalized = text.replace("\r\n", "\n").replace('\r', '\n');
+        String normalized = text
+            .replace("\r\n", "\n")
+            .replace('\r', '\n');
         String scriptType = ass ? "(?im)^ScriptType:\\s*v4\\.00\\+\\s*$"
             : "(?im)^ScriptType:\\s*v4\\.00\\s*$";
-        return Pattern.compile("(?im)^\\[Script Info]\\s*$").matcher(normalized).find()
-            && Pattern.compile(scriptType).matcher(normalized).find()
-            && Pattern.compile("(?im)^\\[Events]\\s*$").matcher(normalized).find()
-            && Pattern.compile("(?im)^Format:\\s*[^\\n]*Start[^\\n]*End[^\\n]*Text\\s*$")
-                .matcher(normalized).find()
-            && Pattern.compile("(?im)^Dialogue:\\s*[^,]*,\\d+:\\d{2}:\\d{2}\\.\\d{2},"
-                + "\\d+:\\d{2}:\\d{2}\\.\\d{2},.*$").matcher(normalized).find();
+        return Pattern
+            .compile("(?im)^\\[Script Info]\\s*$")
+            .matcher(normalized)
+            .find()
+            && Pattern
+            .compile(scriptType)
+            .matcher(normalized)
+            .find()
+            && Pattern
+            .compile("(?im)^\\[Events]\\s*$")
+            .matcher(normalized)
+            .find()
+            && Pattern
+            .compile("(?im)^Format:\\s*[^\\n]*Start[^\\n]*End[^\\n]*Text\\s*$")
+            .matcher(normalized)
+            .find()
+            && Pattern
+            .compile("(?im)^Dialogue:\\s*[^,]*,\\d+:\\d{2}:\\d{2}\\.\\d{2},"
+                + "\\d+:\\d{2}:\\d{2}\\.\\d{2},.*$")
+            .matcher(normalized)
+            .find();
     }
 
     private static boolean isVtt(String text) {
@@ -556,15 +604,25 @@ public final class MediaFileDetector {
             return false;
         }
         int lineEnd = normalized.indexOf('\n');
-        if (lineEnd < 0 || !normalized.substring(0, lineEnd).stripTrailing().equals("WEBVTT")) {
+        if (lineEnd < 0 || !normalized
+            .substring(0, lineEnd)
+            .stripTrailing()
+            .equals("WEBVTT")) {
             return false;
         }
-        return VTT_TIMELINE.matcher(normalized.substring(lineEnd + 1)).find();
+        return VTT_TIMELINE
+            .matcher(normalized.substring(lineEnd + 1))
+            .find();
     }
 
     private static boolean isIdx(String text) {
-        return Pattern.compile("(?im)^#\\s*VobSub index file.*$").matcher(text).find()
-            && IDX_TIMELINE.matcher(text).find();
+        return Pattern
+            .compile("(?im)^#\\s*VobSub index file.*$")
+            .matcher(text)
+            .find()
+            && IDX_TIMELINE
+            .matcher(text)
+            .find();
     }
 
     private static boolean isTtml(byte[] data) {
@@ -589,7 +647,9 @@ public final class MediaFileDetector {
             }
             for (int i = 0; i < paragraphs.getLength(); i++) {
                 Element paragraph = (Element) paragraphs.item(i);
-                if (!paragraph.getTextContent().isBlank()
+                if (!paragraph
+                    .getTextContent()
+                    .isBlank()
                     && (paragraph.hasAttribute("begin")
                     || paragraph.hasAttribute("end") || paragraph.hasAttribute("dur"))) {
                     return true;
@@ -603,12 +663,16 @@ public final class MediaFileDetector {
 
     private static boolean isSvg(byte[] data) {
         Optional<String> decoded = decodeUtf8(data);
-        if (decoded.isEmpty() || !decoded.get().stripLeading().startsWith("<")) {
+        if (decoded.isEmpty() || !decoded
+            .get()
+            .stripLeading()
+            .startsWith("<")) {
             return false;
         }
         try {
             DocumentBuilderFactory factory = secureDocumentBuilderFactory();
-            Document document = factory.newDocumentBuilder()
+            Document document = factory
+                .newDocumentBuilder()
                 .parse(new ByteArrayInputStream(data));
             Element root = document.getDocumentElement();
             return root != null && "svg".equals(root.getLocalName())
@@ -646,10 +710,12 @@ public final class MediaFileDetector {
             }
         }
         try {
-            String text = StandardCharsets.UTF_8.newDecoder()
+            String text = StandardCharsets.UTF_8
+                .newDecoder()
                 .onMalformedInput(CodingErrorAction.REPORT)
                 .onUnmappableCharacter(CodingErrorAction.REPORT)
-                .decode(ByteBuffer.wrap(data, offset, data.length - offset)).toString();
+                .decode(ByteBuffer.wrap(data, offset, data.length - offset))
+                .toString();
             return text.isBlank() ? Optional.empty() : Optional.of(text);
         } catch (CharacterCodingException exception) {
             return Optional.empty();
@@ -692,7 +758,11 @@ public final class MediaFileDetector {
     }
 
     private static boolean containsBrand(String[] brands, String... expected) {
-        return Arrays.stream(brands).anyMatch(brand -> Arrays.asList(expected).contains(brand));
+        return Arrays
+            .stream(brands)
+            .anyMatch(brand -> Arrays
+                .asList(expected)
+                .contains(brand));
     }
 
     private static boolean startsWith(byte[] data, byte[] expected) {
@@ -737,24 +807,35 @@ public final class MediaFileDetector {
     }
 
     private static long readUInt32Be(byte[] data, int offset) {
-        return Integer.toUnsignedLong(ByteBuffer.wrap(data, offset, 4).getInt());
+        return Integer.toUnsignedLong(ByteBuffer
+            .wrap(data, offset, 4)
+            .getInt());
     }
 
     private static long readUInt32Le(byte[] data, int offset) {
-        return Integer.toUnsignedLong(ByteBuffer.wrap(data, offset, 4)
-            .order(ByteOrder.LITTLE_ENDIAN).getInt());
+        return Integer.toUnsignedLong(ByteBuffer
+            .wrap(data, offset, 4)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .getInt());
     }
 
     private static long readUInt64Le(byte[] data, int offset) {
-        long value = ByteBuffer.wrap(data, offset, 8).order(ByteOrder.LITTLE_ENDIAN).getLong();
+        long value = ByteBuffer
+            .wrap(data, offset, 8)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .getLong();
         return value < 0 ? Long.MAX_VALUE : value;
     }
 
     private static byte[] hex(String value) {
-        return java.util.HexFormat.of().parseHex(value);
+        return java.util.HexFormat
+            .of()
+            .parseHex(value);
     }
 
-    /** EBML 可变长整数的长度和值。 */
+    /**
+     * EBML 可变长整数的长度和值。
+     */
     private record VarInt(int length, long value) {
     }
 }

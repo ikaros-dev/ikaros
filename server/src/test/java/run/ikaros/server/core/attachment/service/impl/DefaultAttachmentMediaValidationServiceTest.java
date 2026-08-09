@@ -8,14 +8,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.NettyDataBuffer;
+import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.media.MediaFileFormat;
 
-/** 验证附件流式前缀检测、回放和失败释放行为。 */
+/**
+ * 验证附件流式前缀检测、回放和失败释放行为。
+ */
 class DefaultAttachmentMediaValidationServiceTest {
 
     private final DefaultAttachmentMediaValidationService service =
@@ -28,7 +30,7 @@ class DefaultAttachmentMediaValidationServiceTest {
         int[] subscriptions = {0};
         Flux<DataBuffer> content = Flux.defer(() -> {
             subscriptions[0]++;
-            return Flux.just(bufferFactory.wrap(new byte[]{1, 2, 3}));
+            return Flux.just(bufferFactory.wrap(new byte[] {1, 2, 3}));
         });
 
         assertThatThrownBy(() -> service.validateFilename("movie.exe"))
@@ -42,26 +44,36 @@ class DefaultAttachmentMediaValidationServiceTest {
         byte[] second = "tail".getBytes(StandardCharsets.UTF_8);
         Flux<DataBuffer> content = Flux.just(bufferFactory.wrap(first), bufferFactory.wrap(second));
 
-        StepVerifier.create(service.validate(content, "movie.mp4"))
+        StepVerifier
+            .create(service.validate(content, "movie.mp4"))
             .assertNext(validated -> {
-                assertThat(validated.detectionResult().format()).isEqualTo(MediaFileFormat.PNG);
-                StepVerifier.create(validated.content().map(buffer -> {
-                        byte[] bytes = new byte[buffer.readableByteCount()];
-                        buffer.read(bytes);
-                        DataBufferUtils.release(buffer);
-                        return bytes;
-                    }).collectList())
-                    .assertNext(parts -> assertThat(parts.stream()
+                assertThat(validated
+                    .detectionResult()
+                    .format()).isEqualTo(MediaFileFormat.PNG);
+                StepVerifier
+                    .create(validated
+                        .content()
+                        .map(buffer -> {
+                            byte[] bytes = new byte[buffer.readableByteCount()];
+                            buffer.read(bytes);
+                            DataBufferUtils.release(buffer);
+                            return bytes;
+                        })
+                        .collectList())
+                    .assertNext(parts -> assertThat(parts
+                        .stream()
                         .toList()).satisfies(values -> {
-                            byte[] actual = new byte[values.stream()
-                                .mapToInt(bytes -> bytes.length).sum()];
-                            int offset = 0;
-                            for (byte[] value : values) {
-                                System.arraycopy(value, 0, actual, offset, value.length);
-                                offset += value.length;
-                            }
-                            assertThat(actual).isEqualTo(join(first, second));
-                        }))
+                        byte[] actual = new byte[values
+                            .stream()
+                            .mapToInt(bytes -> bytes.length)
+                            .sum()];
+                        int offset = 0;
+                        for (byte[] value : values) {
+                            System.arraycopy(value, 0, actual, offset, value.length);
+                            offset += value.length;
+                        }
+                        assertThat(actual).isEqualTo(join(first, second));
+                    }))
                     .verifyComplete();
             })
             .verifyComplete();
@@ -69,12 +81,15 @@ class DefaultAttachmentMediaValidationServiceTest {
 
     @Test
     void rejectsZipAndReleasesReceivedBuffer() {
-        DataBuffer buffer = bufferFactory.wrap(new byte[]{'P', 'K', 3, 4, 1});
+        DataBuffer buffer = bufferFactory.wrap(new byte[] {'P', 'K', 3, 4, 1});
 
-        StepVerifier.create(service.validate(Flux.just(buffer), "movie.png"))
+        StepVerifier
+            .create(service.validate(Flux.just(buffer), "movie.png"))
             .expectError()
             .verify();
-        assertThat(((NettyDataBuffer) buffer).getNativeBuffer().refCnt()).isZero();
+        assertThat(((NettyDataBuffer) buffer)
+            .getNativeBuffer()
+            .refCnt()).isZero();
     }
 
     private static byte[] pngPrefix() {

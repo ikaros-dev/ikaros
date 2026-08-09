@@ -11,13 +11,9 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
@@ -28,7 +24,6 @@ import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,8 +34,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -88,8 +83,8 @@ import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.cache.annotation.MonoCacheEvict;
 import run.ikaros.server.cache.annotation.MonoCacheable;
 import run.ikaros.server.core.attachment.event.AttachmentRemoveEvent;
-import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.attachment.service.AttachmentMediaValidationService;
+import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
@@ -109,7 +104,9 @@ public class AttachmentServiceImpl implements AttachmentService {
     private final AttachmentRepository attachmentRepository;
     private final AttachmentDriverRepository driverRepository;
     private final ExtensionComponentsFinder extensionComponentsFinder;
-    /** 附件名称门禁和有限前缀真实格式验证服务。 */
+    /**
+     * 附件名称门禁和有限前缀真实格式验证服务。
+     */
     private final AttachmentMediaValidationService mediaValidationService;
 
     /**
@@ -140,7 +137,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheEvict
     public Mono<AttachmentEntity> saveEntity(AttachmentEntity attachmentEntity) {
         Assert.notNull(attachmentEntity, "'attachmentEntity' must not be null.");
-        return repository.findByTypeAndParentIdAndName(attachmentEntity.getType(),
+        return repository
+            .findByTypeAndParentIdAndName(attachmentEntity.getType(),
                 attachmentEntity.getParentId(), attachmentEntity.getName())
             .switchIfEmpty(findPathByParentId(
                 attachmentEntity.getParentId(),
@@ -172,13 +170,15 @@ public class AttachmentServiceImpl implements AttachmentService {
                 validateFsPath(fsPath);
             }
         }
-        attachment.setParentId(Optional.ofNullable(attachment.getParentId())
+        attachment.setParentId(Optional
+            .ofNullable(attachment.getParentId())
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID));
         final UUID newParentId = attachment.getParentId();
         Mono<AttachmentEntity> attachmentEntityMono =
             Objects.isNull(attachment.getId())
                 ? copyProperties(attachment, new AttachmentEntity())
-                : repository.findById(attachment.getId())
+                : repository
+                .findById(attachment.getId())
                 .flatMap(attachmentEntity ->
                     copyProperties(attachment, attachmentEntity, "parentId"));
 
@@ -211,11 +211,17 @@ public class AttachmentServiceImpl implements AttachmentService {
         AttachmentSearchCondition searchCondition) {
         Assert.notNull(searchCondition, "'condition' must no null.");
 
-        final int page = Optional.ofNullable(searchCondition.getPage()).orElse(1);
-        final int size = Optional.ofNullable(searchCondition.getSize()).orElse(10);
+        final int page = Optional
+            .ofNullable(searchCondition.getPage())
+            .orElse(1);
+        final int size = Optional
+            .ofNullable(searchCondition.getSize())
+            .orElse(10);
 
         String[] nameKeyWords = StringUtils.hasText(searchCondition.getName())
-            ? searchCondition.getName().split(" ")
+            ? searchCondition
+            .getName()
+            .split(" ")
             : new String[] {};
         final AttachmentType type = searchCondition.getType();
         final UUID parentId = searchCondition.getParentId();
@@ -224,11 +230,15 @@ public class AttachmentServiceImpl implements AttachmentService {
         Criteria criteria = Criteria.empty();
 
         if (Objects.nonNull(parentId)) {
-            criteria = Criteria.where("parent_id").is(parentId);
+            criteria = Criteria
+                .where("parent_id")
+                .is(parentId);
         }
 
         if (Objects.nonNull(type)) {
-            criteria = criteria.and("type").is(type);
+            criteria = criteria
+                .and("type")
+                .is(type);
         }
 
         for (String nameKeyWord : nameKeyWords) {
@@ -236,14 +246,21 @@ public class AttachmentServiceImpl implements AttachmentService {
                 continue;
             }
             String nameKeyWordLike = "%" + nameKeyWord + "%";
-            criteria = criteria.and("name").like(nameKeyWordLike);
+            criteria = criteria
+                .and("name")
+                .like(nameKeyWordLike);
         }
 
-        criteria = criteria.and(Criteria.where("deleted").is(false)
-            .or(Criteria.where("deleted").isNull()));
+        criteria = criteria.and(Criteria
+            .where("deleted")
+            .is(false)
+            .or(Criteria
+                .where("deleted")
+                .isNull()));
 
 
-        Query query = Query.query(criteria)
+        Query query = Query
+            .query(criteria)
             .sort(Sort.by(Sort.Order.asc("type")))
             .sort(Sort.by(Sort.Order.asc("name")))
             .sort(Sort.by(Sort.Order.asc("size")))
@@ -269,7 +286,10 @@ public class AttachmentServiceImpl implements AttachmentService {
     public Mono<PagingWrap<Attachment>> listByCondition(AttachmentSearchCondition searchCondition) {
         Assert.notNull(searchCondition, "'condition' must no null.");
         return listEntitiesByCondition(searchCondition)
-            .flatMap(pagingWrap -> Flux.fromStream(pagingWrap.getItems().stream())
+            .flatMap(pagingWrap -> Flux
+                .fromStream(pagingWrap
+                    .getItems()
+                    .stream())
                 .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()))
                 .collectList()
                 .map(attachments -> new PagingWrap<>(pagingWrap.getPage(), pagingWrap.getSize(),
@@ -279,13 +299,15 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     private Mono<AttachmentEntity> checkChildAttachmentRefNotExists(
         AttachmentEntity attachmentEntity) {
-        return Mono.just(attachmentEntity)
+        return Mono
+            .just(attachmentEntity)
             .map(AttachmentEntity::getType)
             .filter(Directory::equals)
             .map(eq -> attachmentEntity.getId())
             .flatMapMany(repository::findAllByParentId)
             .flatMap(this::checkChildAttachmentRefNotExists)
-            .flatMap(entity -> referenceRepository.existsByAttachmentId(entity.getId())
+            .flatMap(entity -> referenceRepository
+                .existsByAttachmentId(entity.getId())
                 .filter(exists -> !exists)
                 .switchIfEmpty(Mono.error(new AttachmentRemoveException(
                     "Attachment references exists, "
@@ -296,9 +318,11 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private Mono<UUID> checkAttachmentRefNotExists(UUID attachmentId) {
-        return repository.findById(attachmentId)
+        return repository
+            .findById(attachmentId)
             .flatMap(this::checkChildAttachmentRefNotExists)
-            .flatMap(entity -> referenceRepository.existsByAttachmentId(entity.getId())
+            .flatMap(entity -> referenceRepository
+                .existsByAttachmentId(entity.getId())
                 .filter(exists -> !exists)
                 .switchIfEmpty(Mono.error(new AttachmentRemoveException(
                     "Attachment references exists, "
@@ -310,13 +334,15 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     private Mono<AttachmentEntity> checkChildAttachmentRelNotExists(
         AttachmentEntity attachmentEntity) {
-        return Mono.just(attachmentEntity)
+        return Mono
+            .just(attachmentEntity)
             .map(AttachmentEntity::getType)
             .filter(Directory::equals)
             .map(eq -> attachmentEntity.getId())
             .flatMapMany(repository::findAllByParentId)
             .flatMap(this::checkChildAttachmentRelNotExists)
-            .flatMap(entity -> relationRepository.existsByAttachmentId(entity.getId())
+            .flatMap(entity -> relationRepository
+                .existsByAttachmentId(entity.getId())
                 .filter(exists -> !exists)
                 .switchIfEmpty(Mono.error(new AttachmentRemoveException(
                     "Attachment relations exists, "
@@ -326,9 +352,11 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private Mono<UUID> checkAttachmentRelNotExists(UUID attachmentId) {
-        return repository.findById(attachmentId)
+        return repository
+            .findById(attachmentId)
             .flatMap(this::checkChildAttachmentRelNotExists)
-            .flatMap(entity -> relationRepository.existsByAttachmentId(entity.getId())
+            .flatMap(entity -> relationRepository
+                .existsByAttachmentId(entity.getId())
                 .filter(exists -> !exists)
                 .switchIfEmpty(Mono.error(new AttachmentRemoveException(
                     "Attachment relations exists, "
@@ -338,7 +366,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private Mono<AttachmentEntity> removeChildrenAttachment(AttachmentEntity attachmentEntity) {
-        return Mono.just(attachmentEntity)
+        return Mono
+            .just(attachmentEntity)
             .map(AttachmentEntity::getType)
             .filter(Directory::equals)
             .map(eq -> attachmentEntity.getId())
@@ -353,7 +382,8 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     private Mono<AttachmentEntity> removeChildrenAttachmentForcibly(
         AttachmentEntity attachmentEntity) {
-        return Mono.just(attachmentEntity)
+        return Mono
+            .just(attachmentEntity)
             .map(AttachmentEntity::getType)
             .filter(attachmentType -> Directory.equals(attachmentType)
                 || Driver_Directory.equals(attachmentType))
@@ -368,7 +398,8 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     private Mono<AttachmentEntity> removeChildrenAttachmentOnlyRecords(
         AttachmentEntity attachmentEntity) {
-        return Mono.just(attachmentEntity)
+        return Mono
+            .just(attachmentEntity)
             .map(AttachmentEntity::getType)
             .filter(attachmentType -> Directory.equals(attachmentType)
                 || Driver_Directory.equals(attachmentType))
@@ -382,7 +413,8 @@ public class AttachmentServiceImpl implements AttachmentService {
 
 
     private Mono<Void> deleteEntity(AttachmentEntity attachmentEntity) {
-        return repository.delete(attachmentEntity)
+        return repository
+            .delete(attachmentEntity)
             .doOnSuccess(unused -> {
                 AttachmentRemoveEvent event = new AttachmentRemoveEvent(this, attachmentEntity);
                 applicationEventPublisher.publishEvent(event);
@@ -416,7 +448,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheEvict
     public Mono<Void> removeByIdForcibly(UUID attachmentId) {
         Assert.notNull(attachmentId, "'attachmentId' must not null.");
-        return repository.findById(attachmentId)
+        return repository
+            .findById(attachmentId)
             .flatMap(this::removeChildrenAttachmentForcibly)
             .map(this::removeFileSystemFile)
             .flatMap(this::deleteEntity);
@@ -426,7 +459,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheEvict
     public Mono<Void> removeByIdOnlyRecords(UUID attachmentId) {
         Assert.notNull(attachmentId, "'attachmentId' must not null.");
-        return repository.findById(attachmentId)
+        return repository
+            .findById(attachmentId)
             .flatMap(this::removeChildrenAttachmentOnlyRecords)
             .flatMap(this::deleteEntityWithLogic);
     }
@@ -441,7 +475,8 @@ public class AttachmentServiceImpl implements AttachmentService {
         if (Objects.isNull(parentId)) {
             parentId = AttachmentConst.ROOT_DIRECTORY_ID;
         }
-        return repository.findByTypeAndParentIdAndName(type, parentId, name)
+        return repository
+            .findByTypeAndParentIdAndName(type, parentId, name)
             .map(AttachmentEntity::getId)
             .flatMap(this::removeById);
     }
@@ -453,26 +488,36 @@ public class AttachmentServiceImpl implements AttachmentService {
         String name = uploadCondition.getName();
         mediaValidationService.validateFilename(name);
         final Boolean isAutoReName =
-            Optional.ofNullable(uploadCondition.getIsAutoReName()).orElse(true);
-        UUID parentId = Optional.ofNullable(uploadCondition.getParentId())
+            Optional
+                .ofNullable(uploadCondition.getIsAutoReName())
+                .orElse(true);
+        UUID parentId = Optional
+            .ofNullable(uploadCondition.getParentId())
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID);
         AtomicReference<Path> targetPath = new AtomicReference<>();
         AtomicBoolean persisted = new AtomicBoolean();
-        return mediaValidationService.validate(uploadCondition.getDataBufferFlux(), name)
+        return mediaValidationService
+            .validate(uploadCondition.getDataBufferFlux(), name)
             .flatMap(validated -> Mono.defer(() -> {
                 Path path = Path.of(FileUtils.buildAppUploadFilePath(
-                    ikarosProperties.getWorkDir().toString(),
-                    MediaFilePolicy.extractExtension(name).orElseThrow()));
+                    ikarosProperties
+                        .getWorkDir()
+                        .toString(),
+                    MediaFilePolicy
+                        .extractExtension(name)
+                        .orElseThrow()));
                 targetPath.set(path);
                 return writeDataToFsPath(validated.content(), path);
             }))
-            .flatMap(fsPath -> repository.existsByTypeAndParentIdAndName(
+            .flatMap(fsPath -> repository
+                .existsByTypeAndParentIdAndName(
                     AttachmentType.File, parentId, name)
                 .filter(exists -> isAutoReName && exists)
                 .map(exists -> System.currentTimeMillis() + "-" + name)
                 .switchIfEmpty(Mono.just(name))
                 .flatMap(n -> findPathByParentId(parentId, n)
-                    .map(path -> AttachmentEntity.builder()
+                    .map(path -> AttachmentEntity
+                        .builder()
                         .parentId(parentId)
                         .fsPath(fsPath.toString())
                         .updateTime(LocalDateTime.now())
@@ -480,12 +525,16 @@ public class AttachmentServiceImpl implements AttachmentService {
                         .name(n)
                         .path(path)
                         .url(path2url(fsPath.toString(),
-                            ikarosProperties.getWorkDir().toString()))
+                            ikarosProperties
+                                .getWorkDir()
+                                .toString()))
                         .size(findFileSize(fsPath.toString()))
                         .build())
                     .flatMap(this::saveEntity)))
             .flatMap(attachmentEntity ->
-                copyProperties(attachmentEntity, Attachment.builder().build()))
+                copyProperties(attachmentEntity, Attachment
+                    .builder()
+                    .build()))
             .doOnNext(attachment -> persisted.set(true))
             .doFinally(signalType -> {
                 if (!persisted.get()) {
@@ -497,7 +546,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     @MonoCacheable(value = "attachment:id:", key = "#attachmentId")
     public Mono<Attachment> findById(UUID attachmentId) {
-        return repository.findById(attachmentId)
+        return repository
+            .findById(attachmentId)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }
 
@@ -516,14 +566,16 @@ public class AttachmentServiceImpl implements AttachmentService {
         if (Objects.isNull(parentId)) {
             parentId = AttachmentConst.ROOT_DIRECTORY_ID;
         }
-        return repository.findByTypeAndParentIdAndName(type, parentId, name)
+        return repository
+            .findByTypeAndParentIdAndName(type, parentId, name)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, new Attachment()));
     }
 
 
     private static Mono<Path> writeDataToFsPath(Flux<DataBuffer> dataBufferFlux,
                                                 Path fsPath) {
-        return Mono.fromCallable(() -> {
+        return Mono
+            .fromCallable(() -> {
                 Files.createDirectories(fsPath.getParent());
                 return fsPath;
             })
@@ -531,7 +583,8 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(path -> Mono.using(
                 () -> Files.newOutputStream(path, StandardOpenOption.CREATE_NEW,
                     StandardOpenOption.WRITE),
-                outputStream -> DataBufferUtils.write(dataBufferFlux, outputStream)
+                outputStream -> DataBufferUtils
+                    .write(dataBufferFlux, outputStream)
                     .doOnNext(buffer -> DataBufferUtils.release(buffer))
                     .doOnDiscard(DataBuffer.class, DataBufferUtils::release)
                     .then(Mono.just(path)), AttachmentServiceImpl::closeOutputStream));
@@ -594,23 +647,28 @@ public class AttachmentServiceImpl implements AttachmentService {
         Assert.hasText(uploadName, "'uploadName' must has text.");
         Assert.notNull(content, "'content' must not null.");
         if (uploadLength <= 0 || uploadOffset < 0 || uploadOffset >= uploadLength) {
-            return content.doOnNext(DataBufferUtils::release).then(Mono.error(
-                new IllegalArgumentException("无效的上传长度或分片偏移量")));
+            return content
+                .doOnNext(DataBufferUtils::release)
+                .then(Mono.error(
+                    new IllegalArgumentException("无效的上传长度或分片偏移量")));
         }
         mediaValidationService.validateFilename(uploadName);
         Path sessionDir = fragmentSessionDir(unique);
-        UUID resolvedParentId = Optional.ofNullable(parentId)
+        UUID resolvedParentId = Optional
+            .ofNullable(parentId)
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID);
         Mono<FragmentSession> sessionMono = uploadOffset == 0
-            ? mediaValidationService.validate(content, uploadName)
-                .flatMap(validated -> initializeFragmentSession(sessionDir, uploadName,
-                    uploadLength, validated.detectionResult(), validated.content()))
+            ? mediaValidationService
+            .validate(content, uploadName)
+            .flatMap(validated -> initializeFragmentSession(sessionDir, uploadName,
+                uploadLength, validated.detectionResult(), validated.content()))
             : readFragmentSession(sessionDir)
-                .flatMap(session -> validateFragmentSession(session, uploadName, uploadLength)
-                    .then(writeFragmentChunk(sessionDir, uploadOffset, content))
-                    .thenReturn(session));
+            .flatMap(session -> validateFragmentSession(session, uploadName, uploadLength)
+                .then(writeFragmentChunk(sessionDir, uploadOffset, content))
+                .thenReturn(session));
         AtomicReference<Path> targetPath = new AtomicReference<>();
-        return sessionMono.flatMap(session -> currentFragmentLength(sessionDir)
+        return sessionMono
+            .flatMap(session -> currentFragmentLength(sessionDir)
                 .flatMap(currentLength -> {
                     if (currentLength > uploadLength) {
                         return Mono.error(new AttachmentUploadException(
@@ -620,7 +678,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                         return Mono.empty();
                     }
                     return completeFragmentUpload(sessionDir, session, resolvedParentId,
-                            targetPath)
+                        targetPath)
                         .then(cleanupFragmentUpload(sessionDir, null));
                 }))
             .onErrorResume(throwable -> cleanupFragmentUpload(sessionDir, targetPath.get())
@@ -641,7 +699,9 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     private Mono<Void> validateFragmentSession(FragmentSession session, String uploadName,
                                                long uploadLength) {
-        if (!session.uploadName().equals(uploadName) || session.uploadLength() != uploadLength) {
+        if (!session
+            .uploadName()
+            .equals(uploadName) || session.uploadLength() != uploadLength) {
             return Mono.error(new IllegalArgumentException("分片上传会话名称或长度不匹配"));
         }
         return Mono.empty();
@@ -655,7 +715,8 @@ public class AttachmentServiceImpl implements AttachmentService {
             }
             Path chunkPath = sessionDir.resolve(Long.toString(uploadOffset));
             AtomicLong chunkLength = new AtomicLong();
-            return Mono.fromCallable(() -> {
+            return Mono
+                .fromCallable(() -> {
                     Files.createDirectories(sessionDir);
                     return chunkPath;
                 })
@@ -663,7 +724,8 @@ public class AttachmentServiceImpl implements AttachmentService {
                 .flatMap(path -> Mono.using(
                     () -> Files.newOutputStream(path, StandardOpenOption.CREATE_NEW,
                         StandardOpenOption.WRITE),
-                    outputStream -> DataBufferUtils.write(
+                    outputStream -> DataBufferUtils
+                        .write(
                             content.doOnNext(buffer -> chunkLength.addAndGet(
                                 buffer.readableByteCount())), outputStream)
                         .doOnNext(buffer -> DataBufferUtils.release(buffer))
@@ -684,12 +746,19 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private Mono<Void> writeFragmentSession(Path sessionDir, FragmentSession session) {
-        return Mono.fromRunnable(() -> {
+        return Mono
+            .fromRunnable(() -> {
                 Properties properties = new Properties();
-                properties.setProperty("name", Base64.getUrlEncoder().withoutPadding()
-                    .encodeToString(session.uploadName().getBytes(StandardCharsets.UTF_8)));
+                properties.setProperty("name", Base64
+                    .getUrlEncoder()
+                    .withoutPadding()
+                    .encodeToString(session
+                        .uploadName()
+                        .getBytes(StandardCharsets.UTF_8)));
                 properties.setProperty("length", Long.toString(session.uploadLength()));
-                properties.setProperty("format", session.format().name());
+                properties.setProperty("format", session
+                    .format()
+                    .name());
                 try (OutputStream outputStream = Files.newOutputStream(
                     sessionDir.resolve(".validated"), StandardOpenOption.CREATE_NEW,
                     StandardOpenOption.WRITE)) {
@@ -698,11 +767,13 @@ public class AttachmentServiceImpl implements AttachmentService {
                     throw new AttachmentUploadException("写入分片验证元数据失败", exception);
                 }
             })
-            .subscribeOn(Schedulers.boundedElastic()).then();
+            .subscribeOn(Schedulers.boundedElastic())
+            .then();
     }
 
     private Mono<FragmentSession> readFragmentSession(Path sessionDir) {
-        return Mono.fromCallable(() -> {
+        return Mono
+            .fromCallable(() -> {
                 Path metadataPath = sessionDir.resolve(".validated");
                 if (!Files.isRegularFile(metadataPath)) {
                     throw new IllegalArgumentException("分片上传会话尚未通过首分片验证");
@@ -711,7 +782,8 @@ public class AttachmentServiceImpl implements AttachmentService {
                 try (InputStream inputStream = Files.newInputStream(metadataPath)) {
                     properties.load(inputStream);
                 }
-                String uploadName = new String(Base64.getUrlDecoder()
+                String uploadName = new String(Base64
+                    .getUrlDecoder()
                     .decode(properties.getProperty("name")), StandardCharsets.UTF_8);
                 long uploadLength = Long.parseLong(properties.getProperty("length"));
                 MediaFileFormat format = MediaFileFormat.valueOf(
@@ -724,17 +796,23 @@ public class AttachmentServiceImpl implements AttachmentService {
                     || exception instanceof IllegalArgumentException,
                 exception -> exception instanceof IllegalArgumentException
                     && "分片上传会话尚未通过首分片验证".equals(exception.getMessage())
-                    ? exception : new IllegalArgumentException("分片上传会话元数据无效", exception));
+                    ? exception :
+                    new IllegalArgumentException("分片上传会话元数据无效", exception));
     }
 
     private Mono<Long> currentFragmentLength(Path sessionDir) {
-        return Mono.fromCallable(() -> {
+        return Mono
+            .fromCallable(() -> {
                 if (!Files.isDirectory(sessionDir)) {
                     return 0L;
                 }
                 try (var paths = Files.list(sessionDir)) {
-                    return paths.filter(Files::isRegularFile)
-                        .filter(path -> path.getFileName().toString().matches("\\d+"))
+                    return paths
+                        .filter(Files::isRegularFile)
+                        .filter(path -> path
+                            .getFileName()
+                            .toString()
+                            .matches("\\d+"))
                         .mapToLong(path -> {
                             try {
                                 return Files.size(path);
@@ -742,7 +820,8 @@ public class AttachmentServiceImpl implements AttachmentService {
                                 throw new AttachmentUploadException(
                                     "读取分片长度失败", exception);
                             }
-                        }).sum();
+                        })
+                        .sum();
                 }
             })
             .subscribeOn(Schedulers.boundedElastic());
@@ -752,24 +831,31 @@ public class AttachmentServiceImpl implements AttachmentService {
                                               UUID parentId,
                                               AtomicReference<Path> targetPath) {
         Path firstChunk = sessionDir.resolve("0");
-        return mediaValidationService.validate(firstChunk, session.uploadName())
+        return mediaValidationService
+            .validate(firstChunk, session.uploadName())
             .filter(result -> result.format() == session.format())
             .switchIfEmpty(Mono.error(new AttachmentUploadException(
                 "最终合并前的真实格式检测不一致", null)))
             .flatMap(result -> Mono.defer(() -> {
                 Path target = Path.of(FileUtils.buildAppUploadFilePath(
-                    ikarosProperties.getWorkDir().toString(),
-                    MediaFilePolicy.extractExtension(session.uploadName()).orElseThrow()));
+                    ikarosProperties
+                        .getWorkDir()
+                        .toString(),
+                    MediaFilePolicy
+                        .extractExtension(session.uploadName())
+                        .orElseThrow()));
                 targetPath.set(target);
                 return mergeFragmentFiles(sessionDir, target, session.uploadLength());
             }))
-            .flatMap(filePath -> repository.existsByTypeAndParentIdAndName(
+            .flatMap(filePath -> repository
+                .existsByTypeAndParentIdAndName(
                     AttachmentType.File, parentId, session.uploadName())
                 .filter(Boolean::booleanValue)
                 .map(exists -> System.currentTimeMillis() + "-" + session.uploadName())
                 .switchIfEmpty(Mono.just(session.uploadName()))
                 .flatMap(name -> findPathByParentId(parentId, name)
-                    .map(path -> AttachmentEntity.builder()
+                    .map(path -> AttachmentEntity
+                        .builder()
                         .parentId(parentId)
                         .fsPath(filePath.toString())
                         .updateTime(LocalDateTime.now())
@@ -777,7 +863,9 @@ public class AttachmentServiceImpl implements AttachmentService {
                         .name(name)
                         .path(path)
                         .url(path2url(filePath.toString(),
-                            ikarosProperties.getWorkDir().toString()))
+                            ikarosProperties
+                                .getWorkDir()
+                                .toString()))
                         .size(findFileSize(filePath.toString()))
                         .sha1(findFileSha1(filePath.toString()))
                         .build())
@@ -787,14 +875,21 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     private Mono<Path> mergeFragmentFiles(Path sessionDir, Path targetPath,
                                           long uploadLength) {
-        return Mono.fromCallable(() -> {
+        return Mono
+            .fromCallable(() -> {
                 Files.createDirectories(targetPath.getParent());
                 List<Path> chunks;
                 try (var paths = Files.list(sessionDir)) {
-                    chunks = paths.filter(Files::isRegularFile)
-                        .filter(path -> path.getFileName().toString().matches("\\d+"))
+                    chunks = paths
+                        .filter(Files::isRegularFile)
+                        .filter(path -> path
+                            .getFileName()
+                            .toString()
+                            .matches("\\d+"))
                         .sorted(Comparator.comparingLong(path ->
-                            Long.parseLong(path.getFileName().toString())))
+                            Long.parseLong(path
+                                .getFileName()
+                                .toString())))
                         .toList();
                 }
                 long mergedLength = 0;
@@ -825,9 +920,13 @@ public class AttachmentServiceImpl implements AttachmentService {
         if (!unique.matches("[A-Za-z0-9_-]+")) {
             throw new IllegalArgumentException("无效的分片上传会话标识");
         }
-        Path cacheRoot = Path.of(SystemVarUtils.getOsCacheDirPath(ikarosProperties.getWorkDir()))
-            .toAbsolutePath().normalize();
-        Path sessionDir = cacheRoot.resolve(unique).normalize();
+        Path cacheRoot = Path
+            .of(SystemVarUtils.getOsCacheDirPath(ikarosProperties.getWorkDir()))
+            .toAbsolutePath()
+            .normalize();
+        Path sessionDir = cacheRoot
+            .resolve(unique)
+            .normalize();
         if (!sessionDir.startsWith(cacheRoot)) {
             throw new IllegalArgumentException("分片上传会话路径越界");
         }
@@ -835,27 +934,34 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private Mono<Void> cleanupFragmentUpload(Path sessionDir, @Nullable Path targetPath) {
-        return Mono.fromRunnable(() -> {
+        return Mono
+            .fromRunnable(() -> {
                 deleteFileQuietly(targetPath);
                 if (!Files.exists(sessionDir)) {
                     return;
                 }
                 try (var paths = Files.walk(sessionDir)) {
-                    paths.sorted(Comparator.reverseOrder()).forEach(path -> {
-                        try {
-                            Files.deleteIfExists(path);
-                        } catch (IOException exception) {
-                            log.warn("清理分片上传临时资源失败: {}", path.getFileName(), exception);
-                        }
-                    });
+                    paths
+                        .sorted(Comparator.reverseOrder())
+                        .forEach(path -> {
+                            try {
+                                Files.deleteIfExists(path);
+                            } catch (IOException exception) {
+                                log.warn("清理分片上传临时资源失败: {}", path.getFileName(),
+                                    exception);
+                            }
+                        });
                 } catch (IOException exception) {
                     log.warn("遍历分片上传临时目录失败: {}", sessionDir.getFileName(), exception);
                 }
             })
-            .subscribeOn(Schedulers.boundedElastic()).then();
+            .subscribeOn(Schedulers.boundedElastic())
+            .then();
     }
 
-    /** 缓存目录内持久化的最小分片验证会话信息。 */
+    /**
+     * 缓存目录内持久化的最小分片验证会话信息。
+     */
     private record FragmentSession(
         /** 已验证的上传文件名。 */
         String uploadName,
@@ -878,13 +984,17 @@ public class AttachmentServiceImpl implements AttachmentService {
     public Mono<Attachment> createDirectory(@Nullable UUID parentId, @NotBlank String name) {
         Assert.hasText(name, "'name' must has text.");
         final UUID fParentId =
-            Optional.ofNullable(parentId).orElse(AttachmentConst.ROOT_DIRECTORY_ID);
-        return repository.existsById(fParentId)
+            Optional
+                .ofNullable(parentId)
+                .orElse(AttachmentConst.ROOT_DIRECTORY_ID);
+        return repository
+            .existsById(fParentId)
             .filter(exists -> exists)
             .switchIfEmpty(Mono.error(new AttachmentParentNotFoundException(
                 "Parent attachment not found for id = " + fParentId)))
             .flatMap(exists -> findPathByParentId(fParentId, name))
-            .map(path -> AttachmentEntity.builder()
+            .map(path -> AttachmentEntity
+                .builder()
                 .id(UuidV7Utils.generateUuid())
                 .parentId(fParentId)
                 .name(name)
@@ -900,7 +1010,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheable(value = "attachments:", key = "#id")
     public Mono<List<Attachment>> findAttachmentPathDirsById(UUID id) {
         return findPathDirs(id, new ArrayList<>())
-            .flatMap(attEntities -> repository.findById(id)
+            .flatMap(attEntities -> repository
+                .findById(id)
                 .filter(attachmentEntity ->
                     (Directory.equals(attachmentEntity.getType()))
                         || (Driver_Directory.equals(attachmentEntity.getType())))
@@ -944,7 +1055,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     ) {
         Assert.notNull(type, "'type' must not be null.");
         Assert.hasText(driverName, "'driverName' must has text.");
-        return extensionComponentsFinder.getExtensions(AttachmentDriverFetcher.class)
+        return extensionComponentsFinder
+            .getExtensions(AttachmentDriverFetcher.class)
             .stream()
             .filter(fetcher -> type.equals(fetcher.getDriverType()))
             .filter(fetcher -> driverName.equals(fetcher.getDriverName()))
@@ -957,8 +1069,12 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public Mono<String> getDownloadUrl(UUID aid) {
-        return repository.findById(aid)
-            .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
+        return repository
+            .findById(aid)
+            .filter(att -> att
+                .getType()
+                .toString()
+                .toUpperCase(Locale.ROOT)
                 .startsWith("DRIVER_"))
             .map(AttachmentEntity::getDriverId)
             .flatMap(driverRepository::findById)
@@ -966,17 +1082,24 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(driver -> {
                 AttachmentDriverFetcher driverFetcher =
                     getAttDriverFetcher(driver.getType(), driver.getName());
-                return repository.findById(aid)
+                return repository
+                    .findById(aid)
                     .flatMap(entity -> copyProperties(entity, new Attachment()))
                     .flatMap(driverFetcher::parseDownloadUrl);
             })
-            .switchIfEmpty(repository.findById(aid).map(AttachmentEntity::getUrl));
+            .switchIfEmpty(repository
+                .findById(aid)
+                .map(AttachmentEntity::getUrl));
     }
 
     @Override
     public Mono<String> getReadUrl(UUID aid) {
-        return repository.findById(aid)
-            .filter(att -> att.getType().toString().toUpperCase(Locale.ROOT)
+        return repository
+            .findById(aid)
+            .filter(att -> att
+                .getType()
+                .toString()
+                .toUpperCase(Locale.ROOT)
                 .startsWith("DRIVER_"))
             .map(AttachmentEntity::getDriverId)
             .flatMap(driverRepository::findById)
@@ -984,11 +1107,13 @@ public class AttachmentServiceImpl implements AttachmentService {
             .flatMap(driver -> {
                 AttachmentDriverFetcher driverFetcher =
                     getAttDriverFetcher(driver.getType(), driver.getName());
-                return repository.findById(aid)
+                return repository
+                    .findById(aid)
                     .flatMap(entity -> copyProperties(entity, new Attachment()))
                     .flatMap(driverFetcher::parseReadUrl);
             })
-            .switchIfEmpty(repository.findById(aid)
+            .switchIfEmpty(repository
+                .findById(aid)
                 .map(att -> {
                     final String url = att.getUrl();
                     return url.startsWith("http")
@@ -999,13 +1124,15 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public Mono<AttachmentStreamVo> getStreamById(UUID aid) {
-        return repository.findById(aid)
+        return repository
+            .findById(aid)
             .flatMap(attachment -> getValidatedStream(attachment, null, null));
     }
 
     @Override
     public Mono<AttachmentStreamVo> getStreamByIdWithRange(UUID aid, long start, long end) {
-        return repository.findById(aid)
+        return repository
+            .findById(aid)
             .flatMap(attachment -> {
                 if (start < 0 || start > end || attachment.getSize() == null
                     || end >= attachment.getSize()) {
@@ -1016,17 +1143,22 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private Mono<AttachmentStreamVo> getValidatedStream(AttachmentEntity attachment,
-                                                         Long start, Long end) {
+                                                        Long start, Long end) {
         validateResponseFilename(attachment.getName());
-        if (attachment.getType().toString().toUpperCase(Locale.ROOT).startsWith("DRIVER_")) {
+        if (attachment
+            .getType()
+            .toString()
+            .toUpperCase(Locale.ROOT)
+            .startsWith("DRIVER_")) {
             return getValidatedDriverStream(attachment, start, end);
         }
         return getValidatedLocalStream(attachment, start, end);
     }
 
     private Mono<AttachmentStreamVo> getValidatedDriverStream(AttachmentEntity entity,
-                                                               Long start, Long end) {
-        return driverRepository.findById(entity.getDriverId())
+                                                              Long start, Long end) {
+        return driverRepository
+            .findById(entity.getDriverId())
             .flatMap(driverEntity -> copyProperties(driverEntity, new AttachmentDriver()))
             .flatMap(driver -> copyProperties(entity, new Attachment())
                 .flatMap(attachment -> {
@@ -1043,13 +1175,14 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private Mono<AttachmentStreamVo> getValidatedLocalStream(AttachmentEntity attachment,
-                                                              Long start, Long end) {
+                                                             Long start, Long end) {
         String rawFsPath = attachment.getFsPath();
         if (StringUtils.hasText(rawFsPath) && !rawFsPath.startsWith("http")) {
             validateFsPath(rawFsPath);
         }
         Path path = Path.of(new File(rawFsPath).toURI());
-        return Mono.fromCallable(() -> Files.size(path))
+        return Mono
+            .fromCallable(() -> Files.size(path))
             .subscribeOn(Schedulers.boundedElastic())
             .flatMap(size -> {
                 Supplier<Flux<DataBuffer>> fullSource = () -> readFile(path);
@@ -1064,15 +1197,20 @@ public class AttachmentServiceImpl implements AttachmentService {
     private Mono<AttachmentStreamVo> validateAndOpenStream(
         String filename, long contentLength, Supplier<Flux<DataBuffer>> validationSource,
         Supplier<Flux<DataBuffer>> responseSource) {
-        return mediaValidationService.validate(validationSource.get(), filename)
-            .flatMap(validated -> validated.content()
+        return mediaValidationService
+            .validate(validationSource.get(), filename)
+            .flatMap(validated -> validated
+                .content()
                 .take(1)
                 .doOnNext(DataBufferUtils::release)
                 .then(Mono.fromSupplier(() -> {
                     AttachmentStreamVo streamVo = new AttachmentStreamVo();
                     streamVo.setContextLength(contentLength);
-                    streamVo.setContextType(validated.detectionResult().mimeType());
-                    streamVo.setDataBufferFlux(responseSource.get()
+                    streamVo.setContextType(validated
+                        .detectionResult()
+                        .mimeType());
+                    streamVo.setDataBufferFlux(responseSource
+                        .get()
                         .doOnDiscard(DataBuffer.class, DataBufferUtils::release));
                     return streamVo;
                 })))
@@ -1165,16 +1303,18 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public Mono<String> getUrlWithConditions(UUID attachmentId,
-                                              Map<String, Object> conditions) {
+                                             Map<String, Object> conditions) {
         Map<String, Object> finalConditions = conditions == null
             ? Collections.emptyMap() : conditions;
-        return repository.findById(attachmentId)
+        return repository
+            .findById(attachmentId)
             .flatMap(att -> {
                 UUID driverId = att.getDriverId();
                 if (driverId == null) {
                     return Mono.just(att.getUrl());
                 }
-                return driverRepository.findById(driverId)
+                return driverRepository
+                    .findById(driverId)
                     .flatMap(driverEntity -> copyProperties(driverEntity,
                         new AttachmentDriver()))
                     .flatMap(driver -> {
@@ -1202,13 +1342,15 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public Mono<List<AccessUrlCondition>> getUrlConditions(UUID attachmentId) {
-        return repository.findById(attachmentId)
+        return repository
+            .findById(attachmentId)
             .flatMap(att -> {
                 UUID driverId = att.getDriverId();
                 if (driverId == null) {
                     return Mono.just(List.of());
                 }
-                return driverRepository.findById(driverId)
+                return driverRepository
+                    .findById(driverId)
                     .flatMap(driverEntity -> copyProperties(driverEntity,
                         new AttachmentDriver()))
                     .flatMap(driver ->
@@ -1232,8 +1374,10 @@ public class AttachmentServiceImpl implements AttachmentService {
             Collections.reverse(entities);
             return Mono.just(entities);
         }
-        return repository.findById(id)
-            .flatMap(e -> repository.findById(e.getParentId())
+        return repository
+            .findById(id)
+            .flatMap(e -> repository
+                .findById(e.getParentId())
                 .switchIfEmpty(
                     Mono.error(new NotFoundException("att parent not found for " + e))))
             .flatMap(attachmentEntity -> {
@@ -1246,15 +1390,19 @@ public class AttachmentServiceImpl implements AttachmentService {
         if (ROOT_DIRECTORY_ID.equals(parentId)) {
             return Mono.just('/' + name);
         }
-        return repository.findById(parentId)
+        return repository
+            .findById(parentId)
             .map(AttachmentEntity::getPath)
             .map(path -> path + '/' + name);
     }
 
     private AttachmentEntity removeFileSystemFile(AttachmentEntity attachmentEntity) {
         if (Directory.equals(attachmentEntity.getType())
-            || attachmentEntity.getType().toString()
-            .toUpperCase(Locale.ROOT).startsWith("DRIVER")) {
+            || attachmentEntity
+            .getType()
+            .toString()
+            .toUpperCase(Locale.ROOT)
+            .startsWith("DRIVER")) {
             return attachmentEntity;
         }
         String fsPath = attachmentEntity.getFsPath();
@@ -1285,14 +1433,18 @@ public class AttachmentServiceImpl implements AttachmentService {
             // 相对路径：检查是否存在路径穿越（../）
             // 如 ../../etc/passwd 会包含 ..，而网盘驱动标识符如 "0" 则不会
             Path normalized = path.normalize();
-            if (normalized.toString().contains("..")) {
+            if (normalized
+                .toString()
+                .contains("..")) {
                 throw new IllegalArgumentException(
                     "Path traversal detected in fsPath: " + fsPath);
             }
             return;
         }
         Path normalized = path.normalize();
-        Path workDirPath = ikarosProperties.getWorkDir().normalize();
+        Path workDirPath = ikarosProperties
+            .getWorkDir()
+            .normalize();
         if (!normalized.startsWith(workDirPath)) {
             throw new IllegalArgumentException(
                 "fsPath escapes work directory: " + fsPath);

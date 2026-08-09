@@ -1,10 +1,10 @@
 package run.ikaros.server.core.attachment.endpoint;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.anyLong;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -25,18 +25,26 @@ import run.ikaros.api.core.attachment.exception.AttachmentUploadException;
 import run.ikaros.server.core.attachment.service.AttachmentMediaValidationService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 
-/** 验证附件流和隔离 SVG 预览接口的响应行为. */
+/**
+ * 验证附件流和隔离 SVG 预览接口的响应行为.
+ */
 class AttachmentEndpointTest {
 
-    /** SVG 预览接口要求的固定内容安全策略. */
+    /**
+     * SVG 预览接口要求的固定内容安全策略.
+     */
     private static final String SVG_CONTENT_SECURITY_POLICY =
         "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:";
-    /** 模拟附件服务. */
+    /**
+     * 模拟附件服务.
+     */
     @Mock
     private AttachmentService attachmentService;
     @Mock
     private AttachmentMediaValidationService mediaValidationService;
-    /** 用于调用附件函数式路由的测试客户端. */
+    /**
+     * 用于调用附件函数式路由的测试客户端.
+     */
     private WebTestClient webTestClient;
 
     @BeforeEach
@@ -44,7 +52,9 @@ class AttachmentEndpointTest {
         MockitoAnnotations.openMocks(this);
         AttachmentEndpoint endpoint = new AttachmentEndpoint(attachmentService,
             mediaValidationService);
-        webTestClient = WebTestClient.bindToRouterFunction(endpoint.endpoint()).build();
+        webTestClient = WebTestClient
+            .bindToRouterFunction(endpoint.endpoint())
+            .build();
     }
 
     @Test
@@ -57,16 +67,26 @@ class AttachmentEndpointTest {
         when(attachmentService.getStreamById(attachmentId))
             .thenReturn(stream(content, "image/svg+xml"));
 
-        webTestClient.get().uri("/attachment/svg-preview/id/{id}", attachmentId)
+        webTestClient
+            .get()
+            .uri("/attachment/svg-preview/id/{id}", attachmentId)
             .exchange()
-            .expectStatus().isOk()
-            .expectHeader().valueEquals(HttpHeaders.CONTENT_TYPE, "image/svg+xml")
-            .expectHeader().valueEquals("Content-Security-Policy",
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .valueEquals(HttpHeaders.CONTENT_TYPE, "image/svg+xml")
+            .expectHeader()
+            .valueEquals("Content-Security-Policy",
                 SVG_CONTENT_SECURITY_POLICY)
-            .expectHeader().valueEquals("X-Content-Type-Options", "nosniff")
-            .expectHeader().value(HttpHeaders.CONTENT_DISPOSITION,
-                value -> assertThat(value).startsWith("inline;").contains("cover.SvG"))
-            .expectBody(byte[].class).value(body -> assertThat(body).isEqualTo(content));
+            .expectHeader()
+            .valueEquals("X-Content-Type-Options", "nosniff")
+            .expectHeader()
+            .value(HttpHeaders.CONTENT_DISPOSITION,
+                value -> assertThat(value)
+                    .startsWith("inline;")
+                    .contains("cover.SvG"))
+            .expectBody(byte[].class)
+            .value(body -> assertThat(body).isEqualTo(content));
 
         verify(attachmentService).findById(attachmentId);
         verify(attachmentService).getStreamById(attachmentId);
@@ -78,9 +98,12 @@ class AttachmentEndpointTest {
         when(attachmentService.findById(attachmentId))
             .thenReturn(Mono.just(attachment(attachmentId, "cover.svg.png", 10)));
 
-        webTestClient.get().uri("/attachment/svg-preview/id/{id}", attachmentId)
+        webTestClient
+            .get()
+            .uri("/attachment/svg-preview/id/{id}", attachmentId)
             .exchange()
-            .expectStatus().isNotFound();
+            .expectStatus()
+            .isNotFound();
 
         verify(attachmentService).findById(attachmentId);
         verify(attachmentService, never()).getStreamById(attachmentId);
@@ -91,9 +114,12 @@ class AttachmentEndpointTest {
         UUID attachmentId = UUID.randomUUID();
         when(attachmentService.findById(attachmentId)).thenReturn(Mono.empty());
 
-        webTestClient.get().uri("/attachment/svg-preview/id/{id}", attachmentId)
+        webTestClient
+            .get()
+            .uri("/attachment/svg-preview/id/{id}", attachmentId)
             .exchange()
-            .expectStatus().isNotFound();
+            .expectStatus()
+            .isNotFound();
 
         verify(attachmentService).findById(attachmentId);
         verify(attachmentService, never()).getStreamById(attachmentId);
@@ -107,9 +133,12 @@ class AttachmentEndpointTest {
         when(attachmentService.getStreamById(attachmentId))
             .thenReturn(Mono.error(new IllegalStateException("driver read failure")));
 
-        webTestClient.get().uri("/attachment/svg-preview/id/{id}", attachmentId)
+        webTestClient
+            .get()
+            .uri("/attachment/svg-preview/id/{id}", attachmentId)
             .exchange()
-            .expectStatus().is5xxServerError();
+            .expectStatus()
+            .is5xxServerError();
 
         verify(attachmentService).getStreamById(attachmentId);
     }
@@ -123,17 +152,28 @@ class AttachmentEndpointTest {
         when(attachmentService.getStreamById(attachmentId))
             .thenReturn(stream(content, "image/jpeg"));
 
-        webTestClient.get().uri("/attachment/stream/id/{id}", attachmentId)
+        webTestClient
+            .get()
+            .uri("/attachment/stream/id/{id}", attachmentId)
             .exchange()
-            .expectStatus().isOk()
-            .expectHeader().valueEquals(HttpHeaders.CONTENT_TYPE, "image/jpeg")
-            .expectHeader().valueEquals(HttpHeaders.CONTENT_LENGTH,
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .valueEquals(HttpHeaders.CONTENT_TYPE, "image/jpeg")
+            .expectHeader()
+            .valueEquals(HttpHeaders.CONTENT_LENGTH,
                 String.valueOf(content.length))
-            .expectHeader().valueEquals(HttpHeaders.ACCEPT_RANGES, "bytes")
-            .expectHeader().valueEquals("X-Content-Type-Options", "nosniff")
-            .expectHeader().value(HttpHeaders.CONTENT_DISPOSITION,
-                value -> assertThat(value).startsWith("inline;").contains("cover.png"))
-            .expectBody(byte[].class).value(body -> assertThat(body).isEqualTo(content));
+            .expectHeader()
+            .valueEquals(HttpHeaders.ACCEPT_RANGES, "bytes")
+            .expectHeader()
+            .valueEquals("X-Content-Type-Options", "nosniff")
+            .expectHeader()
+            .value(HttpHeaders.CONTENT_DISPOSITION,
+                value -> assertThat(value)
+                    .startsWith("inline;")
+                    .contains("cover.png"))
+            .expectBody(byte[].class)
+            .value(body -> assertThat(body).isEqualTo(content));
     }
 
     @Test
@@ -145,18 +185,30 @@ class AttachmentEndpointTest {
         when(attachmentService.getStreamByIdWithRange(attachmentId, 5, 9))
             .thenReturn(stream(content, "video/x-matroska"));
 
-        webTestClient.get().uri("/attachment/stream/id/{id}", attachmentId)
+        webTestClient
+            .get()
+            .uri("/attachment/stream/id/{id}", attachmentId)
             .header(HttpHeaders.RANGE, "bytes=5-9")
             .exchange()
-            .expectStatus().isEqualTo(HttpStatus.PARTIAL_CONTENT)
-            .expectHeader().valueEquals(HttpHeaders.CONTENT_TYPE, "video/x-matroska")
-            .expectHeader().valueEquals(HttpHeaders.ACCEPT_RANGES, "bytes")
-            .expectHeader().valueEquals("X-Content-Type-Options", "nosniff")
-            .expectHeader().valueEquals(HttpHeaders.CONTENT_RANGE, "bytes 5-9/20")
-            .expectHeader().valueEquals(HttpHeaders.CONTENT_LENGTH, "5")
-            .expectHeader().value(HttpHeaders.CONTENT_DISPOSITION,
-                value -> assertThat(value).startsWith("inline;").contains("episode.mp4"))
-            .expectBody(byte[].class).value(body -> assertThat(body).isEqualTo(content));
+            .expectStatus()
+            .isEqualTo(HttpStatus.PARTIAL_CONTENT)
+            .expectHeader()
+            .valueEquals(HttpHeaders.CONTENT_TYPE, "video/x-matroska")
+            .expectHeader()
+            .valueEquals(HttpHeaders.ACCEPT_RANGES, "bytes")
+            .expectHeader()
+            .valueEquals("X-Content-Type-Options", "nosniff")
+            .expectHeader()
+            .valueEquals(HttpHeaders.CONTENT_RANGE, "bytes 5-9/20")
+            .expectHeader()
+            .valueEquals(HttpHeaders.CONTENT_LENGTH, "5")
+            .expectHeader()
+            .value(HttpHeaders.CONTENT_DISPOSITION,
+                value -> assertThat(value)
+                    .startsWith("inline;")
+                    .contains("episode.mp4"))
+            .expectBody(byte[].class)
+            .value(body -> assertThat(body).isEqualTo(content));
     }
 
     @Test
@@ -168,12 +220,18 @@ class AttachmentEndpointTest {
         when(attachmentService.getStreamById(attachmentId))
             .thenReturn(stream(content, "application/x-subrip"));
 
-        webTestClient.get().uri("/attachment/stream/id/{id}", attachmentId)
+        webTestClient
+            .get()
+            .uri("/attachment/stream/id/{id}", attachmentId)
             .exchange()
-            .expectStatus().isOk()
-            .expectHeader().value(HttpHeaders.CONTENT_DISPOSITION, value -> assertThat(value)
-                .startsWith("attachment;").contains("filename*="))
-            .expectBody(byte[].class).value(body -> assertThat(body).isEqualTo(content));
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .value(HttpHeaders.CONTENT_DISPOSITION, value -> assertThat(value)
+                .startsWith("attachment;")
+                .contains("filename*="))
+            .expectBody(byte[].class)
+            .value(body -> assertThat(body).isEqualTo(content));
     }
 
     @Test
@@ -184,10 +242,14 @@ class AttachmentEndpointTest {
         when(attachmentService.getStreamById(attachmentId))
             .thenReturn(Mono.error(new AttachmentUploadException("检测失败", null)));
 
-        webTestClient.get().uri("/attachment/stream/id/{id}", attachmentId)
+        webTestClient
+            .get()
+            .uri("/attachment/stream/id/{id}", attachmentId)
             .exchange()
-            .expectStatus().isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-            .expectBody().isEmpty();
+            .expectStatus()
+            .isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+            .expectBody()
+            .isEmpty();
     }
 
     @Test
@@ -196,12 +258,17 @@ class AttachmentEndpointTest {
         when(attachmentService.findById(attachmentId))
             .thenReturn(Mono.just(attachment(attachmentId, "episode.mp4", 20)));
 
-        webTestClient.get().uri("/attachment/stream/id/{id}", attachmentId)
+        webTestClient
+            .get()
+            .uri("/attachment/stream/id/{id}", attachmentId)
             .header(HttpHeaders.RANGE, "bytes=20-30")
             .exchange()
-            .expectStatus().isEqualTo(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
-            .expectHeader().valueEquals(HttpHeaders.CONTENT_RANGE, "bytes */20")
-            .expectBody().isEmpty();
+            .expectStatus()
+            .isEqualTo(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+            .expectHeader()
+            .valueEquals(HttpHeaders.CONTENT_RANGE, "bytes */20")
+            .expectBody()
+            .isEmpty();
 
         verify(attachmentService, never()).getStreamByIdWithRange(
             org.mockito.ArgumentMatchers.eq(attachmentId), anyLong(), anyLong());
@@ -209,15 +276,24 @@ class AttachmentEndpointTest {
 
     @Test
     void listMediaFormats_returnsServerPolicyHints() {
-        webTestClient.get().uri("/attachment/media-formats")
+        webTestClient
+            .get()
+            .uri("/attachment/media-formats")
             .exchange()
-            .expectStatus().isOk()
+            .expectStatus()
+            .isOk()
             .expectBody()
-            .jsonPath("$[*].format").exists();
+            .jsonPath("$[*].format")
+            .exists();
     }
 
     private static Attachment attachment(UUID id, String name, long size) {
-        return Attachment.builder().id(id).name(name).size(size).build();
+        return Attachment
+            .builder()
+            .id(id)
+            .name(name)
+            .size(size)
+            .build();
     }
 
     private static Mono<AttachmentStreamVo> stream(byte[] content, String contentType) {

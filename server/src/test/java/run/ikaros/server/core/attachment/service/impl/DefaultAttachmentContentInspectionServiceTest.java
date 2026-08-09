@@ -2,7 +2,6 @@ package run.ikaros.server.core.attachment.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -29,7 +28,9 @@ import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.attachment.service.ValidatedMediaStream;
 import run.ikaros.server.store.entity.AttachmentEntity;
 
-/** 附件内容检查服务测试。 */
+/**
+ * 附件内容检查服务测试。
+ */
 class DefaultAttachmentContentInspectionServiceTest {
 
     @Mock
@@ -49,13 +50,18 @@ class DefaultAttachmentContentInspectionServiceTest {
 
     @Test
     void inspectRejectsUnsupportedNameBeforeDriverStream() {
-        Attachment attachment = Attachment.builder()
-            .id(UUID.randomUUID()).type(AttachmentType.Driver_File)
-            .name("payload.exe").build();
+        Attachment attachment = Attachment
+            .builder()
+            .id(UUID.randomUUID())
+            .type(AttachmentType.Driver_File)
+            .name("payload.exe")
+            .build();
         doThrow(new IllegalArgumentException("unsupported"))
-            .when(mediaValidationService).validateFilename("payload.exe");
+            .when(mediaValidationService)
+            .validateFilename("payload.exe");
 
-        StepVerifier.create(service.inspect(attachment, fetcher))
+        StepVerifier
+            .create(service.inspect(attachment, fetcher))
             .expectError(IllegalArgumentException.class)
             .verify();
 
@@ -65,16 +71,20 @@ class DefaultAttachmentContentInspectionServiceTest {
 
     @Test
     void inspectReturnsDetectionAndReleasesReplayPrefix() {
-        Attachment attachment = Attachment.builder()
-            .id(UUID.randomUUID()).type(AttachmentType.Driver_File)
-            .name("episode.mp4").build();
+        Attachment attachment = Attachment
+            .builder()
+            .id(UUID.randomUUID())
+            .type(AttachmentType.Driver_File)
+            .name("episode.mp4")
+            .build();
         MediaFileDetectionResult detection = new MediaFileDetectionResult(MediaFileFormat.MP4);
         DataBuffer buffer = new DefaultDataBufferFactory().wrap(new byte[] {0, 1, 2});
         when(mediaValidationService.validate(any(Flux.class), eq("episode.mp4")))
             .thenReturn(Mono.just(new ValidatedMediaStream(detection, Flux.just(buffer))));
         when(fetcher.getSteam(attachment)).thenReturn(Flux.empty());
 
-        StepVerifier.create(service.inspect(attachment, fetcher))
+        StepVerifier
+            .create(service.inspect(attachment, fetcher))
             .assertNext(result -> assertThat(result).isEqualTo(detection))
             .verifyComplete();
 
@@ -83,13 +93,18 @@ class DefaultAttachmentContentInspectionServiceTest {
 
     @Test
     void inspectEntityRejectsUnsupportedNameBeforeAttachmentStream() {
-        AttachmentEntity entity = AttachmentEntity.builder()
-            .id(UUID.randomUUID()).type(AttachmentType.File)
-            .name("payload.zip").build();
+        AttachmentEntity entity = AttachmentEntity
+            .builder()
+            .id(UUID.randomUUID())
+            .type(AttachmentType.File)
+            .name("payload.zip")
+            .build();
         doThrow(new IllegalArgumentException("unsupported"))
-            .when(mediaValidationService).validateFilename("payload.zip");
+            .when(mediaValidationService)
+            .validateFilename("payload.zip");
 
-        StepVerifier.create(service.inspect(entity))
+        StepVerifier
+            .create(service.inspect(entity))
             .expectError(IllegalArgumentException.class)
             .verify();
 

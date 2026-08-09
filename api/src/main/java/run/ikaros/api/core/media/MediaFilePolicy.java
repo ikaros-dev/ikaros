@@ -22,7 +22,9 @@ public final class MediaFilePolicy {
         if (dotIndex <= 0 || dotIndex == filename.length() - 1) {
             return Optional.empty();
         }
-        String extension = filename.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
+        String extension = filename
+            .substring(dotIndex + 1)
+            .toLowerCase(Locale.ROOT);
         return isKnownExtension(extension) ? Optional.of(extension) : Optional.empty();
     }
 
@@ -35,21 +37,32 @@ public final class MediaFilePolicy {
         if (normalized == null) {
             return List.of();
         }
-        return Arrays.stream(MediaFileFormat.values())
-            .filter(format -> format.extensions().contains(normalized))
+        return Arrays
+            .stream(MediaFileFormat.values())
+            .filter(format -> format
+                .extensions()
+                .contains(normalized))
             .toList();
     }
 
     public static List<MediaFileFormatHint> hintsForExtension(String extension) {
-        return formatsForExtension(extension).stream().map(MediaFileFormatHint::from).toList();
+        return formatsForExtension(extension)
+            .stream()
+            .map(MediaFileFormatHint::from)
+            .toList();
     }
 
     public static List<MediaFileFormatHint> formatHints() {
-        return Arrays.stream(MediaFileFormat.values()).map(MediaFileFormatHint::from).toList();
+        return Arrays
+            .stream(MediaFileFormat.values())
+            .map(MediaFileFormatHint::from)
+            .toList();
     }
 
     public static boolean extensionHasCategory(String extension, MediaFileCategory category) {
-        return formatsForExtension(extension).stream().anyMatch(format -> format.category() == category);
+        return formatsForExtension(extension)
+            .stream()
+            .anyMatch(format -> format.category() == category);
     }
 
     public static boolean isDetectionAllowed(String extension, MediaFileDetectionResult result) {
@@ -61,11 +74,14 @@ public final class MediaFilePolicy {
         if ("sub".equals(normalized)) {
             return format == MediaFileFormat.MICRODVD || format == MediaFileFormat.VOBSUB;
         }
-        boolean strictExtension = formatsForExtension(normalized).stream()
+        boolean strictExtension = formatsForExtension(normalized)
+            .stream()
             .anyMatch(candidate -> candidate.category() == MediaFileCategory.SUBTITLE
                 || candidate.category() == MediaFileCategory.LYRICS);
         if (strictExtension) {
-            return format.extensions().contains(normalized);
+            return format
+                .extensions()
+                .contains(normalized);
         }
         return format.category() == MediaFileCategory.IMAGE
             || format.category() == MediaFileCategory.AUDIO
@@ -73,8 +89,11 @@ public final class MediaFilePolicy {
     }
 
     private static boolean isKnownExtension(String extension) {
-        return Arrays.stream(MediaFileFormat.values())
-            .anyMatch(format -> format.extensions().contains(extension));
+        return Arrays
+            .stream(MediaFileFormat.values())
+            .anyMatch(format -> format
+                .extensions()
+                .contains(extension));
     }
 
     private static String normalizeExtension(String extension) {

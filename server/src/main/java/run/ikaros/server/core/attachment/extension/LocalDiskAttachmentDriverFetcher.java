@@ -39,9 +39,13 @@ import run.ikaros.server.core.attachment.service.AttachmentMediaValidationServic
 @Component
 public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher {
     public static String LOCAL_DISK_DRIVER_NAME = "DISK";
-    /** 本地驱动文件访问路径校验器. */
+    /**
+     * 本地驱动文件访问路径校验器.
+     */
     private final LocalAttachmentPathValidator pathValidator;
-    /** 本地文件名称门禁和真实格式检测服务。 */
+    /**
+     * 本地文件名称门禁和真实格式检测服务。
+     */
     private final AttachmentMediaValidationService mediaValidationService;
 
     public LocalDiskAttachmentDriverFetcher(
@@ -64,56 +68,72 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
     @Override
     public Flux<Attachment> getChildren(UUID driverId, UUID parentAttId, String remotePath) {
         Assert.hasText(remotePath, "remotePath must not be empty.");
-        return pathValidator.validate(driverId, remotePath)
+        return pathValidator
+            .validate(driverId, remotePath)
             .flatMapMany(path -> {
-                var files = path.toFile().listFiles();
+                var files = path
+                    .toFile()
+                    .listFiles();
                 if (files == null) {
                     return Flux.error(
                         new IllegalArgumentException("目标路径不是可读取目录: " + remotePath));
                 }
-                return Flux.fromArray(files)
+                return Flux
+                    .fromArray(files)
                     .flatMap(file -> file.isDirectory()
                         ? createAttachment(driverId, parentAttId, file.toPath(),
-                            AttachmentType.Driver_Directory)
+                        AttachmentType.Driver_Directory)
                         : inspectFile(driverId, parentAttId, file.toPath()), 8);
             });
     }
 
     private Mono<Attachment> inspectFile(UUID driverId, UUID parentAttId, Path filePath) {
-        String filename = filePath.getFileName().toString();
+        String filename = filePath
+            .getFileName()
+            .toString();
         if (!MediaFilePolicy.isAllowedFileName(filename)) {
             log.debug("Skip local driver file with unsupported name: {}", filename);
             return Mono.empty();
         }
-        return Mono.fromCallable(() -> pathValidator.validateNow(driverId, filePath.toString()))
+        return Mono
+            .fromCallable(() -> pathValidator.validateNow(driverId, filePath.toString()))
             .subscribeOn(Schedulers.boundedElastic())
-            .flatMap(realPath -> mediaValidationService.validate(realPath, filename)
+            .flatMap(realPath -> mediaValidationService
+                .validate(realPath, filename)
                 .then(createAttachment(driverId, parentAttId, realPath,
                     AttachmentType.Driver_File)))
             .onErrorResume(exception -> {
                 log.debug("Skip invalid local driver media file: {}, reason={}",
-                    filename, exception.getClass().getSimpleName());
+                    filename, exception
+                        .getClass()
+                        .getSimpleName());
                 return Mono.empty();
             });
     }
 
     private Mono<Attachment> createAttachment(UUID driverId, UUID parentAttId, Path path,
-                                               AttachmentType type) {
-        return Mono.fromCallable(() -> {
+                                              AttachmentType type) {
+        return Mono
+            .fromCallable(() -> {
                 Path realPath = pathValidator.validateNow(driverId, path.toString());
                 BasicFileAttributes attributes = Files.readAttributes(
                     realPath, BasicFileAttributes.class);
-                return Attachment.builder()
+                return Attachment
+                    .builder()
                     .parentId(parentAttId)
                     .type(type)
-                    .name(realPath.getFileName().toString())
+                    .name(realPath
+                        .getFileName()
+                        .toString())
                     .path(realPath.toString())
                     .url(realPath.toString())
                     .fsPath(realPath.toString())
                     .size(attributes.size())
                     .sha1("")
                     .updateTime(LocalDateTime.now())
-                    .modifiedTime(LocalDateTime.ofInstant(attributes.lastModifiedTime().toInstant(),
+                    .modifiedTime(LocalDateTime.ofInstant(attributes
+                            .lastModifiedTime()
+                            .toInstant(),
                         java.time.ZoneId.systemDefault()))
                     .deleted(false)
                     .driverId(driverId)
@@ -142,7 +162,8 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
 
     @Override
     public Flux<DataBuffer> getSteam(Attachment att) {
-        return pathValidator.validate(att.getDriverId(), att.getFsPath())
+        return pathValidator
+            .validate(att.getDriverId(), att.getFsPath())
             .flatMapMany(path -> org.springframework.core.io.buffer.DataBufferUtils
                 .readAsynchronousFileChannel(
                     () -> AsynchronousFileChannel.open(path, StandardOpenOption.READ),
@@ -153,7 +174,8 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
 
     @Override
     public Flux<DataBuffer> getSteam(Attachment att, long start, long end) {
-        return pathValidator.validate(att.getDriverId(), att.getFsPath())
+        return pathValidator
+            .validate(att.getDriverId(), att.getFsPath())
             .flatMapMany(path -> Flux.create(sink -> {
                 try {
                     AsynchronousFileChannel channel = AsynchronousFileChannel.open(

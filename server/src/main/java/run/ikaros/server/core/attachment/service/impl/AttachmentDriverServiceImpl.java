@@ -26,9 +26,9 @@ import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
-import run.ikaros.api.core.media.MediaFilePolicy;
 import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
 import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
+import run.ikaros.api.core.media.MediaFilePolicy;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.api.store.enums.AttachmentType;
@@ -54,30 +54,39 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private final AttachmentRepository attachmentRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final AttachmentService attachmentService;
-    /** 附件驱动挂载服务. */
+    /**
+     * 附件驱动挂载服务.
+     */
     private final AttachmentDriverMountService mountService;
-    /** 附件 SHA-1 后台计算服务. */
+    /**
+     * 附件 SHA-1 后台计算服务.
+     */
     private final AttachmentSha1Service attachmentSha1Service;
 
     private final R2dbcEntityTemplate template;
     private final ExtensionComponentsFinder extensionComponentsFinder;
-    /** 对驱动扫描结果执行有限前缀真实格式检查。 */
+    /**
+     * 对驱动扫描结果执行有限前缀真实格式检查。
+     */
     private final AttachmentContentInspectionService contentInspectionService;
-    /** 正在执行的目录刷新任务，用于合并同一目录的并发请求. */
+    /**
+     * 正在执行的目录刷新任务，用于合并同一目录的并发请求.
+     */
     private final ConcurrentMap<UUID, Mono<Void>> refreshTasks = new ConcurrentHashMap<>();
 
     /**
      * .
      */
-    public AttachmentDriverServiceImpl(AttachmentDriverRepository repository,
-                                       AttachmentRepository attachmentRepository,
-                                       ApplicationEventPublisher eventPublisher,
-                                       AttachmentService attachmentService,
-                                       AttachmentDriverMountService mountService,
-                                       AttachmentSha1Service attachmentSha1Service,
-                                       R2dbcEntityTemplate template,
-                                       ExtensionComponentsFinder extensionComponentsFinder,
-                                       AttachmentContentInspectionService contentInspectionService) {
+    public AttachmentDriverServiceImpl(
+        AttachmentDriverRepository repository,
+        AttachmentRepository attachmentRepository,
+        ApplicationEventPublisher eventPublisher,
+        AttachmentService attachmentService,
+        AttachmentDriverMountService mountService,
+        AttachmentSha1Service attachmentSha1Service,
+        R2dbcEntityTemplate template,
+        ExtensionComponentsFinder extensionComponentsFinder,
+        AttachmentContentInspectionService contentInspectionService) {
         this.repository = repository;
         this.attachmentRepository = attachmentRepository;
         this.eventPublisher = eventPublisher;
@@ -94,7 +103,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     ) {
         Assert.notNull(type, "'type' must not be null.");
         Assert.hasText(driverName, "'driverName' must has text.");
-        return extensionComponentsFinder.getExtensions(AttachmentDriverFetcher.class)
+        return extensionComponentsFinder
+            .getExtensions(AttachmentDriverFetcher.class)
             .stream()
             .filter(fetcher -> type.equals(fetcher.getDriverType()))
             .filter(fetcher -> driverName.equals(fetcher.getDriverName()))
@@ -118,8 +128,11 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     private Mono<AttachmentDriverEntity> saveNewDriver(AttachmentDriver driver) {
-        return repository.findByTypeAndNameAndMountName(
-                driver.getType().toString(), driver.getName(), driver.getMountName())
+        return repository
+            .findByTypeAndNameAndMountName(
+                driver
+                    .getType()
+                    .toString(), driver.getName(), driver.getMountName())
             .flatMap(entity -> updateExistingDriver(driver, entity))
             .switchIfEmpty(Mono.defer(() -> copyProperties(driver, new AttachmentDriverEntity())
                 .map(entity -> entity
@@ -134,7 +147,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     private Mono<AttachmentDriverEntity> updateExistingDriver(AttachmentDriver driver) {
-        return repository.findById(driver.getId())
+        return repository
+            .findById(driver.getId())
             .switchIfEmpty(Mono.error(new IllegalArgumentException(
                 "Attachment driver not found for id=" + driver.getId())))
             .flatMap(entity -> updateExistingDriver(driver, entity));
@@ -150,7 +164,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     private AttachmentDriverEntity snapshotDriver(AttachmentDriverEntity entity) {
-        return AttachmentDriverEntity.builder()
+        return AttachmentDriverEntity
+            .builder()
             .id(entity.getId())
             .enable(entity.isEnable())
             .type(entity.getType())
@@ -180,7 +195,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     @Override
     public Mono<Void> removeById(UUID id) {
         Assert.notNull(id, "'id' must not null.");
-        return repository.findById(id)
+        return repository
+            .findById(id)
             .map(entity -> {
                 eventPublisher.publishEvent(new AttachmentDriverDisableEvent(this, entity));
                 return entity.getId();
@@ -192,7 +208,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     public Mono<Void> removeByTypeAndName(String type, String name) {
         Assert.notNull(type, "'type' must not null.");
         name = name.trim();
-        return repository.findByTypeAndName(type, name)
+        return repository
+            .findByTypeAndName(type, name)
             .map(entity -> {
                 eventPublisher.publishEvent(new AttachmentDriverDisableEvent(this, entity));
                 return entity.getId();
@@ -203,7 +220,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     @Override
     public Mono<AttachmentDriver> findById(UUID id) {
         Assert.notNull(id, "'id' must not null.");
-        return repository.findById(id)
+        return repository
+            .findById(id)
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
     }
 
@@ -211,14 +229,16 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     public Mono<AttachmentDriver> findByTypeAndName(String type, String name) {
         Assert.notNull(type, "'type' must not null.");
         name = name.trim();
-        return repository.findByTypeAndName(type, name)
+        return repository
+            .findByTypeAndName(type, name)
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
     }
 
     @Override
     public Mono<Void> enable(UUID driverId) {
         Assert.notNull(driverId, "'driverId' must not null.");
-        return repository.findById(driverId)
+        return repository
+            .findById(driverId)
             .map(entity -> entity.setEnable(true))
             .flatMap(repository::update)
             .doOnSuccess(entity ->
@@ -229,7 +249,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     @Override
     public Mono<Void> disable(UUID driverId) {
         Assert.notNull(driverId, "'driverId' must not null.");
-        return repository.findById(driverId)
+        return repository
+            .findById(driverId)
             .map(entity -> entity.setEnable(false))
             .flatMap(repository::update)
             .doOnSuccess(entity ->
@@ -262,13 +283,15 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     }
 
     private Mono<Void> createRefreshTask(UUID attachmentId) {
-        return Mono.defer(() -> performRefresh(attachmentId))
+        return Mono
+            .defer(() -> performRefresh(attachmentId))
             .doFinally(signalType -> refreshTasks.remove(attachmentId))
             .cache();
     }
 
     private Mono<Void> performRefresh(UUID attachmentId) {
-        return attachmentService.findById(attachmentId)
+        return attachmentService
+            .findById(attachmentId)
             .switchIfEmpty(Mono.error(new AttachmentNotFoundException(
                 "Attachment not found for id=" + attachmentId)))
             .flatMap(attachment -> {
@@ -298,21 +321,26 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         Integer finalPage = page;
         Integer finalPageSize = pageSize;
 
-        Query query = Query.query(Criteria.empty())
+        Query query = Query
+            .query(Criteria.empty())
             .sort(Sort.by(Sort.Order.desc("d_order")))
             .with(pageRequest);
 
-        return template.select(query, AttachmentDriverEntity.class)
+        return template
+            .select(query, AttachmentDriverEntity.class)
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()))
             .collectList()
-            .flatMap(attachments -> template.count(query, AttachmentDriverEntity.class)
+            .flatMap(attachments -> template
+                .count(query, AttachmentDriverEntity.class)
                 .map(total -> new PagingWrap<>(finalPage, finalPageSize, total, attachments)));
     }
 
     @Override
     public Flux<AttachmentDriverFetcherVo> listDriversFetchers() {
-        return Flux.fromStream(
-                extensionComponentsFinder.getExtensions(AttachmentDriverFetcher.class)
+        return Flux
+            .fromStream(
+                extensionComponentsFinder
+                    .getExtensions(AttachmentDriverFetcher.class)
                     .stream())
             .map(fetcher -> {
                 AttachmentDriverFetcherVo fetcherVo = new AttachmentDriverFetcherVo();
@@ -325,7 +353,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private Mono<Void> refreshRemoteFileSystem(Attachment attachment, UUID driverId) {
         final UUID pid = attachment.getId();
         String remotePath = attachment.getFsPath();
-        return repository.findById(driverId)
+        return repository
+            .findById(driverId)
             .switchIfEmpty(Mono.error(new IllegalStateException(
                 "Attachment driver not found for id=" + driverId)))
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()))
@@ -338,13 +367,15 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         AttachmentDriverFetcher fetcher =
             getAttDriverFetcher(driver.getType(), driver.getName());
         Mono<List<Attachment>> scannedAttachments =
-            fetcher.getChildren(driver.getId(), pid, remotePath)
+            fetcher
+                .getChildren(driver.getId(), pid, remotePath)
                 .concatMap(attachment -> validateScannedAttachment(fetcher, attachment))
                 .collectList();
         Mono<List<AttachmentEntity>> storedAttachments = attachmentRepository
             .findAllByParentIdAndDriverId(pid, driver.getId())
             .collectList();
-        return Mono.zip(scannedAttachments, storedAttachments)
+        return Mono
+            .zip(scannedAttachments, storedAttachments)
             .flatMap(tuple -> synchronizeAttachments(
                 fetcher, tuple.getT1(), tuple.getT2()));
     }
@@ -356,14 +387,16 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         storedAttachments.forEach(attachment ->
             storedAttachmentMap.put(attachment.getFsPath(), attachment));
 
-        Mono<List<Attachment>> saveChanges = Flux.fromIterable(scannedAttachments)
+        Mono<List<Attachment>> saveChanges = Flux
+            .fromIterable(scannedAttachments)
             .flatMap(scannedAttachment -> {
                 AttachmentEntity storedAttachment =
                     storedAttachmentMap.remove(scannedAttachment.getFsPath());
                 return saveChangedAttachment(scannedAttachment, storedAttachment);
             }, 8)
             .collectList();
-        Mono<Void> removeMissingAttachments = Flux.fromIterable(storedAttachmentMap.values())
+        Mono<Void> removeMissingAttachments = Flux
+            .fromIterable(storedAttachmentMap.values())
             .filter(attachment -> !Boolean.TRUE.equals(attachment.getDeleted()))
             .flatMap(attachment ->
                 attachmentService.removeByIdOnlyRecords(attachment.getId()), 8)
@@ -384,11 +417,14 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
                 attachment.getType(), attachment.getName());
             return Mono.empty();
         }
-        return contentInspectionService.inspect(attachment, fetcher)
+        return contentInspectionService
+            .inspect(attachment, fetcher)
             .thenReturn(attachment)
             .onErrorResume(exception -> {
                 log.debug("Skip invalid driver media file: {}, reason={}",
-                    attachment.getName(), exception.getClass().getSimpleName());
+                    attachment.getName(), exception
+                        .getClass()
+                        .getSimpleName());
                 return Mono.empty();
             });
     }
@@ -405,7 +441,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         if (!attachmentChanged(scannedAttachment, storedAttachment)) {
             return requiresSha1 ? Mono.just(scannedAttachment) : Mono.empty();
         }
-        return attachmentService.save(scannedAttachment)
+        return attachmentService
+            .save(scannedAttachment)
             .flatMap(savedAttachment ->
                 requiresSha1 ? Mono.just(savedAttachment) : Mono.empty());
     }
@@ -419,7 +456,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             || !Objects.equals(scannedAttachment.getType(), storedAttachment.getType())
             || !Objects.equals(scannedAttachment.getSize(), storedAttachment.getSize())
             || !Objects.equals(
-                scannedAttachment.getModifiedTime(), storedAttachment.getModifiedTime())
+            scannedAttachment.getModifiedTime(), storedAttachment.getModifiedTime())
             || !StringUtils.hasText(storedAttachment.getSha1());
     }
 
@@ -434,7 +471,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             || !Objects.equals(scannedAttachment.getFsPath(), storedAttachment.getFsPath())
             || !Objects.equals(scannedAttachment.getSize(), storedAttachment.getSize())
             || !Objects.equals(
-                scannedAttachment.getModifiedTime(), storedAttachment.getModifiedTime())
+            scannedAttachment.getModifiedTime(), storedAttachment.getModifiedTime())
             || !Objects.equals(scannedAttachment.getDriverId(), storedAttachment.getDriverId());
     }
 
