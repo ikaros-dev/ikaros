@@ -684,6 +684,7 @@ Console ──POST /api/v1/binding/directory──▶ DirectoryBindingEndpoint
    │                                            ▼
    │                            DirectoryBindingChain.execute(ctx)
    │                              ├─ step10 ParseDirectoryName ─┐
+   │                              ├─ step15 CleanDirectoryName  │
    │                              ├─ step20 FindSubjectInfo     │
    │                              ├─ step30 FetchAndCreate      │ (失败逆序回滚)
    │                              ├─ step40 CreateTags          │

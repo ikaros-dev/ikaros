@@ -287,17 +287,17 @@ Ikaros 是一款**自托管（Self-hosted）、面向个人用户的 ACGMN 内�
 
 #### 4.6.2 工作流步骤
 
-| 步骤 | 说明 |
+| 步骤（order） | 说明 |
 |------|------|
-| CleanDirectoryNameStep | 清洗目录名（去除无效字符） |
-| ParseDirectoryNameStep | 解析目录名，提取条目名称、剧集序号等信息 |
-| ListFilesStep | 列出目录内文件 |
-| FindSubjectInfoStep | 查找本地已有条目信息 |
-| FetchAndCreateSubjectStep | 拉取元数据并创建条目 |
-| SyncSubjectByPlatformIdStep | 按平台 ID 同步条目（对接第三方平台） |
-| CreateSubjectTagsStep | 创建条目标签 |
-| ProcessSpSubdirectoriesStep | 处理 SP 等特殊子目录 |
-| BindEpisodesStep | 批量绑定剧集与附件 |
+| ParseDirectoryNameStep（10） | 解析目录名，提取条目名称、剧集序号等信息 |
+| CleanDirectoryNameStep（15） | 清洗目录名（去除无效字符） |
+| FindSubjectInfoStep（20） | 查找本地已有条目信息 |
+| FetchAndCreateSubjectStep（30） | 拉取元数据并创建条目 |
+| CreateSubjectTagsStep（40） | 创建条目标签 |
+| ListFilesStep（50） | 列出目录内文件 |
+| SyncSubjectByPlatformIdStep（60） | 按平台 ID 同步条目（对接第三方平台） |
+| BindEpisodesStep（70） | 批量绑定剧集与附件 |
+| ProcessSpSubdirectoriesStep（75） | 处理 SP 等特殊子目录 |
 
 #### 4.6.3 需求点
 
@@ -744,7 +744,7 @@ ikaros/
 | 数据模型 | 7 | 4 | 13 |
 | 测试 | 5.5 | 7.4 | 15 |
 
-### 11.2 文档维护
+### 11.3 文档维护
 
 - 本文档随版本迭代持续更新，代码基线变更时应同步修订。
 - 需求编号（FR-XXX-NN / NFR-XXX-NN）作为需求追踪标识，后续可关联 issue 与测试用例。

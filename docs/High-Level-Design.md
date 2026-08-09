@@ -31,6 +31,7 @@
 - **前端**：Vue 3 + Vite + pnpm workspaces（shared 与 api-client 为内部包）。
 - **协议**：REST（`/api/v1/**`）+ Subsonic 兼容（`/rest/**`）+ 静态资源（`/static/**`）。
 - **版本兼容**：插件必须声明兼容的 Core 版本（当前 1.2.1）。
+- 完整技术栈版本详见 [PRD 6.1 技术栈](./Product-Requirements-Document.md#61-技术栈)。
 
 ---
 
@@ -230,8 +231,7 @@ IkarosPluginManager (PF4J PluginManager)
  └─ 校验：版本兼容（system-version）、安装包安全（路径穿越/文件名注入）
 ```
 
-插件可实现的扩展点（`IkarosExtensionPoint` 子接口）：
-`AttachmentDriverFetcher`、`AttachmentAccessUrlProvider`、`SubjectSynchronizer`、`MetaOperate`、`TagOperate`、`EpisodeSequenceRegularPluginHook`、`PluginTask`、`CustomEndpoint`、自定义 Scheme 等。
+插件可实现的扩展点（`IkarosExtensionPoint` 子接口）：详见 [PRD 4.10.2 插件扩展点](./Product-Requirements-Document.md#4.10.2-插件扩展点fr-plugin-02)。
 
 ---
 
