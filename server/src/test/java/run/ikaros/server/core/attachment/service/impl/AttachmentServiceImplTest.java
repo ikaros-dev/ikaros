@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
 import java.util.UUID;
@@ -17,8 +17,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
-import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentConst;
@@ -27,13 +27,12 @@ import run.ikaros.api.core.attachment.AttachmentUploadCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentUploadException;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.api.infra.utils.UuidV7Utils;
-import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.store.enums.AttachmentDriverType;
-import run.ikaros.server.plugin.ExtensionComponentsFinder;
+import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.core.attachment.service.AttachmentMediaValidationService;
-import run.ikaros.server.core.attachment.service.impl.DefaultAttachmentMediaValidationService;
-import run.ikaros.server.store.entity.AttachmentEntity;
+import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
+import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentDriverRepository;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRelationRepository;
@@ -84,7 +83,8 @@ class AttachmentServiceImplTest {
         when(mediaValidationService.validateFilename("payload.exe"))
             .thenThrow(new IllegalArgumentException("不支持的媒体文件名"));
 
-        AttachmentUploadCondition condition = AttachmentUploadCondition.builder()
+        AttachmentUploadCondition condition = AttachmentUploadCondition
+            .builder()
             .name("payload.exe")
             .dataBufferFlux(Flux.defer(() -> {
                 subscriptions[0]++;
@@ -102,7 +102,8 @@ class AttachmentServiceImplTest {
     void save_allowsDriverDirectoryOutsideWorkDirectory(@TempDir Path tempDir) {
         Path workDirectory = tempDir.resolve("work");
         Path driverDirectory = tempDir.resolve("driver");
-        Attachment attachment = Attachment.builder()
+        Attachment attachment = Attachment
+            .builder()
             .name("收藏")
             .type(AttachmentType.Driver_Directory)
             .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
@@ -117,7 +118,8 @@ class AttachmentServiceImplTest {
         when(attachmentRepository.insert(any(AttachmentEntity.class)))
             .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
-        StepVerifier.create(service.save(attachment))
+        StepVerifier
+            .create(service.save(attachment))
             .assertNext(saved -> {
                 assertThat(saved.getFsPath()).isEqualTo(driverDirectory.toString());
                 assertThat(saved.getDriverId()).isEqualTo(attachment.getDriverId());
@@ -129,7 +131,8 @@ class AttachmentServiceImplTest {
     void save_rejectsRegularAttachmentOutsideWorkDirectory(@TempDir Path tempDir) {
         Path workDirectory = tempDir.resolve("work");
         Path outsideFile = tempDir.resolve("outside.mkv");
-        Attachment attachment = Attachment.builder()
+        Attachment attachment = Attachment
+            .builder()
             .name("outside.mkv")
             .type(AttachmentType.File)
             .fsPath(outsideFile.toString())
@@ -143,7 +146,8 @@ class AttachmentServiceImplTest {
 
     @Test
     void save_rejectsDriverAttachmentWithoutDriverId(@TempDir Path tempDir) {
-        Attachment attachment = Attachment.builder()
+        Attachment attachment = Attachment
+            .builder()
             .name("driver")
             .type(AttachmentType.Driver_Directory)
             .fsPath(tempDir.toString())
@@ -162,13 +166,20 @@ class AttachmentServiceImplTest {
         java.nio.file.Files.write(file, content);
         when(ikarosProperties.getWorkDir()).thenReturn(tempDir);
         UUID id = UUID.randomUUID();
-        AttachmentEntity entity = AttachmentEntity.builder()
-            .id(id).name("cover.png").type(AttachmentType.File)
-            .fsPath(file.toString()).url(file.toString()).size((long) content.length).build();
+        AttachmentEntity entity = AttachmentEntity
+            .builder()
+            .id(id)
+            .name("cover.png")
+            .type(AttachmentType.File)
+            .fsPath(file.toString())
+            .url(file.toString())
+            .size((long) content.length)
+            .build();
         when(repository.findById(id)).thenReturn(Mono.just(entity));
         service = newServiceWithRealValidation();
 
-        StepVerifier.create(service.getStreamById(id))
+        StepVerifier
+            .create(service.getStreamById(id))
             .assertNext(stream -> {
                 assertThat(stream.getContextType()).isEqualTo("image/jpeg");
                 assertThat(read(stream)).isEqualTo(content);
@@ -184,13 +195,20 @@ class AttachmentServiceImplTest {
         java.nio.file.Files.write(file, content);
         when(ikarosProperties.getWorkDir()).thenReturn(tempDir);
         UUID id = UUID.randomUUID();
-        AttachmentEntity entity = AttachmentEntity.builder()
-            .id(id).name("song.mp4").type(AttachmentType.File)
-            .fsPath(file.toString()).url(file.toString()).size((long) content.length).build();
+        AttachmentEntity entity = AttachmentEntity
+            .builder()
+            .id(id)
+            .name("song.mp4")
+            .type(AttachmentType.File)
+            .fsPath(file.toString())
+            .url(file.toString())
+            .size((long) content.length)
+            .build();
         when(repository.findById(id)).thenReturn(Mono.just(entity));
         service = newServiceWithRealValidation();
 
-        StepVerifier.create(service.getStreamByIdWithRange(id, 2, 5))
+        StepVerifier
+            .create(service.getStreamByIdWithRange(id, 2, 5))
             .assertNext(stream -> {
                 assertThat(stream.getContextType()).isEqualTo("audio/mpeg");
                 assertThat(read(stream)).isEqualTo(java.util.Arrays.copyOfRange(content, 2, 6));
@@ -203,11 +221,21 @@ class AttachmentServiceImplTest {
         byte[] content = jpeg();
         UUID id = UUID.randomUUID();
         UUID driverId = UUID.randomUUID();
-        AttachmentEntity entity = AttachmentEntity.builder()
-            .id(id).driverId(driverId).name("cover.png").type(AttachmentType.Driver_File)
-            .fsPath("driver-file").size((long) content.length).build();
-        AttachmentDriverEntity driver = AttachmentDriverEntity.builder()
-            .id(driverId).type(AttachmentDriverType.LOCAL).name("DISK").build();
+        AttachmentEntity entity = AttachmentEntity
+            .builder()
+            .id(id)
+            .driverId(driverId)
+            .name("cover.png")
+            .type(AttachmentType.Driver_File)
+            .fsPath("driver-file")
+            .size((long) content.length)
+            .build();
+        AttachmentDriverEntity driver = AttachmentDriverEntity
+            .builder()
+            .id(driverId)
+            .type(AttachmentDriverType.LOCAL)
+            .name("DISK")
+            .build();
         AttachmentDriverFetcher fetcher = org.mockito.Mockito.mock(
             AttachmentDriverFetcher.class);
         int[] subscriptions = {0};
@@ -224,7 +252,8 @@ class AttachmentServiceImplTest {
         }));
         service = newServiceWithRealValidation();
 
-        StepVerifier.create(service.getStreamById(id))
+        StepVerifier
+            .create(service.getStreamById(id))
             .assertNext(stream -> {
                 assertThat(stream.getContextType()).isEqualTo("image/jpeg");
                 assertThat(read(stream)).isEqualTo(content);
@@ -236,14 +265,22 @@ class AttachmentServiceImplTest {
     @Test
     void getStreamById_rejectsUnsupportedNameBeforeOpeningFile(@TempDir Path tempDir) {
         UUID id = UUID.randomUUID();
-        AttachmentEntity entity = AttachmentEntity.builder()
-            .id(id).name("payload.exe").type(AttachmentType.File)
-            .fsPath(tempDir.resolve("payload.exe").toString()).size(10L).build();
+        AttachmentEntity entity = AttachmentEntity
+            .builder()
+            .id(id)
+            .name("payload.exe")
+            .type(AttachmentType.File)
+            .fsPath(tempDir
+                .resolve("payload.exe")
+                .toString())
+            .size(10L)
+            .build();
         when(repository.findById(id)).thenReturn(Mono.just(entity));
         when(mediaValidationService.validateFilename("payload.exe"))
             .thenThrow(new IllegalArgumentException("unsupported"));
 
-        StepVerifier.create(service.getStreamById(id))
+        StepVerifier
+            .create(service.getStreamById(id))
             .expectErrorSatisfies(error -> assertThat(error)
                 .isInstanceOf(AttachmentUploadException.class))
             .verify();
@@ -259,13 +296,15 @@ class AttachmentServiceImplTest {
     }
 
     private byte[] read(run.ikaros.api.core.attachment.AttachmentStreamVo stream) {
-        return org.springframework.core.io.buffer.DataBufferUtils.join(stream.getDataBufferFlux())
+        return org.springframework.core.io.buffer.DataBufferUtils
+            .join(stream.getDataBufferFlux())
             .map(buffer -> {
                 byte[] bytes = new byte[buffer.readableByteCount()];
                 buffer.read(bytes);
                 org.springframework.core.io.buffer.DataBufferUtils.release(buffer);
                 return bytes;
-            }).block();
+            })
+            .block();
     }
 
     private byte[] jpeg() {
@@ -294,7 +333,8 @@ class AttachmentServiceImplTest {
     @Test
     void findById_found() {
         UUID id = UuidV7Utils.generateUuid();
-        AttachmentEntity entity = AttachmentEntity.builder()
+        AttachmentEntity entity = AttachmentEntity
+            .builder()
             .id(id)
             .name("test-file.mp4")
             .type(AttachmentType.File)
@@ -304,7 +344,8 @@ class AttachmentServiceImplTest {
 
         when(repository.findById(id)).thenReturn(Mono.just(entity));
 
-        StepVerifier.create(service.findById(id))
+        StepVerifier
+            .create(service.findById(id))
             .assertNext(attachment -> {
                 assertThat(attachment.getId()).isEqualTo(id);
                 assertThat(attachment.getName()).isEqualTo("test-file.mp4");
@@ -319,7 +360,8 @@ class AttachmentServiceImplTest {
         UUID id = UuidV7Utils.generateUuid();
         when(repository.findById(id)).thenReturn(Mono.empty());
 
-        StepVerifier.create(service.findById(id))
+        StepVerifier
+            .create(service.findById(id))
             .verifyComplete();
     }
 
@@ -330,7 +372,8 @@ class AttachmentServiceImplTest {
         UUID parentId = UuidV7Utils.generateUuid();
         String name = "test-video.mkv";
 
-        AttachmentEntity entity = AttachmentEntity.builder()
+        AttachmentEntity entity = AttachmentEntity
+            .builder()
             .id(UuidV7Utils.generateUuid())
             .name(name)
             .type(AttachmentType.File)
@@ -341,7 +384,8 @@ class AttachmentServiceImplTest {
         when(repository.findByTypeAndParentIdAndName(AttachmentType.File, parentId, name))
             .thenReturn(Mono.just(entity));
 
-        StepVerifier.create(service.findByTypeAndParentIdAndName(
+        StepVerifier
+            .create(service.findByTypeAndParentIdAndName(
                 AttachmentType.File, parentId, name))
             .assertNext(attachment -> {
                 assertThat(attachment.getName()).isEqualTo(name);
@@ -360,7 +404,8 @@ class AttachmentServiceImplTest {
             AttachmentType.File, parentId, name))
             .thenReturn(Mono.empty());
 
-        StepVerifier.create(service.findByTypeAndParentIdAndName(
+        StepVerifier
+            .create(service.findByTypeAndParentIdAndName(
                 AttachmentType.File, parentId, name))
             .verifyComplete();
     }
@@ -369,7 +414,8 @@ class AttachmentServiceImplTest {
     void findByTypeAndParentIdAndName_nullParentId_defaultsToRoot() {
         String name = "test.txt";
 
-        AttachmentEntity entity = AttachmentEntity.builder()
+        AttachmentEntity entity = AttachmentEntity
+            .builder()
             .id(UuidV7Utils.generateUuid())
             .name(name)
             .type(AttachmentType.File)
@@ -381,7 +427,8 @@ class AttachmentServiceImplTest {
             AttachmentType.File, AttachmentConst.ROOT_DIRECTORY_ID, name))
             .thenReturn(Mono.just(entity));
 
-        StepVerifier.create(service.findByTypeAndParentIdAndName(
+        StepVerifier
+            .create(service.findByTypeAndParentIdAndName(
                 AttachmentType.File, null, name))
             .assertNext(attachment -> {
                 assertThat(attachment.getName()).isEqualTo(name);
@@ -414,7 +461,8 @@ class AttachmentServiceImplTest {
         when(repository.existsByParentIdAndName(parentId, name))
             .thenReturn(Mono.just(true));
 
-        StepVerifier.create(service.existsByParentIdAndName(parentId, name))
+        StepVerifier
+            .create(service.existsByParentIdAndName(parentId, name))
             .assertNext(exists -> assertThat(exists).isTrue())
             .verifyComplete();
     }
@@ -427,7 +475,8 @@ class AttachmentServiceImplTest {
         when(repository.existsByParentIdAndName(parentId, name))
             .thenReturn(Mono.just(false));
 
-        StepVerifier.create(service.existsByParentIdAndName(parentId, name))
+        StepVerifier
+            .create(service.existsByParentIdAndName(parentId, name))
             .assertNext(exists -> assertThat(exists).isFalse())
             .verifyComplete();
     }
@@ -439,7 +488,8 @@ class AttachmentServiceImplTest {
         when(repository.existsByParentIdAndName(AttachmentConst.ROOT_DIRECTORY_ID, name))
             .thenReturn(Mono.just(true));
 
-        StepVerifier.create(service.existsByParentIdAndName(null, name))
+        StepVerifier
+            .create(service.existsByParentIdAndName(null, name))
             .assertNext(exists -> assertThat(exists).isTrue())
             .verifyComplete();
     }
@@ -461,7 +511,8 @@ class AttachmentServiceImplTest {
             AttachmentType.File, parentId, name))
             .thenReturn(Mono.just(true));
 
-        StepVerifier.create(service.existsByTypeAndParentIdAndName(
+        StepVerifier
+            .create(service.existsByTypeAndParentIdAndName(
                 AttachmentType.File, parentId, name))
             .assertNext(exists -> assertThat(exists).isTrue())
             .verifyComplete();
@@ -476,7 +527,8 @@ class AttachmentServiceImplTest {
             AttachmentType.File, parentId, name))
             .thenReturn(Mono.just(false));
 
-        StepVerifier.create(service.existsByTypeAndParentIdAndName(
+        StepVerifier
+            .create(service.existsByTypeAndParentIdAndName(
                 AttachmentType.File, parentId, name))
             .assertNext(exists -> assertThat(exists).isFalse())
             .verifyComplete();
@@ -490,7 +542,8 @@ class AttachmentServiceImplTest {
             AttachmentType.File, AttachmentConst.ROOT_DIRECTORY_ID, name))
             .thenReturn(Mono.just(true));
 
-        StepVerifier.create(service.existsByTypeAndParentIdAndName(
+        StepVerifier
+            .create(service.existsByTypeAndParentIdAndName(
                 AttachmentType.File, null, name))
             .assertNext(exists -> assertThat(exists).isTrue())
             .verifyComplete();
@@ -505,7 +558,8 @@ class AttachmentServiceImplTest {
             AttachmentType.Directory, parentId, name))
             .thenReturn(Mono.just(true));
 
-        StepVerifier.create(service.existsByTypeAndParentIdAndName(
+        StepVerifier
+            .create(service.existsByTypeAndParentIdAndName(
                 AttachmentType.Directory, parentId, name))
             .assertNext(exists -> assertThat(exists).isTrue())
             .verifyComplete();

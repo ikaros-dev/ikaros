@@ -421,8 +421,8 @@ public final class MediaFileDetector {
         int offset = 0;
         if (data.length >= 10 && asciiEquals(data, 0, "ID3")) {
             if ((data[6] | data[7] | data[8] | data[9]) < 0
-                || (unsigned(data[6]) | unsigned(data[7]) | unsigned(data[8]) | unsigned(data[9])) >
-                127) {
+                || (unsigned(data[6]) | unsigned(data[7]) | unsigned(data[8])
+                | unsigned(data[9])) > 127) {
                 return Optional.empty();
             }
             offset = 10 + (unsigned(data[6]) << 21) + (unsigned(data[7]) << 14)

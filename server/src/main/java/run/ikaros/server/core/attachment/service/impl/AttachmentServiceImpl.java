@@ -963,11 +963,11 @@ public class AttachmentServiceImpl implements AttachmentService {
      * 缓存目录内持久化的最小分片验证会话信息。
      */
     private record FragmentSession(
-        /** 已验证的上传文件名。 */
+        // 已验证的上传文件名。
         String uploadName,
-        /** 客户端声明的完整文件长度。 */
+        // 客户端声明的完整文件长度。
         long uploadLength,
-        /** 首分片检测出的真实格式。 */
+        // 首分片检测出的真实格式。
         MediaFileFormat format) {
     }
 

@@ -63,17 +63,17 @@ class DefaultAttachmentMediaValidationServiceTest {
                     .assertNext(parts -> assertThat(parts
                         .stream()
                         .toList()).satisfies(values -> {
-                        byte[] actual = new byte[values
-                            .stream()
-                            .mapToInt(bytes -> bytes.length)
-                            .sum()];
-                        int offset = 0;
-                        for (byte[] value : values) {
-                            System.arraycopy(value, 0, actual, offset, value.length);
-                            offset += value.length;
-                        }
-                        assertThat(actual).isEqualTo(join(first, second));
-                    }))
+                            byte[] actual = new byte[values
+                                .stream()
+                                .mapToInt(bytes -> bytes.length)
+                                .sum()];
+                            int offset = 0;
+                            for (byte[] value : values) {
+                                System.arraycopy(value, 0, actual, offset, value.length);
+                                offset += value.length;
+                            }
+                            assertThat(actual).isEqualTo(join(first, second));
+                        }))
                     .verifyComplete();
             })
             .verifyComplete();
