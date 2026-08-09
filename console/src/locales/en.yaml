@@ -1,4 +1,4 @@
-Root: Root
+Root: Dashboard
 common:
   greeting: Hello,
   exception:

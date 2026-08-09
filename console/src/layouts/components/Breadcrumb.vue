@@ -14,9 +14,11 @@ const breadcrumbList: Ref = ref([]);
 
 const initBreadcrumbList = () => {
 	// console.log('route.matched: ', route.matched);
-	breadcrumbList.value = route.matched.filter(
+	const matchedRoutes = route.matched.filter(
 		(item) => item.meta?.title || item.name
 	);
+	breadcrumbList.value =
+		route.name === 'Dashboard' ? matchedRoutes.slice(-1) : matchedRoutes;
 };
 
 const handleRedirect = (path) => {

@@ -40,11 +40,6 @@ export const routes: Array<RouteRecordRaw> = [
 
 export const coreMenuGroups: MenuGroupType[] = [
 	{
-		id: 'dashboard',
-		name: undefined,
-		priority: 0,
-	},
-	{
 		id: 'content',
 		name: 'router.sidebar.group.content',
 		priority: 1,
