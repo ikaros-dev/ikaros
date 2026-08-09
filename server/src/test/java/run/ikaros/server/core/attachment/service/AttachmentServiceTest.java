@@ -74,7 +74,7 @@ class AttachmentServiceTest {
             .expectNext(0L)
             .verifyComplete();
 
-        final String name = "UnitTestDocFile.TXT";
+        final String name = "UnitTestDocFile.PNG";
         ClassPathResource classPathResource =
             new ClassPathResource("core/file/" + name);
 
