@@ -212,6 +212,16 @@ const showEpisodeDetails = (record: EpisodeRecord) => {
 
 const episodeDetailsDialogVisible = ref(false);
 
+const contentRouteByType = (type: Subject['type']) => {
+	const typeValue = type as string;
+	if (typeValue === 'VIDEO' || typeValue === 'ANIME' || typeValue === 'REAL') {
+		return '/videos';
+	}
+	if (typeValue === 'MUSIC') return '/music';
+	if (typeValue === 'COMIC') return '/images';
+	return '/subjects';
+};
+
 const toSubjectPut = () => {
 	if (subject.value.id) {
 		router.push('/subjects/subject/put/' + subject.value.id);
@@ -258,7 +268,7 @@ const deleteSubject = async () => {
 					name: subject.value.name,
 				})
 			);
-			router.push('/subjects');
+			router.push(contentRouteByType(subject.value.type));
 		});
 };
 

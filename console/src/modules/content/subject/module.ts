@@ -1,10 +1,8 @@
 import { definePlugin } from '@runikaros/shared';
-import { Tickets } from '@element-plus/icons-vue';
 import Subjects from './Subjects.vue';
 import SubjectPut from './SubjectPut.vue';
 import SubjectPost from './SubjectPost.vue';
 import SubjectDetails from './SubjectDetails.vue';
-import { markRaw } from 'vue';
 
 export default definePlugin({
 	name: 'Subjects',
@@ -18,12 +16,7 @@ export default definePlugin({
 				component: Subjects,
 				meta: {
 					title: 'module.subject.title',
-					menu: {
-						name: 'module.subject.sidebar',
-						group: 'content',
-						icon: markRaw(Tickets),
-						priority: 1,
-					},
+					hidden: true,
 				},
 			},
 		},

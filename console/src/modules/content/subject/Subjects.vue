@@ -78,7 +78,15 @@ interface SubjectsCondition {
 	name: string;
 	nameCn: string;
 	nsfw: boolean | undefined;
-	type?: 'ANIME' | 'COMIC' | 'GAME' | 'MUSIC' | 'NOVEL' | 'REAL' | 'OTHER';
+	type?:
+		| 'VIDEO'
+		| 'ANIME'
+		| 'COMIC'
+		| 'GAME'
+		| 'MUSIC'
+		| 'NOVEL'
+		| 'REAL'
+		| 'OTHER';
 }
 
 const findSubjectsCondition = ref<SubjectsCondition>({

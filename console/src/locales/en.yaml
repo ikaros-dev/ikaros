@@ -1433,6 +1433,26 @@ module:
     album:
       detail:
         title: Album Details
+  media:
+    import: Scan and Import
+    video:
+      title: Videos
+      sidebar: Videos
+      searchPlaceholder: Search video names
+      emptyTitle: No videos
+      emptyDescription: Scan and import videos to show them here
+    music:
+      title: Music
+      sidebar: Music
+      searchPlaceholder: Search music names
+      emptyTitle: No music
+      emptyDescription: Scan and import music to show it here
+    image:
+      title: Images
+      sidebar: Images
+      searchPlaceholder: Search image names
+      emptyTitle: No images
+      emptyDescription: Scan and import images to show them here
 login:
   operations:
     submit:

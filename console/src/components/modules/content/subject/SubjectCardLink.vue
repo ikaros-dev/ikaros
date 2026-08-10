@@ -8,6 +8,7 @@ const props = withDefaults(
 		nameCn?: string;
 		cover: string;
 		percentage: number;
+		to?: string;
 	}>(),
 	{
 		id: '',
@@ -15,12 +16,13 @@ const props = withDefaults(
 		nameCn: '',
 		cover: '',
 		percentage: 0,
+		to: '',
 	}
 );
 </script>
 
 <template>
-	<router-link :to="'/subjects/subject/details/' + props.id">
+	<router-link :to="props.to || '/subjects/subject/details/' + props.id">
 		<SubjectCard
 			:name="props.name"
 			:name-cn="props.nameCn"

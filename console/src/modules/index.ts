@@ -3,7 +3,7 @@ import User from './user/module';
 import Attachment from './content/attachment/module';
 import Regular from './content/regular/module';
 import Subject from './content/subject/module';
-import Music from './content/music/module';
+import Media from './content/media/module';
 import Plugin from './system/plugin/module';
 import Setting from './system/setting/module';
 import About from './system/about/module';
@@ -15,9 +15,9 @@ const coreModules = [
 	Dashboard,
 	User,
 	Attachment,
-	Regular,
+	Media,
 	Subject,
-	Music,
+	Regular,
 	Plugin,
 	Setting,
 	About,

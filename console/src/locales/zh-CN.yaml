@@ -1395,6 +1395,26 @@ module:
     album:
       detail:
         title: 专辑详情
+  media:
+    import: 扫描并导入
+    video:
+      title: 视频
+      sidebar: 视频
+      searchPlaceholder: 搜索视频名称
+      emptyTitle: 暂无视频
+      emptyDescription: 扫描并导入视频后会显示在这里
+    music:
+      title: 音乐
+      sidebar: 音乐
+      searchPlaceholder: 搜索音乐名称
+      emptyTitle: 暂无音乐
+      emptyDescription: 扫描并导入音乐后会显示在这里
+    image:
+      title: 图片
+      sidebar: 图片
+      searchPlaceholder: 搜索图片名称
+      emptyTitle: 暂无图片
+      emptyDescription: 扫描并导入图片后会显示在这里
 login:
   operations:
     submit:

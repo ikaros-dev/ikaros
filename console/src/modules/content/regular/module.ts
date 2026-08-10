@@ -19,7 +19,7 @@ export default definePlugin({
 						name: 'module.regular.sidebar',
 						group: 'content',
 						icon: markRaw(Coin),
-						priority: 2,
+						priority: 4,
 					},
 				},
 			},

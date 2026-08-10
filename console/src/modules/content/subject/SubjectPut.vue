@@ -37,7 +37,6 @@ import {
 	subjectTypes,
 } from '@/modules/common/constants';
 import AttachmentSelectDialog from '../attachment/AttachmentSelectDialog.vue';
-import { base64Encode } from '@/utils/string-util';
 import { useSubjectStore } from '@/stores/subject';
 import { useI18n } from 'vue-i18n';
 import CropperjsDialog from '@/components/image/CropperjsDialog.vue';
@@ -125,6 +124,16 @@ const subjectRuleFormRules = reactive<FormRules>({
 
 const submitBtnLoading = ref(false);
 const subjectElFormRef = ref<FormInstance>();
+const contentRouteByType = (type: Subject['type']) => {
+	const typeValue = type as string;
+	if (typeValue === 'VIDEO' || typeValue === 'ANIME' || typeValue === 'REAL') {
+		return '/videos';
+	}
+	if (typeValue === 'MUSIC') return '/music';
+	if (typeValue === 'COMIC') return '/images';
+	return '/subjects';
+};
+
 const submitForm = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid, fields) => {
@@ -155,16 +164,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 			if (subject.value.id) {
 				subjectStore.clearSubjectCacheById(subject.value.id);
 			}
-			router.push(
-				'/subjects?name=' +
-					base64Encode(encodeURI(subject.value.name)) +
-					'&nameCn=' +
-					base64Encode(encodeURI(subject.value.name_cn as string)) +
-					'&nsfw=' +
-					subject.value.nsfw +
-					'&type=' +
-					subject.value.type
-			);
+			router.push(contentRouteByType(subject.value.type));
 		} else {
 			console.log('error submit!', fields);
 			ElMessage.error(t('module.subject.put.message.form-rule.validate-fail'));
