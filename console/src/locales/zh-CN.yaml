@@ -469,6 +469,38 @@ module:
           button:
             subject:
               update: 更新
+    file-source:
+      title: 文件源管理
+      create: 添加文件源
+      create-title: 添加文件源
+      edit-title: 编辑文件源
+      columns:
+        name: 名称
+        path: 服务器路径
+        enabled: 已启用
+        operations: 操作
+      fields:
+        name: 名称
+        path: 服务器路径
+        comment: 备注
+      actions:
+        retry: 重试
+        save: 保存
+      validation:
+        mount-name: 请输入文件源名称
+        remote-path: 请输入服务器路径
+      delete-title: 删除文件源
+      delete-confirm: 确定要删除文件源“{name}”吗？此操作不会删除服务器上的文件。
+      messages:
+        save-success: 文件源已保存
+        delete-success: 文件源已删除
+      errors:
+        load: 加载文件源失败，请重试
+        save: 保存文件源失败
+        missing-id: 文件源已保存，但服务端未返回标识，无法启用
+        enable-after-save: 文件源已保存，但启用失败；请检查列表状态后重试
+        toggle: 更新文件源启用状态失败
+        delete: 删除文件源失败
   regular:
     title: 剧集序号正则
     sidebar: 正则

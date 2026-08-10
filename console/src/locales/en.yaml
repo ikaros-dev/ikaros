@@ -482,6 +482,43 @@ module:
           button:
             subject:
               update: Update
+    file-source:
+      title: File sources
+      create: Add file source
+      create-title: Add file source
+      edit-title: Edit file source
+      columns:
+        name: Name
+        path: Server path
+        enabled: Enabled
+        operations: Operations
+      fields:
+        name: Name
+        path: Server path
+        comment: Notes
+      actions:
+        retry: Retry
+        save: Save
+      validation:
+        mount-name: Enter a file source name
+        remote-path: Enter a server path
+      delete-title: Delete file source
+      delete-confirm:
+        Delete file source "{name}"? Files on the server will not be deleted.
+      messages:
+        save-success: File source saved
+        delete-success: File source deleted
+      errors:
+        load: Failed to load file sources. Please try again.
+        save: Failed to save the file source
+        missing-id:
+          The file source was saved, but the server did not return an ID, so it
+          could not be enabled
+        enable-after-save:
+          The file source was saved but could not be enabled. Check its status
+          and try again.
+        toggle: Failed to update the file source status
+        delete: Failed to delete the file source
   regular:
     title: Episode Regex Rules
     sidebar: Regex
