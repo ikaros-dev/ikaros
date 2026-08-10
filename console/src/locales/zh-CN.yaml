@@ -306,6 +306,9 @@ module:
           EPISODE: 剧集视频
           AUDIO: 音频
           IMAGE: 图片序列
+        directory:
+          label: 扫描目录
+          select: 选择目录
         preview:
           title: 扫描预览
           action: 开始扫描
@@ -342,6 +345,7 @@ module:
           type: 条目类型
           nsfw: 标记为 NSFW
           typeValue:
+            VIDEO: 暂不分类
             ANIME: 动画
             COMIC: 漫画
             GAME: 游戏

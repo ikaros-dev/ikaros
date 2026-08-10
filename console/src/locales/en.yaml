@@ -314,6 +314,9 @@ module:
           EPISODE: Episode video
           AUDIO: Audio
           IMAGE: Image sequence
+        directory:
+          label: Scan directory
+          select: Select directory
         preview:
           title: Scan preview
           action: Scan directory
@@ -350,6 +353,7 @@ module:
           type: Subject type
           nsfw: Mark as NSFW
           typeValue:
+            VIDEO: Unclassified video
             ANIME: Anime
             COMIC: Comic
             GAME: Game
