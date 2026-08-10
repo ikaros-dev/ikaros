@@ -334,7 +334,7 @@ const onDialogClose = () => {
 							v-if="userStore.roleHasMaster()"
 							target="_blank"
 							:to="
-								'/attachments?parentId=' +
+								'/sources?parentId=' +
 								episodeResources[0].parentAttachmentId +
 								'&name=' +
 								base64Encode(encodeURI(episodeResources[0].name as string))
@@ -367,7 +367,7 @@ const onDialogClose = () => {
 									v-if="userStore.roleHasMaster()"
 									target="_blank"
 									:to="
-										'/attachments?parentId=' +
+										'/sources?parentId=' +
 										res.parentAttachmentId +
 										'&name=' +
 										base64Encode(encodeURI(res.name as string))

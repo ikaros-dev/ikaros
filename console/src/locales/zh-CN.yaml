@@ -165,8 +165,8 @@ module:
           shelve: 搁置
           discard: 抛弃
   attachment:
-    title: 附件
-    sidebar: 附件
+    title: 文件源
+    sidebar: 文件源
     message:
       directory: 目录
       file: 附件
@@ -261,12 +261,16 @@ module:
           add: 添加
           cancel: 返回
     btn:
-      upload: 上传附件
+      upload: 上传文件
       mkdir: 新建目录
       move_atts: 批量移动
       refresh: 刷新
       driver: 驱动
       bind: 绑定目录
+      more: 更多
+      add-source: 添加文件源
+      manage-sources: 添加/管理文件源
+      scan: 扫描当前目录
     bind:
       confirm:
         content: 确定要根据当前目录自动创建条目并绑定剧集吗？
@@ -366,9 +370,22 @@ module:
       btn: 批量删除
       system_internal_forbidden: 不允许删除系统内置目录
     search_input:
-      placeholder: 搜索当前目录下的所有附件，模糊匹配，空格多个关键词，回车搜查
+      placeholder: 搜索当前目录中的文件和目录，按回车开始搜索
     breadcrumb:
       label: 路径
+    browser:
+      error: 加载当前目录失败，请重试
+      source-error: 加载文件源失败，请重试
+      no-sources:
+        title: 暂无文件源
+        description: 添加本地文件源后即可浏览和扫描媒体文件
+      no-results:
+        title: 未找到匹配内容
+        description: 请调整关键词后重新搜索当前目录
+      empty:
+        title: 当前目录为空
+        directory-description: 可以上传文件或新建子目录
+        driver-description: 可以刷新文件源，或显式扫描当前目录
     table:
       colum:
         label:

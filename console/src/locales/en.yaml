@@ -165,8 +165,8 @@ module:
           shelve: Shelve
           discard: Discard
   attachment:
-    title: Attachments
-    sidebar: Attachments
+    title: File Sources
+    sidebar: File Sources
     message:
       directory: Directory
       file: File
@@ -269,12 +269,16 @@ module:
           add: Add
           cancel: Cancel
     btn:
-      upload: Upload
+      upload: Upload Files
       mkdir: Create
       move_atts: Batch move
       refresh: Refresh
       driver: Driver
       bind: Bind Directory
+      more: More
+      add-source: Add File Source
+      manage-sources: Add/Manage File Sources
+      scan: Scan Current Directory
     bind:
       confirm:
         content: Are you sure you want to auto-create subjects and bind episodes for the current directory?
@@ -374,11 +378,22 @@ module:
       btn: Batch delete
       system_internal_forbidden: System internal directories cannot be deleted
     search_input:
-      placeholder: >-
-        Search all attachments in the current directory, fuzzy match, space
-        multiple keywords, enter search.
+      placeholder: Search files and directories in the current directory, then press Enter
     breadcrumb:
       label: Path
+    browser:
+      error: Failed to load the current directory. Please retry.
+      source-error: Failed to load file sources. Please retry.
+      no-sources:
+        title: No file sources
+        description: Add a local file source to browse and scan media files
+      no-results:
+        title: No matching content
+        description: Adjust the keyword and search the current directory again
+      empty:
+        title: This directory is empty
+        directory-description: Upload files or create a subdirectory
+        driver-description: Refresh the file source or explicitly scan this directory
     table:
       colum:
         label:
