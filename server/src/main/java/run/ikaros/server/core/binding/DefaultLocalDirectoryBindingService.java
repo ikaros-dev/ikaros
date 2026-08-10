@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -109,7 +111,7 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
             .mode(request.getMode()).build())
             .flatMap(preview -> requirePrimaryItems(preview)
                 .then(validateAssignments(preview, request.getAssignments()))
-                .then(selectSubjectId(request))
+                .then(Mono.defer(() -> selectSubjectId(request)))
                 .flatMap(subjectId -> loadWorkflow(
                     request.getDirectoryId(), subjectId, request.getMode())
                     .flatMap(holder -> reconcile(holder.workflow(), preview, subjectId,
@@ -174,22 +176,38 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
 
     private Mono<UUID> selectSubjectId(LocalScanConfirmRequest request) {
         if (request.getSubjectId() != null) {
-            if (request.getMode() == LocalMediaMode.AUDIO) {
-                return subjectService.findById(request.getSubjectId())
-                    .filter(subject -> subject.getType() == SubjectType.MUSIC)
-                    .map(Subject::getId)
-                    .switchIfEmpty(Mono.error(
-                        new IllegalArgumentException("音频扫描只能绑定音乐条目")));
-            }
-            return Mono.just(request.getSubjectId());
+            return subjectService.findById(request.getSubjectId())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                    "未找到条目: " + request.getSubjectId())))
+                .flatMap(subject -> validateSubjectType(request.getMode(), subject.getType())
+                    .thenReturn(request.getSubjectId()));
         }
         Subject subject = request.getSubject();
-        if (request.getMode() == LocalMediaMode.AUDIO && subject.getType() != SubjectType.MUSIC) {
-            return Mono.error(new IllegalArgumentException("音频扫描只能创建音乐条目"));
-        }
-        return subjectService.create(subject).map(Subject::getId)
+        return validateSubjectType(request.getMode(), subject.getType())
+            .then(Mono.defer(() -> subjectService.create(subject)))
+            .map(Subject::getId)
             .filter(Objects::nonNull)
             .switchIfEmpty(Mono.error(new IllegalStateException("创建本地条目后未返回标识")));
+    }
+
+    private Mono<Void> validateSubjectType(LocalMediaMode mode, SubjectType subjectType) {
+        Set<SubjectType> allowedTypes = allowedSubjectTypes(mode);
+        if (allowedTypes.contains(subjectType)) {
+            return Mono.empty();
+        }
+        String allowedTypeNames = allowedTypes.stream().map(SubjectType::name)
+            .collect(Collectors.joining("、"));
+        return Mono.error(new IllegalArgumentException("扫描模式 " + mode + " 只允许条目类型 "
+            + allowedTypeNames + "，实际类型为 "
+            + (subjectType == null ? "null" : subjectType.name())));
+    }
+
+    private Set<SubjectType> allowedSubjectTypes(LocalMediaMode mode) {
+        return switch (mode) {
+            case EPISODE -> EnumSet.of(SubjectType.VIDEO, SubjectType.ANIME, SubjectType.REAL);
+            case AUDIO -> EnumSet.of(SubjectType.MUSIC);
+            case IMAGE -> EnumSet.of(SubjectType.COMIC);
+        };
     }
 
     private Mono<WorkflowHolder> loadWorkflow(UUID directoryId, UUID subjectId,
