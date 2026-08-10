@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Optional;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.requestbody.Builder;
@@ -80,7 +82,7 @@ public class SubjectEndpoint implements CoreEndpoint {
 
             .GET("/subjects/condition", this::listByCondition,
                 builder -> builder.operationId("ListSubjectsByCondition")
-                    .tag(tag).description("List subjects by condition.")
+                    .tag(tag).description("按名称、关键词、类型等条件分页查询条目。")
                     .parameter(parameterBuilder()
                         .name("page")
                         .description("第几页，从1开始, 默认为1.")
@@ -98,6 +100,10 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .description("经过Basic64编码的中文名称，中文名称字段模糊查询。")
                         .implementation(String.class))
                     .parameter(parameterBuilder()
+                        .name("keyword")
+                        .description("经过Base64编码的关键词，同时模糊匹配条目原名和中文名。")
+                        .implementation(String.class))
+                    .parameter(parameterBuilder()
                         .name("nsfw")
                         .description("Not Safe/Suitable For Work. default is false.")
                         .implementation(Boolean.class))
@@ -105,6 +111,10 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .name("type")
                         .description("条目类型")
                         .implementation(SubjectType.class))
+                    .parameter(parameterBuilder()
+                        .name("types")
+                        .description("逗号分隔的条目类型集合；去除空白并去重，非法类型返回400。")
+                        .implementation(String.class))
                     .parameter(parameterBuilder()
                         .name("time")
                         .implementation(String.class)
@@ -121,7 +131,9 @@ public class SubjectEndpoint implements CoreEndpoint {
                         .name("scoreDesc")
                         .implementation(Boolean.class)
                         .description("是否根据评分倒序，默认为空."))
-                    .response(responseBuilder().implementation(PagingWrap.class))
+                    .response(responseBuilder()
+                        .description("返回符合全部筛选条件的分页条目及完整匹配数量。")
+                        .implementation(PagingWrap.class))
             )
 
             .POST("/subject", this::create,
@@ -161,55 +173,68 @@ public class SubjectEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> listByCondition(ServerRequest request) {
-        Optional<String> pageOp = request.queryParam("page");
-        if (pageOp.isEmpty()) {
-            pageOp = Optional.of("1");
+        FindSubjectCondition findSubjectCondition;
+        try {
+            findSubjectCondition = parseFindSubjectCondition(request);
+        } catch (IllegalArgumentException exception) {
+            log.debug("解析条目查询参数失败。", exception);
+            return ServerResponse.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of("message", "查询参数格式错误"));
         }
-        final Integer page = Integer.valueOf(pageOp.get());
-        Optional<String> sizeOp = request.queryParam("size");
-        if (sizeOp.isEmpty()) {
-            sizeOp = Optional.of("10");
-        }
-        final Integer size = Integer.valueOf(sizeOp.get());
-        Optional<String> nameOp = request.queryParam("name");
-        final String name = nameOp.isPresent() && StringUtils.hasText(nameOp.get())
-            ? new String(Base64.getDecoder().decode(nameOp.get()), StandardCharsets.UTF_8)
-            : null;
-        Optional<String> nameCnOp = request.queryParam("nameCn");
-        final String nameCn = nameCnOp.isPresent() && StringUtils.hasText(nameCnOp.get())
-            ? new String(Base64.getDecoder().decode(nameCnOp.get()), StandardCharsets.UTF_8)
-            : null;
-        Optional<String> nsfwOp = request.queryParam("nsfw");
-        final Boolean nsfw = nsfwOp.isPresent() && StringUtils.hasText(nsfwOp.get())
-            ? Boolean.valueOf(nsfwOp.get())
-            : null;
-        Optional<String> typeOp = request.queryParam("type");
-        final SubjectType type = typeOp.isPresent() && StringUtils.hasText(typeOp.get())
-            ? SubjectType.valueOf(typeOp.get())
-            : null;
-        String time = request.queryParam("time").orElse("");
-        boolean airTimeDesc =
-            Boolean.parseBoolean(request.queryParam("airTimeDesc")
-                .orElse(Boolean.TRUE.toString()));
-        boolean updateTimeDesc =
-            Boolean.parseBoolean(request.queryParam("updateTimeDesc")
-                .orElse(Boolean.FALSE.toString()));
-        Optional<String> scoreDescOp = request.queryParam("scoreDesc");
-        Boolean scoreDesc = null;
-        if (scoreDescOp.isPresent() && !scoreDescOp.get().isEmpty()) {
-            scoreDesc =
-                Boolean.parseBoolean(scoreDescOp.get());
-        }
+        return subjectService.listEntitiesByCondition(findSubjectCondition)
+            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
+    }
 
-        FindSubjectCondition findSubjectCondition = FindSubjectCondition.builder()
-            .page(page).size(size).name(name).nameCn(nameCn)
-            .nsfw(nsfw).type(type).time(time)
+    private FindSubjectCondition parseFindSubjectCondition(ServerRequest request) {
+        Integer page = Integer.valueOf(request.queryParam("page").orElse("1"));
+        Integer size = Integer.valueOf(request.queryParam("size").orElse("10"));
+        String name = decodeBase64QueryParam(request, "name");
+        String nameCn = decodeBase64QueryParam(request, "nameCn");
+        String keyword = decodeBase64QueryParam(request, "keyword");
+        Boolean nsfw = request.queryParam("nsfw")
+            .filter(StringUtils::hasText)
+            .map(Boolean::valueOf)
+            .orElse(null);
+        SubjectType type = request.queryParam("type")
+            .filter(StringUtils::hasText)
+            .map(SubjectType::valueOf)
+            .orElse(null);
+        Set<SubjectType> types = parseSubjectTypes(request.queryParam("types").orElse(""));
+        String time = request.queryParam("time").orElse("");
+        boolean airTimeDesc = Boolean.parseBoolean(request.queryParam("airTimeDesc")
+            .orElse(Boolean.TRUE.toString()));
+        boolean updateTimeDesc = Boolean.parseBoolean(request.queryParam("updateTimeDesc")
+            .orElse(Boolean.FALSE.toString()));
+        Boolean scoreDesc = request.queryParam("scoreDesc")
+            .filter(StringUtils::hasText)
+            .map(Boolean::valueOf)
+            .orElse(null);
+
+        return FindSubjectCondition.builder()
+            .page(page).size(size).name(name).nameCn(nameCn).keyword(keyword)
+            .nsfw(nsfw).type(type).types(types).time(time)
             .airTimeDesc(airTimeDesc)
             .updateTimeDesc(updateTimeDesc)
             .scoreDesc(scoreDesc)
             .build();
-        return subjectService.listEntitiesByCondition(findSubjectCondition)
-            .flatMap(pagingWrap -> ServerResponse.ok().bodyValue(pagingWrap));
+    }
+
+    private String decodeBase64QueryParam(ServerRequest request, String parameterName) {
+        return request.queryParam(parameterName)
+            .filter(StringUtils::hasText)
+            .map(value -> new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8))
+            .orElse(null);
+    }
+
+    private Set<SubjectType> parseSubjectTypes(String value) {
+        Set<SubjectType> types = new LinkedHashSet<>();
+        for (String typeValue : value.split(",")) {
+            if (StringUtils.hasText(typeValue)) {
+                types.add(SubjectType.valueOf(typeValue.trim()));
+            }
+        }
+        return types;
     }
 
     private Mono<ServerResponse> list(ServerRequest request) {

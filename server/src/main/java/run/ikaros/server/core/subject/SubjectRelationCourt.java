@@ -17,6 +17,7 @@ public class SubjectRelationCourt {
         subjectRelationTypeMap.put(SubjectType.MUSIC, SubjectRelationType.MUSIC);
         subjectRelationTypeMap.put(SubjectType.NOVEL, SubjectRelationType.NOVEL);
         subjectRelationTypeMap.put(SubjectType.REAL, SubjectRelationType.REAL);
+        subjectRelationTypeMap.put(SubjectType.VIDEO, SubjectRelationType.VIDEO);
         subjectRelationTypeMap.put(SubjectType.OTHER, SubjectRelationType.OTHER);
     }
 

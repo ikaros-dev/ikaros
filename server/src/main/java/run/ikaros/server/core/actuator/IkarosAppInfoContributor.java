@@ -60,6 +60,7 @@ public class IkarosAppInfoContributor implements InfoContributor {
         subjectMap.put("music", subjectRepository.countByType(SubjectType.MUSIC).block());
         subjectMap.put("novel", subjectRepository.countByType(SubjectType.NOVEL).block());
         subjectMap.put("real", subjectRepository.countByType(SubjectType.REAL).block());
+        subjectMap.put("video", subjectRepository.countByType(SubjectType.VIDEO).block());
         subjectMap.put("other", subjectRepository.countByType(SubjectType.OTHER).block());
 
         Map<String, Object> subjectCollectionMap = new HashMap<>();

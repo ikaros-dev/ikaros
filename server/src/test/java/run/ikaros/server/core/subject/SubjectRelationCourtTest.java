@@ -64,6 +64,12 @@ class SubjectRelationCourtTest {
     }
 
     @Test
+    void judgeVideoReturnsVideo() {
+        assertThat(SubjectRelationCourt.judge(SubjectType.VIDEO, SubjectRelationType.VIDEO))
+            .isEqualTo(SubjectRelationType.VIDEO);
+    }
+
+    @Test
     void judgeOtherReturnsOther() {
         assertThat(SubjectRelationCourt.judge(SubjectType.OTHER, SubjectRelationType.OTHER))
             .isEqualTo(SubjectRelationType.OTHER);

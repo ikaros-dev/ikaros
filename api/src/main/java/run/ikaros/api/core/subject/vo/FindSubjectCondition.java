@@ -2,6 +2,7 @@ package run.ikaros.api.core.subject.vo;
 
 
 import java.util.Objects;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import run.ikaros.api.store.enums.SubjectType;
@@ -19,8 +20,17 @@ public class FindSubjectCondition {
     private Integer size;
     private String name;
     private String nameCn;
+    /**
+     * 同时匹配原名和中文名的关键词。
+     */
+    private String keyword;
     private Boolean nsfw;
     private SubjectType type;
+    /**
+     * 需要匹配的条目类型集合。
+     */
+    @Builder.Default
+    private Set<SubjectType> types = Set.of();
     private String time;
     /**
      * default is true.
@@ -48,7 +58,10 @@ public class FindSubjectCondition {
             page = 1;
         }
         if (Objects.isNull(size)) {
-            page = 10;
+            size = 10;
+        }
+        if (Objects.isNull(types)) {
+            types = Set.of();
         }
         if (Objects.isNull(airTimeDesc)) {
             airTimeDesc = true;

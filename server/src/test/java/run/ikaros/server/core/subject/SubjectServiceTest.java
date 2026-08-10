@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.api.core.subject.vo.FindSubjectCondition;
@@ -252,6 +254,101 @@ class SubjectServiceTest {
                     && result.getSize() == 10
                     && result.getTotal() >= 1)
             .verifyComplete();
+    }
+
+    @Test
+    void listEntitiesByKeywordAndTypes() {
+        Subject videoByName = createSearchSubject(
+            "contract-keyword-video-one", "未分类视频一", SubjectType.VIDEO, false);
+        Subject animeByNameCn = createSearchSubject(
+            "anime-original-name", "契约关键词动画", SubjectType.ANIME, false);
+        Subject realNsfw = createSearchSubject(
+            "contract-keyword-real", "真人影视", SubjectType.REAL, true);
+        Subject music = createSearchSubject(
+            "contract-keyword-music", "音乐", SubjectType.MUSIC, false);
+        Subject secondVideo = createSearchSubject(
+            "contract-keyword-video-two", "未分类视频二", SubjectType.VIDEO, false);
+        StepVerifier.create(Flux.just(videoByName, animeByNameCn, realNsfw, music, secondVideo)
+                .flatMap(subjectService::create)
+                .then())
+            .verifyComplete();
+
+        StepVerifier.create(subjectService.listEntitiesByCondition(FindSubjectCondition.builder()
+                .keyword("contract-keyword-video-one")
+                .build()))
+            .assertNext(result -> {
+                assertThat(result.getTotal()).isEqualTo(1);
+                assertThat(result.getItems()).extracting(Subject::getId)
+                    .containsExactly(videoByName.getId());
+            })
+            .verifyComplete();
+
+        StepVerifier.create(subjectService.listEntitiesByCondition(FindSubjectCondition.builder()
+                .keyword("契约关键词")
+                .build()))
+            .assertNext(result -> {
+                assertThat(result.getTotal()).isEqualTo(1);
+                assertThat(result.getItems()).extracting(Subject::getId)
+                    .containsExactly(animeByNameCn.getId());
+            })
+            .verifyComplete();
+
+        StepVerifier.create(subjectService.listEntitiesByCondition(FindSubjectCondition.builder()
+                .keyword("keyword-not-found")
+                .build()))
+            .assertNext(result -> {
+                assertThat(result.getTotal()).isZero();
+                assertThat(result.getItems()).isEmpty();
+            })
+            .verifyComplete();
+
+        StepVerifier.create(subjectService.listEntitiesByCondition(FindSubjectCondition.builder()
+                .type(SubjectType.MUSIC)
+                .types(Set.of(SubjectType.VIDEO))
+                .build()))
+            .assertNext(result -> {
+                assertThat(result.getTotal()).isEqualTo(2);
+                assertThat(result.getItems()).extracting(Subject::getType)
+                    .containsOnly(SubjectType.VIDEO);
+            })
+            .verifyComplete();
+
+        StepVerifier.create(subjectService.listEntitiesByCondition(FindSubjectCondition.builder()
+                .types(Set.of(SubjectType.VIDEO, SubjectType.ANIME))
+                .build()))
+            .assertNext(result -> {
+                assertThat(result.getTotal()).isEqualTo(3);
+                assertThat(result.getItems()).extracting(Subject::getType)
+                    .containsOnly(SubjectType.VIDEO, SubjectType.ANIME);
+            })
+            .verifyComplete();
+
+        StepVerifier.create(subjectService.listEntitiesByCondition(FindSubjectCondition.builder()
+                .page(1)
+                .size(1)
+                .keyword("contract-keyword")
+                .types(Set.of(SubjectType.VIDEO, SubjectType.ANIME, SubjectType.REAL))
+                .nsfw(false)
+                .build()))
+            .assertNext(result -> {
+                assertThat(result.getTotal()).isEqualTo(2);
+                assertThat(result.getItems()).hasSize(1);
+                assertThat(result.getItems()).extracting(Subject::getType)
+                    .containsOnly(SubjectType.VIDEO);
+                assertThat(result.getItems()).extracting(Subject::getNsfw)
+                    .containsOnly(false);
+            })
+            .verifyComplete();
+    }
+
+    private static Subject createSearchSubject(String name, String nameCn, SubjectType type,
+                                               boolean nsfw) {
+        Subject subject = createSubjectInstance();
+        subject.setName(name);
+        subject.setNameCn(nameCn);
+        subject.setType(type);
+        subject.setNsfw(nsfw);
+        return subject;
     }
 
     @Test

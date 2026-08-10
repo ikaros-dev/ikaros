@@ -61,6 +61,7 @@ export const episodeGroupLabelMap = new Map([
 ]);
 
 export const subjectTypes = [
+	'VIDEO',
 	'ANIME',
 	'COMIC',
 	'GAME',
@@ -71,6 +72,7 @@ export const subjectTypes = [
 ];
 
 export const subjectTypeAliasMap = new Map([
+	['VIDEO', '未分类视频'],
 	['ANIME', '动漫'],
 	['COMIC', '漫画'],
 	['GAME', '游戏'],
@@ -107,6 +109,7 @@ export const subjectRelationTypes = [
 	'MUSIC',
 	'NOVEL',
 	'REAL',
+	'VIDEO',
 	'BEFORE',
 	'AFTER',
 	'SAME_WORLDVIEW',

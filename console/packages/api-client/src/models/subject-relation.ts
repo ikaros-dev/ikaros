@@ -46,6 +46,7 @@ export const SubjectRelationRelationTypeEnum = {
   Music: "MUSIC",
   Novel: "NOVEL",
   Real: "REAL",
+  Video: "VIDEO",
   Before: "BEFORE",
   After: "AFTER",
   SameWorldview: "SAME_WORLDVIEW",

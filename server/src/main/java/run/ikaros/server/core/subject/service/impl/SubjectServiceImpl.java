@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -308,8 +309,11 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         String nameLike = "%" + name + "%";
         String nameCn = condition.getNameCn();
         String nameCnLike = "%" + nameCn + "%";
+        String keyword = condition.getKeyword();
+        String keywordLike = "%" + keyword + "%";
         Boolean nsfw = condition.getNsfw();
         final SubjectType type = condition.getType();
+        final Set<SubjectType> types = condition.getTypes();
         final String time = condition.getTime();
         final Boolean airTimeDesc = condition.getAirTimeDesc();
         final Boolean updateTimeDesc = condition.getUpdateTimeDesc();
@@ -330,7 +334,14 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         if (StringUtils.isNotBlank(nameCn)) {
             criteria = criteria.and("name_cn").like(nameCnLike);
         }
-        if (!Objects.isNull(type)) {
+        if (StringUtils.isNotBlank(keyword)) {
+            Criteria keywordCriteria = Criteria.where("name").like(keywordLike)
+                .or(Criteria.where("name_cn").like(keywordLike));
+            criteria = criteria.and(keywordCriteria);
+        }
+        if (Objects.nonNull(types) && !types.isEmpty()) {
+            criteria = criteria.and("type").in(types);
+        } else if (Objects.nonNull(type)) {
             criteria = criteria.and("type").is(type);
         }
 
@@ -376,6 +387,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             }
         }
 
+        final Query countQuery = Query.query(criteria);
         Query query = Query.query(criteria);
 
         if (Objects.nonNull(updateTimeDesc) && updateTimeDesc) {
@@ -396,7 +408,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .with(pageRequest);
 
         Flux<SubjectEntity> subjectEntityFlux = template.select(query, SubjectEntity.class);
-        Mono<Long> countMono = template.count(query, SubjectEntity.class);
+        Mono<Long> countMono = template.count(countQuery, SubjectEntity.class);
 
         return subjectEntityFlux.map(BaseEntity::getId)
             .flatMap(subjectRepository::findById)
