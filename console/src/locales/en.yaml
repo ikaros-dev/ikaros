@@ -102,11 +102,31 @@ module:
   dashboard:
     title: Dashboard
     sidebar: Dashboard
+    loading: Loading dashboard data
+    error: Failed to load dashboard data
+    retry: Retry
     label:
       attachment: Attachments
       subject: Subjects
+      video: Videos
+      music: Music
+      image: Images
       collection: Collections
       doing: Doings
+    guide:
+      empty:
+        title: Start managing your content
+        description: Add a file source before importing media
+      addSource: Add file source
+      import:
+        title: File source ready
+        description: Choose a content type to start importing
+      content:
+        description: Recent actions
+        sources: File sources
+        videos: Videos
+        music: Music
+        images: Images
   user:
     title: User
     sidebar: User

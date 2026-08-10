@@ -102,11 +102,31 @@ module:
   dashboard:
     title: 仪表板
     sidebar: 仪表板
+    loading: 正在加载仪表板数据
+    error: 仪表板数据加载失败
+    retry: 重试
     label:
       attachment: 附件
       subject: 条目
+      video: 视频
+      music: 音乐
+      image: 图片
       collection: 收藏
       doing: 在看
+    guide:
+      empty:
+        title: 开始管理你的内容
+        description: 先添加一个文件源，再导入媒体内容
+      addSource: 添加文件源
+      import:
+        title: 文件源已就绪
+        description: 选择内容类型开始导入
+      content:
+        description: 最近操作
+        sources: 文件源
+        videos: 视频
+        music: 音乐
+        images: 图片
   user:
     title: 用户
     sidebar: 用户
