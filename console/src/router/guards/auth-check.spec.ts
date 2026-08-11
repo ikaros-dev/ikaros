@@ -4,6 +4,7 @@ import type { NavigationGuardNext, Router } from 'vue-router';
 const guardMocks = vi.hoisted(() => ({
 	setApiClientJwtToken: vi.fn(),
 	useUserStore: vi.fn(),
+	resolve: vi.fn(),
 }));
 
 vi.mock('@/stores/user', () => ({ useUserStore: guardMocks.useUserStore }));
@@ -11,7 +12,7 @@ vi.mock('@/utils/api-client', () => ({
 	setApiClientJwtToken: guardMocks.setApiClientJwtToken,
 }));
 
-import { setupAuthCheckGuard } from './auth-check';
+import { resolvePostLoginRoute, setupAuthCheckGuard } from './auth-check';
 
 type Guard = (
 	to: Parameters<NavigationGuardNext>[0],
@@ -25,6 +26,7 @@ const installGuard = () => {
 		beforeEach: vi.fn((registeredGuard: Guard) => {
 			guard = registeredGuard;
 		}),
+		resolve: guardMocks.resolve,
 	};
 	setupAuthCheckGuard(router as unknown as Router);
 	return guard as Exclude<Guard, undefined>;
@@ -33,6 +35,11 @@ const installGuard = () => {
 describe('身份认证路由守卫', () => {
 	beforeEach(() => {
 		window.history.replaceState({}, '', '/console/#/subjects');
+		guardMocks.resolve.mockImplementation((target: string) => ({
+			name: target.startsWith('/attachments')
+				? 'router.title.notfound'
+				: 'ResolvedRoute',
+		}));
 	});
 
 	it('匿名用户可以访问白名单路由', () => {
@@ -58,7 +65,7 @@ describe('身份认证路由守卫', () => {
 		});
 	});
 
-	it('已登录用户访问登录页时跳转原目标', () => {
+	it('已登录用户访问登录页时恢复合法的控制台目标', () => {
 		guardMocks.useUserStore.mockReturnValue({ isAnonymous: false });
 		const guard = installGuard();
 		const next = vi.fn();
@@ -72,9 +79,30 @@ describe('身份认证路由守卫', () => {
 			next
 		);
 
-		expect(next).toHaveBeenCalledWith({
-			name: 'Redirect',
-			query: { redirect_uri: '/console/#/subjects' },
+		expect(guardMocks.resolve).toHaveBeenCalledWith('/subjects');
+		expect(next).toHaveBeenCalledWith('/subjects');
+	});
+
+	it('已失效的登录恢复地址回退到仪表板', () => {
+		const router = { resolve: guardMocks.resolve } as unknown as Router;
+		const redirectUri = `${window.location.origin}/console/#/attachments?name=&parentId=019b715b-08c7-7509-ab14-2abe47f440f3`;
+
+		expect(resolvePostLoginRoute(router, redirectUri)).toEqual({
+			name: 'Dashboard',
+		});
+		expect(guardMocks.resolve).toHaveBeenCalledWith(
+			'/attachments?name=&parentId=019b715b-08c7-7509-ab14-2abe47f440f3'
+		);
+	});
+
+	it('非同源或非控制台 Hash 地址回退到仪表板', () => {
+		const router = { resolve: guardMocks.resolve } as unknown as Router;
+
+		expect(resolvePostLoginRoute(router, 'https://example.com/#/subjects')).toEqual({
+			name: 'Dashboard',
+		});
+		expect(resolvePostLoginRoute(router, '/console/subjects')).toEqual({
+			name: 'Dashboard',
 		});
 	});
 

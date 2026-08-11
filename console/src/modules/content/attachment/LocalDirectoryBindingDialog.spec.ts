@@ -24,7 +24,8 @@ const mountDialog = (props: Record<string, unknown> = {}) =>
 		global: {
 			stubs: {
 				ElDialog: { template: '<div><slot/><slot name="footer"/></div>' },
-				AttachmentDirectorySelectDialog: true,
+				FileSourceManagerDialog: true,
+				ScanDirectorySelectDialog: true,
 			},
 		},
 	});
@@ -61,6 +62,19 @@ describe('统一显式扫描导入对话框', () => {
 		expect(mocks.preview).toHaveBeenCalledWith({
 			localScanPreviewRequest: { directory_id: 'dir-1', mode: 'AUDIO' },
 		});
+	});
+
+	it('没有文件源时可以进入管理弹窗并在变更后返回目录选择', () => {
+		const state = stateOf(mountDialog());
+		state.directorySelectVisible = true;
+		state.manageSources();
+
+		expect(state.directorySelectVisible).toBe(false);
+		expect(state.fileSourceManagerVisible).toBe(true);
+
+		state.onFileSourcesChanged();
+		expect(state.fileSourceManagerVisible).toBe(false);
+		expect(state.directorySelectVisible).toBe(true);
 	});
 
 	it('搜索已有条目使用 keyword/types 且按模式收紧类型', async () => {

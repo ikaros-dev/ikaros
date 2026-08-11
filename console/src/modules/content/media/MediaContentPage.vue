@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 import type { Subject } from '@runikaros/api-client';
 import { ElButton, ElCol, ElRow } from 'element-plus';
 import ContentBrowser from '@/components/modules/content/ContentBrowser.vue';
@@ -7,6 +7,9 @@ import SubjectCardLink from '@/components/modules/content/subject/SubjectCardLin
 import { apiClient } from '@/utils/api-client';
 import { base64Encode } from '@/utils/string-util';
 import LocalDirectoryBindingDialog from '../attachment/LocalDirectoryBindingDialog.vue';
+import ScanDirectorySelectDialog from '../attachment/ScanDirectorySelectDialog.vue';
+import FileSourceManagerDialog from '../attachment/FileSourceManagerDialog.vue';
+import { FolderOpened, Search } from '@element-plus/icons-vue';
 
 type ScanMode = 'EPISODE' | 'AUDIO' | 'IMAGE';
 
@@ -28,6 +31,11 @@ const page = ref(1);
 const size = ref(12);
 const total = ref(0);
 const importVisible = ref(false);
+const directorySelectVisible = ref(false);
+const fileSourceManagerVisible = ref(false);
+const selectedDirectoryId = ref('');
+const selectedDirectoryPath = ref('');
+const bindingDialogRef = ref<InstanceType<typeof LocalDirectoryBindingDialog>>();
 const pageSizes = [12, 24, 48, 96];
 
 const extractErrorMessage = (requestError: unknown) => {
@@ -85,6 +93,22 @@ const changeSize = async (value: number) => {
 
 const openImport = () => {
 	importVisible.value = true;
+	void nextTick(() => bindingDialogRef.value?.scan());
+};
+
+const selectDirectory = (directoryId: string, path: string) => {
+	selectedDirectoryId.value = directoryId;
+	selectedDirectoryPath.value = path;
+};
+
+const manageSources = () => {
+	directorySelectVisible.value = false;
+	fileSourceManagerVisible.value = true;
+};
+
+const onFileSourcesChanged = () => {
+	fileSourceManagerVisible.value = false;
+	directorySelectVisible.value = true;
 };
 
 const detailPath = (subjectId: string) => `${props.detailRoute}/${subjectId}`;
@@ -112,14 +136,20 @@ onMounted(fetchSubjects);
 		@update:size="changeSize"
 	>
 		<template #actions>
-			<el-button type="primary" @click="openImport">
-				{{ $t('module.media.import') }}
+			<el-button :icon="FolderOpened" @click="directorySelectVisible = true">
+				{{ selectedDirectoryPath || $t('module.attachment.bind.local.directory.select') }}
+			</el-button>
+			<el-button
+				type="primary"
+				:icon="Search"
+				:disabled="!selectedDirectoryId"
+				@click="openImport"
+			>
+				{{ $t('module.attachment.bind.local.preview.action') }}
 			</el-button>
 		</template>
 		<template #empty-actions>
-			<el-button type="primary" @click="openImport">
-				{{ $t('module.media.import') }}
-			</el-button>
+			<span />
 		</template>
 
 		<el-row :gutter="20" class="media-content-grid">
@@ -145,9 +175,21 @@ onMounted(fetchSubjects);
 	</ContentBrowser>
 
 	<LocalDirectoryBindingDialog
+		ref="bindingDialogRef"
 		v-model:visible="importVisible"
+		:directory-id="selectedDirectoryId"
 		:mode="scanMode"
+		hide-setup-controls
 		@confirmed="fetchSubjects"
+	/>
+	<ScanDirectorySelectDialog
+		v-model:visible="directorySelectVisible"
+		@selected="selectDirectory"
+		@manage-sources="manageSources"
+	/>
+	<FileSourceManagerDialog
+		v-model:visible="fileSourceManagerVisible"
+		@changed="onFileSourcesChanged"
 	/>
 </template>
 

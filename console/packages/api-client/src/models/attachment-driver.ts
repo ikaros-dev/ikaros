@@ -136,7 +136,6 @@ export interface AttachmentDriver {
 
 export const AttachmentDriverTypeEnum = {
   Local: "LOCAL",
-  Webdav: "WEBDAV",
   Custom: "CUSTOM",
 } as const;
 

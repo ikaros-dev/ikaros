@@ -125,7 +125,7 @@ ikaros
 | ADR-05 搜索 | Lucene + IKAnalyzer（中文分词） | 毫秒级全文检索，索引落盘工作目录，支持重建 |
 | ADR-06 缓存 | 注解切面（Mono/Flux Cacheable/Evict）+ 内存/Redis 可切换 | 对业务代码侵入小，可开关（ikaros.cache.enable） |
 | ADR-07 ID 生成 | UUID v7（时间有序）为主键默认值 | 分布式友好、索引性能优于 UUID v4 |
-| ADR-08 附件驱动 | Fetcher 扩展点 + 挂载服务 | 本地/WebDAV/插件自定义统一抽象，安全校验集中 |
+| ADR-08 附件驱动 | Fetcher 扩展点 + 挂载服务 | 本地与插件自定义驱动统一抽象，安全校验集中 |
 | ADR-09 授权模型 | 权限目标字符串（Authority Target）+ 角色绑定 | 细粒度到接口路径，MASTER 超管兜底 |
 
 ---

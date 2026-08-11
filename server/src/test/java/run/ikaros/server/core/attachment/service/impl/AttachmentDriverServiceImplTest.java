@@ -1,6 +1,7 @@
 package run.ikaros.server.core.attachment.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -25,10 +26,12 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.attachment.Attachment;
+import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.core.attachment.AttachmentDriver;
 import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.exception.AttachmentNotFoundException;
+import run.ikaros.api.core.attachment.exception.NoAvailableAttDriverFetcherException;
 import run.ikaros.api.core.media.MediaFileDetectionResult;
 import run.ikaros.api.core.media.MediaFileFormat;
 import run.ikaros.api.store.enums.AttachmentDriverType;
@@ -171,6 +174,43 @@ class AttachmentDriverServiceImplTest {
         verify(attachmentSha1Service).calculateAsync(
             eq(fetcher), argThat(attachments ->
                 attachments.equals(List.of(firstFile, secondFile))));
+    }
+
+    @Test
+    void refreshMountRootKeepsDirectoriesAndRemovesFiles() {
+        Attachment mountRoot = Attachment
+            .builder()
+            .id(parentId)
+            .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .driverId(driverId)
+            .type(AttachmentType.Driver_Directory)
+            .fsPath(remotePath)
+            .build();
+        Attachment rootFile = scannedFile("D:/media/root.mkv", 100L,
+            LocalDateTime.of(2026, 8, 11, 12, 0));
+        Attachment rootDirectory = Attachment
+            .builder()
+            .parentId(parentId)
+            .driverId(driverId)
+            .type(AttachmentType.Driver_Directory)
+            .name("series")
+            .fsPath("D:/media/series")
+            .build();
+        AttachmentEntity storedRootFile = storedFile(rootFile,
+            rootFile.getModifiedTime(), "stored-sha1");
+        when(attachmentService.findById(parentId)).thenReturn(Mono.just(mountRoot));
+        when(fetcher.getChildren(driverId, parentId, remotePath))
+            .thenReturn(Flux.just(rootFile, rootDirectory));
+        when(attachmentRepository.findAllByParentIdAndDriverId(parentId, driverId))
+            .thenReturn(Flux.just(storedRootFile));
+
+        StepVerifier.create(service.refresh(parentId)).verifyComplete();
+
+        verify(attachmentService).save(rootDirectory);
+        verify(attachmentService, never()).save(rootFile);
+        verify(contentInspectionService, never()).inspect(rootFile, fetcher);
+        verify(attachmentService).removeByIdOnlyRecords(storedRootFile.getId());
+        verify(attachmentSha1Service).calculateAsync(fetcher, List.of());
     }
 
     @Test
@@ -354,6 +394,53 @@ class AttachmentDriverServiceImplTest {
 
         verify(eventPublisher, never()).publishEvent(
             any(AttachmentDriverEnableEvent.class));
+    }
+
+    @Test
+    void saveNormalizesLocalDriverImplementationAndTokens() {
+        AttachmentDriver newDriver = AttachmentDriver
+            .builder()
+            .type(AttachmentDriverType.LOCAL)
+            .name("IGNORED")
+            .mountName("media")
+            .remotePath(remotePath)
+            .accessToken("ignored-access")
+            .refreshToken("ignored-refresh")
+            .build();
+        when(driverRepository.findByTypeAndNameAndMountName(
+            AttachmentDriverType.LOCAL.name(),
+            LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME,
+            "media")).thenReturn(Mono.empty());
+        when(driverRepository.insert(any(AttachmentDriverEntity.class)))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier
+            .create(service.save(newDriver))
+            .assertNext(savedDriver -> {
+                assertThat(savedDriver.getName())
+                    .isEqualTo(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME);
+                assertThat(savedDriver.getAccessToken()).isNull();
+                assertThat(savedDriver.getRefreshToken()).isNull();
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    void saveRejectsCustomDriverWithoutMatchingPluginFetcher() {
+        AttachmentDriver customDriver = AttachmentDriver
+            .builder()
+            .type(AttachmentDriverType.CUSTOM)
+            .name("MISSING")
+            .mountName("cloud")
+            .remotePath("root")
+            .build();
+
+        assertThatThrownBy(() -> service.save(customDriver))
+            .isInstanceOf(NoAvailableAttDriverFetcherException.class)
+            .hasMessageContaining("CUSTOM")
+            .hasMessageContaining("MISSING");
+
+        verify(driverRepository, never()).insert(any(AttachmentDriverEntity.class));
     }
 
     @Test

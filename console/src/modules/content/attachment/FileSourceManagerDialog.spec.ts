@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
 	list: vi.fn(),
+	listFetchers: vi.fn(),
 	save: vi.fn(),
 	enable: vi.fn(),
 	disable: vi.fn(),
@@ -17,6 +18,7 @@ vi.mock('@/utils/api-client', () => ({
 	apiClient: {
 		attachmentDriver: {
 			listDriversByCondition: mocks.list,
+			listDriversFetchers: mocks.listFetchers,
 			saveAttachmentDriver: mocks.save,
 			enableDriver1: mocks.enable,
 			enableDriver: mocks.disable,
@@ -53,6 +55,17 @@ const localDriver = {
 	comment: '本地媒体',
 	enable: true,
 };
+const customDriver = {
+	id: 'source-2',
+	type: 'CUSTOM' as const,
+	name: 'ALIYUN',
+	mount_name: '云盘',
+	remote_path: 'root',
+	access_token: 'access',
+	refresh_token: 'refresh',
+	comment: '远端媒体',
+	enable: true,
+};
 
 const FormStub = defineComponent({
 	setup(_, { expose, slots }) {
@@ -64,6 +77,12 @@ const FormStub = defineComponent({
 	},
 });
 
+const TableColumnStub = defineComponent({
+	setup(_, { slots }) {
+		return () => h('div', slots.default?.({ row: localDriver }));
+	},
+});
+
 const mountDialog = (visible = false) =>
 	shallowMount(FileSourceManagerDialog, {
 		props: { visible },
@@ -72,7 +91,10 @@ const mountDialog = (visible = false) =>
 				loading: () => undefined,
 			},
 			stubs: {
-				ElDialog: { template: '<div><slot/><slot name="footer"/></div>' },
+				ElDialog: {
+					props: ['width'],
+					template: '<div :data-width="width"><slot/></div>',
+				},
 				ElAlert: { template: '<div><slot/></div>' },
 				ElButton: {
 					template: '<button @click="$emit(\'click\')"><slot/></button>',
@@ -80,8 +102,12 @@ const mountDialog = (visible = false) =>
 				ElForm: FormStub,
 				ElFormItem: { template: '<label><slot/></label>' },
 				ElInput: true,
+				ElOption: true,
+				ElRadioButton: { template: '<span><slot/></span>' },
+				ElRadioGroup: { template: '<div><slot/></div>' },
+				ElSelect: { template: '<div><slot/></div>' },
 				ElTable: { template: '<div><slot/></div>' },
-				ElTableColumn: true,
+				ElTableColumn: TableColumnStub,
 				ElSwitch: true,
 			},
 		},
@@ -93,12 +119,10 @@ const stateOf = (wrapper: ReturnType<typeof mountDialog>) =>
 describe('文件源管理对话框', () => {
 	beforeEach(() => {
 		mocks.list.mockResolvedValue({
-			data: {
-				items: [
-					localDriver,
-					{ id: 'custom-1', type: 'CUSTOM', name: 'PLUGIN' },
-				],
-			},
+			data: { items: [localDriver, customDriver] },
+		});
+		mocks.listFetchers.mockResolvedValue({
+			data: [{ type: 'LOCAL', name: 'DISK' }],
 		});
 		mocks.save.mockResolvedValue({ data: localDriver });
 		mocks.enable.mockResolvedValue({});
@@ -107,25 +131,93 @@ describe('文件源管理对话框', () => {
 		mocks.confirm.mockResolvedValue('confirm');
 	});
 
-	it('打开时加载并仅展示本地文件源', async () => {
+	it('使用视口内自适应宽度和双栏内容容器', () => {
+		const wrapper = mountDialog();
+
+		expect(wrapper.attributes('data-width')).toBe(
+			'min(1100px, calc(100vw - 32px))'
+		);
+		expect(wrapper.find('.manager-layout').exists()).toBe(true);
+		expect(wrapper.find('.source-form-panel').exists()).toBe(true);
+		expect(wrapper.find('.source-list-panel').exists()).toBe(true);
+	});
+
+	it('文件源名称和服务器路径使用软换行单元格', () => {
+		const wrapper = mountDialog();
+		const cells = wrapper.findAll('.source-cell-text');
+
+		expect(cells).toHaveLength(2);
+		expect(cells[0].text()).toBe(localDriver.mount_name);
+		expect(cells[1].text()).toBe(localDriver.remote_path);
+	});
+
+	it('打开时加载全部文件源和可用驱动实现', async () => {
 		const wrapper = mountDialog();
 		await wrapper.setProps({ visible: true });
 		await flushPromises();
 
 		expect(mocks.list).toHaveBeenCalledWith({ page: 1, size: 1000 });
-		expect(stateOf(wrapper).drivers).toEqual([localDriver]);
+		expect(mocks.listFetchers).toHaveBeenCalledOnce();
+		expect(stateOf(wrapper).drivers).toEqual([localDriver, customDriver]);
 	});
 
-	it('新建后使用保存响应中的标识启用并发出变更事件', async () => {
-		const created = { ...localDriver, id: 'created-1', enable: false };
-		mocks.save.mockResolvedValue({ data: created });
+	it('没有自定义驱动插件时隐藏类型并固定为本地驱动', async () => {
+		const wrapper = mountDialog(true);
+		await flushPromises();
+		const state = stateOf(wrapper);
+
+		expect(state.customAvailable).toBe(false);
+		expect(state.form.type).toBe('LOCAL');
+		expect(state.form.name).toBe('DISK');
+		expect(wrapper.findComponent({ name: 'ElRadioGroup' }).exists()).toBe(
+			false
+		);
+	});
+
+	it('插件提供自定义驱动时显示类型并保存插件字段', async () => {
+		mocks.listFetchers.mockResolvedValue({
+			data: [
+				{ type: 'LOCAL', name: 'DISK' },
+				{ type: 'CUSTOM', name: 'ALIYUN' },
+			],
+		});
+		mocks.save.mockResolvedValue({ data: customDriver });
+		const wrapper = mountDialog(true);
+		await flushPromises();
+		const state = stateOf(wrapper);
+
+		expect(state.customAvailable).toBe(true);
+		state.form.type = 'CUSTOM';
+		state.changeType();
+		state.form.mount_name = '云盘';
+		state.form.remote_path = 'root';
+		state.form.access_token = 'access';
+		state.form.refresh_token = 'refresh';
+		state.form.comment = '远端媒体';
+		await nextTick();
+		await state.saveForm();
+
+		expect(mocks.save).toHaveBeenCalledWith({
+			attachmentDriver: {
+				type: 'CUSTOM',
+				name: 'ALIYUN',
+				mount_name: '云盘',
+				remote_path: 'root',
+				access_token: 'access',
+				refresh_token: 'refresh',
+				comment: '远端媒体',
+			},
+		});
+	});
+
+	it('本地驱动保存时不提交自定义驱动字段', async () => {
 		const wrapper = mountDialog();
 		const state = stateOf(wrapper);
-		state.openCreate();
-		await nextTick();
 		state.form.mount_name = '新文件源';
 		state.form.remote_path = '/srv/media';
-		state.form.comment = '备注';
+		state.form.access_token = 'ignored-access';
+		state.form.refresh_token = 'ignored-refresh';
+		await nextTick();
 
 		await state.saveForm();
 
@@ -135,27 +227,32 @@ describe('文件源管理对话框', () => {
 				name: 'DISK',
 				mount_name: '新文件源',
 				remote_path: '/srv/media',
-				comment: '备注',
+				access_token: undefined,
+				refresh_token: undefined,
+				comment: '',
 			},
 		});
-		expect(mocks.enable).toHaveBeenCalledWith({ id: 'created-1' });
-		expect(wrapper.emitted('changed')).toHaveLength(1);
+		expect(mocks.enable).toHaveBeenCalledWith({ id: 'source-1' });
 	});
 
-	it('编辑时保留启用状态和内部字段', async () => {
+	it('编辑时保留内部字段并复用左侧表单', async () => {
 		const wrapper = mountDialog();
 		const state = stateOf(wrapper);
 		state.openEdit(localDriver);
-		await nextTick();
 		state.form.remote_path = '/new-path';
+		await nextTick();
 
 		await state.saveForm();
 
 		expect(mocks.save).toHaveBeenCalledWith({
-			attachmentDriver: { ...localDriver, remote_path: '/new-path' },
+			attachmentDriver: {
+				...localDriver,
+				remote_path: '/new-path',
+				access_token: undefined,
+				refresh_token: undefined,
+			},
 		});
 		expect(mocks.enable).not.toHaveBeenCalled();
-		expect(wrapper.emitted('changed')).toHaveLength(1);
 	});
 
 	it('分别调用启用和停用接口', async () => {
@@ -216,38 +313,6 @@ describe('文件源管理对话框', () => {
 
 		expect(mocks.messageError).toHaveBeenCalledWith(
 			expect.stringContaining(errorKey)
-		);
-		expect(wrapper.emitted('changed')).toBeUndefined();
-	});
-
-	it('保存响应缺少标识时不启用且不报告完整成功', async () => {
-		mocks.save.mockResolvedValue({ data: { ...localDriver, id: undefined } });
-		const wrapper = mountDialog();
-		const state = stateOf(wrapper);
-		state.openCreate();
-		await nextTick();
-
-		await state.saveForm();
-
-		expect(mocks.enable).not.toHaveBeenCalled();
-		expect(mocks.messageError).toHaveBeenCalledWith(
-			expect.stringContaining('errors.missing-id')
-		);
-		expect(wrapper.emitted('changed')).toBeUndefined();
-	});
-
-	it('新建保存后启用失败时刷新列表且不报告完整成功', async () => {
-		mocks.enable.mockRejectedValueOnce(new Error('enable failed'));
-		const wrapper = mountDialog();
-		const state = stateOf(wrapper);
-		state.openCreate();
-		await nextTick();
-
-		await state.saveForm();
-
-		expect(mocks.list).toHaveBeenCalledTimes(1);
-		expect(mocks.messageError).toHaveBeenCalledWith(
-			expect.stringContaining('errors.enable-after-save')
 		);
 		expect(wrapper.emitted('changed')).toBeUndefined();
 	});

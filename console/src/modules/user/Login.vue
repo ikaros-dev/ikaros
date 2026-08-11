@@ -1,13 +1,26 @@
 <script setup lang="ts">
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElRadio, ElRadioGroup } from 'element-plus';
 import { AxiosError } from 'axios';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
+import { useLayoutStore } from '@/stores/layout';
+import { changeI18nLocal, locales } from '@/locales';
 import { randomUUID } from '@/utils/id';
 import { onMounted, ref, computed } from 'vue';
-import LanguageSelect from '@/layouts/components/LanguageSelect.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const layoutStore = useLayoutStore();
+const languages = locales.filter((language) => language.name);
+const selectedLanguage = ref(layoutStore.i18nCode || locale.value);
+changeI18nLocal(selectedLanguage.value);
+
+const changeLanguage = (
+	languageCode: string | number | boolean | undefined
+) => {
+	const i18nCode = String(languageCode);
+	changeI18nLocal(i18nCode);
+	layoutStore.setI18nCode(i18nCode);
+};
 
 const step = ref<'credentials' | 'totp'>('credentials');
 
@@ -167,7 +180,19 @@ onMounted(() => {
 					</div>
 
 					<div class="m3-login__actions">
-						<LanguageSelect />
+						<el-radio-group
+							v-model="selectedLanguage"
+							class="m3-language-select"
+							@change="changeLanguage"
+						>
+							<el-radio
+								v-for="language in languages"
+								:key="language.code"
+								:value="language.code"
+							>
+								{{ language.name }}
+							</el-radio>
+						</el-radio-group>
 						<button type="submit" class="m3-btn m3-btn--filled">
 							<span class="m3-btn__content">{{
 								t('module.user.login.button')
@@ -420,8 +445,15 @@ onMounted(() => {
 	gap: 16px;
 }
 
-.m3-login__actions :deep(.lang-select) {
+.m3-language-select {
+	display: flex;
+	align-items: center;
+	gap: 16px;
 	flex-shrink: 0;
+}
+
+:deep(.m3-language-select .el-radio) {
+	margin-right: 0;
 }
 
 /* ========== TOTP Input ========== */

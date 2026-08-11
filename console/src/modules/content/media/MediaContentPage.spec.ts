@@ -1,7 +1,7 @@
 import { flushPromises, shallowMount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ get: vi.fn() }));
+const mocks = vi.hoisted(() => ({ get: vi.fn(), scan: vi.fn() }));
 
 vi.mock('@/utils/api-client', () => ({ apiClient: { get: mocks.get } }));
 vi.mock('@/utils/string-util', () => ({
@@ -43,8 +43,20 @@ const mountPage = (props: Record<string, unknown> = {}) =>
 				},
 				LocalDirectoryBindingDialog: {
 					name: 'LocalDirectoryBindingDialog',
-					props: ['visible', 'mode'],
+					props: ['visible', 'mode', 'directoryId'],
+					setup(_props, { expose }) {
+						expose({ scan: mocks.scan });
+						return {};
+					},
 					template: '<div class="binding-dialog" />',
+				},
+				ScanDirectorySelectDialog: {
+					name: 'ScanDirectorySelectDialog',
+					template: '<div class="directory-dialog" />',
+				},
+				FileSourceManagerDialog: {
+					name: 'FileSourceManagerDialog',
+					template: '<div />',
 				},
 				SubjectCardLink: {
 					name: 'SubjectCardLink',
@@ -141,12 +153,25 @@ describe('共享媒体列表页面', () => {
 		expect(stateOf(wrapper).total).toBe(0);
 	});
 
-	it('导入操作只打开对话框，不自动调用扫描接口', async () => {
+	it('选择目录不扫描，点击开始扫描后才发起扫描', async () => {
 		const wrapper = mountPage();
 		await flushPromises();
-		await wrapper.findComponent({ name: 'ElButton' }).trigger('click');
+		const buttons = wrapper.findAllComponents({ name: 'ElButton' });
+		await buttons[0].trigger('click');
+		expect(stateOf(wrapper).directorySelectVisible).toBe(true);
+		expect(mocks.scan).not.toHaveBeenCalled();
+		wrapper
+			.findComponent({ name: 'ScanDirectorySelectDialog' })
+			.vm.$emit('selected', 'directory-id', '019cc123 根目录 / 动画');
+		await flushPromises();
+		expect(mocks.scan).not.toHaveBeenCalled();
+		await buttons[1].trigger('click');
+		await flushPromises();
 		expect(stateOf(wrapper).importVisible).toBe(true);
-		expect(mocks.get).toHaveBeenCalledTimes(1);
+		expect(mocks.scan).toHaveBeenCalledTimes(1);
+		expect(
+			wrapper.findComponent({ name: 'LocalDirectoryBindingDialog' }).props('directoryId')
+		).toBe('directory-id');
 	});
 
 	it('将卡片链接到传入的详情路由', async () => {

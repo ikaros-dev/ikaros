@@ -84,7 +84,7 @@ describe('Dashboard', () => {
 		expect(push).toHaveBeenCalledWith('/sources');
 	});
 
-	it('有文件无内容时提供三类导入入口', async () => {
+	it('有文件无内容时不显示无效导入引导', async () => {
 		info.mockResolvedValue({
 			data: validInfo({
 				subject: { total: 0, video: 0, anime: 0, real: 0, music: 0, comic: 0 },
@@ -92,22 +92,9 @@ describe('Dashboard', () => {
 		});
 		const wrapper = mountDashboard();
 		await flushPromises();
-		const buttons = wrapper.findAll('button');
-		await buttons[0].trigger('click');
-		await buttons[1].trigger('click');
-		await buttons[2].trigger('click');
-		expect(push).toHaveBeenNthCalledWith(1, {
-			path: '/videos',
-			query: { import: '1' },
-		});
-		expect(push).toHaveBeenNthCalledWith(2, {
-			path: '/music',
-			query: { import: '1' },
-		});
-		expect(push).toHaveBeenNthCalledWith(3, {
-			path: '/images',
-			query: { import: '1' },
-		});
+		expect(wrapper.text()).not.toContain('module.dashboard.guide.import.title');
+		expect(wrapper.findAll('button')).toHaveLength(0);
+		expect(push).not.toHaveBeenCalled();
 	});
 
 	it('接口失败后显示错误并支持重试', async () => {

@@ -77,10 +77,7 @@ const hasSubjects = computed(
 	() => (actuatorInfo.value?.subject.total ?? 0) > 0
 );
 
-const go = (path: string, importMode = false) => {
-	if (importMode) router.push({ path, query: { import: '1' } });
-	else router.push(path);
-};
+const go = (path: string) => router.push(path);
 
 onMounted(fetchActuatorInfo);
 </script>
@@ -164,20 +161,7 @@ onMounted(fetchActuatorInfo);
 					t('module.dashboard.guide.addSource')
 				}}</el-button>
 			</div>
-			<div v-else-if="hasAttachments && !hasSubjects" class="dashboard-guide">
-				<h3>{{ t('module.dashboard.guide.import.title') }}</h3>
-				<p>{{ t('module.dashboard.guide.import.description') }}</p>
-				<el-button @click="go('/videos', true)">{{
-					t('module.dashboard.label.video')
-				}}</el-button>
-				<el-button @click="go('/music', true)">{{
-					t('module.dashboard.label.music')
-				}}</el-button>
-				<el-button @click="go('/images', true)">{{
-					t('module.dashboard.label.image')
-				}}</el-button>
-			</div>
-			<div v-else class="dashboard-guide dashboard-actions">
+			<div v-else-if="hasSubjects" class="dashboard-guide dashboard-actions">
 				<span>{{ t('module.dashboard.guide.content.description') }}</span>
 				<el-button link type="primary" @click="go('/sources')">{{
 					t('module.dashboard.guide.content.sources')
@@ -209,6 +193,7 @@ onMounted(fetchActuatorInfo);
 .dashboard-card-content {
 	display: flex;
 	flex-direction: column;
+	align-items: center;
 	gap: 5px;
 }
 .dashboard-card-content span {

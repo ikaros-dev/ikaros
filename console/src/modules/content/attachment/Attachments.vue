@@ -15,6 +15,7 @@ import {
 	type MediaFileFormatLookup,
 } from '@/utils/media-file-format';
 import ContentBrowser from '@/components/modules/content/ContentBrowser.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import AttachmentDeatilDrawer from './AttachmentDeatilDrawer.vue';
 import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
@@ -44,15 +45,12 @@ import {
 	Position,
 	CopyDocument,
 	Download,
-	Refresh,
-	MoreFilled,
+	Search,
+	Setting,
 } from '@element-plus/icons-vue';
 import {
 	ElInput,
 	ElButton,
-	ElDropdown,
-	ElDropdownItem,
-	ElDropdownMenu,
 	ElIcon,
 	ElBreadcrumb,
 	ElBreadcrumbItem,
@@ -62,6 +60,7 @@ import {
 	ElMessage,
 	ElPopconfirm,
 	ElMessageBox,
+	ElAlert,
 } from 'element-plus';
 import router from '@/router';
 import { getCompleteFileUrl } from '@/utils/url-tuils';
@@ -300,8 +299,16 @@ async function updateBreadcrumbByParentPath(
 			Boolean(att.id && att.parentId)
 		)
 		.map((att) => {
+			const isSystemRoot = att.id === attachmentRootId;
+			const isFileSourceRoot =
+				att.type === AttachmentTypeEnum.DriverDirectory &&
+				att.parentId === attachmentRootId;
 			const path: Path = {
-				name: att.name as string,
+				name: isSystemRoot
+					? '根目录'
+					: isFileSourceRoot
+						? `${(att.driverId || '').slice(0, 8)} 根目录`
+						: (att.name as string),
 				id: att.id,
 				parentId: att.parentId,
 			};
@@ -337,7 +344,7 @@ interface Path {
 
 const paths = ref<Path[]>([
 	{
-		name: '/',
+		name: '根目录',
 		parentId: attachmentRootId,
 		id: attachmentRootId,
 	},
@@ -740,6 +747,9 @@ const isDriverDirectory = computed(
 		currentParentAttachment.value.type === AttachmentTypeEnum.DriverDirectory
 );
 const canWriteCurrentDirectory = computed(() => !isDriverDirectory.value);
+const canUploadCurrentDirectory = computed(
+	() => canWriteCurrentDirectory.value && !isRootDirectory.value
+);
 const canScanCurrentDirectory = computed(
 	() =>
 		isDriverDirectory.value &&
@@ -963,44 +973,33 @@ const onAttachmentDetailDrawerClose = () => {
 	>
 		<template #actions>
 			<el-button
-				v-if="canWriteCurrentDirectory"
+				v-if="canUploadCurrentDirectory"
 				type="primary"
 				:icon="Upload"
 				@click="attachmentUploadDrawerVisible = true"
 			>
 				{{ t('module.attachment.btn.upload') }}
 			</el-button>
-			<el-dropdown trigger="click">
-				<el-button :icon="MoreFilled">
-					{{ t('module.attachment.btn.more') }}
-				</el-button>
-				<template #dropdown>
-					<el-dropdown-menu>
-						<el-dropdown-item
-							v-if="canWriteCurrentDirectory"
-							@click="dialogFolderVisible = true"
-						>
-							{{ t('module.attachment.btn.mkdir') }}
-						</el-dropdown-item>
-						<el-dropdown-item @click="fileSourceManagerVisible = true">
-							{{ t('module.attachment.btn.manage-sources') }}
-						</el-dropdown-item>
-						<el-dropdown-item
-							v-if="canScanCurrentDirectory"
-							@click="openScanDialog"
-						>
-							{{ t('module.attachment.btn.scan') }}
-						</el-dropdown-item>
-					</el-dropdown-menu>
-				</template>
-			</el-dropdown>
 			<el-button
-				circle
-				:icon="Refresh"
-				:loading="refreshButtonLoading"
-				:aria-label="t('module.attachment.btn.refresh')"
-				@click="refreshCurrentDir"
-			/>
+				v-if="canWriteCurrentDirectory"
+				:icon="FolderAdd"
+				@click="dialogFolderVisible = true"
+			>
+				{{ t('module.attachment.btn.mkdir') }}
+			</el-button>
+			<el-button :icon="Setting" @click="fileSourceManagerVisible = true">
+				{{ t('module.attachment.btn.manage-sources') }}
+			</el-button>
+			<el-button
+				v-if="canScanCurrentDirectory"
+				:icon="Search"
+				@click="openScanDialog"
+			>
+				{{ t('module.attachment.btn.scan') }}
+			</el-button>
+			<RefreshButton :loading="refreshButtonLoading" @click="refreshCurrentDir">
+				{{ t('module.attachment.btn.refresh') }}
+			</RefreshButton>
 			<el-button
 				v-if="
 					selectionAttachments.length > 0 &&
@@ -1044,15 +1043,24 @@ const onAttachmentDetailDrawerClose = () => {
 		</template>
 
 		<template #breadcrumb>
-			<div class="attachment-breadcrumb">
-				<span>{{ t('module.attachment.breadcrumb.label') }}</span>
-				<el-breadcrumb separator=">">
-					<el-breadcrumb-item v-for="path in paths" :key="path.id">
-						<el-button link @click="onBreadcrumbClick(path)">
-							{{ path.name }}
-						</el-button>
-					</el-breadcrumb-item>
-				</el-breadcrumb>
+			<div class="attachment-navigation">
+				<div class="attachment-breadcrumb">
+					<span>{{ t('module.attachment.breadcrumb.label') }}</span>
+					<el-breadcrumb separator=">">
+						<el-breadcrumb-item v-for="path in paths" :key="path.id">
+							<el-button link @click="onBreadcrumbClick(path)">
+								{{ path.name }}
+							</el-button>
+						</el-breadcrumb-item>
+					</el-breadcrumb>
+				</div>
+				<el-alert
+					:title="t('module.attachment.browser.refresh-hint')"
+					type="info"
+					show-icon
+					:closable="false"
+					class="attachment-refresh-hint"
+				/>
 			</div>
 		</template>
 
@@ -1060,27 +1068,38 @@ const onAttachmentDetailDrawerClose = () => {
 			<el-button
 				v-if="isRootDirectory && !hasFileSources"
 				type="primary"
+				:icon="Setting"
 				@click="fileSourceManagerVisible = true"
 			>
 				{{ t('module.attachment.btn.add-source') }}
 			</el-button>
 			<template v-else-if="isDriverDirectory">
-				<el-button :icon="Refresh" @click="refreshCurrentDir">
+				<RefreshButton @click="refreshCurrentDir">
 					{{ t('module.attachment.btn.refresh') }}
-				</el-button>
+				</RefreshButton>
 				<el-button
 					v-if="canScanCurrentDirectory"
 					type="primary"
+					:icon="Search"
 					@click="openScanDialog"
 				>
 					{{ t('module.attachment.btn.scan') }}
 				</el-button>
 			</template>
 			<template v-else>
-				<el-button type="primary" @click="attachmentUploadDrawerVisible = true">
+				<el-button
+					v-if="canUploadCurrentDirectory"
+					type="primary"
+					:icon="Upload"
+					@click="attachmentUploadDrawerVisible = true"
+				>
 					{{ t('module.attachment.btn.upload') }}
 				</el-button>
-				<el-button @click="dialogFolderVisible = true">
+				<el-button
+					v-if="canWriteCurrentDirectory"
+					:icon="FolderAdd"
+					@click="dialogFolderVisible = true"
+				>
 					{{ t('module.attachment.btn.mkdir') }}
 				</el-button>
 			</template>
@@ -1097,7 +1116,7 @@ const onAttachmentDetailDrawerClose = () => {
 		>
 			<el-table-column type="selection" width="60" />
 			<!-- <el-table-column prop="id" label="ID" width="60" /> -->
-			<el-table-column prop="name" show-overflow-tooltip>
+			<el-table-column prop="name">
 				<template #header>
 					<button
 						type="button"
@@ -1153,7 +1172,7 @@ const onAttachmentDetailDrawerClose = () => {
 						</span>
 					</el-icon>
 					<!-- &nbsp;&nbsp; -->
-					<span>
+					<span class="attachment-name">
 						{{ scoped.row.name }}
 					</span>
 				</template>
@@ -1203,10 +1222,81 @@ const onAttachmentDetailDrawerClose = () => {
 </template>
 
 <style lang="scss" scoped>
+.attachment-navigation {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
 .attachment-breadcrumb {
 	display: flex;
-	align-items: center;
+	align-items: baseline;
 	gap: 12px;
+	line-height: 24px;
+}
+
+.attachment-breadcrumb > span {
+	flex: none;
+}
+
+:deep(.attachment-breadcrumb .el-breadcrumb) {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	min-width: 0;
+}
+
+:deep(.attachment-breadcrumb .el-breadcrumb__item) {
+	display: flex;
+	align-items: baseline;
+	min-width: 0;
+	max-width: 100%;
+}
+
+:deep(.attachment-breadcrumb .el-breadcrumb__inner) {
+	display: block;
+	min-width: 0;
+	max-width: 100%;
+	line-height: 24px;
+}
+
+:deep(.attachment-breadcrumb .el-breadcrumb__separator) {
+	display: inline-block;
+	line-height: 24px;
+}
+
+.attachment-name {
+	line-height: 24px;
+}
+
+:deep(.attachment-breadcrumb .el-button) {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	min-height: 24px;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	line-height: 24px;
+	white-space: normal;
+	text-align: left;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+:deep(.attachment-breadcrumb .el-button > span) {
+	display: block;
+	line-height: 24px;
+}
+
+.attachment-name {
+	white-space: normal;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+.attachment-refresh-hint {
+	border-radius: 6px;
 }
 
 .batch-delete-button-wrapper {

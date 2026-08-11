@@ -32,7 +32,8 @@ import {
 } from 'element-plus';
 import { apiClient } from '@/utils/api-client';
 import { base64Encode } from '@/utils/string-util';
-import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
+import FileSourceManagerDialog from './FileSourceManagerDialog.vue';
+import ScanDirectorySelectDialog from './ScanDirectorySelectDialog.vue';
 
 type ScanMode = NonNullable<LocalScanPreview['mode']>;
 type SubjectSource = 'existing' | 'new';
@@ -43,6 +44,7 @@ interface Props {
 	directoryId?: string;
 	mode?: ScanMode;
 	workflow?: DirectoryBindingWorkflowEntity;
+	hideSetupControls?: boolean;
 }
 
 interface RescanDetails {
@@ -62,6 +64,7 @@ const { t } = useI18n();
 const unassociatedValue = '__UNASSOCIATED__';
 const selectedDirectoryId = ref('');
 const directorySelectVisible = ref(false);
+const fileSourceManagerVisible = ref(false);
 const selectedMode = ref<ScanMode>(LocalScanPreviewRequestModeEnum.Episode);
 const preview = ref<LocalScanPreview>();
 const previewLoading = ref(false);
@@ -212,6 +215,8 @@ const scan = async () => {
 		previewLoading.value = false;
 	}
 };
+
+defineExpose({ scan });
 
 const searchSubjects = async (keyword: string) => {
 	subjectSearchLoading.value = true;
@@ -380,6 +385,16 @@ const chooseDirectory = (directoryId: string) => {
 	preview.value = undefined;
 	clearAssignments();
 };
+
+const manageSources = () => {
+	directorySelectVisible.value = false;
+	fileSourceManagerVisible.value = true;
+};
+
+const onFileSourcesChanged = () => {
+	fileSourceManagerVisible.value = false;
+	directorySelectVisible.value = true;
+};
 </script>
 
 <template>
@@ -452,7 +467,7 @@ const chooseDirectory = (directoryId: string) => {
 
 		<el-divider v-if="workflow?.id" />
 
-		<section class="local-binding-section">
+		<section v-if="!props.hideSetupControls" class="local-binding-section">
 			<div class="local-binding-section-header">
 				<h3>{{ t('module.attachment.bind.local.preview.title') }}</h3>
 				<el-button
@@ -693,9 +708,14 @@ const chooseDirectory = (directoryId: string) => {
 			</section>
 		</template>
 
-		<AttachmentDirectorySelectDialog
+		<ScanDirectorySelectDialog
 			v-model:visible="directorySelectVisible"
-			@close-with-target-dir-id="chooseDirectory"
+			@selected="chooseDirectory"
+			@manage-sources="manageSources"
+		/>
+		<FileSourceManagerDialog
+			v-model:visible="fileSourceManagerVisible"
+			@changed="onFileSourcesChanged"
 		/>
 
 		<template #footer>

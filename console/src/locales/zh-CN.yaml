@@ -223,6 +223,17 @@ module:
         value: 删除
         confirm: 您当前删除的附件 [{name}] 为目录类型，系统默认会删除目录里的所有内容，您确定要删除吗？
     dialog:
+      scan-directory:
+        title: 选择目录
+        system-root: 根目录
+        source-root: '{id} 根目录'
+        load-error: 目录加载失败
+        refresh-error: 目录刷新失败
+        refresh-hint: 目录内容不会自动更新，请点击刷新获取最新文件夹
+        no-sources: 暂无可用文件源
+        empty: 当前目录没有文件夹
+        manage-sources: 管理文件源
+        select-current: 选择当前目录
       mkdir:
         title: 新建目录
         placeholder: 请输入目录名称，提交后会在当前目录创造子目录。
@@ -392,7 +403,7 @@ module:
     search_input:
       placeholder: 搜索当前目录中的文件和目录，按回车开始搜索
     breadcrumb:
-      label: 路径
+      label: 路径：
     browser:
       error: 加载当前目录失败，请重试
       source-error: 加载文件源失败，请重试
@@ -521,13 +532,18 @@ module:
         enabled: 已启用
         operations: 操作
       fields:
+        type: 类型
+        driver-name: 驱动实现
         name: 名称
         path: 服务器路径
+        access-token: 访问令牌
+        refresh-token: 刷新令牌
         comment: 备注
       actions:
         retry: 重试
         save: 保存
       validation:
+        driver-name: 请选择驱动实现
         mount-name: 请输入文件源名称
         remote-path: 请输入服务器路径
       delete-title: 删除文件源

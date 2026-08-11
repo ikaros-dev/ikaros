@@ -229,6 +229,17 @@ module:
           default, the system deletes all contents in the directory. Are you
           sure you want to delete it?
     dialog:
+      scan-directory:
+        title: Select Directory
+        system-root: Root
+        source-root: '{id} Root'
+        load-error: Failed to load directories
+        refresh-error: Failed to refresh directory
+        refresh-hint: Directory contents are not updated automatically. Refresh to get the latest folders.
+        no-sources: No file sources available
+        empty: No folders in this directory
+        manage-sources: Manage File Sources
+        select-current: Select Current Directory
       mkdir:
         title: Crate new directory
         placeholder: >-
@@ -254,7 +265,7 @@ module:
           colum:
             label:
               name: Name
-              path: Path
+              path: "Path:"
               update-time: UpdateTime
               size: Size
       select:
@@ -268,7 +279,7 @@ module:
           colum:
             label:
               name: Name
-              path: Path
+              path: "Path:"
               update-time: UpdateTime
               size: Size
       relation:
@@ -447,7 +458,7 @@ module:
         type: Type
         size: Size
         updateTime: Update Time
-        path: Path
+        path: "Path:"
         fsPath: File System Path
       descItemValue:
         sha1Calculating: Calculating
@@ -532,13 +543,18 @@ module:
         enabled: Enabled
         operations: Operations
       fields:
+        type: Type
+        driver-name: Driver implementation
         name: Name
         path: Server path
+        access-token: Access token
+        refresh-token: Refresh token
         comment: Notes
       actions:
         retry: Retry
         save: Save
       validation:
+        driver-name: Select a driver implementation
         mount-name: Enter a file source name
         remote-path: Enter a server path
       delete-title: Delete file source

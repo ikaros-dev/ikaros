@@ -34,7 +34,6 @@ export interface AttachmentDriverFetcherVo {
 
 export const AttachmentDriverFetcherVoTypeEnum = {
   Local: "LOCAL",
-  Webdav: "WEBDAV",
   Custom: "CUSTOM",
 } as const;
 

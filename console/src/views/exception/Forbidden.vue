@@ -5,7 +5,7 @@ const { t } = useI18n();
 </script>
 
 <template>
-	<Exception code="403" :message="t('views.exception.forbidden.message')" />
+	<Exception code="403" :message="t('view.exception.forbidden.message')" />
 </template>
 
 <style lang="scss" scoped></style>

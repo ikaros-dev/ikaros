@@ -174,15 +174,16 @@ public class AttachmentServiceImpl implements AttachmentService {
             .ofNullable(attachment.getParentId())
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID));
         final UUID newParentId = attachment.getParentId();
-        Mono<AttachmentEntity> attachmentEntityMono =
-            Objects.isNull(attachment.getId())
+        Mono<Void> targetDirectoryValidation = AttachmentType.File.equals(attachment.getType())
+            ? validateFileTargetDirectory(newParentId)
+            : Mono.empty();
+        return targetDirectoryValidation
+            .then(Mono.defer(() -> Objects.isNull(attachment.getId())
                 ? copyProperties(attachment, new AttachmentEntity())
                 : repository
                 .findById(attachment.getId())
                 .flatMap(attachmentEntity ->
-                    copyProperties(attachment, attachmentEntity, "parentId"));
-
-        return attachmentEntityMono
+                    copyProperties(attachment, attachmentEntity, "parentId"))))
             .flatMap(attachmentEntity -> updatePathWhenNewParentId(attachmentEntity, newParentId))
             .flatMap(this::saveEntity)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, attachment));
@@ -496,8 +497,9 @@ public class AttachmentServiceImpl implements AttachmentService {
             .orElse(AttachmentConst.ROOT_DIRECTORY_ID);
         AtomicReference<Path> targetPath = new AtomicReference<>();
         AtomicBoolean persisted = new AtomicBoolean();
-        return mediaValidationService
-            .validate(uploadCondition.getDataBufferFlux(), name)
+        return validateFileTargetDirectory(parentId)
+            .then(Mono.defer(() -> mediaValidationService
+            .validate(uploadCondition.getDataBufferFlux(), name))
             .flatMap(validated -> Mono.defer(() -> {
                 Path path = Path.of(FileUtils.buildAppUploadFilePath(
                     ikarosProperties
@@ -540,7 +542,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                 if (!persisted.get()) {
                     deleteFileQuietly(targetPath.get());
                 }
-            });
+            }));
     }
 
     @Override
@@ -667,7 +669,8 @@ public class AttachmentServiceImpl implements AttachmentService {
                 .then(writeFragmentChunk(sessionDir, uploadOffset, content))
                 .thenReturn(session));
         AtomicReference<Path> targetPath = new AtomicReference<>();
-        return sessionMono
+        return validateFileTargetDirectory(resolvedParentId)
+            .then(sessionMono)
             .flatMap(session -> currentFragmentLength(sessionDir)
                 .flatMap(currentLength -> {
                     if (currentLength > uploadLength) {
@@ -1140,6 +1143,24 @@ public class AttachmentServiceImpl implements AttachmentService {
                 }
                 return getValidatedStream(attachment, start, end);
             });
+    }
+
+    /**
+     * 校验文件写入目标，系统总根目录和文件源目录只允许包含文件夹.
+     *
+     * @param parentId 文件目标父目录标识
+     * @return 校验完成信号
+     */
+    private Mono<Void> validateFileTargetDirectory(UUID parentId) {
+        if (AttachmentConst.ROOT_DIRECTORY_ID.equals(parentId)) {
+            return Mono.error(new IllegalArgumentException("根目录只能包含文件夹"));
+        }
+        return repository
+            .findById(parentId)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("目标目录不存在")))
+            .flatMap(parent -> AttachmentType.Driver_Directory.equals(parent.getType())
+                ? Mono.error(new IllegalArgumentException("文件源目录不允许上传或移动文件"))
+                : Mono.empty());
     }
 
     private Mono<AttachmentStreamVo> getValidatedStream(AttachmentEntity attachment,

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
 	AttachmentDriver,
+	AttachmentDriverFetcherVo,
 	AttachmentDriverTypeEnum,
 } from '@runikaros/api-client';
 import { computed, reactive, ref, watch } from 'vue';
@@ -14,9 +15,13 @@ import {
 	ElInput,
 	ElMessage,
 	ElMessageBox,
+	ElRadioButton,
+	ElRadioGroup,
+	ElSelect,
+	ElOption,
+	ElSwitch,
 	ElTable,
 	ElTableColumn,
-	ElSwitch,
 	FormInstance,
 	FormRules,
 } from 'element-plus';
@@ -30,22 +35,66 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const drivers = ref<AttachmentDriver[]>([]);
+const driverFetchers = ref<AttachmentDriverFetcherVo[]>([]);
 const loading = ref(false);
 const errorMessage = ref('');
-const formVisible = ref(false);
 const editingDriver = ref<AttachmentDriver>();
 const formLoading = ref(false);
 const formRef = ref<FormInstance>();
-const form = reactive({ mount_name: '', remote_path: '', comment: '' });
 const operationId = ref<string>();
+type SupportedDriverType =
+	| typeof AttachmentDriverTypeEnum.Local
+	| typeof AttachmentDriverTypeEnum.Custom;
+interface FileSourceForm {
+	type: SupportedDriverType;
+	name: string;
+	mount_name: string;
+	remote_path: string;
+	access_token: string;
+	refresh_token: string;
+	comment: string;
+}
+const form = reactive<FileSourceForm>({
+	type: AttachmentDriverTypeEnum.Local,
+	name: 'DISK',
+	mount_name: '',
+	remote_path: '',
+	access_token: '',
+	refresh_token: '',
+	comment: '',
+});
 
+const customFetchers = computed(() =>
+	driverFetchers.value.filter(
+		(fetcher) =>
+			fetcher.type === AttachmentDriverTypeEnum.Custom && fetcher.name
+	)
+);
+const customAvailable = computed(() => customFetchers.value.length > 0);
+const customSelected = computed(
+	() => form.type === AttachmentDriverTypeEnum.Custom
+);
 const formTitle = computed(() =>
 	editingDriver.value
 		? t('module.attachment.file-source.edit-title')
 		: t('module.attachment.file-source.create-title')
 );
+const submitText = computed(() =>
+	editingDriver.value
+		? t('module.attachment.file-source.actions.save')
+		: t('module.attachment.file-source.create')
+);
 
 const formRules = computed<FormRules>(() => ({
+	name: customSelected.value
+		? [
+				{
+					required: true,
+					message: t('module.attachment.file-source.validation.driver-name'),
+					trigger: 'change',
+				},
+			]
+		: [],
 	mount_name: [
 		{
 			required: true,
@@ -62,18 +111,20 @@ const formRules = computed<FormRules>(() => ({
 	],
 }));
 
-const loadDrivers = async () => {
+const loadData = async () => {
 	loading.value = true;
 	errorMessage.value = '';
 	try {
-		const { data } = await apiClient.attachmentDriver.listDriversByCondition({
-			page: 1,
-			size: 1000,
-		});
-		drivers.value = ((data?.items ?? []) as AttachmentDriver[]).filter(
-			(driver) =>
-				driver.type === AttachmentDriverTypeEnum.Local && driver.name === 'DISK'
-		);
+		const [driversResponse, fetchersResponse] = await Promise.all([
+			apiClient.attachmentDriver.listDriversByCondition({
+				page: 1,
+				size: 1000,
+			}),
+			apiClient.attachmentDriver.listDriversFetchers(),
+		]);
+		drivers.value = (driversResponse.data?.items ?? []) as AttachmentDriver[];
+		driverFetchers.value = (fetchersResponse.data ??
+			[]) as AttachmentDriverFetcherVo[];
 	} catch {
 		errorMessage.value = t('module.attachment.file-source.errors.load');
 	} finally {
@@ -82,28 +133,42 @@ const loadDrivers = async () => {
 };
 
 const resetForm = () => {
+	editingDriver.value = undefined;
+	form.type = AttachmentDriverTypeEnum.Local;
+	form.name = 'DISK';
 	form.mount_name = '';
 	form.remote_path = '';
+	form.access_token = '';
+	form.refresh_token = '';
 	form.comment = '';
 	formRef.value?.clearValidate();
 };
 
-const openCreate = () => {
-	editingDriver.value = undefined;
-	resetForm();
-	formVisible.value = true;
-};
-
 const openEdit = (driver: AttachmentDriver) => {
 	editingDriver.value = driver;
+	form.type =
+		driver.type === AttachmentDriverTypeEnum.Custom
+			? AttachmentDriverTypeEnum.Custom
+			: AttachmentDriverTypeEnum.Local;
+	form.name = driver.name ?? '';
 	form.mount_name = driver.mount_name ?? '';
 	form.remote_path = driver.remote_path ?? '';
+	form.access_token = driver.access_token ?? '';
+	form.refresh_token = driver.refresh_token ?? '';
 	form.comment = driver.comment ?? '';
-	formVisible.value = true;
+	formRef.value?.clearValidate();
 };
 
-const closeForm = () => {
-	if (!formLoading.value) formVisible.value = false;
+const changeType = () => {
+	if (form.type === AttachmentDriverTypeEnum.Local) {
+		form.name = 'DISK';
+		form.access_token = '';
+		form.refresh_token = '';
+	} else {
+		form.name =
+			customFetchers.value.length === 1 ? customFetchers.value[0].name! : '';
+	}
+	formRef.value?.clearValidate();
 };
 
 const saveForm = async () => {
@@ -113,20 +178,16 @@ const saveForm = async () => {
 	formLoading.value = true;
 	let savedDriver: AttachmentDriver;
 	try {
-		const driver: AttachmentDriver = editingDriver.value
-			? {
-					...editingDriver.value,
-					mount_name: form.mount_name,
-					remote_path: form.remote_path,
-					comment: form.comment,
-				}
-			: {
-					type: AttachmentDriverTypeEnum.Local,
-					name: 'DISK',
-					mount_name: form.mount_name,
-					remote_path: form.remote_path,
-					comment: form.comment,
-				};
+		const driver: AttachmentDriver = {
+			...(editingDriver.value ?? {}),
+			type: form.type,
+			name: customSelected.value ? form.name : 'DISK',
+			mount_name: form.mount_name,
+			remote_path: form.remote_path,
+			access_token: customSelected.value ? form.access_token : undefined,
+			refresh_token: customSelected.value ? form.refresh_token : undefined,
+			comment: form.comment,
+		};
 		const { data } = await apiClient.attachmentDriver.saveAttachmentDriver({
 			attachmentDriver: driver,
 		});
@@ -145,7 +206,7 @@ const saveForm = async () => {
 		try {
 			await apiClient.attachmentDriver.enableDriver1({ id: savedDriver.id });
 		} catch {
-			await loadDrivers();
+			await loadData();
 			ElMessage.error(
 				t('module.attachment.file-source.errors.enable-after-save')
 			);
@@ -154,8 +215,8 @@ const saveForm = async () => {
 		}
 	}
 	try {
-		formVisible.value = false;
-		await loadDrivers();
+		resetForm();
+		await loadData();
 		ElMessage.success(t('module.attachment.file-source.messages.save-success'));
 		emit('changed');
 	} finally {
@@ -175,11 +236,11 @@ const changeEnabled = async (
 		} else {
 			await apiClient.attachmentDriver.enableDriver({ id: driver.id });
 		}
-		await loadDrivers();
+		await loadData();
 		emit('changed');
 	} catch {
 		ElMessage.error(t('module.attachment.file-source.errors.toggle'));
-		await loadDrivers();
+		await loadData();
 	} finally {
 		operationId.value = undefined;
 	}
@@ -207,7 +268,8 @@ const deleteDriver = async (driver: AttachmentDriver) => {
 		await apiClient.attachmentDriver.deleteAttachmentDriverById({
 			id: driver.id,
 		});
-		await loadDrivers();
+		if (editingDriver.value?.id === driver.id) resetForm();
+		await loadData();
 		emit('changed');
 		ElMessage.success(
 			t('module.attachment.file-source.messages.delete-success')
@@ -222,7 +284,10 @@ const deleteDriver = async (driver: AttachmentDriver) => {
 watch(
 	() => props.visible,
 	(visible) => {
-		if (visible) loadDrivers();
+		if (visible) {
+			resetForm();
+			loadData();
+		}
 	},
 	{ immediate: true }
 );
@@ -232,105 +297,240 @@ watch(
 	<el-dialog
 		:model-value="visible"
 		:title="t('module.attachment.file-source.title')"
-		width="760px"
+		width="min(1100px, calc(100vw - 32px))"
+		class="file-source-dialog"
 		@update:model-value="emit('update:visible', $event)"
 	>
-		<el-alert v-if="errorMessage" :title="errorMessage" type="error" show-icon>
-			<template #default>
-				<el-button link type="danger" @click="loadDrivers">
-					{{ t('module.attachment.file-source.actions.retry') }}
-				</el-button>
-			</template>
-		</el-alert>
-		<el-button type="primary" :loading="loading" @click="openCreate">
-			{{ t('module.attachment.file-source.create') }}
-		</el-button>
-		<el-table v-loading="loading" :data="drivers" class="source-table">
-			<el-table-column
-				prop="mount_name"
-				:label="t('module.attachment.file-source.columns.name')"
-			/>
-			<el-table-column
-				prop="remote_path"
-				:label="t('module.attachment.file-source.columns.path')"
-			/>
-			<el-table-column
-				:label="t('module.attachment.file-source.columns.enabled')"
-				width="100"
-			>
-				<template #default="{ row }">
-					<el-switch
-						v-model="row.enable"
-						:loading="operationId === row.id"
-						:disabled="operationId !== undefined"
-						@change="changeEnabled(row, $event)"
-					/>
-				</template>
-			</el-table-column>
-			<el-table-column
-				:label="t('module.attachment.file-source.columns.operations')"
-				width="180"
-			>
-				<template #default="{ row }">
-					<el-button link type="primary" @click="openEdit(row)">{{
-						t('common.button.edit')
-					}}</el-button>
-					<el-button
-						link
-						type="danger"
-						:loading="operationId === row.id"
-						@click="deleteDriver(row)"
+		<div class="manager-layout">
+			<section class="source-form-panel">
+				<h3 class="panel-title">{{ formTitle }}</h3>
+				<el-form
+					ref="formRef"
+					:model="form"
+					:rules="formRules"
+					label-position="top"
+				>
+					<el-form-item
+						v-if="customAvailable"
+						:label="t('module.attachment.file-source.fields.type')"
 					>
-						{{ t('common.button.delete') }}
+						<el-radio-group v-model="form.type" @change="changeType">
+							<el-radio-button :value="AttachmentDriverTypeEnum.Local">
+								LOCAL
+							</el-radio-button>
+							<el-radio-button :value="AttachmentDriverTypeEnum.Custom">
+								CUSTOM
+							</el-radio-button>
+						</el-radio-group>
+					</el-form-item>
+					<el-form-item
+						v-if="customSelected"
+						:label="t('module.attachment.file-source.fields.driver-name')"
+						prop="name"
+					>
+						<el-select v-model="form.name">
+							<el-option
+								v-for="fetcher in customFetchers"
+								:key="fetcher.name"
+								:label="fetcher.name"
+								:value="fetcher.name"
+							/>
+						</el-select>
+					</el-form-item>
+					<el-form-item
+						:label="t('module.attachment.file-source.fields.name')"
+						prop="mount_name"
+					>
+						<el-input v-model="form.mount_name" />
+					</el-form-item>
+					<el-form-item
+						:label="t('module.attachment.file-source.fields.path')"
+						prop="remote_path"
+					>
+						<el-input v-model="form.remote_path" />
+					</el-form-item>
+					<template v-if="customSelected">
+						<el-form-item
+							:label="t('module.attachment.file-source.fields.access-token')"
+						>
+							<el-input v-model="form.access_token" />
+						</el-form-item>
+						<el-form-item
+							:label="t('module.attachment.file-source.fields.refresh-token')"
+						>
+							<el-input v-model="form.refresh_token" />
+						</el-form-item>
+					</template>
+					<el-form-item
+						:label="t('module.attachment.file-source.fields.comment')"
+					>
+						<el-input v-model="form.comment" type="textarea" />
+					</el-form-item>
+				</el-form>
+				<div class="form-actions">
+					<el-button
+						v-if="editingDriver"
+						:disabled="formLoading"
+						@click="resetForm"
+					>
+						{{ t('common.button.cancel') }}
 					</el-button>
-				</template>
-			</el-table-column>
-		</el-table>
+					<el-button type="primary" :loading="formLoading" @click="saveForm">
+						{{ submitText }}
+					</el-button>
+				</div>
+			</section>
 
-		<el-dialog
-			v-model="formVisible"
-			:title="formTitle"
-			width="520px"
-			append-to-body
-		>
-			<el-form
-				ref="formRef"
-				:model="form"
-				:rules="formRules"
-				label-width="100px"
-			>
-				<el-form-item
-					:label="t('module.attachment.file-source.fields.name')"
-					prop="mount_name"
+			<section class="source-list-panel">
+				<h3 class="panel-title">
+					{{ t('module.attachment.file-source.title') }}
+				</h3>
+				<el-alert
+					v-if="errorMessage"
+					:title="errorMessage"
+					type="error"
+					show-icon
 				>
-					<el-input v-model="form.mount_name" />
-				</el-form-item>
-				<el-form-item
-					:label="t('module.attachment.file-source.fields.path')"
-					prop="remote_path"
-				>
-					<el-input v-model="form.remote_path" />
-				</el-form-item>
-				<el-form-item
-					:label="t('module.attachment.file-source.fields.comment')"
-				>
-					<el-input v-model="form.comment" type="textarea" />
-				</el-form-item>
-			</el-form>
-			<template #footer>
-				<el-button @click="closeForm">{{
-					t('common.button.cancel')
-				}}</el-button>
-				<el-button type="primary" :loading="formLoading" @click="saveForm">
-					{{ t('module.attachment.file-source.actions.save') }}
-				</el-button>
-			</template>
-		</el-dialog>
+					<template #default>
+						<el-button link type="danger" @click="loadData">
+							{{ t('module.attachment.file-source.actions.retry') }}
+						</el-button>
+					</template>
+				</el-alert>
+				<div class="table-scroll">
+					<el-table v-loading="loading" :data="drivers" class="source-table">
+						<el-table-column
+							:label="t('module.attachment.file-source.columns.name')"
+							min-width="140"
+						>
+							<template #default="{ row }">
+								<div class="source-cell-text">{{ row.mount_name }}</div>
+							</template>
+						</el-table-column>
+						<el-table-column
+							:label="t('module.attachment.file-source.columns.path')"
+							min-width="190"
+						>
+							<template #default="{ row }">
+								<div class="source-cell-text">{{ row.remote_path }}</div>
+							</template>
+						</el-table-column>
+						<el-table-column
+							:label="t('module.attachment.file-source.columns.enabled')"
+							width="100"
+						>
+							<template #default="{ row }">
+								<el-switch
+									v-model="row.enable"
+									:loading="operationId === row.id"
+									:disabled="operationId !== undefined"
+									@change="changeEnabled(row, $event)"
+								/>
+							</template>
+						</el-table-column>
+						<el-table-column
+							:label="t('module.attachment.file-source.columns.operations')"
+							width="150"
+						>
+							<template #default="{ row }">
+								<el-button link type="primary" @click="openEdit(row)">
+									{{ t('common.button.edit') }}
+								</el-button>
+								<el-button
+									link
+									type="danger"
+									:loading="operationId === row.id"
+									@click="deleteDriver(row)"
+								>
+									{{ t('common.button.delete') }}
+								</el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</div>
+			</section>
+		</div>
 	</el-dialog>
 </template>
 
 <style scoped>
+:deep(.file-source-dialog .el-dialog__body) {
+	max-height: calc(100vh - 140px);
+	overflow: auto;
+}
+
+.manager-layout {
+	display: grid;
+	grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
+	gap: 24px;
+	align-items: stretch;
+}
+
+.source-form-panel,
+.source-list-panel {
+	min-width: 0;
+	padding: 20px;
+	border: 1px solid var(--el-border-color-lighter);
+	border-radius: 8px;
+}
+
+.source-form-panel {
+	display: flex;
+	flex-direction: column;
+}
+
+.panel-title {
+	margin: 0 0 20px;
+	font-size: 16px;
+}
+
+.form-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: auto;
+	padding-top: 8px;
+}
+
+.table-scroll {
+	width: 100%;
+	overflow-x: auto;
+}
+
 .source-table {
-	margin-top: 16px;
+	min-width: 580px;
+}
+
+.source-cell-text {
+	min-width: 0;
+	white-space: normal;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+@media (max-width: 767px) {
+	:deep(.file-source-dialog) {
+		margin-top: 16px;
+		margin-bottom: 16px;
+	}
+
+	:deep(.file-source-dialog .el-dialog__body) {
+		max-height: calc(100vh - 96px);
+		padding: 12px;
+	}
+
+	.manager-layout {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 16px;
+	}
+
+	.source-form-panel,
+	.source-list-panel {
+		padding: 16px;
+	}
+
+	.form-actions .el-button {
+		flex: 1;
+	}
 }
 </style>
