@@ -90,7 +90,10 @@ const emit = defineEmits<{
 				:description="emptyDescription"
 			>
 				<h2 class="content-browser__empty-title">{{ emptyTitle }}</h2>
-				<div v-if="$slots['empty-actions']" class="content-browser__empty-actions">
+				<div
+					v-if="$slots['empty-actions']"
+					class="content-browser__empty-actions"
+				>
 					<slot name="empty-actions" />
 				</div>
 			</el-empty>

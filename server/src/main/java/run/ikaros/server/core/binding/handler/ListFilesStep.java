@@ -26,7 +26,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 public class ListFilesStep implements DirectoryBindingStep {
 
     private final AttachmentRepository attachmentRepository;
-    /** 对候选附件执行有限前缀真实格式检查。 */
+    /** 对候选附件执行有限前缀真实格式检查. */
     private final AttachmentContentInspectionService contentInspectionService;
 
     public ListFilesStep(AttachmentRepository attachmentRepository,

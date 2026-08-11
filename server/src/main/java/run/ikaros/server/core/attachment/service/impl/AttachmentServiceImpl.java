@@ -105,7 +105,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     private final AttachmentDriverRepository driverRepository;
     private final ExtensionComponentsFinder extensionComponentsFinder;
     /**
-     * 附件名称门禁和有限前缀真实格式验证服务。
+     * 附件名称门禁和有限前缀真实格式验证服务.
      */
     private final AttachmentMediaValidationService mediaValidationService;
 
@@ -960,7 +960,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     /**
-     * 缓存目录内持久化的最小分片验证会话信息。
+     * 缓存目录内持久化的最小分片验证会话信息.
      */
     private record FragmentSession(
         // 已验证的上传文件名。

@@ -33,9 +33,16 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 public class AttachmentRelVideoSubtitleListener {
     private final AttachmentRepository attachmentRepository;
     private final AttachmentRelationRepository attachmentRelationRepository;
-    /** 对视频和字幕候选执行有限前缀真实格式检查。 */
+    /** 对视频和字幕候选执行有限前缀真实格式检查. */
     private final AttachmentContentInspectionService contentInspectionService;
 
+    /**
+     * 创建视频字幕附件关系监听器.
+     *
+     * @param attachmentRepository 附件仓库
+     * @param attachmentRelationRepository 附件关系仓库
+     * @param contentInspectionService 附件内容检查服务
+     */
     public AttachmentRelVideoSubtitleListener(
         AttachmentRepository attachmentRepository,
         AttachmentRelationRepository attachmentRelationRepository,

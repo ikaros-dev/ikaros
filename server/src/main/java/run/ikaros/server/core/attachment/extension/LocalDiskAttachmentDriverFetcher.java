@@ -44,7 +44,7 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
      */
     private final LocalAttachmentPathValidator pathValidator;
     /**
-     * 本地文件名称门禁和真实格式检测服务。
+     * 本地文件名称门禁和真实格式检测服务.
      */
     private final AttachmentMediaValidationService mediaValidationService;
 

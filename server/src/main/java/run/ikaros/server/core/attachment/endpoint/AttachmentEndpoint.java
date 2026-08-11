@@ -63,7 +63,7 @@ import run.ikaros.server.endpoint.CoreEndpoint;
 public class AttachmentEndpoint implements CoreEndpoint {
     private final AttachmentService attachmentService;
     /**
-     * 附件名称和真实媒体格式验证服务。
+     * 附件名称和真实媒体格式验证服务.
      */
     private final AttachmentMediaValidationService mediaValidationService;
 
@@ -327,12 +327,12 @@ public class AttachmentEndpoint implements CoreEndpoint {
     }
 
     /**
-     * 仅供 SpringDoc 描述 multipart 文件字段的公共请求模型。
+     * 仅供 SpringDoc 描述 multipart 文件字段的公共请求模型.
      */
     public interface UploadRequest {
 
         /**
-         * 获取 multipart 文件字段。
+         * 获取 multipart 文件字段.
          *
          * @return 上传文件字段
          */
@@ -405,7 +405,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
     }
 
     /**
-     * 返回服务端权威媒体格式提示，不承担上传安全校验。
+     * 返回服务端权威媒体格式提示，不承担上传安全校验.
      */
     private Mono<ServerResponse> listMediaFormats(ServerRequest request) {
         return ServerResponse

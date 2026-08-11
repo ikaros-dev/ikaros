@@ -18,14 +18,14 @@ import run.ikaros.server.core.attachment.service.AttachmentService;
 import run.ikaros.server.core.attachment.service.ValidatedMediaStream;
 import run.ikaros.server.store.entity.AttachmentEntity;
 
-/** 默认附件有限前缀真实格式检查服务。 */
+/** 默认附件有限前缀真实格式检查服务. */
 @Service
 public class DefaultAttachmentContentInspectionService
     implements AttachmentContentInspectionService {
 
-    /** 提供受路径校验保护的持久化附件内容流。 */
+    /** 提供受路径校验保护的持久化附件内容流. */
     private final AttachmentService attachmentService;
-    /** 执行名称门禁和有限前缀真实格式检测。 */
+    /** 执行名称门禁和有限前缀真实格式检测. */
     private final AttachmentMediaValidationService mediaValidationService;
 
     public DefaultAttachmentContentInspectionService(

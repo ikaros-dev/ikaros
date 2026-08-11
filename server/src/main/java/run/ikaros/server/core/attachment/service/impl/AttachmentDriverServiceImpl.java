@@ -66,7 +66,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private final R2dbcEntityTemplate template;
     private final ExtensionComponentsFinder extensionComponentsFinder;
     /**
-     * 对驱动扫描结果执行有限前缀真实格式检查。
+     * 对驱动扫描结果执行有限前缀真实格式检查.
      */
     private final AttachmentContentInspectionService contentInspectionService;
     /**
