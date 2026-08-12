@@ -1,14 +1,14 @@
 package run.ikaros.server.custom;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 
-public record CustomDto(@Nonnull CustomEntity customEntity,
+public record CustomDto(@NonNull CustomEntity customEntity,
                         @Nullable List<CustomMetadataEntity> customMetadataEntityList) {
 
     CustomDto updateMetadataCustomId() {

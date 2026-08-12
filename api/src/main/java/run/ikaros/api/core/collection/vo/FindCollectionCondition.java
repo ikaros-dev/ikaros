@@ -1,8 +1,8 @@
 package run.ikaros.api.core.collection.vo;
 
-import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.store.enums.CollectionCategory;
 import run.ikaros.api.store.enums.CollectionType;
 

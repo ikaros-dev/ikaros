@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.custom.scheme.CustomScheme;
 import run.ikaros.api.custom.scheme.CustomSchemeManager;
 

@@ -3,13 +3,13 @@ package run.ikaros.server.custom;
 import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
 import static run.ikaros.server.custom.CustomConverter.getNameFieldValue;
 
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Predicate;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Predicates;
@@ -125,7 +125,7 @@ public class CustomClientImpl implements CustomClient {
 
     @Override
     public <C> void updateOneMeta(@NotNull Class<C> clazz, String name, String metaName,
-                                  @Nullable byte[] metaNewVal) {
+                                  byte @Nullable [] metaNewVal) {
         Assert.notNull(clazz, "'clazz' must not null.");
         Assert.isTrue(StringUtils.hasText(name), "'name' must has text");
         Assert.isTrue(StringUtils.hasText(metaName), "'metaName' must has text");

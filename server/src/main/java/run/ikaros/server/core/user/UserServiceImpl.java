@@ -3,11 +3,11 @@ package run.ikaros.server.core.user;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static run.ikaros.server.core.user.UserService.addEncodingIdPrefixIfNotExists;
 
-import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Example;
@@ -131,7 +131,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<User> update(@Nonnull UpdateUserRequest updateUserRequest) {
+    public Mono<User> update(@NonNull UpdateUserRequest updateUserRequest) {
         Assert.notNull(updateUserRequest, "'updateUserRequest' must not be null.");
         String username = updateUserRequest.getUsername();
         Assert.hasText(username, "'username' must has text.");
@@ -259,7 +259,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    @Nonnull
+    @NonNull
     private Mono<UserEntity> updateEntity(UserEntity userEntity,
                                           UpdateUserRequest updateUserRequest) {
         Assert.notNull(userEntity, "'userEntity' must not null.");

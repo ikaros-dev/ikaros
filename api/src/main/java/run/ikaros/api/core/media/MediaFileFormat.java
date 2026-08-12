@@ -3,7 +3,7 @@ package run.ikaros.api.core.media;
 import java.util.Set;
 
 /**
- * 媒体文件真实格式的权威定义。
+ * 媒体文件真实格式的权威定义.
  */
 public enum MediaFileFormat {
     PNG(MediaFileCategory.IMAGE, "image/png", "png"),
@@ -119,13 +119,13 @@ public enum MediaFileFormat {
     TLRC(MediaFileCategory.LYRICS, "text/plain", "tlrc"),
     SKRC(MediaFileCategory.LYRICS, "text/plain", "skrc");
 
-    /** 媒体文件的真实类别。 */
+    /** 媒体文件的真实类别. */
     private final MediaFileCategory category;
 
-    /** 媒体文件的规范 MIME。 */
+    /** 媒体文件的规范 MIME. */
     private final String mimeType;
 
-    /** 允许进入真实格式检测的扩展名。 */
+    /** 允许进入真实格式检测的扩展名. */
     private final Set<String> extensions;
 
     MediaFileFormat(MediaFileCategory category, String mimeType, String... extensions) {

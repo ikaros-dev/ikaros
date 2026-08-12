@@ -2,13 +2,13 @@ package run.ikaros.server.custom;
 
 import static run.ikaros.server.custom.CustomConverter.getNameFieldValue;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Predicates;
@@ -109,8 +109,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public <C> Mono<Void> updateOneMeta(@Nonnull Class<C> clazz, @NotBlank String name,
-                                        @NotBlank String metaName, @Nullable byte[] metaNewVal) {
+    public <C> Mono<Void> updateOneMeta(@NonNull Class<C> clazz, @NotBlank String name,
+                                        @NotBlank String metaName, byte @Nullable [] metaNewVal) {
         Assert.notNull(clazz, "'clazz' must not null.");
         Assert.isTrue(StringUtils.hasText(name), "'name' must has text");
         Assert.isTrue(StringUtils.hasText(metaName), "'metaName' must has text");
@@ -127,7 +127,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
-    public <C> Mono<byte[]> fetchOneMeta(@Nonnull Class<C> clazz, @NotBlank String name,
+    public <C> Mono<byte[]> fetchOneMeta(@NonNull Class<C> clazz, @NotBlank String name,
                                          @NotBlank String metaName) {
         Assert.notNull(clazz, "'clazz' must not null.");
         Assert.isTrue(StringUtils.hasText(name), "'name' must has text");

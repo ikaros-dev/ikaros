@@ -1,8 +1,8 @@
 package run.ikaros.server.core.subject;
 
-import jakarta.annotation.Nullable;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

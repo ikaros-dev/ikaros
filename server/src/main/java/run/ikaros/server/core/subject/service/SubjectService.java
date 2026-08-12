@@ -1,8 +1,8 @@
 package run.ikaros.server.core.subject.service;
 
-import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,14 +17,14 @@ public interface SubjectService {
     Mono<Subject> findByBgmId(UUID subjectId, String bgmtvId);
 
     Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(UUID subjectId,
-                                                          @Nonnull
+                                                          @NonNull
                                                           SubjectSyncPlatform subjectSyncPlatform,
                                                           @NotBlank String platformId);
 
-    Flux<Subject> findByPlatformAndPlatformId(@Nonnull SubjectSyncPlatform subjectSyncPlatform,
+    Flux<Subject> findByPlatformAndPlatformId(@NonNull SubjectSyncPlatform subjectSyncPlatform,
                                               @NotBlank String platformId);
 
-    Mono<Boolean> existsByPlatformAndPlatformId(@Nonnull SubjectSyncPlatform subjectSyncPlatform,
+    Mono<Boolean> existsByPlatformAndPlatformId(@NonNull SubjectSyncPlatform subjectSyncPlatform,
                                                 @NotBlank String platformId);
 
     @Transactional

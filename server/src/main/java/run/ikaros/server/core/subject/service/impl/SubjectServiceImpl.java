@@ -3,7 +3,6 @@ package run.ikaros.server.core.subject.service.impl;
 import static org.springframework.data.relational.core.query.Criteria.where;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
-import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -14,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -116,7 +116,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
 
     @Override
     @MonoCacheable(value = "subject:", key = "#bgmtvId")
-    public Mono<Subject> findByBgmId(@Nonnull UUID subjectId, String bgmtvId) {
+    public Mono<Subject> findByBgmId(@NonNull UUID subjectId, String bgmtvId) {
         Assert.notNull(subjectId, "'subjectId' must not null.");
         Assert.hasText(bgmtvId, "'bgmtvId' must has text.");
         return Mono.just(bgmtvId)
@@ -132,8 +132,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     @Override
     @MonoCacheable(value = "subject:",
         key = "#subjectId + ' ' + #platform.toString() + ' ' + #platformId")
-    public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull UUID subjectId,
-                                                                 @Nonnull SubjectSyncPlatform
+    public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@NonNull UUID subjectId,
+                                                                 @NonNull SubjectSyncPlatform
                                                                      platform,
                                                                  @NotBlank String platformId) {
         Assert.notNull(subjectId, "'subjectId' must not null.");
@@ -149,7 +149,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     @FluxCacheable(value = "subject:platform:",
         key = "#subjectSyncPlatform.toString() + ' ' + #platformId")
     public Flux<Subject> findByPlatformAndPlatformId(
-        @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
+        @NonNull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
         return subjectSyncRepository.findByPlatformAndPlatformId(subjectSyncPlatform, platformId)
@@ -161,7 +161,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     @MonoCacheable(value = "subject:",
         key = "#subjectSyncPlatform.toString() + ' ' + #platformId.toString()")
     public Mono<Boolean> existsByPlatformAndPlatformId(
-        @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
+        @NonNull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
         return subjectSyncRepository.existsByPlatformAndPlatformId(subjectSyncPlatform, platformId);

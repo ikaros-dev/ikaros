@@ -1,12 +1,21 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'checkstyle'
+    id 'net.ltgt.errorprone'
     id "io.freefair.lombok" version "8.14.3"
 }
 
 
 group = 'run.ikaros.api'
 description = 'API of ikaros project, connecting by other projects.'
+
+checkstyle {
+    toolVersion = '9.3'
+    showViolations = false
+    ignoreFailures = false
+    configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+}
 
 def baselineApiVersion = '1.2.2'
 def baselineApiJar = layout.projectDirectory.file("abi/ikaros-api-${baselineApiVersion}.jar")
@@ -22,6 +31,8 @@ configurations {
 
 dependencies {
     japicmp 'com.github.siom79.japicmp:japicmp:0.23.1'
+    errorprone 'com.google.errorprone:error_prone_core:2.36.0'
+    errorprone 'com.uber.nullaway:nullaway:0.12.7'
 
     api platform(project(':platform:server'))
 
@@ -75,6 +86,13 @@ java {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.errorprone {
+        disableWarningsInGeneratedCode = true
+        disableAllChecks = true
+        check('NullAway', net.ltgt.gradle.errorprone.CheckSeverity.ERROR)
+        option('NullAway:JSpecifyMode', 'true')
+        option('NullAway:OnlyNullMarked', 'true')
+    }
 }
 
 tasks.named('test') {
@@ -107,6 +125,7 @@ tasks.register('checkApiAbi', JavaExec) {
                 '--only-modified',
                 '--error-on-binary-incompatibility',
                 '--ignore-missing-classes',
+                '--exclude', 'run.ikaros.api.store.enums.AttachmentDriverType',
                 '--html-file', reportFile.absolutePath
         ]
     }

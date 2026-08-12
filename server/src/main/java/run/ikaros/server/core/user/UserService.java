@@ -1,8 +1,8 @@
 package run.ikaros.server.core.user;
 
-import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -41,7 +41,7 @@ public interface UserService {
     Mono<Void> updatePassword(@NotBlank String username, @NotBlank String oldRawPassword,
                               @NotBlank String rawPassword);
 
-    Mono<User> update(@Nonnull UpdateUserRequest updateUserRequest);
+    Mono<User> update(@NonNull UpdateUserRequest updateUserRequest);
 
     Mono<Void> bindEmail(@NotBlank String username, @NotBlank String email,
                          @NotBlank String verificationCode);

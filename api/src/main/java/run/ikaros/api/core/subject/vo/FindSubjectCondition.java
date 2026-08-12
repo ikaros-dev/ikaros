@@ -21,13 +21,13 @@ public class FindSubjectCondition {
     private String name;
     private String nameCn;
     /**
-     * 同时匹配原名和中文名的关键词。
+     * 同时匹配原名和中文名的关键词.
      */
     private String keyword;
     private Boolean nsfw;
     private SubjectType type;
     /**
-     * 需要匹配的条目类型集合。
+     * 需要匹配的条目类型集合.
      */
     @Builder.Default
     private Set<SubjectType> types = Set.of();

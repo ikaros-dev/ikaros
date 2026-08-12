@@ -1,11 +1,11 @@
 package run.ikaros.server.plugin;
 
-import jakarta.annotation.Nullable;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.pf4j.ExtensionFactory;
 import org.pf4j.Plugin;
 import org.pf4j.PluginManager;

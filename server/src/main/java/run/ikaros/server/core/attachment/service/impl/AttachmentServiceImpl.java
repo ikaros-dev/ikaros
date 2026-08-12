@@ -7,8 +7,6 @@ import static run.ikaros.api.store.enums.AttachmentType.Directory;
 import static run.ikaros.api.store.enums.AttachmentType.Driver_Directory;
 import static run.ikaros.api.store.enums.AttachmentType.Driver_File;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +37,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -638,8 +638,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     @MonoCacheEvict
     public Mono<Void> receiveAndHandleFragmentUploadChunkFile(String unique,
-                                                              @Nonnull Long uploadLength,
-                                                              @Nonnull Long uploadOffset,
+                                                              @NonNull Long uploadLength,
+                                                              @NonNull Long uploadOffset,
                                                               String uploadName,
                                                               Flux<DataBuffer> content,
                                                               @Nullable UUID parentId) {

@@ -5,8 +5,9 @@ import reactor.core.publisher.Mono;
 /**
  * Handler interface for the Episode Sequence Regular Chain of Responsibility.
  * Each handler checks if an attachment name matches its regex pattern.
- * <p>
- * Implementations can be provided by plugins via {@link EpisodeSequenceRegularPluginHook}.
+ *
+ * <p>Implementations can be provided by plugins via
+ * {@link EpisodeSequenceRegularPluginHook}.
  *
  * @see EpisodeSequenceRegularPluginHook
  */

@@ -1,12 +1,12 @@
 package run.ikaros.api.infra.utils;
 
-import jakarta.annotation.Nullable;
 import java.io.File;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.StringUtils;
 
 @Slf4j

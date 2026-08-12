@@ -3,7 +3,7 @@ package run.ikaros.api.core.media;
 import java.util.Objects;
 
 /**
- * 媒体文件前缀检测确认的真实格式信息。
+ * 媒体文件前缀检测确认的真实格式信息.
  *
  * @param format 真实格式
  * @param category 真实类别
@@ -13,6 +13,9 @@ public record MediaFileDetectionResult(MediaFileFormat format,
                                        MediaFileCategory category,
                                        String mimeType) {
 
+    /**
+     * 校验检测结果中的格式、类别与 MIME 类型是否一致.
+     */
     public MediaFileDetectionResult {
         Objects.requireNonNull(format, "format must not be null");
         if (category != format.category() || !format.mimeType().equals(mimeType)) {

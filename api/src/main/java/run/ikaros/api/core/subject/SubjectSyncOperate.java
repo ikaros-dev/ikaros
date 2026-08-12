@@ -1,7 +1,7 @@
 package run.ikaros.api.core.subject;
 
-import jakarta.annotation.Nullable;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

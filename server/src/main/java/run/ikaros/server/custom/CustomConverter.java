@@ -3,8 +3,6 @@ package run.ikaros.server.custom;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -13,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -72,8 +72,8 @@ public class CustomConverter {
      * @param <C>    Custom class type
      * @return a CustomMetadataEntity instance
      */
-    public static <C> CustomMetadataEntity covertCustomFieldToMetadataEntity(@Nonnull C custom,
-                                                                             @Nonnull Field field,
+    public static <C> CustomMetadataEntity covertCustomFieldToMetadataEntity(@NonNull C custom,
+                                                                             @NonNull Field field,
                                                                              @Nullable
                                                                              ObjectMapper om) {
         Assert.notNull(custom, "'custom' must not null");

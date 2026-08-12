@@ -1,7 +1,7 @@
 package run.ikaros.api.core.tag;
 
 import java.util.UUID;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.plugin.AllowPluginOperate;

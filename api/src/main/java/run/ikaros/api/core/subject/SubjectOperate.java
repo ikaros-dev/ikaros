@@ -1,9 +1,9 @@
 package run.ikaros.api.core.subject;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.plugin.AllowPluginOperate;
@@ -25,14 +25,14 @@ public interface SubjectOperate extends AllowPluginOperate {
                                  String platformId);
 
 
-    Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull UUID subjectId,
-                                                          @Nonnull
+    Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@NonNull UUID subjectId,
+                                                          @NonNull
                                                           SubjectSyncPlatform subjectSyncPlatform,
                                                           @NotBlank String platformId);
 
-    Flux<Subject> findByPlatformAndPlatformId(@Nonnull SubjectSyncPlatform subjectSyncPlatform,
+    Flux<Subject> findByPlatformAndPlatformId(@NonNull SubjectSyncPlatform subjectSyncPlatform,
                                               @NotBlank String platformId);
 
-    Mono<Boolean> existsByPlatformAndPlatformId(@Nonnull SubjectSyncPlatform subjectSyncPlatform,
+    Mono<Boolean> existsByPlatformAndPlatformId(@NonNull SubjectSyncPlatform subjectSyncPlatform,
                                                 @NotBlank String platformId);
 }

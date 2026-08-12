@@ -66,10 +66,14 @@ public class IkarosAppInfoContributor implements InfoContributor {
 
         Map<String, Object> subjectCollectionMap = new HashMap<>();
         subjectCollectionMap.put("total", subjectCollectionRepository.countActive().block());
-        subjectCollectionMap.put("wish", subjectCollectionRepository.countActiveByType(WISH).block());
-        subjectCollectionMap.put("doing", subjectCollectionRepository.countActiveByType(DOING).block());
-        subjectCollectionMap.put("done", subjectCollectionRepository.countActiveByType(DONE).block());
-        subjectCollectionMap.put("shelve", subjectCollectionRepository.countActiveByType(SHELVE).block());
+        subjectCollectionMap.put("wish",
+            subjectCollectionRepository.countActiveByType(WISH).block());
+        subjectCollectionMap.put("doing",
+            subjectCollectionRepository.countActiveByType(DOING).block());
+        subjectCollectionMap.put("done",
+            subjectCollectionRepository.countActiveByType(DONE).block());
+        subjectCollectionMap.put("shelve",
+            subjectCollectionRepository.countActiveByType(SHELVE).block());
         subjectCollectionMap.put("discard",
             subjectCollectionRepository.countActiveByType(DISCARD).block());
 

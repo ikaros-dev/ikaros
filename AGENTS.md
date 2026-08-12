@@ -12,6 +12,14 @@
 - 项目所有涉及编码的地方统一使用 **UTF-8**（无 BOM）
 - 项目中涉及 npm 操作（安装依赖、运行脚本等）统一使用 **pnpm**，不得使用 npm 或 yarn
 
+## Java 空值注解规范
+
+- JSpecify 是 Java 空值注解的唯一标准
+- 禁止使用 Spring、Jakarta 或 Javax 的旧空值注解
+- 新增包必须使用 `package-info.java` 和 `@NullMarked` 声明默认非空
+- `@NullMarked` 标记的包内不得重复使用 `@NonNull`
+- 仅在允许为空的位置使用 `@Nullable`
+
 ---
 
 # 单元测试规范
