@@ -14,6 +14,8 @@ import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.store.entity.SubjectCollectionEntity;
+import run.ikaros.server.store.entity.SubjectEntity;
+import run.ikaros.api.store.enums.SubjectType;
 
 @SpringBootTest
 @Testcontainers
@@ -23,9 +25,12 @@ class SubjectCollectionRepositoryTest {
     @Autowired
     SubjectCollectionRepository repository;
 
+    @Autowired
+    SubjectRepository subjectRepository;
+
     @AfterEach
     void tearDown() {
-        StepVerifier.create(repository.deleteAll()).verifyComplete();
+        StepVerifier.create(repository.deleteAll().then(subjectRepository.deleteAll())).verifyComplete();
     }
 
     @Test
@@ -154,5 +159,43 @@ class SubjectCollectionRepositoryTest {
 
         StepVerifier.create(repository.findById(entity.getId()))
             .expectNextCount(0).verifyComplete();
+    }
+
+    @Test
+    void countActiveExcludesCollectionsOfDeletedSubjects() {
+        SubjectEntity activeSubject = subject(false);
+        SubjectEntity deletedSubject = subject(true);
+        SubjectCollectionEntity activeCollection = collection(activeSubject.getId());
+        SubjectCollectionEntity deletedCollection = collection(deletedSubject.getId());
+
+        StepVerifier.create(subjectRepository.insert(activeSubject)
+                .then(subjectRepository.insert(deletedSubject))
+                .then(repository.insert(activeCollection))
+                .then(repository.insert(deletedCollection))
+                .then(repository.countActive())
+                .zipWith(repository.countActiveByType(CollectionType.WISH)))
+            .expectNextMatches(counts -> counts.getT1() == 1L && counts.getT2() == 1L)
+            .verifyComplete();
+    }
+
+    private SubjectEntity subject(boolean deleted) {
+        SubjectEntity subject = SubjectEntity.builder()
+            .name(UuidV7Utils.generate())
+            .type(SubjectType.ANIME)
+            .nsfw(false)
+            .build();
+        subject.setId(UuidV7Utils.generateUuid());
+        subject.setDeleteStatus(deleted);
+        return subject;
+    }
+
+    private SubjectCollectionEntity collection(UUID subjectId) {
+        return SubjectCollectionEntity.builder()
+            .id(UuidV7Utils.generateUuid())
+            .userId(UuidV7Utils.generateUuid())
+            .subjectId(subjectId)
+            .type(CollectionType.WISH)
+            .isPrivate(false)
+            .build();
     }
 }

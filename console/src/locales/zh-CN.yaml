@@ -106,7 +106,8 @@ module:
     error: 仪表板数据加载失败
     retry: 重试
     label:
-      attachment: 附件
+      folder: 已知文件夹
+      file: 已知文件
       subject: 条目
       video: 视频
       music: 音乐

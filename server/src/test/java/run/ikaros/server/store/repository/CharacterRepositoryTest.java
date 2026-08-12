@@ -58,4 +58,20 @@ class CharacterRepositoryTest {
         StepVerifier.create(repository.findByName(name))
             .expectNext(entity).verifyComplete();
     }
+
+    @Test
+    void countActiveExcludesLogicallyDeletedCharacters() {
+        CharacterEntity active = CharacterEntity.builder().name("active").build();
+        CharacterEntity deleted = CharacterEntity.builder().name("deleted").build();
+        active.setId(UuidV7Utils.generateUuid());
+        active.setDeleteStatus(false);
+        deleted.setId(UuidV7Utils.generateUuid());
+        deleted.setDeleteStatus(true);
+
+        StepVerifier.create(repository.insert(active)
+                .then(repository.insert(deleted))
+                .then(repository.countActive()))
+            .expectNext(1L)
+            .verifyComplete();
+    }
 }

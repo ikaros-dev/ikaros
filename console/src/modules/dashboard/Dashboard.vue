@@ -6,6 +6,7 @@ import { apiClient } from '@/utils/api-client';
 import { ElButton, ElCard, ElCol, ElIcon, ElRow } from 'element-plus';
 import {
 	Files,
+	Folder,
 	Star,
 	View,
 	VideoCamera,
@@ -14,7 +15,7 @@ import {
 } from '@element-plus/icons-vue';
 
 interface ActuatorInfo {
-	attachment: { total: number };
+	attachment: { file: number; folder: number };
 	subject: {
 		total: number;
 		video: number;
@@ -39,7 +40,8 @@ const isValidInfo = (value: unknown): value is ActuatorInfo => {
 	if (!value || typeof value !== 'object') return false;
 	const info = value as Partial<ActuatorInfo>;
 	return [
-		info.attachment?.total,
+		info.attachment?.file,
+		info.attachment?.folder,
 		info.subject?.total,
 		info.subject?.video,
 		info.subject?.anime,
@@ -66,12 +68,56 @@ const fetchActuatorInfo = async () => {
 	}
 };
 
-const videoTotal = computed(() => {
-	const subject = actuatorInfo.value?.subject;
-	return subject ? subject.video + subject.anime + subject.real : undefined;
+const cards = computed(() => {
+	const info = actuatorInfo.value;
+	if (!info) return [];
+	return [
+		{
+			label: t('module.dashboard.label.folder'),
+			value: info.attachment.folder,
+			icon: Folder,
+			path: '/sources',
+		},
+		{
+			label: t('module.dashboard.label.file'),
+			value: info.attachment.file,
+			icon: Files,
+			path: '/sources',
+		},
+		{
+			label: t('module.dashboard.label.video'),
+			value: info.subject.video + info.subject.anime + info.subject.real,
+			icon: VideoCamera,
+			path: '/videos',
+		},
+		{
+			label: t('module.dashboard.label.music'),
+			value: info.subject.music,
+			icon: Headset,
+			path: '/music',
+		},
+		{
+			label: t('module.dashboard.label.image'),
+			value: info.subject.comic,
+			icon: Picture,
+			path: '/images',
+		},
+		{
+			label: t('module.dashboard.label.collection'),
+			value: info.subjectCollection.total,
+			icon: Star,
+		},
+		{
+			label: t('module.dashboard.label.doing'),
+			value: info.subjectCollection.doing,
+			icon: View,
+		},
+	].filter((card) => card.value > 0);
 });
 const hasAttachments = computed(
-	() => (actuatorInfo.value?.attachment.total ?? 0) > 0
+	() =>
+		(actuatorInfo.value?.attachment.file ?? 0) > 0 ||
+		(actuatorInfo.value?.attachment.folder ?? 0) > 0
 );
 const hasSubjects = computed(
 	() => (actuatorInfo.value?.subject.total ?? 0) > 0
@@ -96,42 +142,7 @@ onMounted(fetchActuatorInfo);
 		<template v-else-if="actuatorInfo">
 			<el-row :gutter="10" class="dashboard-cards">
 				<el-col
-					v-for="card in [
-						{
-							label: t('module.dashboard.label.attachment'),
-							value: actuatorInfo.attachment.total,
-							icon: Files,
-							path: '/sources',
-						},
-						{
-							label: t('module.dashboard.label.video'),
-							value: videoTotal,
-							icon: VideoCamera,
-							path: '/videos',
-						},
-						{
-							label: t('module.dashboard.label.music'),
-							value: actuatorInfo.subject.music,
-							icon: Headset,
-							path: '/music',
-						},
-						{
-							label: t('module.dashboard.label.image'),
-							value: actuatorInfo.subject.comic,
-							icon: Picture,
-							path: '/images',
-						},
-						{
-							label: t('module.dashboard.label.collection'),
-							value: actuatorInfo.subjectCollection.total,
-							icon: Star,
-						},
-						{
-							label: t('module.dashboard.label.doing'),
-							value: actuatorInfo.subjectCollection.doing,
-							icon: View,
-						},
-					]"
+					v-for="card in cards"
 					:key="card.label"
 					:xs="24"
 					:sm="12"

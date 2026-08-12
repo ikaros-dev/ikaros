@@ -58,4 +58,20 @@ class PersonRepositoryTest {
         StepVerifier.create(repository.findByName(name))
             .expectNext(entity).verifyComplete();
     }
+
+    @Test
+    void countActiveExcludesLogicallyDeletedPeople() {
+        PersonEntity active = PersonEntity.builder().name("active").build();
+        PersonEntity deleted = PersonEntity.builder().name("deleted").build();
+        active.setId(UuidV7Utils.generateUuid());
+        active.setDeleteStatus(false);
+        deleted.setId(UuidV7Utils.generateUuid());
+        deleted.setDeleteStatus(true);
+
+        StepVerifier.create(repository.insert(active)
+                .then(repository.insert(deleted))
+                .then(repository.countActive()))
+            .expectNext(1L)
+            .verifyComplete();
+    }
 }

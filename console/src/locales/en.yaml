@@ -106,7 +106,8 @@ module:
     error: Failed to load dashboard data
     retry: Retry
     label:
-      attachment: Attachments
+      folder: Known folders
+      file: Known files
       subject: Subjects
       video: Videos
       music: Music
