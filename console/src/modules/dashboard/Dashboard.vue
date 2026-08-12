@@ -145,10 +145,12 @@ onMounted(fetchActuatorInfo);
 						:class="{ clickable: card.path }"
 						@click="card.path && go(card.path)"
 					>
-						<el-icon size="38"><component :is="card.icon" /></el-icon>
-						<div class="dashboard-card-content">
-							<span>{{ card.label }}</span>
-							<strong>{{ card.value }}</strong>
+						<div class="dashboard-card-layout">
+							<el-icon size="38"><component :is="card.icon" /></el-icon>
+							<div class="dashboard-card-content">
+								<span>{{ card.label }}</span>
+								<strong>{{ card.value }}</strong>
+							</div>
 						</div>
 					</el-card>
 				</el-col>
@@ -182,10 +184,14 @@ onMounted(fetchActuatorInfo);
 
 <style lang="scss" scoped>
 .dashboard-card {
+	margin-bottom: 10px;
+}
+.dashboard-card-layout {
 	display: flex;
 	align-items: center;
+	justify-content: center;
 	gap: 14px;
-	margin-bottom: 10px;
+	min-height: 76px;
 }
 .dashboard-card.clickable {
 	cursor: pointer;
@@ -198,7 +204,7 @@ onMounted(fetchActuatorInfo);
 }
 .dashboard-card-content span {
 	color: var(--el-text-color-secondary);
-	font-size: 12px;
+	font-size: 14px;
 }
 .dashboard-card-content strong {
 	font-size: 28px;

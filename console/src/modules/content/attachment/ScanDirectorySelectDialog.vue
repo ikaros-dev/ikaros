@@ -11,7 +11,8 @@ import {
 	ElIcon,
 	ElScrollbar,
 } from 'element-plus';
-import { Folder, Refresh, Setting } from '@element-plus/icons-vue';
+import { Folder, Setting } from '@element-plus/icons-vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import { apiClient } from '@/utils/api-client';
 import { attachmentRootId } from '@/modules/common/constants';
 import { useI18n } from 'vue-i18n';
@@ -230,17 +231,13 @@ watch(
 					</el-breadcrumb-item>
 				</el-breadcrumb>
 			</div>
-			<el-button
+			<RefreshButton
 				v-if="!showingSystemRoot"
-				:icon="Refresh"
 				:loading="refreshing"
-				type="danger"
-				plain
-				class="refresh-button"
 				@click="refreshCurrentDirectory"
 			>
 				{{ t('module.attachment.btn.refresh') }}
-			</el-button>
+			</RefreshButton>
 		</div>
 		<el-alert
 			v-if="!showingSystemRoot"
@@ -359,6 +356,7 @@ watch(
 :deep(.breadcrumb-path > span),
 .directory-name {
 	min-width: 0;
+	line-height: 24px;
 	white-space: normal;
 	overflow-wrap: anywhere;
 	word-break: break-word;
@@ -368,7 +366,7 @@ watch(
 	display: block;
 }
 
-.refresh-button {
+:deep(.refresh-button) {
 	flex: none;
 }
 
@@ -419,7 +417,7 @@ watch(
 		flex-basis: 100%;
 	}
 
-	.refresh-button {
+	:deep(.refresh-button) {
 		margin-left: auto;
 	}
 }

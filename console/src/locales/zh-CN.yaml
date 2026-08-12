@@ -407,6 +407,7 @@ module:
     browser:
       error: 加载当前目录失败，请重试
       source-error: 加载文件源失败，请重试
+      refresh-hint: 目录内容不会自动更新，请点击刷新获取最新文件夹
       no-sources:
         title: 暂无文件源
         description: 添加本地文件源后即可浏览和扫描媒体文件

@@ -71,6 +71,14 @@ describe('Dashboard', () => {
 		expect(push).toHaveBeenNthCalledWith(4, '/images');
 	});
 
+	it('每张统计卡片使用统一居中内容容器', async () => {
+		const wrapper = mountDashboard();
+		await flushPromises();
+
+		expect(wrapper.findAll('.dashboard-card-layout')).toHaveLength(6);
+		expect(wrapper.findAll('.dashboard-card-content')).toHaveLength(6);
+	});
+
 	it('全空时提供添加文件源入口', async () => {
 		info.mockResolvedValue({
 			data: validInfo({

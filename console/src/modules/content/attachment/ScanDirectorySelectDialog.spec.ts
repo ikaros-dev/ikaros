@@ -1,5 +1,6 @@
 import { flushPromises, shallowMount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 
 const { listDrivers, listAttachments, refreshAttachments } = vi.hoisted(() => ({
 	listDrivers: vi.fn(),
@@ -93,16 +94,14 @@ describe('扫描目录选择器', () => {
 		expect(state.directories).toEqual([folder]);
 	});
 
-	it('目录名称和面包屑允许软换行且刷新按钮使用预设红色系', async () => {
+	it('目录名称和面包屑允许软换行且使用统一刷新按钮', async () => {
 		const wrapper = mountDialog();
 		await wrapper.setProps({ visible: true });
 		await flushPromises();
 
 		expect(wrapper.get('.directory-name').text()).toBe(folder.name);
 		expect(wrapper.find('.breadcrumb-path').exists()).toBe(true);
-		const refreshButton = wrapper.get('.refresh-button');
-		expect(refreshButton.attributes('type')).toBe('danger');
-		expect(refreshButton.attributes()).toHaveProperty('plain');
+		expect(wrapper.findComponent(RefreshButton).exists()).toBe(true);
 	});
 
 	it('递归进入子目录后允许选择并仅在点击刷新时扫描当前层', async () => {
