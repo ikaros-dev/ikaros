@@ -30,6 +30,7 @@ class DefaultCustomSchemeManagerTest {
     private ObjectNode schema;
 
     @BeforeEach
+    @SuppressWarnings("NullAway.Init")
     void setUp() throws Exception {
         manager = new DefaultCustomSchemeManager(watcherManager);
         ObjectMapper mapper = new ObjectMapper();

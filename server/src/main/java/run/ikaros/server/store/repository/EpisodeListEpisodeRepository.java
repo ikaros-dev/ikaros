@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.server.store.entity.EpisodeListEpisodeEntity;
 
 public interface EpisodeListEpisodeRepository
-    extends BaseRepository<EpisodeListEpisodeEntity> {
+    extends BaseRepository<EpisodeListEpisodeEntity>, EpisodeListEpisodeRepositoryCustom {
 
     Flux<EpisodeListEpisodeEntity> findAllByEpisodeListId(UUID episodeListId);
 

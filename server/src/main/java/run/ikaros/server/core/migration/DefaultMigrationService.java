@@ -142,18 +142,7 @@ public class DefaultMigrationService implements MigrationService {
 
     @Override
     public Flux<DataBuffer> exportDatabaseTables() {
-        String name = template.getDatabaseClient().getConnectionFactory()
-            .getMetadata()
-            .getName();
         String sql = "SELECT tablename FROM pg_tables WHERE schemaname = 'public';";
-        String tableNameKey;
-        if (name.toLowerCase().contains("h2")) {
-            sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES "
-                + "WHERE TABLE_SCHEMA = 'PUBLIC'";
-            tableNameKey = "TABLE_NAME";
-        } else {
-            tableNameKey = "tablename";
-        }
 
         final Path workDir = ikarosProperties.getWorkDir();
         final Path currentDir =
@@ -173,7 +162,7 @@ public class DefaultMigrationService implements MigrationService {
             .index()
             .map(t -> {
                 Long index = t.getT1();
-                Object o = t.getT2().get(tableNameKey);
+                Object o = t.getT2().get("tablename");
                 return String.valueOf(o);
             })
             .flatMap(tableName -> {

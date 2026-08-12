@@ -1,5 +1,6 @@
 package run.ikaros.server.core.subsonic.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.subsonic.SubsonicResponse.SubsonicResponseBody;
 import run.ikaros.server.core.subsonic.SubsonicContext;
@@ -77,6 +78,7 @@ public interface SubsonicService {
     /**
      * createPlaylist — 创建或更新歌单.
      */
+    @Transactional
     Mono<SubsonicResponseBody> createPlaylist(String playlistId, String name,
                                                java.util.List<String> songIds);
 

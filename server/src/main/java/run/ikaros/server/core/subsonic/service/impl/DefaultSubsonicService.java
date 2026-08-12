@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -35,7 +36,6 @@ import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subsonic.SubsonicContext;
 import run.ikaros.server.core.subsonic.service.SubsonicService;
 import run.ikaros.server.store.entity.EpisodeListEntity;
-import run.ikaros.server.store.entity.EpisodeListEpisodeEntity;
 import run.ikaros.server.store.repository.EpisodeListEpisodeRepository;
 import run.ikaros.server.store.repository.EpisodeListRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
@@ -424,7 +424,7 @@ public class DefaultSubsonicService implements SubsonicService {
             return episodeListRepository.findById(id)
                 .flatMap(existing -> {
                     existing.setName(name);
-                    return episodeListRepository.save(existing)
+                    return episodeListRepository.update(existing)
                         .flatMap(saved -> updatePlaylistSongs(id, songIds));
                 })
                 .then(Mono.just(ok()));
@@ -436,7 +436,7 @@ public class DefaultSubsonicService implements SubsonicService {
             .nsfw(false)
             .build();
         newList.setId(UuidV7Utils.generateUuid());
-        return episodeListRepository.save(newList)
+        return episodeListRepository.insert(newList)
             .flatMap(saved -> updatePlaylistSongs(saved.getId(), songIds))
             .then(Mono.just(ok()));
     }
@@ -499,16 +499,12 @@ public class DefaultSubsonicService implements SubsonicService {
         if (songIds == null || songIds.isEmpty()) {
             return Mono.empty();
         }
+        List<UUID> episodeIds = songIds.stream()
+            .map(songId -> Objects.requireNonNull(UuidV7Utils.fromString(songId),
+                "Invalid song ID: " + songId))
+            .toList();
         return episodeListEpisodeRepository.deleteByEpisodeListId(listId)
-            .thenMany(episodeListEpisodeRepository.saveAll(songIds.stream()
-                .map(sid -> {
-                    EpisodeListEpisodeEntity e = new EpisodeListEpisodeEntity();
-                    e.setId(UuidV7Utils.generateUuid());
-                    e.setEpisodeListId(listId);
-                    e.setEpisodeId(UuidV7Utils.fromString(sid));
-                    return e;
-                }).toList()))
-            .then();
+            .then(episodeListEpisodeRepository.insertAll(listId, episodeIds));
     }
 
     private String formatDuration(long seconds) {
