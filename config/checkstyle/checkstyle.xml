@@ -52,10 +52,23 @@
             <property name="illegalClasses"
                       value="org.springframework.lang.NonNull,
                              org.springframework.lang.Nullable,
+                             org.jetbrains.annotations.NotNull,
+                             org.jetbrains.annotations.Nullable,
+                             edu.umd.cs.findbugs.annotations.NonNull,
+                             edu.umd.cs.findbugs.annotations.Nullable,
+                             edu.umd.cs.findbugs.annotations.CheckForNull,
+                             org.checkerframework.checker.nullness.qual.NonNull,
+                             org.checkerframework.checker.nullness.qual.Nullable,
+                             reactor.util.annotation.NonNull,
+                             reactor.util.annotation.Nullable,
+                             io.micrometer.common.lang.NonNull,
+                             io.micrometer.common.lang.Nullable,
                              jakarta.annotation.Nonnull,
                              jakarta.annotation.Nullable,
+                             jakarta.annotation.CheckForNull,
                              javax.annotation.Nonnull,
-                             javax.annotation.Nullable"/>
+                             javax.annotation.Nullable,
+                             javax.annotation.CheckForNull"/>
         </module>
         <module name="SuppressionCommentFilter"/>
         <module name="OuterTypeFilename"/>
