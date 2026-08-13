@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.jspecify.annotations.Nullable;
 
 @Data
 @Builder
@@ -15,9 +16,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VideoSubtitle {
     @JsonProperty("master_attachment_id")
-    private UUID masterAttachmentId;
+    private @Nullable UUID masterAttachmentId;
     @JsonProperty("attachment_id")
-    private UUID attachmentId;
-    private String name;
-    private String url;
+    private @Nullable UUID attachmentId;
+    private @Nullable String name;
+    private @Nullable String url;
 }

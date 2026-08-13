@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentReference;
 import run.ikaros.api.core.subject.Episode;
@@ -27,29 +28,29 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class DirectoryBindingContext {
-    private UUID directoryId;
-    private String directoryName;
-    private String cleanName;
-    private String keyword;
-    private List<String> bracketTags;
+    private @Nullable UUID directoryId;
+    private @Nullable String directoryName;
+    private @Nullable String cleanName;
+    private @Nullable String keyword;
+    private @Nullable List<String> bracketTags;
 
-    private SubjectSyncPlatform platform;
-    private String platformId;
+    private @Nullable SubjectSyncPlatform platform;
+    private @Nullable String platformId;
 
-    private UUID subjectId;
-    private Subject subject;
-    private SubjectSync subjectSync;
+    private @Nullable UUID subjectId;
+    private @Nullable Subject subject;
+    private @Nullable SubjectSync subjectSync;
 
-    private List<Attachment> childAttachments;
-    private List<Attachment> spSubdirectoryAttachments;
+    private @Nullable List<Attachment> childAttachments;
+    private @Nullable List<Attachment> spSubdirectoryAttachments;
 
-    private List<Episode> createdEpisodes;
-    private List<Tag> createdTags;
-    private List<AttachmentReference> createdAttachmentRefs;
+    private @Nullable List<Episode> createdEpisodes;
+    private @Nullable List<Tag> createdTags;
+    private @Nullable List<AttachmentReference> createdAttachmentRefs;
 
-    private Map<String, DirectoryBindingStepStatus> stepResults;
-    private Map<String, String> stepErrors;
-    private Map<String, Object> parameters;
+    private @Nullable Map<String, DirectoryBindingStepStatus> stepResults;
+    private @Nullable Map<String, String> stepErrors;
+    private @Nullable Map<String, Object> parameters;
 
     /**
      * Create a new context with initialized collections.

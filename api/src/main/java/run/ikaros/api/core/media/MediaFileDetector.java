@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -93,8 +94,10 @@ public final class MediaFileDetector {
      * @param extension 文件扩展名
      * @return 检测成功时返回媒体格式结果，否则返回空
      */
-    public static Optional<MediaFileDetectionResult> detect(byte[] prefix, String extension) {
-        if (prefix == null || prefix.length == 0 || prefix.length > MAX_PREFIX_SIZE
+    public static Optional<MediaFileDetectionResult> detect(byte @Nullable [] prefix,
+                                                            @Nullable String extension) {
+        if (prefix == null || extension == null || prefix.length == 0
+            || prefix.length > MAX_PREFIX_SIZE
             || MediaFilePolicy
             .formatsForExtension(extension)
             .isEmpty()) {
@@ -743,7 +746,7 @@ public final class MediaFileDetector {
             || (data[2] == 7 && data[3] == 8));
     }
 
-    private static VarInt readEbmlVarInt(byte[] data, int offset) {
+    private static @Nullable VarInt readEbmlVarInt(byte[] data, int offset) {
         if (offset >= data.length || data[offset] == 0) {
             return null;
         }

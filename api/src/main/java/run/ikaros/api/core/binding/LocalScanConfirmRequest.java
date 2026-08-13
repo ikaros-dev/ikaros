@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.core.subject.Subject;
 
 /** 确认本地扫描预览并创建绑定任务的请求. */
@@ -22,16 +23,16 @@ import run.ikaros.api.core.subject.Subject;
 public class LocalScanConfirmRequest {
     /** 已完成预览的目录附件标识. */
     @JsonProperty("directory_id")
-    private UUID directoryId;
+    private @Nullable UUID directoryId;
     /** 确认时采用的媒体扫描模式. */
-    private LocalMediaMode mode;
+    private @Nullable LocalMediaMode mode;
     /** 已有条目的标识. */
     @JsonProperty("subject_id")
-    private UUID subjectId;
+    private @Nullable UUID subjectId;
     /** 要新建的条目. */
-    private Subject subject;
+    private @Nullable Subject subject;
     /** 仅针对待确认扫描项的人工关联结果. */
-    private List<LocalScanAssignment> assignments;
+    private @Nullable List<LocalScanAssignment> assignments;
 
     /**
      * 判断已有条目和新建条目是否恰好选择其一.
