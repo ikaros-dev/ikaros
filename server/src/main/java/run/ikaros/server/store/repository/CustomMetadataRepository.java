@@ -1,6 +1,7 @@
 package run.ikaros.server.store.repository;
 
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.r2dbc.repository.Query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,6 +23,7 @@ public interface CustomMetadataRepository
 
     @Query("update custom_metadata set cm_value=$3 "
         + "where custom_id=$1 and cm_key=$2")
-    Mono<Void> updateValueByCustomIdAndKeyAndValue(UUID customId, String key, byte[] value);
+    Mono<Void> updateValueByCustomIdAndKeyAndValue(UUID customId, String key,
+                                                   byte @Nullable [] value);
 
 }

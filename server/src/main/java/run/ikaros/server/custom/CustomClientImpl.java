@@ -3,7 +3,6 @@ package run.ikaros.server.custom;
 import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
 import static run.ikaros.server.custom.CustomConverter.getNameFieldValue;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -69,7 +68,7 @@ public class CustomClientImpl implements CustomClient {
         return convertFrom(custom, customDto);
     }
 
-    private <C> CustomEntity findCustomEntityOne(Class<C> type, String name) {
+    private <C> @Nullable CustomEntity findCustomEntityOne(Class<C> type, String name) {
         Assert.notNull(type, "'type' must not null.");
         Assert.hasText(name, "'name' must has text");
         Custom annotation = type.getAnnotation(Custom.class);
@@ -86,7 +85,8 @@ public class CustomClientImpl implements CustomClient {
     public <C> C update(C custom) {
         Assert.notNull(custom, "'custom' must not null.");
         CustomEntity customEntity =
-            findCustomEntityOne(custom.getClass(), getNameFieldValue(custom));
+            findCustomEntityOne(custom.getClass(),
+                Objects.requireNonNull(getNameFieldValue(custom)));
         if (customEntity == null) {
             throw new NotFoundException("custom not found for name=" + getNameFieldValue(custom));
         }
@@ -124,7 +124,7 @@ public class CustomClientImpl implements CustomClient {
     }
 
     @Override
-    public <C> void updateOneMeta(@NotNull Class<C> clazz, String name, String metaName,
+    public <C> void updateOneMeta(Class<C> clazz, String name, String metaName,
                                   byte @Nullable [] metaNewVal) {
         Assert.notNull(clazz, "'clazz' must not null.");
         Assert.isTrue(StringUtils.hasText(name), "'name' must has text");
@@ -148,11 +148,12 @@ public class CustomClientImpl implements CustomClient {
     }
 
     @Override
-    public <C> byte[] fetchOneMeta(@NotNull Class<C> clazz, String name, String metaName) {
+    public <C> byte[] fetchOneMeta(Class<C> clazz, String name, String metaName) {
         Assert.notNull(clazz, "'clazz' must not null.");
         Assert.isTrue(StringUtils.hasText(name), "'name' must has text");
         Assert.isTrue(StringUtils.hasText(metaName), "'metaName' must has text");
-        CustomEntity customEntity = findCustomEntityOne(clazz, name);
+        CustomEntity customEntity = Objects.requireNonNull(findCustomEntityOne(clazz, name),
+            "custom entity must not null");
         UUID customEntityId = customEntity.getId();
 
         CustomMetadataEntity customMetadata =
@@ -168,8 +169,10 @@ public class CustomClientImpl implements CustomClient {
     @Override
     public <C> void delete(C custom) {
         Assert.notNull(custom, "'custom' must not null.");
-        CustomEntity customEntity =
-            findCustomEntityOne(custom.getClass(), getNameFieldValue(custom));
+        CustomEntity customEntity = Objects.requireNonNull(
+            findCustomEntityOne(custom.getClass(),
+                Objects.requireNonNull(getNameFieldValue(custom))),
+            "custom entity must not null");
         UUID customEntityId = customEntity.getId();
         repository.delete(customEntity).block(BLOCK_TIMEOUT);
         metadataRepository.deleteAllByCustomId(customEntityId)
@@ -177,7 +180,7 @@ public class CustomClientImpl implements CustomClient {
     }
 
     @Override
-    public <C> C delete(Class<C> clazz, String name) {
+    public <C> @Nullable C delete(Class<C> clazz, String name) {
         Assert.notNull(clazz, "'clazz' must not null.");
         Assert.hasText(name, "'name' must has text.");
         C custom = findOne(clazz, name);
@@ -208,7 +211,7 @@ public class CustomClientImpl implements CustomClient {
     }
 
     @Override
-    public <C> PagingWrap<C> findAllWithPage(@NotNull Class<C> type, @Nullable Integer page,
+    public <C> PagingWrap<C> findAllWithPage(Class<C> type, @Nullable Integer page,
                                              @Nullable Integer size,
                                              @Nullable Predicate<C> predicate) {
         Assert.notNull(type, "'type' must not null.");
@@ -252,7 +255,7 @@ public class CustomClientImpl implements CustomClient {
     }
 
     @Override
-    public <C> List<C> findAll(@NotNull Class<C> type, @Nullable Predicate<C> predicate) {
+    public <C> List<C> findAll(Class<C> type, @Nullable Predicate<C> predicate) {
         Assert.notNull(type, "'type' must not null.");
         Custom annotation = type.getAnnotation(Custom.class);
 

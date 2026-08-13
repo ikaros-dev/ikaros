@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
@@ -53,7 +52,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .flatMap(customDto -> repository.insert(customDto.customEntity()
                     .setId(UuidV7Utils.generateUuid()))
                 .flatMap(customEntity -> Mono.just(customDto)))
-            .flatMap(customDto -> Mono.just(customDto.customMetadataEntityList())
+            .flatMap(customDto -> Mono.just(
+                    Objects.requireNonNull(customDto.customMetadataEntityList()))
                 .filter(customMetadataEntityList -> !customMetadataEntityList.isEmpty())
                 .flatMapMany(customMetadataEntityList -> Flux.fromStream(
                     customMetadataEntityList.stream()))
@@ -73,7 +73,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     public <C> Mono<C> update(C custom) {
         return Mono.justOrEmpty(custom)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'custom' must not null")))
-            .flatMap(obj -> findCustomEntityOne(custom.getClass(), getNameFieldValue(custom)))
+            .flatMap(obj -> findCustomEntityOne(custom.getClass(),
+                Objects.requireNonNull(getNameFieldValue(custom))))
             // .switchIfEmpty(Mono.error(
             //     new NotFoundException("custom not found for name=" + getNameFieldValue(custom))))
             .flatMap(customEntity -> Mono.just(custom)
@@ -83,7 +84,8 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
                     .map(customEntityTmp -> customEntityTmp.setId(customEntity.getId()))
                     .then(Mono.just(customDto)))
                 .map(CustomDto::updateMetadataCustomId)
-                .flatMap(customDto -> Mono.just(customDto.customMetadataEntityList())
+                .flatMap(customDto -> Mono.just(
+                        Objects.requireNonNull(customDto.customMetadataEntityList()))
                     .filter(customMetadataEntityList -> !customMetadataEntityList.isEmpty())
                     .flatMapMany(customMetadataEntityList -> Flux.fromStream(
                         customMetadataEntityList.stream()))
@@ -109,7 +111,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public <C> Mono<Void> updateOneMeta(@NonNull Class<C> clazz, @NotBlank String name,
+    public <C> Mono<Void> updateOneMeta(Class<C> clazz, @NotBlank String name,
                                         @NotBlank String metaName, byte @Nullable [] metaNewVal) {
         Assert.notNull(clazz, "'clazz' must not null.");
         Assert.isTrue(StringUtils.hasText(name), "'name' must has text");
@@ -127,7 +129,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
-    public <C> Mono<byte[]> fetchOneMeta(@NonNull Class<C> clazz, @NotBlank String name,
+    public <C> Mono<byte[]> fetchOneMeta(Class<C> clazz, @NotBlank String name,
                                          @NotBlank String metaName) {
         Assert.notNull(clazz, "'clazz' must not null.");
         Assert.isTrue(StringUtils.hasText(name), "'name' must has text");
@@ -147,7 +149,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
             .filter(Objects::nonNull)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'custom' must not null")))
             .flatMap(obj -> findCustomEntityOne(custom.getClass(),
-                getNameFieldValue(custom)))
+                Objects.requireNonNull(getNameFieldValue(custom))))
             .flatMap(customEntity -> repository.delete(customEntity)
                 .then(Mono.just(customEntity)))
             .flatMap(customEntity -> metadataRepository.deleteAllByCustomId(
@@ -213,8 +215,9 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
-    public <C> Mono<PagingWrap<C>> findAllWithPage(Class<C> type, Integer page, Integer size,
-                                                   Predicate<C> predicate) {
+    public <C> Mono<PagingWrap<C>> findAllWithPage(Class<C> type, @Nullable Integer page,
+                                                   @Nullable Integer size,
+                                                   @Nullable Predicate<C> predicate) {
         final int finalPage = (page == null || page <= 0) ? 1 : page;
         final int finalSize = (size == null || size <= 0) ? 5 : size;
         return Mono.justOrEmpty(type)
@@ -241,7 +244,7 @@ public class ReactiveCustomClientImpl implements ReactiveCustomClient {
     }
 
     @Override
-    public <C> Flux<C> findAll(Class<C> type, Predicate<C> predicate) {
+    public <C> Flux<C> findAll(Class<C> type, @Nullable Predicate<C> predicate) {
         return Mono.justOrEmpty(type)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("'type' must not null")))
             .flatMapMany(obj -> repository.findAll(Example.of(CustomEntity.builder()

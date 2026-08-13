@@ -1,8 +1,10 @@
 package run.ikaros.server.custom;
 
+import org.jspecify.annotations.NullUnmarked;
 import run.ikaros.api.custom.Custom;
 import run.ikaros.api.custom.Name;
 
+@NullUnmarked
 @Custom(group = "demo.ikaros.run", version = "v1alpha1",
     kind = "DemoOnlyNameCustom", singular = "demo", plural = "demos")
 public class DemoOnlyNameCustom {

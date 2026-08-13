@@ -3,7 +3,6 @@ package run.ikaros.server.custom;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.function.Predicate;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import run.ikaros.api.wrap.PagingWrap;
 
@@ -14,15 +13,15 @@ public interface CustomClient {
 
     <C> C update(C custom);
 
-    <C> void updateOneMeta(@NonNull Class<C> clazz, @NotBlank String name,
+    <C> void updateOneMeta(Class<C> clazz, @NotBlank String name,
                            @NotBlank String metaName, byte @Nullable [] metaNewVal);
 
-    <C> byte[] fetchOneMeta(@NonNull Class<C> clazz, @NotBlank String name,
+    <C> byte[] fetchOneMeta(Class<C> clazz, @NotBlank String name,
                             @NotBlank String metaName);
 
     <C> void delete(C custom);
 
-    <C> C delete(Class<C> clazz, String name);
+    <C> @Nullable C delete(Class<C> clazz, String name);
 
     void deleteAll();
 
@@ -38,9 +37,9 @@ public interface CustomClient {
      * @param <C>       custom class type
      * @return PagingWrap
      */
-    <C> PagingWrap<C> findAllWithPage(@NonNull Class<C> type,
+    <C> PagingWrap<C> findAllWithPage(Class<C> type,
                                       @Nullable Integer page, @Nullable Integer size,
                                       @Nullable Predicate<C> predicate);
 
-    <C> List<C> findAll(@NonNull Class<C> type, @Nullable Predicate<C> predicate);
+    <C> List<C> findAll(Class<C> type, @Nullable Predicate<C> predicate);
 }

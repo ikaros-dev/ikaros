@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import org.jspecify.annotations.NonNull;
+import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -44,7 +44,7 @@ public class CustomConverter {
         Assert.notNull(customAnnotation,
             "class must annotation by @run.ikaros.api.custom.Custom");
 
-        String name = getNameFieldValue(custom);
+        String name = Objects.requireNonNull(getNameFieldValue(custom));
 
         CustomEntity customEntity = CustomEntity.builder()
             .group(customAnnotation.group())
@@ -72,8 +72,8 @@ public class CustomConverter {
      * @param <C>    Custom class type
      * @return a CustomMetadataEntity instance
      */
-    public static <C> CustomMetadataEntity covertCustomFieldToMetadataEntity(@NonNull C custom,
-                                                                             @NonNull Field field,
+    public static <C> CustomMetadataEntity covertCustomFieldToMetadataEntity(C custom,
+                                                                             Field field,
                                                                              @Nullable
                                                                              ObjectMapper om) {
         Assert.notNull(custom, "'custom' must not null");
@@ -110,7 +110,7 @@ public class CustomConverter {
      * @param <C>    custom instance class type
      * @return current custom instance @Name field value
      */
-    public static <C> String getNameFieldValue(C custom) {
+    public static <C> @Nullable String getNameFieldValue(@Nullable C custom) {
         if (custom == null) {
             return null;
         }
