@@ -1,9 +1,10 @@
 package run.ikaros.api.core.setting.vo;
 
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 
 @Data
 public class GlobalSetting {
-    private String header;
-    private String footer;
+    private @Nullable String header;
+    private @Nullable String footer;
 }

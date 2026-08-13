@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
@@ -38,7 +39,7 @@ public class PagingWrap<T> implements Streamable<T> {
      * @param total total
      * @param items item list
      */
-    public PagingWrap(int page, int size, long total, List<T> items) {
+    public PagingWrap(int page, int size, long total, @Nullable List<T> items) {
         Assert.isTrue(total >= 0, "Total elements must be greater than or equal to 0");
         if (page < 0) {
             page = 0;

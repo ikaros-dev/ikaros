@@ -3,6 +3,7 @@ package run.ikaros.api.core.setting;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.custom.Custom;
 import run.ikaros.api.custom.Name;
@@ -15,8 +16,8 @@ public class ConfigMap {
      * 如是插件的配置，会与插件名称(name)保持一致.
      */
     @Name
-    private String name;
-    private Map<String, String> data;
+    private @Nullable String name;
+    private @Nullable Map<String, String> data;
 
     /**
      * Put data map item.

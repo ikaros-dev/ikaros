@@ -1,9 +1,10 @@
 package run.ikaros.api.wrap;
 
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 
 @Data
 public class CommonResult {
-    private String exception;
-    private String message;
+    private @Nullable String exception;
+    private @Nullable String message;
 }
