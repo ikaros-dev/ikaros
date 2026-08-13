@@ -1,5 +1,6 @@
 package run.ikaros.api.custom.exception;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,8 +22,8 @@ public class CustomException extends ResponseStatusException {
         super(rawStatusCode, reason, cause);
     }
 
-    public CustomException(HttpStatusCode status, String reason, Throwable cause,
-                           String messageDetailCode, Object[] messageDetailArguments) {
+    public CustomException(HttpStatusCode status, String reason, @Nullable Throwable cause,
+                           @Nullable String messageDetailCode, Object[] messageDetailArguments) {
         super(status, reason, cause, messageDetailCode, messageDetailArguments);
     }
 }

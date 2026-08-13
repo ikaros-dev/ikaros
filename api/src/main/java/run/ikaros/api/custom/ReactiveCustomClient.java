@@ -2,7 +2,6 @@ package run.ikaros.api.custom;
 
 import jakarta.validation.constraints.NotBlank;
 import java.util.function.Predicate;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,10 +14,10 @@ public interface ReactiveCustomClient {
 
     <C> Mono<C> update(C custom);
 
-    <C> Mono<Void> updateOneMeta(@NonNull Class<C> clazz, @NotBlank String name,
+    <C> Mono<Void> updateOneMeta(Class<C> clazz, @NotBlank String name,
                                  @NotBlank String metaName, byte @Nullable [] metaNewVal);
 
-    <C> Mono<byte[]> fetchOneMeta(@NonNull Class<C> clazz, @NotBlank String name,
+    <C> Mono<byte[]> fetchOneMeta(Class<C> clazz, @NotBlank String name,
                                   @NotBlank String metaName);
 
     <C> Mono<C> delete(C custom);
@@ -39,10 +38,10 @@ public interface ReactiveCustomClient {
      * @param <C>       custom class type
      * @return PagingWrap
      */
-    <C> Mono<PagingWrap<C>> findAllWithPage(@NonNull Class<C> type,
+    <C> Mono<PagingWrap<C>> findAllWithPage(Class<C> type,
                                             @Nullable Integer page, @Nullable Integer size,
                                             @Nullable Predicate<C> predicate);
 
-    <C> Flux<C> findAll(@NonNull Class<C> type, @Nullable Predicate<C> predicate);
+    <C> Flux<C> findAll(Class<C> type, @Nullable Predicate<C> predicate);
 
 }
