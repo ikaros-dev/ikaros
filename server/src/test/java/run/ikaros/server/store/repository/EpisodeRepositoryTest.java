@@ -30,18 +30,19 @@ class EpisodeRepositoryTest {
     @Test
     void insert() {
         UUID subjectId = UuidV7Utils.generateUuid();
+        UUID entityId = UuidV7Utils.generateUuid();
         EpisodeEntity entity = EpisodeEntity.builder()
             .subjectId(subjectId)
             .name("Episode-1")
             .group(EpisodeGroup.MAIN)
             .sequence(1.0f)
             .build();
-        entity.setId(UuidV7Utils.generateUuid());
+        entity.setId(entityId);
 
         StepVerifier.create(repository.insert(entity))
             .expectNext(entity).verifyComplete();
 
-        StepVerifier.create(repository.findById(entity.getId()))
+        StepVerifier.create(repository.findById(entityId))
             .expectNext(entity).verifyComplete();
     }
 
@@ -164,6 +165,7 @@ class EpisodeRepositoryTest {
     @Test
     void deleteBySubjectIdAndGroupAndSequenceAndName() {
         UUID subjectId = UuidV7Utils.generateUuid();
+        UUID entityId = UuidV7Utils.generateUuid();
 
         EpisodeEntity entity = EpisodeEntity.builder()
             .subjectId(subjectId)
@@ -171,7 +173,7 @@ class EpisodeRepositoryTest {
             .group(EpisodeGroup.MAIN)
             .sequence(1.0f)
             .build();
-        entity.setId(UuidV7Utils.generateUuid());
+        entity.setId(entityId);
 
         StepVerifier.create(repository.insert(entity)).expectNext(entity).verifyComplete();
 
@@ -179,7 +181,7 @@ class EpisodeRepositoryTest {
                 subjectId, EpisodeGroup.MAIN, 1.0f, "Episode-1"))
             .verifyComplete();
 
-        StepVerifier.create(repository.findById(entity.getId()))
+        StepVerifier.create(repository.findById(entityId))
             .expectNextCount(0).verifyComplete();
     }
 }

@@ -163,10 +163,12 @@ class SubjectCollectionRepositoryTest {
 
     @Test
     void countActiveExcludesCollectionsOfDeletedSubjects() {
-        SubjectEntity activeSubject = subject(false);
-        SubjectEntity deletedSubject = subject(true);
-        SubjectCollectionEntity activeCollection = collection(activeSubject.getId());
-        SubjectCollectionEntity deletedCollection = collection(deletedSubject.getId());
+        UUID activeSubjectId = UuidV7Utils.generateUuid();
+        UUID deletedSubjectId = UuidV7Utils.generateUuid();
+        SubjectEntity activeSubject = subject(activeSubjectId, false);
+        SubjectEntity deletedSubject = subject(deletedSubjectId, true);
+        SubjectCollectionEntity activeCollection = collection(activeSubjectId);
+        SubjectCollectionEntity deletedCollection = collection(deletedSubjectId);
 
         StepVerifier.create(subjectRepository.insert(activeSubject)
                 .then(subjectRepository.insert(deletedSubject))
@@ -178,13 +180,13 @@ class SubjectCollectionRepositoryTest {
             .verifyComplete();
     }
 
-    private SubjectEntity subject(boolean deleted) {
+    private SubjectEntity subject(UUID id, boolean deleted) {
         SubjectEntity subject = SubjectEntity.builder()
             .name(UuidV7Utils.generate())
             .type(SubjectType.ANIME)
             .nsfw(false)
             .build();
-        subject.setId(UuidV7Utils.generateUuid());
+        subject.setId(id);
         subject.setDeleteStatus(deleted);
         return subject;
     }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -157,7 +158,7 @@ class AttachmentRepositoryTest {
     }
 
     private AttachmentEntity attachment(AttachmentType type, boolean deleted,
-                                        UUID parentId, UUID driverId) {
+                                        @Nullable UUID parentId, @Nullable UUID driverId) {
         UUID id = UuidV7Utils.generateUuid();
         return AttachmentEntity.builder()
             .id(id)

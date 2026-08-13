@@ -1,11 +1,14 @@
 package run.ikaros.server.store.convert;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
 @Slf4j
 @ReadingConverter
+@NullUnmarked
 public class String2EnumConverter<E extends Enum<E>>
     implements Converter<String, E> {
     private final Class<E> cls;
@@ -23,7 +26,7 @@ public class String2EnumConverter<E extends Enum<E>>
     }
 
     @Override
-    public E convert(String source) {
+    public @Nullable E convert(@Nullable String source) {
         if (source == null || "".equalsIgnoreCase(source)) {
             return null;
         }

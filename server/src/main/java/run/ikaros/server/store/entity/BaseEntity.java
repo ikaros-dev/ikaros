@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
@@ -23,7 +24,7 @@ public class BaseEntity {
      * base entity id, generate by identity.
      */
     @Id
-    private UUID id;
+    private @Nullable UUID id;
 
     /**
      * record status, it is logic delete field, has deleted is true, normal is false.
@@ -36,34 +37,34 @@ public class BaseEntity {
      */
     // @CreatedBy
     @Column("create_uid")
-    private UUID createUid;
+    private @Nullable UUID createUid;
 
     /**
      * record create time.
      */
     // @CreatedDate
     @Column("create_time")
-    private LocalDateTime createTime;
+    private @Nullable LocalDateTime createTime;
 
     /**
      * record last modified user id.
      */
     // @LastModifiedBy
     @Column("update_uid")
-    private UUID updateUid;
+    private @Nullable UUID updateUid;
 
     /**
      * record last modified time.
      */
     // @LastModifiedDate
     @Column("update_time")
-    private LocalDateTime updateTime;
+    private @Nullable LocalDateTime updateTime;
 
     /**
      * optimistic lock version field.
      */
     @Version
     @Column("ol_version")
-    private Long optimisticLockVersion;
+    private @Nullable Long optimisticLockVersion;
 
 }

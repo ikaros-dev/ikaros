@@ -1,5 +1,6 @@
 package run.ikaros.server.store.repository;
 
+import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -32,12 +33,13 @@ class CharacterRepositoryTest {
             .infobox("infobox content")
             .summary("summary content")
             .build();
-        entity.setId(UuidV7Utils.generateUuid());
+        UUID entityId = UuidV7Utils.generateUuid();
+        entity.setId(entityId);
 
         StepVerifier.create(repository.insert(entity))
             .expectNext(entity).verifyComplete();
 
-        StepVerifier.create(repository.findById(entity.getId()))
+        StepVerifier.create(repository.findById(entityId))
             .expectNext(entity).verifyComplete();
     }
 
