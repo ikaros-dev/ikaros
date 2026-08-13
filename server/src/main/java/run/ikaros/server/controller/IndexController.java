@@ -22,7 +22,7 @@ public class IndexController {
      */
     @RequestMapping("/")
     public Mono<String> index(Model model) {
-        if (ikarosProperties.getShowTheme()) {
+        if (Boolean.TRUE.equals(ikarosProperties.getShowTheme())) {
             return themeService.getCurrentTheme()
                 .map(theme -> theme + "/index");
         } else {

@@ -1,6 +1,7 @@
 package run.ikaros.server.infra.properties;
 
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -8,8 +9,8 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "ikaros.task")
 public class IkarosTaskProperties {
-    private Integer corePoolSize;
-    private Integer maximumPoolSize;
-    private Long keepAliveTime;
-    private Integer queueCount;
+    private @Nullable Integer corePoolSize;
+    private @Nullable Integer maximumPoolSize;
+    private @Nullable Long keepAliveTime;
+    private @Nullable Integer queueCount;
 }

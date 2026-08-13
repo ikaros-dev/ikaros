@@ -6,6 +6,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Base64;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -52,7 +53,8 @@ class AesEncryptUtilsTest {
         byte[] originalBytes = original.getBytes(StandardCharsets.UTF_8);
 
         // encryptByteArray(byte[] key, byte[] data)
-        byte[] encrypted = AesEncryptUtils.encryptByteArray(rawKey, originalBytes);
+        byte[] encrypted = Objects.requireNonNull(
+            AesEncryptUtils.encryptByteArray(rawKey, originalBytes));
         assertThat(encrypted).isNotNull();
         assertThat(encrypted).isNotEqualTo(originalBytes);
 
@@ -69,8 +71,8 @@ class AesEncryptUtilsTest {
         String original = "测试中文加密内容";
 
         // encryptByteArray(String base64Key, byte[] data)
-        byte[] encrypted = AesEncryptUtils.encryptByteArray(keyBase64Str,
-            original.getBytes(StandardCharsets.UTF_8));
+        byte[] encrypted = Objects.requireNonNull(AesEncryptUtils.encryptByteArray(keyBase64Str,
+            original.getBytes(StandardCharsets.UTF_8)));
         assertThat(encrypted).isNotNull();
 
         byte[] rawKey = Base64
@@ -131,8 +133,9 @@ class AesEncryptUtilsTest {
         AesEncryptUtils.generateKeyFile(keyFile);
         String original = "Encrypt with key file";
 
-        byte[] encrypted =
-            AesEncryptUtils.encryptByteArray(keyFile, original.getBytes(StandardCharsets.UTF_8));
+        byte[] encrypted = Objects.requireNonNull(
+            AesEncryptUtils.encryptByteArray(keyFile,
+                original.getBytes(StandardCharsets.UTF_8)));
         assertThat(encrypted).isNotNull();
 
         byte[] keyB64 = Files.readAllBytes(keyFile.toPath());

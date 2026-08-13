@@ -8,7 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -36,7 +38,7 @@ public class JsonUtils {
      * @param obj 待转换的对象
      * @return JSON
      */
-    public static String obj2Json(Object obj) {
+    public static @Nullable String obj2Json(Object obj) {
         Assert.notNull(obj, "'obj' must not be null");
         try {
             return objectMapper.writeValueAsString(obj);
@@ -53,7 +55,7 @@ public class JsonUtils {
      * @param obj 待转换的对象
      * @return JSON
      */
-    public static byte[] obj2Bytes(Object obj) {
+    public static byte @Nullable [] obj2Bytes(Object obj) {
         Assert.notNull(obj, "'obj' must not be null");
         try {
             return objectMapper.writeValueAsBytes(obj);
@@ -72,7 +74,7 @@ public class JsonUtils {
      * @param <T>   对象类型
      * @return 对象实例
      */
-    public static <T> T json2obj(String json, Class<T> clazz) {
+    public static <T> @Nullable T json2obj(String json, Class<T> clazz) {
         Assert.notNull(clazz, "'clazz' must not be null");
         Assert.notNull(json, "'json' must not be null");
         try {
@@ -92,7 +94,7 @@ public class JsonUtils {
      * @param <T>           对象类型
      * @return 对象实例
      */
-    public static <T> T[] json2ObjArr(String json, TypeReference<T[]> typeReference) {
+    public static <T> T @Nullable [] json2ObjArr(String json, TypeReference<T[]> typeReference) {
         Assert.notNull(typeReference, "'clazz' must not be null");
         Assert.notNull(json, "'json' must not be null");
         try {
@@ -117,10 +119,10 @@ public class JsonUtils {
      * @param <T>           对象类型
      * @return 对象实例
      */
-    public static <T> T[] obj2Arr(Object obj, TypeReference<T[]> typeReference) {
+    public static <T> T @Nullable [] obj2Arr(Object obj, TypeReference<T[]> typeReference) {
         Assert.notNull(obj, "'obj' must not be null");
         Assert.notNull(typeReference, "'clazz' must not be null");
-        return json2ObjArr(obj2Json(obj), typeReference);
+        return json2ObjArr(Objects.requireNonNull(obj2Json(obj)), typeReference);
     }
 
 }

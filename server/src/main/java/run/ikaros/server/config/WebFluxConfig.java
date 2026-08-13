@@ -14,7 +14,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
-import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -66,12 +65,12 @@ public class WebFluxConfig implements WebFluxConfigurer {
                                    ViewResolutionResultHandler resultHandler) {
         return new ServerResponse.Context() {
             @Override
-            public @NonNull List<HttpMessageWriter<?>> messageWriters() {
+            public List<HttpMessageWriter<?>> messageWriters() {
                 return codec.getWriters();
             }
 
             @Override
-            public @NonNull List<ViewResolver> viewResolvers() {
+            public List<ViewResolver> viewResolvers() {
                 return resultHandler.getViewResolvers();
             }
         };
@@ -114,7 +113,8 @@ public class WebFluxConfig implements WebFluxConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        var importRoot = ikarosProperties.getWorkDir().resolve(FileConst.DEFAULT_DIR_NAME);
+        var importRoot = Objects.requireNonNull(ikarosProperties.getWorkDir())
+            .resolve(FileConst.DEFAULT_DIR_NAME);
         var cacheControl = CacheControl.maxAge(Duration.ofDays(365 / 2));
 
         // Mandatory resource mapping

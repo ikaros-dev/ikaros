@@ -1,5 +1,6 @@
 package run.ikaros.server.theme;
 
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -22,7 +23,7 @@ public class DefaultThemeService implements ThemeService {
     public Mono<String> getCurrentTheme() {
         return reactiveCustomClient.findOne(ConfigMap.class,
                 SystemSettingInitListener.getConfigMapName())
-            .map(ConfigMap::getData)
+            .map(configMap -> Objects.requireNonNull(configMap.getData()))
             .map(map -> map.getOrDefault(SettingKeyConst.THEME_SELECT, ThemeConst.DEFAULT));
     }
 }

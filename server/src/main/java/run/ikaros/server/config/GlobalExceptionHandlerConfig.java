@@ -72,8 +72,7 @@ public class GlobalExceptionHandlerConfig implements WebFilter {
         CommonResult result = new CommonResult();
         result.setException(e.getClass().getName());
         result.setMessage(e.getLocalizedMessage());
-        String json = JsonUtils.obj2Json(result);
-        assert json != null;
+        String json = Objects.requireNonNull(JsonUtils.obj2Json(result));
         byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = response.bufferFactory().wrap(bytes);
         return response.writeWith(Flux.just(buffer));
