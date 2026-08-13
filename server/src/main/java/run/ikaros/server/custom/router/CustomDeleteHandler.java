@@ -35,14 +35,15 @@ public class CustomDeleteHandler implements CustomRouterFunctionFactory.DeleteHa
         var customName = request.pathVariable("name");
         return customClient.delete(scheme.type(), customName)
             .doOnSuccess(custom -> applicationEventPublisher.publishEvent(
-                new CustomDeleteEvent(this, scheme, CustomConverter.getNameFieldValue(custom))))
+                new CustomDeleteEvent(this, scheme,
+                    java.util.Objects.requireNonNull(CustomConverter.getNameFieldValue(custom)))))
             .flatMap(custom -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(custom))
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                    .bodyValue(java.util.Objects.toString(e.getMessage(), e.toString())));
     }
 
     @Override

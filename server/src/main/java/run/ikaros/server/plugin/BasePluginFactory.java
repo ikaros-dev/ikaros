@@ -1,6 +1,7 @@
 package run.ikaros.server.plugin;
 
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.Plugin;
 import org.pf4j.PluginFactory;
@@ -13,7 +14,7 @@ import run.ikaros.api.plugin.BasePlugin;
 public class BasePluginFactory implements PluginFactory {
 
     @Override
-    public Plugin create(PluginWrapper pluginWrapper) {
+    public @Nullable Plugin create(PluginWrapper pluginWrapper) {
         return getPluginContext(pluginWrapper)
             .map(context -> {
                 try {

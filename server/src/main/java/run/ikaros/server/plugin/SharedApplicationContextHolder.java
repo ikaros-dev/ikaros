@@ -1,6 +1,7 @@
 package run.ikaros.server.plugin;
 
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,7 @@ public class SharedApplicationContextHolder {
 
 
     private final ApplicationContext rootApplicationContext;
-    private volatile SharedApplicationContext sharedApplicationContext;
+    private volatile @Nullable SharedApplicationContext sharedApplicationContext;
 
     public SharedApplicationContextHolder(ApplicationContext rootApplicationContext) {
         this.rootApplicationContext = rootApplicationContext;

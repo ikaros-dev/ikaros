@@ -73,7 +73,8 @@ public class PluginPropertiesEnablesInitListener {
                 .forEach(pluginId -> reactiveCustomClient.findOne(Plugin.class, pluginId)
                     .filter(plugin -> PluginState.DISABLED != plugin.getState())
                     .onErrorResume(NotFoundException.class, e -> Mono.empty())
-                    .subscribe(plugin -> ikarosPluginManager.startPlugin(plugin.getName())));
+                    .subscribe(plugin -> ikarosPluginManager.startPlugin(
+                        java.util.Objects.requireNonNull(plugin.getName()))));
         }
 
         // Sync plugin records for manager and database.
@@ -97,13 +98,15 @@ public class PluginPropertiesEnablesInitListener {
                         plugin.getName());
                 }
             })
-            .flatMap(plugin -> reactiveCustomClient.delete(ConfigMap.class, plugin.getName())
+            .flatMap(plugin -> reactiveCustomClient.delete(ConfigMap.class,
+                    java.util.Objects.requireNonNull(plugin.getName()))
                 .onErrorResume(NotFoundException.class, e -> Mono.empty()))
             .checkpoint("RemoveDatabasePluginThatManagerNone.")
 
             .thenMany(reactiveCustomClient.findAll(Plugin.class, null))
             .filter(plugin -> PluginState.DISABLED == plugin.getState())
-            .map(plugin -> ikarosPluginManager.disablePlugin(plugin.getName()))
+            .map(plugin -> ikarosPluginManager.disablePlugin(
+                java.util.Objects.requireNonNull(plugin.getName())))
             .then();
     }
 

@@ -68,7 +68,8 @@ public class IkarosExtensionFactory implements ExtensionFactory {
 
     private <T> Optional<PluginApplicationContext> getPluginApplicationContextBy(
         Class<T> extensionClass) {
-        final Plugin plugin = Optional.ofNullable(this.pluginManager.whichPlugin(extensionClass))
+        final @Nullable Plugin plugin = Optional.ofNullable(
+                this.pluginManager.whichPlugin(extensionClass))
             .map(PluginWrapper::getPlugin)
             .orElse(null);
 
@@ -113,7 +114,6 @@ public class IkarosExtensionFactory implements ExtensionFactory {
     }
 
 
-    @Nullable
     protected <T> T createWithoutSpring(final Class<T> extensionClass) {
         Assert.notNull(extensionClass, "'extensionClass' must not be null");
         T t;
@@ -125,7 +125,7 @@ public class IkarosExtensionFactory implements ExtensionFactory {
         return t;
     }
 
-    private String nameOf(final Plugin plugin) {
+    private String nameOf(final @Nullable Plugin plugin) {
         return Objects.nonNull(plugin)
             ? plugin.getWrapper().getPluginId()
             : "system";
