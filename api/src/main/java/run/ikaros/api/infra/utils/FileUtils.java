@@ -56,7 +56,8 @@ public class FileUtils {
      * @param uploadedTime 条目数据上传的时间
      * @return 基础的上传目录路径，格式：[files/yyyy/MM/dd/HH]
      */
-    public static String buildAppUploadFileBasePath(String basePath, LocalDateTime uploadedTime) {
+    public static String buildAppUploadFileBasePath(@Nullable String basePath,
+                                                    LocalDateTime uploadedTime) {
         Assert.notNull(uploadedTime, "'uploadedTime' must not be null");
         String locationDirPath =
             (StringUtils.hasText(basePath) ? basePath + File.separator + BASE_UPLOAD_DIR_NAME

@@ -68,7 +68,7 @@ public class SystemVarUtils {
     /**
      * Get ip address.
      */
-    public static String getIpAddress() {
+    public static @Nullable String getIpAddress() {
         InetAddress localHost = null;
         try {
             localHost = Inet4Address.getLocalHost();

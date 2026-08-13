@@ -2,6 +2,7 @@ package run.ikaros.api.infra.utils;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 public class ReflectUtils {
 
@@ -11,7 +12,7 @@ public class ReflectUtils {
      * @param dbFieldName 数据库字段名（如 ATTACHMENT_ID）
      * @return 转换后的 Java 字段名（如 attachmentId）
      */
-    public static String convertToCamelCase(String dbFieldName) {
+    public static @Nullable String convertToCamelCase(@Nullable String dbFieldName) {
         if (dbFieldName == null || dbFieldName.isEmpty()) {
             return dbFieldName;
         }
@@ -39,14 +40,14 @@ public class ReflectUtils {
     /**
      * Map to Object instance.
      */
-    public static <T> T mapToClass(Map<String, Object> map, Class<T> clazz,
+    public static <T> T mapToClass(Map<String, @Nullable Object> map, Class<T> clazz,
                                    boolean ignoreMissingField) {
         T instance;
         try {
             instance = clazz.getDeclaredConstructor().newInstance();
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 String fieldName = convertToCamelCase(entry.getKey());
-                Object fieldValue = entry.getValue();
+                @Nullable Object fieldValue = entry.getValue();
 
                 Field field;
                 try {

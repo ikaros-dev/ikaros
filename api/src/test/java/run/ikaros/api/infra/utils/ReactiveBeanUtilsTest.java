@@ -3,6 +3,7 @@ package run.ikaros.api.infra.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -117,10 +118,10 @@ class ReactiveBeanUtilsTest {
     }
 
     public static class TestTarget {
-        private String name;
+        private @Nullable String name;
         private int value;
 
-        public String getName() {
+        public @Nullable String getName() {
             return name;
         }
 
