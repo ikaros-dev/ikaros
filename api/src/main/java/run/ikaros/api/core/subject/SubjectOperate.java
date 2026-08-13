@@ -2,7 +2,6 @@ package run.ikaros.api.core.subject;
 
 import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,14 +24,13 @@ public interface SubjectOperate extends AllowPluginOperate {
                                  String platformId);
 
 
-    Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@NonNull UUID subjectId,
-                                                          @NonNull
+    Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(UUID subjectId,
                                                           SubjectSyncPlatform subjectSyncPlatform,
                                                           @NotBlank String platformId);
 
-    Flux<Subject> findByPlatformAndPlatformId(@NonNull SubjectSyncPlatform subjectSyncPlatform,
+    Flux<Subject> findByPlatformAndPlatformId(SubjectSyncPlatform subjectSyncPlatform,
                                               @NotBlank String platformId);
 
-    Mono<Boolean> existsByPlatformAndPlatformId(@NonNull SubjectSyncPlatform subjectSyncPlatform,
+    Mono<Boolean> existsByPlatformAndPlatformId(SubjectSyncPlatform subjectSyncPlatform,
                                                 @NotBlank String platformId);
 }

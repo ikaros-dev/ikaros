@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.store.enums.SubjectType;
 
 @Data
@@ -13,37 +14,37 @@ public class FindSubjectCondition {
     /**
      * default is 1.
      */
-    private Integer page;
+    private @Nullable Integer page;
     /**
      * default is 10.
      */
-    private Integer size;
-    private String name;
-    private String nameCn;
+    private @Nullable Integer size;
+    private @Nullable String name;
+    private @Nullable String nameCn;
     /**
      * 同时匹配原名和中文名的关键词.
      */
-    private String keyword;
-    private Boolean nsfw;
-    private SubjectType type;
+    private @Nullable String keyword;
+    private @Nullable Boolean nsfw;
+    private @Nullable SubjectType type;
     /**
      * 需要匹配的条目类型集合.
      */
     @Builder.Default
-    private Set<SubjectType> types = Set.of();
-    private String time;
+    private @Nullable Set<SubjectType> types = Set.of();
+    private @Nullable String time;
     /**
      * default is true.
      */
-    private Boolean airTimeDesc;
+    private @Nullable Boolean airTimeDesc;
     /**
      * default is false.
      */
-    private Boolean updateTimeDesc;
+    private @Nullable Boolean updateTimeDesc;
     /**
      * default is null.
      */
-    private Boolean scoreDesc;
+    private @Nullable Boolean scoreDesc;
 
     /**
      * init default if field value is null.
