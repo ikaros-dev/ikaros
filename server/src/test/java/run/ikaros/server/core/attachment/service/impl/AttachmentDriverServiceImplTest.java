@@ -52,6 +52,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 /**
  * 附件驱动增量刷新服务测试.
  */
+@org.jspecify.annotations.NullUnmarked
 class AttachmentDriverServiceImplTest {
     /**
      * 附件驱动仓库.

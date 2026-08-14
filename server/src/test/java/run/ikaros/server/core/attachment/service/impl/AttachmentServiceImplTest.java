@@ -38,6 +38,7 @@ import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRelationRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class AttachmentServiceImplTest {
 
     @Mock

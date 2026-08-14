@@ -23,6 +23,7 @@ import run.ikaros.server.core.attachment.service.AttachmentService;
 /**
  * 默认附件 SHA-1 后台计算服务测试.
  */
+@org.jspecify.annotations.NullUnmarked
 class DefaultAttachmentSha1ServiceTest {
     /** 附件服务. */
     @Mock

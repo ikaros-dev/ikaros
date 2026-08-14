@@ -121,7 +121,8 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         Assert.notNull(driver, "'driver' must not null.");
         Assert.notNull(driver.getType(), "'driver type' must not null.");
         normalizeDriver(driver);
-        getAttDriverFetcher(driver.getType(), driver.getName());
+        getAttDriverFetcher(Objects.requireNonNull(driver.getType()),
+            Objects.requireNonNull(driver.getName()));
         Mono<AttachmentDriverEntity> savedEntity = driver.getId() == null
             ? saveNewDriver(driver)
             : updateExistingDriver(driver);
@@ -141,9 +142,9 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private Mono<AttachmentDriverEntity> saveNewDriver(AttachmentDriver driver) {
         return repository
             .findByTypeAndNameAndMountName(
-                driver
-                    .getType()
-                    .toString(), driver.getName(), driver.getMountName())
+                Objects.requireNonNull(driver.getType()).toString(),
+                Objects.requireNonNull(driver.getName()),
+                Objects.requireNonNull(driver.getMountName()))
             .flatMap(entity -> updateExistingDriver(driver, entity))
             .switchIfEmpty(Mono.defer(() -> copyProperties(driver, new AttachmentDriverEntity())
                 .map(entity -> entity
@@ -159,7 +160,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
 
     private Mono<AttachmentDriverEntity> updateExistingDriver(AttachmentDriver driver) {
         return repository
-            .findById(driver.getId())
+            .findById(Objects.requireNonNull(driver.getId()))
             .switchIfEmpty(Mono.error(new IllegalArgumentException(
                 "Attachment driver not found for id=" + driver.getId())))
             .flatMap(entity -> updateExistingDriver(driver, entity));
@@ -279,7 +280,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         if (parentId == null) {
             parentId = AttachmentConst.ROOT_DIRECTORY_ID;
         }
-        if (refresh) {
+        if (Boolean.TRUE.equals(refresh)) {
             return refresh(parentId)
                 .then(attachmentService.listByCondition(attachmentSearchCondition));
         }
@@ -370,23 +371,24 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             .switchIfEmpty(Mono.error(new IllegalStateException(
                 "Attachment driver not found for id=" + driverId)))
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()))
-            .flatMap(attachmentDriver ->
-                fetchAndUpdateEntities(attachmentDriver, pid, remotePath, mountRoot));
+            .flatMap(attachmentDriver -> fetchAndUpdateEntities(attachmentDriver,
+                Objects.requireNonNull(pid), Objects.requireNonNull(remotePath), mountRoot));
     }
 
     private Mono<Void> fetchAndUpdateEntities(
         AttachmentDriver driver, UUID pid, String remotePath, boolean mountRoot) {
         AttachmentDriverFetcher fetcher =
-            getAttDriverFetcher(driver.getType(), driver.getName());
+            getAttDriverFetcher(Objects.requireNonNull(driver.getType()),
+                Objects.requireNonNull(driver.getName()));
         Mono<List<Attachment>> scannedAttachments =
             fetcher
-                .getChildren(driver.getId(), pid, remotePath)
+                .getChildren(Objects.requireNonNull(driver.getId()), pid, remotePath)
                 .filter(attachment -> !mountRoot
                     || attachment.getType() == AttachmentType.Driver_Directory)
                 .concatMap(attachment -> validateScannedAttachment(fetcher, attachment))
                 .collectList();
         Mono<List<AttachmentEntity>> storedAttachments = attachmentRepository
-            .findAllByParentIdAndDriverId(pid, driver.getId())
+            .findAllByParentIdAndDriverId(pid, Objects.requireNonNull(driver.getId()))
             .collectList();
         return Mono
             .zip(scannedAttachments, storedAttachments)

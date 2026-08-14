@@ -31,6 +31,7 @@ import run.ikaros.server.store.entity.AttachmentEntity;
 /**
  * 附件内容检查服务测试。
  */
+@org.jspecify.annotations.NullUnmarked
 class DefaultAttachmentContentInspectionServiceTest {
 
     @Mock

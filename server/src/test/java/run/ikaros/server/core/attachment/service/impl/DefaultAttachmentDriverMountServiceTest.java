@@ -32,6 +32,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 /**
  * 默认附件驱动挂载服务测试.
  */
+@org.jspecify.annotations.NullUnmarked
 class DefaultAttachmentDriverMountServiceTest {
     /** 附件服务. */
     @Mock

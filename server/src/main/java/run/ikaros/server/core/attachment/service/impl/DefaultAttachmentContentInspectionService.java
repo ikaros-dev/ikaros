@@ -57,8 +57,9 @@ public class DefaultAttachmentContentInspectionService
             return Mono.empty();
         }
         return Mono.defer(() -> {
-            mediaValidationService.validateFilename(attachment.getName());
-            return inspect(fetcher.getSteam(attachment), attachment.getName());
+            String name = Objects.requireNonNull(attachment.getName());
+            mediaValidationService.validateFilename(name);
+            return inspect(fetcher.getSteam(attachment), name);
         });
     }
 

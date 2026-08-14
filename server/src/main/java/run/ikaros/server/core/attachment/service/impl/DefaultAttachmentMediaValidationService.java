@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Subscription;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -83,15 +84,15 @@ public class DefaultAttachmentMediaValidationService
         /** 防止回放流被重复订阅. */
         private final AtomicBoolean replaySubscribed = new AtomicBoolean();
         /** 前缀回放流的接收器. */
-        private volatile FluxSink<DataBuffer> replaySink;
+        private volatile @Nullable FluxSink<DataBuffer> replaySink;
         /** 前缀达到上限时同一缓冲区内尚未消费的尾部. */
-        private volatile DataBuffer boundaryBuffer;
+        private volatile @Nullable DataBuffer boundaryBuffer;
         /** 验证完成后待回放的前缀字节. */
-        private volatile byte[] replayPrefix;
+        private volatile byte @Nullable [] replayPrefix;
         /** 原始上游是否已经结束. */
         private volatile boolean sourceCompleted;
         /** 验证结果返回后原始上游延迟报告的错误. */
-        private volatile Throwable sourceError;
+        private volatile @Nullable Throwable sourceError;
         /** 当前会话是否已经终止. */
         private volatile boolean terminated;
         /** 前缀是否已经完成验证. */

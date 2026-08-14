@@ -4,6 +4,7 @@ import static run.ikaros.api.constant.OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -72,10 +73,12 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
     @MonoCacheEvict
     public Mono<AttachmentRelation> putAttachmentRelation(AttachmentRelation attachmentRelation) {
         Assert.notNull(attachmentRelation, "'attachmentRelation' must not be null.");
-        UUID attachmentId = attachmentRelation.getAttachmentId();
-        AttachmentRelationType type = attachmentRelation.getType();
-        UUID relationAttachmentId = attachmentRelation.getRelationAttachmentId();
-        Assert.notNull(type, "'type' must not null.");
+        UUID attachmentId = Objects.requireNonNull(attachmentRelation.getAttachmentId());
+        AttachmentRelationType nullableType = attachmentRelation.getType();
+        UUID relationAttachmentId =
+            Objects.requireNonNull(attachmentRelation.getRelationAttachmentId());
+        Assert.notNull(nullableType, "'type' must not null.");
+        AttachmentRelationType type = Objects.requireNonNull(nullableType);
         return repository.existsByTypeAndAttachmentIdAndRelationAttachmentId(type, attachmentId,
                 relationAttachmentId)
             .filter(exist -> exist)
@@ -121,10 +124,12 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
         Assert.notNull(attachmentRelation, "'attachmentRelation' must not be null.");
         UUID id = attachmentRelation.getId();
 
-        AttachmentRelationType type = attachmentRelation.getType();
-        UUID relationAttachmentId = attachmentRelation.getRelationAttachmentId();
-        UUID attachmentId = attachmentRelation.getAttachmentId();
-        Assert.notNull(type, "'type' must not null.");
+        AttachmentRelationType nullableType = attachmentRelation.getType();
+        UUID relationAttachmentId =
+            Objects.requireNonNull(attachmentRelation.getRelationAttachmentId());
+        UUID attachmentId = Objects.requireNonNull(attachmentRelation.getAttachmentId());
+        Assert.notNull(nullableType, "'type' must not null.");
+        AttachmentRelationType type = Objects.requireNonNull(nullableType);
         return repository
             .existsByTypeAndAttachmentIdAndRelationAttachmentId(
                 type, attachmentId, relationAttachmentId)

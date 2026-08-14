@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
@@ -69,8 +68,8 @@ public interface AttachmentService {
      * @return 分片处理完成信号
      */
     Mono<Void> receiveAndHandleFragmentUploadChunkFile(@NotBlank String unique,
-                                                       @NonNull Long uploadLength,
-                                                       @NonNull Long uploadOffset,
+                                                       Long uploadLength,
+                                                       Long uploadOffset,
                                                        @NotBlank String uploadName,
                                                        Flux<DataBuffer> content,
                                                        @Nullable UUID parentId);

@@ -22,6 +22,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 @SpringBootTest
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
+@org.jspecify.annotations.NullUnmarked
 class AttachmentRelationServiceTest {
 
     @Autowired

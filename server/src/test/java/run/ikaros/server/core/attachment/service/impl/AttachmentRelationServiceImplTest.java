@@ -24,6 +24,7 @@ import run.ikaros.server.store.entity.AttachmentRelationEntity;
 import run.ikaros.server.store.repository.AttachmentRelationRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class AttachmentRelationServiceImplTest {
 
     @Mock

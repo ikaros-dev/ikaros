@@ -3,6 +3,7 @@ package run.ikaros.server.core.attachment.service.impl;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import static run.ikaros.api.store.enums.AttachmentReferenceType.EPISODE;
 
+import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -162,15 +163,17 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                                     + " and ep group=" + targetGroup)))
                             .collectList().map(list -> list.get(0));
                     })
-                    .flatMap(episodeEntity -> repository
-                        .existsByTypeAndReferenceId(EPISODE, episodeEntity.getId())
+                    .flatMap(episodeEntity -> {
+                        UUID episodeId = Objects.requireNonNull(episodeEntity.getId());
+                        return repository
+                        .existsByTypeAndReferenceId(EPISODE, episodeId)
                         .filter(exists -> !exists)
                         .flatMap(exists -> repository
                             .insert(AttachmentReferenceEntity.builder()
                                 .id(UuidV7Utils.generateUuid())
                                 .type(EPISODE)
                                 .attachmentId(entity.getId())
-                                .referenceId(episodeEntity.getId())
+                                .referenceId(episodeId)
                                 .build())
                             .doOnSuccess(attachmentReferenceEntity -> {
                                 log.info("save episode file matching "
@@ -179,14 +182,14 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
                                     entity.getName(), episodeEntity.getSequence(), subjectId);
                                 EpisodeAttachmentUpdateEvent event =
                                     new EpisodeAttachmentUpdateEvent(this,
-                                        episodeEntity.getId(),
+                                        episodeId,
                                         entity.getId(), notify);
                                 applicationEventPublisher.publishEvent(event);
                                 log.debug("publish event EpisodeAttachmentUpdateEvent "
                                         + "for attachmentReferenceEntity: {}",
                                     attachmentReferenceEntity);
-                            }))
-                    ))
+                            }));
+                    }))
             .then();
     }
 
@@ -235,7 +238,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
 
     private Mono<AttachmentReference> checkAttachmentRef(AttachmentReference attachmentReference) {
         if (EPISODE.equals(attachmentReference.getType())) {
-            return Mono.just(attachmentReference.getAttachmentId())
+            return Mono.just(Objects.requireNonNull(attachmentReference.getAttachmentId()))
                 .flatMap(attId -> attachmentRepository.findById(attId)
                     .switchIfEmpty(Mono.error(new AttachmentNotFoundException(
                         "Check fail, current attachment not found for id=" + attId))))

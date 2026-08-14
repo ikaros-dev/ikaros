@@ -18,6 +18,7 @@ import run.ikaros.api.core.media.MediaFileFormat;
 /**
  * 验证附件流式前缀检测、回放和失败释放行为。
  */
+@org.jspecify.annotations.NullUnmarked
 class DefaultAttachmentMediaValidationServiceTest {
 
     private final DefaultAttachmentMediaValidationService service =
