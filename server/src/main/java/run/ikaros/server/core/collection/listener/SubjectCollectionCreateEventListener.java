@@ -6,7 +6,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.core.collection.event.SubjectCollectionCreateEvent;
-import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeCollectionEntity;
 import run.ikaros.server.store.repository.EpisodeCollectionRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
@@ -34,7 +33,7 @@ public class SubjectCollectionCreateEventListener {
         log.debug("Receive SubjectCollectionCreateEvent for userId={} and subjectId={}",
             userId, subjectId);
         return episodeRepository.findAllBySubjectId(subjectId)
-            .map(BaseEntity::getId)
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
             .flatMap(episodeId
                 -> episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
                 .switchIfEmpty(

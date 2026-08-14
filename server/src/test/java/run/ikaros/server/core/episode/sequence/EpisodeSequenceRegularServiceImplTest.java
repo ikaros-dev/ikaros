@@ -20,6 +20,7 @@ import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.store.entity.EpisodeSequenceRegularEntity;
 import run.ikaros.server.store.repository.EpisodeSequenceRegularRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class EpisodeSequenceRegularServiceImplTest {
 
     @Mock

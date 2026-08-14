@@ -177,7 +177,7 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
             .flatMap(pagingWarp -> ServerResponse.ok().bodyValue(pagingWarp))
             .switchIfEmpty(ServerResponse.notFound().build())
             .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+                e -> ServerResponse.badRequest().bodyValue(errorMessage(e)));
     }
 
     private Mono<ServerResponse> findSubjectCollection(ServerRequest serverRequest) {
@@ -187,11 +187,14 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
             .flatMap(subjectCollection -> ServerResponse.ok().bodyValue(subjectCollection))
             .switchIfEmpty(ServerResponse.notFound().build())
             .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+                e -> ServerResponse.badRequest().bodyValue(errorMessage(e)));
     }
 
     private Mono<ServerResponse> collectSubject(ServerRequest serverRequest) {
         UUID subjectId = serverRequest.queryParam("subjectId").map(UUID::fromString).orElse(null);
+        if (subjectId == null) {
+            throw new IllegalArgumentException("'subjectId' must has value.");
+        }
         Optional<String> typeOp = serverRequest.queryParam("type");
         Assert.isTrue(typeOp.isPresent(), "'type' must has value.");
         CollectionType type = CollectionType.valueOf(typeOp.get());
@@ -210,16 +213,19 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
                 .build()))
             .then(ServerResponse.ok().build())
             .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+                e -> ServerResponse.badRequest().bodyValue(errorMessage(e)));
     }
 
     private Mono<ServerResponse> unCollectSubject(ServerRequest serverRequest) {
         UUID subjectId = serverRequest.queryParam("subjectId").map(UUID::fromString).orElse(null);
+        if (subjectId == null) {
+            throw new IllegalArgumentException("'subjectId' must has value.");
+        }
         return userService.getUserIdFromSecurityContext()
             .flatMap(userId -> selfService.unCollect(userId, subjectId))
             .then(ServerResponse.ok().build())
             .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+                e -> ServerResponse.badRequest().bodyValue(errorMessage(e)));
     }
 
     private Mono<ServerResponse> updateSubjectCollectionMainEpProgress(ServerRequest request) {
@@ -231,7 +237,12 @@ public class SubjectCollectionEndpoint implements CoreEndpoint {
             .flatMap(userId -> selfService.updateMainEpisodeProgress(userId, subjectId, progress))
             .then(Mono.defer(() -> ServerResponse.ok().build()))
             .onErrorResume(NotFoundException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+                e -> ServerResponse.badRequest().bodyValue(errorMessage(e)));
+    }
+
+    private String errorMessage(Throwable error) {
+        String message = error.getMessage();
+        return message == null ? "" : message;
     }
 
 }

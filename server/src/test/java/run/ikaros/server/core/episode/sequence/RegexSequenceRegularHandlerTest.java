@@ -7,6 +7,7 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.server.store.entity.EpisodeSequenceRegularEntity;
 
+@org.jspecify.annotations.NullUnmarked
 class RegexSequenceRegularHandlerTest {
 
     private static EpisodeSequenceRegularEntity createRule(String name, String regex,

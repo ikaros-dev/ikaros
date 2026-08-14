@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -230,17 +231,19 @@ public class EpisodeSequenceRegularInitializer {
 
     private static EpisodeSequenceRegularEntity buildRule(
         String name, String regex, EpisodeGroup epGroup,
-        Float sequence, int priority, String description) {
+        @Nullable Float sequence, int priority, String description) {
         LocalDateTime now = LocalDateTime.now();
         EpisodeSequenceRegularEntity entity = EpisodeSequenceRegularEntity.builder()
             .name(name)
             .regex(regex)
             .epGroup(epGroup)
-            .sequence(sequence)
             .priority(priority)
             .description(description)
             .enabled(true)
             .build();
+        if (sequence != null) {
+            entity.setSequence(sequence);
+        }
         entity.setCreateTime(now)
             .setUpdateTime(now)
             .setDeleteStatus(false);

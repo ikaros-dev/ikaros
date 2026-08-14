@@ -20,6 +20,7 @@ import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.EpisodeSequenceRegularEntity;
 import run.ikaros.server.store.repository.EpisodeSequenceRegularRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class EpisodeSequenceRegularChainTest {
 
     @Mock

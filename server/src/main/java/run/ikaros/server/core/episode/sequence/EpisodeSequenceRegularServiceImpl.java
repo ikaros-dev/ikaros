@@ -4,6 +4,7 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -67,7 +68,8 @@ public class EpisodeSequenceRegularServiceImpl implements EpisodeSequenceRegular
     }
 
     @Override
-    public Mono<PagingWrap<EpisodeSequenceRegular>> findAll(Integer page, Integer size) {
+    public Mono<PagingWrap<EpisodeSequenceRegular>> findAll(@Nullable Integer page,
+                                                            @Nullable Integer size) {
         int pageNum = page == null || page < 1 ? 1 : page;
         int pageSize = size == null || size < 1 ? 10 : size;
         PageRequest pageRequest = PageRequest.of(pageNum - 1, pageSize);

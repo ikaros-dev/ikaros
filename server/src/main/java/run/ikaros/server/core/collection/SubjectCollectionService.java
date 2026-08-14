@@ -1,6 +1,7 @@
 package run.ikaros.server.core.collection;
 
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.collection.SubjectCollection;
@@ -32,15 +33,15 @@ public interface SubjectCollectionService {
      * @param subjectId subject id
      * @return subject collection or null
      */
-    Mono<SubjectCollection> findCollection(UUID userId, UUID subjectId);
+    Mono<SubjectCollection> findCollection(@Nullable UUID userId, @Nullable UUID subjectId);
 
     Mono<PagingWrap<SubjectCollection>> findCollections(UUID userId, Integer page,
                                                         Integer size);
 
     Mono<PagingWrap<SubjectCollection>> findCollections(UUID userId, Integer page,
                                                         Integer size,
-                                                        CollectionType type,
-                                                        Boolean isPrivate);
+                                                        @Nullable CollectionType type,
+                                                        @Nullable Boolean isPrivate);
 
     Mono<Void> updateMainEpisodeProgress(UUID userId, UUID subjectId, Integer progress);
 }

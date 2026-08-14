@@ -16,6 +16,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class EpisodeAttachmentUpdateEventListenerTest {
 
     private AttachmentRepository attachmentRepository;

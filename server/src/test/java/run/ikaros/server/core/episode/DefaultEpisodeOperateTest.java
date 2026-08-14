@@ -16,6 +16,7 @@ import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.EpisodeResource;
 import run.ikaros.api.store.enums.EpisodeGroup;
 
+@org.jspecify.annotations.NullUnmarked
 class DefaultEpisodeOperateTest {
 
     private EpisodeService service;

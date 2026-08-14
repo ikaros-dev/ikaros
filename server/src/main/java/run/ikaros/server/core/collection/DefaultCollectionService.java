@@ -62,8 +62,14 @@ public class DefaultCollectionService implements CollectionService {
     public Mono<PagingWrap> listCollectionsByCondition(FindCollectionCondition condition) {
         Assert.notNull(condition, "'condition' must not null.");
         final Integer page = condition.getPage();
+        if (page == null) {
+            throw new IllegalArgumentException("'page' must not null.");
+        }
         Assert.isTrue(page > 0, "'page' must gt 0.");
         final Integer size = condition.getSize();
+        if (size == null) {
+            throw new IllegalArgumentException("'size' must not null.");
+        }
         Assert.isTrue(size > 0, "'size' must gt 0.");
         final PageRequest pageRequest = PageRequest.of(page - 1, size);
 
@@ -76,7 +82,7 @@ public class DefaultCollectionService implements CollectionService {
 
         // 范围查询更新时间，用于查询指定时间段的收藏纪录
         String time = condition.getTime();
-        if (CollectionCategory.EPISODE == condition.getCategory()
+        if (time != null && CollectionCategory.EPISODE == condition.getCategory()
             && StringUtils.isNotBlank(time)
         ) {
             String[] split = time.split("-");
@@ -94,14 +100,15 @@ public class DefaultCollectionService implements CollectionService {
         Query query = Query.query(criteria);
 
         if (CollectionCategory.EPISODE == condition.getCategory()
-            && condition.getUpdateTimeDesc()) {
+            && Boolean.TRUE.equals(condition.getUpdateTimeDesc())) {
             query = query.sort(Sort.by(Sort.Order.desc("update_time").nullsLast()));
         }
 
         if (CollectionCategory.EPISODE == condition.getCategory()) {
             query = query
                 .sort(Sort.by(
-                    condition.getUpdateTimeDesc() ? Sort.Order.desc("update_time").nullsLast()
+                    Boolean.TRUE.equals(condition.getUpdateTimeDesc())
+                        ? Sort.Order.desc("update_time").nullsLast()
                         : Sort.Order.asc("update_time").nullsLast()));
         }
 
