@@ -118,8 +118,8 @@ async function handleDisable() {
 	try {
 		const token = userStore.jwtToken;
 		const { status } = await axios.post(
-			`${totpBase}/disable?password=${encodeURIComponent(disablePassword.value)}`,
-			{},
+			`${totpBase}/disable`,
+			{ password: disablePassword.value },
 			{ headers: { Authorization: `Bearer ${token}` } }
 		);
 		if (status === 200) {
