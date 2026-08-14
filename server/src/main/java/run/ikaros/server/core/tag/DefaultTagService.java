@@ -5,6 +5,7 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
@@ -45,7 +46,8 @@ public class DefaultTagService implements TagService {
     }
 
     @Override
-    public Flux<Tag> findAll(TagType type, UUID masterId, UUID userId, String name) {
+    public Flux<Tag> findAll(@Nullable TagType type, @Nullable UUID masterId,
+                             @Nullable UUID userId, @Nullable String name) {
         Criteria criteria = Criteria.empty();
 
         if (Objects.nonNull(type)) {
@@ -71,7 +73,7 @@ public class DefaultTagService implements TagService {
     }
 
     @Override
-    public Flux<SubjectTag> findSubjectTags(UUID subjectId) {
+    public Flux<SubjectTag> findSubjectTags(@Nullable UUID subjectId) {
         return findAll(TagType.SUBJECT, subjectId, null, null)
             .map(tag -> SubjectTag.builder()
                 .id(tag.getId())
@@ -84,7 +86,7 @@ public class DefaultTagService implements TagService {
     }
 
     @Override
-    public Flux<AttachmentTag> findAttachmentTags(UUID attachmentId) {
+    public Flux<AttachmentTag> findAttachmentTags(@Nullable UUID attachmentId) {
         return findAll(TagType.ATTACHMENT, attachmentId, null, null)
             .map(tag -> AttachmentTag.builder()
                 .id(tag.getId())
@@ -127,7 +129,7 @@ public class DefaultTagService implements TagService {
     }
 
     @Override
-    public Mono<Void> remove(TagType type, UUID masterId, String name, UUID userId) {
+    public Mono<Void> remove(TagType type, @Nullable UUID masterId, String name, UUID userId) {
         Assert.notNull(type, "'type' must not null.");
         Assert.hasText(name, "'name' must has text.");
         Assert.notNull(userId, "'userId' must not null.");
@@ -137,7 +139,10 @@ public class DefaultTagService implements TagService {
     }
 
     @Override
-    public Mono<Void> removeById(UUID tagId) {
+    public Mono<Void> removeById(@Nullable UUID tagId) {
+        if (tagId == null) {
+            throw new IllegalArgumentException("tagId must not null.");
+        }
         return tagRepository.findById(tagId)
             .switchIfEmpty(Mono.error(new NotFoundException("Tag not found for id = " + tagId)))
             .flatMap(tagEntity -> tagRepository.deleteById(tagEntity.getId())
