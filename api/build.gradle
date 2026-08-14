@@ -6,6 +6,8 @@ plugins {
     id "io.freefair.lombok" version "8.14.3"
 }
 
+apply from: rootProject.file('gradle/nullmarked-packages.gradle')
+
 
 group = 'run.ikaros.api'
 description = 'API of ikaros project, connecting by other projects.'
